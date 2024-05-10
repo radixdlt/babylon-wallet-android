@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -83,7 +84,7 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 
 @Composable
 fun BackupScreen(
@@ -223,7 +224,7 @@ private fun BackupScreenContent(
         ) {
             Text(
                 modifier = Modifier,
-                text = stringResource(id = R.string.configurationBackup_subtitle),
+                text = stringResource(id = R.string.configurationBackup_automated_heading),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body1Header
             )
@@ -260,7 +261,7 @@ private fun BackupScreenContent(
                     )
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = stringResource(id = R.string.configurationBackup_automatedBackupsWarning),
+                        text = stringResource(id = R.string.configurationBackup_automated_warning),
                         color = RadixTheme.colors.gray1,
                         style = RadixTheme.typography.body1Regular
                     )
@@ -269,7 +270,7 @@ private fun BackupScreenContent(
 
             Text(
                 modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.configurationBackup_manualBackup_heading),
+                text = stringResource(id = R.string.configurationBackup_manual_heading),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body1Header
             )
@@ -346,7 +347,7 @@ private fun ManualBackupCard(
     ) {
         Text(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.configurationBackup_manualBackup_subtitle),
+            text = stringResource(id = R.string.configurationBackup_manual_text),
             color = RadixTheme.colors.gray1,
             style = RadixTheme.typography.body1Regular
         )
@@ -354,7 +355,7 @@ private fun ManualBackupCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.configurationBackup_manualBackup_exportButton),
+            text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -374,7 +375,7 @@ private fun ManualBackupCard(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.configurationBackup_manualBackup_warning),
+                text = stringResource(id = R.string.configurationBackup_manual_warning),
                 color = RadixTheme.colors.gray1,
                 style = RadixTheme.typography.body1Regular
             )
@@ -395,8 +396,8 @@ private fun BackupStatusCard(
     ) {
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         SwitchSettingsItem(
-            titleRes = R.string.configurationBackup_backupsToggleGDrive,
-            subtitleRes = R.string.configurationBackup_backupsUpdate,
+            titleRes = R.string.configurationBackup_automated_toggleAndroid,
+            subtitleRes = R.string.configurationBackup_automated_lastBackup,
             checked = state.isBackupEnabled,
             icon = {
                 Icon(
@@ -412,29 +413,29 @@ private fun BackupStatusCard(
             color = RadixTheme.colors.gray5
         )
         Text(
-            text = stringResource(id = R.string.configurationBackup_automatedBackupsToggle),
+            text = stringResource(id = R.string.configurationBackup_automated_text),
             color = RadixTheme.colors.gray1,
             style = RadixTheme.typography.body1Regular
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_accountsItem),
-            subtitle = stringResource(id = R.string.configurationBackup_accountsSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_accountsItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_accountsItemSubtitle),
             backupState = state.backupState
         )
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_personasItem),
-            subtitle = stringResource(id = R.string.configurationBackup_personasSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_personasItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_personasItemSubtitle),
             backupState = state.backupState
         )
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_securityFactorsItem),
-            subtitle = stringResource(id = R.string.configurationBackup_securityFactorsSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemSubtitle),
             backupState = state.backupState
         )
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_walletSettingsItem),
-            subtitle = stringResource(id = R.string.configurationBackup_walletSettingsSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemSubtitle),
             backupState = state.backupState
         )
     }
@@ -451,7 +452,7 @@ private fun LoggedInStatus(modifier: Modifier = Modifier, onDisconnectClick: () 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.configurationBackup_loggedInAsHeading),
+                text = stringResource(id = R.string.configurationBackup_automated_loggedInAsAndroid),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
@@ -464,7 +465,7 @@ private fun LoggedInStatus(modifier: Modifier = Modifier, onDisconnectClick: () 
         }
         RadixTextButton(
             modifier = Modifier.weight(1f),
-            text = stringResource(id = R.string.configurationBackup_disconnectButton),
+            text = stringResource(id = R.string.configurationBackup_automated_disconnectAndroid),
             onClick = onDisconnectClick
         )
     }
@@ -475,7 +476,7 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange1.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
@@ -518,7 +519,7 @@ private fun BackupStatusSection(title: String, subtitle: String, backupState: Ba
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Icon(
-                painter = painterResource(id = DSR.ic_check_circle),
+                painter = painterResource(id = if (backupState.isWarningVisible) DSR.ic_warning_error else DSR.ic_check_circle),
                 tint = statusColor,
                 contentDescription = null
             )
@@ -690,7 +691,7 @@ private fun EncryptSheet(
             .navigationBarsPadding()
             .imePadding(),
         topBar = {
-            RadixCenteredTopAppBar(title = "", onBackClick = onBackClick)
+            RadixCenteredTopAppBar(title = stringResource(id = R.string.empty), onBackClick = onBackClick)
         },
         bottomBar = {
             RadixPrimaryButton(
@@ -707,11 +708,11 @@ private fun EncryptSheet(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.widthIn(max = 300.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupTitle),
                 textAlign = TextAlign.Center,
@@ -736,6 +737,7 @@ private fun EncryptSheet(
                 onValueChanged = onPasswordTyped,
                 value = state.password,
                 hint = stringResource(id = R.string.encryptProfileBackup_enterPasswordField_placeholder),
+                hintColor = RadixTheme.colors.gray2,
                 trailingIcon = {
                     IconButton(onClick = onPasswordRevealToggle) {
                         Icon(
@@ -765,13 +767,17 @@ private fun EncryptSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                    .padding(
+                        vertical = RadixTheme.dimensions.paddingDefault,
+                        horizontal = RadixTheme.dimensions.paddingXXLarge
+                    )
                     .onFocusChanged {
                         isConfirmFocused = it.isFocused
                     },
                 onValueChanged = onPasswordConfirmTyped,
                 value = state.confirm,
                 hint = stringResource(id = R.string.encryptProfileBackup_confirmPasswordField_placeholder),
+                hintColor = RadixTheme.colors.gray2,
                 error = if (!state.passwordsMatch && !isConfirmFocused && state.confirm.isNotBlank()) {
                     stringResource(id = R.string.encryptProfileBackup_confirmPasswordField_error)
                 } else {

@@ -1,20 +1,26 @@
 package com.babylon.wallet.android.fakes
 
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.RequestedNumberQuantifier
+import com.radixdlt.sargon.RequestedQuantity
+import com.radixdlt.sargon.SharedPersonaData
+import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
+import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.extensions.atLeast
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.DApp
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
-import rdx.works.profile.data.model.pernetwork.RequestedNumber
-import rdx.works.profile.data.model.pernetwork.Shared
+import rdx.works.core.sargon.PersonaDataField
 import rdx.works.profile.data.repository.DAppConnectionRepository
 
 class DAppConnectionRepositoryFake : DAppConnectionRepository {
@@ -25,26 +31,26 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         NoDapp, PredefinedDapp, SavedDapp
     }
 
-    var savedDApp: Network.AuthorizedDapp? = null
+    var savedDApp: AuthorizedDapp? = null
 
-    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
+    override suspend fun getAuthorizedDApp(dAppDefinitionAddress: AccountAddress): AuthorizedDapp? {
         return when (state) {
             InitialState.NoDapp -> null
             InitialState.PredefinedDapp -> {
                 val dApp = DApp.sampleMainnet().copy(dAppAddress = dAppDefinitionAddress)
-                savedDApp = Network.AuthorizedDapp(
-                    NetworkId.MAINNET.discriminant.toInt(), dApp.dAppAddress.string, dApp.name, listOf(
-                        Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                            identityAddress = IdentityAddress.sampleMainnet().string,
-                            lastLogin = "2023-01-31T10:28:14Z",
-                            sharedAccounts = Shared(
-                                listOf(AccountAddress.sampleMainnet.random().string, AccountAddress.sampleMainnet.random().string),
-                                RequestedNumber(
-                                    RequestedNumber.Quantifier.AtLeast,
-                                    1
-                                )
+                savedDApp = AuthorizedDapp(
+                    networkId = NetworkId.MAINNET,
+                    dappDefinitionAddress = dApp.dAppAddress,
+                    displayName = dApp.name,
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                        AuthorizedPersonaSimple(
+                            identityAddress = IdentityAddress.sampleMainnet(),
+                            lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
+                            sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                                request = RequestedQuantity.atLeast(1),
+                                ids = listOf(AccountAddress.sampleMainnet.random(), AccountAddress.sampleMainnet.random())
                             ),
-                            sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
+                            sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
                     )
                 )
@@ -54,104 +60,98 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         }
     }
 
-    override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
-        return flow {
-            emit(
-                listOf(
-                    with(DApp.sampleMainnet()) {
-                        Network.AuthorizedDapp(
-                            dAppAddress.networkId.discriminant.toInt(), dAppAddress.string, name, listOf(
-                                Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                                    identityAddress = IdentityAddress.sampleMainnet().string,
-                                    lastLogin = "2023-01-31T10:28:14Z",
-                                    sharedAccounts = Shared(
-                                        listOf(),
-                                        RequestedNumber(
-                                            RequestedNumber.Quantifier.AtLeast,
-                                            1
-                                        )
-                                    ),
-                                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
-                                )
-                            )
+    override fun getAuthorizedDApps(): Flow<List<AuthorizedDapp>> = flowOf(listOf(
+            with(DApp.sampleMainnet()) {
+                AuthorizedDapp(
+                    networkId = dAppAddress.networkId,
+                    dappDefinitionAddress = dAppAddress,
+                    displayName = name,
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                        AuthorizedPersonaSimple(
+                            identityAddress = IdentityAddress.sampleMainnet(),
+                            lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
+                            sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                                request = RequestedQuantity.atLeast(1),
+                                ids = emptyList()
+                            ),
+                            sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    },
-                    with(DApp.sampleMainnet.other()) {
-                        Network.AuthorizedDapp(
-                            dAppAddress.networkId.discriminant.toInt(), dAppAddress.string, name, listOf(
-                                Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                                    identityAddress = IdentityAddress.sampleMainnet().string,
-                                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(),
-                                    lastLogin = "2023-01-31T10:28:14Z",
-                                    sharedAccounts = Shared(
-                                        listOf(),
-                                        RequestedNumber(
-                                            RequestedNumber.Quantifier.AtLeast,
-                                            1
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    }
+                    )
                 )
-            )
-        }
-    }
+            },
+            with(DApp.sampleMainnet.other()) {
+                AuthorizedDapp(
+                    networkId = dAppAddress.networkId,
+                    dappDefinitionAddress = dAppAddress,
+                    displayName = name,
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                        AuthorizedPersonaSimple(
+                            identityAddress = IdentityAddress.sampleMainnet(),
+                            lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
+                            sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                                request = RequestedQuantity.atLeast(1),
+                                ids = emptyList()
+                            ),
+                            sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
+                        )
+                    )
+                )
+            }
+        ))
 
-    override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
+    override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: AuthorizedDapp) {
         this.savedDApp = authorizedDApp
     }
 
     override suspend fun getDAppConnectedPersona(
         dAppDefinitionAddress: AccountAddress,
-        personaAddress: String
-    ): Network.AuthorizedDapp.AuthorizedPersonaSimple? {
+        personaAddress: IdentityAddress
+    ): AuthorizedPersonaSimple? {
         return null
     }
 
     override suspend fun dAppAuthorizedPersonaAccountAddresses(
         dAppDefinitionAddress: AccountAddress,
-        personaAddress: String,
+        personaAddress: IdentityAddress,
         numberOfAccounts: Int,
-        quantifier: RequestedNumber.Quantifier
+        quantifier: RequestedNumberQuantifier
     ): List<AccountAddress> {
         return emptyList()
     }
 
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: AccountAddress,
-        personaAddress: String,
-        requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
+        personaAddress: IdentityAddress,
+        requestedFieldKinds: Map<PersonaDataField.Kind, Int>
     ): Boolean {
         return false
     }
 
-    override suspend fun updateDappAuthorizedPersonaSharedAccounts(
+    override suspend fun updateDAppAuthorizedPersonaSharedAccounts(
         dAppDefinitionAddress: AccountAddress,
-        personaAddress: String,
-        sharedAccounts: Shared<String>
-    ): Network.AuthorizedDapp {
-        return checkNotNull(savedDApp)
+        personaAddress: IdentityAddress,
+        sharedAccounts: SharedToDappWithPersonaAccountAddresses
+    ): AuthorizedDapp = checkNotNull(savedDApp)
+
+    override suspend fun deletePersonaForDApp(
+        dAppDefinitionAddress: AccountAddress,
+        personaAddress: IdentityAddress
+    ) {}
+
+    override fun getAuthorizedDAppsByPersona(personaAddress: IdentityAddress): Flow<List<AuthorizedDapp>> {
+        return getAuthorizedDApps()
     }
 
-    override suspend fun deletePersonaForDapp(dAppDefinitionAddress: AccountAddress, personaAddress: String) {
-    }
-
-    override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>> {
-        return getAuthorizedDapps()
-    }
-
-    override fun getAuthorizedDappFlow(dAppDefinitionAddress: AccountAddress): Flow<Network.AuthorizedDapp?> {
+    override fun getAuthorizedDAppFlow(dAppDefinitionAddress: AccountAddress): Flow<AuthorizedDapp?> {
         return flow {
-            emit(getAuthorizedDapp(dAppDefinitionAddress))
+            emit(getAuthorizedDApp(dAppDefinitionAddress))
         }
     }
 
-    override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: AccountAddress) {
+    override suspend fun deleteAuthorizedDApp(dAppDefinitionAddress: AccountAddress) {
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryID>) {
     }
 
 }

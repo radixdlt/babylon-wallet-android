@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,46 +23,41 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
+import rdx.works.core.sargon.isLedgerAccount
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
 fun AccountCardView(
     modifier: Modifier = Modifier,
-    accountWithAssets: AccountWithAssets,
-    isFiatBalancesEnabled: Boolean,
-    fiatTotalValue: FiatPrice?,
-    accountTag: WalletUiState.AccountTag?,
-    isLoadingResources: Boolean,
-    isLoadingBalance: Boolean,
-    securityPromptType: SecurityPromptType?,
+    accountWithAssets: WalletUiState.AccountUiItem,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
-    val gradient = remember(accountWithAssets.account.appearanceID) {
-        AccountGradientList[accountWithAssets.account.appearanceID % AccountGradientList.size]
-    }
     ConstraintLayout(
         modifier
-            .background(Brush.linearGradient(gradient), shape = RadixTheme.shapes.roundedRectMedium)
+            .background(
+                brush = accountWithAssets.account.appearanceId.gradient(),
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
             .fillMaxWidth()
             .heightIn(min = 160.dp)
             .padding(
@@ -82,15 +76,12 @@ fun AccountCardView(
             promptsContainer
         ) = createRefs()
 
-        val isFiatBalanceVisible = accountWithAssets.assets == null ||
-            accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
-
         Text(
             modifier = Modifier.constrainAs(nameLabel) {
                 linkTo(
                     start = parent.start,
-                    end = if (isFiatBalancesEnabled && isFiatBalanceVisible) {
-                        if (isLoadingBalance) {
+                    end = if (accountWithAssets.isFiatBalanceVisible) {
+                        if (accountWithAssets.isLoadingBalance) {
                             fiatTotalLoading.start
                         } else {
                             fiatTotalValueLabel.start
@@ -102,15 +93,15 @@ fun AccountCardView(
                 )
                 width = Dimension.fillToConstraints
             },
-            text = accountWithAssets.account.displayName,
+            text = accountWithAssets.account.displayName.value,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.white,
             overflow = TextOverflow.Ellipsis
         )
 
-        if (isFiatBalancesEnabled && isFiatBalanceVisible) {
-            if (isLoadingBalance) {
+        if (accountWithAssets.isFiatBalanceVisible) {
+            if (accountWithAssets.isLoadingBalance) {
                 Row(
                     modifier = Modifier.constrainAs(fiatTotalLoading) {
                         start.linkTo(nameLabel.end, margin = 10.dp)
@@ -136,7 +127,7 @@ fun AccountCardView(
                         end.linkTo(parent.end)
                         top.linkTo(parent.top)
                     },
-                    fiatPrice = fiatTotalValue,
+                    fiatPrice = accountWithAssets.fiatTotalValue,
                     currency = SupportedCurrency.USD,
                     isLoading = false,
                     contentColor = RadixTheme.colors.white,
@@ -147,22 +138,27 @@ fun AccountCardView(
             }
         }
 
+        val addressTextColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+
         ActionableAddressView(
-            address = remember(accountWithAssets.account.address) {
-                Address.Account(AccountAddress.init(accountWithAssets.account.address))
-            },
             modifier = Modifier.constrainAs(addressLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
             },
+            address = accountWithAssets.address,
+            truncateAddress = true,
+            visitableInDashboard = true,
             textStyle = RadixTheme.typography.body2HighImportance,
-            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+            textColor = addressTextColor,
+            iconColor = addressTextColor,
+            addressNetworkId = accountWithAssets.account.networkId,
+            isLedgerAccountAddress = accountWithAssets.account.isLedgerAccount
         )
 
-        accountTag?.let {
+        accountWithAssets.tag?.let {
             val context = LocalContext.current
-            val tagLabel = remember(accountTag) {
-                accountTag.toLabel(context)
+            val tagLabel = remember(it) {
+                it.toLabel(context)
             }
             Text(
                 modifier = Modifier.constrainAs(legacyLabel) {
@@ -193,13 +189,13 @@ fun AccountCardView(
                     start = parent.start,
                     end = parent.end,
                     top = spacer.bottom,
-                    bottom = if (securityPromptType != null) promptsContainer.top else parent.bottom,
-                    bottomMargin = if (securityPromptType != null) 18.dp else 0.dp
+                    bottom = if (accountWithAssets.securityPromptType != null) promptsContainer.top else parent.bottom,
+                    bottomMargin = if (accountWithAssets.securityPromptType != null) 18.dp else 0.dp
                 )
                 width = Dimension.fillToConstraints
             },
             assets = accountWithAssets.assets,
-            isLoading = isLoadingResources
+            isLoading = accountWithAssets.isLoadingAssets
         )
 
         Column(
@@ -213,13 +209,13 @@ fun AccountCardView(
                 )
             }
         ) {
-            securityPromptType?.let {
+            accountWithAssets.securityPromptType?.let {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         onApplySecuritySettings(it)
                     },
-                    text = securityPromptType.toText()
+                    text = it.toText()
                 )
             }
         }
@@ -273,22 +269,23 @@ fun AccountCardPreview() {
     RadixWalletPreviewTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
-                accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(),
+                accountWithAssets = WalletUiState.AccountUiItem(
+                    account = Account.sampleMainnet(),
+                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
                         liquidStakeUnits = emptyList(),
                         stakeClaims = emptyList()
-                    )
+                    ),
+                    fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
+                    tag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    isFiatBalanceVisible = true,
+                    isLoadingAssets = false,
+                    isLoadingBalance = false,
                 ),
-                isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
-                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                isLoadingResources = false,
-                isLoadingBalance = false,
-                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                 onApplySecuritySettings = {}
             )
         }
@@ -302,24 +299,25 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
     RadixWalletPreviewTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
-                accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(
-                        name = "a very long name for my account"
+                accountWithAssets = WalletUiState.AccountUiItem(
+                    account = Account.sampleMainnet().copy(
+                        displayName = DisplayName("a very long name for my account")
                     ),
+                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
                         liquidStakeUnits = emptyList(),
                         stakeClaims = emptyList()
-                    )
+                    ),
+                    fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
+                    tag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    isFiatBalanceVisible = true,
+                    isLoadingAssets = false,
+                    isLoadingBalance = false
                 ),
-                isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
-                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                isLoadingResources = false,
-                isLoadingBalance = false,
-                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                 onApplySecuritySettings = {}
             )
         }
@@ -333,24 +331,25 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
     RadixWalletPreviewTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
-                accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(
-                        name = "a very long name for my account again much more longer oh god "
+                accountWithAssets = WalletUiState.AccountUiItem(
+                    account = Account.sampleMainnet().copy(
+                        displayName = DisplayName("a very long name for my account again much more longer oh god ")
                     ),
+                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
                         liquidStakeUnits = emptyList(),
                         stakeClaims = emptyList()
-                    )
+                    ),
+                    fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
+                    tag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    isFiatBalanceVisible = true,
+                    isLoadingAssets = false,
+                    isLoadingBalance = false,
                 ),
-                isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
-                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                isLoadingResources = false,
-                isLoadingBalance = false,
-                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                 onApplySecuritySettings = {}
             )
         }
@@ -365,24 +364,25 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
         CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 AccountCardView(
-                    accountWithAssets = AccountWithAssets(
-                        account = SampleDataProvider().sampleAccount(
-                            name = "a very long name for my account again much more longer oh god "
+                    accountWithAssets = WalletUiState.AccountUiItem(
+                        account = Account.sampleMainnet().copy(
+                            displayName = DisplayName("a very long name for my account again much more longer oh god ")
                         ),
+                        address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                         assets = Assets(
                             tokens = emptyList(),
                             nonFungibles = listOf(),
                             poolUnits = emptyList(),
                             liquidStakeUnits = emptyList(),
                             stakeClaims = emptyList()
-                        )
+                        ),
+                        fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
+                        tag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                        securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                        isLoadingAssets = false,
+                        isLoadingBalance = false,
+                        isFiatBalanceVisible = true
                     ),
-                    isFiatBalancesEnabled = true,
-                    fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
-                    accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    isLoadingResources = false,
-                    isLoadingBalance = false,
-                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                     onApplySecuritySettings = {}
                 )
             }
@@ -397,22 +397,23 @@ fun AccountCardLoadingPreview() {
     RadixWalletPreviewTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
-                accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(),
+                accountWithAssets = WalletUiState.AccountUiItem(
+                    account = Account.sampleMainnet(),
+                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
                         liquidStakeUnits = emptyList(),
                         stakeClaims = emptyList()
-                    )
+                    ),
+                    fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
+                    tag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    isFiatBalanceVisible = true,
+                    isLoadingAssets = true,
+                    isLoadingBalance = true
                 ),
-                isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
-                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                isLoadingResources = true,
-                isLoadingBalance = true,
-                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                 onApplySecuritySettings = {}
             )
         }

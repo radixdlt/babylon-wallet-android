@@ -2,9 +2,12 @@
 
 package com.babylon.wallet.android.designsystem.theme
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.radixdlt.sargon.AppearanceId
 
 val Blue1 = Color(0xFF060F8F)
 val Blue2 = Color(0xFF052CC0)
@@ -26,6 +29,7 @@ val Gray5 = Color(0xFFF4F5F9)
 // alert
 val Orange1 = Color(0xFFF2AD21)
 val Orange2 = Color(0xFFEC633E)
+val LightOrange = Color(255, 244, 223)
 val Red1 = Color(0xFFC82020)
 
 val White = Color(0xFFFFFFFF)
@@ -83,6 +87,11 @@ val AccountGradientList =
         GradientAccount12,
     )
 
-fun getAccountGradientColorsFor(index: Int): List<Color> {
-    return AccountGradientList[index % AccountGradientList.size]
+@Composable
+fun AppearanceId.gradient(alpha: Float = 1f): Brush {
+    val colors = remember(this, alpha) {
+        AccountGradientList[value.toInt() % AccountGradientList.size].map { it.copy(alpha = alpha) }
+    }
+
+    return Brush.horizontalGradient(colors)
 }

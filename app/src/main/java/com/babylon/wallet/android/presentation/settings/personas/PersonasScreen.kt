@@ -29,17 +29,20 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.sargon.factorSourceId
 
 @Composable
 fun PersonasScreen(
@@ -47,8 +50,8 @@ fun PersonasScreen(
     viewModel: PersonasViewModel,
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onPersonaClick: (String) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit
+    onPersonaClick: (IdentityAddress) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context: Context = LocalContext.current
@@ -66,7 +69,7 @@ fun PersonasScreen(
         createNewPersona = viewModel::onCreatePersona,
         onPersonaClick = onPersonaClick,
         onApplySecuritySettings = { factorSourceID ->
-            (factorSourceID as? FactorSource.FactorSourceID.FromHash)?.let { id ->
+            (factorSourceID as? FactorSourceId.Hash)?.let { id ->
                 context.biometricAuthenticate { result ->
                     if (result == BiometricAuthenticationResult.Succeeded) {
                         onNavigateToMnemonicBackup(id)
@@ -83,8 +86,8 @@ fun PersonasContent(
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
-    onPersonaClick: (String) -> Unit,
-    onApplySecuritySettings: ((FactorSource.FactorSourceID) -> Unit)
+    onPersonaClick: (IdentityAddress) -> Unit,
+    onApplySecuritySettings: ((FactorSourceId.Hash) -> Unit)
 ) {
     Scaffold(
         modifier = modifier,
@@ -131,7 +134,7 @@ fun PersonasContent(
                         persona = personaItem,
                         displaySecurityPrompt = state.securityPrompt(personaItem) != null,
                         onApplySecuritySettings = {
-                            onApplySecuritySettings(personaItem.factorSourceId)
+                            onApplySecuritySettings(personaItem.factorSourceId as FactorSourceId.Hash)
                         }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -150,22 +153,14 @@ fun PersonasContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun PersonasScreenPreview() {
     RadixWalletTheme {
         PersonasContent(
             PersonasViewModel.PersonasUiState(
-                personas = listOf(
-                    SampleDataProvider().samplePersona(
-                        personaAddress = "address1",
-                        personaName = "persona1"
-                    ),
-                    SampleDataProvider().samplePersona(
-                        personaAddress = "address2",
-                        personaName = "persona2"
-                    ),
-                ).toImmutableList()
+                personas = Persona.sampleMainnet.all.toImmutableList()
             ),
             modifier = Modifier,
             onBackClick = {},

@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBal
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -47,7 +48,7 @@ import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.sargon.default
 
 @Composable
 fun LSUDialogContent(
@@ -126,7 +127,7 @@ fun LSUDialogContent(
 
         val xrdWorth = remember(args, lsu) {
             val xrdResourceAddress = runCatching {
-                val networkId = args.resourceAddress.networkId.value.toInt()
+                val networkId = args.resourceAddress.networkId
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
@@ -252,7 +253,7 @@ private fun LSUResourceValue(
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
             token = Resource.FungibleResource(
-                address = XrdResource.address(Radix.Gateway.default.network.networkId().value),
+                address = XrdResource.address(Gateway.default.network.id),
                 ownedAmount = null
             )
         )

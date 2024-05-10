@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestR
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.Persona
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
@@ -18,9 +17,15 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.presentation.model.toPersonaDataRequestResponseItem
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.extensions.asProfileEntity
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.string
 import javax.inject.Inject
+
+private typealias DAppPersona = com.babylon.wallet.android.data.dapp.model.Persona
 
 open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
 
@@ -28,7 +33,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
 
     protected suspend fun buildAccountsResponseItem(
         request: MessageFromDataChannel.IncomingRequest,
-        accounts: List<Network.Account>,
+        accounts: List<Account>,
         challengeHex: String?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean,
     ): Result<AccountsRequestResponseItem?> {
@@ -49,14 +54,15 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                     request.metadata.origin,
                     request.metadata.dAppDefinitionAddress
                 )
-                val signatureWithPublicKey = rolaClient.signAuthChallenge(account, signRequest, biometricAuthProvider)
+                val signatureWithPublicKey =
+                    rolaClient.signAuthChallenge(account.asProfileEntity(), signRequest, biometricAuthProvider)
                 if (signatureWithPublicKey.isFailure) {
                     return Result.failure(
                         signatureWithPublicKey.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
                 }
                 AccountProof(
-                    account.address,
+                    account.address.string,
                     signatureWithPublicKey.getOrThrow().toProof()
                 )
             }
@@ -64,9 +70,9 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
 
         val accountsResponses = accounts.map { account ->
             AccountsRequestResponseItem.Account(
-                address = account.address,
-                label = account.displayName,
-                appearanceId = account.appearanceID
+                address = account.address.string,
+                label = account.displayName.value,
+                appearanceId = account.appearanceId.value.toInt()
             )
         }
 
@@ -87,9 +93,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: AuthorizedRequest,
-        selectedPersona: Network.Persona,
-        oneTimeAccounts: List<Network.Account>,
-        ongoingAccounts: List<Network.Account>,
+        selectedPersona: Persona,
+        oneTimeAccounts: List<Account>,
+        ongoingAccounts: List<Account>,
         ongoingSharedPersonaData: PersonaData? = null,
         onetimeSharedPersonaData: PersonaData? = null,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }
@@ -105,10 +111,10 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             }
             val oneTimeAccountsResponseItem =
                 buildAccountsResponseItem(
-                    request,
-                    oneTimeAccounts,
-                    request.oneTimeAccountsRequestItem?.challenge?.value,
-                    authProvider
+                    request = request,
+                    accounts = oneTimeAccounts,
+                    challengeHex = request.oneTimeAccountsRequestItem?.challenge?.hex,
+                    deviceBiometricAuthenticationProvider = authProvider
                 )
             if (oneTimeAccountsResponseItem.isFailure) {
                 return Result.failure(
@@ -117,10 +123,10 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             }
             val ongoingAccountsResponseItem =
                 buildAccountsResponseItem(
-                    request,
-                    ongoingAccounts,
-                    request.ongoingAccountsRequestItem?.challenge?.value,
-                    authProvider
+                    request = request,
+                    accounts = ongoingAccounts,
+                    challengeHex = request.ongoingAccountsRequestItem?.challenge?.hex,
+                    deviceBiometricAuthenticationProvider = authProvider
                 )
             if (ongoingAccountsResponseItem.isFailure) {
                 return Result.failure(
@@ -146,7 +152,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
     private suspend fun buildAuthResponseItem(
         request: AuthorizedRequest,
-        selectedPersona: Network.Persona,
+        selectedPersona: Persona,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<AuthRequestResponseItem> {
         val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
@@ -155,23 +161,23 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
-                    challengeHex = authRequest.challenge.value,
+                    challengeHex = authRequest.challenge.hex,
                     origin = request.metadata.origin,
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 )
                 rolaClient.signAuthChallenge(
-                    selectedPersona,
+                    selectedPersona.asProfileEntity(),
                     signRequest,
                     deviceBiometricAuthenticationProvider
                 ).onSuccess { signature ->
                     response = Result.success(
                         AuthLoginWithChallengeRequestResponseItem(
-                            Persona(
-                                selectedPersona.address,
-                                selectedPersona.displayName
+                            persona = DAppPersona(
+                                identityAddress = selectedPersona.address.string,
+                                label = selectedPersona.displayName.value
                             ),
-                            authRequest.challenge.value,
-                            signature.toProof()
+                            challenge = authRequest.challenge.hex,
+                            proof = signature.toProof()
                         )
                     )
                 }.onFailure {
@@ -183,9 +189,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
                 Result.success(
                     AuthLoginWithoutChallengeRequestResponseItem(
-                        Persona(
-                            selectedPersona.address,
-                            selectedPersona.displayName
+                        persona = DAppPersona(
+                            identityAddress = selectedPersona.address.string,
+                            label = selectedPersona.displayName.value
                         )
                     )
                 )
@@ -194,9 +200,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 Result.success(
                     AuthUsePersonaRequestResponseItem(
-                        Persona(
-                            selectedPersona.address,
-                            selectedPersona.displayName
+                        persona = DAppPersona(
+                            identityAddress = selectedPersona.address.string,
+                            label = selectedPersona.displayName.value
                         )
                     )
                 )
@@ -213,7 +219,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest,
-        oneTimeAccounts: List<Network.Account> = emptyList(),
+        oneTimeAccounts: List<Account> = emptyList(),
         onetimeSharedPersonaData: PersonaData? = null,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },
     ): Result<WalletInteractionResponse> {
@@ -221,7 +227,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
             buildAccountsResponseItem(
                 request = request,
                 accounts = oneTimeAccounts,
-                challengeHex = request.oneTimeAccountsRequestItem?.challenge?.value,
+                challengeHex = request.oneTimeAccountsRequestItem?.challenge?.hex,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             )
         if (oneTimeAccountsResponseItem.isFailure) {

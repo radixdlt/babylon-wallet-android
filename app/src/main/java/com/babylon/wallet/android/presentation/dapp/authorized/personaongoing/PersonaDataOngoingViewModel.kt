@@ -9,11 +9,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,7 +33,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.personaOnCurrentNetworkFlow(args.personaId).collect { persona ->
+            getProfileUseCase.flow.mapNotNull { it.activePersonaOnCurrentNetwork(args.personaId) }.collect { persona ->
                 val uiModel = PersonaUiModel(persona, requiredPersonaFields = args.requiredPersonaFields)
                 _state.update {
                     it.copy(
@@ -42,16 +45,16 @@ class PersonaDataOngoingViewModel @Inject constructor(
         }
     }
 
-    fun onEditClick(personaAddress: String) {
+    fun onEditClick(persona: Persona) {
         viewModelScope.launch {
-            sendEvent(PersonaDataOngoingEvent.OnEditPersona(personaAddress, args.requiredPersonaFields))
+            sendEvent(PersonaDataOngoingEvent.OnEditPersona(persona.address, args.requiredPersonaFields))
         }
     }
 }
 
 sealed interface PersonaDataOngoingEvent : OneOffEvent {
     data class OnEditPersona(
-        val personaAddress: String,
+        val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields
     ) : PersonaDataOngoingEvent
 }

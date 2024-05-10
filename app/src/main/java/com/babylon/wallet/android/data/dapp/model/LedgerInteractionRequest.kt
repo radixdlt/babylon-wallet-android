@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.LedgerHardwareWalletModel
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.hex
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.factorsources.Slip10Curve
 
 @Serializable
 sealed interface LedgerInteractionRequest {
@@ -91,10 +92,10 @@ sealed interface LedgerInteractionRequest {
     ) {
 
         companion object {
-            fun from(ledgerFactorSource: LedgerHardwareWalletFactorSource): LedgerDevice = LedgerDevice(
-                name = ledgerFactorSource.hint.name,
-                model = requireNotNull(ledgerFactorSource.getLedgerDeviceModel()),
-                id = ledgerFactorSource.id.body.value
+            fun from(factorSource: FactorSource.Ledger): LedgerDevice = LedgerDevice(
+                id = factorSource.value.id.body.hex,
+                name = factorSource.value.hint.name,
+                model = LedgerDeviceModel.from(factorSource.value.hint.model),
             )
         }
     }
@@ -117,11 +118,9 @@ enum class Curve {
     Secp256k1;
 
     companion object {
-        fun from(curve: Slip10Curve): Curve {
-            return when (curve) {
-                Slip10Curve.CURVE_25519 -> Curve25519
-                Slip10Curve.SECP_256K1 -> Secp256k1
-            }
+        fun from(publicKey: PublicKey): Curve = when (publicKey) {
+            is PublicKey.Ed25519 -> Curve25519
+            is PublicKey.Secp256k1 -> Secp256k1
         }
     }
 }
@@ -138,13 +137,10 @@ enum class LedgerDeviceModel {
     NanoX;
 
     companion object {
-        fun LedgerHardwareWalletFactorSource.getLedgerDeviceModel(): LedgerDeviceModel? {
-            return when (this.hint.model) {
-                LedgerHardwareWalletFactorSource.DeviceModel.NANO_S.value -> NanoS
-                LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS.value -> NanoSPlus
-                LedgerHardwareWalletFactorSource.DeviceModel.NANO_X.value -> NanoX
-                else -> null
-            }
+        fun from(model: LedgerHardwareWalletModel): LedgerDeviceModel = when (model) {
+            LedgerHardwareWalletModel.NANO_S -> NanoS
+            LedgerHardwareWalletModel.NANO_S_PLUS -> NanoSPlus
+            LedgerHardwareWalletModel.NANO_X -> NanoX
         }
     }
 }

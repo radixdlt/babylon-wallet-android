@@ -2,7 +2,7 @@ package rdx.works.profile.data.repository
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import rdx.works.profile.data.model.DeviceInfo
+import rdx.works.core.domain.DeviceInfo
 import javax.inject.Inject
 
 interface DeviceInfoRepository {

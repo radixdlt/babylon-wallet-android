@@ -33,7 +33,6 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.extensions.init
 
 /**
  * TODO
@@ -45,14 +44,11 @@ fun AccountTopBar(
     state: AccountUiState,
     lazyListState: LazyListState,
     onBackClick: () -> Unit,
-    onAccountPreferenceClick: (String) -> Unit,
+    onAccountPreferenceClick: (AccountAddress) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
-    val accountAddress = remember(state.accountWithAssets) {
-        state.accountWithAssets?.account?.address?.let { AccountAddress.init(it) }
-    }
-
+    val accountAddress = state.accountWithAssets?.account?.address
     val progressTargetValue by remember {
         derivedStateOf { if (lazyListState.firstVisibleItemIndex == 0) 0f else 1f }
     }
@@ -89,7 +85,7 @@ fun AccountTopBar(
             modifier = Modifier
                 .layoutId("titleLabel")
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            text = state.accountWithAssets?.account?.displayName.orEmpty(),
+            text = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
             style = RadixTheme.typography.body1Header.copy(textAlign = TextAlign.Center),
             color = RadixTheme.colors.white,
             maxLines = 2,
@@ -98,7 +94,11 @@ fun AccountTopBar(
 
         IconButton(
             modifier = Modifier.layoutId("moreButton"),
-            onClick = { onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty()) }
+            onClick = {
+                if (accountAddress != null) {
+                    onAccountPreferenceClick(accountAddress)
+                }
+            }
         ) {
             Icon(
                 painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz),

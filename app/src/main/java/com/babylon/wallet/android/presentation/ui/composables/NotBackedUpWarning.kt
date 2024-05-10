@@ -13,7 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 
 @Composable
 fun NotBackedUpWarning(

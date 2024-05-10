@@ -5,22 +5,32 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Personas
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -30,7 +40,13 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
 
-    private val samplePersona = sampleDataProvider.samplePersona()
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
+        val network = profile.networks.getBy(NetworkId.MAINNET)!!.let {
+            it.copy(personas = Personas.init(it.personas().first()))
+        }
+        profile.copy(networks = ProfileNetworks.init(network))
+    }
+    private val samplePersona = profile.currentNetwork!!.personas().first()
 
     override fun initVM(): PersonaDataOnetimeViewModel {
         return PersonaDataOnetimeViewModel(
@@ -46,7 +62,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
+                    PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -54,12 +70,9 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
                 )
             )
         )
-        coEvery { preferencesManager.firstPersonaCreated } returns flow {
-            emit(true)
-        }
-        coEvery { getProfileUseCase() } returns flowOf(
-            profile(personas = identifiedArrayListOf(samplePersona))
-        )
+        coEvery { preferencesManager.firstPersonaCreated } returns flowOf(true)
+        coEvery { getProfileUseCase() } returns profile
+        coEvery { getProfileUseCase.flow } returns flowOf(profile)
     }
 
     @Test
@@ -87,10 +100,10 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     @Test
     fun `edit click triggers edit action with proper required fields`() = runTest {
         val vm = vm.value
-        vm.onEditClick(samplePersona.address)
+        vm.onEditClick(samplePersona)
         advanceUntilIdle()
         val item = vm.oneOffEvent.first()
-        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredPersonaFields.fields.any { it.kind == PersonaData.PersonaDataField.Kind.Name })
+        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredPersonaFields.fields.any { it.kind == PersonaDataField.Kind.Name })
     }
 
 }

@@ -1,17 +1,25 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.mockdata.account
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_ACCOUNT_ID
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountConfirmationEvent
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Accounts
+import com.radixdlt.sargon.AppearanceId
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sample
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +33,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
@@ -33,18 +41,23 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val accountId = AccountAddress.sampleMainnet.random()
-    private val accountName = "My main account"
+
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).let {
+        val mainnetNetwork = it.networks.getBy(NetworkId.MAINNET)!!.let { network ->
+            network.copy(accounts = Accounts.init(network.accounts().take(1)))
+        }
+        it.copy(networks = ProfileNetworks.init(mainnetNetwork))
+    }
+    private val account = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.first()!!
 
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns accountId.string
-        every { savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME) } returns accountName
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns account.address.string
+        every { savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME) } returns account.displayName.value
         every { savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE) } returns false
-        every { getProfileUseCase() } returns flowOf(profile(accounts = identifiedArrayListOf(
-            account(address = accountId, name = accountName)))
-        )
+        every { getProfileUseCase.flow } returns flowOf(profile)
+        coEvery { getProfileUseCase() } returns profile
     }
 
     @Test
@@ -65,9 +78,9 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
         // then
         Assert.assertEquals(
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
-                accountName = accountName,
-                accountAddress = accountId.string,
-                appearanceId = 1
+                accountName = account.displayName.value,
+                accountAddress = account.address.string,
+                appearanceId = AppearanceId(0u)
             ),
             viewModel.state.value
         )
@@ -90,9 +103,9 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
         // then
         Assert.assertEquals(
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
-                accountName = accountName,
-                accountAddress = accountId.string,
-                appearanceId = 1
+                accountName = account.displayName.value,
+                accountAddress = account.address.string,
+                appearanceId = AppearanceId(0u)
             ),
             viewModel.state.value
         )

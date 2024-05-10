@@ -51,7 +51,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -63,7 +62,11 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.sargon.sample
 
 @Composable
 fun RestoreMnemonicsScreen(
@@ -203,6 +206,9 @@ private fun RestoreMnemonicsContent(
                         }
                     }
 
+                    val isSeedPhraseValid = remember(state.seedPhraseState) {
+                        state.seedPhraseState.isValidSeedPhrase()
+                    }
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -216,8 +222,7 @@ private fun RestoreMnemonicsContent(
                                     R.string.recoverSeedPhrase_skipMainSeedPhraseButton
                             }
                         ),
-                        enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
-                            (state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid),
+                        enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase || isSeedPhraseValid,
                         isLoading = state.isRestoring,
                         onClick = onSubmitClick
                     )
@@ -425,7 +430,10 @@ private fun SeedPhraseView(
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
-        if (state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid.not()) {
+        val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
+            state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+        }
+        if (shouldDisplaySeedPhraseWarning) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RedWarningText(
                 modifier = Modifier.fillMaxWidth(),
@@ -454,13 +462,8 @@ fun RestoreMnemonicsIntroContent() {
             state = RestoreMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
-                        associatedAccounts = List(5) { index ->
-                            SampleDataProvider().sampleAccount(
-                                name = "Account $index",
-                                appearanceId = index
-                            )
-                        },
-                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
+                        associatedAccounts = Account.sampleMainnet.all,
+                        factorSource = FactorSource.Device.sample()
                     )
                 ),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
@@ -486,16 +489,11 @@ fun RestoreMnemonicsSeedPhraseContent() {
             state = RestoreMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
-                        associatedAccounts = List(5) { index ->
-                            SampleDataProvider().sampleAccount(
-                                name = "Account $index",
-                                appearanceId = index
-                            )
-                        },
-                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
+                        associatedAccounts = Account.sampleMainnet.all,
+                        factorSource = FactorSource.Device.sample()
                     )
                 ),
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase
             ),
             onBackClick = {},
             onSkipSeedPhraseClick = {},
@@ -518,13 +516,8 @@ fun RestoreMnemonicsNoMainSeedPhraseContent() {
             state = RestoreMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
-                        associatedAccounts = List(5) { index ->
-                            SampleDataProvider().sampleAccount(
-                                name = "Account $index",
-                                appearanceId = index
-                            )
-                        },
-                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
+                        associatedAccounts = Account.sampleMainnet.all,
+                        factorSource = FactorSource.Device.sample()
                     )
                 ),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase

@@ -8,25 +8,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.Account
 
 fun LazyListScope.feePayerSelectionContent(
     candidates: List<TransactionFeePayers.FeePayerCandidate>,
-    onPayerSelected: (Network.Account) -> Unit
+    onPayerSelected: (Account) -> Unit
 ) {
     item {
         Text(
@@ -44,23 +40,20 @@ fun LazyListScope.feePayerSelectionContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
     items(candidates) { candidate ->
-        val gradientColor = getAccountGradientColorsFor(candidate.account.appearanceID)
         AccountSelectionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .background(
-                    brush = Brush.horizontalGradient(gradientColor),
+                    brush = candidate.account.appearanceId.gradient(),
                     shape = RadixTheme.shapes.roundedRectMedium
                 )
                 .clip(RadixTheme.shapes.roundedRectMedium)
                 .throttleClickable {
                     onPayerSelected(candidate.account)
                 },
-            accountName = candidate.account.displayName,
-            address = remember(candidate.account.address) {
-                AccountAddress.init(candidate.account.address)
-            },
+            accountName = candidate.account.displayName.value,
+            address = candidate.account.address,
             checked = false,
             isSingleChoice = true,
             radioButtonClicked = {

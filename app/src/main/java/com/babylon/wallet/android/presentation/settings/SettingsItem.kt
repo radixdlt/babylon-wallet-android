@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 
 sealed interface SettingsItem {
@@ -10,7 +11,7 @@ sealed interface SettingsItem {
     sealed interface TopLevelSettings {
         data object LinkToConnector : TopLevelSettings
 
-        data class SecurityCenter(val needAction: Boolean = false) : TopLevelSettings
+        data class SecurityCenter(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
         data object Personas : TopLevelSettings
         data object ApprovedDapps : TopLevelSettings
 
@@ -165,9 +166,10 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
-                EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity
+                Gateways -> DSR.ic_gateways
+                EntityHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
+                is DeveloperMode -> DSR.ic_developer_mode
                 else -> null
             }
         }

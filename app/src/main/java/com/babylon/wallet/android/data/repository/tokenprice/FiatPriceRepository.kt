@@ -13,6 +13,7 @@ import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntit
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository.PriceRequestAddress
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -24,7 +25,6 @@ import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.peerdroid.di.IoDispatcher
-import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
 import java.lang.IllegalStateException
 import javax.inject.Inject
@@ -152,7 +152,7 @@ class TestnetFiatPriceRepository @Inject constructor(
     @Mainnet private val delegate: FiatPriceRepository
 ) : FiatPriceRepository {
 
-    private val mainnetXrdAddress = XrdResource.address(networkId = NetworkId.Mainnet.value)
+    private val mainnetXrdAddress = XrdResource.address(networkId = NetworkId.MAINNET)
     private val mainnetAddresses = listOf(
         "resource_rdx1t4tjx4g3qzd98nayqxm7qdpj0a0u8ns6a0jrchq49dyfevgh6u0gj3",
         "resource_rdx1t45js47zxtau85v0tlyayerzrgfpmguftlfwfr5fxzu42qtu72tnt0",

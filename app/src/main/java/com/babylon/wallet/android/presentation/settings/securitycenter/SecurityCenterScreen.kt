@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,10 +33,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import rdx.works.profile.data.model.BackupState
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.id
+import rdx.works.core.sargon.sample
 
 @Composable
 fun SecurityCenterScreen(
@@ -43,6 +48,8 @@ fun SecurityCenterScreen(
     onBackClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
+    onRecoverEntitiesClick: () -> Unit,
+    onBackupEntities: () -> Unit,
 ) {
     val state by securityCenterViewModel.state.collectAsStateWithLifecycle()
     SecurityCenterContent(
@@ -50,7 +57,9 @@ fun SecurityCenterScreen(
         state = state,
         onBackClick = onBackClick,
         onSecurityFactorsClick = onSecurityFactorsClick,
-        onBackupConfigurationClick = onBackupConfigurationClick
+        onBackupConfigurationClick = onBackupConfigurationClick,
+        onRecoverEntitiesClick = onRecoverEntitiesClick,
+        onBackupEntities = onBackupEntities
     )
 }
 
@@ -60,7 +69,9 @@ private fun SecurityCenterContent(
     state: SecurityCenterViewModel.SecurityCenterUiState,
     onBackClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
-    onBackupConfigurationClick: () -> Unit
+    onBackupConfigurationClick: () -> Unit,
+    onRecoverEntitiesClick: () -> Unit,
+    onBackupEntities: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -78,7 +89,8 @@ private fun SecurityCenterContent(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)
         ) {
@@ -93,42 +105,54 @@ private fun SecurityCenterContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-            when {
-                state.securityFactorsState?.contains(SecurityPromptType.NEEDS_RESTORE) == true -> {
-                    NotOkStatusCard(
-                        title = stringResource(id = R.string.securityCenter_problem9_heading),
-                        subtitle = stringResource(id = R.string.securityCenter_problem9_text)
-                    )
-                }
+            state.securityProblems?.forEach { problem ->
+                val title = problem.toProblemHeading()
+                when (problem) {
+                    is SecurityProblem.EntitiesNotRecoverable -> {
+                        NotOkStatusCard(
+                            modifier = Modifier
+                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                .clickable {
+                                    onBackupEntities()
+                                },
+                            title = title,
+                            subtitle = stringResource(id = R.string.securityCenter_problem3_text)
+                        )
+                    }
 
-                state.securityFactorsState?.contains(SecurityPromptType.NEEDS_BACKUP) == true -> {
-                    NotOkStatusCard(
-                        title = stringResource(
-                            id = R.string.securityCenter_problem3_heading,
-                            state.accountsNeedRecovery,
-                            state.personasNeedRecovery
-                        ),
-                        subtitle = stringResource(id = R.string.securityCenter_problem3_text)
-                    )
-                }
+                    is SecurityProblem.EntitiesNeedRecovery -> {
+                        NotOkStatusCard(
+                            modifier = Modifier
+                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                .clickable { onRecoverEntitiesClick() },
+                            title = title,
+                            subtitle = stringResource(id = R.string.securityCenter_problem9_text)
+                        )
+                    }
 
-                state.backupState?.isWarningVisible == true -> {
-                    NotOkStatusCard(
-                        title = stringResource(id = R.string.securityCenter_problem6_heading),
-                        subtitle = stringResource(id = R.string.securityCenter_problem6_text)
-                    )
+                    SecurityProblem.BackupNotWorking -> {
+                        NotOkStatusCard(
+                            modifier = Modifier
+                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                .clickable { onBackupConfigurationClick() },
+                            title = title,
+                            subtitle = stringResource(id = R.string.securityCenter_problem6_text)
+                        )
+                    }
                 }
-
-                state.securityFactorsState != null && state.backupState?.isWarningVisible == false -> OkStatusCard()
+            }
+            if (state.securityProblems?.isEmpty() == true) {
+                OkStatusCard()
             }
             SecurityFactorsCard(
                 onSecurityFactorsClick = onSecurityFactorsClick,
-                needsAction = state.securityFactorsState?.isNotEmpty() == true
+                needsAction = state.securityProblems?.isNotEmpty() == true
             )
             BackupConfigurationCard(
-                needsAction = state.backupState?.isWarningVisible == true,
+                needsAction = state.securityProblems?.contains(SecurityProblem.BackupNotWorking) == true,
                 onBackupConfigurationClick = onBackupConfigurationClick
             )
+            Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
         }
     }
 }
@@ -157,7 +181,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange1.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
@@ -170,7 +194,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
             Text(
                 text = title,
-                style = RadixTheme.typography.body1Regular,
+                style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.white
             )
         }
@@ -184,7 +208,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             Text(
                 modifier = Modifier.weight(1f),
                 text = subtitle,
-                style = RadixTheme.typography.body1Regular,
+                style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.orange1
             )
             Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange1)
@@ -286,12 +310,12 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
         ) {
             Text(
-                text = stringResource(id = R.string.configurationBackup_title),
+                text = stringResource(id = R.string.securityCenter_configurationBackupItem_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = stringResource(id = R.string.configurationBackup_subtitle),
+                text = stringResource(id = R.string.securityCenter_configurationBackupItem_subtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -305,7 +329,7 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
                 val text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
                 } else {
-                    stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
+                    stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
                 }
                 Icon(
                     painter = painterResource(id = icon),
@@ -322,34 +346,53 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
     }
 }
 
+@Composable
+fun SecurityProblem.toProblemHeading(): String {
+    return when (this) {
+        is SecurityProblem.EntitiesNotRecoverable -> stringResource(
+            id = R.string.securityCenter_problem3_heading,
+            accountsNeedBackup,
+            personasNeedBackup
+        )
+
+        is SecurityProblem.EntitiesNeedRecovery -> stringResource(id = R.string.securityCenter_problem9_heading)
+        SecurityProblem.BackupNotWorking -> stringResource(id = R.string.securityCenter_problem6_heading)
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SecurityCenterContentPreviewAllOk() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
-                securityFactorsState = emptySet(),
-                backupState = null,
+                securityProblems = emptySet()
             ),
             onBackClick = {},
             onSecurityFactorsClick = {},
-            onBackupConfigurationClick = {}
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
         )
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SecurityCenterContentPreviewAllNotOk() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
-                securityFactorsState = setOf(SecurityPromptType.NEEDS_RESTORE),
-                backupState = BackupState.Closed
+                securityProblems = setOf(
+                    SecurityProblem.EntitiesNeedRecovery(FactorSource.Device.sample.invoke().id)
+                )
             ),
             onBackClick = {},
             onSecurityFactorsClick = {},
-            onBackupConfigurationClick = {}
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
         )
     }
 }

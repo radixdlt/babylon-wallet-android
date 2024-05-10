@@ -14,7 +14,7 @@ import java.time.Instant
 
 data class AccountPortfolioResponse(
     @ColumnInfo("account_address")
-    val address: String,
+    val address: AccountAddress,
     @ColumnInfo("account_type")
     val accountType: AccountType?,
     @ColumnInfo("account_synced")

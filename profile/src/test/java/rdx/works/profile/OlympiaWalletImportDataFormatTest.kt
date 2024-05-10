@@ -2,25 +2,22 @@
 
 package rdx.works.profile
 
-import io.mockk.coEvery
-import io.mockk.mockk
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeBase64
-import org.junit.Assert
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Before
-import org.junit.Test
-import rdx.works.profile.data.model.DeviceInfo
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.olympiaimport.OlympiaWalletDataParser
 import java.io.File
-import java.time.Instant
+import kotlin.test.Test
 
 internal class OlympiaWalletExportFormatTest {
 
@@ -28,15 +25,13 @@ internal class OlympiaWalletExportFormatTest {
 
     private lateinit var testVectors: List<TestVector>
 
-    private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val profileRepository = FakeProfileRepository(Profile.sample())
+    private val getProfileUseCase = GetProfileUseCase(profileRepository)
 
     private val parser = OlympiaWalletDataParser(getProfileUseCase)
 
     @Before
     fun setUp() {
-        coEvery { getProfileUseCase() } returns flowOf(
-            Profile.init("", DeviceInfo(name = "", manufacturer = "", model = ""), Instant.now())
-        )
         val testVectorsContent = File("src/test/resources/raw/import_olympia_wallet_parse_test.json").readText()
         testVectors = json.decodeFromString(testVectorsContent)
     }
@@ -45,15 +40,15 @@ internal class OlympiaWalletExportFormatTest {
     fun `run tests for test vector`() = runTest {
         testVectors.forEach { testVector ->
             val parsedOlympiaAccountData = parser.parseOlympiaWalletAccountData(testVector.payloads)
-            Assert.assertNotNull(parsedOlympiaAccountData)
-            assert(testVector.olympiaWallet.mnemonic.split(MnemonicWithPassphrase.mnemonicWordsDelimiter).size == parsedOlympiaAccountData!!.mnemonicWordCount)
+            assertNotNull(parsedOlympiaAccountData)
+            assert(testVector.olympiaWallet.mnemonic.split(" ").size == parsedOlympiaAccountData!!.mnemonicWordCount.value.toInt())
             parsedOlympiaAccountData.accountData.forEach { olympiaAccountDetail ->
                 val correspondingTestVector = testVector.olympiaWallet.accounts[olympiaAccountDetail.index]
                 assert(
                     olympiaAccountDetail.accountName == correspondingTestVector.name.orEmpty()
                         .ifEmpty { "Unnamed Olympia account ${olympiaAccountDetail.index}" })
-                val pubKeyUnwrapped = correspondingTestVector.pubKey.decodeBase64()?.hex()
-                assert(olympiaAccountDetail.publicKey == pubKeyUnwrapped)
+
+                assert(olympiaAccountDetail.publicKey == correspondingTestVector.publicKey)
             }
         }
     }
@@ -61,7 +56,7 @@ internal class OlympiaWalletExportFormatTest {
     @Test
     fun `incomplete payload parsing return null`() = runTest {
         val parsedData = parser.parseOlympiaWalletAccountData(testVectors[1].payloads.subList(0, 1))
-        Assert.assertNull(parsedData)
+        assertNull(parsedData)
     }
 
 }
@@ -96,4 +91,9 @@ data class OlympiaAccountTextVector(
     val addressIndex: Int,
     @kotlinx.serialization.SerialName("name")
     val name: String? = null
-)
+) {
+
+    val publicKey: PublicKey
+        get() = PublicKey.init(pubKey.decodeBase64()?.hex().orEmpty())
+
+}

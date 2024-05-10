@@ -147,7 +147,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
         )
         personaDataOnetimeAuthorized(
             onEdit = {
-                navController.personaEditScreen(it.personaAddress, it.requiredPersonaFields)
+                navController.personaEditScreen(it.persona.address, it.requiredPersonaFields)
             },
             navController = navController,
             onBackClick = {

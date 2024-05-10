@@ -1,12 +1,13 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.IdentityAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.extensions.hideAccount
-import rdx.works.profile.data.model.extensions.hidePersona
-import rdx.works.profile.data.model.extensions.unhideAllEntities
+import rdx.works.core.sargon.hideAccount
+import rdx.works.core.sargon.hidePersona
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -20,23 +21,23 @@ class ChangeEntityVisibilityUseCase @Inject constructor(
     suspend fun hideAccount(entityAddress: AccountAddress) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.hideAccount(address = entityAddress)
+            val updatedProfile = profile.hideAccount(accountAddress = entityAddress)
             profileRepository.saveProfile(updatedProfile)
         }
     }
 
-    suspend fun hidePersona(entityAddress: String) {
+    suspend fun hidePersona(entityAddress: IdentityAddress) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.hidePersona(address = entityAddress)
+            val updatedProfile = profile.hidePersona(identityAddress = entityAddress)
             profileRepository.saveProfile(updatedProfile)
         }
     }
 
-    suspend fun unhideAll() {
+    suspend fun unHideAll() {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.unhideAllEntities()
+            val updatedProfile = profile.unHideAllEntities()
             profileRepository.saveProfile(updatedProfile)
         }
     }

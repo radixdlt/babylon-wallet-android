@@ -51,17 +51,21 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Url
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.apppreferences.Radix
 
 @Composable
 fun GatewaysScreen(
     viewModel: GatewaysViewModel,
     onBackClick: () -> Unit,
-    onCreateProfile: (String, Int) -> Unit,
+    onCreateProfile: (Url, NetworkId) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -88,9 +92,9 @@ private fun GatewaysContent(
     onAddGatewayClick: () -> Unit,
     onNewUrlChanged: (String) -> Unit,
     onDeleteGateway: (GatewayWrapper) -> Unit,
-    onGatewayClick: (Radix.Gateway) -> Unit,
+    onGatewayClick: (Gateway) -> Unit,
     oneOffEvent: Flow<SettingsEditGatewayEvent>,
-    onCreateProfile: (String, Int) -> Unit,
+    onCreateProfile: (Url, NetworkId) -> Unit,
     addGatewaySheetVisible: (Boolean) -> Unit
 ) {
     val bottomSheetState =
@@ -332,14 +336,14 @@ private fun GatewayCard(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = gateway.gateway.displayDescription(),
+                text = gateway.gateway.network.displayDescription,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        if (!gateway.gateway.isWellKnown) {
+        if (gateway.canBeDeleted) {
             IconButton(onClick = {
                 gatewayToDelete = gateway
             }) {
@@ -381,10 +385,7 @@ private fun GatewayCard(
 }
 
 @Composable
-private fun Radix.Gateway.displayName(): String = when (network.id) {
-    Radix.Network.ansharnet.id -> stringResource(id = R.string.gateways_rcNetGateway)
-    else -> url
-}
+private fun Gateway.displayName(): String = string
 
 @Preview(showBackground = true)
 @Composable
@@ -392,24 +393,15 @@ fun GatewaysScreenPreview() {
     RadixWalletTheme {
         GatewaysContent(
             state = SettingsUiState(
-                currentGateway = Radix.Gateway(
-                    url = "https://babylon-stokenet-gateway.radixdlt.com/",
-                    Radix.Network.stokenet
-                ),
+                currentGateway = Gateway.forNetwork(NetworkId.MAINNET),
                 gatewayList = persistentListOf(
                     GatewayWrapper(
-                        gateway = Radix.Gateway(
-                            url = "https://babylon-stokenet-gateway.radixdlt.com/",
-                            Radix.Network.stokenet
-                        ),
-                        selected = true
+                        gateway = Gateway.forNetwork(NetworkId.STOKENET),
+                        selected = false
                     ),
                     GatewayWrapper(
-                        gateway = Radix.Gateway(
-                            url = "https://mainnet.radixdlt.com/",
-                            Radix.Network.mainnet
-                        ),
-                        selected = false
+                        gateway = Gateway.forNetwork(NetworkId.MAINNET),
+                        selected = true
                     )
                 ),
                 newUrl = "",

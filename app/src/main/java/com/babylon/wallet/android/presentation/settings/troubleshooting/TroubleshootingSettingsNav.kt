@@ -104,9 +104,9 @@ fun NavGraphBuilder.troubleshootingNavGraph(
             onAddSeedPhrase = {
                 navController.addSingleMnemonic(mnemonicType = it)
             },
-            onRecoveryScanWithFactorSource = { factorSource, isOlympia ->
+            onRecoveryScanWithFactorSource = { factorSourceId, isOlympia ->
                 navController.accountRecoveryScan(
-                    factorSourceId = factorSource.identifier,
+                    factorSourceId = factorSourceId,
                     isOlympia = isOlympia
                 )
             }

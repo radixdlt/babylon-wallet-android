@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
@@ -13,7 +13,6 @@ import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
 private typealias SargonStakeClaim = com.radixdlt.sargon.StakeClaim
@@ -23,13 +22,13 @@ class SendClaimRequestUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        account: Network.Account,
+        account: Account,
         claims: List<StakeClaim>,
         epoch: Long
     ) {
         runCatching {
             TransactionManifest.stakesClaim(
-                accountAddress = AccountAddress.init(account.address),
+                accountAddress = account.address,
                 stakeClaims = claims.mapNotNull { claim ->
                     val nfts = claim.nonFungibleResource.items.filter { it.isReadyToClaim(epoch) }
                     if (nfts.isEmpty()) return@mapNotNull null
@@ -50,7 +49,7 @@ class SendClaimRequestUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(
-        account: Network.Account,
+        account: Account,
         claim: StakeClaim,
         nft: Resource.NonFungibleResource.Item,
         epoch: Long
@@ -59,7 +58,7 @@ class SendClaimRequestUseCase @Inject constructor(
 
         runCatching {
             TransactionManifest.stakesClaim(
-                accountAddress = AccountAddress.init(account.address),
+                accountAddress = account.address,
                 stakeClaims = listOf(
                     SargonStakeClaim(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress.string),

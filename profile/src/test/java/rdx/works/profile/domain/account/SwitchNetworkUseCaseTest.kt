@@ -1,50 +1,50 @@
 package rdx.works.profile.domain.account
 
-import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.slot
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.Url
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.TestData
+import rdx.works.core.sargon.addGateway
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.init
+import rdx.works.profile.FakeProfileRepository
+import rdx.works.profile.data.repository.profile
+import rdx.works.profile.data.repository.updateProfile
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class SwitchNetworkUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
-    private val profileRepository = mockk<ProfileRepository>()
+
+    val mnemonicWithPassphrase = MnemonicWithPassphrase.init(
+        phrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
+    )
+    private val profileRepository = FakeProfileRepository(
+        Profile.init(
+            deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase, isMain = true),
+            creatingDeviceName = "Unit Test"
+        )
+    )
 
     private val useCase = SwitchNetworkUseCase(profileRepository, testDispatcher)
 
-    @Before
-    fun setUp() {
-        val mnemonicWithPassphrase = MnemonicWithPassphrase(
-            mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
-            bip39Passphrase = ""
-        )
-        every { profileRepository.profileState } returns flowOf(ProfileState.Restored(TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)))
-        coEvery { profileRepository.saveProfile(any()) } just Runs
-    }
-
     @Test
     fun `switching network changes profile current network`() = testScope.runTest {
-        val changedNetworkId = useCase.invoke(Radix.Gateway.kisharnet.url, Radix.Network.kisharnet.id)
-        val updatedProfile = slot<Profile>()
-        coVerify(exactly = 1) { profileRepository.saveProfile(capture(updatedProfile)) }
-        assert(updatedProfile.captured.appPreferences.gateways.current().url == Radix.Gateway.kisharnet.url)
-        assert(changedNetworkId == Radix.Network.kisharnet.networkId())
+        val networkId = NetworkId.HAMMUNET
+        val urlToSwitch = "https://hammunet-network.radixdlt.com/"
+        profileRepository.updateProfile { it.addGateway(Gateway.init(urlToSwitch, networkId)) }
+
+        useCase(Url(urlToSwitch))
+        assertEquals(urlToSwitch, profileRepository.profile.first().currentGateway.string)
     }
 }

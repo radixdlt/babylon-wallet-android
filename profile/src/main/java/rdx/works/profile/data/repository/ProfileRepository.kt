@@ -1,6 +1,9 @@
 package rdx.works.profile.data.repository
 
 import android.app.backup.BackupManager
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -13,18 +16,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import rdx.works.core.InstantGenerator
+import rdx.works.core.TimestampGenerator
+import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileSnapshot
-import rdx.works.profile.data.model.ProfileSnapshotRelaxed
-import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.datastore.EncryptedPreferencesManager
-import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
+import timber.log.Timber
 import javax.inject.Inject
 
 interface ProfileRepository {
@@ -59,7 +57,6 @@ class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
     private val backupManager: BackupManager,
-    @ProfileSerializer private val profileJson: Json,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
@@ -90,10 +87,10 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun saveProfile(profile: Profile) {
         val profileToSave = profile.copy(
-            header = profile.header.copy(lastModified = InstantGenerator())
+            header = profile.header.copy(lastModified = TimestampGenerator())
         )
         withContext(ioDispatcher) {
-            val profileContent = profileJson.encodeToString(profileToSave.snapshot())
+            val profileContent = profileToSave.toJson()
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
@@ -125,18 +122,15 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     @Suppress("SwallowedException")
-    override fun deriveProfileState(content: String): ProfileState {
-        val snapshotRelaxed = try {
-            profileJson.decodeFromString<ProfileSnapshotRelaxed>(content)
-        } catch (exception: IllegalArgumentException) {
-            return ProfileState.Incompatible
-        }
-
-        return if (snapshotRelaxed.isValid) {
-            val snapshot = profileJson.decodeFromString<ProfileSnapshot>(content)
-            ProfileState.Restored(snapshot.toProfile())
-        } else {
+    override fun deriveProfileState(content: String): ProfileState = runCatching {
+        Profile.fromJson(content)
+    }.fold(
+        onSuccess = {
+            ProfileState.Restored(it)
+        },
+        onFailure = {
+            Timber.w(it)
             ProfileState.Incompatible
         }
-    }
+    )
 }

@@ -36,15 +36,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSelector
 import com.babylon.wallet.android.presentation.ui.composables.SelectorItem
 import kotlinx.collections.immutable.toPersistentList
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.PersonaData.PersonaDataField.Name
+import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.PersonaDataField.Name
 
 @Composable
 fun PersonaDataFieldInput(
     modifier: Modifier,
     label: String,
-    field: PersonaData.PersonaDataField?,
-    onValueChanged: (PersonaData.PersonaDataField) -> Unit,
+    field: PersonaDataField?,
+    onValueChanged: (PersonaDataField) -> Unit,
     onDeleteField: () -> Unit,
     onFocusChanged: ((FocusState) -> Unit)? = null,
     required: Boolean,
@@ -52,12 +52,12 @@ fun PersonaDataFieldInput(
     error: String? = null
 ) {
     when (field) {
-        is PersonaData.PersonaDataField.Email -> {
+        is PersonaDataField.Email -> {
             PersonaDataStringInput(
                 label = label,
                 value = field.value,
                 onValueChanged = {
-                    onValueChanged(PersonaData.PersonaDataField.Email(it))
+                    onValueChanged(PersonaDataField.Email(it))
                 },
                 modifier = modifier,
                 required = required,
@@ -81,12 +81,12 @@ fun PersonaDataFieldInput(
             )
         }
 
-        is PersonaData.PersonaDataField.PhoneNumber -> {
+        is PersonaDataField.PhoneNumber -> {
             PersonaDataStringInput(
                 label = label,
                 value = field.value,
                 onValueChanged = {
-                    onValueChanged(PersonaData.PersonaDataField.PhoneNumber(it))
+                    onValueChanged(PersonaDataField.PhoneNumber(it))
                 },
                 modifier = modifier,
                 required = required,

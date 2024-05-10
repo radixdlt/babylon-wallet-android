@@ -37,9 +37,10 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.Gateway
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.sargon.default
 
 @Composable
 fun TransactionPreviewHeader(
@@ -180,11 +181,11 @@ fun TransactionPreviewHeaderPreview() {
                     requestId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
-                        networkId = Radix.Gateway.default.network.id,
+                        networkId = Gateway.default.network.id,
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
+                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

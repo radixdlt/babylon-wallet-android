@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToReDeriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -16,7 +15,25 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
-import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.OnLedgerSettings
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.extensions.HDPathValue
+import com.radixdlt.sargon.extensions.accountRecoveryScanned
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -25,25 +42,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.decodeHex
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.compressedPublicKey
-import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.extensions.createAccount
-import rdx.works.profile.data.model.extensions.derivationPathEntityIndex
-import rdx.works.profile.data.model.extensions.derivationPathScheme
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.extensions.initializeAccount
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.derivationPathEntityIndex
+import rdx.works.core.sargon.derivationPathScheme
+import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.initBabylon
+import rdx.works.core.sargon.orDefault
 import rdx.works.profile.data.repository.PublicKeyProvider
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
@@ -63,12 +68,12 @@ class DeriveAccountsViewModel @Inject constructor(
 
     private lateinit var input: ToReDeriveAccounts
     private var profile: Profile? = null
-    private var nextDerivationPathOffset: Int = 0
+    private var nextDerivationPathOffset: UInt = 0u
     private var reDerivePublicKeyJob: Job? = null
 
     init {
         reDerivePublicKeyJob = viewModelScope.launch {
-            profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
+            profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.flow.firstOrNull() else null
 
             input = accessFactorSourcesUiProxy.getInput() as ToReDeriveAccounts
             nextDerivationPathOffset = input.nextDerivationPathOffset
@@ -79,8 +84,8 @@ class DeriveAccountsViewModel @Inject constructor(
                 sendEvent(Event.DerivingAccountsCompleted)
             } else { // else is with a given factor source
                 when (input.factorSource) {
-                    is DeviceFactorSource -> sendEvent(Event.RequestBiometricPrompt) // request biometric auth
-                    is LedgerHardwareWalletFactorSource -> initRecoveryFromLedgerFactorSource()
+                    is FactorSource.Device -> sendEvent(Event.RequestBiometricPrompt) // request biometric auth
+                    is FactorSource.Ledger -> initRecoveryFromLedgerFactorSource()
                 }
             }
         }
@@ -151,7 +156,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     private suspend fun initRecoveryFromLedgerFactorSource() {
         _state.update { uiState ->
-            val ledger = input.factorSource as LedgerHardwareWalletFactorSource
+            val ledger = input.factorSource as FactorSource.Ledger
             uiState.copy(showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledger))
         }
 
@@ -171,25 +176,25 @@ class DeriveAccountsViewModel @Inject constructor(
             uiState.copy(isFromOnboarding = true)
         }
         withContext(ioDispatcher) {
-            val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
-            val indicesToScan: Set<Int> = computeIndicesToScan(
-                derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26,
+            val networkId = profile?.currentGateway?.network?.id.orDefault()
+            val indicesToScan: Set<HDPathValue> = computeIndicesToScan(
+                derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP44_OLYMPIA else DerivationPathScheme.CAP26,
                 forNetworkId = networkId,
-                factorSource = input.factorSource as FactorSource
+                factorSource = input.factorSource
             )
             val derivationPathsWithPublicKeys = reDerivePublicKeysWithGivenMnemonic(
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
             )
             val derivedAccounts = deriveAccounts(
-                derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
+                hdPublicKeys = derivationPathsWithPublicKeys,
                 forNetworkId = networkId
             )
 
             accessFactorSourcesUiProxy.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
-                    nextDerivationPathOffset = indicesToScan.last() + 1
+                    nextDerivationPathOffset = indicesToScan.last() + 1u
                 )
             )
         }
@@ -197,25 +202,25 @@ class DeriveAccountsViewModel @Inject constructor(
 
     private suspend fun recoverAccountsForGivenFactorSource(): Result<Unit> {
         return withContext(ioDispatcher) {
-            val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
+            val networkId = profile?.currentGateway?.network?.id.orDefault()
 
-            val indicesToScan: Set<Int> = computeIndicesToScan(
-                derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26,
+            val indicesToScan = computeIndicesToScan(
+                derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP44_OLYMPIA else DerivationPathScheme.CAP26,
                 forNetworkId = networkId,
-                factorSource = input.factorSource as FactorSource
+                factorSource = input.factorSource
             )
             reDerivePublicKeysWithGivenAccountIndices(
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
             ).mapCatching { derivationPathsWithPublicKeys ->
                 val derivedAccounts = deriveAccounts(
-                    derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
+                    hdPublicKeys = derivationPathsWithPublicKeys,
                     forNetworkId = networkId
                 )
                 accessFactorSourcesUiProxy.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
-                        nextDerivationPathOffset = indicesToScan.last() + 1
+                        nextDerivationPathOffset = indicesToScan.last() + 1u
                     )
                 )
             }
@@ -223,27 +228,23 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private fun reDerivePublicKeysWithGivenMnemonic(
-        accountIndices: Set<Int>,
+        accountIndices: Set<HDPathValue>,
         forNetworkId: NetworkId
-    ): Map<DerivationPath, ByteArray> {
-        val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
+    ): List<HierarchicalDeterministicPublicKey> {
+        val mnemonicWithPassphrase = (input as ToReDeriveAccounts.WithGivenMnemonic).mnemonicWithPassphrase
+
+        return publicKeyProvider.getDerivationPathsForIndices(
             forNetworkId = forNetworkId,
             indices = accountIndices
-        )
-
-        val derivationPathsWithPublicKeys = derivationPaths.associateWith { derivationPath ->
-            (input as ToReDeriveAccounts.WithGivenMnemonic).mnemonicWithPassphrase
-                .compressedPublicKey(derivationPath = derivationPath)
-                .removeLeadingZero()
+        ).map { derivationPath ->
+            mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
         }
-
-        return derivationPathsWithPublicKeys
     }
 
     private suspend fun reDerivePublicKeysWithGivenAccountIndices(
-        accountIndices: Set<Int>,
+        accountIndices: Set<HDPathValue>,
         forNetworkId: NetworkId
-    ): Result<Map<DerivationPath, ByteArray>> {
+    ): Result<List<HierarchicalDeterministicPublicKey>> {
         val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
             forNetworkId = forNetworkId,
             indices = accountIndices,
@@ -251,71 +252,59 @@ class DeriveAccountsViewModel @Inject constructor(
         )
 
         return when (val factorSource = input.factorSource) {
-            is DeviceFactorSource -> {
+            is FactorSource.Device -> {
                 publicKeyProvider.derivePublicKeysDeviceFactorSource(
                     deviceFactorSource = factorSource,
-                    derivationPaths = derivationPaths,
-                    isForLegacyOlympia = input.isForLegacyOlympia
+                    derivationPaths = derivationPaths
                 )
             }
 
-            is LedgerHardwareWalletFactorSource -> {
+            is FactorSource.Ledger -> {
                 ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),
                     keyParameters = derivationPaths.map { derivationPath ->
                         LedgerInteractionRequest.KeyParameters(
                             curve = if (input.isForLegacyOlympia) Curve.Secp256k1 else Curve.Curve25519,
-                            derivationPath = derivationPath.path
+                            derivationPath = derivationPath.string
                         )
                     },
-                    ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = factorSource)
+                    ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = factorSource)
                 ).mapCatching { derivePublicKeyResponse ->
-                    val publicKeys = derivePublicKeyResponse.publicKeysHex
-                    val derivationPathsWithPublicKeys = publicKeys.associate { publicKey ->
-                        val derivationPath = derivationPaths.first { it.path == publicKey.derivationPath }
-                        derivationPath to publicKey.publicKeyHex.decodeHex()
+                    derivePublicKeyResponse.publicKeysHex.map { derived ->
+                        HierarchicalDeterministicPublicKey(
+                            publicKey = PublicKey.init(derived.publicKeyHex),
+                            derivationPath = derivationPaths.first { it.string == derived.derivationPath }
+                        )
                     }
-                    derivationPathsWithPublicKeys
                 }
             }
         }
     }
 
-    private suspend fun deriveAccounts(
-        derivationPathsWithPublicKeys: Map<DerivationPath, ByteArray>,
+    private fun deriveAccounts(
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         forNetworkId: NetworkId
-    ): List<Network.Account> {
-        val profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
-
-        val derivedAccounts = derivationPathsWithPublicKeys.map { publicKey ->
-            profile?.createAccount( // it is recovery from account settings (profile already exists)
-                displayName = Constants.DEFAULT_ACCOUNT_NAME,
-                onNetworkId = forNetworkId,
-                compressedPublicKey = publicKey.value,
-                derivationPath = publicKey.key,
-                factorSource = input.factorSource,
-                onLedgerSettings = Network.Account.OnLedgerSettings.init(),
-                isForLegacyOlympia = input.isForLegacyOlympia,
-                appearanceID = publicKey.key.derivationPathEntityIndex() % AccountGradientList.count()
-            ) ?: initializeAccount( // it is recovery from on boarding
-                displayName = Constants.DEFAULT_ACCOUNT_NAME,
-                onNetworkId = forNetworkId,
-                compressedPublicKey = publicKey.value,
-                derivationPath = publicKey.key,
-                factorSource = input.factorSource,
-                onLedgerSettings = Network.Account.OnLedgerSettings.init()
-            )
+    ): List<Account> = hdPublicKeys.map { hdPublicKey ->
+        val factorSourceId = when (val factorSource = input.factorSource) {
+            is FactorSource.Device -> factorSource.value.id.asGeneral()
+            is FactorSource.Ledger -> factorSource.value.id.asGeneral()
         }
-        return derivedAccounts
+        Account.initBabylon(
+            networkId = forNetworkId,
+            displayName = DisplayName(Constants.DEFAULT_ACCOUNT_NAME),
+            hdPublicKey = hdPublicKey,
+            factorSourceId = factorSourceId,
+            onLedgerSettings = OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.accountRecoveryScanned())
+        )
     }
 
     private fun computeIndicesToScan(
         derivationPathScheme: DerivationPathScheme,
         forNetworkId: NetworkId,
         factorSource: FactorSource
-    ): Set<Int> {
-        val network = profile?.networks?.firstOrNull { it.networkID == forNetworkId.value }
-        val usedIndices = network?.accounts
+    ): Set<HDPathValue> {
+        val network = profile?.networks?.getBy(forNetworkId)
+        val usedIndices = network?.accounts()
             ?.filter { account ->
                 account.factorSourceId == factorSource.id && account.derivationPathScheme == derivationPathScheme
             }
@@ -324,7 +313,7 @@ class DeriveAccountsViewModel @Inject constructor(
             }
             ?.toSet().orEmpty()
 
-        val indicesToScan = mutableSetOf<Int>()
+        val indicesToScan = mutableSetOf<HDPathValue>()
         val startIndex = nextDerivationPathOffset
         var currentIndex = startIndex
         do {
@@ -349,7 +338,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
         sealed interface ShowContentForFactorSource {
             data object Device : ShowContentForFactorSource
-            data class Ledger(val selectedLedgerDevice: LedgerHardwareWalletFactorSource) : ShowContentForFactorSource
+            data class Ledger(val selectedLedgerDevice: FactorSource.Ledger) : ShowContentForFactorSource
         }
     }
 

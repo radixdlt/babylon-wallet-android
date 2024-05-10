@@ -2,16 +2,33 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ARG_PERSONA_ADDRESS
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ARG_REQUIRED_FIELDS
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.PersonaEditViewModel
 import com.babylon.wallet.android.utils.isValidEmail
+import com.radixdlt.sargon.CollectionOfEmailAddresses
+import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.PersonaDataEntryEmailAddress
+import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryName
+import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
+import com.radixdlt.sargon.PersonaDataIdentifiedName
+import com.radixdlt.sargon.PersonaDataNameVariant
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.updateOrAppend
+import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -27,11 +44,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.persona.UpdatePersonaUseCase
 
@@ -42,8 +61,27 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val updatePersonaUseCase = mockk<UpdatePersonaUseCase>()
 
-    private val nameFieldId = "1"
-    private val emailFieldId = "2"
+    private val nameFieldId = PersonaDataEntryID.randomUUID()
+    private val emailFieldId = PersonaDataEntryID.randomUUID()
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+        val mainnetNetwork = it.networks.getBy(NetworkId.MAINNET)!!
+        val firstPersona = mainnetNetwork.personas().first().copy(
+            personaData = PersonaData(
+                name = PersonaDataIdentifiedName(id = nameFieldId, value = PersonaDataEntryName(
+                    variant = PersonaDataNameVariant.WESTERN,
+                    givenNames = "John",
+                    familyName = "",
+                    nickname = ""
+                )),
+                emailAddresses = CollectionOfEmailAddresses(
+                    listOf(PersonaDataIdentifiedEmailAddress(id = emailFieldId, value = PersonaDataEntryEmailAddress("test@test.pl")))
+                ),
+                phoneNumbers = CollectionOfPhoneNumbers(emptyList())
+            )
+        )
+        it.copy(networks = it.networks.updateOrAppend(mainnetNetwork.copy(personas = mainnetNetwork.personas.updateOrAppend(firstPersona))))
+    }
+    private val persona = profile.currentNetwork?.personas?.invoke()?.first()!!
 
     override fun initVM(): PersonaEditViewModel {
         return PersonaEditViewModel(getProfileUseCase, updatePersonaUseCase, savedStateHandle)
@@ -52,11 +90,11 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
+        every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns persona.address.string
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
+                    PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -67,13 +105,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidEmail() } returns true
         coEvery { updatePersonaUseCase(any()) } just Runs
-        every { getProfileUseCase() } returns flowOf(
-            profile(
-                personas = identifiedArrayListOf(
-                    SampleDataProvider().samplePersona("1")
-                )
-            )
-        )
+        every { getProfileUseCase.flow } returns flowOf(profile)
     }
 
     private fun <T> StateFlow<T>.whileCollecting(action: suspend () -> Unit) = runTest {
@@ -89,9 +121,9 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
             advanceUntilIdle()
             vm.state.test {
                 val item = expectMostRecentItem()
-                assert(item.persona?.address == "1")
-                assert(item.currentFields.size == 2)
-                assert(item.fieldsToAdd.size == 1)
+                assertEquals(persona.address, item.persona?.address)
+                assertEquals(2, item.currentFields.size)
+                assertEquals(1, item.fieldsToAdd.size)
             }
         }
     }
@@ -103,7 +135,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
             advanceUntilIdle()
             vm.onSave()
             advanceUntilIdle()
-            val persona = slot<Network.Persona>()
+            val persona = slot<Persona>()
             coVerify(exactly = 1) { updatePersonaUseCase(capture(persona)) }
             assert(persona.captured.personaData.name != null)
         }
@@ -118,10 +150,10 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
             advanceUntilIdle()
             vm.onSave()
             advanceUntilIdle()
-            val persona = slot<Network.Persona>()
+            val persona = slot<Persona>()
             coVerify(exactly = 1) { updatePersonaUseCase(capture(persona)) }
             assert(persona.captured.personaData.name != null)
-            assert(persona.captured.personaData.emailAddresses.isEmpty())
+            assert(persona.captured.personaData.emailAddresses.collection.isEmpty())
             vm.state.test {
                 val item = expectMostRecentItem()
                 assert(item.currentFields.size == 1)
@@ -136,12 +168,12 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onFieldValueChanged(emailFieldId, PersonaData.PersonaDataField.Email("jakub@jakub.pl"))
+            vm.onFieldValueChanged(emailFieldId, PersonaDataField.Email("jakub@jakub.pl"))
             advanceUntilIdle()
             vm.onFieldValueChanged(
                 nameFieldId,
-                PersonaData.PersonaDataField.Name(
-                    variant = PersonaData.PersonaDataField.Name.Variant.Western,
+                PersonaDataField.Name(
+                    variant = PersonaDataField.Name.Variant.Western,
                     given = "jakub",
                     family = "",
                     nickname = ""
@@ -154,15 +186,15 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
                     item.currentFields.map {
                         it.entry
                     }.filter {
-                        it.value.kind == PersonaData.PersonaDataField.Kind.EmailAddress
-                    }.map { it.value as PersonaData.PersonaDataField.Email }.first().value == "jakub@jakub.pl"
+                        it.value.kind == PersonaDataField.Kind.EmailAddress
+                    }.map { it.value as PersonaDataField.Email }.first().value == "jakub@jakub.pl"
                 )
                 assert(
                     item.currentFields.map {
                         it.entry
                     }.filter {
-                        it.value.kind == PersonaData.PersonaDataField.Kind.Name
-                    }.map { it.value as PersonaData.PersonaDataField.Name }.first().given == "jakub"
+                        it.value.kind == PersonaDataField.Kind.Name
+                    }.map { it.value as PersonaDataField.Name }.first().given == "jakub"
                 )
             }
         }

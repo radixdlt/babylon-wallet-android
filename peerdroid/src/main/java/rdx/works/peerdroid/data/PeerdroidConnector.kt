@@ -3,8 +3,7 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
-import com.radixdlt.sargon.extensions.hash
-import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.RadixConnectPassword
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,7 +30,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.core.hash
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -60,7 +58,7 @@ interface PeerdroidConnector {
 
     val peerConnectionStatus: Flow<Map<String, PeerConnectionStatus>>
 
-    suspend fun connectToConnectorExtension(encryptionKey: ByteArray): Result<Unit>
+    suspend fun connectToConnectorExtension(encryptionKey: RadixConnectPassword): Result<Unit>
 
     suspend fun deleteConnector(connectionId: ConnectionIdHolder)
 
@@ -108,11 +106,11 @@ internal class PeerdroidConnectorImpl(
     override val peerConnectionStatus: Flow<Map<String, PeerConnectionStatus>>
         get() = _peerConnectionStatus
 
-    override suspend fun connectToConnectorExtension(encryptionKey: ByteArray): Result<Unit> {
-        val connectionId = encryptionKey.hash().hex
+    override suspend fun connectToConnectorExtension(encryptionKey: RadixConnectPassword): Result<Unit> {
+        val connectionId = ConnectionIdHolder(encryptionKey)
 
         return withContext(ioDispatcher) {
-            if (mapOfWebSockets.containsKey(ConnectionIdHolder(id = connectionId))) {
+            if (mapOfWebSockets.containsKey(connectionId)) {
                 Timber.d("⚙️ already tried to establish a link connection with connectionId: $connectionId")
                 return@withContext Result.success(Unit)
             }
@@ -123,9 +121,8 @@ internal class PeerdroidConnectorImpl(
                 connectionId = connectionId,
                 encryptionKey = encryptionKey
             ).onSuccess {
-                val connectionHolder = ConnectionIdHolder(id = connectionId)
-                val job = listenForMessagesFromRemoteClients(connectionHolder, webSocketClient)
-                mapOfWebSockets[connectionHolder] = WebSocketHolder(
+                val job = listenForMessagesFromRemoteClients(connectionId, webSocketClient)
+                mapOfWebSockets[connectionId] = WebSocketHolder(
                     webSocketClient = webSocketClient,
                     listenMessagesJob = job
                 )

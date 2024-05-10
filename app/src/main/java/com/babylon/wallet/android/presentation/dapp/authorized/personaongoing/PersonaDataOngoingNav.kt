@@ -16,6 +16,9 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.encodeToString
 
 @VisibleForTesting
@@ -24,9 +27,9 @@ internal const val ARG_PERSONA_ID = "persona_id"
 @VisibleForTesting
 internal const val ARG_REQUIRED_FIELDS = "required_fields"
 
-internal class PersonaDataOngoingPermissionArgs(val personaId: String, val requiredPersonaFields: RequiredPersonaFields) {
+internal class PersonaDataOngoingPermissionArgs(val personaId: IdentityAddress, val requiredPersonaFields: RequiredPersonaFields) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_PERSONA_ID]) as String,
+        IdentityAddress.init(checkNotNull(savedStateHandle[ARG_PERSONA_ID])),
         (checkNotNull(savedStateHandle[ARG_REQUIRED_FIELDS]) as RequiredPersonaFields)
     )
 }
@@ -34,9 +37,9 @@ internal class PersonaDataOngoingPermissionArgs(val personaId: String, val requi
 const val ROUTE_PERSONA_DATA_ONGOING =
     "route_persona_data_ongoing/{$ARG_PERSONA_ID}/{$ARG_REQUIRED_FIELDS}"
 
-fun NavController.personaDataOngoing(personaAddress: String, request: RequiredPersonaFields) {
+fun NavController.personaDataOngoing(personaAddress: IdentityAddress, request: RequiredPersonaFields) {
     val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(request))
-    navigate("route_persona_data_ongoing/$personaAddress/$argument")
+    navigate("route_persona_data_ongoing/${personaAddress.string}/$argument")
 }
 
 @Suppress("LongParameterList")

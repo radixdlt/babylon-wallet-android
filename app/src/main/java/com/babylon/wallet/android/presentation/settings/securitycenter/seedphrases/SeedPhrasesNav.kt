@@ -6,7 +6,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import rdx.works.profile.data.model.factorsources.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 
 const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_seed_phrases"
 
@@ -19,7 +19,7 @@ fun NavController.seedPhrases() {
 fun NavGraphBuilder.seedPhrases(
     onBackClick: () -> Unit,
     onNavigateToRecoverMnemonic: () -> Unit,
-    onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
+    onNavigateToSeedPhrase: (FactorSourceId.Hash) -> Unit
 ) {
     composable(
         route = ROUTE_SETTINGS_SHOW_MNEMONIC,

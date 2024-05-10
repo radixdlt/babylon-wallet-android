@@ -15,13 +15,13 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
-import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.Nonce
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.secureRandom
 import com.radixdlt.sargon.extensions.value
 import kotlinx.coroutines.flow.update
-import rdx.works.core.decodeHex
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.then
 import timber.log.Timber
@@ -61,7 +61,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             ).mapCatching { preview ->
                 logger.v(preview.encodedReceipt)
                 manifestData
-                    .executionSummary(encodedReceipt = preview.encodedReceipt.decodeHex())
+                    .executionSummary(encodedReceipt = preview.encodedReceipt.hexToBagOfBytes())
                     .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }
@@ -102,7 +102,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),
-                blobsHex = manifestData.blobs.map { it.toHexString() },
+                blobsHex = manifestData.blobs.map { it.hex },
                 notaryPublicKey = notaryAndSigners.notaryPublicKeyNew().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )

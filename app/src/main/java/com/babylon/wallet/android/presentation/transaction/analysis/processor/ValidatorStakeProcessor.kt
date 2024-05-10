@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
@@ -13,16 +14,13 @@ import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
-import com.radixdlt.sargon.extensions.toDecimal192
-import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.roundedWith
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.currentNetwork
 import javax.inject.Inject
 
 class ValidatorStakeProcessor @Inject constructor(
@@ -30,14 +28,14 @@ class ValidatorStakeProcessor @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.ValidatorStake> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorStake): PreviewType {
-        val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
-        val xrdAddress = XrdResource.address(networkId.value)
+        val networkId = getProfileUseCase().currentGateway.network.id
+        val xrdAddress = XrdResource.address(networkId)
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(
             involvedAssets = assets,
             allOwnedAccounts = involvedOwnedAccounts
@@ -58,9 +56,9 @@ class ValidatorStakeProcessor @Inject constructor(
     private suspend fun DetailedManifestClass.ValidatorStake.extractDeposits(
         executionSummary: ExecutionSummary,
         assets: List<Asset>,
-        involvedOwnedAccounts: List<Network.Account>
+        involvedOwnedAccounts: List<Account>
     ) = executionSummary.deposits.map { depositsPerAccount ->
-        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee.toDecimal192()
+        val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         depositsPerAccount.value.map { depositedResource ->
             val asset = assets.find {
                 it.resource.address == depositedResource.address

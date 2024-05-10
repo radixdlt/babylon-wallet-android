@@ -3,12 +3,32 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceViewModel
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceCommon
+import com.radixdlt.sargon.FactorSourceCryptoParameters
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.FactorSources
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.LedgerHardwareWalletHint
+import com.radixdlt.sargon.LedgerHardwareWalletModel
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.extensions.append
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.kind
+import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -16,8 +36,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.HexCoded32Bytes
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.babylon
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -25,7 +44,35 @@ import rdx.works.profile.domain.GetProfileUseCase
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel>() {
 
-    private val firstDeviceId = "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5"
+    private val firstDeviceId = FactorSourceId.Hash(
+        FactorSourceIdFromHash(
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET, Exactly32Bytes.init(
+                "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5".hexToBagOfBytes()
+            )
+        )
+    )
+    private val profile = Profile.sample().let {
+        val factorSources = FactorSources.init(
+            it.factorSources().filterNot { fs -> fs.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
+        ).append(
+            FactorSource.Ledger(
+                LedgerHardwareWalletFactorSource(
+                    id = FactorSourceIdFromHash(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        body = Exactly32Bytes.init("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5".hexToBagOfBytes())
+                    ),
+                    FactorSourceCommon(
+                        cryptoParameters = FactorSourceCryptoParameters.babylon,
+                        addedOn = Timestamp.now(),
+                        lastUsedOn = Timestamp.now(),
+                        flags = emptyList()
+                    ),
+                    LedgerHardwareWalletHint("My Ledger", LedgerHardwareWalletModel.NANO_S)
+                )
+            )
+        )
+        it.copy(factorSources = factorSources)
+    }
 
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
     private val ledgerMessengerMock = mockk<LedgerMessenger>()
@@ -46,12 +93,13 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     @Test
     fun `sending ledger device info requests call proper method and sets proper state`() = runTest {
-        coEvery { getProfileUseCaseMock() } returns flowOf(profile())
+        coEvery { getProfileUseCaseMock() } returns profile
+        every { getProfileUseCaseMock.flow } returns flowOf(profile)
         coEvery { ledgerMessengerMock.sendDeviceInfoRequest(any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
                 interactionId = "1",
                 model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
-                deviceId = HexCoded32Bytes(firstDeviceId)
+                deviceId = firstDeviceId.value.body
             )
         )
         val vm = vm.value
@@ -68,22 +116,23 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     @Test
     fun `adding ledger and providing name`() = runTest {
-        val ledgerDeviceToAdd = (profile().factorSources[1] as LedgerHardwareWalletFactorSource)
+        val ledgerDeviceToAdd =
+            profile.factorSources().first { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } as FactorSource.Ledger
         coEvery {
             addLedgerFactorSourceUseCaseMock(
-                ledgerId = (profile().factorSources[1] as LedgerHardwareWalletFactorSource).id.body,
-                model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
-                name = ledgerDeviceToAdd.hint.name
+                ledgerId = ledgerDeviceToAdd.value.id.asGeneral(),
+                model = LedgerHardwareWalletModel.NANO_S,
+                name = ledgerDeviceToAdd.value.hint.name
             )
         } returns AddLedgerFactorSourceResult.Added(
             ledgerFactorSource = ledgerDeviceToAdd
         )
-        coEvery { getProfileUseCaseMock() } returns flowOf(profile())
+        coEvery { getProfileUseCaseMock() } returns profile
         coEvery { ledgerMessengerMock.sendDeviceInfoRequest(any()) } returns Result.success(
             MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
                 interactionId = "1",
                 model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
-                deviceId = ledgerDeviceToAdd.id.body
+                deviceId = ledgerDeviceToAdd.value.id.body
             )
         )
         val vm = vm.value

@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,8 +63,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
-import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -102,7 +100,10 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -110,7 +111,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.sample
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 
@@ -157,7 +158,7 @@ fun ImportLegacyWalletScreen(
         verifiedLedgerDevices = state.verifiedLedgerDevices,
         addLedgerSheetState = state.addLedgerSheetState,
         onContinueWithLedgerClick = viewModel::onContinueWithLedgerClick,
-        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+        deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel(),
         shouldShowAddLinkConnectorScreen = state.shouldShowAddLinkConnectorScreen,
         addLinkConnectorState = addLinkConnectorState,
         onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
@@ -203,10 +204,10 @@ private fun ImportLegacyWalletContent(
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
     onConfirmLedgerName: (String) -> Unit,
-    verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
+    verifiedLedgerDevices: ImmutableList<FactorSource.Ledger>,
     addLedgerSheetState: AddLedgerDeviceUiState.ShowContent,
     onContinueWithLedgerClick: () -> Unit,
-    deviceModel: String?,
+    deviceModel: LedgerHardwareWalletModel?,
     shouldShowAddLinkConnectorScreen: Boolean,
     addLinkConnectorState: AddLinkConnectorUiState,
     onLinkConnectorQrCodeScanned: (String) -> Unit,
@@ -543,11 +544,10 @@ private fun AccountsToImportListPage(
                 )
             }
             items(olympiaAccountsToImport) { item ->
-                val gradientColor = getAccountGradientColorsFor(item.appearanceId)
                 LegacyAccountCard(
                     modifier = Modifier
                         .background(
-                            Brush.horizontalGradient(gradientColor),
+                            item.appearanceId.gradient(),
                             shape = RadixTheme.shapes.roundedRectSmall
                         )
                         .applyIf(
@@ -580,7 +580,7 @@ private fun VerifyWithLedgerDevicePage(
     modifier: Modifier = Modifier,
     hardwareAccountsLeft: Int,
     waitingForLedgerResponse: Boolean,
-    verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
+    verifiedLedgerDevices: ImmutableList<FactorSource.Ledger>,
     onContinueWithLedgerClick: () -> Unit
 ) {
     Box(modifier = modifier) {
@@ -629,7 +629,7 @@ private fun VerifyWithLedgerDevicePage(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         items(items = verifiedLedgerDevices, key = { item ->
-                            item.id.body.value
+                            item.value.id.body.hex
                         }, itemContent = { item ->
                             LedgerListItem(
                                 ledgerFactorSource = item,
@@ -711,7 +711,6 @@ private fun ImportCompletePage(
                 )
             }
             itemsIndexed(migratedAccounts) { index, item ->
-                val gradientColor = getAccountGradientColorsFor(item.appearanceID)
                 if (index == migratedAccounts.size - 1) {
                     AccountCardWithStack(
                         Modifier.fillMaxWidth(0.8f),
@@ -724,7 +723,7 @@ private fun ImportCompletePage(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .background(
-                                Brush.horizontalGradient(gradientColor),
+                                item.appearanceID.gradient(),
                                 RadixTheme.shapes.roundedRectSmall
                             )
                             .padding(
@@ -832,7 +831,11 @@ private fun VerifyWithYourSeedPhrasePage(
             modifier = Modifier.fillMaxWidth(),
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
-        if (seedPhraseInputState.seedPhraseInputValid && seedPhraseInputState.seedPhraseBIP39Valid.not()) {
+
+        val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseInputState) {
+            seedPhraseInputState.shouldDisplayInvalidSeedPhraseWarning()
+        }
+        if (shouldDisplayInvalidSeedPhraseWarning) {
             RedWarningText(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -847,7 +850,7 @@ private fun VerifyWithYourSeedPhrasePage(
             },
             modifier = Modifier.fillMaxWidth(),
             throttleClicks = true,
-            enabled = seedPhraseInputState.seedPhraseInputValid && seedPhraseInputState.seedPhraseBIP39Valid
+            enabled = seedPhraseInputState.isValidSeedPhrase()
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
@@ -898,6 +901,7 @@ fun HardwareImportNoVerifiedLedgersPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun HardwareImportWithVerifiedLedgersPreview() {
@@ -906,12 +910,13 @@ fun HardwareImportWithVerifiedLedgersPreview() {
             modifier = Modifier,
             hardwareAccountsLeft = 3,
             waitingForLedgerResponse = false,
-            verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            verifiedLedgerDevices = FactorSource.Ledger.sample.all.toPersistentList(),
             onContinueWithLedgerClick = {}
         )
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun HardwareImportNoAccountsLeftPreview() {
@@ -920,7 +925,7 @@ fun HardwareImportNoAccountsLeftPreview() {
             modifier = Modifier,
             hardwareAccountsLeft = 0,
             waitingForLedgerResponse = true,
-            verifiedLedgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            verifiedLedgerDevices = FactorSource.Ledger.sample.all.toPersistentList(),
             onContinueWithLedgerClick = {}
         )
     }

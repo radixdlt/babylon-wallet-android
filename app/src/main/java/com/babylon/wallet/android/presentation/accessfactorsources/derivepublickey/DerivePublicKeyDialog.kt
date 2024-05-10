@@ -32,7 +32,9 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
-import rdx.works.profile.domain.TestData.ledgerFactorSource
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.sargon.sample
 
 @Composable
 fun DerivePublicKeyDialog(
@@ -102,14 +104,14 @@ private fun DerivePublicKeyBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.derivePublicKeys_titleCreateAccount)
+                text = stringResource(id = R.string.factorSourceActions_createAccount_title)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
                     if (shouldShowRetryButton) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -126,11 +128,11 @@ private fun DerivePublicKeyBottomSheetContent(
                 is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleLedger)
+                        text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.hint.name)
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                     RadixTextButton(
                         modifier = Modifier.fillMaxWidth(),
@@ -157,13 +159,14 @@ fun DerivePublicKeyDialogDevicePreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
 fun DerivePublicKeyDialogLedgerPreview() {
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
             showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
-                selectedLedgerDevice = ledgerFactorSource
+                selectedLedgerDevice = FactorSource.Ledger.sample()
             ),
             shouldShowRetryButton = false,
             onDismiss = {},

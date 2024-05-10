@@ -7,20 +7,32 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.mockdata.account
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ARG_DAPP_ADDRESS
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailEvent
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailViewModel
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.SelectedSheetState
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDapps
+import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.RequestedQuantity
+import com.radixdlt.sargon.SharedPersonaData
+import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
+import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.extensions.atLeast
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.extensions.updateOrAppend
+import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -28,13 +40,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.domain.DApp
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.RequestedNumber
-import rdx.works.profile.data.model.pernetwork.Shared
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,26 +58,29 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithResourcesUseCase>()
     private val getValidatedDAppWebsiteUseCase = mockk<GetValidatedDAppWebsiteUseCase>()
-    private val samplePersonas = identifiedArrayListOf(
-        sampleDataProvider.samplePersona(IdentityAddress.sampleMainnet().string),
-        sampleDataProvider.samplePersona(IdentityAddress.sampleMainnet.random().string)
-    )
+
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+        val mainnet = it.networks.getBy(NetworkId.MAINNET)!!
+        it.copy(
+            networks = it.networks.updateOrAppend(
+                mainnet.copy(authorizedDapps = AuthorizedDapps.init())
+            )
+        )
+    }
+    private val samplePersonas = profile.currentNetwork!!.personas()
     private val dApp = DApp.sampleMainnet()
-    private val authorizedDapp = Network.AuthorizedDapp(
-        networkID = dApp.dAppAddress.networkId.discriminant.toInt(),
-        dAppDefinitionAddress = dApp.dAppAddress.string,
+    private val authorizedDapp = AuthorizedDapp(
+        networkId = dApp.dAppAddress.networkId,
+        dappDefinitionAddress = dApp.dAppAddress,
         displayName = dApp.name,
-        referencesToAuthorizedPersonas = listOf(
-            Network.AuthorizedDapp.AuthorizedPersonaSimple(
+        referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+            AuthorizedPersonaSimple(
                 identityAddress = samplePersonas[0].address,
-                sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(),
-                lastLogin = "2023-01-31T10:28:14Z",
-                sharedAccounts = Shared(
-                    listOf(AccountAddress.sampleMainnet().string),
-                    RequestedNumber(
-                        RequestedNumber.Quantifier.AtLeast,
-                        1
-                    )
+                sharedPersonaData = SharedPersonaData(null, null, null),
+                lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
+                sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                    request = RequestedQuantity.atLeast(1),
+                    ids = listOf(profile.currentNetwork!!.accounts().first().address)
                 )
             )
         )
@@ -88,20 +104,9 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     @Before
     override fun setUp() {
         super.setUp()
-        val dApp = DApp.sampleMainnet()
         every { savedStateHandle.get<String>(ARG_DAPP_ADDRESS) } returns dApp.dAppAddress.string
-        every { getProfileUseCase() } returns flowOf(
-            profile(
-                accounts = identifiedArrayListOf(
-                    account(address = AccountAddress.sampleMainnet()),
-                    account()
-                ),
-                personas = samplePersonas,
-                dApps = listOf(
-
-                )
-            )
-        )
+        every { getProfileUseCase.flow } returns flowOf(profile)
+        coEvery { getProfileUseCase() } returns profile
         coEvery { getDAppWithAssociatedResourcesUseCase(dApp.dAppAddress, false) } returns
                 Result.success(DAppWithResources(dApp = dApp))
     }
@@ -112,9 +117,9 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.dAppWithResources != null)
-            assert(item.dapp != null)
-            assert(item.personas.size == 1)
+            assertNotNull(item.dAppWithResources)
+            assertNotNull(item.dapp)
+            assertEquals(1, item.personas.size)
         }
     }
 

@@ -1,14 +1,15 @@
 package rdx.works.profile.domain.backup
 
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.extensions.addMainBabylonDeviceFactorSource
-import rdx.works.profile.data.model.extensions.changeGateway
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.NetworkId
+import rdx.works.core.TimestampGenerator
+import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import java.time.Instant
 import javax.inject.Inject
 
 class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
@@ -21,22 +22,20 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
         backupType: BackupType
     ) {
         // always restore backup on mainnet
-        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)?.changeGateway(Radix.Gateway.mainnet)
+        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
 
         if (profile != null) {
             val deviceInfo = deviceInfoRepository.getDeviceInfo()
             val mnemonic = mnemonicRepository()
-            val deviceFactorSource = DeviceFactorSource.babylon(
+            val deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonic,
                 model = deviceInfo.model,
                 name = deviceInfo.name,
-                createdAt = Instant.now(),
+                createdAt = TimestampGenerator(),
                 isMain = true
             )
-            val updatedProfile = profile.addMainBabylonDeviceFactorSource(
-                mainBabylonFactorSource = deviceFactorSource
-            )
 
+            val updatedProfile = profile.addMainBabylonDeviceFactorSource(mainBabylonFactorSource = deviceFactorSource)
             profileRepository.saveProfile(updatedProfile)
         }
     }

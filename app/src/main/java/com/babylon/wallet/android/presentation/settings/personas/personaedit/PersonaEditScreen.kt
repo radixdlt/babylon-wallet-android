@@ -54,12 +54,12 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaDataEntryID
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.core.sargon.PersonaDataField
 
 @Composable
 fun PersonaEditScreen(
@@ -101,7 +101,7 @@ private fun PersonaEditContent(
     onAddFields: () -> Unit,
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
@@ -159,7 +159,7 @@ private fun PersonaEditContent(
             topBar = {
                 Column {
                     RadixCenteredTopAppBar(
-                        title = selectedPersona.displayName,
+                        title = selectedPersona.displayName.value,
                         onBackClick = {
                             if (state.wasEdited) {
                                 showCancelPrompt = true
@@ -255,18 +255,18 @@ private fun PersonaEditContent(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
-    persona: Network.Persona,
+    persona: Persona,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldWrapper>,
     onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
-    missingFields: ImmutableList<PersonaData.PersonaDataField.Kind>
+    missingFields: ImmutableList<PersonaDataField.Kind>
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = dimensions.paddingDefault),

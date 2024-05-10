@@ -1,59 +1,57 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.domain.RadixWalletException
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.SigningPurpose
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.radixdlt.sargon.FactorSource
 
+@Deprecated("It will be removed once refactoring of access factor sources is complete.")
 sealed class InteractionState(val factorSource: FactorSource) {
 
     abstract val label: String
 
-    sealed class Device(private val deviceFactorSource: DeviceFactorSource) : InteractionState(deviceFactorSource) {
-
-        data class DerivingAccounts(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
+    sealed class Device(private val deviceFactorSource: FactorSource.Device) : InteractionState(deviceFactorSource) {
 
         data class Pending(
-            private val deviceFactorSource: DeviceFactorSource,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
-        ) : Device(deviceFactorSource)
-
-        data class Success(
-            private val deviceFactorSource: DeviceFactorSource,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
+            private val deviceFactorSource: FactorSource.Device,
+            val signingPurpose: SigningPurpose = SigningPurpose.Transaction
         ) : Device(deviceFactorSource)
 
         override val label: String
-            get() = deviceFactorSource.hint.name
+            get() = deviceFactorSource.value.hint.name
     }
 
     sealed class Ledger(
-        private val ledgerFactorSource: LedgerHardwareWalletFactorSource
+        private val ledgerFactorSource: FactorSource.Ledger
     ) : InteractionState(ledgerFactorSource) {
 
-        data class DerivingPublicKey(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
-        data class DerivingAccounts(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
+        data class DerivingPublicKey(val ledgerFactorSource: FactorSource.Ledger) : Ledger(ledgerFactorSource)
 
         data class Pending(
-            val ledgerFactorSource: LedgerHardwareWalletFactorSource,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
-        ) : Ledger(ledgerFactorSource)
-
-        data class Success(
-            val ledgerFactorSource: LedgerHardwareWalletFactorSource,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
+            val ledgerFactorSource: FactorSource.Ledger,
+            val signingPurpose: SigningPurpose = SigningPurpose.Transaction
         ) : Ledger(ledgerFactorSource)
 
         data class Error(
-            private val ledgerFactorSource: LedgerHardwareWalletFactorSource,
+            private val ledgerFactorSource: FactorSource.Ledger,
             val signingPurpose: SigningPurpose?,
             val failure: RadixWalletException.LedgerCommunicationException
         ) : Ledger(ledgerFactorSource)
 
         override val label: String
-            get() = ledgerFactorSource.hint.name
+            get() = ledgerFactorSource.value.hint.name
     }
 
     val usingLedger: Boolean = this is Ledger
+
+    enum class SigningPurpose {
+        AuthChallenge,
+        Transaction;
+
+        companion object {
+            fun from(request: SignRequest) = when (request) {
+                is SignRequest.SignAuthChallengeRequest -> AuthChallenge
+                is SignRequest.SignTransactionRequest -> Transaction
+            }
+        }
+    }
 }

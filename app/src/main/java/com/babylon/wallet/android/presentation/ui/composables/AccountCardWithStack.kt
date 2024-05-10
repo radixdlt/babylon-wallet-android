@@ -12,23 +12,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.extensions.init
 
 @Composable
 fun AccountCardWithStack(
     modifier: Modifier,
-    appearanceId: Int = 0,
+    appearanceId: AppearanceId,
     accountName: String,
     accountAddress: String,
 ) {
@@ -42,7 +42,7 @@ fun AccountCardWithStack(
                 .height(singleCardHeight)
                 .zIndex(5f)
                 .background(
-                    Brush.horizontalGradient(AccountGradientList[appearanceId % AccountGradientList.size]),
+                    appearanceId.gradient(),
                     RadixTheme.shapes.roundedRectSmall
                 )
         ) {
@@ -74,9 +74,8 @@ fun AccountCardWithStack(
         }
         repeat(4) {
             val index = it + 1
-            val nextColors =
-                AccountGradientList[(appearanceId + index) % AccountGradientList.size]
-                    .map { color -> color.copy(alpha = 0.3f) }
+
+            val nextAppearanceIdIndex = appearanceId.value + index.toUInt()
             Box(
                 modifier = Modifier
                     .offset(y = offset * index)
@@ -84,7 +83,7 @@ fun AccountCardWithStack(
                     .height(singleCardHeight)
                     .zIndex(5f - index)
                     .background(
-                        Brush.horizontalGradient(nextColors),
+                        AppearanceId(nextAppearanceIdIndex.toUByte()).gradient(alpha = 0.3f),
                         RadixTheme.shapes.roundedRectSmall
                     )
                     .align(Alignment.Center)
@@ -99,6 +98,7 @@ fun CardStackPreview() {
     AccountCardWithStack(
         modifier = Modifier,
         accountName = "My account",
-        accountAddress = "d32d32"
+        accountAddress = "d32d32",
+        appearanceId = AppearanceId(0u)
     )
 }

@@ -34,7 +34,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.SeedPhraseInputVerificationForm
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -42,6 +41,9 @@ import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.sargon.sample
 
 @Composable
 fun ConfirmMnemonicScreen(
@@ -181,13 +183,14 @@ private fun SeedPhraseView(
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun ConfirmMnemonicContentPreview() {
     RadixWalletTheme {
         ConfirmMnemonicContent(
             state = ConfirmMnemonicViewModel.State(
-                factorSource = SampleDataProvider().babylonDeviceFactorSource()
+                factorSource = FactorSource.Device.sample()
             ),
             onBackClick = {},
             onSubmitClick = {},

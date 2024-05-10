@@ -17,20 +17,9 @@ sealed class Screen(override val route: String, override val args: String = "") 
     object SettingsDestination : Screen("settings_route")
     object SettingsAllDestination : Screen("settings_all_route")
     object SettingsEditGatewayApiDestination : Screen("settings_edit_gateway_api_route")
-    object AccountDestination : Screen("account_route")
     object ChooseAccountsCompleteDestination : Screen("choose_accounts_completion_route")
 
-    fun routeWithArgs(vararg args: Any): String {
-        return buildString {
-            append(route)
-            args.forEach { arg ->
-                append("/$arg")
-            }
-        }
-    }
-
     companion object {
-        const val ARG_ACCOUNT_ADDRESS = "arg_account_address"
         const val ARG_ACCOUNT_NAME = "arg_account_name"
         const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"

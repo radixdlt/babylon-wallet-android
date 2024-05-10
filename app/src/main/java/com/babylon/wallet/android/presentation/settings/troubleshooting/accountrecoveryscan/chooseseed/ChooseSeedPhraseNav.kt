@@ -9,7 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
-import rdx.works.profile.data.model.factorsources.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 
 private const val ARGS_MNEMONIC_TYPE = "mnemonic_type"
 private const val ROUTE = "choose_seed_phrase?$ARGS_MNEMONIC_TYPE={$ARGS_MNEMONIC_TYPE}"
@@ -31,7 +31,7 @@ fun NavController.chooseSeedPhrase(mnemonicType: MnemonicType) {
 fun NavGraphBuilder.chooseSeedPhrase(
     onBack: () -> Unit,
     onAddSeedPhrase: (MnemonicType) -> Unit,
-    onRecoveryScanWithFactorSource: (FactorSource, Boolean) -> Unit
+    onRecoveryScanWithFactorSource: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     composable(
         route = ROUTE,

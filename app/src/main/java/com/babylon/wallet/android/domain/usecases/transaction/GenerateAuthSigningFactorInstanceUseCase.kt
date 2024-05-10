@@ -5,29 +5,33 @@ import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.Cap26Path
+import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.toHexString
-import rdx.works.profile.data.model.compressedPublicKey
-import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.factorsources.Slip10Curve
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.core.mapError
+import rdx.works.core.sargon.authenticationSigningFactorInstance
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.core.sargon.toAccountAuthSigningDerivationPath
+import rdx.works.core.sargon.toAuthSigningDerivationPath
+import rdx.works.core.sargon.toIdentityAuthSigningDerivationPath
+import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.factorSourceById
 import javax.inject.Inject
 
 class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
@@ -39,51 +43,41 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     private val _interactionState = MutableStateFlow<InteractionState?>(null)
     val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
 
-    suspend operator fun invoke(entity: Entity): Result<FactorInstance> {
-        val factorSourceId: FactorSourceID.FromHash
-        val authSigningDerivationPath = when (val securityState = entity.securityState) {
-            is SecurityState.Unsecured -> {
-                if (securityState.unsecuredEntityControl.authenticationSigning != null) {
-                    throw ProfileException.AuthenticationSigningAlreadyExist(entity)
+    suspend operator fun invoke(entity: ProfileEntity): Result<HierarchicalDeterministicFactorInstance> {
+        if (entity.securityState.authenticationSigningFactorInstance != null) {
+            return Result.failure(ProfileException.AuthenticationSigningAlreadyExist(entity))
+        }
+
+        val transactionSigning = entity.securityState.transactionSigningFactorInstance
+        val authSigningDerivationPath = when (val path = transactionSigning.publicKey.derivationPath) {
+            is DerivationPath.Bip44Like -> {
+                val networkId = getProfileUseCase().currentGateway.network.id
+                when (entity) {
+                    is ProfileEntity.AccountEntity -> path.value.toAccountAuthSigningDerivationPath(networkId = networkId)
+                    is ProfileEntity.PersonaEntity -> path.value.toIdentityAuthSigningDerivationPath(networkId = networkId)
                 }
-                val transactionSigning = securityState.unsecuredEntityControl.transactionSigning
-                val (signingEntityDerivationPath, publicKey) = when (val badge = transactionSigning.badge) {
-                    is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                        Pair(badge.derivationPath, badge.publicKey)
-                    }
-                }
-                factorSourceId = transactionSigning.factorSourceId as FactorSourceID.FromHash
-                if (publicKey.curve == Slip10Curve.CURVE_25519) {
-                    DerivationPath.authSigningDerivationPathFromCap26Path(signingEntityDerivationPath)
-                } else {
-                    val profile = getProfileUseCase.invoke().first()
-                    val networkId = requireNotNull(profile.currentNetwork?.knownNetworkId)
-                    DerivationPath.authSigningDerivationPathFromBip44LikePath(networkId, signingEntityDerivationPath)
-                }
+            }
+            is DerivationPath.Cap26 -> when (val cap26Path = path.value) {
+                is Cap26Path.Account -> cap26Path.toAuthSigningDerivationPath()
+                is Cap26Path.Identity -> cap26Path.toAuthSigningDerivationPath()
+                is Cap26Path.GetId -> error("Entity should not contain Identity Path")
             }
         }
-        val factorSource = requireNotNull(getProfileUseCase.factorSourceById(factorSourceId))
-        return when (factorSource.id.kind) {
-            FactorSourceKind.DEVICE -> {
-                createAuthSigningFactorInstanceForDevice(factorSource as DeviceFactorSource, authSigningDerivationPath)
-            }
 
-            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
-                createAuthSigningFactorInstanceForLedger(
-                    factorSource as LedgerHardwareWalletFactorSource,
-                    authSigningDerivationPath
-                )
-            }
-
-            FactorSourceKind.OFF_DEVICE_MNEMONIC -> Result.failure(Throwable("factor source is neither device nor ledger"))
-            FactorSourceKind.TRUSTED_CONTACT -> Result.failure(Throwable("factor source is neither device nor ledger"))
+        val factorSourceId = transactionSigning.factorSourceId.asGeneral()
+        return when (val factorSource = requireNotNull(getProfileUseCase().factorSourceById(factorSourceId))) {
+            is FactorSource.Device -> createAuthSigningFactorInstanceForDevice(factorSource, authSigningDerivationPath)
+            is FactorSource.Ledger -> createAuthSigningFactorInstanceForLedger(
+                factorSource,
+                authSigningDerivationPath
+            )
         }
     }
 
     private suspend fun createAuthSigningFactorInstanceForLedger(
-        ledgerHardwareWalletFactorSource: LedgerHardwareWalletFactorSource,
+        ledgerHardwareWalletFactorSource: FactorSource.Ledger,
         authSigningDerivationPath: DerivationPath
-    ): Result<FactorInstance> {
+    ): Result<HierarchicalDeterministicFactorInstance> {
         _interactionState.update {
             InteractionState.Ledger.DerivingPublicKey(ledgerHardwareWalletFactorSource)
         }
@@ -91,48 +85,45 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             interactionId = UUIDGenerator.uuid().toString(),
             keyParameters = listOf(
                 LedgerInteractionRequest.KeyParameters(
-                    Curve.Curve25519,
-                    authSigningDerivationPath.path
+                    curve = Curve.Curve25519, // To whoever works on this feature in the future, this curve should not
+                    // be 25519 hardcoded. (Concluded when scouting this part of code during sargon integration)
+                    // We have to calculate the curve from the derivation path. This feature is not yet
+                    // used by the public so it can stay as a reference.
+                    derivationPath = authSigningDerivationPath.string
                 )
             ),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerHardwareWalletFactorSource)
         ).mapCatching { derivePublicKeyResponse ->
             derivePublicKeyResponse.publicKeysHex.first().publicKeyHex
         }
-        return if (deriveResult.isSuccess) {
-            _interactionState.update { null }
-            Result.success(
-                FactorInstance(
-                    badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-                        derivationPath = authSigningDerivationPath,
-                        publicKey = FactorInstance.PublicKey.curve25519PublicKey(deriveResult.getOrThrow())
-                    ),
-                    factorSourceId = ledgerHardwareWalletFactorSource.id,
+        return deriveResult.mapCatching { hex ->
+            HierarchicalDeterministicFactorInstance(
+                factorSourceId = ledgerHardwareWalletFactorSource.value.id,
+                publicKey = HierarchicalDeterministicPublicKey(
+                    publicKey = PublicKey.Ed25519.init(hex = hex), // To whoever works on this please read the above statement
+                    derivationPath = authSigningDerivationPath
                 )
             )
-        } else {
+        }.onSuccess {
             _interactionState.update { null }
-            Result.failure(RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys)
+        }.onFailure {
+            _interactionState.update { null }
+        }.mapError {
+            RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys
         }
     }
 
     private suspend fun createAuthSigningFactorInstanceForDevice(
-        deviceFactorSource: DeviceFactorSource,
+        deviceFactorSource: FactorSource.Device,
         authSigningDerivationPath: DerivationPath
-    ): Result<FactorInstance> {
-        val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull()
+    ): Result<HierarchicalDeterministicFactorInstance> {
+        val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).getOrNull()
         requireNotNull(mnemonic)
-        val authSigningPublicKey = mnemonic.compressedPublicKey(
-            curve = Slip10Curve.CURVE_25519,
-            derivationPath = authSigningDerivationPath
-        ).removeLeadingZero().toHexString()
+        val authSigningHDPublicKey = mnemonic.derivePublicKey(path = authSigningDerivationPath)
         return Result.success(
-            FactorInstance(
-                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-                    derivationPath = authSigningDerivationPath,
-                    publicKey = FactorInstance.PublicKey.curve25519PublicKey(authSigningPublicKey)
-                ),
-                factorSourceId = deviceFactorSource.id
+            HierarchicalDeterministicFactorInstance(
+                factorSourceId = deviceFactorSource.value.id,
+                publicKey = authSigningHDPublicKey
             )
         )
     }

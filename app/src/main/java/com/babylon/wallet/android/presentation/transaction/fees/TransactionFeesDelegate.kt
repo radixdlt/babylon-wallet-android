@@ -4,8 +4,8 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.radixdlt.sargon.extensions.isZero
 import kotlinx.coroutines.flow.update
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
 
 class TransactionFeesDelegate @Inject constructor(
@@ -23,7 +23,7 @@ class TransactionFeesDelegate @Inject constructor(
             _state.value.feePayers?.let { feePayerResult ->
                 if (feePayerResult.selectedAccountAddress != null) {
                     // Candidate selected
-                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.selectedAccountAddress)
+                    getProfileUseCase().activeAccountOnCurrentNetwork(withAddress = feePayerResult.selectedAccountAddress)
                         ?.let { feePayerCandidate ->
                             _state.update { state ->
                                 state.candidateSelectedState(feePayerCandidate)

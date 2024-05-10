@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
@@ -18,9 +19,7 @@ import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.amount
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
@@ -34,7 +33,6 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.profile.data.model.pernetwork.Network
 
 fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<ResourceAddress> {
     val withdrawIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
@@ -285,9 +283,9 @@ val ResourceIndicator.NonFungible.nonFungibleLocalIds: List<NonFungibleLocalId>
 
 fun List<Transferable>.toAccountWithTransferableResources(
     accountAddress: AccountAddress,
-    ownedAccounts: List<Network.Account>
+    ownedAccounts: List<Account>
 ): AccountWithTransferableResources {
-    val ownedAccount = ownedAccounts.find { it.address == accountAddress.string }
+    val ownedAccount = ownedAccounts.find { it.address == accountAddress }
     return if (ownedAccount != null) {
         AccountWithTransferableResources.Owned(ownedAccount, this)
     } else {
@@ -295,16 +293,16 @@ fun List<Transferable>.toAccountWithTransferableResources(
     }
 }
 
-fun ExecutionSummary.involvedOwnedAccounts(ownedAccounts: List<Network.Account>): List<Network.Account> {
+fun ExecutionSummary.involvedOwnedAccounts(ownedAccounts: List<Account>): List<Account> {
     val involvedAccountAddresses = withdrawals.keys + deposits.keys
     return ownedAccounts.filter {
-        involvedAccountAddresses.contains(AccountAddress.init(it.address))
+        it.address in involvedAccountAddresses
     }
 }
 
 fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
     involvedAssets: List<Asset>,
-    allOwnedAccounts: List<Network.Account>,
+    allOwnedAccounts: List<Account>,
     aggregateByResourceAddress: Boolean = false // for now I turned aggregation off to not introduce any bugs
 ): List<AccountWithTransferableResources> {
     return withdrawals.map { withdrawEntry ->
@@ -365,7 +363,7 @@ fun ExecutionSummary.resolveDepositingAsset(
 
 fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     involvedAssets: List<Asset>,
-    allOwnedAccounts: List<Network.Account>,
+    allOwnedAccounts: List<Account>,
     defaultGuarantee: Decimal192
 ) = deposits.map { depositEntry ->
     depositEntry.value.map { resource ->

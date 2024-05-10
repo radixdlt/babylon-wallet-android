@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
@@ -51,7 +50,9 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 
 @Composable
@@ -151,7 +152,7 @@ private fun PersonaDataOngoingPermissionContent(
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
     persona: PersonaUiModel?,
-    onEditClick: (String) -> Unit,
+    onEditClick: (Persona) -> Unit,
     continueButtonEnabled: Boolean,
 ) {
     Scaffold(
@@ -257,7 +258,7 @@ fun LoginPermissionContentPreview() {
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,
-            persona = PersonaUiModel(SampleDataProvider().samplePersona()),
+            persona = PersonaUiModel(Persona.sampleMainnet()),
             onEditClick = {},
             continueButtonEnabled = true
         )

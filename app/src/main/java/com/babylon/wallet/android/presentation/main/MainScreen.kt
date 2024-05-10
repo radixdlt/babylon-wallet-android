@@ -8,17 +8,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
-    onAccountClick: (Network.Account) -> Unit = { },
-    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
+    onAccountClick: (Account) -> Unit = { },
+    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,

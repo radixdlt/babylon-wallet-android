@@ -4,12 +4,31 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.TestDispatcherRule
+import com.radixdlt.sargon.CollectionOfEmailAddresses
+import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.PersonaDataEntryEmailAddress
+import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryName
+import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
+import com.radixdlt.sargon.PersonaDataIdentifiedName
+import com.radixdlt.sargon.PersonaDataNameVariant
+import com.radixdlt.sargon.Personas
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,8 +38,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 
 internal class PersonaDataOngoingViewModelTest {
@@ -31,7 +52,36 @@ internal class PersonaDataOngoingViewModelTest {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 
-    private val samplePersona = SampleDataProvider().samplePersona()
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+        val network = it.networks.getBy(NetworkId.MAINNET)!!.let { network ->
+            val persona = network.personas().first().copy(
+                personaData = PersonaData(
+                    name = PersonaDataIdentifiedName(
+                        id = PersonaDataEntryID.randomUUID(),
+                        value = PersonaDataEntryName(
+                            variant = PersonaDataNameVariant.WESTERN,
+                            familyName = "",
+                            nickname = "",
+                            givenNames = "John"
+                        )
+                    ),
+                    emailAddresses = CollectionOfEmailAddresses(
+                        listOf(
+                            PersonaDataIdentifiedEmailAddress(
+                                id = PersonaDataEntryID.randomUUID(),
+                                value = PersonaDataEntryEmailAddress("test@test.pl")
+                            )
+                        )
+                    ),
+                    phoneNumbers = CollectionOfPhoneNumbers(emptyList())
+                )
+            )
+
+            network.copy(personas = Personas.init(persona))
+        }
+        it.copy(networks = ProfileNetworks.init(network))
+    }
+    private val samplePersona = profile.currentNetwork!!.personas().first()
 
     fun initVM(): PersonaDataOngoingViewModel {
         return PersonaDataOngoingViewModel(
@@ -42,11 +92,11 @@ internal class PersonaDataOngoingViewModelTest {
 
     @Before
     fun setUp() {
-        every { savedStateHandle.get<String>(ARG_PERSONA_ID) } returns samplePersona.address
+        every { savedStateHandle.get<String>(ARG_PERSONA_ID) } returns samplePersona.address.string
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
+                    PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -54,7 +104,8 @@ internal class PersonaDataOngoingViewModelTest {
                 )
             )
         )
-        every { getProfileUseCase() } returns flowOf(profile(personas = identifiedArrayListOf(samplePersona)))
+        coEvery { getProfileUseCase() } returns profile
+        coEvery { getProfileUseCase.flow } returns flowOf(profile)
     }
 
     @Test
@@ -73,7 +124,7 @@ internal class PersonaDataOngoingViewModelTest {
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.PhoneNumber,
+                    PersonaDataField.Kind.PhoneNumber,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly

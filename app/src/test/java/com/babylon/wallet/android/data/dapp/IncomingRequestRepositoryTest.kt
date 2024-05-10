@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.radixdlt.sargon.NetworkId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,7 +24,7 @@ class IncomingRequestRepositoryTest {
     private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         remoteConnectorId = "remoteConnectorId",
         interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(1, "", "", false),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,

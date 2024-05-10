@@ -3,14 +3,16 @@ package com.babylon.wallet.android.presentation.ui
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AppearanceId
+import com.radixdlt.sargon.Bip44LikePath
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
-import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 
@@ -79,22 +81,22 @@ object MockUiProvider {
             index = 0,
             type = OlympiaAccountType.Software,
             address = LegacyOlympiaAccountAddress.sample(),
-            publicKey = "publicKey1",
+            publicKey = PublicKey.Secp256k1.sample(),
             accountName = "account one",
-            derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
+            derivationPath = Bip44LikePath.sample().asGeneral(),
             newBabylonAddress = LegacyOlympiaAccountAddress.sample().toBabylonAddress(),
-            appearanceId = 0
+            appearanceId = AppearanceId(0u)
         ),
 
         OlympiaAccountDetails(
             index = 1,
             type = OlympiaAccountType.Hardware,
             address = LegacyOlympiaAccountAddress.sample.other(),
-            publicKey = "publicKey2",
+            publicKey = PublicKey.Secp256k1.sample.other(),
             accountName = "account two",
-            derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
+            derivationPath = Bip44LikePath.sample.other().asGeneral(),
             newBabylonAddress = LegacyOlympiaAccountAddress.sample.other().toBabylonAddress(),
-            appearanceId = 1
+            appearanceId = AppearanceId(1u)
         )
     )
 
@@ -102,25 +104,25 @@ object MockUiProvider {
         AccountItemUiModel(
             displayName = "Account name 1",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 1,
+            appearanceID = AppearanceId(1u),
             isSelected = true
         ),
         AccountItemUiModel(
             displayName = "Account name 2",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 2,
+            appearanceID = AppearanceId(2u),
             isSelected = false
         ),
         AccountItemUiModel(
             displayName = "Account name 3",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 3,
+            appearanceID = AppearanceId(3u),
             isSelected = false
         ),
         AccountItemUiModel(
             displayName = "Account name 4",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 4,
+            appearanceID = AppearanceId(4u),
             isSelected = false
         )
     )

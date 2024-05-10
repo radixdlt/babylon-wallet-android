@@ -10,9 +10,7 @@ import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
-import com.radixdlt.sargon.extensions.hash
-import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.RadixConnectPassword
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -23,7 +21,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.hash
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
@@ -35,7 +32,7 @@ interface PeerdroidClient {
 
     val hasAtLeastOneConnection: Flow<Boolean>
 
-    suspend fun connect(encryptionKey: ByteArray): Result<Unit>
+    suspend fun connect(connectionPassword: RadixConnectPassword): Result<Unit>
 
     suspend fun sendMessage(
         remoteConnectorId: String,
@@ -52,7 +49,7 @@ interface PeerdroidClient {
 
     fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error>
 
-    suspend fun deleteLink(connectionPassword: String)
+    suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
     fun terminate()
 }
@@ -65,8 +62,8 @@ class PeerdroidClientImpl @Inject constructor(
     override val hasAtLeastOneConnection: Flow<Boolean>
         get() = peerdroidConnector.anyChannelConnected
 
-    override suspend fun connect(encryptionKey: ByteArray): Result<Unit> {
-        return peerdroidConnector.connectToConnectorExtension(encryptionKey = encryptionKey)
+    override suspend fun connect(connectionPassword: RadixConnectPassword): Result<Unit> {
+        return peerdroidConnector.connectToConnectorExtension(encryptionKey = connectionPassword)
     }
 
     override suspend fun sendMessage(
@@ -111,14 +108,8 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override suspend fun deleteLink(connectionPassword: String) {
-        val encryptionKey = parseEncryptionKeyFromConnectionPassword(
-            connectionPassword = connectionPassword
-        )
-        encryptionKey?.let {
-            val connectionIdHolder = ConnectionIdHolder(id = it.hash().hex)
-            peerdroidConnector.deleteConnector(connectionIdHolder)
-        } ?: Timber.e("\uD83E\uDD16 Failed to delete connector because connection password is wrong")
+    override suspend fun deleteLink(connectionPassword: RadixConnectPassword) {
+        peerdroidConnector.deleteConnector(ConnectionIdHolder(password = connectionPassword))
     }
 
     override fun terminate() {

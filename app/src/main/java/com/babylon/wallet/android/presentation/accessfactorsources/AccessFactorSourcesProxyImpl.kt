@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.MnemonicWithPassphrase
 import javax.inject.Inject
 
 @ActivityRetainedScoped
@@ -21,7 +21,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
 
     override suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath> {
+    ): Result<AccessFactorSourcesOutput.HDPublicKey> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKey)
         val result = _output.first()
@@ -29,7 +29,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         return if (result is AccessFactorSourcesOutput.Failure) {
             Result.failure(result.error)
         } else {
-            Result.success(result as AccessFactorSourcesOutput.PublicKeyAndDerivationPath)
+            Result.success(result as AccessFactorSourcesOutput.HDPublicKey)
         }
     }
 

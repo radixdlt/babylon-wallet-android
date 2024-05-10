@@ -22,12 +22,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -54,11 +56,9 @@ import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -79,14 +79,13 @@ class AccountViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
 
-    private val accountAddress: String = savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS).orEmpty()
-
+    private val args = AccountArgs(savedStateHandle)
     override fun initialState(): AccountUiState = AccountUiState(accountWithAssets = null)
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountFlow = combine(
-        getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accountsInProfile ->
-            accountsInProfile.find { it.address == accountAddress }
+        getProfileUseCase.flow.mapNotNull { profile ->
+            profile.activeAccountsOnCurrentNetwork.find { it.address == args.accountAddress }
         },
         refreshFlow
     ) { account, _ -> account }
@@ -152,7 +151,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.RefreshResourcesNeeded || event is AppEvent.RestoredMnemonic
+                event is AppEvent.RefreshAssetsNeeded || event is AppEvent.RestoredMnemonic
             }.collect {
                 loadAccountDetails(withRefresh = it !is AppEvent.RestoredMnemonic)
             }
@@ -183,8 +182,10 @@ class AccountViewModel @Inject constructor(
 
     private fun observeSecurityPrompt() {
         viewModelScope.launch {
-            getEntitiesWithSecurityPromptUseCase().collect { accounts ->
-                val securityPrompt = accounts.find { it.entity.address == accountAddress }?.prompt
+            getEntitiesWithSecurityPromptUseCase().collect { entities ->
+                val securityPrompt = entities.find {
+                    (it.entity as? ProfileEntity.AccountEntity)?.account?.address == args.accountAddress
+                }?.prompt
 
                 _state.update { state ->
                     state.copy(securityPromptType = securityPrompt)
@@ -246,8 +247,7 @@ class AccountViewModel @Inject constructor(
 
     fun onApplySecuritySettings(securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId = _state.value.accountWithAssets?.account
-                ?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
+            val factorSourceId = _state.value.accountWithAssets?.account?.factorSourceId as? FactorSourceId.Hash ?: return@launch
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(NavigateToMnemonicBackup(factorSourceId))
@@ -338,13 +338,13 @@ class AccountViewModel @Inject constructor(
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
-    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
-    data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : AccountEvent
+    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : AccountEvent
+    data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Account) : AccountEvent
     data class OnNonFungibleClick(
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
-        val account: Network.Account
+        val account: Account
     ) : AccountEvent
 }
 

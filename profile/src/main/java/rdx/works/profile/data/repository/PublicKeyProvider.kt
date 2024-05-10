@@ -1,16 +1,19 @@
 package rdx.works.profile.data.repository
 
-import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.Cap26KeyKind
+import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.HDPathValue
+import com.radixdlt.sargon.extensions.account
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.compressedPublicKey
-import rdx.works.profile.data.model.extensions.nextAccountIndex
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.Slip10Curve
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.sargon.nextAccountIndex
 import javax.inject.Inject
 
 class PublicKeyProvider @Inject constructor(
@@ -26,56 +29,50 @@ class PublicKeyProvider @Inject constructor(
         factorSource: FactorSource
     ): DerivationPath {
         val profile = profileRepository.profile.first()
-        val accountIndex = profile.nextAccountIndex(factorSource, DerivationPathScheme.CAP_26, forNetworkId)
-        return DerivationPath.forAccount(
+        val accountIndex = profile.nextAccountIndex(
+            forNetworkId = forNetworkId,
+            factorSourceId = factorSource.id,
+            derivationPathScheme = DerivationPathScheme.CAP26
+        )
+        return DerivationPath.Cap26.account(
             networkId = forNetworkId,
-            accountIndex = accountIndex,
-            keyType = KeyType.TRANSACTION_SIGNING
+            keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+            index = accountIndex
         )
     }
 
     fun getDerivationPathsForIndices(
         forNetworkId: NetworkId,
-        indices: Set<Int>,
+        indices: Set<HDPathValue>,
         isForLegacyOlympia: Boolean = false
     ): List<DerivationPath> {
         return indices.map { accountIndex ->
             if (isForLegacyOlympia) {
-                DerivationPath.forLegacyOlympia(accountIndex)
+                DerivationPath.Bip44Like.init(index = accountIndex)
             } else {
-                DerivationPath.forAccount(
+                DerivationPath.Cap26.account(
                     networkId = forNetworkId,
-                    accountIndex = accountIndex,
-                    keyType = KeyType.TRANSACTION_SIGNING
+                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                    index = accountIndex,
                 )
             }
         }
     }
 
-    suspend fun derivePublicKeyForDeviceFactorSource(
-        deviceFactorSource: DeviceFactorSource,
+    suspend fun deriveHDPublicKeyForDeviceFactorSource(
+        deviceFactorSource: FactorSource.Device,
         derivationPath: DerivationPath
-    ): Result<ByteArray> {
-        return mnemonicRepository.readMnemonic(deviceFactorSource.id).mapCatching { mnemonicWithPassphrase ->
-            mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+    ): Result<HierarchicalDeterministicPublicKey> = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral())
+        .mapCatching { mnemonicWithPassphrase ->
+            mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
         }
-    }
 
     suspend fun derivePublicKeysDeviceFactorSource(
-        deviceFactorSource: DeviceFactorSource,
-        derivationPaths: List<DerivationPath>,
-        isForLegacyOlympia: Boolean = false
-    ): Result<Map<DerivationPath, ByteArray>> {
-        return mnemonicRepository.readMnemonic(deviceFactorSource.id).mapCatching { mnemonicWithPassphrase ->
-            if (isForLegacyOlympia) {
-                derivationPaths.associateWith { derivationPath ->
-                    mnemonicWithPassphrase.compressedPublicKey(Slip10Curve.SECP_256K1, derivationPath)
-                }
-            } else {
-                derivationPaths.associateWith { derivationPath ->
-                    mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
-                }
-            }
+        deviceFactorSource: FactorSource.Device,
+        derivationPaths: List<DerivationPath>
+    ): Result<List<HierarchicalDeterministicPublicKey>> {
+        return mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).mapCatching { mnemonicWithPassphrase ->
+            derivationPaths.map { mnemonicWithPassphrase.derivePublicKey(path = it) }
         }
     }
 }

@@ -61,7 +61,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import rdx.works.profile.data.model.SeedPhraseLength
+import com.radixdlt.sargon.Bip39WordCount
 
 @Composable
 fun AddSingleMnemonicScreen(
@@ -114,7 +114,7 @@ private fun AddSingleMnemonicsContent(
     onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit,
-    onSeedPhraseLengthChanged: (Int) -> Unit
+    onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -160,13 +160,16 @@ private fun AddSingleMnemonicsContent(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
+                    val isEnabled = remember(state.seedPhraseState) {
+                        state.seedPhraseState.isValidSeedPhrase()
+                    }
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding()
                             .padding(RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_continue),
-                        enabled = state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid,
+                        enabled = isEnabled,
                         onClick = onSubmitClick
                     )
                 }
@@ -208,7 +211,7 @@ private fun SeedPhraseView(
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    onSeedPhraseLengthChanged: (Int) -> Unit = {},
+    onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit = {},
     seedPhraseState: SeedPhraseInputDelegate.State,
     isOlympia: Boolean
 ) {
@@ -239,7 +242,9 @@ private fun SeedPhraseView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         if (isOlympia) {
-            val tabs = SeedPhraseLength.entries
+            val tabs = remember {
+                Bip39WordCount.entries.sortedBy { it.value }
+            }
             var tabIndex by remember { mutableStateOf(0) }
             Text(
                 modifier = Modifier
@@ -278,7 +283,7 @@ private fun SeedPhraseView(
                         selected = isSelected,
                         onClick = {
                             tabIndex = tabs.indexOf(tab)
-                            onSeedPhraseLengthChanged(tab.words)
+                            onSeedPhraseLengthChanged(tab)
                         },
                         interactionSource = interactionSource,
                         selectedContentColor = RadixTheme.colors.gray1,
@@ -288,7 +293,7 @@ private fun SeedPhraseView(
                             modifier = Modifier.padding(
                                 vertical = RadixTheme.dimensions.paddingSmall
                             ),
-                            text = tab.words.toString(),
+                            text = tab.value.toString(),
                             style = RadixTheme.typography.body1HighImportance,
                         )
                     }
@@ -307,7 +312,12 @@ private fun SeedPhraseView(
             onFocusedWordIndexChanged = onFocusedWordIndexChanged,
             showAdvancedMode = isOlympia
         )
-        if (seedPhraseState.seedPhraseInputValid && seedPhraseState.seedPhraseBIP39Valid.not()) {
+
+        val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseState) {
+            seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+        }
+
+        if (shouldDisplayInvalidSeedPhraseWarning) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RedWarningText(
                 modifier = Modifier.fillMaxWidth(),
