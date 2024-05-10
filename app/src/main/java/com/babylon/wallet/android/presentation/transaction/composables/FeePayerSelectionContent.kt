@@ -45,6 +45,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.resources.XrdResource
 import kotlin.random.Random
 
+@Suppress("LongMethod")
 fun LazyListScope.feePayerSelectionContent(
     candidates: List<TransactionFeePayers.FeePayerCandidate>,
     selectedCandidateAddress: AccountAddress? = null,
