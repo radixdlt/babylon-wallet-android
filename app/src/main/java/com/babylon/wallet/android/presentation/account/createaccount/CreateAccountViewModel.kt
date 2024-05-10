@@ -32,12 +32,10 @@ import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
-import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
-import rdx.works.profile.domain.isInitialized
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,7 +44,6 @@ class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val createAccountUseCase: CreateAccountUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val getProfileStateUseCase: GetProfileStateUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
@@ -64,8 +61,7 @@ class CreateAccountViewModel @Inject constructor(
     val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
 
     override fun initialState(): CreateAccountUiState = CreateAccountUiState(
-        firstTime = args.requestSource?.isFirstTime() == true,
-        isCancelable = true,
+        firstTime = args.requestSource?.isFirstTime() == true
     )
 
     fun onAccountNameChange(accountName: String) {
@@ -76,7 +72,7 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean, biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            val isBiometricsProvided = if (!getProfileStateUseCase.isInitialized()) {
+            val isBiometricsProvided = if (!getProfileUseCase.isInitialized()) {
                 if (biometricAuthProvider()) {
                     // TODO To be checked with the secure folder PR.
                     // Guard against problems with secure folder, even when the user has provided biometrics.
@@ -137,9 +133,7 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     fun onBackClick() = viewModelScope.launch {
-        if (!state.value.isCancelable) return@launch
-
-        if (!getProfileStateUseCase.isInitialized()) {
+        if (!getProfileUseCase.isInitialized()) {
             deleteProfileUseCase.deleteProfileDataOnly()
         }
         sendEvent(CreateAccountEvent.Dismiss)
@@ -190,7 +184,6 @@ class CreateAccountViewModel @Inject constructor(
         val accountName: String = "",
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
-        val isCancelable: Boolean = true,
         val uiMessage: UiMessage? = null
     ) : UiState
 

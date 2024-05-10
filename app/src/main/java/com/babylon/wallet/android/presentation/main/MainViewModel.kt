@@ -39,7 +39,6 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
-import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -54,7 +53,6 @@ class MainViewModel @Inject constructor(
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDAppUseCase,
     private val appEventBus: AppEventBus,
-    getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
@@ -91,7 +89,7 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.AccessFactorSources>()
 
-    val isDevBannerVisible = getProfileStateUseCase().map { profileState ->
+    val isDevBannerVisible = getProfileUseCase.state.map { profileState ->
         when (profileState) {
             is ProfileState.Restored -> {
                 profileState.profile.currentGateway.network.id != NetworkId.MAINNET
@@ -107,7 +105,7 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                getProfileStateUseCase(),
+                getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown
             ) { profileState, isDeviceRootedDialogShown ->
                 _state.update {
