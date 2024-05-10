@@ -8,6 +8,8 @@ import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInte
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.radixdlt.sargon.Hash
+import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -52,7 +54,7 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
             .map { statuses ->
                 val generalPurposeConnectionIds = p2pLinksRepository.getP2PLinks()
                     .filter { it.purpose == P2PLinkPurpose.General }
-                    .map { it.connectionPassword.value.hex }
+                    .map { it.connectionPassword.value.bytes.hash().hex }
                 val openConnectionIds = statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
 
                 generalPurposeConnectionIds.filter { connectionId -> connectionId in openConnectionIds }
