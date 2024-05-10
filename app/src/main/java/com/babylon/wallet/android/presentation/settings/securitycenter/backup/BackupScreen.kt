@@ -224,7 +224,7 @@ private fun BackupScreenContent(
         ) {
             Text(
                 modifier = Modifier,
-                text = stringResource(id = R.string.configurationBackup_automated_heading),
+                text = stringResource(id = R.string.configurationBackup_heading),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body1Header
             )
