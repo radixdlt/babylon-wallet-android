@@ -2,19 +2,17 @@ package rdx.works.profile.domain
 
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCryptoParameters
-import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.append
+import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import kotlinx.coroutines.flow.first
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.core.sargon.olympiaBackwardsCompatible
@@ -62,15 +60,15 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             createdAt = TimestampGenerator(),
             isMain = false
         )
-        val existingFactorSource = profile.factorSources().filterIsInstance<FactorSource.Device>().find {
+        val existingFactorSource = profile.factorSources.filterIsInstance<FactorSource.Device>().find {
             it.id == deviceFactorSource.id
         }
         val updatedProfile = if (existingFactorSource != null) {
             if (existingFactorSource.supportsOlympia) {
                 profileRepository.updateProfile { p ->
                     p.copy(
-                        factorSources = FactorSources.init(
-                            p.factorSources().mapWhen(predicate = {
+                        factorSources = FactorSources(
+                            p.factorSources.mapWhen(predicate = {
                                 it.id == existingFactorSource.id
                             }, mutation = {
                                 existingFactorSource.copy(
@@ -81,7 +79,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
                                     )
                                 )
                             })
-                        )
+                        ).asList()
                     )
                 }
             } else {
@@ -90,7 +88,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         } else {
             mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonic)
             profileRepository.updateProfile { p ->
-                p.copy(factorSources = p.factorSources.append(deviceFactorSource))
+                p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
             }
         }
         preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())

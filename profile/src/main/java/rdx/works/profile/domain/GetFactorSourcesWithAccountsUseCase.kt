@@ -2,7 +2,6 @@ package rdx.works.profile.domain
 
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.supportsBabylon
 import com.radixdlt.sargon.extensions.supportsOlympia
 import kotlinx.coroutines.flow.Flow
@@ -23,9 +22,9 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
     operator fun invoke(): Flow<List<DeviceFactorSourceData>> {
         return getProfileUseCase.flow.map { profile ->
             val result = mutableListOf<DeviceFactorSourceData>()
-            val deviceFactorSources = profile.factorSources().filterIsInstance<FactorSource.Device>()
-            val allAccountsOnNetwork = profile.currentNetwork?.accounts()?.notHiddenAccounts().orEmpty()
-            val allPersonasOnNetwork = profile.currentNetwork?.personas()?.notHiddenPersonas().orEmpty()
+            val deviceFactorSources = profile.factorSources.filterIsInstance<FactorSource.Device>()
+            val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
+            val allPersonasOnNetwork = profile.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
                     val olympiaAccounts = allAccountsOnNetwork.filter {

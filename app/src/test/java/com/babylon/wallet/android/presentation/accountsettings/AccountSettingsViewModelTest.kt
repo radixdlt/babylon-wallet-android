@@ -14,7 +14,6 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
@@ -48,7 +47,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
-    private val sampleAddress = sampleProfile.currentNetwork!!.accounts().first().address
+    private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
 
@@ -129,7 +128,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         advanceUntilIdle()
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
-        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.RefreshResourcesNeeded) }
+        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.RefreshAssetsNeeded) }
         coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
     }
 

@@ -4,21 +4,17 @@ package rdx.works.core.sargon
 
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.Accounts
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.AuthorizedDapp
-import com.radixdlt.sargon.AuthorizedDapps
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
-import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
@@ -26,30 +22,24 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ProfileNetwork
-import com.radixdlt.sargon.ProfileNetworks
 import com.radixdlt.sargon.ProfileSnapshotVersion
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionPreferences
+import com.radixdlt.sargon.extensions.Accounts
+import com.radixdlt.sargon.extensions.AuthorizedDapps
+import com.radixdlt.sargon.extensions.EntityFlags
+import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.HDPathValue
+import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
-import com.radixdlt.sargon.extensions.append
+import com.radixdlt.sargon.extensions.ProfileNetworks
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
-import com.radixdlt.sargon.extensions.contains
-import com.radixdlt.sargon.extensions.get
-import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
-import com.radixdlt.sargon.extensions.remove
-import com.radixdlt.sargon.extensions.removeByAddress
-import com.radixdlt.sargon.extensions.removeById
-import com.radixdlt.sargon.extensions.size
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
@@ -64,7 +54,7 @@ val Profile.currentGateway: Gateway
 val Profile.currentNetwork: ProfileNetwork?
     get() {
         val currentGateway = currentGateway
-        return networks.getBy(currentGateway.network.id)
+        return networks.asIdentifiable().getBy(currentGateway.network.id)
     }
 
 val Profile.isCurrentNetworkMainnet: Boolean
@@ -75,7 +65,7 @@ val Profile.activeEntitiesOnCurrentNetwork: List<ProfileEntity>
         activePersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
-    get() = currentNetwork?.accounts()?.notHiddenAccounts().orEmpty()
+    get() = currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
 
 fun Profile.activeAccountOnCurrentNetwork(withAddress: AccountAddress): Account? =
     activeAccountsOnCurrentNetwork.firstOrNull { account ->
@@ -83,13 +73,13 @@ fun Profile.activeAccountOnCurrentNetwork(withAddress: AccountAddress): Account?
     }
 
 val Profile.hiddenAccountsOnCurrentNetwork: List<Account>
-    get() = currentNetwork?.accounts()?.hiddenAccounts().orEmpty()
+    get() = currentNetwork?.accounts?.hiddenAccounts().orEmpty()
 
 val Profile.activePersonasOnCurrentNetwork: List<Persona>
-    get() = currentNetwork?.personas()?.notHiddenPersonas().orEmpty()
+    get() = currentNetwork?.personas?.notHiddenPersonas().orEmpty()
 
 val Profile.hiddenPersonasOnCurrentNetwork: List<Persona>
-    get() = currentNetwork?.personas()?.hiddenPersonas().orEmpty()
+    get() = currentNetwork?.personas?.hiddenPersonas().orEmpty()
 
 fun Profile.activePersonaOnCurrentNetwork(withAddress: IdentityAddress): Persona? =
     activePersonasOnCurrentNetwork.firstOrNull { persona ->
@@ -97,12 +87,12 @@ fun Profile.activePersonaOnCurrentNetwork(withAddress: IdentityAddress): Persona
     }
 
 val Profile.deviceFactorSources: List<FactorSource.Device>
-    get() = factorSources().filterIsInstance<FactorSource.Device>()
+    get() = factorSources.filterIsInstance<FactorSource.Device>()
 
 val Profile.ledgerFactorSources: List<FactorSource.Ledger>
-    get() = factorSources().filterIsInstance<FactorSource.Ledger>()
+    get() = factorSources.filterIsInstance<FactorSource.Ledger>()
 
-fun Profile.factorSourceById(id: FactorSourceId) = factorSources.get(id)
+fun Profile.factorSourceById(id: FactorSourceId) = factorSources.asIdentifiable().getBy(id)
 
 private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() {
@@ -147,25 +137,25 @@ fun Profile.addAccounts(
     accounts: List<Account>,
     onNetwork: NetworkId
 ): Profile {
-    val networkExist = networks().any { onNetwork == it.id }
+    val networkExist = networks.any { onNetwork == it.id }
     val newNetworks = if (networkExist) {
-        networks().mapWhen(predicate = { network -> network.id == onNetwork }) { network ->
+        networks.mapWhen(predicate = { network -> network.id == onNetwork }) { network ->
             ProfileNetwork(
                 id = network.id,
-                accounts = Accounts.init(network.accounts() + accounts),
+                accounts = Accounts(network.accounts + accounts).asList(),
                 authorizedDapps = network.authorizedDapps,
                 personas = network.personas
             )
         }
     } else {
-        networks() + ProfileNetwork(
+        networks + ProfileNetwork(
             id = onNetwork,
-            accounts = Accounts.init(accounts),
-            authorizedDapps = AuthorizedDapps.init(),
-            personas = Personas.init()
+            accounts = Accounts(accounts).asList(),
+            authorizedDapps = AuthorizedDapps().asList(),
+            personas = Personas().asList()
         )
     }
-    val updatedProfile = copy(networks = ProfileNetworks.init(newNetworks))
+    val updatedProfile = copy(networks = ProfileNetworks(newNetworks).asList())
     return updatedProfile.withUpdatedContentHint()
 }
 
@@ -173,11 +163,11 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
     entity: ProfileEntity,
     authSigningFactorInstance: HierarchicalDeterministicFactorInstance
 ): Profile {
-    val updatedNetworks = networks().mapWhen(predicate = { network -> network.id == entity.networkId }) { network ->
+    val updatedNetworks = networks.mapWhen(predicate = { network -> network.id == entity.networkId }) { network ->
         when (entity) {
             is ProfileEntity.AccountEntity -> network.copy(
-                accounts = Accounts.init(
-                    network.accounts().mapWhen(predicate = { it.address == entity.accountAddress }) { account ->
+                accounts = Accounts(
+                    network.accounts.mapWhen(predicate = { it.address == entity.accountAddress }) { account ->
                         val updatedSecurityState = when (val state = account.securityState) {
                             is EntitySecurityState.Unsecured -> state.copy(
                                 value = state.value.copy(authenticationSigning = authSigningFactorInstance)
@@ -185,12 +175,12 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                         }
                         account.copy(securityState = updatedSecurityState)
                     }
-                )
+                ).asList()
             )
 
             is ProfileEntity.PersonaEntity -> network.copy(
-                personas = Personas.init(
-                    network.personas().mapWhen(predicate = { it.address == entity.identityAddress }) { persona ->
+                personas = Personas(
+                    network.personas.mapWhen(predicate = { it.address == entity.identityAddress }) { persona ->
                         val updatedSecurityState = when (val state = persona.securityState) {
                             is EntitySecurityState.Unsecured -> state.copy(
                                 value = state.value.copy(authenticationSigning = authSigningFactorInstance)
@@ -198,38 +188,38 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                         }
                         persona.copy(securityState = updatedSecurityState)
                     }
-                )
+                ).asList()
             )
         }
     }
-    return copy(networks = ProfileNetworks.init(updatedNetworks))
+    return copy(networks = ProfileNetworks(updatedNetworks).asList())
 }
 
 fun Profile.updateThirdPartyDepositSettings(
     account: Account,
     thirdPartyDeposits: ThirdPartyDeposits
 ): Profile {
-    val updatedNetworks = networks().mapWhen(predicate = { network -> network.id == account.networkId }) { network ->
-        val updatedAccounts = network.accounts().mapWhen(predicate = { it.address == account.address }) { account ->
+    val updatedNetworks = networks.mapWhen(predicate = { network -> network.id == account.networkId }) { network ->
+        val updatedAccounts = network.accounts.mapWhen(predicate = { it.address == account.address }) { account ->
             account.copy(onLedgerSettings = account.onLedgerSettings.copy(thirdPartyDeposits = thirdPartyDeposits))
         }
-        network.copy(accounts = Accounts.init(updatedAccounts))
+        network.copy(accounts = Accounts(updatedAccounts).asList())
     }
-    return copy(networks = ProfileNetworks.init(updatedNetworks))
+    return copy(networks = ProfileNetworks(updatedNetworks).asList())
 }
 
 fun Profile.addNetworkIfDoesNotExist(
     onNetwork: NetworkId
-): Profile = if (networks().none { onNetwork == it.id }) {
+): Profile = if (networks.none { onNetwork == it.id }) {
     copy(
-        networks = ProfileNetworks.init(
-            networks() + ProfileNetwork(
+        networks = ProfileNetworks(
+            networks + ProfileNetwork(
                 id = onNetwork,
-                accounts = Accounts.init(),
-                authorizedDapps = AuthorizedDapps.init(),
-                personas = Personas.init()
+                accounts = Accounts().asList(),
+                authorizedDapps = AuthorizedDapps().asList(),
+                personas = Personas().asList()
             )
-        )
+        ).asList()
     ).withUpdatedContentHint()
 } else {
     this
@@ -240,8 +230,8 @@ fun Profile.nextAccountIndex(
     factorSourceId: FactorSourceId,
     derivationPathScheme: DerivationPathScheme,
 ): HDPathValue {
-    val forNetwork = networks.getBy(forNetworkId) ?: return 0u
-    val accountsControlledByFactorSource = forNetwork.accounts().filter {
+    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return 0u
+    val accountsControlledByFactorSource = forNetwork.accounts.filter {
         it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
     }
     return if (accountsControlledByFactorSource.isEmpty()) {
@@ -256,13 +246,13 @@ fun Profile.nextPersonaIndex(
     derivationPathScheme: DerivationPathScheme,
     factorSourceID: FactorSourceId? = null
 ): HDPathValue {
-    val network = networks().firstOrNull { it.id == forNetworkId } ?: return 0u
+    val network = networks.asIdentifiable().getBy(forNetworkId) ?: return 0u
 
-    val factorSource = factorSources().find {
+    val factorSource = factorSources.find {
         it.id == factorSourceID
     } ?: mainBabylonFactorSource ?: return 0u
 
-    val personasControlledByFactorSource = network.personas().filter {
+    val personasControlledByFactorSource = network.personas.filter {
         it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
     }
     return if (personasControlledByFactorSource.isEmpty()) {
@@ -278,15 +268,15 @@ fun Profile.updatePersona(
     val networkId = currentNetwork?.id ?: return this
 
     return copy(
-        networks = ProfileNetworks.init(
-            networks().mapWhen(predicate = { it.id == networkId }, mutation = { network ->
+        networks = ProfileNetworks(
+            networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
                 network.copy(
-                    personas = Personas.init(
-                        network.personas().mapWhen(predicate = { it.address == persona.address }, mutation = { persona })
-                    )
+                    personas = Personas(
+                        network.personas.mapWhen(predicate = { it.address == persona.address }, mutation = { persona })
+                    ).asList()
                 )
             })
-        )
+        ).asList()
     )
 }
 
@@ -294,61 +284,59 @@ fun Profile.addPersona(
     persona: Persona,
     onNetwork: NetworkId,
 ): Profile {
-    val personaExists = this.networks().find {
-        it.id == onNetwork
-    }?.personas?.invoke()?.any { it.address == persona.address } ?: false
+    val personaExists = persona in networks.asIdentifiable().getBy(onNetwork)?.personas.orEmpty().asIdentifiable()
 
     if (personaExists) {
         return this
     }
 
     return copy(
-        networks = ProfileNetworks.init(
-            networks().mapWhen(predicate = { it.id == onNetwork }, mutation = { network ->
-                network.copy(personas = Personas.init(network.personas() + persona))
+        networks = ProfileNetworks(
+            networks.mapWhen(predicate = { it.id == onNetwork }, mutation = { network ->
+                network.copy(personas = Personas(network.personas + persona).asList())
             })
-        )
+        ).asList()
     ).withUpdatedContentHint()
 }
 
 fun Profile.hidePersona(identityAddress: IdentityAddress): Profile {
     val networkId = currentNetwork?.id ?: return this
-    val updatedNetworks = networks().mapWhen(predicate = { it.id == networkId }, mutation = { network ->
-        val updatedAuthorizedDapps = network.authorizedDapps().mapWhen(predicate = { authorizedDapp ->
-            authorizedDapp.referencesToAuthorizedPersonas.getBy(identityAddress) != null
+    val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
+        val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
+            authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(identityAddress) != null
         }, mutation = { authorizedDapp ->
             authorizedDapp.copy(
-                referencesToAuthorizedPersonas = authorizedDapp.referencesToAuthorizedPersonas.removeByAddress(
+                referencesToAuthorizedPersonas = authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().removeBy(
                     identityAddress
-                )
+                ).asList()
             )
         })
         network.copy(
-            personas = Personas.init(
-                network.personas().mapWhen(
+            personas = Personas(
+                network.personas.mapWhen(
                     predicate = { it.address == identityAddress },
                     mutation = { persona ->
-                        persona.copy(flags = EntityFlags.init(persona.flags() + EntityFlag.DELETED_BY_USER))
+                        persona.copy(flags = persona.flags.asIdentifiable().append(EntityFlag.DELETED_BY_USER).asList())
                     }
                 )
-            ),
-            authorizedDapps = AuthorizedDapps.init(
-                updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas().isNotEmpty() }
-            )
+            ).asList(),
+            authorizedDapps = AuthorizedDapps(
+                updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
+            ).asList()
         )
     })
-    return copy(networks = ProfileNetworks.init(updatedNetworks)).withUpdatedContentHint()
+    return copy(networks = ProfileNetworks(updatedNetworks).asList()).withUpdatedContentHint()
 }
 
 fun Profile.hideAccount(accountAddress: AccountAddress): Profile {
     val networkId = currentNetwork?.id ?: return this
-    val updatedNetworks = networks().mapWhen(predicate = { it.id == networkId }, mutation = { network ->
-        val updatedAuthorizedDapps = network.authorizedDapps().mapWhen(predicate = { authorizedDapp ->
-            authorizedDapp.referencesToAuthorizedPersonas().any { reference ->
+    val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
+        val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
+            authorizedDapp.referencesToAuthorizedPersonas.any { reference ->
                 reference.sharedAccounts?.ids.orEmpty().any { it == accountAddress }
             }
         }, mutation = { authorizedDapp ->
-            val updatedReferences = authorizedDapp.referencesToAuthorizedPersonas().mapWhen(
+            val updatedReferences = authorizedDapp.referencesToAuthorizedPersonas.mapWhen(
                 predicate = { reference ->
                     reference.sharedAccounts?.ids.orEmpty().any { it == accountAddress }
                 },
@@ -362,47 +350,47 @@ fun Profile.hideAccount(accountAddress: AccountAddress): Profile {
                     )
                 }
             )
-            authorizedDapp.copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(updatedReferences))
+            authorizedDapp.copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(updatedReferences).asList())
         })
-        val updatedAccounts = network.accounts().mapWhen(
+        val updatedAccounts = network.accounts.mapWhen(
             predicate = { it.address == accountAddress },
             mutation = { account ->
-                account.copy(flags = EntityFlags.init(account.flags() + EntityFlag.DELETED_BY_USER))
+                account.copy(flags = EntityFlags(account.flags + EntityFlag.DELETED_BY_USER).asList())
             }
         )
         network.copy(
-            accounts = Accounts.init(updatedAccounts),
-            authorizedDapps = AuthorizedDapps.init(
-                updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas().isNotEmpty() }
-            )
+            accounts = Accounts(updatedAccounts).asList(),
+            authorizedDapps = AuthorizedDapps(
+                updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
+            ).asList()
         )
     })
-    return copy(networks = ProfileNetworks.init(updatedNetworks)).withUpdatedContentHint()
+    return copy(networks = ProfileNetworks(updatedNetworks).asList()).withUpdatedContentHint()
 }
 
 fun Profile.unHideAllEntities(): Profile {
     val networkId = currentNetwork?.id ?: return this
-    val updatedNetworks = networks().mapWhen(predicate = { it.id == networkId }, mutation = { network ->
+    val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
         network.copy(
-            personas = Personas.init(
-                network.personas().map { persona ->
-                    persona.copy(flags = EntityFlags.init(persona.flags() - EntityFlag.DELETED_BY_USER))
+            personas = Personas(
+                network.personas.map { persona ->
+                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.DELETED_BY_USER).asList())
                 }
-            ),
-            accounts = Accounts.init(
-                network.accounts().map { persona ->
-                    persona.copy(flags = EntityFlags.init(persona.flags() - EntityFlag.DELETED_BY_USER))
+            ).asList(),
+            accounts = Accounts(
+                network.accounts.map { persona ->
+                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.DELETED_BY_USER).asList())
                 }
-            )
+            ).asList()
         )
     })
-    return copy(networks = ProfileNetworks.init(updatedNetworks)).withUpdatedContentHint()
+    return copy(networks = ProfileNetworks(updatedNetworks).asList()).withUpdatedContentHint()
 }
 
 fun Profile.addP2PLink(
     p2pLink: P2pLink
 ): Profile {
-    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.append(p2pLink))
+    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.asIdentifiable().append(p2pLink).asList())
 
     return copy(appPreferences = newAppPreferences)
 }
@@ -410,7 +398,7 @@ fun Profile.addP2PLink(
 fun Profile.deleteP2PLink(
     p2pLink: P2pLink
 ): Profile {
-    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.removeById(p2pLink.id))
+    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.asIdentifiable().removeBy(p2pLink.id).asList())
 
     return copy(appPreferences = newAppPreferences)
 }
@@ -420,7 +408,7 @@ fun Profile.changeGatewayToNetworkId(
 ): Profile {
     if (currentGateway.network.id == networkId) return this
 
-    val gatewayToChange = appPreferences.gateways.other().find { it.network.id == networkId } ?: return this
+    val gatewayToChange = appPreferences.gateways.other.find { it.network.id == networkId } ?: return this
 
     return changeGateway(gatewayToChange)
 }
@@ -436,7 +424,7 @@ fun Profile.changeGateway(
 fun Profile.addGateway(
     gateway: Gateway
 ): Profile {
-    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.append(gateway))
+    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.asIdentifiable().append(gateway).asList())
     val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
 }
@@ -444,7 +432,7 @@ fun Profile.addGateway(
 fun Profile.deleteGateway(
     gateway: Gateway
 ): Profile {
-    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.remove(gateway))
+    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.asIdentifiable().remove(gateway).asList())
     val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
 }
@@ -489,28 +477,28 @@ fun Profile.renameAccountDisplayName(
     val renamedAccount = accountToRename.copy(displayName = newDisplayName)
 
     return copy(
-        networks = ProfileNetworks.init(
-            networks().mapWhen(
+        networks = ProfileNetworks(
+            networks.mapWhen(
                 predicate = { it.id == networkId },
                 mutation = { network ->
                     network.copy(
-                        accounts = Accounts.init(
-                            network.accounts().mapWhen(
+                        accounts = Accounts(
+                            network.accounts.mapWhen(
                                 predicate = { it == accountToRename },
                                 mutation = { renamedAccount }
                             )
-                        )
+                        ).asList()
                     )
                 }
             )
-        )
+        ).asList()
     )
 }
 
 fun Profile.updateLastUsed(id: FactorSourceId): Profile {
     return copy(
-        factorSources = FactorSources.init(
-            factorSources().mapWhen(predicate = { it.id == id }) { factorSource ->
+        factorSources = FactorSources(
+            factorSources.mapWhen(predicate = { it.id == id }) { factorSource ->
                 when (factorSource) {
                     is FactorSource.Device -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
@@ -521,14 +509,14 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     ).asGeneral()
                 }
             }
-        )
+        ).asList()
     )
 }
 
 fun Profile.addMainBabylonDeviceFactorSource(
     mainBabylonFactorSource: FactorSource.Device
 ): Profile {
-    val existingBabylonDeviceFactorSources = factorSources().map { factorSource ->
+    val existingBabylonDeviceFactorSources = factorSources.map { factorSource ->
         if (factorSource is FactorSource.Device && factorSource.supportsBabylon) {
             factorSource.copy(
                 value = factorSource.value.copy(
@@ -542,62 +530,63 @@ fun Profile.addMainBabylonDeviceFactorSource(
         }
     }
 
-    return copy(factorSources = FactorSources.init(listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources))
+    return copy(factorSources = FactorSources(listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources).asList())
 }
 
 fun Profile.nextAppearanceId(forNetworkId: NetworkId): AppearanceId {
-    val forNetwork = networks.getBy(forNetworkId) ?: return AppearanceId(0u)
+    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return AppearanceId(0u)
     return AppearanceId.from(offset = forNetwork.accounts.size.toUInt())
 }
 
 fun Profile.getAuthorizedDApp(dAppDefinitionAddress: AccountAddress): AuthorizedDapp? =
-    currentNetwork?.authorizedDapps?.getBy(dAppDefinitionAddress)
+    currentNetwork?.authorizedDapps?.asIdentifiable()?.getBy(dAppDefinitionAddress)
 
-fun Profile.getAuthorizedDApps(): List<AuthorizedDapp> = currentNetwork?.authorizedDapps().orEmpty()
+fun Profile.getAuthorizedDApps(): List<AuthorizedDapp> = currentNetwork?.authorizedDapps.orEmpty()
 
 fun Profile.createOrUpdateAuthorizedDApp(
     unverifiedAuthorizedDApp: AuthorizedDapp
 ): Profile {
-    val updatedNetworks = networks().mapWhen(
+    val updatedNetworks = networks.mapWhen(
         predicate = { it.id == unverifiedAuthorizedDApp.networkId },
         mutation = { network ->
-            val existingDApp = network.authorizedDapps.getBy(unverifiedAuthorizedDApp.dappDefinitionAddress)
+            val authorizedDapps = network.authorizedDapps.asIdentifiable()
+            val existingDApp = authorizedDapps.getBy(unverifiedAuthorizedDApp.dappDefinitionAddress)
             if (existingDApp == null) {
-                network.copy(authorizedDapps = network.authorizedDapps.append(unverifiedAuthorizedDApp))
+                network.copy(authorizedDapps = authorizedDapps.append(unverifiedAuthorizedDApp).asList())
             } else {
                 val authorizedDApp = network.validateAuthorizedPersonas(unverifiedAuthorizedDApp)
                 // Replace old authorizedDApp
-                val updatedDApps = network.authorizedDapps().mapWhen(
+                val updatedDApps = authorizedDapps.asList().mapWhen(
                     predicate = { it.dappDefinitionAddress == existingDApp.dappDefinitionAddress },
                     mutation = { authorizedDApp }
                 )
-                network.copy(authorizedDapps = AuthorizedDapps.init(updatedDApps))
+                network.copy(authorizedDapps = AuthorizedDapps(updatedDApps).asList())
             }
         }
     )
 
-    return copy(networks = ProfileNetworks.init(updatedNetworks))
+    return copy(networks = ProfileNetworks(updatedNetworks).asList())
 }
 
 fun Profile.deleteAuthorizedDApp(
     dApp: AuthorizedDapp
 ): Profile {
-    val updatedNetwork = networks().mapWhen(
+    val updatedNetwork = networks.mapWhen(
         predicate = { it.id == dApp.networkId },
         mutation = { network ->
-            network.copy(authorizedDapps = network.authorizedDapps.removeByAddress(dApp.dappDefinitionAddress))
+            network.copy(authorizedDapps = network.authorizedDapps.asIdentifiable().removeBy(dApp.dappDefinitionAddress).asList())
         }
     )
 
-    return copy(networks = ProfileNetworks.init(updatedNetwork))
+    return copy(networks = ProfileNetworks(updatedNetwork).asList())
 }
 
 private fun Profile.withUpdatedContentHint() = copy(
     header = header.copy(
         contentHint = ContentHint(
             numberOfNetworks = networks.size.toUShort(),
-            numberOfAccountsOnAllNetworksInTotal = networks().sumOf { network -> network.accounts().notHiddenAccounts().size }.toUShort(),
-            numberOfPersonasOnAllNetworksInTotal = networks().sumOf { network -> network.personas().notHiddenPersonas().size }.toUShort()
+            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.notHiddenAccounts().size }.toUShort(),
+            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.notHiddenPersonas().size }.toUShort()
         )
     )
 )

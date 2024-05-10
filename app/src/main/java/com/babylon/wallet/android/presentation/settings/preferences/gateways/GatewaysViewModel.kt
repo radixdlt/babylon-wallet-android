@@ -14,6 +14,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.all
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isWellKnown
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -169,4 +170,7 @@ enum class GatewayAddFailure {
     AlreadyExist, ErrorWhileAdding
 }
 
-data class GatewayWrapper(val gateway: Gateway, val selected: Boolean)
+data class GatewayWrapper(val gateway: Gateway, val selected: Boolean) {
+
+    val canBeDeleted: Boolean = !gateway.isWellKnown
+}

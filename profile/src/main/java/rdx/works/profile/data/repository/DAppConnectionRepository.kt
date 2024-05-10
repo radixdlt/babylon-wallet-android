@@ -4,15 +4,10 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.PersonaDataEntryID
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
-import com.radixdlt.sargon.extensions.removeByAddress
-import com.radixdlt.sargon.extensions.updateOrAppend
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -21,6 +16,7 @@ import rdx.works.core.mapWhen
 import rdx.works.core.sargon.PersonaDataField
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.alreadyGrantedIds
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.createOrUpdateAuthorizedDApp
 import rdx.works.core.sargon.deleteAuthorizedDApp
 import rdx.works.core.sargon.ensurePersonaDataExist
@@ -73,7 +69,7 @@ interface DAppConnectionRepository {
     fun getAuthorizedDAppFlow(dAppDefinitionAddress: AccountAddress): Flow<AuthorizedDapp?>
     suspend fun deleteAuthorizedDApp(dAppDefinitionAddress: AccountAddress)
 
-    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryID>)
+    suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryId>)
 }
 
 @Suppress("TooManyFunctions")
@@ -118,7 +114,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         dAppDefinitionAddress: AccountAddress,
         personaAddress: IdentityAddress
     ): AuthorizedPersonaSimple? {
-        return getAuthorizedDApp(dAppDefinitionAddress)?.referencesToAuthorizedPersonas?.getBy(personaAddress)
+        return getAuthorizedDApp(dAppDefinitionAddress)?.referencesToAuthorizedPersonas?.asIdentifiable()?.getBy(personaAddress)
     }
 
     override suspend fun dAppAuthorizedPersonaAccountAddresses(
@@ -129,7 +125,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     ): List<AccountAddress> {
         val sharedAccounts = getAuthorizedDApp(
             dAppDefinitionAddress
-        )?.referencesToAuthorizedPersonas?.getBy(personaAddress)?.sharedAccounts
+        )?.referencesToAuthorizedPersonas?.asIdentifiable()?.getBy(personaAddress)?.sharedAccounts
         return if (quantifier == sharedAccounts?.request?.quantifier && numberOfAccounts == sharedAccounts.request.quantity.toInt()) {
             sharedAccounts.ids
         } else {
@@ -147,7 +143,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         val personaData = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(personaAddress)).personaData
         val alreadyGrantedIds = getAuthorizedDApp(
             dAppDefinitionAddress
-        )?.referencesToAuthorizedPersonas?.getBy(personaAddress)?.sharedPersonaData?.alreadyGrantedIds.orEmpty()
+        )?.referencesToAuthorizedPersonas?.asIdentifiable()?.getBy(personaAddress)?.sharedPersonaData?.alreadyGrantedIds.orEmpty()
         alreadyGrantedIds.forEach { entryId ->
             val entryKind = personaData.getDataFieldKind(entryId)
             if (requestedFieldsMutableMap.containsKey(entryKind)) {
@@ -167,21 +163,21 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         sharedAccounts: SharedToDappWithPersonaAccountAddresses
     ): AuthorizedDapp {
         val dApp = getAuthorizedDApp(dAppDefinitionAddress)
-        val persona = dApp?.referencesToAuthorizedPersonas?.getBy(personaAddress)
+        val persona = dApp?.referencesToAuthorizedPersonas?.asIdentifiable()?.getBy(personaAddress)
         requireNotNull(persona)
         return dApp.copy(
-            referencesToAuthorizedPersonas = dApp.referencesToAuthorizedPersonas.updateOrAppend(
+            referencesToAuthorizedPersonas = dApp.referencesToAuthorizedPersonas.asIdentifiable().updateOrAppend(
                 persona.copy(sharedAccounts = sharedAccounts)
-            )
+            ).asList()
         )
     }
 
     override suspend fun deletePersonaForDApp(dAppDefinitionAddress: AccountAddress, personaAddress: IdentityAddress) {
         getAuthorizedDApp(dAppDefinitionAddress)?.let { dApp ->
             val updatedDapp = dApp.copy(
-                referencesToAuthorizedPersonas = dApp.referencesToAuthorizedPersonas.removeByAddress(personaAddress)
+                referencesToAuthorizedPersonas = dApp.referencesToAuthorizedPersonas.asIdentifiable().removeBy(personaAddress).asList()
             )
-            if (updatedDapp.referencesToAuthorizedPersonas().isEmpty()) {
+            if (updatedDapp.referencesToAuthorizedPersonas.isEmpty()) {
                 deleteAuthorizedDApp(dApp.dappDefinitionAddress)
             } else {
                 updateOrCreateAuthorizedDApp(updatedDapp)
@@ -189,16 +185,16 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryID>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryId>) {
         getAuthorizedDAppsByPersona(personaAddress).firstOrNull()?.forEach { dApp ->
             val updatedDApp = dApp.copy(
-                referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
-                    dApp.referencesToAuthorizedPersonas().mapWhen(
+                referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
+                    dApp.referencesToAuthorizedPersonas.mapWhen(
                         predicate = { it.identityAddress == personaAddress }
                     ) { authorizedPersona ->
                         authorizedPersona.ensurePersonaDataExist(existingFieldIds)
                     }
-                )
+                ).asList()
             )
             updateOrCreateAuthorizedDApp(updatedDApp)
         }
@@ -207,7 +203,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     override fun getAuthorizedDAppsByPersona(personaAddress: IdentityAddress): Flow<List<AuthorizedDapp>> {
         return getAuthorizedDApps().map { authorizedDapps ->
             authorizedDapps.filter { dApp ->
-                dApp.referencesToAuthorizedPersonas.getBy(personaAddress) != null
+                dApp.referencesToAuthorizedPersonas.asIdentifiable().getBy(personaAddress) != null
             }
         }
     }

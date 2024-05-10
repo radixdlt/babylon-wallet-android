@@ -15,11 +15,9 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.Accounts
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.Accounts
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -217,7 +215,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 generateProfileUseCase.derived(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
-                    accounts = Accounts.init(accounts)
+                    accounts = Accounts(accounts)
                 )
                 sendEvent(Event.RecoverComplete)
             } else {

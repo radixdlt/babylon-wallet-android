@@ -26,7 +26,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -137,7 +136,7 @@ private fun TotalBalanceContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        val shouldShowContentColor = (fiatPrice != null && isPriceVisible && !fiatPrice.price.isZero)
+        val shouldShowContentColor = (fiatPrice != null && isPriceVisible && !fiatPrice.isZero)
         Text(
             modifier = Modifier.weight(1f, fill = false),
             text = annotatedFormat,

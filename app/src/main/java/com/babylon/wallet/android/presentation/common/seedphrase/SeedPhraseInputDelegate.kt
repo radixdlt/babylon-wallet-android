@@ -140,15 +140,26 @@ class SeedPhraseInputDelegate(
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
     ) : UiState {
 
-        private val seedPhraseInputValid: Boolean
+        private val isInputEmpty: Boolean
+            get() = seedPhraseWords.all { it.state == SeedPhraseWord.State.Empty }
+
+        private val isSeedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
 
-        fun isSeedPhraseValid(): Boolean {
-            val mnemonic = runCatching {
-                Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
-            }.getOrNull()
+        fun shouldDisplayInvalidSeedPhraseWarning(): Boolean {
+            if (isInputEmpty) {
+                return false
+            }
+            return !isValidSeedPhrase()
+        }
 
-            return seedPhraseInputValid && mnemonic != null
+        fun isValidSeedPhrase(): Boolean {
+            if (isInputEmpty) {
+                return false
+            }
+            return isSeedPhraseInputValid && runCatching {
+                Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
+            }.getOrNull() != null
         }
 
         fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(

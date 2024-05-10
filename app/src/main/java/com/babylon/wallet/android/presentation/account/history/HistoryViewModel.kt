@@ -514,8 +514,7 @@ sealed interface HistoryItem {
     }
 
     data class Transaction(val transactionItem: TransactionHistoryItem) : HistoryItem {
-        override val dateTime: ZonedDateTime?
-            get() = transactionItem.timestamp?.atZone(ZoneId.systemDefault())
+        override val dateTime: ZonedDateTime? = transactionItem.timestamp?.atZone(ZoneId.systemDefault())
 
         override val key: String = transactionItem.txId
     }

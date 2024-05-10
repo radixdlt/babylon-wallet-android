@@ -14,18 +14,15 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.PersonaDataEntryEmailAddress
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
 import com.radixdlt.sargon.PersonaDataIdentifiedName
 import com.radixdlt.sargon.PersonaDataNameVariant
-import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.extensions.Personas
+import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -39,6 +36,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
@@ -53,11 +51,11 @@ internal class PersonaDataOngoingViewModelTest {
     private val savedStateHandle = mockk<SavedStateHandle>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
-        val network = it.networks.getBy(NetworkId.MAINNET)!!.let { network ->
-            val persona = network.personas().first().copy(
+        val network = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.let { network ->
+            val persona = network.personas.first().copy(
                 personaData = PersonaData(
                     name = PersonaDataIdentifiedName(
-                        id = PersonaDataEntryID.randomUUID(),
+                        id = PersonaDataEntryId.randomUUID(),
                         value = PersonaDataEntryName(
                             variant = PersonaDataNameVariant.WESTERN,
                             familyName = "",
@@ -68,7 +66,7 @@ internal class PersonaDataOngoingViewModelTest {
                     emailAddresses = CollectionOfEmailAddresses(
                         listOf(
                             PersonaDataIdentifiedEmailAddress(
-                                id = PersonaDataEntryID.randomUUID(),
+                                id = PersonaDataEntryId.randomUUID(),
                                 value = PersonaDataEntryEmailAddress("test@test.pl")
                             )
                         )
@@ -77,11 +75,11 @@ internal class PersonaDataOngoingViewModelTest {
                 )
             )
 
-            network.copy(personas = Personas.init(persona))
+            network.copy(personas = Personas(persona).asList())
         }
-        it.copy(networks = ProfileNetworks.init(network))
+        it.copy(networks = ProfileNetworks(network).asList())
     }
-    private val samplePersona = profile.currentNetwork!!.personas().first()
+    private val samplePersona = profile.currentNetwork!!.personas.first()
 
     fun initVM(): PersonaDataOngoingViewModel {
         return PersonaDataOngoingViewModel(

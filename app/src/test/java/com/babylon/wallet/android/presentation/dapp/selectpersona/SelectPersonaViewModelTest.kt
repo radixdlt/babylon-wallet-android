@@ -7,24 +7,20 @@ import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
 import com.radixdlt.sargon.AuthorizedDapp
-import com.radixdlt.sargon.AuthorizedDapps
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
 import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.extensions.AuthorizedDapps
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.atLeast
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.updateOrAppend
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.every
@@ -38,6 +34,7 @@ import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
@@ -52,32 +49,34 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
 
     private val dApp = DApp.sampleMainnet()
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
-        val mainnet = it.networks.getBy(NetworkId.MAINNET)!!
-        val samplePersonas = mainnet.personas()
+        val mainnet = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
+        val samplePersonas = mainnet.personas
         it.copy(
-            networks = it.networks.updateOrAppend(
-                mainnet.copy(authorizedDapps = AuthorizedDapps.init(
-                    AuthorizedDapp(
-                        networkId = dApp.dAppAddress.networkId,
-                        dappDefinitionAddress = dApp.dAppAddress,
-                        displayName = dApp.name,
-                        referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
-                            AuthorizedPersonaSimple(
-                                identityAddress = samplePersonas[0].address,
-                                sharedPersonaData = SharedPersonaData(null, null, null),
-                                lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
-                                sharedAccounts = SharedToDappWithPersonaAccountAddresses(
-                                    request = RequestedQuantity.atLeast(1),
-                                    ids = listOf(mainnet.accounts().first().address)
+            networks = it.networks.asIdentifiable().updateOrAppend(
+                mainnet.copy(
+                    authorizedDapps = AuthorizedDapps(
+                        AuthorizedDapp(
+                            networkId = dApp.dAppAddress.networkId,
+                            dappDefinitionAddress = dApp.dAppAddress,
+                            displayName = dApp.name,
+                            referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
+                                AuthorizedPersonaSimple(
+                                    identityAddress = samplePersonas[0].address,
+                                    sharedPersonaData = SharedPersonaData(null, null, null),
+                                    lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
+                                    sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                                        request = RequestedQuantity.atLeast(1),
+                                        ids = listOf(mainnet.accounts.first().address)
+                                    )
                                 )
-                            )
+                            ).asList()
                         )
-                    )
-                ))
-            )
+                    ).asList()
+                )
+            ).asList()
         )
     }
-    private val authorizedDapp = profile.currentNetwork!!.authorizedDapps().first()
+    private val authorizedDapp = profile.currentNetwork!!.authorizedDapps.first()
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
         this.savedDApp = authorizedDapp
         state = DAppConnectionRepositoryFake.InitialState.SavedDapp

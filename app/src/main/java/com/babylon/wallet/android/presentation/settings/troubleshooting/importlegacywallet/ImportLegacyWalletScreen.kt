@@ -829,10 +829,10 @@ private fun VerifyWithYourSeedPhrasePage(
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
 
-        val isSeedPhraseValid = remember(seedPhraseInputState) {
-            seedPhraseInputState.isSeedPhraseValid()
+        val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseInputState) {
+            seedPhraseInputState.shouldDisplayInvalidSeedPhraseWarning()
         }
-        if (!isSeedPhraseValid) {
+        if (shouldDisplayInvalidSeedPhraseWarning) {
             RedWarningText(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -847,7 +847,7 @@ private fun VerifyWithYourSeedPhrasePage(
             },
             modifier = Modifier.fillMaxWidth(),
             throttleClicks = true,
-            enabled = isSeedPhraseValid
+            enabled = seedPhraseInputState.isValidSeedPhrase()
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }

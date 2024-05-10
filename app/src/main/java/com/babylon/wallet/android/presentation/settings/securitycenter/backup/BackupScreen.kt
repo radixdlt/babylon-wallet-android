@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -475,7 +476,7 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange1.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
@@ -518,7 +519,7 @@ private fun BackupStatusSection(title: String, subtitle: String, backupState: Ba
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Icon(
-                painter = painterResource(id = DSR.ic_check_circle),
+                painter = painterResource(id = if (backupState.isWarningVisible) DSR.ic_warning_error else DSR.ic_check_circle),
                 tint = statusColor,
                 contentDescription = null
             )
@@ -690,7 +691,7 @@ private fun EncryptSheet(
             .navigationBarsPadding()
             .imePadding(),
         topBar = {
-            RadixCenteredTopAppBar(title = "", onBackClick = onBackClick)
+            RadixCenteredTopAppBar(title = stringResource(id = R.string.empty), onBackClick = onBackClick)
         },
         bottomBar = {
             RadixPrimaryButton(
@@ -707,11 +708,11 @@ private fun EncryptSheet(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.widthIn(max = 300.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupTitle),
                 textAlign = TextAlign.Center,
@@ -736,6 +737,7 @@ private fun EncryptSheet(
                 onValueChanged = onPasswordTyped,
                 value = state.password,
                 hint = stringResource(id = R.string.encryptProfileBackup_enterPasswordField_placeholder),
+                hintColor = RadixTheme.colors.gray2,
                 trailingIcon = {
                     IconButton(onClick = onPasswordRevealToggle) {
                         Icon(
@@ -775,6 +777,7 @@ private fun EncryptSheet(
                 onValueChanged = onPasswordConfirmTyped,
                 value = state.confirm,
                 hint = stringResource(id = R.string.encryptProfileBackup_confirmPasswordField_placeholder),
+                hintColor = RadixTheme.colors.gray2,
                 error = if (!state.passwordsMatch && !isConfirmFocused && state.confirm.isNotBlank()) {
                     stringResource(id = R.string.encryptProfileBackup_confirmPasswordField_error)
                 } else {

@@ -3,12 +3,10 @@ package rdx.works.profile.domain
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.factorSourceById
@@ -36,8 +34,8 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
                 if (existingFactorSource.value.common.cryptoParameters.supportsBabylon) {
                     profileRepository.updateProfile { profile ->
                         profile.copy(
-                            factorSources = FactorSources.init(
-                                profile.factorSources().mapWhen(predicate = {
+                            factorSources = FactorSources(
+                                profile.factorSources.mapWhen(predicate = {
                                     it.id == existing.id
                                 }, mutation = {
                                     existing.value.copy(
@@ -46,7 +44,7 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
                                         )
                                     ).asGeneral()
                                 })
-                            )
+                            ).asList()
                         )
                     }
                 }
@@ -64,7 +62,7 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
             if (existingFactorSource == null) {
                 profileRepository.updateProfile { profile ->
                     profile.copy(
-                        factorSources = FactorSources.init(profile.factorSources() + olympiaFactorSource)
+                        factorSources = FactorSources(profile.factorSources + olympiaFactorSource).asList()
                     )
                 }
             }

@@ -55,7 +55,6 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.isWellKnown
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
@@ -344,7 +343,7 @@ private fun GatewayCard(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        if (!gateway.gateway.isWellKnown) {
+        if (gateway.canBeDeleted) {
             IconButton(onClick = {
                 gatewayToDelete = gateway
             }) {

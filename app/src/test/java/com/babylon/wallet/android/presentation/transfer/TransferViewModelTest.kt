@@ -21,8 +21,6 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -39,6 +37,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -57,8 +56,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val mnemonicRepository = mockk<MnemonicRepository>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
-    private val fromAccount = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.first()!!
-    private val otherAccounts = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.drop(1).orEmpty()
+    private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
+    private val otherAccounts = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.drop(1).orEmpty()
     private val account1WithAssets = AccountWithAssets(
         account = otherAccounts[0],
         details = null,

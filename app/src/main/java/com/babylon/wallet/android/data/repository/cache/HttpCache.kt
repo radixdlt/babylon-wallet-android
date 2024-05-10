@@ -122,7 +122,7 @@ class HttpCacheImpl @Inject constructor(
 
         return CacheKeyData(
             method = request().method,
-            url = request().url.newBuilder().host(baseUrl.host).scheme(baseUrl.protocol).build(),
+            url = request().url.newBuilder().host(baseUrl.host).scheme(baseUrl.scheme).build(),
             body = request().body
         )
     }

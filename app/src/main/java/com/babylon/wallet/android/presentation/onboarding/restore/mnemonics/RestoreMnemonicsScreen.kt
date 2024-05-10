@@ -207,7 +207,7 @@ private fun RestoreMnemonicsContent(
                     }
 
                     val isSeedPhraseValid = remember(state.seedPhraseState) {
-                        state.seedPhraseState.isSeedPhraseValid()
+                        state.seedPhraseState.isValidSeedPhrase()
                     }
                     RadixPrimaryButton(
                         modifier = Modifier
@@ -430,10 +430,10 @@ private fun SeedPhraseView(
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
-        val isSeedPhraseInvalid = remember(state.seedPhraseState) {
-            !state.seedPhraseState.isSeedPhraseValid()
+        val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
+            state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
         }
-        if (isSeedPhraseInvalid) {
+        if (shouldDisplaySeedPhraseWarning) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RedWarningText(
                 modifier = Modifier.fillMaxWidth(),

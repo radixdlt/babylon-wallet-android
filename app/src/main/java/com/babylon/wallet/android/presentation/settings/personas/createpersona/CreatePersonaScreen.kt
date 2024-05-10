@@ -54,7 +54,7 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -108,11 +108,11 @@ fun CreatePersonaContent(
     onPersonaCreateClick: () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier,
-    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onAddFields: () -> Unit,
-    onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onDeleteField: (PersonaDataEntryId) -> Unit,
+    onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     onAddFieldSheetVisible: (Boolean) -> Unit
 ) {
@@ -223,12 +223,12 @@ private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
     personaName: PersonaDisplayNameFieldWrapper,
     currentFields: ImmutableList<PersonaFieldWrapper>,
-    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
-    onDeleteField: (PersonaDataEntryID) -> Unit,
+    onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
+    onDeleteField: (PersonaDataEntryId) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
 ) {
     LazyColumn(
