@@ -16,6 +16,8 @@
   <string name="homePage_visitDashboard_subtitle">Ready to get started using the Radix Network and your Wallet?</string>
   <string name="homePage_profileOlympiaError_title">SERIOUS ERROR - PLEASE READ</string>
   <string name="homePage_profileOlympiaError_subtitle">Your wallet is in a rare condition that must be resolved manually. Please email support at hello@radixdlt.com with subject line BDFS ERROR. Somebody will respond and help you resolve the issue safely.</string>
+  <string name="homePage_profileOlympiaError_affectedAccounts">Affected Accounts</string>
+  <string name="homePage_profileOlympiaError_affectedPersonas">Affected Personas</string>
   <string name="homePage_profileOlympiaError_okCountdown">OK (%d)</string>
   <string name="homePage_radixBanner_title">Start Using Radix</string>
   <string name="homePage_radixBanner_subtitle">Complete setting up your wallet and start staking, using dApps and more!</string>
@@ -165,6 +167,7 @@
   <string name="accountSettings_hideThisAccount">Hide This Account</string>
   <string name="accountSettings_hideAccountConfirmation">Are you sure you want to hide this account?</string>
   <string name="settings_title">Settings</string>
+  <string name="settings_authorizedDapps">Authorized dApps</string>
   <string name="settings_personas">Personas</string>
   <string name="settings_accountSecurityAndSettings">Account Security &amp; Settings</string>
   <string name="settings_appSettings">App Settings</string>
@@ -403,7 +406,7 @@ Only continue if you are linking to the **official Radix Connector browser exten
   <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
   <string name="transactionReview_insufficientBalance">Insufficient Balance</string>
-  <string name="transactionReview_feePayerRequiredMessage">Fee Payer account required</string>
+  <string name="transactionReview_feePayerRequiredMessage">Fee payer account required</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
   <string name="transactionReview_depositsHeading">Depositing To</string>
   <string name="transactionReview_sendingToHeading">Sending to</string>
@@ -689,16 +692,6 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="importOlympiaLedgerAccounts_continueButtonTitle">Continue</string>
   <string name="importOlympiaLedgerAccounts_accountCount">Accounts remaining to verify: %d</string>
   <string name="importOlympiaLedgerAccounts_instruction">Connect your next Ledger device, launch the Radix Babylon app on it, and tap Continue here.</string>
-  <string name="signing_withDeviceFactorSource_signTransaction">Sign transaction with phone</string>
-  <string name="signing_withDeviceFactorSource_idLabel">Factor Source ID: %s</string>
-  <string name="signing_useLedgerLabel_Ledger">Ledger</string>
-  <string name="signing_useLedgerLabel_lastUsed">Last used</string>
-  <string name="signing_useLedgerLabel_addedOn">Added on</string>
-  <string name="signing_signatureRequest_title">Signature Request</string>
-  <string name="signing_signatureRequest_body">Make sure the following **Ledger hardware wallet device** is connected to a computer with a linked Radix Connector browser extension, and the Radix Babylon app is launched on the device.</string>
-  <string name="signing_signatureRequest_instructions">Review and sign the transaction on the Ledger device to continue.</string>
-  <string name="signing_signatureSuccessful_title">Signed</string>
-  <string name="signing_signatureSuccessful_body">Signature successful</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_title">Link a Connector</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_message">To use a Ledger hardware wallet device, it must be connected to a computer running the Radix Connector browser extension.</string>
   <string name="ledgerHardwareDevices_linkConnectorAlert_continue">Continue</string>
@@ -924,7 +917,7 @@ Your old Accounts and Personas will still be listed, but you will have to enter 
   <string name="customizeNetworkFees_tipFieldLabel">Adjust Tip to Lock</string>
   <string name="customizeNetworkFees_tipFieldInfo">(%% of Execution + Finalization Fees)</string>
   <string name="customizeNetworkFees_warning_selectFeePayer">Please select a fee payer for the transaction fee</string>
-  <string name="customizeNetworkFees_warning_insufficientBalance">Insufficient balance to pay the transaction fee</string>
+  <string name="customizeNetworkFees_warning_insufficientBalance">Not enough XRD for transaction fee</string>
   <string name="accountRecoveryScan_inProgress_headerTitle">Scanning in progress</string>
   <string name="accountRecoveryScan_inProgress_headerSubtitle">Scanning for Accounts that have been included in at least one transaction, using:</string>
   <string name="accountRecoveryScan_inProgress_factorSourceBabylonSeedPhrase">**Babylon Seed Phrase**</string>
@@ -961,7 +954,6 @@ Your old Accounts and Personas will still be listed, but you will have to enter 
   <string name="accountRecoveryScan_chooseSeedPhrase_importMnemonicTitleBabylon">Enter Seed Phrase</string>
   <string name="accountRecoveryScan_chooseSeedPhrase_continueButton">Continue</string>
   <string name="accountRecoveryScan_olympiaLedgerNote">Note: You must still use the new *Radix Babylon* app on your Ledger device, not the old Radix Ledger app.</string>
-  <string name="accountRecoveryScan_derivingAccounts">Deriving Accounts</string>
   <string name="accountSecuritySettings_seedPhrases_title">Seed Phrases</string>
   <string name="accountSecuritySettings_ledgerHardwareWallets_title">Ledger Hardware Wallets</string>
   <string name="accountSecuritySettings_depositGuarantees_title">Default Deposit Guarantees</string>
@@ -979,14 +971,6 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="enterSeedPhrase_titleBabylonMain">Enter Main Seed Phrase</string>
   <string name="enterSeedPhrase_titleBabylon">Enter Babylon Seed Phrase</string>
   <string name="enterSeedPhrase_titleOlympia">Enter Olympia Seed Phrase</string>
-  <string name="derivePublicKeys_titleCreateAccount">Creating Account</string>
-  <string name="derivePublicKeys_titleCreatePersona">Creating Persona</string>
-  <string name="derivePublicKeys_titleImportLegacyAccount">Deriving Accounts</string>
-  <string name="derivePublicKeys_titleAccountRecoveryScan">Deriving Accounts</string>
-  <string name="derivePublicKeys_titleCreateAuthSignKeyForAccount">Creating Key</string>
-  <string name="derivePublicKeys_titleCreateAuthSignKeyForPersona">Creating Key</string>
-  <string name="derivePublicKeys_subtitleDevice">Authenticate to your phone to sign.</string>
-  <string name="derivePublicKeys_subtitleLedger">Make sure the following **Ledger hardware wallet device** is connected to a computer with a linked Radix Connector browser extension. Complete signing on the device.</string>
   <string name="recoverWalletWithoutProfile_start_headerTitle">Recover Control Without Backup</string>
   <string name="recoverWalletWithoutProfile_start_headerSubtitle">If you have no wallet backup in the cloud, or as an exported backup file, you still have other restore options.</string>
   <string name="recoverWalletWithoutProfile_start_babylonSectionTitle">I have my main “Babylon” 24-word seed phrase.</string>
@@ -1102,18 +1086,18 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="securityFactors_ledgerWallet_counterSingular">1 set</string>
   <string name="securityFactors_ledgerWallet_counterPlural">%d set</string>
   <string name="configurationBackup_title">Configuration Backup</string>
+  <string name="configurationBackup_heading">You need an up-to-date Configuration Backup to recover your Accounts and Personas if you lose access to them.
+\n\n
+Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_problem5WarningIOS">Automated Configuration Backup not working. Check internet connection and iCloud settings.</string>
   <string name="configurationBackup_problem5WarningAndroid">Automated Configuration Backup not working. Check internet connection and Google Drive settings.</string>
   <string name="configurationBackup_problem6Warning">To secure your wallet, turn on automated backups or manually export backup file.</string>
   <string name="configurationBackup_problem7Warning">Configuration Backup not up to date. Turn on automated backups or manually export backup file.</string>
-  <string name="configurationBackup_automated_heading">You need an up-to-date Configuration Backup to recover your Accounts and Personas if you lose access to them.
-\n\n
-Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_automated_text">Configuration Backup status</string>
   <string name="configurationBackup_automated_warning">Without an updated Configuration Backup, you cannot recover your Accounts and Personas.</string>
   <string name="configurationBackup_automated_toggleIOS">Automated iCloud Backups</string>
   <string name="configurationBackup_automated_toggleAndroid">Automated Google Drive Backups</string>
-  <string name="configurationBackup_automated_lastBackup">Last backup: %s ago</string>
+  <string name="configurationBackup_automated_lastBackup">Last backup: %s</string>
   <string name="configurationBackup_automated_loggedInAsAndroid">Logged in as:</string>
   <string name="configurationBackup_automated_disconnectAndroid">Disconnect</string>
   <string name="configurationBackup_automated_outdatedBackupIOS">Out-of-date backup still present on iCloud</string>
@@ -1126,7 +1110,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_automated_securityFactorsItemSubtitle">The list of Security Factors you need to recover your Accounts and Personas.</string>
   <string name="configurationBackup_automated_walletSettingsItemTitle">Wallet settings</string>
   <string name="configurationBackup_automated_walletSettingsItemSubtitle">Your general settings, such as trusted dApps, linked Connectors and wallet display settings.</string>
-  <string name="configurationBackup_manual_heading">Manual backup.</string>
+  <string name="configurationBackup_manual_heading">Manual backup</string>
   <string name="configurationBackup_manual_text">You can export your own Configuration Backup file and save it locally</string>
   <string name="configurationBackup_manual_warning">You’ll need to export a new Backup file each time you make a change in your wallet.</string>
   <string name="configurationBackup_manual_exportButton">Export Backup File</string>
@@ -1168,7 +1152,18 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="troubleshooting_contactSupport_subtitle">Connect directly with the Radix support team</string>
   <string name="troubleshooting_discord_title">Discord</string>
   <string name="troubleshooting_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
-  <string name="homePage_profileOlympiaError_affectedAccounts">Affected Accounts</string>
-  <string name="homePage_profileOlympiaError_affectedPersonas">Affected Personas</string>
+  <string name="addressDetails_qrCode">Address QR Code</string>
+  <string name="addressDetails_fullAddress">Full address</string>
+  <string name="addressDetails_copy">Copy</string>
+  <string name="addressDetails_enlarge">Enlarge</string>
+  <string name="addressDetails_share">Share</string>
+  <string name="addressDetails_viewOnDashboard">View on Radix Dashboard</string>
+  <string name="addressDetails_verifyOnLedger">Verify Address on Ledger Device</string>
+  <string name="addressDetails_qrCodeFailure">Could not create QR code</string>
+  <string name="timeFormatting_today">Today</string>
+  <string name="timeFormatting_yesterday">Yesterday</string>
+  <string name="timeFormatting_tomorrow">Tomorrow</string>
+  <string name="timeFormatting_ago">%s ago</string>
+  <string name="timeFormatting_justNow">Just now</string>
   <string name="linkedConnectors_oldQRErrorMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
 </resources>
