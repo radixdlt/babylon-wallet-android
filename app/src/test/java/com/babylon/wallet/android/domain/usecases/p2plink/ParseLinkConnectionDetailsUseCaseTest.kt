@@ -205,7 +205,7 @@ class ParseLinkConnectionDetailsUseCaseTest {
         return P2PLink(
             connectionPassword = RadixConnectPassword(Exactly32Bytes.init(password.hexToBagOfBytes())),
             displayName = name,
-            publicKey = PublicKey.Ed25519(Ed25519PublicKey(publicKey.hexToBagOfBytes())),
+            publicKey = PublicKey.Ed25519.init(publicKey.hexToBagOfBytes()),
             purpose = purpose
         )
     }

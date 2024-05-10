@@ -123,7 +123,7 @@ class MainViewModel @Inject constructor(
         handleAllIncomingRequests()
 
         viewModelScope.launch {
-            syncAccountsWithConnectorExtensionUseCase().collect()
+            syncAccountsWithConnectorExtensionUseCase()
         }
     }
 

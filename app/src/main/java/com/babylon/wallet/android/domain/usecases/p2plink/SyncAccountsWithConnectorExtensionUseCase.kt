@@ -6,23 +6,16 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInteraction
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
-import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.radixdlt.sargon.Hash
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.hash
@@ -41,11 +34,10 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector,
     private val peerdroidClient: PeerdroidClient,
     private val preferencesManager: PreferencesManager,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
 ) {
 
-    suspend operator fun invoke(): Flow<Unit> {
+    suspend operator fun invoke() {
         val connectionIdsFlow = peerdroidConnector.peerConnectionStatus
             .filter { connectionStatuses ->
                 connectionStatuses.isNotEmpty() &&
@@ -76,8 +68,10 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
             json.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
         }
 
-        return combine(connectionIdsFlow, accountListMessageFlow) { connectionIds, accountListMessage ->
-            val messageHash = accountListMessage.encodeToByteArray()
+        combine(connectionIdsFlow, accountListMessageFlow) { connectionIds, accountListMessage ->
+            connectionIds to accountListMessage
+        }.collect { connectionIdsAndMessage ->
+            val messageHash = connectionIdsAndMessage.second.encodeToByteArray()
                 .hash()
                 .hex
             val lastSyncedMessageHash = preferencesManager.lastSyncedAccountsWithCE.firstOrNull()
@@ -87,7 +81,7 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
             if (messageHash != lastSyncedMessageHash) {
                 Timber.d("Accounts sync with CE is required")
 
-                sendAccountListMessage(connectionIds, accountListMessage)
+                sendAccountListMessage(connectionIdsAndMessage.first, connectionIdsAndMessage.second)
                     .fold(
                         onSuccess = {
                             Timber.d("Successfully synced accounts with CE")
@@ -100,23 +94,20 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
             } else {
                 Timber.d("Accounts sync triggered, but nothing changed since last sync, ignoring..")
             }
-        }.flowOn(ioDispatcher)
+        }
     }
 
     private suspend fun sendAccountListMessage(connectionIds: List<String>, message: String): Result<Unit> {
-        return withContext(ioDispatcher) {
-            val jobs = connectionIds.map { connectionId ->
-                async { peerdroidClient.sendMessage(connectionId, message) }
-            }
-            val results = jobs.awaitAll()
+        val results = connectionIds.map { connectionId ->
+            peerdroidClient.sendMessage(connectionId, message)
+        }
 
-            if (results.all { it.isSuccess }) {
-                Result.success(Unit)
-            } else {
-                val resultException = results.firstNotNullOfOrNull { it.exceptionOrNull() }
-                    ?: Throwable("Failed to send message to all general purpose links")
-                Result.failure(resultException)
-            }
+        return if (results.all { it.isSuccess }) {
+            Result.success(Unit)
+        } else {
+            val resultException = results.firstNotNullOfOrNull { it.exceptionOrNull() }
+                ?: Throwable("Failed to send message to all general purpose links")
+            Result.failure(resultException)
         }
     }
 }
