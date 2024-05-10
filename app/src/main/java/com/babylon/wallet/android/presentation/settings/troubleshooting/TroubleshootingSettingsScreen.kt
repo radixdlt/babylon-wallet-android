@@ -76,21 +76,15 @@ private fun TroubleshootingSettingsContent(
                     item {
                         when (troubleshootingItem) {
                             TroubleshootingUiItem.RecoverySection -> {
-                                Text(
-                                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(id = R.string.troubleshooting_accountRecovery),
-                                    style = RadixTheme.typography.body1Link,
-                                    color = RadixTheme.colors.gray2
-                                )
+                                SectionHeader(title = stringResource(id = R.string.troubleshooting_accountRecovery))
                             }
 
                             TroubleshootingUiItem.SupportSection -> {
-                                Text(
-                                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = stringResource(id = R.string.troubleshooting_supportAndCommunity),
-                                    style = RadixTheme.typography.body1Link,
-                                    color = RadixTheme.colors.gray2
-                                )
+                                SectionHeader(title = stringResource(id = R.string.troubleshooting_supportAndCommunity))
+                            }
+
+                            TroubleshootingUiItem.ResetSection -> {
+                                SectionHeader(title = stringResource(id = R.string.troubleshooting_resetAccount))
                             }
 
                             is TroubleshootingUiItem.Setting -> {
@@ -132,6 +126,16 @@ private fun TroubleshootingSettingsContent(
             }
         }
     }
+}
+
+@Composable
+private fun SectionHeader(modifier: Modifier = Modifier, title: String) {
+    Text(
+        modifier = modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+        text = title,
+        style = RadixTheme.typography.body1Link,
+        color = RadixTheme.colors.gray2
+    )
 }
 
 @Preview(showBackground = true)

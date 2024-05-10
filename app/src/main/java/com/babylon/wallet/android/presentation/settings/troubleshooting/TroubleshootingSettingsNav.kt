@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
@@ -16,6 +17,7 @@ import com.babylon.wallet.android.presentation.settings.troubleshooting.accountr
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet.importLegacyWalletScreen
+import com.babylon.wallet.android.presentation.settings.troubleshooting.reset.resetWalletScreen
 
 const val ROUTE_TROUBLESHOOTING_GRAPH = "settings_troubleshooting_graph"
 const val ROUTE_TROUBLESHOOTING_SCREEN = "settings_troubleshooting_screen"
@@ -63,6 +65,7 @@ fun NavGraphBuilder.troubleshootingNavGraph(
                 when (item) {
                     SettingsItem.Troubleshooting.AccountRecovery -> navController.accountRecoveryScanSelection()
                     SettingsItem.Troubleshooting.ImportFromLegacyWallet -> navController.importLegacyWalletScreen()
+                    SettingsItem.Troubleshooting.FactoryReset -> navController.resetWalletScreen()
                     else -> {}
                 }
             }
@@ -78,6 +81,14 @@ fun NavGraphBuilder.troubleshootingNavGraph(
             },
             onConfirmSeedPhraseClick = { factorSourceId, mnemonicSize ->
                 navController.confirmSeedPhrase(factorSourceId, mnemonicSize)
+            }
+        )
+        resetWalletScreen(
+            onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            },
+            onBackClick = {
+                navController.popBackStack()
             }
         )
         accountRecoveryScanSelection(

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -30,7 +29,6 @@ import javax.inject.Inject
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
-    private val deleteWalletUseCase: DeleteWalletUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val googleSignInManager: GoogleSignInManager,
@@ -160,23 +158,6 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteWalletClick() {
-        _state.update { it.copy(deleteWalletDialogVisible = true) }
-    }
-
-    fun onDeleteWalletConfirm() {
-        _state.update { it.copy(deleteWalletDialogVisible = false) }
-
-        viewModelScope.launch {
-            deleteWalletUseCase()
-            sendEvent(Event.ProfileDeleted)
-        }
-    }
-
-    fun onDeleteWalletDeny() {
-        _state.update { it.copy(deleteWalletDialogVisible = false) }
-    }
-
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
@@ -185,7 +166,6 @@ class BackupViewModel @Inject constructor(
         val backupState: BackupState,
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
-        val deleteWalletDialogVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
         val canAccessSystemBackupSettings: Boolean = false,
         val isLoggedIn: Boolean = false
