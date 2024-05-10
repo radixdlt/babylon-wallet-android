@@ -6,7 +6,7 @@ import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.isValid
 import com.babylon.wallet.android.presentation.model.sortOrderInt
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -23,13 +23,13 @@ import rdx.works.core.sargon.fields
 interface PersonaEditable {
     val personaEditState: StateFlow<PersonaEditLogicState>
     fun setPersona(persona: Persona?, requiredFieldKinds: List<PersonaDataField.Kind> = emptyList())
-    fun onDeleteField(id: PersonaDataEntryID)
-    fun onFieldValueChanged(id: PersonaDataEntryID, value: PersonaDataField)
+    fun onDeleteField(id: PersonaDataEntryId)
+    fun onFieldValueChanged(id: PersonaDataEntryId, value: PersonaDataField)
     fun onDisplayNameChanged(value: String)
-    fun onSelectionChanged(id: PersonaDataEntryID, selected: Boolean)
+    fun onSelectionChanged(id: PersonaDataEntryId, selected: Boolean)
     fun onAddFields()
     fun validateInput()
-    fun onFieldFocusChanged(id: PersonaDataEntryID, focused: Boolean)
+    fun onFieldFocusChanged(id: PersonaDataEntryId, focused: Boolean)
     fun onPersonaDisplayNameFieldFocusChanged(focused: Boolean)
 }
 
@@ -64,7 +64,7 @@ class PersonaEditableImpl : PersonaEditable {
         }
     }
 
-    override fun onDeleteField(id: PersonaDataEntryID) {
+    override fun onDeleteField(id: PersonaDataEntryId) {
         _state.update { s ->
             val updatedFields = s.currentFields.filter {
                 it.id.toString() != id.toString()
@@ -77,7 +77,7 @@ class PersonaEditableImpl : PersonaEditable {
         validateInput()
     }
 
-    override fun onFieldValueChanged(id: PersonaDataEntryID, value: PersonaDataField) {
+    override fun onFieldValueChanged(id: PersonaDataEntryId, value: PersonaDataField) {
         _state.update { s ->
             s.copy(
                 currentFields = s.currentFields.mapWhen(predicate = { it.id == id }) {
@@ -88,7 +88,7 @@ class PersonaEditableImpl : PersonaEditable {
         validateInput()
     }
 
-    override fun onFieldFocusChanged(id: PersonaDataEntryID, focused: Boolean) {
+    override fun onFieldFocusChanged(id: PersonaDataEntryId, focused: Boolean) {
         _state.update { s ->
             s.copy(
                 currentFields = s.currentFields.mapWhen(predicate = { id == it.id }) {
@@ -122,7 +122,7 @@ class PersonaEditableImpl : PersonaEditable {
         validateInput()
     }
 
-    override fun onSelectionChanged(id: PersonaDataEntryID, selected: Boolean) {
+    override fun onSelectionChanged(id: PersonaDataEntryId, selected: Boolean) {
         _state.update { s ->
             val updated = s.fieldsToAdd.map {
                 if (it.id == id) {

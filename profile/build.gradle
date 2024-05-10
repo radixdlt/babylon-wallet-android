@@ -62,6 +62,10 @@ dependencies {
     //Timber
     implementation libs.timber
 
+    // For HttpUrl support
+    implementation platform(libs.okhttpBom)
+    implementation libs.okhttp
+
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
     testImplementation libs.coroutinesTest

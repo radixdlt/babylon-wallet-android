@@ -6,28 +6,24 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.ProfileNetwork
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
 import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.Timestamp
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
-import com.radixdlt.sargon.extensions.updateOrAppend
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import rdx.works.core.mapWhen
 
 fun AuthorizedDapp.hasAuthorizedPersona(personaAddress: IdentityAddress): Boolean {
-    return referencesToAuthorizedPersonas.getBy(personaAddress) != null
+    return referencesToAuthorizedPersonas.asIdentifiable().getBy(personaAddress) != null
 }
 
 fun AuthorizedDapp.updateAuthorizedDAppPersonas(
     authorizedDAppPersonas: List<AuthorizedPersonaSimple>
 ): AuthorizedDapp = copy(
-    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
-        authorizedDAppPersonas + referencesToAuthorizedPersonas()
-    )
+    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
+        authorizedDAppPersonas + referencesToAuthorizedPersonas
+    ).asList()
 )
 
 fun AuthorizedDapp.updateAuthorizedDAppPersonaFields(
@@ -35,23 +31,23 @@ fun AuthorizedDapp.updateAuthorizedDAppPersonaFields(
     personaData: PersonaData,
     requiredFields: Map<PersonaDataField.Kind, Int>
 ): AuthorizedDapp {
-    val updatedAuthPersonas = referencesToAuthorizedPersonas().mapWhen(
+    val updatedAuthPersonas = referencesToAuthorizedPersonas.mapWhen(
         predicate = { it.identityAddress == personaAddress },
         mutation = { persona ->
             val sharedPersonaData = personaData.toSharedPersonaData(requiredFields)
             persona.copy(sharedPersonaData = sharedPersonaData)
         }
     )
-    return copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(updatedAuthPersonas))
+    return copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(updatedAuthPersonas).asList())
 }
 
 fun AuthorizedDapp.addOrUpdateAuthorizedDAppPersona(
     persona: Persona,
     lastUsed: Timestamp
 ): AuthorizedDapp {
-    val existing = referencesToAuthorizedPersonas.getBy(persona.address)
+    val existing = referencesToAuthorizedPersonas.asIdentifiable().getBy(persona.address)
     val updatedAuthPersonas = if (existing != null) {
-        referencesToAuthorizedPersonas().toMutableList().apply {
+        referencesToAuthorizedPersonas.toMutableList().apply {
             val index = indexOf(existing)
             if (index != -1) {
                 removeAt(index)
@@ -76,22 +72,22 @@ fun AuthorizedDapp.addOrUpdateAuthorizedDAppPersona(
             )
         )
 
-        listOf(newAuthorizedPersona) + referencesToAuthorizedPersonas()
+        listOf(newAuthorizedPersona) + referencesToAuthorizedPersonas
     }
 
-    return copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(updatedAuthPersonas))
+    return copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(updatedAuthPersonas).asList())
 }
 
 fun AuthorizedDapp.updateDAppAuthorizedPersonaSharedAccounts(
     personaAddress: IdentityAddress,
     sharedAccounts: SharedToDappWithPersonaAccountAddresses
 ): AuthorizedDapp {
-    val persona = referencesToAuthorizedPersonas.getBy(personaAddress)
+    val persona = referencesToAuthorizedPersonas.asIdentifiable().getBy(personaAddress)
     requireNotNull(persona)
     return copy(
-        referencesToAuthorizedPersonas = referencesToAuthorizedPersonas.updateOrAppend(
-            authorizedPersonaSimple = persona.copy(sharedAccounts = sharedAccounts)
-        )
+        referencesToAuthorizedPersonas = referencesToAuthorizedPersonas.asIdentifiable().updateOrAppend(
+            element = persona.copy(sharedAccounts = sharedAccounts)
+        ).asList()
     )
 }
 
@@ -99,22 +95,20 @@ fun ProfileNetwork.validateAuthorizedPersonas(authorizedDApp: AuthorizedDapp): A
     require(id == authorizedDApp.networkId)
 
     // Validate that all Personas are known and that every Field.ID is known for each Persona.
-    for (personaNeedle in authorizedDApp.referencesToAuthorizedPersonas()) {
-        val persona = personas().first {
-            it.address == personaNeedle.identityAddress
-        }
+    for (personaNeedle in authorizedDApp.referencesToAuthorizedPersonas) {
+        val persona = personas.asIdentifiable().getBy(identifier = personaNeedle.identityAddress)
         val fieldIDNeedles = personaNeedle.sharedPersonaData.alreadyGrantedIds.toSet()
-        val fieldIDHaystack = persona.personaData.fieldIds.toSet()
+        val fieldIDHaystack = persona?.personaData?.fieldIds?.toSet().orEmpty()
 
         require(fieldIDHaystack.containsAll(fieldIDNeedles))
     }
 
     // Validate that all Accounts are known
-    val accountAddressNeedles = authorizedDApp.referencesToAuthorizedPersonas().flatMap {
+    val accountAddressNeedles = authorizedDApp.referencesToAuthorizedPersonas.flatMap {
         it.sharedAccounts?.ids.orEmpty()
     }.toSet()
 
-    val accountAddressHaystack = accounts().map { it.address }.toSet()
+    val accountAddressHaystack = accounts.map { it.address }.toSet()
 
     require(accountAddressHaystack.containsAll(accountAddressNeedles))
 

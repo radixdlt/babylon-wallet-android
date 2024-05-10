@@ -6,14 +6,10 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.C
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaConfirmationViewModel
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.updateOrAppend
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,6 +24,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -38,11 +35,11 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
     private val getProfileUseCase = Mockito.mock(GetProfileUseCase::class.java)
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).let {
-        val mainNetwork = it.networks.getBy(NetworkId.MAINNET)!!
-        val personas = Personas.init(mainNetwork.personas().take(1))
-        it.copy(networks = it.networks.updateOrAppend(mainNetwork.copy(personas = personas)))
+        val mainNetwork = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
+        val personas = Personas(mainNetwork.personas.take(1)).asList()
+        it.copy(networks = it.networks.asIdentifiable().updateOrAppend(mainNetwork.copy(personas = personas)).asList())
     }
-    private val persona = profile.networks.getBy(NetworkId.MAINNET)?.personas?.invoke()?.first()!!
+    private val persona = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.personas?.first()!!
 
     @Before
     override fun setUp() = runTest {

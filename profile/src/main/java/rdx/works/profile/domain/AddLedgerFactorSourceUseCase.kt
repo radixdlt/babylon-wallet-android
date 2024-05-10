@@ -2,10 +2,8 @@ package rdx.works.profile.domain
 
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.LedgerHardwareWalletModel
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.FactorSources
 import kotlinx.coroutines.flow.first
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.init
@@ -35,7 +33,7 @@ class AddLedgerFactorSourceUseCase @Inject constructor(
             name = name.orEmpty() // it should not be null
         )
 
-        val updatedProfile = profile.copy(factorSources = FactorSources.init(profile.factorSources() + ledgerFactorSource))
+        val updatedProfile = profile.copy(factorSources = FactorSources(profile.factorSources + ledgerFactorSource).asList())
         profileRepository.saveProfile(updatedProfile)
         return AddLedgerFactorSourceResult.Added(ledgerFactorSource)
     }

@@ -1,11 +1,11 @@
 package rdx.works.core.sargon
 
 import com.radixdlt.sargon.AuthorizedPersonaSimple
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.SharedToDappWithPersonaIDsOfPersonaDataEntries
 
 fun AuthorizedPersonaSimple.ensurePersonaDataExist(
-    existingFieldIds: List<PersonaDataEntryID>
+    existingFieldIds: List<PersonaDataEntryId>
 ): AuthorizedPersonaSimple {
     return copy(
         sharedPersonaData = sharedPersonaData.copy(
@@ -17,5 +17,5 @@ fun AuthorizedPersonaSimple.ensurePersonaDataExist(
 }
 
 private fun SharedToDappWithPersonaIDsOfPersonaDataEntries.removeNonExistingIn(
-    existingIds: List<PersonaDataEntryID>
+    existingIds: List<PersonaDataEntryId>
 ): SharedToDappWithPersonaIDsOfPersonaDataEntries = copy(ids = ids.filter { it in existingIds })

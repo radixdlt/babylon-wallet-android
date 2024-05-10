@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.P2pLink
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -40,7 +39,7 @@ class LinkedConnectorsViewModel @Inject constructor(
             getProfileUseCase.flow.map { it.appPreferences.p2pLinks }
                 .collect { p2pLinks ->
                     _state.update {
-                        it.copy(activeConnectors = p2pLinks().toPersistentList())
+                        it.copy(activeConnectors = p2pLinks.toPersistentList())
                     }
                 }
         }

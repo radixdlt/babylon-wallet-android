@@ -30,8 +30,6 @@ import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.perRecipientTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
@@ -51,6 +49,7 @@ import org.junit.Test
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.asIdentifiable
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -118,8 +117,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     fun `transaction approval success`() = runTest {
         mockManifestInput(manifestData = simpleXRDTransfer(testProfile))
         coEvery {
-            stateRepository.getOwnedXRD(testProfile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke().orEmpty())
-        } returns Result.success(testProfile.networks.getBy(NetworkId.MAINNET)?.accounts()?.associateWith { 10.toDecimal192() }.orEmpty())
+            stateRepository.getOwnedXRD(testProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty())
+        } returns Result.success(testProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.associateWith { 10.toDecimal192() }.orEmpty())
         val notarization = NotarizationResult(
             intentHash = IntentHash.sample(),
             compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
@@ -160,7 +159,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
 
     private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData =
-        with(withProfile.networks.getBy(NetworkId.MAINNET)?.accounts()?.first()!!) {
+        with(withProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!) {
             TransactionManifestData.from(
                 manifest = TransactionManifest.perRecipientTransfers(
                     transfers = PerRecipientAssetTransfers(

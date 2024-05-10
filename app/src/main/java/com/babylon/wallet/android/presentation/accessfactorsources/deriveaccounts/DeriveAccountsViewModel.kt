@@ -29,10 +29,8 @@ import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
-import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -42,6 +40,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.derivationPathEntityIndex
 import rdx.works.core.sargon.derivationPathScheme
@@ -303,8 +302,8 @@ class DeriveAccountsViewModel @Inject constructor(
         forNetworkId: NetworkId,
         factorSource: FactorSource
     ): Set<HDPathValue> {
-        val network = profile?.networks?.getBy(forNetworkId)
-        val usedIndices = network?.accounts()
+        val network = profile?.networks?.asIdentifiable()?.getBy(forNetworkId)
+        val usedIndices = network?.accounts
             ?.filter { account ->
                 account.factorSourceId == factorSource.id && account.derivationPathScheme == derivationPathScheme
             }

@@ -55,7 +55,7 @@ import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSh
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -99,11 +99,11 @@ private fun PersonaEditContent(
     state: PersonaEditUiState,
     onSave: () -> Unit,
     onAddFields: () -> Unit,
-    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
-    onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
+    onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
+    onDeleteField: (PersonaDataEntryId) -> Unit,
+    onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     setAddFieldSheetVisible: (Boolean) -> Unit
 ) {
@@ -258,12 +258,12 @@ private fun PersonaDetailList(
     persona: Persona,
     onAddField: () -> Unit,
     editedFields: ImmutableList<PersonaFieldWrapper>,
-    onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
+    onDeleteField: (PersonaDataEntryId) -> Unit,
+    onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
-    onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
     missingFields: ImmutableList<PersonaDataField.Kind>

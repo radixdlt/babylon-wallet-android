@@ -8,13 +8,10 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.extensions.Personas
+import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.every
@@ -28,6 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
@@ -41,12 +39,12 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     private val preferencesManager = mockk<PreferencesManager>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
-        val network = profile.networks.getBy(NetworkId.MAINNET)!!.let {
-            it.copy(personas = Personas.init(it.personas().first()))
+        val network = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.let {
+            it.copy(personas = Personas(it.personas.first()).asList())
         }
-        profile.copy(networks = ProfileNetworks.init(network))
+        profile.copy(networks = ProfileNetworks(network).asList())
     }
-    private val samplePersona = profile.currentNetwork!!.personas().first()
+    private val samplePersona = profile.currentNetwork!!.personas.first()
 
     override fun initVM(): PersonaDataOnetimeViewModel {
         return PersonaDataOnetimeViewModel(

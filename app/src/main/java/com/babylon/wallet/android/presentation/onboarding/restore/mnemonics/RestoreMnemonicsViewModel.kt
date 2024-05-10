@@ -18,7 +18,6 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
@@ -90,9 +89,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     private suspend fun Profile?.recoverableFactorSources(): List<RecoverableFactorSource> {
-        val allAccounts = this?.currentNetwork?.accounts().orEmpty()
+        val allAccounts = this?.currentNetwork?.accounts.orEmpty()
 
-        return this?.factorSources()
+        return this?.factorSources
             ?.filterIsInstance<FactorSource.Device>()
             ?.filter { !mnemonicRepository.mnemonicExist(it.value.id.asGeneral()) }
             ?.mapNotNull { factorSource ->

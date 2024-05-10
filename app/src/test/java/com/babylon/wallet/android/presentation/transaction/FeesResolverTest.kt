@@ -9,7 +9,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.NewEntities
-import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.formattedPlain
@@ -52,7 +52,7 @@ class FeesResolverTest {
     )
     private val notaryAndSigners = NotaryAndSigners(
         listOf(),
-        NotaryPrivateKey.secureRandom()
+        Curve25519SecretKey.secureRandom()
     )
 
     @Test

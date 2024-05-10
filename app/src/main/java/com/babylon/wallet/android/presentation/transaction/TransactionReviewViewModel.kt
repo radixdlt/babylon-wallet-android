@@ -30,7 +30,7 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DepositRule
-import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
@@ -249,7 +249,7 @@ class TransactionReviewViewModel @Inject constructor(
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
-        val ephemeralNotaryPrivateKey: NotaryPrivateKey = NotaryPrivateKey.secureRandom(),
+        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
     ) : UiState {

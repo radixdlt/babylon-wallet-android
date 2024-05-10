@@ -4,7 +4,7 @@ import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.PersonaDataEntryEmailAddress
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
 import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
@@ -79,8 +79,8 @@ data class IdentifiedEntry<T>(
     @SerialName("id")
     val id: String
 ) {
-    val uuid: PersonaDataEntryID
-        get() = PersonaDataEntryID.fromString(id)
+    val uuid: PersonaDataEntryId
+        get() = PersonaDataEntryId.fromString(id)
 
     companion object {
         fun <T> init(value: T): IdentifiedEntry<T> {
@@ -97,7 +97,7 @@ fun List<PersonaDataField>.toPersonaData(): PersonaData {
     return PersonaData(
         name = filterIsInstance<PersonaDataField.Name>().firstOrNull()?.let {
             PersonaDataIdentifiedName(
-                id = PersonaDataEntryID.randomUUID(),
+                id = PersonaDataEntryId.randomUUID(),
                 value = PersonaDataEntryName(
                     variant = when (it.variant) {
                         PersonaDataField.Name.Variant.Western -> PersonaDataNameVariant.WESTERN
@@ -112,14 +112,14 @@ fun List<PersonaDataField>.toPersonaData(): PersonaData {
         emailAddresses = filterIsInstance<PersonaDataField.Email>().let { field ->
             CollectionOfEmailAddresses(
                 collection = field.map {
-                    PersonaDataIdentifiedEmailAddress(id = PersonaDataEntryID.randomUUID(), value = PersonaDataEntryEmailAddress(it.value))
+                    PersonaDataIdentifiedEmailAddress(id = PersonaDataEntryId.randomUUID(), value = PersonaDataEntryEmailAddress(it.value))
                 }
             )
         },
         phoneNumbers = filterIsInstance<PersonaDataField.PhoneNumber>().let { field ->
             CollectionOfPhoneNumbers(
                 collection = field.map {
-                    PersonaDataIdentifiedPhoneNumber(id = PersonaDataEntryID.randomUUID(), value = PersonaDataEntryPhoneNumber(it.value))
+                    PersonaDataIdentifiedPhoneNumber(id = PersonaDataEntryId.randomUUID(), value = PersonaDataEntryPhoneNumber(it.value))
                 }
             )
         }

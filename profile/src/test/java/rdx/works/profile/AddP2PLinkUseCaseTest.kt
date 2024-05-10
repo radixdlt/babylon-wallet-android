@@ -1,20 +1,16 @@
 package rdx.works.profile
 
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.RadixConnectPassword
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.runBlocking
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
 import kotlin.random.Random
 import kotlin.test.Test
@@ -39,7 +35,7 @@ class AddP2PLinkUseCaseTest {
 
         assertEquals(
             P2pLink(connectionPassword = password, displayName = browser),
-            profileRepository.inMemoryProfileOrNull?.appPreferences?.p2pLinks()?.first()
+            profileRepository.inMemoryProfileOrNull?.appPreferences?.p2pLinks?.first()
         )
     }
 }

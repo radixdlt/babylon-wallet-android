@@ -19,6 +19,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.sargon.init
+import rdx.works.core.sargon.toUrl
 
 @VisibleForTesting
 const val ARG_NETWORK_URL = "arg_network_url"
@@ -38,7 +39,7 @@ internal class CreateAccountNavArgs(
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE),
-        savedStateHandle.get<String?>(ARG_NETWORK_URL)?.let { Url(it) },
+        savedStateHandle.get<String?>(ARG_NETWORK_URL)?.toUrl(),
         savedStateHandle.get<String?>(ARG_NETWORK_NAME_TO_SWITCH)?.let { NetworkId.init(name = it) },
     )
 }

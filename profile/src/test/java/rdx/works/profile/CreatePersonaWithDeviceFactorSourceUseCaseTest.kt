@@ -10,15 +10,14 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import rdx.works.core.sargon.addNetworkIfDoesNotExist
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -71,6 +70,6 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
             )
         )
 
-        assertEquals(newPersona, profileRepository.inMemoryProfileOrNull?.networks?.getBy(NetworkId.MAINNET)?.personas()?.first())
+        assertEquals(newPersona, profileRepository.inMemoryProfileOrNull?.networks?.asIdentifiable()?.getBy(NetworkId.MAINNET)?.personas?.first())
     }
 }

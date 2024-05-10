@@ -15,17 +15,15 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.re
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetException
-import com.radixdlt.sargon.AssetsExceptionList
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.DepositRule
-import com.radixdlt.sargon.DepositorsAllowList
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.AssetsExceptionList
+import com.radixdlt.sargon.extensions.DepositorsAllowList
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.thirdPartyDepositUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -123,8 +121,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits ?: return@launch
 
             val newDepositRule = state.value.updatedThirdPartyDepositSettings?.depositRule ?: currentThirdPartyDeposits.depositRule
-            val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList?.invoke().orEmpty()
-            val newDepositors = state.value.updatedThirdPartyDepositSettings?.depositorsAllowList?.invoke().orEmpty()
+            val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty()
+            val newDepositors = state.value.updatedThirdPartyDepositSettings?.depositorsAllowList.orEmpty()
 
             runCatching {
                 TransactionManifest.thirdPartyDepositUpdate(
@@ -136,8 +134,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     ),
                     to = ThirdPartyDeposits(
                         depositRule = newDepositRule,
-                        assetsExceptionList = AssetsExceptionList.init(newAssetExceptions),
-                        depositorsAllowList = DepositorsAllowList.init(newDepositors)
+                        assetsExceptionList = AssetsExceptionList(newAssetExceptions).asList(),
+                        depositorsAllowList = DepositorsAllowList(newDepositors).asList()
                     )
                 )
             }.mapCatching {
@@ -168,7 +166,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             }?.toPersistentList()
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
-                    depositorsAllowList = DepositorsAllowList.init(updatedDepositors?.mapNotNull { it.depositorAddress }.orEmpty())
+                    depositorsAllowList = DepositorsAllowList(updatedDepositors?.mapNotNull { it.depositorAddress }.orEmpty()).asList()
                 ),
                 deleteDialogState = DeleteDialogState.None,
                 allowedDepositorsUiModels = updatedDepositors
@@ -222,7 +220,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
         _state.update { state ->
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
-                    assetsExceptionList = AssetsExceptionList.init(updatedAssetExceptionsUiModels.mapNotNull { it.assetException })
+                    assetsExceptionList = AssetsExceptionList(updatedAssetExceptionsUiModels.mapNotNull { it.assetException }).asList()
                 ),
                 assetExceptionsUiModels = updatedAssetExceptionsUiModels,
                 assetExceptionToAdd = AssetType.ExceptionType()
@@ -243,7 +241,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     val updatedDepositors = (allowedDepositorsUiModels + newDepositors).distinct()
                     state.copy(
                         updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
-                            depositorsAllowList = DepositorsAllowList.init(updatedDepositors.mapNotNull { it.depositorAddress })
+                            depositorsAllowList = DepositorsAllowList(updatedDepositors.mapNotNull { it.depositorAddress }).asList()
                         ),
                         depositorToAdd = AssetType.DepositorType(),
                         allowedDepositorsUiModels = updatedDepositors.toPersistentList()
@@ -286,7 +284,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             state.copy(
                 assetExceptionsUiModels = updateAssetExceptions?.toPersistentList(),
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
-                    assetsExceptionList = AssetsExceptionList.init(updateAssetExceptions?.mapNotNull { it.assetException }.orEmpty())
+                    assetsExceptionList = AssetsExceptionList(updateAssetExceptions?.mapNotNull { it.assetException }.orEmpty()).asList()
                 ),
                 deleteDialogState = DeleteDialogState.None
             )
@@ -355,22 +353,22 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     state.copy(
                         account = account,
                         updatedThirdPartyDepositSettings = account.onLedgerSettings.thirdPartyDeposits,
-                        assetExceptionsUiModels = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.invoke()?.map {
+                        assetExceptionsUiModels = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.map {
                             AssetType.ExceptionType(
                                 assetAddress = it.address,
                                 rule = it.exceptionRule
                             )
                         }?.toPersistentList(),
-                        allowedDepositorsUiModels = account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.invoke()?.map {
+                        allowedDepositorsUiModels = account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.map {
                             AssetType.DepositorType(depositorAddress = it)
                         }?.toPersistentList()
                     )
                 }
                 checkIfSettingsChanged()
                 loadAssets(
-                    addresses = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.invoke()?.map {
+                    addresses = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.map {
                         it.address
-                    }?.toSet().orEmpty() + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.invoke()?.map {
+                    }?.toSet().orEmpty() + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.map {
                         it.resourceAddress
                     }?.toSet().orEmpty()
                 )

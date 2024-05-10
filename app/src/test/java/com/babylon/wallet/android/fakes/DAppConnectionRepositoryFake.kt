@@ -5,15 +5,14 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.PersonaDataEntryID
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
 import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.atLeast
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.flow.Flow
@@ -42,7 +41,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                     networkId = NetworkId.MAINNET,
                     dappDefinitionAddress = dApp.dAppAddress,
                     displayName = dApp.name,
-                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
                         AuthorizedPersonaSimple(
                             identityAddress = IdentityAddress.sampleMainnet(),
                             lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
@@ -52,7 +51,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             ),
                             sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    )
+                    ).asList()
                 )
                 savedDApp
             }
@@ -66,7 +65,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                     networkId = dAppAddress.networkId,
                     dappDefinitionAddress = dAppAddress,
                     displayName = name,
-                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
                         AuthorizedPersonaSimple(
                             identityAddress = IdentityAddress.sampleMainnet(),
                             lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
@@ -76,7 +75,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             ),
                             sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    )
+                    ).asList()
                 )
             },
             with(DApp.sampleMainnet.other()) {
@@ -84,7 +83,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                     networkId = dAppAddress.networkId,
                     dappDefinitionAddress = dAppAddress,
                     displayName = name,
-                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
                         AuthorizedPersonaSimple(
                             identityAddress = IdentityAddress.sampleMainnet(),
                             lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
@@ -94,7 +93,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             ),
                             sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    )
+                    ).asList()
                 )
             }
         ))
@@ -151,7 +150,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun deleteAuthorizedDApp(dAppDefinitionAddress: AccountAddress) {
     }
 
-    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryID>) {
+    override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: IdentityAddress, existingFieldIds: List<PersonaDataEntryId>) {
     }
 
 }

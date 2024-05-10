@@ -12,7 +12,6 @@ import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.SargonBuildInformation
 import com.radixdlt.sargon.extensions.Sargon
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -50,7 +49,7 @@ class SettingsViewModel @Inject constructor(
     ) { profile: Profile, securityProblems ->
         var mutated = defaultSettings
         val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
-        if (profile.appPreferences.p2pLinks().isEmpty() && LinkToConnector !in settingsItems) {
+        if (profile.appPreferences.p2pLinks.isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
         if (securityProblems.isNotEmpty()) {

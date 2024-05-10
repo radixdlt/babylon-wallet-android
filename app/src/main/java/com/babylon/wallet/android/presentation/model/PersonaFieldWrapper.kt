@@ -4,7 +4,7 @@ import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.PersonaDataEntryEmailAddress
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
 import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
@@ -21,7 +21,7 @@ data class PersonaFieldWrapper(
     val required: Boolean = false,
     val wasEdited: Boolean = false,
     val shouldDisplayValidationError: Boolean = false,
-    val id: PersonaDataEntryID = PersonaDataEntryID.randomUUID(),
+    val id: PersonaDataEntryId = PersonaDataEntryId.randomUUID(),
 ) {
     fun isPhoneNumber(): Boolean {
         return entry.value.kind == PersonaDataField.Kind.PhoneNumber

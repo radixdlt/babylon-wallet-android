@@ -58,6 +58,9 @@ dependencies {
     implementation libs.hilt
     ksp libs.hiltCompiler
 
+    implementation platform(libs.okhttpBom)
+    implementation libs.okhttp
+
     testImplementation libs.junit
     testRuntimeOnly libs.sargonDesktop
     androidTestImplementation libs.androidXJunit

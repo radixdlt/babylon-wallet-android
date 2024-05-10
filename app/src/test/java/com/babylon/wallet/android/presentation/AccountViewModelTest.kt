@@ -2,15 +2,12 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
-import com.babylon.wallet.android.presentation.account.AccountUiState
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.account.history.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -23,10 +20,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -44,7 +41,7 @@ class AccountViewModelTest {
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
     private val profile = Profile.sample()
-    private val account = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.first()!!
+    private val account = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
 
     @Before
     fun setUp() = runTest {

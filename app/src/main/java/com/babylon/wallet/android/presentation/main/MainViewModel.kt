@@ -19,8 +19,6 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.RadixConnectPassword
-import com.radixdlt.sargon.extensions.invoke
-import com.radixdlt.sargon.extensions.size
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -73,7 +71,7 @@ class MainViewModel @Inject constructor(
         .map { it.appPreferences.p2pLinks }
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
-            p2pLinks().forEach { p2PLink ->
+            p2pLinks.forEach { p2PLink ->
                 establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
             }
         }

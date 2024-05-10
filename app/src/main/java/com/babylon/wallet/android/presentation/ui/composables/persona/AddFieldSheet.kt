@@ -31,7 +31,7 @@ import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.PersonaDataField
@@ -42,7 +42,7 @@ fun AddFieldSheet(
     onBackClick: () -> Unit,
     fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     onAddFields: () -> Unit,
-    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     anyFieldSelected: Boolean
 ) {
@@ -105,7 +105,7 @@ fun AddFieldSheet(
 
 @Composable
 private fun SelectableFieldItem(
-    onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
+    onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
     field: PersonaFieldWrapper,
     modifier: Modifier = Modifier
 ) {

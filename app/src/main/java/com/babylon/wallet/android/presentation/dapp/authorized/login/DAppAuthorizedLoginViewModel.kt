@@ -37,13 +37,12 @@ import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
 import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -435,7 +434,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             mutex.withLock {
                 editedDapp =
                     editedDapp?.updateAuthorizedDAppPersonas(
-                        dapp.referencesToAuthorizedPersonas().map { ref ->
+                        dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
                                 ref.copy(lastLogin = TimestampGenerator())
                             } else {
@@ -516,7 +515,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             mutex.withLock {
                 editedDapp =
                     editedDapp?.updateAuthorizedDAppPersonas(
-                        dapp.referencesToAuthorizedPersonas().map { ref ->
+                        dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
                                 ref.copy(lastLogin = TimestampGenerator())
                             } else {
@@ -557,7 +556,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     networkId = request.metadata.networkId,
                     dappDefinitionAddress = AccountAddress.init(request.metadata.dAppDefinitionAddress),
                     displayName = dAppName,
-                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas(
                         AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
                             lastLogin = date,
@@ -574,7 +573,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                                 phoneNumbers = null
                             )
                         )
-                    )
+                    ).asList()
                 )
             }
         } else {
