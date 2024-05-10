@@ -364,6 +364,7 @@ private fun TransactionPreviewContent(
         DefaultModalSheetLayout(
             modifier = modifier.fillMaxSize(),
             sheetState = modalBottomSheetState,
+            enableImePadding = true,
             sheetContent = {
                 BottomSheetContent(
                     modifier = Modifier.navigationBarsPadding(),

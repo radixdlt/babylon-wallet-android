@@ -76,7 +76,6 @@ fun CreateAccountScreen(
             accountName = accountName,
             isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
             buttonEnabled = buttonEnabled,
-            cancelable = state.isCancelable,
             onBackClick = viewModel::onBackClick,
             modifier = modifier,
             firstTime = state.firstTime,
@@ -109,7 +108,6 @@ fun CreateAccountContent(
     isAccountNameLengthMoreThanTheMaximum: Boolean,
     buttonEnabled: Boolean,
     onBackClick: () -> Unit,
-    cancelable: Boolean,
     modifier: Modifier,
     firstTime: Boolean,
     isWithLedger: Boolean,
@@ -130,7 +128,7 @@ fun CreateAccountContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = if (cancelable) BackIconType.Close else BackIconType.None,
+                backIconType = BackIconType.Close,
                 windowInsets = WindowInsets.statusBars
             )
         },
@@ -253,7 +251,6 @@ fun CreateAccountContentPreview() {
             isAccountNameLengthMoreThanTheMaximum = false,
             buttonEnabled = false,
             onBackClick = {},
-            cancelable = true,
             modifier = Modifier,
             firstTime = false,
             isWithLedger = false,

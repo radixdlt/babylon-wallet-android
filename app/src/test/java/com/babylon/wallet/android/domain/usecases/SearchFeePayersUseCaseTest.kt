@@ -68,8 +68,7 @@ class SearchFeePayersUseCaseTest {
                 TransactionFeePayers(
                     selectedAccountAddress = account1.address,
                     candidates = listOf(
-                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192()),
-                        TransactionFeePayers.FeePayerCandidate(account2, 0.toDecimal192())
+                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192())
                     )
                 ),
                 result
@@ -87,8 +86,7 @@ class SearchFeePayersUseCaseTest {
                 TransactionFeePayers(
                     selectedAccountAddress = null,
                     candidates = listOf(
-                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192()),
-                        TransactionFeePayers.FeePayerCandidate(account2, 0.toDecimal192())
+                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192())
                     )
                 ),
                 result
