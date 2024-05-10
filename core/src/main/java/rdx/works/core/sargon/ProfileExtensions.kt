@@ -51,6 +51,9 @@ val Header.isCompatible: Boolean
 val Profile.currentGateway: Gateway
     get() = appPreferences.gateways.current
 
+val Profile.hasNetworks: Boolean
+    get() = networks.isNotEmpty()
+
 val Profile.currentNetwork: ProfileNetwork?
     get() {
         val currentGateway = currentGateway
