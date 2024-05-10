@@ -209,6 +209,7 @@ Only continue if you are linking to the **official Radix Connector browser exten
   <string name="linkedConnectors_linkFailedErrorTitle">Link Failed</string>
   <string name="linkedConnectors_unknownPurposeErrorMessage">This type of Connector link is not supported.</string>
   <string name="linkedConnectors_changingPurposeNotSupportedErrorMessage">Changing a Connector’s type is not supported.</string>
+  <string name="linkedConnectors_oldQRErrorMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
