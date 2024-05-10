@@ -1126,7 +1126,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="walletSettings_connectors_title">Linked Connectors</string>
   <string name="walletSettings_connectors_subtitle">Connect to desktop through the Radix Connector browser extension</string>
   <string name="walletSettings_preferences_title">Preferences</string>
-  <string name="walletSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and avdanced preferences</string>
+  <string name="walletSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and advanced preferences</string>
   <string name="walletSettings_troubleshooting_title">Troubleshooting</string>
   <string name="walletSettings_troubleshooting_subtitle">Add your existing Accounts and contact support</string>
   <string name="walletSettings_appVersion">App version: %s</string>
