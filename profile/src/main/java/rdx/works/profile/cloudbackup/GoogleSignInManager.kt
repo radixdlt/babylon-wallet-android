@@ -149,7 +149,7 @@ class GoogleSignInManager @Inject constructor(
         }
 
     // In order to confirm that wallet is authorized to access drive files,
-    // we must start the Drive service and access the the files.
+    // we must start the Drive service and access the files.
     // If the account (email) is not authorized the function will throw an UserRecoverableAuthIOException.
     // This method is currently used ONLY when user signs in (see handleSignInResult fun)
     //
