@@ -11,6 +11,7 @@ import com.google.api.services.drive.model.File
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import rdx.works.profile.cloudbackup.model.CloudFileMetadata
 import rdx.works.profile.di.coroutines.IoDispatcher
 import timber.log.Timber
 import java.io.ByteArrayOutputStream

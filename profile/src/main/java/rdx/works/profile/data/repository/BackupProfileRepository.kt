@@ -11,7 +11,7 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.profile.cloudbackup.CloudFileMetadata
+import rdx.works.profile.cloudbackup.model.CloudFileMetadata
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
