@@ -55,6 +55,9 @@ dependencies {
     // Hilt
     implementation libs.hilt
     ksp libs.hiltCompiler
+    // Hilt WorkerManager
+    implementation libs.androidXHiltWorker
+    ksp libs.androidXHiltCompiler
 
     implementation libs.kotlinxSerialization
     implementation project(path: ':core')
@@ -75,6 +78,8 @@ dependencies {
     api(libs.googleApiServicesDrive) {
         exclude group: "org.apache.httpcomponents", module: "guava-jdk5"
     }
+    // WorkManager for cloud sync
+    implementation libs.workManagerRuntimeKtx
 
     //Timber
     implementation libs.timber

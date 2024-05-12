@@ -213,6 +213,9 @@ dependencies {
     implementation libs.hilt
     implementation libs.hiltNavigation
     ksp libs.hiltCompiler
+    // Hilt WorkerManager
+    implementation libs.androidXHiltWorker
+    ksp libs.androidXHiltCompiler
 
     // Biometric
     implementation libs.biometricKtx
