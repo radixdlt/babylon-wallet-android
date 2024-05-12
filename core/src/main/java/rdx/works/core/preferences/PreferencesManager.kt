@@ -30,8 +30,8 @@ import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 interface PreferencesManager {
-    val uuid: Flow<String>
-    val lastBackupInstant: Flow<Instant?>
+    val surveyUuid: Flow<String>
+    val lastCloudBackupInstant: Flow<Instant?>
     val firstPersonaCreated: Flow<Boolean>
     val isImportFromOlympiaSettingDismissed: Flow<Boolean>
     val isDeviceRootedDialogShown: Flow<Boolean>
@@ -42,9 +42,9 @@ interface PreferencesManager {
     val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
 
-    suspend fun updateLastBackupInstant(backupInstant: Instant)
+    suspend fun updateLastCloudBackupInstant(backupInstant: Instant)
 
-    suspend fun removeLastBackupInstant()
+    suspend fun removeLastCloudBackupInstant()
 
     suspend fun markFirstPersonaCreated()
 
@@ -57,6 +57,7 @@ interface PreferencesManager {
     suspend fun enableCrashReporting(enabled: Boolean)
 
     suspend fun setRadixBannerVisibility(isVisible: Boolean)
+
     fun getLastUsedEpochFlow(address: AccountAddress): Flow<Epoch?>
 
     suspend fun updateEpoch(account: AccountAddress, epoch: Epoch)
@@ -64,6 +65,7 @@ interface PreferencesManager {
     suspend fun markDeviceRootedDialogShown()
 
     suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean)
+
     suspend fun incrementTransactionCompleteCounter()
 
     suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant)
@@ -80,34 +82,34 @@ class PreferencesManagerImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) : PreferencesManager {
 
-    override val uuid: Flow<String>
+    override val surveyUuid: Flow<String>
         get() = dataStore.data.map { preferences ->
-            preferences[KEY_UUID]
+            preferences[KEY_SURVEY_UUID]
         }.onStart {
-            val existingUUID = dataStore.data.map { it[KEY_UUID] }.firstOrNull()
+            val existingUUID = dataStore.data.map { it[KEY_SURVEY_UUID] }.firstOrNull()
             if (existingUUID.isNullOrEmpty()) {
                 dataStore.edit { preferences ->
-                    preferences[KEY_UUID] = UUIDGenerator.uuid().toString()
+                    preferences[KEY_SURVEY_UUID] = UUIDGenerator.uuid().toString()
                 }
             }
         }.filterNotNull()
 
-    override val lastBackupInstant: Flow<Instant?> = dataStore.data
+    override val lastCloudBackupInstant: Flow<Instant?> = dataStore.data
         .map { preferences ->
-            preferences[KEY_LAST_BACKUP_INSTANT]?.let {
+            preferences[KEY_LAST_CLOUD_BACKUP_INSTANT]?.let {
                 Instant.parse(it)
             }
         }
 
-    override suspend fun updateLastBackupInstant(backupInstant: Instant) {
+    override suspend fun updateLastCloudBackupInstant(backupInstant: Instant) {
         dataStore.edit { preferences ->
-            preferences[KEY_LAST_BACKUP_INSTANT] = backupInstant.toString()
+            preferences[KEY_LAST_CLOUD_BACKUP_INSTANT] = backupInstant.toString()
         }
     }
 
-    override suspend fun removeLastBackupInstant() {
+    override suspend fun removeLastCloudBackupInstant() {
         dataStore.edit { preferences ->
-            preferences.remove(KEY_LAST_BACKUP_INSTANT)
+            preferences.remove(KEY_LAST_CLOUD_BACKUP_INSTANT)
         }
     }
 
@@ -269,14 +271,14 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
-        val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
+        val KEY_LAST_CLOUD_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
         val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
         val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
         val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
         val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
         val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
         val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
-        val KEY_UUID = stringPreferencesKey("uuid")
+        val KEY_SURVEY_UUID = stringPreferencesKey("uuid")
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
     }
 }

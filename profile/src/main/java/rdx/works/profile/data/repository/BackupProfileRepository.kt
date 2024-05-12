@@ -40,7 +40,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
         is BackupType.Cloud -> {
             if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
                 encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
-                preferencesManager.updateLastBackupInstant(InstantGenerator())
+                preferencesManager.updateLastCloudBackupInstant(InstantGenerator())
                 Result.success(Unit)
             } else {
                 Result.failure(ProfileException.InvalidSnapshot)
@@ -89,7 +89,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
     override suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType) = when (backupType) {
         is BackupType.Cloud -> {
             encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-            preferencesManager.removeLastBackupInstant()
+            preferencesManager.removeLastCloudBackupInstant()
         }
         is BackupType.File -> {
             encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()

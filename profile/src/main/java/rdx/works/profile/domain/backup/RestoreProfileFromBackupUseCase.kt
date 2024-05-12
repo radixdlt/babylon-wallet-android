@@ -36,7 +36,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
             profileRepository.saveProfile(profileWithRestoredHeader)
 
             if (backupType is BackupType.Cloud) {
-                preferencesManager.updateLastBackupInstant(InstantGenerator())
+                preferencesManager.updateLastCloudBackupInstant(InstantGenerator())
             } else {
                 // Remove only temporary file backups, cloud backups can only be deleted
                 // if user opts to create a new profile.
