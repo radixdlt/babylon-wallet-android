@@ -13,15 +13,11 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
-import rdx.works.profile.domain.backup.BackupProfileToCloudUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
-import java.io.DataOutputStream
-import java.io.FileOutputStream
-import java.util.Date
 
+@Deprecated("New cloud backup system (Drive) in place. It is only used to fetch profile from old backup system.")
 class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
-    private val backupProfileToCloudUseCase: BackupProfileToCloudUseCase
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase
 
     init {
@@ -29,24 +25,11 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
             context.applicationContext,
             BackupHelperEntryPoint::class.java
         )
-        backupProfileToCloudUseCase = entryPoint.backupProfileToCloudUseCase()
         saveTemporaryRestoringSnapshotUseCase = entryPoint.saveTemporaryRestoringSnapshotUseCase()
     }
 
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
-        log("Backup started")
-
-        runBlocking {
-            backupProfileToCloudUseCase(data, ENTITY_HEADER).onSuccess {
-                log("Backup successful")
-            }.onFailure {
-                log("Backup failed $it")
-            }
-        }
-
-        FileOutputStream(newState.fileDescriptor).also {
-            DataOutputStream(it).writeLong(Date().time)
-        }
+        // not needed
     }
 
     override fun restoreEntity(data: BackupDataInputStream) {
@@ -77,12 +60,10 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface BackupHelperEntryPoint {
-        fun backupProfileToCloudUseCase(): BackupProfileToCloudUseCase
         fun saveTemporaryRestoringSnapshotUseCase(): SaveTemporaryRestoringSnapshotUseCase
     }
 
     companion object {
         private const val TAG = "Backup"
-        private const val ENTITY_HEADER = "snapshot"
     }
 }
