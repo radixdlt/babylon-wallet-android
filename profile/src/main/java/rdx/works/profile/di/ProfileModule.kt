@@ -4,6 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import rdx.works.profile.cloudbackup.DriveClient
+import rdx.works.profile.cloudbackup.DriveClientImpl
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.BackupProfileRepositoryImpl
 import rdx.works.profile.data.repository.DAppConnectionRepository
@@ -29,6 +31,12 @@ interface ProfileModule {
     fun bindBackupProfileRepository(
         backupProfileRepositoryImpl: BackupProfileRepositoryImpl
     ): BackupProfileRepository
+
+    @Binds
+    @Singleton
+    fun bindDriveClient(
+        driveClientImpl: DriveClientImpl
+    ): DriveClient
 
     @Binds
     fun bindDAppConnectionRepository(
