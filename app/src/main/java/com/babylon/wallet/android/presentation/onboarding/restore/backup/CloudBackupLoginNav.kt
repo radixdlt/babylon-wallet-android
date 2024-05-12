@@ -7,19 +7,18 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-const val ROUTE_RESTORE_FROM_BACKUP = "route_restore_from_backup"
+const val ROUTE_CLOUD_BACKUP_LOGIN = "route_cloud_backup_login_screen"
 
-fun NavController.restoreFromBackupScreen() {
-    navigate(route = ROUTE_RESTORE_FROM_BACKUP)
+fun NavController.cloudBackupLoginScreen() {
+    navigate(route = ROUTE_CLOUD_BACKUP_LOGIN)
 }
 
-fun NavGraphBuilder.restoreFromBackupScreen(
+fun NavGraphBuilder.cloudBackupLoginScreen(
     onBackClick: () -> Unit,
-    onRestoreConfirmed: (fromCloud: Boolean) -> Unit,
-    onOtherRestoreOptionsClick: () -> Unit
+    onContinueToRestoreFromBackup: () -> Unit,
 ) {
     composable(
-        route = ROUTE_RESTORE_FROM_BACKUP,
+        route = ROUTE_CLOUD_BACKUP_LOGIN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
@@ -33,11 +32,10 @@ fun NavGraphBuilder.restoreFromBackupScreen(
             EnterTransition.None
         }
     ) {
-        RestoreFromBackupScreen(
+        CloudBackupLoginScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onRestoreConfirmed = onRestoreConfirmed,
-            onOtherRestoreOptionsClick = onOtherRestoreOptionsClick
+            onContinueToRestoreFromBackup = onContinueToRestoreFromBackup
         )
     }
 }

@@ -15,6 +15,7 @@ import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
+@Deprecated("will be removed when new cloud backup solution is in place")
 class GetBackupStateUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,

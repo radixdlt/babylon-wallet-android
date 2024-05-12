@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.backup
 
+import android.content.Intent
 import android.net.Uri
+import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -14,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.BackupState
+import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -22,7 +25,7 @@ import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
@@ -30,6 +33,7 @@ class BackupViewModel @Inject constructor(
     private val deleteWalletUseCase: DeleteWalletUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
+    private val googleSignInManager: GoogleSignInManager,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -55,7 +59,26 @@ class BackupViewModel @Inject constructor(
     }
 
     fun onBackupSettingChanged(isChecked: Boolean) = viewModelScope.launch {
-        changeBackupSettingUseCase(isChecked)
+        if (isChecked) {
+            val intent = googleSignInManager.createSignInIntent()
+            sendEvent(Event.SignInToGoogle(intent))
+        } else { // just turn off the cloud backup sync
+            changeBackupSettingUseCase(isChecked = false)
+        }
+    }
+
+    fun handleSignInResult(result: ActivityResult) {
+        viewModelScope.launch {
+            googleSignInManager.handleSignInResult(result)
+                .onSuccess {
+                    changeBackupSettingUseCase(isChecked = true)
+                    Timber.d("cloud backup is authorized")
+                }
+                .onFailure { exception ->
+                    changeBackupSettingUseCase(isChecked = false)
+                    Timber.e("cloud backup authorization failed: $exception")
+                }
+        }
     }
 
     fun onFileBackupClick() {
@@ -202,5 +225,6 @@ class BackupViewModel @Inject constructor(
         data object ProfileDeleted : Event
         data class ChooseExportFile(val fileName: String) : Event
         data class DeleteFile(val file: Uri) : Event
+        data class SignInToGoogle(val signInIntent: Intent) : Event
     }
 }

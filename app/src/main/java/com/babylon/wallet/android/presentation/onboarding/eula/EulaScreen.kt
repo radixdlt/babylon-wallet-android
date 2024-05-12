@@ -39,9 +39,37 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun EulaScreen(
+    viewModel: EulaViewModel,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit,
-    onAccepted: () -> Unit
+    onBackClick: (isWithCloudBackupEnabled: Boolean) -> Unit,
+    onAccepted: (isWithCloudBackupEnabled: Boolean) -> Unit
+) {
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is EulaViewModel.EulaEvent.ProceedToCreateNewWallet -> {
+                    onAccepted(event.isWithCloudBackupEnabled)
+                }
+
+                is EulaViewModel.EulaEvent.NavigateBack -> {
+                    onBackClick(event.isWithCloudBackupEnabled)
+                }
+            }
+        }
+    }
+
+    EulaContent(
+        modifier = modifier,
+        onAcceptClick = viewModel::onAcceptClick,
+        onBackClick = viewModel::onBackClick
+    )
+}
+
+@Composable
+private fun EulaContent(
+    modifier: Modifier = Modifier,
+    onAcceptClick: () -> Unit,
+    onBackClick: () -> Unit,
 ) {
     var eulaText: String? by remember { mutableStateOf(null) }
     Scaffold(
@@ -50,13 +78,15 @@ fun EulaScreen(
             Column {
                 RadixCenteredTopAppBar(
                     title = stringResource(id = R.string.empty),
-                    onBackClick = onBack,
+                    onBackClick = onBackClick,
                     backIconType = BackIconType.Close,
                     windowInsets = WindowInsets.statusBars
                 )
 
                 Text(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.onboarding_eula_headerTitle),
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1,
@@ -82,7 +112,7 @@ fun EulaScreen(
 
                 RadixPrimaryButton(
                     text = stringResource(id = R.string.onboarding_eula_accept),
-                    onClick = onAccepted,
+                    onClick = onAcceptClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(RadixTheme.dimensions.paddingDefault),
@@ -108,7 +138,7 @@ fun EulaScreen(
             exit = fadeOut()
         ) {
             eulaText?.let {
-                EulaContent(eula = it)
+                EulaView(eula = it)
             }
         }
 
@@ -119,7 +149,10 @@ fun EulaScreen(
 }
 
 @Composable
-private fun EulaContent(modifier: Modifier = Modifier, eula: String) {
+private fun EulaView(
+    modifier: Modifier = Modifier,
+    eula: String
+) {
     AndroidView(
         modifier = modifier,
         factory = {
@@ -141,6 +174,9 @@ private fun EulaContent(modifier: Modifier = Modifier, eula: String) {
 @Composable
 fun EulaScreenPreview() {
     RadixWalletTheme {
-        EulaScreen(onBack = {}, onAccepted = {})
+        EulaContent(
+            onBackClick = {},
+            onAcceptClick = {}
+        )
     }
 }

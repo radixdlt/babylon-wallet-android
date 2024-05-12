@@ -225,7 +225,7 @@ private fun SelectRecoveryOptionSection(
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = "Ledger-only restore",
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_start_hardwareSectionButton),
             onClick = onShowLedgerPrompt
         )
         HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -245,7 +245,7 @@ private fun SelectRecoveryOptionSection(
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = "Olympia-only Restore",
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_start_olympiaSectionButton),
             onClick = onShowOlympiaPrompt
         )
     }

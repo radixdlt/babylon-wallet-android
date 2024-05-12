@@ -29,6 +29,11 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    packagingOptions {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+        }
+    }
     testOptions {
         // Caution: Take care when setting the returnDefaultValues property to true.
         // The null/zero return values can introduce regressions to your tests,
@@ -58,6 +63,18 @@ dependencies {
 
     // Datastore
     implementation libs.datastorePreferences
+
+    // Google API Auth and Drive
+    api(libs.googleApiClient) {
+        exclude group: "org.apache.httpcomponents", module: "guava-jdk5"
+    }
+    api(libs.playServicesAuth) {
+        exclude group: "com.google.http-client", module: "google-http-client"
+        exclude group: "com.google.http-client", module: "google-http-client-jackson"
+    }
+    api(libs.googleApiServicesDrive) {
+        exclude group: "org.apache.httpcomponents", module: "guava-jdk5"
+    }
 
     //Timber
     implementation libs.timber
