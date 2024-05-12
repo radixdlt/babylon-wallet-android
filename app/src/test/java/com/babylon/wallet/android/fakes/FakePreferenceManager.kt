@@ -14,9 +14,9 @@ class FakePreferenceManager : PreferencesManager {
     private val _transactionCompleteCounter = MutableStateFlow(0)
 
     private val _lastNPSSurveyInstant = MutableStateFlow<Instant?>(null)
-    override val uuid: Flow<String>
+    override val surveyUuid: Flow<String>
         get() = TODO("Not yet implemented")
-    override val lastBackupInstant: Flow<Instant?>
+    override val lastCloudBackupInstant: Flow<Instant?>
         get() = TODO("Not yet implemented")
     override val firstPersonaCreated: Flow<Boolean>
         get() = TODO("Not yet implemented")
@@ -36,11 +36,11 @@ class FakePreferenceManager : PreferencesManager {
     override val lastSyncedAccountsWithCE: Flow<String?>
         get() = TODO("Not yet implemented")
 
-    override suspend fun updateLastBackupInstant(backupInstant: Instant) {
+    override suspend fun updateLastCloudBackupInstant(backupInstant: Instant) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeLastBackupInstant() {
+    override suspend fun removeLastCloudBackupInstant() {
         TODO("Not yet implemented")
     }
 
