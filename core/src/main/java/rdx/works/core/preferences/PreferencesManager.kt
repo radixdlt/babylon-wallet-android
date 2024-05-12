@@ -25,11 +25,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.BuildConfig
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import java.time.Instant
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 interface PreferencesManager {
+    val googleDriveFileId: Flow<GoogleDriveFileId?>
     val surveyUuid: Flow<String>
     val lastCloudBackupInstant: Flow<Instant?>
     val firstPersonaCreated: Flow<Boolean>
@@ -41,6 +43,8 @@ interface PreferencesManager {
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
+
+    suspend fun setGoogleDriveFileId(googleDriveFileId: GoogleDriveFileId)
 
     suspend fun updateLastCloudBackupInstant(backupInstant: Instant)
 
@@ -77,7 +81,7 @@ interface PreferencesManager {
     suspend fun clear(): Preferences
 }
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions") // TODO maybe break it into two or more classes
 class PreferencesManagerImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) : PreferencesManager {
@@ -94,12 +98,25 @@ class PreferencesManagerImpl @Inject constructor(
             }
         }.filterNotNull()
 
+    override val googleDriveFileId: Flow<GoogleDriveFileId?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_GOOGLE_DRIVE_FILE_ID]?.let {
+                GoogleDriveFileId(it)
+            }
+        }
+
     override val lastCloudBackupInstant: Flow<Instant?> = dataStore.data
         .map { preferences ->
             preferences[KEY_LAST_CLOUD_BACKUP_INSTANT]?.let {
                 Instant.parse(it)
             }
         }
+
+    override suspend fun setGoogleDriveFileId(googleDriveFileId: GoogleDriveFileId) {
+        dataStore.edit { preferences ->
+            preferences[KEY_GOOGLE_DRIVE_FILE_ID] = googleDriveFileId.id
+        }
+    }
 
     override suspend fun updateLastCloudBackupInstant(backupInstant: Instant) {
         dataStore.edit { preferences ->
@@ -267,6 +284,7 @@ class PreferencesManagerImpl @Inject constructor(
     override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
+        val KEY_GOOGLE_DRIVE_FILE_ID = stringPreferencesKey("google_drive_file_id")
         val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
         val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
