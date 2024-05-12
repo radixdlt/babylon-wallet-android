@@ -15,8 +15,8 @@ splash = "1.0.1"
 immutableCollections = "0.3.7"
 accompanist = "0.32.0"
 datastorePreferences = "1.1.0-alpha06"
-hilt = "2.50"
-hiltNavigation = "1.1.0"
+hilt = "2.51"
+hiltNavigation = "1.2.0"
 biometricKtx = "1.2.0-alpha05"
 coilCompose = "2.5.0"
 kotlinxSerialization = "1.6.2"
@@ -54,6 +54,8 @@ installReferrer = "2.2"
 playServicesAuth = "21.1.1"
 googleApiClient = "2.3.0"
 googleApiServicesDrive = "v3-rev20240123-2.0.0"
+workManagerRuntimeKtx = "2.9.0"
+androidXHiltWorker = "1.2.0"
 
 androidApplicationPlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
@@ -148,6 +150,9 @@ installReferrer = { module = "com.android.installreferrer:installreferrer", vers
 playServicesAuth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 googleApiClient = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
 googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
+workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManagerRuntimeKtx" }
+androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
+androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
