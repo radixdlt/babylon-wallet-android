@@ -11,6 +11,7 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.profile.cloudbackup.CloudFileMetadata
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
@@ -25,6 +26,8 @@ interface BackupProfileRepository {
     suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType)
 
     suspend fun getSnapshotForBackup(backupType: BackupType): String?
+
+    suspend fun getProfileMetadataForCloudBackup(): CloudFileMetadata?
 }
 
 class BackupProfileRepositoryImpl @Inject constructor(
@@ -110,6 +113,19 @@ class BackupProfileRepositoryImpl @Inject constructor(
             }
             is BackupType.File.PlainText -> profile.toJson()
             is BackupType.File.Encrypted -> profile.toEncryptedJson(encryptionPassword = backupType.password)
+        }
+    }
+
+    override suspend fun getProfileMetadataForCloudBackup(): CloudFileMetadata? {
+        val profile = profileRepository.profile.firstOrNull()
+        return profile?.let {
+            CloudFileMetadata(
+                profileId = profile.header.id,
+                lastUsedOnDeviceName = profile.header.lastUsedOnDevice.description,
+                lastUsedOnDeviceModified = profile.header.lastUsedOnDevice.date,
+                totalNumberOfAccountsOnAllNetworks = profile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt(),
+                totalNumberOfPersonasOnAllNetworks = profile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
+            )
         }
     }
 }
