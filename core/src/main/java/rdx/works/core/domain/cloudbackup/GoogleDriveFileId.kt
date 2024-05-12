@@ -1,4 +1,4 @@
-package rdx.works.profile.cloudbackup.model
+package rdx.works.core.domain.cloudbackup
 
 @JvmInline
 value class GoogleDriveFileId(
