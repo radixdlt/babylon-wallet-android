@@ -1,0 +1,88 @@
+package rdx.works.profile.cloudbackup
+
+import android.content.Context
+import androidx.hilt.work.HiltWorker
+import androidx.work.Constraints
+import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import dagger.hilt.android.qualifiers.ApplicationContext
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.repository.BackupProfileRepository
+import rdx.works.profile.domain.backup.BackupType
+import timber.log.Timber
+import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
+
+// NOTE: All background work is given a maximum of ten minutes to finish its execution.
+// After this time has expired, the worker will be signalled to stop.
+//
+// Exercise caution in renaming classes derived from ListenableWorkers.
+// WorkManager stores the class name in its internal database when the WorkRequest is enqueued
+// so it can later create an instance of that worker when constraints are met. See link for more details:
+// https://developer.android.com/reference/androidx/work/WorkManager#renaming-and-removing-listenableworker-classes
+@HiltWorker
+internal class CloudBackupSyncWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted private val params: WorkerParameters,
+    private val driveClient: DriveClient,
+    private val backupProfileRepository: BackupProfileRepository,
+    private val preferencesManager: PreferencesManager
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result {
+        val profileSnapshotJson = backupProfileRepository.getSnapshotForBackup(BackupType.Cloud)
+        val fileMetadata = backupProfileRepository.getProfileMetadataForCloudBackup()
+
+        return if (profileSnapshotJson != null && fileMetadata != null) {
+            driveClient.updateBackupProfile(
+                encodedProfile = profileSnapshotJson,
+                fileMetadata = fileMetadata
+            ).fold(
+                onSuccess = { file ->
+                    Timber.d("☁\uFE0F profile synced successfully ✅")
+                    val modifiedTimeInstant = Instant.ofEpochMilli(file.modifiedTime.value)
+                    preferencesManager.updateLastCloudBackupInstant(modifiedTimeInstant)
+                    Result.success()
+                },
+                onFailure = { exception ->
+                    Timber.d("☁\uFE0F failed to sync profile ❌: $exception")
+                    Result.failure()
+                }
+            )
+        } else {
+            Timber.d("☁\uFE0F failed to sync profile because profile snapshot is null ❌")
+            Result.failure()
+        }
+    }
+}
+
+@Singleton
+class CloudBackupSyncExecutor @Inject constructor(@ApplicationContext private val context: Context) {
+
+    fun syncProfile() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        // Every work request has a backoff policy and backoff delay.
+        // The default policy is EXPONENTIAL with a delay of 30 seconds
+        val workRequest = OneTimeWorkRequestBuilder<CloudBackupSyncWorker>()
+            .setConstraints(constraints)
+            .build()
+
+        Timber.d("☁\uFE0F enqueue new work: $uniqueWorkName")
+        // REPLACE existing work with the new work. This option cancels the existing work.
+        WorkManager.getInstance(context).enqueueUniqueWork(uniqueWorkName, ExistingWorkPolicy.REPLACE, workRequest)
+    }
+
+    companion object {
+        private const val uniqueWorkName = "SyncProfileToDriveWork"
+    }
+}
