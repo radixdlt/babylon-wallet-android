@@ -94,7 +94,7 @@ class ProfileRepositoryImpl @Inject constructor(
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
-            val lastBackupInstant = preferencesManager.lastBackupInstant.firstOrNull()
+            val lastBackupInstant = preferencesManager.lastCloudBackupInstant.firstOrNull()
             if (profileToSave.appPreferences.security.isCloudProfileSyncEnabled) {
                 if (lastBackupInstant != null) {
                     encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(profileContent)

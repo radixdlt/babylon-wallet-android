@@ -24,7 +24,7 @@ class GetBackupStateUseCase @Inject constructor(
 
     operator fun invoke() = combine(
         profileRepository.profile,
-        preferencesManager.lastBackupInstant,
+        preferencesManager.lastCloudBackupInstant,
         minuteUpdateFlow(),
     ) { profile, lastBackupInstant, _ ->
         if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
