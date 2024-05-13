@@ -1,8 +1,8 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
+import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.Signature
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
@@ -44,7 +44,7 @@ interface PeerdroidLink {
      *
      */
     suspend fun addConnection(
-        encryptionKey: RadixConnectPassword,
+        p2pLink: P2pLink,
         connectionListener: ConnectionListener
     ): Result<Unit>
 
@@ -95,14 +95,14 @@ internal class PeerdroidLinkImpl(
     private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
     override suspend fun addConnection(
-        encryptionKey: RadixConnectPassword,
+        p2pLink: P2pLink,
         connectionListener: PeerdroidLink.ConnectionListener
     ): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
 
         // get connection id from encryption key
-        val connectionId = ConnectionIdHolder(encryptionKey)
+        val connectionId = ConnectionIdHolder(p2pLink)
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {
@@ -111,7 +111,7 @@ internal class PeerdroidLinkImpl(
             // and now establish the web socket
             webSocketClient.initSession(
                 connectionId = connectionId,
-                encryptionKey = encryptionKey
+                encryptionKey = p2pLink.connectionPassword
             )
                 .onSuccess {
                     listenForIncomingMessagesFromSignalingServer(webSocketClient)

@@ -13,12 +13,12 @@ import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isValid
+import com.radixdlt.sargon.extensions.messageHash
 import timber.log.Timber
 import javax.inject.Inject
 
 class ParseLinkConnectionDetailsUseCase @Inject constructor(
-    private val p2PLinksRepository: P2PLinksRepository,
-    private val getP2PLinkClientSignatureMessageUseCase: GetP2PLinkClientSignatureMessageUseCase
+    private val p2PLinksRepository: P2PLinksRepository
 ) {
 
     suspend operator fun invoke(raw: String): Result<LinkConnectionPayload> {
@@ -29,12 +29,10 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
         }
 
         runCatching {
-            val hashedData = getP2PLinkClientSignatureMessageUseCase(content.password)
-
             SignatureWithPublicKey.Ed25519(
                 publicKey = content.publicKeyOfOtherParty,
                 signature = content.signature
-            ).isValid(hashedData)
+            ).isValid(content.password.messageHash())
         }.getOrElse { throwable ->
             Timber.e("Failed to verify the link signature: ${content.signature} Error: ${throwable.message}")
             return Result.failure(RadixWalletException.LinkConnectionException.InvalidSignature)

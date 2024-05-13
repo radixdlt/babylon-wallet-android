@@ -9,6 +9,7 @@ import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.LENGTH
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.messageHash
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.toHexString
@@ -21,7 +22,6 @@ import javax.inject.Inject
 class EstablishP2PLinkConnectionUseCase @Inject constructor(
     private val peerdroidLink: PeerdroidLink,
     private val p2PLinksRepository: P2PLinksRepository,
-    private val getP2PLinkClientSignatureMessageUseCase: GetP2PLinkClientSignatureMessageUseCase,
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager
 ) {
@@ -49,7 +49,7 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
     @OptIn(ExperimentalStdlibApi::class)
     private suspend fun addConnection(p2pLink: P2pLink): Result<Unit> {
         return peerdroidLink.addConnection(
-            encryptionKey = p2pLink.connectionPassword,
+            p2pLink = p2pLink,
             connectionListener = object : PeerdroidLink.ConnectionListener {
 
                 override suspend fun completeLinking(connectionId: String): Result<Unit> {
@@ -65,7 +65,7 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
                     val linkClientInteraction = PeerdroidLink.LinkClientExchangeInteraction(
                         publicKey = walletClientKey.toPublicKey(),
                         signature = walletClientKey.sign(
-                            hash = getP2PLinkClientSignatureMessageUseCase(p2pLink.connectionPassword)
+                            hash = p2pLink.connectionPassword.messageHash()
                         ).asGeneral()
                     )
 
