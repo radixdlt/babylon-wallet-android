@@ -48,7 +48,7 @@ class SettingsViewModel @Inject constructor(
     ) { p2pLinks, securityProblems ->
         var mutated = defaultSettings
         val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
-        if (p2pLinks.isEmpty() && LinkToConnector !in settingsItems) {
+        if (p2pLinks.asList().isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
         if (securityProblems.isNotEmpty()) {

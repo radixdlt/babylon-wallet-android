@@ -440,7 +440,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onContinueWithLedgerClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks().isNotEmpty()
+            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
+                .asList()
+                .isNotEmpty()
 
             if (hasAtLeastOneLinkedConnector) {
                 useLedgerDelegate.onSendAddLedgerRequest()

@@ -100,7 +100,10 @@ class ChooseLedgerViewModel @Inject constructor(
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks().isNotEmpty()
+                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks()
+                    .asList()
+                    .isNotEmpty()
+
                 // check if there is not linked connector and show link new connector screen
                 if (hasAtLeastOneLinkedConnector.not()) {
                     _state.update {
@@ -139,7 +142,10 @@ class ChooseLedgerViewModel @Inject constructor(
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             _state.update { uiState ->
-                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks().isNotEmpty()
+                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks()
+                    .asList()
+                    .isNotEmpty()
+
                 if (hasAtLeastOneLinkedConnector) {
                     uiState.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                 } else {

@@ -1,27 +1,31 @@
 package com.babylon.wallet.android.data.repository.p2plink
 
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.extensions.P2pLinks
+import com.radixdlt.sargon.extensions.asIdentifiable
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
 interface P2PLinksRepository {
 
-    fun observeP2PLinks(): Flow<List<P2PLink>>
+    fun observeP2PLinks(): Flow<P2pLinks>
 
-    suspend fun getP2PLinks(): List<P2PLink>
+    suspend fun getP2PLinks(): P2pLinks
 
-    suspend fun save(p2pLinks: List<P2PLink>)
+    suspend fun addOrUpdateP2PLink(p2pLink: P2pLink)
 
-    suspend fun removeP2PLink(id: String)
+    suspend fun removeP2PLink(id: PublicKeyHash)
 }
 
 class P2PLinksRepositoryImpl @Inject constructor(
@@ -30,45 +34,63 @@ class P2PLinksRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : P2PLinksRepository {
 
-    override fun observeP2PLinks(): Flow<List<P2PLink>> {
+    override fun observeP2PLinks(): Flow<P2pLinks> {
         return encryptedPreferencesManager.getP2PLinkListJson()
             .map { serializedLinksResult ->
                 serializedLinksResult?.getOrNull()
-                    ?.let { Json.decodeFromString<List<P2PLink>>(it) }
+                    ?.let {
+                        runCatching {
+                            P2pLinks.fromJson(it)
+                        }.getOrNull()
+                    }
                     .orEmpty()
+                    .asIdentifiable()
             }
+            .flowOn(ioDispatcher)
     }
 
-    override suspend fun getP2PLinks(): List<P2PLink> {
+    override suspend fun getP2PLinks(): P2pLinks {
         return withContext(ioDispatcher) { getSavedP2PLinks() }
     }
 
-    override suspend fun save(p2pLinks: List<P2PLink>) {
-        withContext(ioDispatcher) { saveP2PLinks(p2pLinks) }
+    override suspend fun addOrUpdateP2PLink(p2pLink: P2pLink) {
+        withContext(ioDispatcher) {
+            saveP2PLinks(
+                getSavedP2PLinks()
+                    .updateOrAppend(p2pLink)
+                    .asList()
+            )
+        }
     }
 
-    override suspend fun removeP2PLink(id: String) {
+    override suspend fun removeP2PLink(id: PublicKeyHash) {
         withContext(ioDispatcher) {
             val p2pLinks = getSavedP2PLinks()
-            val p2pLink = p2pLinks.findBy(id) ?: return@withContext
-            val newP2PLinks = getSavedP2PLinks().filter { it.id != id }
+            val p2pLink = p2pLinks.getBy(id) ?: return@withContext
+            val newP2PLinks = getSavedP2PLinks().remove(p2pLink)
 
-            saveP2PLinks(newP2PLinks)
+            saveP2PLinks(newP2PLinks.asList())
             peerdroidClient.deleteLink(p2pLink.connectionPassword)
         }
     }
 
-    private suspend fun getSavedP2PLinks(): List<P2PLink> {
+    private suspend fun getSavedP2PLinks(): P2pLinks {
         return encryptedPreferencesManager.getP2PLinkListJson()
             .firstOrNull()
             ?.getOrNull()
-            ?.let { Json.decodeFromString<List<P2PLink>>(it) }
+            ?.let {
+                runCatching {
+                    P2pLinks.fromJson(it)
+                }.getOrNull()
+            }
             .orEmpty()
+            .asIdentifiable()
     }
 
-    private suspend fun saveP2PLinks(links: List<P2PLink>) {
+    private suspend fun saveP2PLinks(links: List<P2pLink>) {
         encryptedPreferencesManager.saveP2PLinkListJson(
-            p2pLinkListJson = Json.encodeToString(links.distinctBy { it.publicKey })
+            p2pLinkListJson = links.asIdentifiable()
+                .toJson()
         )
     }
 }

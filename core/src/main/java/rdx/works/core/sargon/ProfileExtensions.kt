@@ -20,7 +20,6 @@ import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ProfileNetwork
@@ -388,22 +387,6 @@ fun Profile.unHideAllEntities(): Profile {
         )
     })
     return copy(networks = ProfileNetworks(updatedNetworks).asList()).withUpdatedContentHint()
-}
-
-fun Profile.addP2PLink(
-    p2pLink: P2pLink
-): Profile {
-    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.asIdentifiable().append(p2pLink).asList())
-
-    return copy(appPreferences = newAppPreferences)
-}
-
-fun Profile.deleteP2PLink(
-    p2pLink: P2pLink
-): Profile {
-    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.asIdentifiable().removeBy(p2pLink.id).asList())
-
-    return copy(appPreferences = newAppPreferences)
 }
 
 fun Profile.changeGatewayToNetworkId(

@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInteraction
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.radixdlt.sargon.Hash
+import com.radixdlt.sargon.RadixConnectPurpose
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
@@ -23,7 +24,6 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.domain.PeerConnectionStatus
-import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -45,7 +45,8 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
             }
             .map { statuses ->
                 val generalPurposeConnectionIds = p2pLinksRepository.getP2PLinks()
-                    .filter { it.purpose == P2PLinkPurpose.General }
+                    .asList()
+                    .filter { it.connectionPurpose == RadixConnectPurpose.GENERAL }
                     .map { it.connectionPassword.value.bytes.hash().hex }
                 val openConnectionIds = statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
 

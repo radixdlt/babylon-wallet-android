@@ -38,7 +38,9 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorSc
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -96,7 +98,7 @@ private fun LinkedConnectorsContent(
     isAddingNewLinkConnectorInProgress: Boolean,
     activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -109,7 +111,7 @@ private fun LinkedConnectorsContent(
             )
         }
     ) { padding ->
-        var connectionLinkToDelete by remember { mutableStateOf<String?>(null) }
+        var connectionLinkToDelete by remember { mutableStateOf<PublicKeyHash?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -158,7 +160,7 @@ private fun LinkedConnectorsContent(
 private fun ActiveLinkedConnectorDetails(
     activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -183,14 +185,13 @@ private fun ActiveLinkedConnectorDetails(
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
     activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
         items(
             items = activeLinkedConnectorsList,
-            key = { activeLinkedConnector -> activeLinkedConnector.id },
             itemContent = { item ->
                 ActiveLinkedConnectorContent(
                     activeLinkedConnector = item,
@@ -225,7 +226,7 @@ private fun ActiveLinkedConnectorsListContent(
 private fun ActiveLinkedConnectorContent(
     activeLinkedConnector: LinkedConnectorsUiState.ConnectorUiItem,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -269,6 +270,7 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
@@ -277,11 +279,11 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = listOf(
                 LinkedConnectorsUiState.ConnectorUiItem(
-                    id = "id1",
+                    id = PublicKeyHash.sample.invoke(),
                     name = "chrome connection"
                 ),
                 LinkedConnectorsUiState.ConnectorUiItem(
-                    id = "id2",
+                    id = PublicKeyHash.sample.other(),
                     name = "firefox connection"
                 )
             ).toPersistentList(),

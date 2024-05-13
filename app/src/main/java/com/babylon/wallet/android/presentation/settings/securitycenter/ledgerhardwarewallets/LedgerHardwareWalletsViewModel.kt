@@ -40,7 +40,10 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks().isNotEmpty()
+            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
+                .asList()
+                .isNotEmpty()
+
             if (hasAtLeastOneLinkedConnector) {
                 _state.update {
                     it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLedger)

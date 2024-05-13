@@ -71,7 +71,7 @@ class MainViewModel @Inject constructor(
     val observeP2PLinks = p2PLinksRepository.observeP2PLinks()
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
-            p2pLinks.forEach { p2PLink ->
+            p2pLinks.asList().forEach { p2PLink ->
                 establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
             }
         }

@@ -8,6 +8,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -34,7 +36,7 @@ class LinkedConnectorsViewModel @Inject constructor(
                 .collect { p2pLinks ->
                     _state.update {
                         it.copy(
-                            activeConnectors = p2pLinks.map { link ->
+                            activeConnectors = p2pLinks.asList().map { link ->
                                 LinkedConnectorsUiState.ConnectorUiItem(
                                     id = link.id,
                                     name = link.displayName
@@ -46,7 +48,7 @@ class LinkedConnectorsViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteConnectorClick(id: String) {
+    fun onDeleteConnectorClick(id: PublicKeyHash) {
         viewModelScope.launch {
             p2pLinksRepository.removeP2PLink(id)
         }
@@ -78,7 +80,7 @@ data class LinkedConnectorsUiState(
 ) : UiState {
 
     data class ConnectorUiItem(
-        val id: String,
+        val id: PublicKeyHash,
         val name: String
     )
 }
