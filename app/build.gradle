@@ -149,7 +149,8 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
     testOptions {
@@ -187,7 +188,6 @@ dependencies {
     implementation libs.lifecycelRuntimeCompose
     implementation libs.composeUi
     implementation libs.composeRuntime
-    // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
     implementation libs.composeFoundation
     implementation libs.composeConstraintLayout
     implementation libs.composeActivity

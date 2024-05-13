@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -110,8 +110,11 @@ fun CreateAccountConfirmationContent(
                     stringResource(id = R.string.createEntity_completion_destinationHome)
                 )
                 CreateAccountRequestSource.ChooseAccount -> stringResource(R.string.createEntity_completion_destinationChooseAccounts)
-                CreateAccountRequestSource.FirstTime -> stringResource(R.string.createEntity_completion_destinationHome)
                 CreateAccountRequestSource.Gateways -> stringResource(R.string.createEntity_completion_destinationGateways)
+                CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
+                CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled -> stringResource(
+                    R.string.createEntity_completion_destinationHome
+                )
             },
             onClick = accountConfirmed,
             modifier = Modifier.fillMaxWidth()
@@ -130,7 +133,7 @@ fun CreateAccountConfirmationContentPreview() {
             accountId = "mock_account_id",
             accountConfirmed = {},
             appearanceId = AppearanceId(0u),
-            requestSource = CreateAccountRequestSource.FirstTime
+            requestSource = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
         )
     }
 }

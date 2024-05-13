@@ -12,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -29,7 +28,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
 fun OnboardingScreen(
-    viewModel: OnboardingViewModel,
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onCreateNewWalletClick: () -> Unit,
@@ -38,20 +36,10 @@ fun OnboardingScreen(
     BackHandler { onBack() }
 
     OnboardingScreenContent(
-        onProceedClick = viewModel::onCreateNewWalletClick,
+        onProceedClick = onCreateNewWalletClick,
         onRestoreWalletClick = onRestoreFromBackupClick,
         modifier = modifier
     )
-
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is OnboardingViewModel.OnBoardingEvent.CreateNewWallet -> {
-                    onCreateNewWalletClick()
-                }
-            }
-        }
-    }
 }
 
 @Composable

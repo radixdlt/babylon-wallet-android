@@ -108,7 +108,8 @@ private fun ChooseSeedPhraseContent(
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault).navigationBarsPadding(),
+                .padding(RadixTheme.dimensions.paddingDefault)
+                .navigationBarsPadding(),
             enabled = state.selectedFactorSource != null,
             text = stringResource(id = R.string.common_continue),
             onClick = onUseFactorSource
@@ -122,7 +123,10 @@ private fun ChooseSeedPhraseContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingXXLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    ),
                 text = stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -131,7 +135,10 @@ private fun ChooseSeedPhraseContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingXXLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    ),
                 text = when (recoveryType) {
                     MnemonicType.Olympia -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleOlympia)
                     else -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleBabylon)
@@ -207,7 +214,7 @@ fun SeedPhraseCard(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Seed phrase",
+                    text = stringResource(id = R.string.seedPhrases_seedPhrase_headingScan),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,

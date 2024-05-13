@@ -202,13 +202,12 @@
   <string name="linkedConnectors_incorrectQrMessage">Please scan the QR code provided by your Radix Wallet Connector browser extension.</string>
   <string name="linkedConnectors_approveNewConnector_title">Link Connector</string>
   <string name="linkedConnectors_approveExistingConnector_title">Update Link</string>
-  <string name="linkedConnectors_approveNewConnector_message">This Connector will be trusted to verify the dApp origin of requests to this wallet.
-\n\n
-Only continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.</string>
+  <string name="linkedConnectors_approveNewConnector_message">This Connector will be trusted to verify the dApp origin of requests to this wallet.\n\nOnly continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.</string>
   <string name="linkedConnectors_approveExistingConnector_message">This appears to be a Radix Connector you previously linked to. Link will be updated.</string>
   <string name="linkedConnectors_linkFailedErrorTitle">Link Failed</string>
   <string name="linkedConnectors_unknownPurposeErrorMessage">This type of Connector link is not supported.</string>
   <string name="linkedConnectors_changingPurposeNotSupportedErrorMessage">Changing a Connector’s type is not supported.</string>
+  <string name="linkedConnectors_oldQRErrorMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -606,11 +605,7 @@ Only continue if you are linking to the **official Radix Connector browser exten
   <string name="splash_profileOnAnotherDeviceAlert_claimExisting">Claim Existing Wallet</string>
   <string name="splash_profileOnAnotherDeviceAlert_claimHere">Clear Wallet on This Phone</string>
   <string name="splash_profileOnAnotherDeviceAlert_askLater">Ask Later (no changes)</string>
-  <string name="splash_profileOnAnotherDeviceAlert_message">This wallet is currently configured with a set of Accounts and Personas in use by a different phone.
-\n\n
-To make changes to this wallet, you must claim it for use on this phone instead, removing access by the other phone.
-\n\n
-Or you can clear this wallet from this phone and start fresh.</string>
+  <string name="splash_profileOnAnotherDeviceAlert_message">This wallet is currently configured with a set of Accounts and Personas in use by a different phone.\n\nTo make changes to this wallet, you must claim it for use on this phone instead, removing access by the other phone.\n\nOr you can clear this wallet from this phone and start fresh.</string>
   <string name="splash_rootDetection_messageAndroid">It appears that your device might be rooted. To ensure the security of your Accounts and assets, using the Radix Wallet on rooted devices is not recommended. Please confirm if you wish to continue anyway at your own risk.</string>
   <string name="splash_rootDetection_titleIOS">Possible jailbreak detected</string>
   <string name="splash_rootDetection_messageIOS">It appears that your device might be jailbroken. To ensure the security of your Accounts and assets, using the Radix Wallet on jailbroken devices is not recommended. Please confirm if you wish to continue anyway at your own risk.</string>
@@ -778,14 +773,10 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="addLedgerDevice_nameLedger_detectedType">Detected type: %s</string>
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
-  <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can restore access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).
-\n\n
-**For security, backups do not contain any seed phrases or private keys. You must write them down separately.**</string>
+  <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can restore access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).\n\n**For security, backups do not contain any seed phrases or private keys. You must write them down separately.**</string>
   <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
   <string name="profileBackup_manualBackups_title">Manual Backups</string>
-  <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).
-\n\n
-Only the **current configuration** of your wallet is backed up with each manual export.</string>
+  <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).\n\nOnly the **current configuration** of your wallet is backed up with each manual export.</string>
   <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
   <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
   <string name="profileBackup_manualBackups_successMessage">Exported wallet backup file</string>
@@ -817,9 +808,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="androidProfileBackup_openSystemBackupSettings">Open System Backup Settings</string>
   <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data to Cloud</string>
   <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
-  <string name="androidProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.
-\n\n
-**Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
+  <string name="androidProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.\n\n**Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
   <string name="androidProfileBackup_deleteWallet_confirmButton">Delete Wallet</string>
   <string name="iOSProfileBackup_iCloudSyncEnabledAlert_title">Enabling iCloud sync</string>
   <string name="iOSProfileBackup_iCloudSyncEnabledAlert_message">iCloud sync is now enabled, but it might take up to an hour before your wallet data is uploaded to iCloud.</string>
@@ -842,9 +831,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="iOSProfileBackup_totalAccountsNumberLabel">Number of Accounts: %d</string>
   <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
   <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
-  <string name="iOSProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any iCloud backup.
-\n\n
-**Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
+  <string name="iOSProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any iCloud backup.\n\n**Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
   <string name="iOSProfileBackup_deleteWallet_confirmButton">Delete Wallet and iCloud Backup</string>
   <string name="iOSProfileBackup_profileNotFoundInCloud">Unable to find wallet backup in iCloud.</string>
   <string name="encryptProfileBackup_header_title">Encrypt Wallet Backup File</string>
@@ -872,11 +859,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="recoverSeedPhrase_header_titleOther">Seed Phrase Required</string>
   <string name="recoverSeedPhrase_header_subtitleMainSeedPhrase">Your **Personas** and the following **Accounts** are controlled by your main seed phrase. To recover control, you must re-enter it.</string>
   <string name="recoverSeedPhrase_header_subtitleOtherSeedPhrase">The following **Accounts** are controlled by a seed phrase. To recover control, you must re-enter it.</string>
-  <string name="recoverSeedPhrase_header_subtitleNoMainSeedPhrase">The Radix Wallet always uses a single main “Babylon” seed phrase to generate new Personas and new Accounts (when not using a Ledger device).
-\n\n
-If you do not have access to your previous main seed phrase, you can skip entering it for now. **The Radix Wallet will create a new one, which will be used for new Personas and Accounts.**
-\n\n
-Your old Accounts and Personas will still be listed, but you will have to enter their original seed phrase to use them. Alternatively, you can hide them if you no longer are interested in using them.</string>
+  <string name="recoverSeedPhrase_header_subtitleNoMainSeedPhrase">The Radix Wallet always uses a single main “Babylon” seed phrase to generate new Personas and new Accounts (when not using a Ledger device).\n\nIf you do not have access to your previous main seed phrase, you can skip entering it for now. **The Radix Wallet will create a new one, which will be used for new Personas and Accounts.**\n\nYour old Accounts and Personas will still be listed, but you will have to enter their original seed phrase to use them. Alternatively, you can hide them if you no longer are interested in using them.</string>
   <string name="recoverSeedPhrase_skipButton">Skip This Seed Phrase For Now</string>
   <string name="recoverSeedPhrase_noMainSeedPhraseButton">I Don’t Have the Main Seed Phrase</string>
   <string name="recoverSeedPhrase_enterButton">Enter This Seed Phrase</string>
@@ -939,9 +922,7 @@ Your old Accounts and Personas will still be listed, but you will have to enter 
   <string name="accountRecoveryScan_babylonSection_title">Babylon Accounts</string>
   <string name="accountRecoveryScan_babylonSection_subtitle">Scan for Accounts originally created on the **Babylon** network.</string>
   <string name="accountRecoveryScan_olympiaSection_title">Olympia Accounts</string>
-  <string name="accountRecoveryScan_olympiaSection_subtitle">Scan for Accounts originally created on the **Olympia** network.
-\n\n
-(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using **Import from a Legacy Wallet** instead.</string>
+  <string name="accountRecoveryScan_olympiaSection_subtitle">Scan for Accounts originally created on the **Olympia** network.\n\n(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using **Import from a Legacy Wallet** instead.</string>
   <string name="accountRecoveryScan_olympiaSection_footnote">Note: You will still use the new **Radix Babylon** app on your Ledger device, not the old Radix Ledger app.</string>
   <string name="accountRecoveryScan_seedPhraseButtonTitle">Use Seed Phrase</string>
   <string name="accountRecoveryScan_ledgerButtonTitle">Use Ledger Hardware Wallet</string>
@@ -958,9 +939,7 @@ Your old Accounts and Personas will still be listed, but you will have to enter 
   <string name="accountSecuritySettings_ledgerHardwareWallets_title">Ledger Hardware Wallets</string>
   <string name="accountSecuritySettings_depositGuarantees_title">Default Deposit Guarantees</string>
   <string name="accountSecuritySettings_depositGuarantees_subtitle">Set your default guaranteed minimum for estimated deposits</string>
-  <string name="accountSecuritySettings_depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
-\n\n
-You can always change the guarantee from this default in each transaction.</string>
+  <string name="accountSecuritySettings_depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.\n\nYou can always change the guarantee from this default in each transaction.</string>
   <string name="accountSecuritySettings_accountRecoveryScan_title">Account Recovery Scan</string>
   <string name="accountSecuritySettings_accountRecoveryScan_subtitle">Using seed phrase or Ledger device</string>
   <string name="accountSecuritySettings_backups_title">Backups</string>
@@ -985,14 +964,10 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="recoverWalletWithoutProfile_start_useNewWalletAlertCancel">Cancel</string>
   <string name="recoverWalletWithoutProfile_start_useNewWalletAlertContinue">Continue</string>
   <string name="recoverWalletWithoutProfile_info_headerTitle">Recover Control Without Backup</string>
-  <string name="recoverWalletWithoutProfile_info_headerSubtitle">**If you have no wallet backup in the cloud or as an exported backup file**, you can still restore Account access only using your main “Babylon” seed phrase. You cannot recover your Account names or other wallet settings this way.
-\n\n
-You will be asked to enter your main seed phrase. This is a set of **24 words** that the Radix Wallet mobile app showed you to write down and save securely.</string>
+  <string name="recoverWalletWithoutProfile_info_headerSubtitle">**If you have no wallet backup in the cloud or as an exported backup file**, you can still restore Account access only using your main “Babylon” seed phrase. You cannot recover your Account names or other wallet settings this way.\n\nYou will be asked to enter your main seed phrase. This is a set of **24 words** that the Radix Wallet mobile app showed you to write down and save securely.</string>
   <string name="recoverWalletWithoutProfile_info_continueButton">Continue</string>
   <string name="recoverWalletWithoutProfile_complete_headerTitle">Recovery Complete</string>
-  <string name="recoverWalletWithoutProfile_complete_headerSubtitle">Accounts discovered in the scan have been added to your wallet.
-\n\n
-If you have any “Legacy” Accounts (created on the Olympia network) to import - or any Accounts using a Ledger hardware wallet device - please continue and then use the **Account Recovery Scan** option in your Radix Wallet settings under **Account Security**.</string>
+  <string name="recoverWalletWithoutProfile_complete_headerSubtitle">Accounts discovered in the scan have been added to your wallet.\n\nIf you have any “Legacy” Accounts (created on the Olympia network) to import - or any Accounts using a Ledger hardware wallet device - please continue and then use the **Account Recovery Scan** option in your Radix Wallet settings under **Account Security**.</string>
   <string name="recoverWalletWithoutProfile_complete_continueButton">Continue</string>
   <string name="transactionHistory_title">History</string>
   <string name="transactionHistory_settingsSection">Settings</string>
@@ -1086,9 +1061,7 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="securityFactors_ledgerWallet_counterSingular">1 set</string>
   <string name="securityFactors_ledgerWallet_counterPlural">%d set</string>
   <string name="configurationBackup_title">Configuration Backup</string>
-  <string name="configurationBackup_heading">You need an up-to-date Configuration Backup to recover your Accounts and Personas if you lose access to them.
-\n\n
-Your Backup does not contain your keys or seed phrase.</string>
+  <string name="configurationBackup_heading">You need an up-to-date Configuration Backup to recover your Accounts and Personas if you lose access to them.\n\nYour Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_problem5WarningIOS">Automated Configuration Backup not working. Check internet connection and iCloud settings.</string>
   <string name="configurationBackup_problem5WarningAndroid">Automated Configuration Backup not working. Check internet connection and Google Drive settings.</string>
   <string name="configurationBackup_problem6Warning">To secure your wallet, turn on automated backups or manually export backup file.</string>
@@ -1114,6 +1087,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_manual_text">You can export your own Configuration Backup file and save it locally</string>
   <string name="configurationBackup_manual_warning">You’ll need to export a new Backup file each time you make a change in your wallet.</string>
   <string name="configurationBackup_manual_exportButton">Export Backup File</string>
+  <string name="configurationBackup_manual_lastBackup">Last backup: %s</string>
   <string name="walletSettings_title">Wallet Settings</string>
   <string name="walletSettings_securityCenter_title">Security Center</string>
   <string name="walletSettings_securityCenter_subtitle">Manage your wallet security settings</string>
@@ -1125,7 +1099,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="walletSettings_connectors_title">Linked Connectors</string>
   <string name="walletSettings_connectors_subtitle">Connect to desktop through the Radix Connector browser extension</string>
   <string name="walletSettings_preferences_title">Preferences</string>
-  <string name="walletSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and avdanced preferences</string>
+  <string name="walletSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and advanced preferences</string>
   <string name="walletSettings_troubleshooting_title">Troubleshooting</string>
   <string name="walletSettings_troubleshooting_subtitle">Add your existing Accounts and contact support</string>
   <string name="walletSettings_appVersion">App version: %s</string>
@@ -1152,6 +1126,9 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="troubleshooting_contactSupport_subtitle">Connect directly with the Radix support team</string>
   <string name="troubleshooting_discord_title">Discord</string>
   <string name="troubleshooting_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
+  <string name="troubleshooting_resetAccount">Reset Account</string>
+  <string name="troubleshooting_factoryReset_title">Factory Reset</string>
+  <string name="troubleshooting_factoryReset_subtitle">Restore your Radix wallet to its original state</string>
   <string name="addressDetails_qrCode">Address QR Code</string>
   <string name="addressDetails_fullAddress">Full address</string>
   <string name="addressDetails_copy">Copy</string>
@@ -1165,5 +1142,14 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="timeFormatting_tomorrow">Tomorrow</string>
   <string name="timeFormatting_ago">%s ago</string>
   <string name="timeFormatting_justNow">Just now</string>
-  <string name="linkedConnectors_oldQRErrorMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
+  <string name="factoryReset_title">Factory Reset</string>
+  <string name="factoryReset_message">A factory reset will restore your Radix wallet to its original settings. All of your data and preferences will be erased.</string>
+  <string name="factoryReset_status">Security Center status</string>
+  <string name="factoryReset_recoverable">Your wallet is recoverable</string>
+  <string name="factoryReset_unrecoverable_title">Your wallet is not recoverable</string>
+  <string name="factoryReset_unrecoverable_message">Your wallet is currently unrecoverable. If you do a factory reset now, you will never be able to access your Accounts and Personas again.</string>
+  <string name="factoryReset_disclosure">Once you’ve completed a factory reset, you will not be able to access your Accounts and Personas unless you do a full recovery.</string>
+  <string name="factoryReset_resetWallet">Reset Wallet</string>
+  <string name="factoryReset_dialog_title">Confirm factory reset</string>
+  <string name="factoryReset_dialog_message">Return wallet to factory settings? You cannot undo this.</string>
 </resources>
