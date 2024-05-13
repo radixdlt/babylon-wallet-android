@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.fees
 
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.utils.sanitizedForDecimalConversion
 import com.radixdlt.sargon.extensions.isZero
 import kotlinx.coroutines.flow.update
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
@@ -52,7 +53,7 @@ class TransactionFeesDelegate @Inject constructor(
         _state.update { state ->
             state.copy(
                 transactionFees = transactionFees.copy(
-                    feePaddingAmount = feePaddingAmount
+                    feePaddingAmount = feePaddingAmount.sanitizedForDecimalConversion()
                 )
             )
         }

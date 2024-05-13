@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.DepositGuaranteesViewModel.State
+import com.babylon.wallet.android.utils.sanitizedForDecimalConversion
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.div
@@ -35,18 +36,19 @@ class DepositGuaranteesViewModel @Inject constructor(
     }
 
     fun onDepositGuaranteeChanged(depositGuarantee: String) {
-        if (depositGuarantee.contains("-")) {
+        val sanitized = depositGuarantee.sanitizedForDecimalConversion()
+        if (sanitized.contains("-")) {
             return
         }
 
-        val updatedDepositGuarantee = depositGuarantee.toDecimal192OrNull()?.let {
+        val updatedDepositGuarantee = sanitized.toDecimal192OrNull()?.let {
             it / HUNDRED
         }
 
         _state.update { state ->
             state.copy(
                 isDepositInputValid = updatedDepositGuarantee != null,
-                depositGuarantee = depositGuarantee
+                depositGuarantee = sanitized
             )
         }
 
