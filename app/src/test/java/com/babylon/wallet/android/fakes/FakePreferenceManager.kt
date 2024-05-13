@@ -6,6 +6,7 @@ import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.preferences.PreferencesManager
 import java.time.Instant
 
@@ -14,6 +15,8 @@ class FakePreferenceManager : PreferencesManager {
     private val _transactionCompleteCounter = MutableStateFlow(0)
 
     private val _lastNPSSurveyInstant = MutableStateFlow<Instant?>(null)
+    override val googleDriveFileId: Flow<GoogleDriveFileId?>
+        get() = TODO("Not yet implemented")
     override val surveyUuid: Flow<String>
         get() = TODO("Not yet implemented")
     override val lastCloudBackupInstant: Flow<Instant?>
@@ -86,6 +89,10 @@ class FakePreferenceManager : PreferencesManager {
 
     override val transactionCompleteCounter: Flow<Int>
         get() = _transactionCompleteCounter
+
+    override suspend fun setGoogleDriveFileId(googleDriveFileId: GoogleDriveFileId) {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun incrementTransactionCompleteCounter() {
         _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)
