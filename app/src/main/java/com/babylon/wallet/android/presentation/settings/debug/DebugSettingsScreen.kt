@@ -51,16 +51,6 @@ fun DebugSettingsScreen(
                 SettingsItem.DebugSettingsItem.values().forEach { debugSettingsItem ->
                     item {
                         when (debugSettingsItem) {
-                            SettingsItem.DebugSettingsItem.InspectProfile -> {
-                                DefaultSettingsItem(
-                                    title = stringResource(id = debugSettingsItem.descriptionRes()),
-                                    leadingIcon = debugSettingsItem.getIcon(),
-                                    onClick = {
-                                        onItemClick(debugSettingsItem)
-                                    }
-                                )
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
-                            }
                             SettingsItem.DebugSettingsItem.LinkConnectionStatusIndicator -> {
                                 SwitchSettingsItem(
                                     modifier = Modifier
@@ -70,6 +60,16 @@ fun DebugSettingsScreen(
                                     iconResource = debugSettingsItem.getIcon(),
                                     checked = linkConnectionStatusIndicatorState.isEnabled,
                                     onCheckedChange = viewModel::onLinkConnectionStatusIndicatorToggled
+                                )
+                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                            }
+                            else  -> {
+                                DefaultSettingsItem(
+                                    title = stringResource(id = debugSettingsItem.descriptionRes()),
+                                    leadingIcon = debugSettingsItem.getIcon(),
+                                    onClick = {
+                                        onItemClick(debugSettingsItem)
+                                    }
                                 )
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
                             }

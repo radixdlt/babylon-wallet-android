@@ -183,11 +183,14 @@ sealed interface SettingsItem {
 
         data object LinkConnectionStatusIndicator : DebugSettingsItem
 
+        data object InspectCloudBackups: DebugSettingsItem
+
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
+                InspectCloudBackups -> R.string.settings_debugSettings_inspectCloudBackups
             }
         }
 
@@ -196,13 +199,15 @@ sealed interface SettingsItem {
             return when (this) {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
+                InspectCloudBackups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
             }
         }
 
         companion object {
             fun values() = setOf(
                 InspectProfile,
-                LinkConnectionStatusIndicator
+                LinkConnectionStatusIndicator,
+                InspectCloudBackups
             )
         }
     }
