@@ -209,6 +209,7 @@ Only continue if you are linking to the **official Radix Connector browser exten
   <string name="linkedConnectors_linkFailedErrorTitle">Link Failed</string>
   <string name="linkedConnectors_unknownPurposeErrorMessage">This type of Connector link is not supported.</string>
   <string name="linkedConnectors_changingPurposeNotSupportedErrorMessage">Changing a Connector’s type is not supported.</string>
+  <string name="linkedConnectors_oldQRErrorMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -1114,6 +1115,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_manual_text">You can export your own Configuration Backup file and save it locally</string>
   <string name="configurationBackup_manual_warning">You’ll need to export a new Backup file each time you make a change in your wallet.</string>
   <string name="configurationBackup_manual_exportButton">Export Backup File</string>
+  <string name="configurationBackup_manual_lastBackup">Last backup: %s</string>
   <string name="walletSettings_title">Wallet Settings</string>
   <string name="walletSettings_securityCenter_title">Security Center</string>
   <string name="walletSettings_securityCenter_subtitle">Manage your wallet security settings</string>
@@ -1125,7 +1127,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="walletSettings_connectors_title">Linked Connectors</string>
   <string name="walletSettings_connectors_subtitle">Connect to desktop through the Radix Connector browser extension</string>
   <string name="walletSettings_preferences_title">Preferences</string>
-  <string name="walletSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and avdanced preferences</string>
+  <string name="walletSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and advanced preferences</string>
   <string name="walletSettings_troubleshooting_title">Troubleshooting</string>
   <string name="walletSettings_troubleshooting_subtitle">Add your existing Accounts and contact support</string>
   <string name="walletSettings_appVersion">App version: %s</string>
@@ -1152,6 +1154,9 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="troubleshooting_contactSupport_subtitle">Connect directly with the Radix support team</string>
   <string name="troubleshooting_discord_title">Discord</string>
   <string name="troubleshooting_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
+  <string name="troubleshooting_resetAccount">Reset Account</string>
+  <string name="troubleshooting_factoryReset_title">Factory Reset</string>
+  <string name="troubleshooting_factoryReset_subtitle">Restore your Radix wallet to its original state</string>
   <string name="addressDetails_qrCode">Address QR Code</string>
   <string name="addressDetails_fullAddress">Full address</string>
   <string name="addressDetails_copy">Copy</string>
@@ -1165,4 +1170,14 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="timeFormatting_tomorrow">Tomorrow</string>
   <string name="timeFormatting_ago">%s ago</string>
   <string name="timeFormatting_justNow">Just now</string>
+  <string name="factoryReset_title">Factory Reset</string>
+  <string name="factoryReset_message">A factory reset will restore your Radix wallet to its original settings. All of your data and preferences will be erased.</string>
+  <string name="factoryReset_status">Security Center status</string>
+  <string name="factoryReset_recoverable">Your wallet is recoverable</string>
+  <string name="factoryReset_unrecoverable_title">Your wallet is not recoverable</string>
+  <string name="factoryReset_unrecoverable_message">Your wallet is currently unrecoverable. If you do a factory reset now, you will never be able to access your Accounts and Personas again.</string>
+  <string name="factoryReset_disclosure">Once you’ve completed a factory reset, you will not be able to access your Accounts and Personas unless you do a full recovery.</string>
+  <string name="factoryReset_resetWallet">Reset Wallet</string>
+  <string name="factoryReset_dialog_title">Confirm factory reset</string>
+  <string name="factoryReset_dialog_message">Return wallet to factory settings? You cannot undo this.</string>
 </resources>
