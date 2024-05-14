@@ -12,8 +12,11 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.first
+import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.BackupProfileRepository
+import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.backup.BackupType
 import timber.log.Timber
 import java.time.Instant
@@ -32,22 +35,25 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted private val params: WorkerParameters,
     private val driveClient: DriveClient,
-    private val backupProfileRepository: BackupProfileRepository,
+    private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val profileSnapshotJson = backupProfileRepository.getSnapshotForBackup(BackupType.Cloud)
-        val fileMetadata = backupProfileRepository.getProfileMetadataForCloudBackup()
+        val profile = profileRepository.inMemoryProfileOrNull
+        val googleDriveFileId = preferencesManager.googleDriveFileId.first()
 
-        return if (profileSnapshotJson != null && fileMetadata != null) {
-            driveClient.updateBackupProfile(
-                encodedProfile = profileSnapshotJson,
-                fileMetadata = fileMetadata
+        return if (profile != null) {
+            driveClient.backupProfile(
+                googleDriveFileId = googleDriveFileId,
+                profile = profile
             ).fold(
                 onSuccess = { file ->
+                    if (googleDriveFileId == null) { // TODO what if another sync comes and this is not done yet?
+                        preferencesManager.setGoogleDriveFileId(file.id)
+                    }
                     Timber.d("☁\uFE0F profile synced successfully ✅")
-                    val modifiedTimeInstant = Instant.ofEpochMilli(file.modifiedTime.value)
+                    val modifiedTimeInstant = file.lastUsedOnDeviceModified.toInstant()
                     preferencesManager.updateLastCloudBackupInstant(modifiedTimeInstant)
                     Result.success()
                 },

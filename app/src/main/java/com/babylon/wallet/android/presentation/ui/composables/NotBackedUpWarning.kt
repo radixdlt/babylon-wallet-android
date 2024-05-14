@@ -13,12 +13,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.domain.BackupState
+import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
 fun NotBackedUpWarning(
     modifier: Modifier = Modifier,
-    backupState: BackupState,
+    cloudBackupState: CloudBackupState,
     horizontalSpacing: Dp = RadixTheme.dimensions.paddingSmall
 ) {
     Row(
@@ -26,7 +26,7 @@ fun NotBackedUpWarning(
         horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (backupState.isWarningVisible) {
+        if (cloudBackupState.isDisabled) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_warning_error),
                 contentDescription = null,
@@ -34,37 +34,56 @@ fun NotBackedUpWarning(
             )
         }
         Text(
-            text = backupState.title(),
+            text = cloudBackupState.title(),
             style = RadixTheme.typography.body2Regular,
-            color = backupState.color()
+            color = cloudBackupState.color()
         )
     }
 }
 
-@Composable
-private fun BackupState.title() = when (this) {
-    is BackupState.Closed -> stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_disabledText)
-    is BackupState.Open -> {
-        val lastBackupRelativeTime = remember(this) { lastBackupTimeRelative }
+// @Composable
+// private fun BackupState.title() = when (this) {
+//    is BackupState.Closed -> stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_disabledText)
+//    is BackupState.Open -> {
+//        val lastBackupRelativeTime = remember(this) { lastBackupTimeRelative }
+//
+//        if (lastBackupRelativeTime != null) {
+//            stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_lastBackedUp, lastBackupRelativeTime)
+//        } else {
+//            stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_noLastBackUp)
+//        }
+//    }
+// }
 
-        if (lastBackupRelativeTime != null) {
-            stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_lastBackedUp, lastBackupRelativeTime)
-        } else {
-            stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_noLastBackUp)
-        }
+@Composable
+fun CloudBackupState.title() = when (this) {
+    is CloudBackupState.Disabled -> {
+        val lastBackupRelativeTime = remember(this) { lastBackup }
+        stringResource(id = com.babylon.wallet.android.R.string.androidProfileBackup_lastBackedUp, lastBackupRelativeTime)
+    }
+    is CloudBackupState.Enabled -> {
+        stringResource(id = com.babylon.wallet.android.R.string.empty)
     }
 }
 
 @Composable
-private fun BackupState.color() = when (this) {
-    is BackupState.Closed -> RadixTheme.colors.orange1
-    is BackupState.Open -> {
-        val lastBackupRelativeTime = remember(this) { lastBackupTimeRelative }
-
-        if (lastBackupRelativeTime != null) {
-            RadixTheme.colors.gray1
-        } else {
-            RadixTheme.colors.orange1
-        }
+private fun CloudBackupState.color() = when (this) {
+    is CloudBackupState.Disabled -> RadixTheme.colors.orange1
+    is CloudBackupState.Enabled -> {
+        RadixTheme.colors.gray1
     }
 }
+
+// @Composable
+// private fun BackupState.color() = when (this) {
+//    is BackupState.Closed -> RadixTheme.colors.orange1
+//    is BackupState.Open -> {
+//        val lastBackupRelativeTime = remember(this) { lastBackupTimeRelative }
+//
+//        if (lastBackupRelativeTime != null) {
+//            RadixTheme.colors.gray1
+//        } else {
+//            RadixTheme.colors.orange1
+//        }
+//    }
+// }

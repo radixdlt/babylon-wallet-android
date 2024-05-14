@@ -4,17 +4,17 @@ import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.radixdlt.sargon.extensions.ProfileEntity
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.sargon.factorSourceId
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import javax.inject.Inject
 
 class GetSecurityProblemsUseCase @Inject constructor(
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
-    private val getBackupStateUseCase: GetBackupStateUseCase
+    private val getCloudBackupStateUseCase: GetCloudBackupStateUseCase
 ) {
 
     operator fun invoke() = combine(
         getEntitiesWithSecurityPromptUseCase(),
-        getBackupStateUseCase()
+        getCloudBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, backupState ->
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_BACKUP) }
         val entitiesNeedingRestore = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_RESTORE) }
@@ -37,7 +37,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
                         personasNeedBackup = personasNeedBackup
                     )
                 )
-                if (backupState.isWarningVisible) {
+                if (backupState.hasAnyProblems) {
                     add(SecurityProblem.BackupNotWorking)
                 }
             }

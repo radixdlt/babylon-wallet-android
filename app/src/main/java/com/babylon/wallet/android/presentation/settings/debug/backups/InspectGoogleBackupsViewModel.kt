@@ -10,6 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.FetchBackedUpProfilesMetadataFromCloud
 import javax.inject.Inject
 
@@ -48,7 +49,7 @@ class InspectGoogleBackupsViewModel @Inject constructor(
     data class State(
         val isLoading: Boolean,
         val accountEmail: String? = null,
-        val files: List<File> = emptyList(),
+        val files: List<CloudBackupFileEntity> = emptyList(),
         val uiMessage: UiMessage? = null
     ) : UiState
 }

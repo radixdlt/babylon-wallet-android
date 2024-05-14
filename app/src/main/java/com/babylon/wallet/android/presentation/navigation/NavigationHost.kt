@@ -76,7 +76,6 @@ import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.radixdlt.sargon.extensions.networkId
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.profile.domain.backup.BackupType
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -142,12 +141,8 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onRestoreConfirmed = { fromCloud ->
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs(
-                        backupType = if (fromCloud) BackupType.Cloud else BackupType.File.PlainText
-                    )
-                )
+            onRestoreConfirmed = {
+                navController.restoreMnemonics(args = RestoreMnemonicsArgs(backupType = it))
             },
             onOtherRestoreOptionsClick = {
                 navController.restoreWithoutBackupScreen()

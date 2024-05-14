@@ -36,9 +36,9 @@ import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
-import rdx.works.profile.domain.backup.RestoreAndCreateMainSeedPhraseUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions", "LongParameterList")
@@ -50,7 +50,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
-    private val restoreAndCreateMainSeedPhraseUseCase: RestoreAndCreateMainSeedPhraseUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
@@ -208,25 +207,40 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
                 args.backupType?.let { backupType ->
                     if (skipAuth.not() && biometricAuthProvider().not()) return
-                    restoreAndCreateMainSeedPhraseUseCase(backupType).onFailure { e ->
-                        _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(e), isRestoring = false) }
-                        return
-                    }.onSuccess {
-                        _state.update { state ->
-                            state.copy(
-                                isRestoring = false,
-                                hasSkippedMainSeedPhrase = false
-                            )
+
+                    restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = true)
+                        .onSuccess {
+                            _state.update { state ->
+                                state.copy(
+                                    isRestoring = false,
+                                    hasSkippedMainSeedPhrase = false // TODO check that
+                                )
+                            }
+                            sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                        }.onFailure {
+                            Timber.w(it)
+                            _state.update { state ->
+                                state.copy(
+                                    isRestoring = false,
+                                    uiMessage = UiMessage.ErrorMessage(it)
+                                )
+                            }
                         }
+                } ?: run {
+                    _state.update { state ->
+                        state.copy(
+                            isRestoring = false,
+                            hasSkippedMainSeedPhrase = false
+                        )
                     }
+                    sendEvent(Event.FinishRestoration(isMovingToMain = true))
                 }
             } else {
                 args.backupType?.let { backupType ->
-                    restoreProfileFromBackupUseCase(backupType)
+                    restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = false)
                 }
+                sendEvent(Event.FinishRestoration(isMovingToMain = true))
             }
-
-            sendEvent(Event.FinishRestoration(isMovingToMain = true))
         }
     }
 

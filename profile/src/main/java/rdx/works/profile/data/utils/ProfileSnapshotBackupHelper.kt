@@ -35,7 +35,7 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     override fun restoreEntity(data: BackupDataInputStream) {
         log("Restoring for key: ${data.key}")
         runBlocking {
-            saveTemporaryRestoringSnapshotUseCase.forCloud(data).onSuccess {
+            saveTemporaryRestoringSnapshotUseCase.forDeprecatedCloud(data).onSuccess {
                 log("Saved restored profile")
             }.onFailure { error ->
                 log("Restored profile discarded or incompatible: ${error.message}")

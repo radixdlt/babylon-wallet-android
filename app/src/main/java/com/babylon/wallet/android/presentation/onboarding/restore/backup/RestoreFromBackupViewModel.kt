@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,16 +14,24 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileId
+import com.radixdlt.sargon.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.sargon.isCompatible
 import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.CloudBackupFileEntity
+import rdx.works.profile.domain.backup.DownloadBackedUpProfileFromCloud
+import rdx.works.profile.domain.backup.FetchBackedUpProfilesMetadataFromCloud
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
 import timber.log.Timber
@@ -33,6 +42,8 @@ import kotlin.coroutines.cancellation.CancellationException
 @HiltViewModel
 @Suppress("TooManyFunctions")
 class RestoreFromBackupViewModel @Inject constructor(
+    private val fetchBackedUpProfilesMetadataFromCloud: FetchBackedUpProfilesMetadataFromCloud,
+    private val downloadBackedUpProfileFromCloud: DownloadBackedUpProfileFromCloud,
     private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase,
     private val googleSignInManager: GoogleSignInManager
@@ -42,29 +53,30 @@ class RestoreFromBackupViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        // if user has enabled cloud backup (from previous screen)
-        // then restore profiles from backup
+        // if user has enabled cloud backup (from previous screen) then restore profiles from cloud backup
         googleSignInManager.getSignedInGoogleAccount()?.email?.let { email ->
-            _state.update {
-                it.copy(backupEmail = email)
-            }
+            _state.update { it.copy(backupEmail = email) }
             viewModelScope.launch {
-                restoreProfileFromCloudBackup()
+                println("☁\uFE0F -----> restoreProfilesFromCloudBackup at init")
+                restoreProfilesFromCloudBackup()
             }
         }
     }
 
-    @Deprecated("Remove when new cloud back up system in place")
-    fun toggleRestoringProfileCheck(isChecked: Boolean) {
-        if (state.value.restoringProfiles.first().header.isCompatible) {
-            _state.update { it.copy(isRestoringProfileChecked = isChecked) }
+    fun onRestoringProfileSelected(index: Int) {
+        _state.update { state ->
+            state.copy(
+                restoringProfiles = state.restoringProfiles?.map {
+                    state.restoringProfiles[index].copy(selected = true)
+                }?.toImmutableList()
+            )
         }
     }
 
     fun onRestoreFromFile(uri: Uri) = viewModelScope.launch {
         saveTemporaryRestoringSnapshotUseCase.forFile(uri = uri, BackupType.File.PlainText)
             .onSuccess {
-                sendEvent(Event.OnRestoreConfirm(fromCloud = false))
+                sendEvent(Event.OnRestoreConfirmed(BackupType.File.PlainText))
             }.onFailure { error ->
                 when (error) {
                     is ProfileException.InvalidPassword -> _state.update {
@@ -79,6 +91,8 @@ class RestoreFromBackupViewModel @Inject constructor(
     }
 
     fun onLoginToGoogleClick() = viewModelScope.launch {
+        _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
+
         val intent = googleSignInManager.createSignInIntent()
         sendEvent(Event.SignInToGoogle(intent))
     }
@@ -89,7 +103,8 @@ class RestoreFromBackupViewModel @Inject constructor(
                 .onSuccess { googleAccount ->
                     _state.update { it.copy(backupEmail = googleAccount.email) }
                     Timber.d("cloud backup is authorized")
-                    restoreProfileFromCloudBackup()
+                    println("☁\uFE0F -----> restoreProfilesFromCloudBackup at handleSignInResult")
+                    restoreProfilesFromCloudBackup()
                 }
                 .onFailure { exception ->
                     if (exception is UserRecoverableAuthIOException) {
@@ -107,16 +122,24 @@ class RestoreFromBackupViewModel @Inject constructor(
                         }
                     }
                 }
+                .also {
+                    _state.update { state ->
+                        state.copy(isAccessToGoogleDriveInProgress = false)
+                    }
+                }
         }
     }
 
     fun handleAuthDriveResult(result: ActivityResult) {
         viewModelScope.launch {
+            _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
+
             val email = googleSignInManager.getSignedInGoogleAccount()?.email
             if (result.resultCode == Activity.RESULT_OK && email != null) {
                 Timber.d("cloud backup is authorized")
                 _state.update { it.copy(backupEmail = email) }
-                restoreProfileFromCloudBackup()
+                println("☁\uFE0F -----> restoreProfilesFromCloudBackup at handleSignInResult")
+                restoreProfilesFromCloudBackup()
             } else {
                 Timber.e("cloud backup authorization failed: ${result.resultCode}")
                 _state.update { state ->
@@ -128,6 +151,8 @@ class RestoreFromBackupViewModel @Inject constructor(
                     )
                 }
             }
+
+            _state.update { it.copy(isAccessToGoogleDriveInProgress = false) }
         }
     }
 
@@ -156,7 +181,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     .onSuccess {
                         _state.update { state -> state.copy(passwordSheetState = State.PasswordSheet.Closed) }
                         delay(Constants.DELAY_300_MS)
-                        sendEvent(Event.OnRestoreConfirm(fromCloud = false))
+                        sendEvent(Event.OnRestoreConfirmed(BackupType.File.Encrypted(sheet.password)))
                     }.onFailure { error ->
                         when (error) {
                             is ProfileException.InvalidPassword -> _state.update {
@@ -184,30 +209,108 @@ class RestoreFromBackupViewModel @Inject constructor(
     }
 
     fun onContinueClick() = viewModelScope.launch {
-        if (state.value.isRestoringProfileChecked) {
-            sendEvent(Event.OnRestoreConfirm(fromCloud = true))
+        val profileToRestore = state.value.restoringProfiles?.first { selectable -> selectable.selected }
+
+        profileToRestore?.let { selectableRestoringProfile ->
+            if (selectableRestoringProfile.data.isFromGoogleDrive && selectableRestoringProfile.data.googleDriveFileId != null) {
+                _state.update { it.copy(isDownloadingSelectedCloudBackup = true) }
+
+                val entity = CloudBackupFileEntity(
+                    id = selectableRestoringProfile.data.googleDriveFileId,
+                    profileId = selectableRestoringProfile.data.profileId,
+                    lastUsedOnDeviceName = selectableRestoringProfile.data.deviceDescription,
+                    lastUsedOnDeviceModified = selectableRestoringProfile.data.lastModified,
+                    totalNumberOfAccountsOnAllNetworks = selectableRestoringProfile.data.totalNumberOfAccountsOnAllNetworks,
+                    totalNumberOfPersonasOnAllNetworks = selectableRestoringProfile.data.totalNumberOfPersonasOnAllNetworks
+                )
+
+                downloadBackedUpProfileFromCloud(
+                    entity = entity
+                ).fold(
+                    onSuccess = { cloudBackupFile ->
+                        val backupType = BackupType.Cloud(entity)
+                        saveTemporaryRestoringSnapshotUseCase.forCloud(cloudBackupFile.serializedProfile, backupType)
+                        _state.update { it.copy(isDownloadingSelectedCloudBackup = false) }
+                        sendEvent(Event.OnRestoreConfirmed(backupType))
+                    },
+                    onFailure = { exception ->
+                        _state.update {
+                            it.copy(
+                                uiMessage = UiMessage.GoogleAuthErrorMessage(exception),
+                                isDownloadingSelectedCloudBackup = false
+                            )
+                        }
+                    }
+                )
+            } else {
+                sendEvent(Event.OnRestoreConfirmed(BackupType.DeprecatedCloud))
+            }
         }
     }
 
     fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
 
-    private suspend fun restoreProfileFromCloudBackup() {
-        getTemporaryRestoringProfileForBackupUseCase(BackupType.Cloud)?.let { restoringProfile ->
-            if (restoringProfile.header.isCompatible) {
-                _state.update {
-                    it.copy(restoringProfiles = listOf(restoringProfile))
-                }
+    private suspend fun restoreProfilesFromCloudBackup() {
+        val availableCloudBackedUpProfiles = fetchBackedUpProfilesMetadataFromCloud().getOrNull() // TODO exception?
+
+        if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
+            val restoringProfiles = availableCloudBackedUpProfiles.mapNotNull { fileEntity ->
+                println("☁\uFE0F -----> at restore, profileId: ${fileEntity.profileId}")
+                Selectable(
+                    data = State.RestoringProfile(
+                        googleDriveFileId = fileEntity.id,
+                        profileId = fileEntity.profileId,
+                        deviceDescription = fileEntity.lastUsedOnDeviceName,
+                        lastModified = fileEntity.lastUsedOnDeviceModified,
+                        totalNumberOfAccountsOnAllNetworks = fileEntity.totalNumberOfAccountsOnAllNetworks,
+                        totalNumberOfPersonasOnAllNetworks = fileEntity.totalNumberOfPersonasOnAllNetworks
+                    )
+                )
             }
+            _state.update {
+                it.copy(restoringProfiles = restoringProfiles.toPersistentList())
+            }
+        } else {
+            getTemporaryRestoringProfileForBackupUseCase(BackupType.DeprecatedCloud)?.let { profile ->
+                if (profile.header.isCompatible) {
+                    println("☁\uFE0F -----> profileId of old: ${profile.header.id}")
+                    val restoringProfile = Selectable(
+                        data = State.RestoringProfile(
+                            googleDriveFileId = null,
+                            profileId = profile.header.id,
+                            deviceDescription = profile.header.lastUsedOnDevice.description,
+                            lastModified = profile.header.lastUsedOnDevice.date,
+                            totalNumberOfAccountsOnAllNetworks = profile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt(),
+                            totalNumberOfPersonasOnAllNetworks = profile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
+                        )
+                    )
+                    _state.update {
+                        it.copy(restoringProfiles = persistentListOf(restoringProfile))
+                    }
+                }
+            } ?: _state.update { it.copy(restoringProfiles = persistentListOf()) }
         }
     }
 
     data class State(
         private val backupEmail: String = "",
-        val isRestoringProfileChecked: Boolean = false,
-        val restoringProfiles: List<Profile> = persistentListOf(),
+        val isAccessToGoogleDriveInProgress: Boolean = false,
+        val restoringProfiles: ImmutableList<Selectable<RestoringProfile>>? = null,
+        val isDownloadingSelectedCloudBackup: Boolean = false,
         val passwordSheetState: PasswordSheet = PasswordSheet.Closed,
         val uiMessage: UiMessage? = null
     ) : UiState {
+
+        data class RestoringProfile(
+            val googleDriveFileId: GoogleDriveFileId?,
+            val profileId: ProfileId,
+            val deviceDescription: String,
+            val lastModified: Timestamp,
+            val totalNumberOfAccountsOnAllNetworks: Int,
+            val totalNumberOfPersonasOnAllNetworks: Int
+        ) {
+            val isFromGoogleDrive = googleDriveFileId?.id.isNullOrEmpty().not()
+        }
 
         val isCloudBackupAuthorized: Boolean
             get() = backupEmail.isEmpty().not()
@@ -216,7 +319,17 @@ class RestoreFromBackupViewModel @Inject constructor(
             get() = passwordSheetState is PasswordSheet.Open
 
         val isContinueEnabled: Boolean
-            get() = isRestoringProfileChecked
+            get() {
+                val isRestoringProfileSelected = restoringProfiles?.any { restoringProfile ->
+                    restoringProfile.selected
+                } == true
+
+                return if (isRestoringProfileSelected) {
+                    isDownloadingSelectedCloudBackup.not()
+                } else {
+                    false
+                }
+            }
 
         sealed interface PasswordSheet {
             data object Closed : PasswordSheet
@@ -237,6 +350,6 @@ class RestoreFromBackupViewModel @Inject constructor(
         data object OnDismiss : Event
         data class SignInToGoogle(val signInIntent: Intent) : Event
         data class RecoverUserAuthToDrive(val authIntent: Intent) : Event
-        data class OnRestoreConfirm(val fromCloud: Boolean) : Event
+        data class OnRestoreConfirmed(val backupType: BackupType): Event
     }
 }

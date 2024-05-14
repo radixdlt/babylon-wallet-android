@@ -59,7 +59,7 @@ import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -76,7 +76,7 @@ class WalletViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
-    getBackupStateUseCase: GetBackupStateUseCase,
+    getCloudBackupStateUseCase: GetCloudBackupStateUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -107,7 +107,7 @@ class WalletViewModel @Inject constructor(
         }
         observeAccounts()
         observePrompts()
-        observeProfileBackupState(getBackupStateUseCase)
+        observeProfileBackupState(getCloudBackupStateUseCase)
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
         observeNpsSurveyState()
@@ -206,10 +206,10 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
+    private fun observeProfileBackupState(getCloudBackupStateUseCase: GetCloudBackupStateUseCase) {
         viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                this@WalletViewModel.isBackupWarningVisible = backupState.isWarningVisible
+            getCloudBackupStateUseCase().collect { backupState ->
+                this@WalletViewModel.isBackupWarningVisible = backupState.isDisabled
 
                 _state.update {
                     it.copy(
