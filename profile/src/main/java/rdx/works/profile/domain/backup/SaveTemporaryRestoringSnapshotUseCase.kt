@@ -12,12 +12,19 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
     private val fileRepository: FileRepository
 ) {
 
-    suspend fun forCloud(data: BackupDataInputStream): Result<Unit> = runCatching {
+    suspend fun forCloud(serializedProfile: String, backupType: BackupType.Cloud): Result<Unit> = backupProfileRepository
+        .saveTemporaryRestoringSnapshot(
+            snapshotSerialised = serializedProfile,
+            backupType = backupType
+        )
+
+    @Deprecated("It is only used to fetch profile from old backup system.")
+    suspend fun forDeprecatedCloud(data: BackupDataInputStream): Result<Unit> = runCatching {
         val byteArray = ByteArray(data.size())
         data.read(byteArray)
         byteArray.toString(Charsets.UTF_8)
     }.then { snapshot ->
-        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud)
+        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.DeprecatedCloud) // TODO correct?
     }
 
     suspend fun forFile(uri: Uri, fileBackupType: BackupType.File): Result<Unit> {

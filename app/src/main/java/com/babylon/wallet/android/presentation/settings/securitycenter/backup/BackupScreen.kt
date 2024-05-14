@@ -62,8 +62,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -71,6 +73,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -79,7 +82,8 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.BackupState
+import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
 fun BackupScreen(
@@ -104,8 +108,8 @@ fun BackupScreen(
         onEncryptPasswordConfirmRevealToggle = viewModel::onEncryptConfirmPasswordRevealChange,
         onEncryptSubmitClick = viewModel::onEncryptSubmitClick,
         onUiMessageShown = viewModel::onMessageShown,
+        onDisconnectClick = viewModel::onDisconnectClick,
         onBackClick = viewModel::onBackClick,
-        onDisconnectClick = {}
     )
 
     val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -217,7 +221,7 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            if (state.backupState.isWarningVisible) {
+            if (state.cloudBackupState.isDisabled) {
                 BackupWarning()
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
@@ -227,19 +231,31 @@ private fun BackupScreenContent(
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
             ) {
-                BackupStatusCard(state = state, onBackupCheckChanged = onBackupCheckChanged)
-                if (state.isLoggedIn) {
+                BackupStatusCard(
+                    cloudBackupState = state.cloudBackupState,
+                    onBackupCheckChanged = onBackupCheckChanged
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                if (state.cloudBackupState.isAuthorized) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        color = RadixTheme.colors.gray5
+                        color = RadixTheme.colors.gray4
                     )
-                    LoggedInStatus(onDisconnectClick = onDisconnectClick)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                    LoggedInStatus(
+                        email = state.cloudBackupState.email.orEmpty(),
+                        onDisconnectClick = onDisconnectClick
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium)
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingLarge,
+                            vertical = RadixTheme.dimensions.paddingDefault
+                        ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                 ) {
@@ -342,7 +358,7 @@ private fun ManualBackupCard(
 @Composable
 private fun BackupStatusCard(
     modifier: Modifier = Modifier,
-    state: BackupViewModel.State,
+    cloudBackupState: CloudBackupState,
     onBackupCheckChanged: (Boolean) -> Unit
 ) {
     Column(
@@ -353,8 +369,7 @@ private fun BackupStatusCard(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         SwitchSettingsItem(
             titleRes = R.string.configurationBackup_automated_toggleAndroid,
-            subtitleRes = R.string.configurationBackup_automated_lastBackup,
-            checked = state.isBackupEnabled,
+            checked = cloudBackupState.isEnabled,
             icon = {
                 Icon(
                     painter = painterResource(id = DSR.ic_backup),
@@ -364,9 +379,17 @@ private fun BackupStatusCard(
             },
             onCheckedChange = onBackupCheckChanged
         )
+        if (cloudBackupState is CloudBackupState.Disabled) {
+            Text(
+                modifier = Modifier.padding(start = 44.dp),
+                text = stringResource(id = R.string.configurationBackup_automated_lastBackup, cloudBackupState.lastBackup),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
+            )
+        }
         HorizontalDivider(
-            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
-            color = RadixTheme.colors.gray5
+            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSemiLarge),
+            color = RadixTheme.colors.gray4
         )
         Text(
             text = stringResource(id = R.string.configurationBackup_automated_text),
@@ -377,51 +400,57 @@ private fun BackupStatusCard(
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_accountsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_accountsItemSubtitle),
-            backupState = state.backupState
+            cloudBackupState = cloudBackupState
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_personasItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_personasItemSubtitle),
-            backupState = state.backupState
+            cloudBackupState = cloudBackupState
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemSubtitle),
-            backupState = state.backupState
+            cloudBackupState = cloudBackupState
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemSubtitle),
-            backupState = state.backupState
+            cloudBackupState = cloudBackupState
         )
     }
 }
 
 @Composable
-private fun LoggedInStatus(modifier: Modifier = Modifier, onDisconnectClick: () -> Unit) {
+private fun LoggedInStatus(
+    modifier: Modifier = Modifier,
+    email: String,
+    onDisconnectClick: () -> Unit
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium),
+            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                modifier = Modifier.weight(1f),
                 text = stringResource(id = R.string.configurationBackup_automated_loggedInAsAndroid),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
             Text(
-                modifier = Modifier.weight(1f),
-                text = "Test User",
+                text = email,
                 color = RadixTheme.colors.gray1,
-                style = RadixTheme.typography.body1Regular
+                style = RadixTheme.typography.body1Regular,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
         RadixTextButton(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier,
             text = stringResource(id = R.string.configurationBackup_automated_disconnectAndroid),
+            isWithoutPadding = true,
+            fontSize = 14.sp,
             onClick = onDisconnectClick
         )
     }
@@ -438,7 +467,10 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.orange1.copy(alpha = 0.1f), RadixTheme.shapes.roundedRectMedium)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium),
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingMedium
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
         ) {
@@ -460,7 +492,7 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
 private fun BackupStatusSection(
     title: String,
     subtitle: String,
-    backupState: BackupState
+    cloudBackupState: CloudBackupState
 ) {
     var expanded by rememberSaveable {
         mutableStateOf(false)
@@ -472,14 +504,14 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (backupState.isWarningVisible) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+        val statusColor = if (cloudBackupState.isDisabled) RadixTheme.colors.orange1 else RadixTheme.colors.green1
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Icon(
-                painter = painterResource(id = if (backupState.isWarningVisible) DSR.ic_warning_error else DSR.ic_check_circle),
+                painter = painterResource(id = if (cloudBackupState.isDisabled) DSR.ic_warning_error else DSR.ic_check_circle),
                 tint = statusColor,
                 contentDescription = null
             )
@@ -491,7 +523,7 @@ private fun BackupStatusSection(
             )
             Icon(
                 painter = painterResource(id = if (expanded) DSR.ic_arrow_up else DSR.ic_arrow_down),
-                tint = RadixTheme.colors.gray1,
+                tint = RadixTheme.colors.gray2,
                 contentDescription = null
             )
         }
@@ -627,7 +659,8 @@ private fun EncryptSheet(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                modifier = Modifier.widthIn(max = 300.dp)
+                modifier = Modifier
+                    .widthIn(max = 300.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupTitle),
                 textAlign = TextAlign.Center,
@@ -725,12 +758,82 @@ private fun EncryptSheet(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun BackupWarningPreview() {
+    RadixWalletPreviewTheme {
+        BackupWarning()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BackupStatusCardPreview() {
+    RadixWalletPreviewTheme {
+        BackupStatusCard(
+            cloudBackupState = CloudBackupState.Enabled(email = "my cool email"),
+            onBackupCheckChanged = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoggedInStatusPreview() {
+    RadixWalletPreviewTheme {
+        LoggedInStatus(
+            modifier = Modifier.height(40.dp),
+            email = "averylongemail@withlongmail.com",
+            onDisconnectClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BackupStatusSectionPreview() {
+    RadixWalletPreviewTheme {
+        BackupStatusSection(
+            title = "title",
+            subtitle = "subtitle",
+            cloudBackupState = CloudBackupState.Enabled(email = "email@mail.com")
+        )
+    }
+}
+
 @Preview
 @Composable
 fun BackupScreenPreview() {
     RadixWalletTheme {
         BackupScreenContent(
-            state = BackupViewModel.State(backupState = BackupState.Closed),
+            state = BackupViewModel.State(cloudBackupState = CloudBackupState.Enabled(email = "email@mail.com")),
+            onBackupCheckChanged = {},
+            onFileBackupClick = {},
+            onFileBackupConfirm = {},
+            onFileBackupDeny = {},
+            onEncryptPasswordTyped = {},
+            onEncryptPasswordRevealToggle = {},
+            onEncryptConfirmPasswordTyped = {},
+            onEncryptPasswordConfirmRevealToggle = {},
+            onEncryptSubmitClick = {},
+            onUiMessageShown = {},
+            onBackClick = {},
+            onDisconnectClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun BackupScreenOffPreview() {
+    RadixWalletTheme {
+        BackupScreenContent(
+            state = BackupViewModel.State(
+                cloudBackupState = CloudBackupState.Disabled(
+                    email = "my cool email",
+                    lastCloudBackupTime = InstantGenerator()
+                )
+            ),
             onBackupCheckChanged = {},
             onFileBackupClick = {},
             onFileBackupConfirm = {},

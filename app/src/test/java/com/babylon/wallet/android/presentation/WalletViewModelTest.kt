@@ -27,7 +27,8 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import rdx.works.core.domain.BackupState
+import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -38,13 +39,13 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
-    private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
+    private val getCloudBackupStateUseCase = mockk<GetCloudBackupStateUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
@@ -75,7 +76,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         ensureBabylonFactorSourceExistUseCase,
         preferencesManager,
         npsSurveyStateObserver,
-        getBackupStateUseCase,
+        getCloudBackupStateUseCase,
         testDispatcher
     )
 
@@ -83,7 +84,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         super.setUp()
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
-        every { getBackupStateUseCase() } returns flowOf(BackupState.Closed)
+        every { getCloudBackupStateUseCase() } returns flowOf(CloudBackupState.Disabled(email = "email", lastCloudBackupTime = InstantGenerator()))
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)

@@ -10,40 +10,35 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.BackupState
+import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions", "LongParameterList")
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val googleSignInManager: GoogleSignInManager,
-    getBackupStateUseCase: GetBackupStateUseCase
+    getCloudBackupStateUseCase: GetCloudBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): State = State(
-        backupState = BackupState.Closed,
-        canAccessSystemBackupSettings = deviceCapabilityHelper.canOpenSystemBackupSettings()
-    )
+    override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                _state.update { it.copy(backupState = backupState) }
+            getCloudBackupStateUseCase().collect { backupState ->
+                _state.update { it.copy(cloudBackupState = backupState) }
             }
         }
     }
@@ -76,6 +71,14 @@ class BackupViewModel @Inject constructor(
                     changeBackupSettingUseCase(isChecked = false)
                     Timber.e("cloud backup authorization failed: $exception")
                 }
+        }
+    }
+
+    fun onDisconnectClick() {
+        viewModelScope.launch {
+            googleSignInManager.signOut()
+            googleSignInManager.revokeAccess()
+            changeBackupSettingUseCase(isChecked = false)
         }
     }
 
@@ -163,16 +166,11 @@ class BackupViewModel @Inject constructor(
     }
 
     data class State(
-        val backupState: BackupState,
+        val cloudBackupState: CloudBackupState = CloudBackupState.Enabled(email = ""),
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
         val uiMessage: UiMessage? = null,
-        val canAccessSystemBackupSettings: Boolean = false,
-        val isLoggedIn: Boolean = false
     ) : UiState {
-
-        val isBackupEnabled: Boolean
-            get() = backupState is BackupState.Open
 
         val isEncryptSheetVisible: Boolean
             get() = encryptSheet is EncryptSheet.Open

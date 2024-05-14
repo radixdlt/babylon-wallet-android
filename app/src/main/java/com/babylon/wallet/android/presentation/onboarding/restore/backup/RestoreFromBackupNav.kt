@@ -6,6 +6,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import rdx.works.profile.domain.backup.BackupType
 
 const val ROUTE_RESTORE_FROM_BACKUP = "route_restore_from_backup"
 
@@ -15,7 +16,7 @@ fun NavController.restoreFromBackupScreen() {
 
 fun NavGraphBuilder.restoreFromBackupScreen(
     onBackClick: () -> Unit,
-    onRestoreConfirmed: (fromCloud: Boolean) -> Unit,
+    onRestoreConfirmed: (BackupType) -> Unit,
     onOtherRestoreOptionsClick: () -> Unit
 ) {
     composable(

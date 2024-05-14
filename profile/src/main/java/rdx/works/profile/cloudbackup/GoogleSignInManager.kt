@@ -182,10 +182,11 @@ class GoogleSignInManager @Inject constructor(
     companion object {
 
         private val driveAppDataScope = Scope(DriveScopes.DRIVE_APPDATA)
+        private val driveMetadataScope = Scope(DriveScopes.DRIVE_METADATA)
 
         private fun getGoogleSignInClient(context: Context): GoogleSignInClient {
             val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(driveAppDataScope)
+                .requestScopes(driveAppDataScope, driveMetadataScope)
                 .requestEmail()
                 .build()
             return GoogleSignIn.getClient(context, signInOptions)

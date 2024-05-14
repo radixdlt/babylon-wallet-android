@@ -4,8 +4,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface BackupType {
+
     @Serializable
-    data object Cloud : BackupType
+    data class Cloud(
+        val entity: CloudBackupFileEntity
+    ) : BackupType
+
+    @Serializable
+    data object DeprecatedCloud : BackupType
 
     @Serializable
     sealed interface File : BackupType {

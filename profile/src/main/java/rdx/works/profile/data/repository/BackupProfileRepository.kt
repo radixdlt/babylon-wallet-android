@@ -7,14 +7,12 @@ import com.radixdlt.sargon.extensions.fromEncryptedJson
 import com.radixdlt.sargon.extensions.toEncryptedJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.ProfileState
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.profile.cloudbackup.model.CloudFileMetadata
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
+import timber.log.Timber
 import javax.inject.Inject
 
 interface BackupProfileRepository {
@@ -26,13 +24,10 @@ interface BackupProfileRepository {
     suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType)
 
     suspend fun getSnapshotForBackup(backupType: BackupType): String?
-
-    suspend fun getProfileMetadataForCloudBackup(): CloudFileMetadata?
 }
 
 class BackupProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val preferencesManager: PreferencesManager,
     private val profileRepository: ProfileRepository
 ) : BackupProfileRepository {
 
@@ -40,10 +35,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
         snapshotSerialised: String,
         backupType: BackupType
     ): Result<Unit> = when (backupType) {
-        is BackupType.Cloud -> {
+        is BackupType.Cloud, BackupType.DeprecatedCloud -> {
+            Timber.d("☁\uFE0F Save temporary restoring profile for $backupType")
             if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
                 encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
-                preferencesManager.updateLastCloudBackupInstant(InstantGenerator())
                 Result.success(Unit)
             } else {
                 Result.failure(ProfileException.InvalidSnapshot)
@@ -83,7 +78,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getTemporaryRestoringProfile(backupType: BackupType): Profile? = when (backupType) {
-        is BackupType.Cloud -> encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()
+        is BackupType.DeprecatedCloud, is BackupType.Cloud -> {
+            Timber.d("☁\uFE0F Get temporary restoring profile from $backupType")
+            encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()
+        }
         is BackupType.File -> encryptedPreferencesManager.getProfileSnapshotFromFileBackup()
     }?.let { snapshot ->
         profileRepository.deriveProfileState(snapshot) as? ProfileState.Restored
@@ -91,8 +89,12 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType) = when (backupType) {
         is BackupType.Cloud -> {
+            // TODO what? probably nothing
+//            preferencesManager.removeLastCloudBackupInstant()
+        }
+        is BackupType.DeprecatedCloud -> {
             encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-            preferencesManager.removeLastCloudBackupInstant()
+//            preferencesManager.removeLastCloudBackupInstant()
         }
         is BackupType.File -> {
             encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()
@@ -106,26 +108,13 @@ class BackupProfileRepositoryImpl @Inject constructor(
         val profile = profileRepository.profile.firstOrNull()
         if (profile == null || profile.mainBabylonFactorSource == null) return null
         return when (backupType) {
-            is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
+            is BackupType.DeprecatedCloud, is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
                 profile.toJson()
             } else {
                 null
             }
             is BackupType.File.PlainText -> profile.toJson()
             is BackupType.File.Encrypted -> profile.toEncryptedJson(encryptionPassword = backupType.password)
-        }
-    }
-
-    override suspend fun getProfileMetadataForCloudBackup(): CloudFileMetadata? {
-        val profile = profileRepository.profile.firstOrNull()
-        return profile?.let {
-            CloudFileMetadata(
-                profileId = profile.header.id,
-                lastUsedOnDeviceName = profile.header.lastUsedOnDevice.description,
-                lastUsedOnDeviceModified = profile.header.lastUsedOnDevice.date,
-                totalNumberOfAccountsOnAllNetworks = profile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt(),
-                totalNumberOfPersonasOnAllNetworks = profile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
-            )
         }
     }
 }

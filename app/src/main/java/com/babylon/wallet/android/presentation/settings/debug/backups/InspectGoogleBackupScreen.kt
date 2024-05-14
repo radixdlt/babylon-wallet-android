@@ -35,8 +35,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.google.api.services.drive.model.File
-import java.time.Instant
+import rdx.works.profile.domain.backup.CloudBackupFileEntity
 
 @Composable
 fun InspectGoogleBackupsScreen(
@@ -114,7 +113,7 @@ fun InspectGoogleBackupsScreen(
                     contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
                 ) {
                     items(state.files) {
-                        GoogleDriveFile(file = it)
+                        GoogleDriveFile(entity = it)
                     }
                 }
             }
@@ -126,7 +125,7 @@ fun InspectGoogleBackupsScreen(
 @Composable
 private fun GoogleDriveFile(
     modifier: Modifier = Modifier,
-    file: File
+    entity: CloudBackupFileEntity
 ) {
     Surface(
         modifier = modifier.padding(bottom = RadixTheme.dimensions.paddingMedium),
@@ -140,17 +139,14 @@ private fun GoogleDriveFile(
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
-            FileProperty(key = "ID", value = file.id)
-            FileProperty(key = "Name", value = file.name)
-            FileProperty(key = "Backed up", value = remember(file.modifiedTime) {
-                Instant.ofEpochMilli(file.modifiedTime.value).toString()
+            FileProperty(key = "ID", value = entity.id.id)
+            FileProperty(key = "ProfileId", value = entity.profileId.toString())
+            FileProperty(key = "Backed up", value = remember(entity.lastUsedOnDeviceModified) {
+                entity.lastUsedOnDeviceModified.toInstant().toString()
             })
-            file.appProperties.forEach { entry ->
-                FileProperty(
-                    key = entry.key,
-                    value = entry.value
-                )
-            }
+            FileProperty(key = "Device", value = entity.lastUsedOnDeviceName)
+            FileProperty(key = "Accounts", value = entity.totalNumberOfAccountsOnAllNetworks.toString())
+            FileProperty(key = "Personas", value = entity.totalNumberOfPersonasOnAllNetworks.toString())
         }
     }
 }
