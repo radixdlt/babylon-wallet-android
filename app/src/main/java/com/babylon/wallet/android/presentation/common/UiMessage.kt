@@ -14,8 +14,8 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
-import java.io.IOException
 import rdx.works.profile.domain.ProfileException
+import java.io.IOException
 
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
