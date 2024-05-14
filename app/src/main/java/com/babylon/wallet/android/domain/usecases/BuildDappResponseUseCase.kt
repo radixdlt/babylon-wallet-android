@@ -69,7 +69,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
         }
 
         val accountsResponses = accounts.map { account ->
-            AccountsRequestResponseItem.Account(
+            com.babylon.wallet.android.data.dapp.model.Account(
                 address = account.address.string,
                 label = account.displayName.value,
                 appearanceId = account.appearanceId.value.toInt()

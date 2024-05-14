@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -32,6 +33,7 @@ import javax.inject.Inject
 class ChooseLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val appEventBus: AppEventBus,
+    private val p2pLinksRepository: P2PLinksRepository,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<ChooseLedgerUiState>(),
     OneOffEventHandler<ChooseLedgerEvent> by OneOffEventHandlerImpl() {
@@ -98,7 +100,10 @@ class ChooseLedgerViewModel @Inject constructor(
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
+                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks()
+                    .asList()
+                    .isNotEmpty()
+
                 // check if there is not linked connector and show link new connector screen
                 if (hasAtLeastOneLinkedConnector.not()) {
                     _state.update {
@@ -137,7 +142,10 @@ class ChooseLedgerViewModel @Inject constructor(
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             _state.update { uiState ->
-                val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
+                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks()
+                    .asList()
+                    .isNotEmpty()
+
                 if (hasAtLeastOneLinkedConnector) {
                     uiState.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                 } else {

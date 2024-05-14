@@ -48,12 +48,4 @@ data class AccountsRequestResponseItem(
     @SerialName("accounts") val accounts: List<Account>,
     @SerialName("challenge") val challenge: String? = null,
     @SerialName("proofs") val proofs: List<AccountProof>? = null
-) {
-
-    @Serializable
-    data class Account(
-        @SerialName("address") val address: String,
-        @SerialName("label") val label: String,
-        @SerialName("appearanceId") val appearanceId: Int,
-    )
-}
+)

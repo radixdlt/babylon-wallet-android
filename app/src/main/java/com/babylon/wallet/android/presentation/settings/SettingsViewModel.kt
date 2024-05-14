@@ -3,13 +3,13 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Preferences
 import com.babylon.wallet.android.utils.Constants
-import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.SargonBuildInformation
 import com.radixdlt.sargon.extensions.Sargon
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,14 +20,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.core.mapWhen
-import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    getProfileUseCase: GetProfileUseCase,
-    getSecurityProblemsUseCase: GetSecurityProblemsUseCase
+    getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
+    p2PLinksRepository: P2PLinksRepository
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
@@ -44,12 +43,12 @@ class SettingsViewModel @Inject constructor(
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
-        getProfileUseCase.flow,
+        p2PLinksRepository.observeP2PLinks(),
         getSecurityProblemsUseCase(),
-    ) { profile: Profile, securityProblems ->
+    ) { p2pLinks, securityProblems ->
         var mutated = defaultSettings
         val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
-        if (profile.appPreferences.p2pLinks.isEmpty() && LinkToConnector !in settingsItems) {
+        if (p2pLinks.asList().isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
         if (securityProblems.isNotEmpty()) {

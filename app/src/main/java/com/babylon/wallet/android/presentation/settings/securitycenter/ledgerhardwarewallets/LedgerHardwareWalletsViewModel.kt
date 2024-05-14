@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerha
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LedgerHardwareWalletsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val ledgerMessenger: LedgerMessenger
+    private val ledgerMessenger: LedgerMessenger,
+    private val p2PLinksRepository: P2PLinksRepository
 ) : StateViewModel<LedgerHardwareWalletsUiState>() {
 
     override fun initialState(): LedgerHardwareWalletsUiState = LedgerHardwareWalletsUiState()
@@ -38,7 +40,10 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
+            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
+                .asList()
+                .isNotEmpty()
+
             if (hasAtLeastOneLinkedConnector) {
                 _state.update {
                     it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLedger)

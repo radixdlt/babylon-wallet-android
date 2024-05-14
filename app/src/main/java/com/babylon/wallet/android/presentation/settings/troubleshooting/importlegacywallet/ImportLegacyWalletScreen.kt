@@ -175,7 +175,7 @@ fun ImportLegacyWalletScreen(
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
         importAllAccounts = viewModel::importAllAccounts,
-        onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onInvalidConnectionPasswordShown,
+        onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onErrorDismiss,
         seedPhraseInputState = state.seedPhraseInputState
     )
 }
@@ -397,15 +397,12 @@ private fun ImportLegacyWalletContent(
         if (shouldShowAddLinkConnectorScreen) {
             AddLinkConnectorScreen(
                 modifier = Modifier.fillMaxSize(),
-                showContent = addLinkConnectorState.showContent,
+                state = addLinkConnectorState,
                 onQrCodeScanned = onLinkConnectorQrCodeScanned,
                 onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-                connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-                isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-                onNewConnectorContinueClick = onNewConnectorContinueClick,
-                onNewConnectorCloseClick = onNewConnectorCloseClick,
-                invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
-                onInvalidConnectionPasswordDismissed = onInvalidConnectionPasswordShown
+                onContinueClick = onNewConnectorContinueClick,
+                onCloseClick = onNewConnectorCloseClick,
+                onErrorDismiss = onInvalidConnectionPasswordShown
             )
         }
         if (shouldShowAddLedgerDeviceScreen) {

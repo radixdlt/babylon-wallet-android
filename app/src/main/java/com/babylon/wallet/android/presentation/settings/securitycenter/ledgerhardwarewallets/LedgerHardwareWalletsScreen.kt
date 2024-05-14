@@ -133,21 +133,18 @@ fun LedgerHardwareWalletsScreen(
             is LedgerHardwareWalletsUiState.ShowContent.AddLinkConnector -> {
                 AddLinkConnectorScreen(
                     modifier = Modifier,
-                    showContent = addLinkConnectorState.showContent,
+                    state = addLinkConnectorState,
                     onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                     onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-                    connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-                    isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-                    onNewConnectorContinueClick = {
+                    onContinueClick = {
                         addLinkConnectorViewModel.onContinueClick()
                         viewModel.disableAddLedgerButtonUntilConnectionIsEstablished()
                     },
-                    onNewConnectorCloseClick = {
+                    onCloseClick = {
                         addLinkConnectorViewModel.onCloseClick()
                         viewModel.onNewConnectorCloseClick()
                     },
-                    invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
-                    onInvalidConnectionPasswordDismissed = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
+                    onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss
                 )
             }
         }

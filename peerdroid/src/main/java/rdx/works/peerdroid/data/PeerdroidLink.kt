@@ -1,7 +1,9 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
-import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Signature
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,10 +17,18 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import rdx.works.core.serializers.PublicKeySerializer
+import rdx.works.core.serializers.SignatureSerializer
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.completeWhenDisconnected
+import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.AnswerPayload.Companion.toAnswerPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
@@ -30,12 +40,41 @@ import timber.log.Timber
 interface PeerdroidLink {
 
     /**
-     * Call this function to add a connection in the wallet settings.
-     *
+     * Initiates a p2p connection and the linking flow using [P2pLink.connectionPassword].
+     * Lets the caller complete the linking through [ConnectionListener] callback
+     * by computing [LinkClientExchangeInteraction] message and sending it using [sendMessage].
+     * Upon successful message sending, the linking is considered completed.
      */
-    suspend fun addConnection(encryptionKey: RadixConnectPassword): Result<Unit>
+    suspend fun addConnection(
+        p2pLink: P2pLink,
+        connectionListener: ConnectionListener
+    ): Result<Unit>
+
+    suspend fun sendMessage(
+        connectionId: String,
+        message: LinkClientExchangeInteraction
+    ): Result<Unit>
+
+    @Serializable
+    data class LinkClientExchangeInteraction(
+        @EncodeDefault
+        @SerialName("discriminator")
+        val discriminator: String = "linkClient",
+        @Serializable(with = PublicKeySerializer::class)
+        @SerialName("publicKey")
+        val publicKey: PublicKey,
+        @Serializable(with = SignatureSerializer::class)
+        @SerialName("signature")
+        val signature: Signature
+    )
+
+    interface ConnectionListener {
+
+        suspend fun completeLinking(connectionId: String): Result<Unit>
+    }
 }
 
+@Suppress("TooManyFunctions")
 internal class PeerdroidLinkImpl(
     @ApplicationContext private val applicationContext: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -57,20 +96,24 @@ internal class PeerdroidLinkImpl(
     // This CompletableDeferred will return a result indicating if the peer connection is ready or not.
     private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
-    override suspend fun addConnection(encryptionKey: RadixConnectPassword): Result<Unit> {
+    override suspend fun addConnection(
+        p2pLink: P2pLink,
+        connectionListener: PeerdroidLink.ConnectionListener
+    ): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
+
         // get connection id from encryption key
-        val connectionId = ConnectionIdHolder(encryptionKey)
+        val connectionId = ConnectionIdHolder(p2pLink)
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {
-            observePeerConnectionUntilEstablished()
+            observePeerConnectionUntilEstablished(connectionId.id, connectionListener)
             peerConnectionDeferred.await() // wait until the peer connection is initialized and ready to negotiate
             // and now establish the web socket
             webSocketClient.initSession(
                 connectionId = connectionId,
-                encryptionKey = encryptionKey
+                encryptionKey = p2pLink.connectionPassword
             )
                 .onSuccess {
                     listenForIncomingMessagesFromSignalingServer(webSocketClient)
@@ -81,6 +124,20 @@ internal class PeerdroidLinkImpl(
         }
 
         return addConnectionDeferred.await()
+    }
+
+    override suspend fun sendMessage(
+        connectionId: String,
+        message: PeerdroidLink.LinkClientExchangeInteraction
+    ): Result<Unit> {
+        val dataChannelWrapper = DataChannelWrapper(
+            connectionIdHolder = ConnectionIdHolder(connectionId),
+            webRtcDataChannel = webRtcManager.getDataChannel()
+        )
+
+        val serializedMessage = Json.encodeToString(message)
+        Timber.d("🗼 \uD83D\uDCE1️ sending message to the connector extension ⬆️")
+        return dataChannelWrapper.sendMessage(serializedMessage)
     }
 
     @Suppress("LongMethod")
@@ -147,7 +204,10 @@ internal class PeerdroidLinkImpl(
 
     // a peer connection executed its lifecycle:
     // created -> connecting -> connected -> disconnected
-    private fun observePeerConnectionUntilEstablished() {
+    private fun observePeerConnectionUntilEstablished(
+        connectionId: String,
+        connectionListener: PeerdroidLink.ConnectionListener
+    ) {
         webRtcManagerJob = webRtcManager
             .createPeerConnection("")
             .onStart { // for debugging
@@ -174,10 +234,20 @@ internal class PeerdroidLinkImpl(
                     }
                     PeerConnectionEvent.Connected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection connected 🟢")
+
+                        connectionListener.completeLinking(connectionId)
+                            .onSuccess {
+                                Timber.d("🗼️ linking completed")
+                                terminateWithSuccess()
+                            }
+                            .onFailure { throwable ->
+                                Timber.e("🗼️ failed to complete linking: ${throwable.message}❗")
+                                terminateWithError()
+                            }
                     }
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection disconnected 🔴")
-                        terminateWithSuccess()
+                        terminateWithError()
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection failed ❌")
@@ -248,20 +318,21 @@ internal class PeerdroidLinkImpl(
     }
 
     private suspend fun terminateWithError() {
-        webSocketClientJob?.cancel()
-        webSocketClient.closeSession()
-        webRtcManagerJob?.cancel()
-        webRtcManager.close()
+        terminateConnection()
         peerConnectionDeferred.complete(Result.failure(IllegalStateException("peer connection couldn't initialize")))
         addConnectionDeferred.complete(Result.failure(IllegalStateException("data channel couldn't initialize")))
     }
 
     private suspend fun terminateWithSuccess() {
+        terminateConnection()
+        addConnectionDeferred.complete(Result.success(Unit))
+    }
+
+    private suspend fun terminateConnection() {
         Timber.d("🗼️ terminate webrtc and web socket connection \uD83D\uDEAB")
         webSocketClientJob?.cancel()
         webSocketClient.closeSession()
         webRtcManagerJob?.cancel()
         webRtcManager.close()
-        addConnectionDeferred.complete(Result.success(Unit))
     }
 }

@@ -231,7 +231,10 @@ private fun WalletContent(
                 onRadixBannerDismiss = onRadixBannerDismiss
             )
 
-            AnimatedVisibility(visible = state.isLoading) {
+            AnimatedVisibility(
+                modifier = Modifier.align(Alignment.Center),
+                visible = state.isLoading
+            ) {
                 CircularProgressIndicator(color = RadixTheme.colors.gray1)
             }
 
@@ -469,7 +472,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         isLoadingBalance = true
                     ),
                 ),
-                isLoading = false,
+                isLoading = true,
                 isSettingsWarningVisible = true,
                 totalFiatValueOfWallet = FiatPrice(
                     price = Decimal192.sample.invoke(),

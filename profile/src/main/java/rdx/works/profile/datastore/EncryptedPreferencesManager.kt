@@ -19,6 +19,7 @@ import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.core.logNonFatalException
+import rdx.works.profile.di.PermanentDataStore
 import rdx.works.profile.di.ProfileDataStore
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.ProfileException
@@ -29,6 +30,7 @@ import javax.inject.Singleton
 @Singleton
 class EncryptedPreferencesManager @Inject constructor(
     @ProfileDataStore private val preferences: DataStore<Preferences>,
+    @PermanentDataStore private val permanentPreferences: DataStore<Preferences>,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
@@ -75,10 +77,14 @@ class EncryptedPreferencesManager @Inject constructor(
     }
 
     private suspend fun putString(key: String, newValue: String?, keySpec: KeySpec) {
+        putString(preferences, key, newValue, keySpec)
+    }
+
+    private suspend fun putString(prefs: DataStore<Preferences>, key: String, newValue: String?, keySpec: KeySpec) {
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
             val encryptedValue = newValueNotNull.encrypt(withKey = keySpec).getOrThrow()
-            preferences.edit { mutablePreferences ->
+            prefs.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
         }
@@ -134,6 +140,34 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
+    fun getP2PLinkListJson(): Flow<Result<String>?> {
+        return permanentPreferences.data.catchIOException()
+            .map { preferences ->
+                preferences[stringPreferencesKey(P2P_LINKS_PREFERENCES_KEY)]
+                    .takeIf { !it.isNullOrEmpty() }
+                    ?.decrypt(KeySpec.Profile())
+            }
+    }
+
+    suspend fun saveP2PLinkListJson(p2pLinkListJson: String) {
+        putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, p2pLinkListJson, KeySpec.Profile())
+    }
+
+    suspend fun saveP2PLinksWalletPrivateKey(privateKeyHex: String) {
+        putString(permanentPreferences, P2P_LINKS_WALLET_PK_PREFERENCES_KEY, privateKeyHex, KeySpec.Profile())
+    }
+
+    suspend fun getP2PLinksWalletPrivateKey(): String? {
+        return permanentPreferences.data.catchIOException()
+            .map { preferences ->
+                preferences[stringPreferencesKey(P2P_LINKS_WALLET_PK_PREFERENCES_KEY)]
+                    .takeIf { !it.isNullOrEmpty() }
+                    ?.decrypt(KeySpec.Profile())
+            }
+            .firstOrNull()
+            ?.getOrNull()
+    }
+
     suspend fun clear() = preferences.edit { it.clear() }
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->
@@ -147,9 +181,12 @@ class EncryptedPreferencesManager @Inject constructor(
 
     companion object {
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
+        const val PERMANENT_DATA_STORE_NAME = "rdx_permanent_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
+        private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
+        private const val P2P_LINKS_WALLET_PK_PREFERENCES_KEY = "p2p_links_wallet_pk_key"
         private const val RETRY_COUNT = 3L
         private const val RETRY_DELAY = 1500L
     }

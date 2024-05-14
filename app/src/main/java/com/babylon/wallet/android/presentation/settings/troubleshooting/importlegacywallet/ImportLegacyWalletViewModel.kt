@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -65,7 +66,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val getFactorSourceIdForOlympiaAccountsUseCase: GetFactorSourceIdForOlympiaAccountsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val olympiaWalletDataParser: OlympiaWalletDataParser,
-    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase
+    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
+    private val p2PLinksRepository: P2PLinksRepository
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private val scannedData = mutableSetOf<String>()
@@ -438,7 +440,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onContinueWithLedgerClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
+            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
+                .asList()
+                .isNotEmpty()
 
             if (hasAtLeastOneLinkedConnector) {
                 useLedgerDelegate.onSendAddLedgerRequest()

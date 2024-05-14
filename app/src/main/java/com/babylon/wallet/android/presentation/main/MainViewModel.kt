@@ -3,10 +3,12 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
+import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -48,6 +50,7 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel
 class MainViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
+    p2PLinksRepository: P2PLinksRepository,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
@@ -56,7 +59,8 @@ class MainViewModel @Inject constructor(
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase
+    private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
+    private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -64,12 +68,10 @@ class MainViewModel @Inject constructor(
     private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
 
-    val observeP2PLinks = getProfileUseCase
-        .flow
-        .map { it.appPreferences.p2pLinks }
+    val observeP2PLinks = p2PLinksRepository.observeP2PLinks()
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
-            p2pLinks.forEach { p2PLink ->
+            p2pLinks.asList().forEach { p2PLink ->
                 establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
             }
         }
@@ -119,6 +121,10 @@ class MainViewModel @Inject constructor(
             }.collect()
         }
         handleAllIncomingRequests()
+
+        viewModelScope.launch {
+            observeAccountsAndSyncWithConnectorExtensionUseCase()
+        }
     }
 
     override fun initialState(): MainUiState {
@@ -134,7 +140,7 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun establishLinkConnection(connectionPassword: RadixConnectPassword) {
-        peerdroidClient.connect(connectionPassword = connectionPassword)
+        peerdroidClient.connect(connectionPassword)
             .onSuccess {
                 if (incomingDappRequestsJob == null) {
                     Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")

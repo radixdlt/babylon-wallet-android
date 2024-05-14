@@ -38,13 +38,12 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorSc
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun LinkedConnectorsScreen(
@@ -63,24 +62,23 @@ fun LinkedConnectorsScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        addLinkConnectorViewModel.oneOffEvent.collect { event ->
+            when (event) {
+                AddLinkConnectorViewModel.Event.Close -> viewModel.onNewConnectorCloseClick()
+            }
+        }
+    }
+
     if (state.showAddLinkConnectorScreen) {
         AddLinkConnectorScreen(
             modifier = modifier,
-            showContent = addLinkConnectorState.showContent,
+            state = addLinkConnectorState,
             onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
             onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-            connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-            isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-            onNewConnectorContinueClick = {
-                addLinkConnectorViewModel.onContinueClick()
-                viewModel.onNewConnectorCloseClick()
-            },
-            onNewConnectorCloseClick = {
-                addLinkConnectorViewModel.onCloseClick()
-                viewModel.onNewConnectorCloseClick()
-            },
-            invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
-            onInvalidConnectionPasswordDismissed = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
+            onContinueClick = addLinkConnectorViewModel::onContinueClick,
+            onCloseClick = addLinkConnectorViewModel::onCloseClick,
+            onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss
         )
     } else {
         LinkedConnectorsContent(
@@ -98,9 +96,9 @@ fun LinkedConnectorsScreen(
 private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
     isAddingNewLinkConnectorInProgress: Boolean,
-    activeLinkedConnectorsList: ImmutableList<P2pLink>,
+    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (P2pLink) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -113,7 +111,7 @@ private fun LinkedConnectorsContent(
             )
         }
     ) { padding ->
-        var onLinkToDelete by remember { mutableStateOf<P2pLink?>(null) }
+        var connectionLinkToDelete by remember { mutableStateOf<PublicKeyHash?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -122,19 +120,19 @@ private fun LinkedConnectorsContent(
                 ActiveLinkedConnectorDetails(
                     activeLinkedConnectorsList = activeLinkedConnectorsList,
                     onLinkNewConnectorClick = onLinkNewConnectorClick,
-                    onDeleteConnectorClick = { onLinkToDelete = it },
+                    onDeleteConnectorClick = { connectionLinkToDelete = it },
                     isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (onLinkToDelete != null) {
+                if (connectionLinkToDelete != null) {
                     @Suppress("UnsafeCallOnNullableType")
                     BasicPromptAlertDialog(
                         finish = {
                             if (it) {
-                                onDeleteConnectorClick(onLinkToDelete!!)
+                                onDeleteConnectorClick(connectionLinkToDelete!!)
                             }
-                            onLinkToDelete = null
+                            connectionLinkToDelete = null
                         },
                         title = {
                             Text(
@@ -160,9 +158,9 @@ private fun LinkedConnectorsContent(
 
 @Composable
 private fun ActiveLinkedConnectorDetails(
-    activeLinkedConnectorsList: ImmutableList<P2pLink>,
+    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (P2pLink) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -186,20 +184,17 @@ private fun ActiveLinkedConnectorDetails(
 @Composable
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
-    activeLinkedConnectorsList: ImmutableList<P2pLink>,
-    onDeleteConnectorClick: (P2pLink) -> Unit,
+    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
         items(
             items = activeLinkedConnectorsList,
-            key = { activeLinkedConnector ->
-                activeLinkedConnector.id.hex
-            },
-            itemContent = { p2pLink ->
+            itemContent = { item ->
                 ActiveLinkedConnectorContent(
-                    activeLinkedConnector = p2pLink,
+                    activeLinkedConnector = item,
                     onDeleteConnectorClick = onDeleteConnectorClick
                 )
             }
@@ -229,9 +224,9 @@ private fun ActiveLinkedConnectorsListContent(
 
 @Composable
 private fun ActiveLinkedConnectorContent(
-    activeLinkedConnector: P2pLink,
+    activeLinkedConnector: LinkedConnectorsUiState.ConnectorUiItem,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: (P2pLink) -> Unit,
+    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -243,12 +238,12 @@ private fun ActiveLinkedConnectorContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = activeLinkedConnector.displayName,
+                text = activeLinkedConnector.name,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
             IconButton(onClick = {
-                onDeleteConnectorClick(activeLinkedConnector)
+                onDeleteConnectorClick(activeLinkedConnector.id)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete_24),
@@ -282,7 +277,16 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
 fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
-            activeLinkedConnectorsList = persistentListOf(P2pLink.sample()),
+            activeLinkedConnectorsList = listOf(
+                LinkedConnectorsUiState.ConnectorUiItem(
+                    id = PublicKeyHash.sample.invoke(),
+                    name = "chrome connection"
+                ),
+                LinkedConnectorsUiState.ConnectorUiItem(
+                    id = PublicKeyHash.sample.other(),
+                    name = "firefox connection"
+                )
+            ).toPersistentList(),
             onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},

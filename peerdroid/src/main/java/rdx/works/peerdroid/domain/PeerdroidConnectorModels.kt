@@ -1,7 +1,9 @@
 package rdx.works.peerdroid.domain
 
+import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.clientID
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
 import kotlinx.coroutines.Job
@@ -15,6 +17,8 @@ value class ConnectionIdHolder(
 ) {
 
     constructor(password: RadixConnectPassword) : this(password.value.bytes.hash().hex)
+
+    constructor(p2pLink: P2pLink) : this(p2pLink.clientID().hex)
 }
 
 @JvmInline

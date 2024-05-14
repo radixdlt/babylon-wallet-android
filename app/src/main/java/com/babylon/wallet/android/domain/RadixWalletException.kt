@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.domain
 
 import android.content.Context
@@ -185,6 +187,19 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 FailedToSignAuthChallenge -> WalletErrorType.InvalidRequest
             }
     }
+
+    sealed class LinkConnectionException : RadixWalletException() {
+
+        data object OldQRVersion : LinkConnectionException()
+
+        data object InvalidQR : LinkConnectionException()
+
+        data object InvalidSignature : LinkConnectionException()
+
+        data object UnknownPurpose : LinkConnectionException()
+
+        data object PurposeChangeNotSupported : LinkConnectionException()
+    }
 }
 
 typealias ConnectorExtensionError = WalletErrorType
@@ -285,6 +300,22 @@ fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context
     }
 }
 
+fun RadixWalletException.LinkConnectionException.toUserFriendlyMessage(context: Context): String = when (this) {
+    RadixWalletException.LinkConnectionException.OldQRVersion -> {
+        context.getString(R.string.linkedConnectors_oldQRErrorMessage)
+    }
+    RadixWalletException.LinkConnectionException.InvalidQR,
+    RadixWalletException.LinkConnectionException.InvalidSignature -> {
+        context.getString(R.string.linkedConnectors_incorrectQrMessage)
+    }
+    RadixWalletException.LinkConnectionException.PurposeChangeNotSupported -> {
+        context.getString(R.string.linkedConnectors_changingPurposeNotSupportedErrorMessage)
+    }
+    RadixWalletException.LinkConnectionException.UnknownPurpose -> {
+        context.getString(R.string.linkedConnectors_unknownPurposeErrorMessage)
+    }
+}
+
 fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
         is RadixWalletException.TransactionSubmitException.FailedToPollTXStatus -> {
@@ -376,6 +407,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.PrepareTransactionException -> toUserFriendlyMessage(context)
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
+        is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
     }
 }
 
