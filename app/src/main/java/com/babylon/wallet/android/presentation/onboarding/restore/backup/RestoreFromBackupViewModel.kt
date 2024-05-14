@@ -63,11 +63,15 @@ class RestoreFromBackupViewModel @Inject constructor(
         }
     }
 
-    fun onRestoringProfileSelected(index: Int) {
+    fun onRestoringProfileSelected(restoringProfile: State.RestoringProfile) {
         _state.update { state ->
             state.copy(
                 restoringProfiles = state.restoringProfiles?.map {
-                    state.restoringProfiles[index].copy(selected = true)
+                    if (restoringProfile == it.data) {
+                        it.copy(selected = true)
+                    } else {
+                        it.copy(selected = false)
+                    }
                 }?.toImmutableList()
             )
         }
