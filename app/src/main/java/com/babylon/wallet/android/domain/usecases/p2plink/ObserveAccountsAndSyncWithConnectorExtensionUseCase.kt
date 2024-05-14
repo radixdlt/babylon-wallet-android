@@ -8,11 +8,11 @@ import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInte
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.radixdlt.sargon.Hash
 import com.radixdlt.sargon.RadixConnectPurpose
-import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.clientID
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
@@ -22,54 +22,23 @@ import kotlinx.serialization.json.Json
 import rdx.works.core.hash
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
-import rdx.works.peerdroid.data.PeerdroidConnector
-import rdx.works.peerdroid.domain.PeerConnectionStatus
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
+class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
     private val p2pLinksRepository: P2PLinksRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val peerdroidConnector: PeerdroidConnector,
     private val peerdroidClient: PeerdroidClient,
     private val preferencesManager: PreferencesManager,
     private val json: Json
 ) {
 
     suspend operator fun invoke() {
-        val connectionIdsFlow = peerdroidConnector.peerConnectionStatus
-            .filter { connectionStatuses ->
-                connectionStatuses.isNotEmpty() &&
-                    !connectionStatuses.any { it.value == PeerConnectionStatus.CONNECTING }
-            }
-            .map { statuses ->
-                val generalPurposeConnectionIds = p2pLinksRepository.getP2PLinks()
-                    .asList()
-                    .filter { it.connectionPurpose == RadixConnectPurpose.GENERAL }
-                    .map { it.connectionPassword.value.bytes.hash().hex }
-                val openConnectionIds = statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
-
-                generalPurposeConnectionIds.filter { connectionId -> connectionId in openConnectionIds }
-            }
-            .filter { connectionIds -> connectionIds.isNotEmpty() }
-
-        val accountListMessageFlow = getProfileUseCase.flow.map {
-            val accounts = it.activeAccountsOnCurrentNetwork
-
-            val accountListExchangeInteraction = ConnectorExtensionExchangeInteraction.AccountList(
-                accounts = accounts.map { account ->
-                    Account(
-                        address = account.address.string,
-                        label = account.displayName.value,
-                        appearanceId = account.appearanceId.value.toInt()
-                    )
-                }
-            )
-            json.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
-        }
-
-        combine(connectionIdsFlow, accountListMessageFlow) { connectionIds, accountListMessage ->
+        combine(
+            observeOpenGeneralPurposeConnectionIds(),
+            observeAccountsOnCurrentNetworkInteractionMessage()
+        ) { connectionIds, accountListMessage ->
             connectionIds to accountListMessage
         }.collect { connectionIdsAndMessage ->
             val messageHash = connectionIdsAndMessage.second.encodeToByteArray()
@@ -98,7 +67,36 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
         }
     }
 
-    private suspend fun sendAccountListMessage(connectionIds: List<String>, message: String): Result<Unit> {
+    private fun observeOpenGeneralPurposeConnectionIds(): Flow<Set<String>> {
+        return peerdroidClient.openConnectionIds
+            .map { openConnectionIds ->
+                val generalPurposeConnectionIds = p2pLinksRepository.getP2PLinks(RadixConnectPurpose.GENERAL)
+                    .asList()
+                    .map { it.clientID().hex }
+                generalPurposeConnectionIds.filter { connectionId -> connectionId in openConnectionIds }
+                    .toSet()
+            }
+            .filter { connectionIds -> connectionIds.isNotEmpty() }
+    }
+
+    private fun observeAccountsOnCurrentNetworkInteractionMessage(): Flow<String> {
+        return getProfileUseCase.flow.map {
+            val accounts = it.activeAccountsOnCurrentNetwork
+
+            val accountListExchangeInteraction = ConnectorExtensionExchangeInteraction.AccountList(
+                accounts = accounts.map { account ->
+                    Account(
+                        address = account.address.string,
+                        label = account.displayName.value,
+                        appearanceId = account.appearanceId.value.toInt()
+                    )
+                }
+            )
+            json.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
+        }
+    }
+
+    private suspend fun sendAccountListMessage(connectionIds: Set<String>, message: String): Result<Unit> {
         val results = connectionIds.map { connectionId ->
             peerdroidClient.sendMessage(connectionId, message)
         }

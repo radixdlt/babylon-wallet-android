@@ -40,8 +40,10 @@ import timber.log.Timber
 interface PeerdroidLink {
 
     /**
-     * Call this function to add a connection in the wallet settings.
-     *
+     * Initiates a p2p connection and the linking flow using [P2pLink.connectionPassword].
+     * Lets the caller complete the linking through [ConnectionListener] callback
+     * by computing [LinkClientExchangeInteraction] message and sending it using [sendMessage].
+     * Upon successful message sending, the linking is considered completed.
      */
     suspend fun addConnection(
         p2pLink: P2pLink,

@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -25,12 +26,15 @@ import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
+import rdx.works.peerdroid.domain.PeerConnectionStatus
 import timber.log.Timber
 import javax.inject.Inject
 
 interface PeerdroidClient {
 
     val hasAtLeastOneConnection: Flow<Boolean>
+
+    val openConnectionIds: Flow<Set<String>>
 
     suspend fun connect(connectionPassword: RadixConnectPassword): Result<Unit>
 
@@ -61,6 +65,16 @@ class PeerdroidClientImpl @Inject constructor(
 
     override val hasAtLeastOneConnection: Flow<Boolean>
         get() = peerdroidConnector.anyChannelConnected
+
+    override val openConnectionIds: Flow<Set<String>>
+        get() = peerdroidConnector.peerConnectionStatus
+            .filter { connectionStatuses ->
+                connectionStatuses.isNotEmpty() &&
+                    !connectionStatuses.any { it.value == PeerConnectionStatus.CONNECTING }
+            }
+            .map { statuses ->
+                statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
+            }
 
     override suspend fun connect(connectionPassword: RadixConnectPassword): Result<Unit> {
         return peerdroidConnector.connectToConnectorExtension(encryptionKey = connectionPassword)

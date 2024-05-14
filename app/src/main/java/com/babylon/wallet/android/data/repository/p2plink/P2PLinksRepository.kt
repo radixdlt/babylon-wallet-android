@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.p2plink
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.RadixConnectPurpose
 import com.radixdlt.sargon.extensions.P2pLinks
 import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.fromJson
@@ -22,6 +23,8 @@ interface P2PLinksRepository {
     fun observeP2PLinks(): Flow<P2pLinks>
 
     suspend fun getP2PLinks(): P2pLinks
+
+    suspend fun getP2PLinks(purpose: RadixConnectPurpose): P2pLinks
 
     suspend fun addOrUpdateP2PLink(p2pLink: P2pLink)
 
@@ -50,7 +53,17 @@ class P2PLinksRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getP2PLinks(): P2pLinks {
-        return withContext(ioDispatcher) { getSavedP2PLinks() }
+        return withContext(ioDispatcher) {
+            getSavedP2PLinks()
+        }
+    }
+
+    override suspend fun getP2PLinks(purpose: RadixConnectPurpose): P2pLinks {
+        return withContext(ioDispatcher) {
+            getSavedP2PLinks().asList()
+                .filter { it.connectionPurpose == purpose }
+                .asIdentifiable()
+        }
     }
 
     override suspend fun addOrUpdateP2PLink(p2pLink: P2pLink) {
