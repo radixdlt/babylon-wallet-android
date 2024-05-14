@@ -21,12 +21,10 @@ val backupSettingsScreenIntent: Intent
     }
 
 fun Context.biometricAuthenticate(
-    onlyDeviceCredentials: Boolean = false,
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit
 ) {
     findFragmentActivity()?.let { activity ->
         activity.activityBiometricAuthenticate(
-            onlyDeviceCredentials = onlyDeviceCredentials,
             authenticationCallback = { biometricAuthenticationResult ->
                 authenticationCallback(biometricAuthenticationResult)
             }

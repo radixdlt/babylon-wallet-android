@@ -75,24 +75,17 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean, biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            val isBiometricsProvided = if (!getProfileUseCase.isInitialized()) {
-                if (biometricAuthProvider()) {
-                    // TODO To be checked with the secure folder PR.
-                    // Guard against problems with secure folder, even when the user has provided biometrics.
-                    val newMnemonic = mnemonicRepository.createNew().getOrNull() ?: return@launch
-
+            if (biometricAuthProvider().not()) {
+                return@launch
+            }
+            if (!getProfileUseCase.isInitialized()) {
+                mnemonicRepository.createNew().mapCatching { newMnemonic ->
                     generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
-                    // Since we choose to create a new profile, this is the time
-                    // we discard the data copied from the cloud backup, since they represent
-                    // a previous instance.
                     discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
-
-                    true
-                } else {
+                }.onFailure { throwable ->
+                    handleAccountCreationError(throwable)
                     return@launch
                 }
-            } else {
-                false
             }
 
             // at the moment you can create a account either with device factor source or ledger factor source
@@ -111,7 +104,7 @@ class CreateAccountViewModel @Inject constructor(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
-                    isBiometricsProvided = isBiometricsProvided
+                    isBiometricsProvided = true
                 )
             ).onSuccess {
                 handleAccountCreate { nameOfAccount ->
@@ -126,18 +119,22 @@ class CreateAccountViewModel @Inject constructor(
                     )
                 }
             }.onFailure { throwable ->
-                if (throwable is ProfileException.SecureStorageAccess) {
-                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                handleAccountCreationError(throwable)
+            }
+        }
+    }
+
+    private suspend fun handleAccountCreationError(throwable: Throwable) {
+        if (throwable is ProfileException.SecureStorageAccess) {
+            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+        } else {
+            _state.update { state ->
+                if (throwable is ProfileException.NoMnemonic) {
+                    state.copy(isNoMnemonicErrorVisible = true)
                 } else {
-                    _state.update { state ->
-                        if (throwable is ProfileException.NoMnemonic) {
-                            state.copy(isNoMnemonicErrorVisible = true)
-                        } else {
-                            state.copy(
-                                uiMessage = UiMessage.ErrorMessage(throwable)
-                            )
-                        }
-                    }
+                    state.copy(
+                        uiMessage = UiMessage.ErrorMessage(throwable)
+                    )
                 }
             }
         }

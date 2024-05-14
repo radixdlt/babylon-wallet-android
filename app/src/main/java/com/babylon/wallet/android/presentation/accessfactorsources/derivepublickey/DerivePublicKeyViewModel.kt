@@ -56,7 +56,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                 is FactorSource.Device -> if (input.isBiometricsProvided) {
                     biometricAuthenticationCompleted()
                 } else {
-                    sendEvent(Event.RequestBiometricPrompt())
+                    sendEvent(Event.RequestBiometricPrompt)
                 }
             }
         }
@@ -102,7 +102,7 @@ class DerivePublicKeyViewModel @Inject constructor(
             }
             when (state.value.showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> {
-                    sendEvent(Event.RequestBiometricPrompt())
+                    sendEvent(Event.RequestBiometricPrompt)
                 }
 
                 is ShowContentForFactorSource.Ledger -> {
@@ -190,7 +190,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data class RequestBiometricPrompt(val onlyDeviceCredentials: Boolean = false) : Event
+        data object RequestBiometricPrompt : Event
         data object AccessingFactorSourceCompleted : Event
     }
 }

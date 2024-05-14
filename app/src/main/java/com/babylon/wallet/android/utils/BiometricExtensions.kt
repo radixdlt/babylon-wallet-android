@@ -12,16 +12,10 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 fun FragmentActivity.activityBiometricAuthenticate(
-    onlyDeviceCredentials: Boolean = false,
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit,
 ) {
     val biometricManager = BiometricManager.from(this)
-    val authenticators = if (onlyDeviceCredentials) {
-        BiometricManager.Authenticators.DEVICE_CREDENTIAL
-    } else {
-        ALLOWED_AUTHENTICATORS
-    }
-    val canAuthenticate = biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+    val canAuthenticate = biometricManager.canAuthenticate(ALLOWED_AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
     if (!canAuthenticate) {
         authenticationCallback(BiometricAuthenticationResult.Error)
         return
@@ -43,7 +37,7 @@ fun FragmentActivity.activityBiometricAuthenticate(
 
     val promptInfo = BiometricPrompt.PromptInfo.Builder()
         .setTitle(getString(R.string.biometrics_prompt_title))
-        .setAllowedAuthenticators(authenticators)
+        .setAllowedAuthenticators(ALLOWED_AUTHENTICATORS)
         .build()
 
     val biometricPrompt = BiometricPrompt(
