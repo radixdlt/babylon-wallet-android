@@ -49,7 +49,9 @@ class TroubleshootingSettingsViewModel @Inject constructor(
             TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ImportFromLegacyWallet),
             TroubleshootingUiItem.SupportSection,
             TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ContactSupport),
-            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.Discord)
+            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.Discord),
+            TroubleshootingUiItem.ResetSection,
+            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.FactoryReset)
         )
     }
 }
@@ -57,6 +59,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
 sealed interface TroubleshootingUiItem {
     data object RecoverySection : TroubleshootingUiItem
     data object SupportSection : TroubleshootingUiItem
+    data object ResetSection : TroubleshootingUiItem
     data class Setting(val item: SettingsItem.Troubleshooting) : TroubleshootingUiItem
 }
 

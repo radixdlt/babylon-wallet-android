@@ -142,7 +142,7 @@ private fun SecurityCenterContent(
                 }
             }
             if (state.securityProblems?.isEmpty() == true) {
-                OkStatusCard()
+                RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
             }
             SecurityFactorsCard(
                 onSecurityFactorsClick = onSecurityFactorsClick,
@@ -158,7 +158,7 @@ private fun SecurityCenterContent(
 }
 
 @Composable
-private fun OkStatusCard(modifier: Modifier = Modifier) {
+fun RecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -169,7 +169,7 @@ private fun OkStatusCard(modifier: Modifier = Modifier) {
     ) {
         Icon(painter = painterResource(id = DSR.ic_security_center), contentDescription = null, tint = RadixTheme.colors.white)
         Text(
-            text = stringResource(id = R.string.securityCenter_goodState_heading),
+            text = text,
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.white
         )
