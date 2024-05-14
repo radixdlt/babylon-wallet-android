@@ -127,7 +127,7 @@ class DriveClientImpl @Inject constructor(
                 .setFields(putFields)
                 .execute()
         }.mapCatching { copiedFile ->
-            getDrive().files().delete(file.id.id)
+            getDrive().files().delete(file.id.id).execute()
 
             CloudBackupFileEntity(copiedFile)
         }
@@ -220,9 +220,7 @@ class DriveClientImpl @Inject constructor(
             NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
             credential
-        )
-            .setApplicationName("get a name")
-            .build()
+        ).build() // TODO check for app name
     }
 
     companion object {
