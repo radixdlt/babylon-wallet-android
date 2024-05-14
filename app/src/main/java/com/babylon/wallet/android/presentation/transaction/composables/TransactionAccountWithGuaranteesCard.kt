@@ -209,9 +209,7 @@ fun TransactionAccountWithGuaranteesCard(
 
                 RadixTextField(
                     modifier = Modifier.weight(1.1f),
-                    onValueChanged = { value ->
-                        onGuaranteePercentChanged(value)
-                    },
+                    onValueChanged = onGuaranteePercentChanged,
                     value = accountWithGuarantee.guaranteeAmountString,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(

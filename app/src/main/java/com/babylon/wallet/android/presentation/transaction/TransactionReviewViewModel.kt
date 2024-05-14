@@ -34,15 +34,15 @@ import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
-import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.formattedTextField
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.parseFromTextField
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
@@ -374,6 +374,7 @@ class TransactionReviewViewModel @Inject constructor(
                 is PreviewType.Transfer -> {
                     previewType.from.isNotEmpty() && previewType.to.isNotEmpty()
                 }
+
                 else -> false
             }
 
@@ -548,7 +549,7 @@ sealed interface AccountWithPredictedGuarantee {
     val guaranteeAmountString: String
 
     val guaranteeOffsetDecimal: Decimal192
-        get() = guaranteeAmountString.toDecimal192OrNull().orZero() / 100.toDecimal192()
+        get() = Decimal192.Companion.parseFromTextField(guaranteeAmountString).decimal.orZero() / 100.toDecimal192()
 
     val guaranteedAmount: Decimal192
         get() = (transferable.amount * guaranteeOffsetDecimal).roundedWith(divisibility)
@@ -558,9 +559,11 @@ sealed interface AccountWithPredictedGuarantee {
             is TransferableAsset.Fungible.Token -> {
                 asset.resource.divisibility
             }
+
             is TransferableAsset.Fungible.LSUAsset -> {
                 asset.resource.divisibility
             }
+
             is TransferableAsset.Fungible.PoolUnitAsset -> {
                 asset.resource.divisibility
             }
@@ -569,16 +572,16 @@ sealed interface AccountWithPredictedGuarantee {
     fun increase(): AccountWithPredictedGuarantee {
         val newOffset = ((guaranteeOffsetDecimal + changeOffset) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.formatted())
-            is Owned -> copy(guaranteeAmountString = newOffset.formatted())
+            is Other -> copy(guaranteeAmountString = newOffset.formattedTextField())
+            is Owned -> copy(guaranteeAmountString = newOffset.formattedTextField())
         }
     }
 
     fun decrease(): AccountWithPredictedGuarantee {
         val newOffset = ((guaranteeOffsetDecimal - changeOffset).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.formatted())
-            is Owned -> copy(guaranteeAmountString = newOffset.formatted())
+            is Other -> copy(guaranteeAmountString = newOffset.formattedTextField())
+            is Owned -> copy(guaranteeAmountString = newOffset.formattedTextField())
         }
     }
 
@@ -615,7 +618,7 @@ sealed interface AccountWithPredictedGuarantee {
     ) : AccountWithPredictedGuarantee
 
     companion object {
-        private val changeOffset = 0.001.toDecimal192()
+        private val changeOffset = 0.01.toDecimal192()
     }
 }
 

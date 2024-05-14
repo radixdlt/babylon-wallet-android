@@ -21,11 +21,11 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.parseFromTextField
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -612,7 +612,7 @@ sealed class SpendingAsset {
             get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || !amountDecimal.isZero)
 
         val amountDecimal: Decimal192
-            get() = amountString.toDecimal192OrNull().orZero()
+            get() = Decimal192.Companion.parseFromTextField(amountString).decimal.orZero()
     }
 
     data class NFT(

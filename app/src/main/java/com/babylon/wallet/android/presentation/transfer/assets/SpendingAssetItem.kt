@@ -175,9 +175,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                         }
                         .focusRequester(focusRequester),
                     value = amount,
-                    onValueChange = {
-                        onAmountChanged(it.replace(",", ""))
-                    },
+                    onValueChange = onAmountChanged,
                     singleLine = true,
                     textStyle = RadixTheme.typography.header.copy(
                         color = RadixTheme.colors.gray1,

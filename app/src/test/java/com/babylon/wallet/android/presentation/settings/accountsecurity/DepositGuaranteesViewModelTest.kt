@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity
 
 import app.cash.turbine.test
+import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.DepositGuaranteesViewModel
 import com.radixdlt.sargon.Decimal192
@@ -19,6 +20,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
@@ -28,6 +30,9 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val changeDefaultDepositGuaranteeUseCase = mockk<ChangeDefaultDepositGuaranteeUseCase>()
+
+    @get:Rule
+    val defaultLocaleTestRule = DefaultLocaleRule()
 
     private val profile = profileWithGuarantee(guarantee = 1.5.toDecimal192())
 

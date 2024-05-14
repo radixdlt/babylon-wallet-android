@@ -5,14 +5,15 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.formattedTextField
 import com.radixdlt.sargon.extensions.isPositive
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.negative
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.parseFromTextField
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.toDecimal192OrNull
 
 data class TransactionFees(
     private val nonContingentFeeLock: Decimal192 = 0.toDecimal192(),
@@ -139,13 +140,13 @@ data class TransactionFees(
     @Suppress("MagicNumber")
     val feePaddingAmountToDisplay: String
         get() = feePaddingAmount
-            ?: defaultPadding.formatted()
+            ?: defaultPadding.formattedTextField()
 
     val feePaddingAmountForCalculation: Decimal192
         get() = if (feePaddingAmount.isNullOrEmpty()) {
             defaultPadding
         } else {
-            feePaddingAmount.toDecimal192OrNull().orZero()
+            Decimal192.Companion.parseFromTextField(feePaddingAmount).decimal.orZero()
         }
 
     val tipPercentageToDisplay: String
