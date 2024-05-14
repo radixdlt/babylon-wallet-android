@@ -57,20 +57,20 @@ class DriveClientImpl @Inject constructor(
     private val deviceInfoRepository: DeviceInfoRepository
 ) : DriveClient {
 
-    private val postFields = listOf(
+    private val backupFields = listOf(
         "id",
         "name",
         "modifiedTime",
         "appProperties"
     ).joinToString(separator = ",")
 
-    private val putFields = listOf(
+    private val claimFields = listOf(
         "id",
         "name",
         "appProperties"
     ).joinToString(separator = ",")
 
-    private val getFields = listOf(
+    private val getFilesFields = listOf(
         "id",
         "name",
         "modifiedTime",
@@ -124,7 +124,7 @@ class DriveClientImpl @Inject constructor(
                     file.id.id,
                     file.newFile(claimedByDevice = deviceInfoRepository.getDeviceInfo().displayName)
                 )
-                .setFields(putFields)
+                .setFields(claimFields)
                 .execute()
         }.mapCatching { copiedFile ->
             getDrive().files().delete(file.id.id).execute()
@@ -150,7 +150,7 @@ class DriveClientImpl @Inject constructor(
 
             getDrive().files()
                 .create(backupFile, backupContent)
-                .setFields(postFields)
+                .setFields(backupFields)
                 .execute().let { file ->
                     Timber.d("☁\uFE0F Backup file with fileId: ${file.id}, and name: ${file.name} created successfully")
                     CloudBackupFileEntity(file)
@@ -173,7 +173,7 @@ class DriveClientImpl @Inject constructor(
                     },
                     backupContent
                 )
-                .setFields(postFields)
+                .setFields(backupFields)
                 .execute()
                 .let { file ->
                     Timber.d("☁\uFE0F Backup file with fileId: ${file.id}, and name: ${file.name} updated")
@@ -186,7 +186,7 @@ class DriveClientImpl @Inject constructor(
         runCatching {
             val outputStream = ByteArrayOutputStream()
             getDrive().files().get(fileId)
-                .setFields(getFields)
+                .setFields(getFilesFields)
                 .executeMediaAndDownloadTo(outputStream)
             outputStream.toByteArray().toString(Charsets.UTF_8)
         }
@@ -196,7 +196,7 @@ class DriveClientImpl @Inject constructor(
         getDrive().files()
             .list()
             .setSpaces(APP_DATA_FOLDER)
-            .setFields(getFields)
+            .setFields(getFilesFields)
             .execute()
             .files
     }
