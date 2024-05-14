@@ -13,13 +13,10 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
-import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
+import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.backup.BackupType
 import timber.log.Timber
-import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -51,28 +48,33 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
                 onSuccess = { file ->
                     if (googleDriveFileId == null) { // TODO what if another sync comes and this is not done yet?
                         preferencesManager.setGoogleDriveFileId(file.id)
+                        Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
+                    } else {
+                        Timber.tag("CloudBackup").d("\uD83D\uDD04 ✅")
                     }
-                    Timber.d("☁\uFE0F profile synced successfully ✅")
                     val modifiedTimeInstant = file.lastUsedOnDeviceModified.toInstant()
                     preferencesManager.updateLastCloudBackupInstant(modifiedTimeInstant)
                     Result.success()
                 },
                 onFailure = { exception ->
-                    Timber.d("☁\uFE0F failed to sync profile ❌: $exception")
+                    Timber.tag("CloudBackup").w(exception, "❌")
                     Result.failure()
                 }
             )
         } else {
-            Timber.d("☁\uFE0F failed to sync profile because profile snapshot is null ❌")
+            Timber.tag("CloudBackup").d("❌ No profile snapshot")
             Result.failure()
         }
     }
 }
 
 @Singleton
-class CloudBackupSyncExecutor @Inject constructor(@ApplicationContext private val context: Context) {
+class CloudBackupSyncExecutor @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val preferencesManager: PreferencesManager
+) {
 
-    fun syncProfile() {
+    suspend fun syncProfile() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
@@ -83,12 +85,19 @@ class CloudBackupSyncExecutor @Inject constructor(@ApplicationContext private va
             .setConstraints(constraints)
             .build()
 
-        Timber.d("☁\uFE0F enqueue new work: $uniqueWorkName")
-        // REPLACE existing work with the new work. This option cancels the existing work.
-        WorkManager.getInstance(context).enqueueUniqueWork(uniqueWorkName, ExistingWorkPolicy.REPLACE, workRequest)
+        val workManager = WorkManager.getInstance(context)
+
+        if (preferencesManager.googleDriveFileId.firstOrNull() == null) {
+            Timber.tag("CloudBackup").d("\uD83C\uDD95 Enqueued")
+            workManager.enqueueUniqueWork(SYNC_CLOUD_PROFILE_WORK, ExistingWorkPolicy.KEEP, workRequest)
+        } else {
+            Timber.tag("CloudBackup").d("\uD83D\uDD04 Enqueued")
+            // REPLACE existing work with the new work. This option cancels the existing work.
+            workManager.enqueueUniqueWork(SYNC_CLOUD_PROFILE_WORK, ExistingWorkPolicy.REPLACE, workRequest)
+        }
     }
 
     companion object {
-        private const val uniqueWorkName = "SyncProfileToDriveWork"
+        private const val SYNC_CLOUD_PROFILE_WORK = "sync_cloud_profile"
     }
 }
