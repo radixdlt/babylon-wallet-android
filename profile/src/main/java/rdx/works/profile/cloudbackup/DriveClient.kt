@@ -3,6 +3,7 @@ package rdx.works.profile.cloudbackup
 import android.content.Context
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.ByteArrayContent
+import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
@@ -15,6 +16,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
+import rdx.works.profile.BuildConfig
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
@@ -23,6 +25,8 @@ import rdx.works.profile.domain.backup.toCloudBackupProperties
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.logging.Level
+import java.util.logging.Logger
 import javax.inject.Inject
 
 interface DriveClient {
@@ -85,10 +89,8 @@ class DriveClientImpl @Inject constructor(
         profile: Profile
     ): Result<CloudBackupFileEntity> {
         return if (googleDriveFileId == null) { // if true then this is the first attempt to backup the profile!
-            Timber.d("☁\uFE0F Create cloud backup file in Google Drive")
             createBackupFile(profile = profile)
         } else {
-            Timber.d("☁\uFE0F Update cloud backup file with fileId: ${googleDriveFileId.id}")
             updateBackupFile(
                 googleDriveFileId = googleDriveFileId,
                 profile = profile
@@ -98,11 +100,7 @@ class DriveClientImpl @Inject constructor(
 
     override suspend fun fetchCloudBackupFileEntities(): Result<List<CloudBackupFileEntity>> = withContext(ioDispatcher) {
         runCatching {// TODO catch exception? e.g. authorization exception
-            getFiles().mapIndexed { index, file ->
-                CloudBackupFileEntity(file).also {
-                    Timber.d("      ☁\uFE0F $index profile: with fileId: ${it.id} and ProfileId: ${it.profileId} ")
-                }
-            }
+            getFiles().map { file -> CloudBackupFileEntity(file) }
         }
     }
 
@@ -152,7 +150,6 @@ class DriveClientImpl @Inject constructor(
                 .create(backupFile, backupContent)
                 .setFields(backupFields)
                 .execute().let { file ->
-                    Timber.d("☁\uFE0F Backup file with fileId: ${file.id}, and name: ${file.name} created successfully")
                     CloudBackupFileEntity(file)
                 }
         }
@@ -176,7 +173,6 @@ class DriveClientImpl @Inject constructor(
                 .setFields(backupFields)
                 .execute()
                 .let { file ->
-                    Timber.d("☁\uFE0F Backup file with fileId: ${file.id}, and name: ${file.name} updated")
                     CloudBackupFileEntity(file)
                 }
         }
@@ -205,7 +201,7 @@ class DriveClientImpl @Inject constructor(
         val email = googleSignInManager.getSignedInGoogleAccount()?.email
 
         if (email.isNullOrEmpty()) {
-            Timber.e("☁\uFE0F not signed in")
+            Timber.tag("CloudBackup").e("☁\uFE0F not signed in")
             throw IOException("not signed in")
         }
 
@@ -217,10 +213,13 @@ class DriveClientImpl @Inject constructor(
         }
 
         return Drive.Builder(
-            NetHttpTransport(),
+            NetHttpTransport().apply {
+                val logger = Logger.getLogger(HttpTransport::class.java.name)
+                logger.level = if (BuildConfig.DEBUG) Level.CONFIG else Level.OFF
+            },
             GsonFactory.getDefaultInstance(),
             credential
-        ).build() // TODO check for app name
+        ).build()
     }
 
     companion object {

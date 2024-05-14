@@ -96,7 +96,6 @@ class ProfileRepositoryImpl @Inject constructor(
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
             if (profileToSave.isCloudBackupEnabled) {
-                Timber.d("☁\uFE0F sync profile \uD83C\uDD95")
                 cloudBackupSyncExecutor.syncProfile()
             } else {
                 encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()

@@ -42,17 +42,17 @@ class ConnectCloudBackupViewModel @Inject constructor(
 
             googleSignInManager.handleSignInResult(result)
                 .onSuccess { googleAccount ->
-                    Timber.d("cloud backup is authorized for email: ${googleAccount.email}")
+                    Timber.tag("CloudBackup").d("Authorized for email: ${googleAccount.email}")
                     sendEvent(Event.ProceedToCreateAccountWithCloudBackupEnabled)
                 }
                 .onFailure { exception ->
                     if (exception is CancellationException) {
-                        Timber.e("user cancelled sign in")
+                        Timber.tag("CloudBackup").e("User cancelled sign in")
                     } else {
                         _state.update { state ->
                             state.copy(errorMessage = UiMessage.GoogleAuthErrorMessage(exception))
                         }
-                        Timber.e("cloud backup authorization failed: $exception")
+                        Timber.tag("CloudBackup").e("Authorization failed: $exception")
                     }
                 }
                 .also {
