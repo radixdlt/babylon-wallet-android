@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.backup
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,10 +18,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -149,7 +148,7 @@ private fun RestoreFromBackupContent(
     onPasswordTyped: (String) -> Unit,
     onPasswordRevealToggle: () -> Unit,
     onPasswordSubmitted: () -> Unit,
-    onRestoringProfileSelected: (index: Int) -> Unit,
+    onRestoringProfileSelected: (RestoreFromBackupViewModel.State.RestoringProfile) -> Unit,
     onContinueClick: () -> Unit,
     onOtherRestoreOptionsClick: () -> Unit
 ) {
@@ -209,8 +208,7 @@ private fun RestoreFromBackupContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
+                .padding(padding),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
@@ -244,26 +242,49 @@ private fun RestoreFromBackupContent(
                 color = RadixTheme.colors.gray1
             )
 
-            if (state.isCloudBackupAuthorized.not()) {
-                SignInToGoogleDrive(
-                    isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
-                    onLoginToGoogleClick = onLoginToGoogleClick
-                )
-            } else {
-                RestoredProfilesList(
-                    state = state,
-                    onRestoringProfileSelected = onRestoringProfileSelected
-                )
-            }
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                if (!state.isCloudBackupAuthorized) {
+                    item {
+                        SignInToGoogleDrive(
+                            isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
+                            onLoginToGoogleClick = onLoginToGoogleClick
+                        )
+                    }
+                } else {
+                    if (state.restoringProfiles == null) {
+                        item {
+                            LoadingCloudBackups()
+                        }
+                    } else if (state.restoringProfiles.isEmpty()){
+                        item {
+                            EmptyCloudBackups()
+                        }
+                    } else {
+                        items(state.restoringProfiles) {restoringProfile ->
+                            RestoredProfileListItem(
+                                modifier = Modifier.fillMaxSize(),
+                                restoringProfile = restoringProfile.data,
+                                isRestoringProfileSelected = restoringProfile.selected,
+                                onRadioButtonClick = { onRestoringProfileSelected(restoringProfile.data) }
+                            )
+                        }
+                    }
+                }
 
-            RadixTextButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
-                onClick = onRestoreFromFileClick
-            )
-            OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
+                item {
+                    RadixTextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
+                        onClick = onRestoreFromFileClick
+                    )
+                }
+
+                item {
+                    OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
+                }
+            }
         }
     }
 
@@ -290,6 +311,40 @@ private fun RestoreFromBackupContent(
 }
 
 @Composable
+private fun EmptyCloudBackups() {
+    Box(
+        modifier = Modifier
+            .height(140.dp)
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingDefault)
+            .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingXXLarge),
+            text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
+            color = RadixTheme.colors.gray2,
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.secondaryHeader
+        )
+    }
+}
+
+@Composable
+private fun LoadingCloudBackups() {
+    Box(
+        modifier = Modifier
+            .height(140.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = RadixTheme.colors.gray1)
+    }
+}
+
+@Composable
 private fun SignInToGoogleDrive(
     isAccessToGoogleDriveInProgress: Boolean,
     onLoginToGoogleClick: () -> Unit
@@ -307,42 +362,6 @@ private fun SignInToGoogleDrive(
             isLoading = isAccessToGoogleDriveInProgress,
             onClick = onLoginToGoogleClick
         )
-    }
-}
-
-@Composable
-private fun RestoredProfilesList(
-    modifier: Modifier = Modifier,
-    state: RestoreFromBackupViewModel.State,
-    onRestoringProfileSelected: (index: Int) -> Unit
-) {
-    if (state.restoringProfiles == null) {
-        Box(
-            modifier = Modifier
-                .height(140.dp)
-                .fillMaxWidth()
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center),
-                color = RadixTheme.colors.gray1
-            )
-        }
-    } else {
-        LazyColumn(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(140.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            itemsIndexed(state.restoringProfiles) { index, restoringProfile ->
-                RestoredProfileListItem(
-                    modifier = Modifier.fillMaxSize(),
-                    restoringProfile = restoringProfile.data,
-                    isRestoringProfileSelected = restoringProfile.selected,
-                    onRadioButtonClick = { onRestoringProfileSelected(index) }
-                )
-            }
-        }
     }
 }
 
@@ -450,10 +469,6 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
             onClick = onOtherRestoreOptionsClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            color = RadixTheme.colors.gray4
-        )
     }
 }
 
