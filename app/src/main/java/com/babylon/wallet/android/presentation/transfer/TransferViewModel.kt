@@ -612,7 +612,7 @@ sealed class SpendingAsset {
             get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || !amountDecimal.isZero)
 
         val amountDecimal: Decimal192
-            get() = runCatching { Decimal192.Companion.parseFromTextField(amountString).decimal }.getOrNull().orZero()
+            get() = Decimal192.Companion.parseFromTextField(amountString).decimal.orZero()
     }
 
     data class NFT(

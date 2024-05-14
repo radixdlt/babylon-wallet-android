@@ -146,7 +146,7 @@ data class TransactionFees(
         get() = if (feePaddingAmount.isNullOrEmpty()) {
             defaultPadding
         } else {
-            kotlin.runCatching { Decimal192.Companion.parseFromTextField(feePaddingAmount).decimal }.getOrNull().orZero()
+            Decimal192.Companion.parseFromTextField(feePaddingAmount).decimal.orZero()
         }
 
     val tipPercentageToDisplay: String

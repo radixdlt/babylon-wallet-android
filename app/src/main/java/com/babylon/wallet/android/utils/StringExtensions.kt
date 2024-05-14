@@ -14,7 +14,6 @@ import org.apache.commons.validator.routines.InetAddressValidator
 import org.apache.commons.validator.routines.UrlValidator
 import java.net.URLDecoder
 import java.net.URLEncoder
-import java.text.DecimalFormatSymbols
 
 fun String.truncatedHash(): String {
     if (length <= 9) {
@@ -37,12 +36,6 @@ fun String.toMnemonicWords(expectedWordCount: Int): List<String> {
     } else {
         emptyList()
     }
-}
-
-fun String.sanitizedForDecimalConversion(): String {
-    val symbols = DecimalFormatSymbols.getInstance()
-    val nonDecimalCharactersInput = "[^0-9\\\\${symbols.decimalSeparator}]".toRegex()
-    return replace(nonDecimalCharactersInput, "")
 }
 
 fun String.formattedSpans(

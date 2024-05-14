@@ -51,7 +51,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.utils.sanitizedForDecimalConversion
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -176,9 +175,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                         }
                         .focusRequester(focusRequester),
                     value = amount,
-                    onValueChange = {
-                        onAmountChanged(it.sanitizedForDecimalConversion())
-                    },
+                    onValueChange = onAmountChanged,
                     singleLine = true,
                     textStyle = RadixTheme.typography.header.copy(
                         color = RadixTheme.colors.gray1,

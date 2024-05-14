@@ -40,7 +40,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedG
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.babylon.wallet.android.utils.sanitizedForDecimalConversion
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -210,9 +209,7 @@ fun TransactionAccountWithGuaranteesCard(
 
                 RadixTextField(
                     modifier = Modifier.weight(1.1f),
-                    onValueChanged = { value ->
-                        onGuaranteePercentChanged(value.sanitizedForDecimalConversion())
-                    },
+                    onValueChanged = onGuaranteePercentChanged,
                     value = accountWithGuarantee.guaranteeAmountString,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
