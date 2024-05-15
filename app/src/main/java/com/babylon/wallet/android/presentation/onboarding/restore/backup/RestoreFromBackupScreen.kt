@@ -65,6 +65,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.formattedSpans
+import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import com.radixdlt.sargon.ProfileId
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -92,13 +93,7 @@ fun RestoreFromBackupScreen(
         }
     }
 
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleSignInResult(result)
-    }
-
-    val recoverDriveAuthLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleAuthDriveResult(result)
-    }
+    val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
     RestoreFromBackupContent(
         state = state,
@@ -122,13 +117,7 @@ fun RestoreFromBackupScreen(
                 when (event) {
                     is RestoreFromBackupViewModel.Event.OnDismiss -> onBackClick()
 
-                    is RestoreFromBackupViewModel.Event.SignInToGoogle -> {
-                        signInLauncher.launch(event.signInIntent)
-                    }
-
-                    is RestoreFromBackupViewModel.Event.RecoverUserAuthToDrive -> {
-                        recoverDriveAuthLauncher.launch(event.authIntent)
-                    }
+                    is RestoreFromBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
 
                     is RestoreFromBackupViewModel.Event.OnRestoreConfirmed -> onRestoreConfirmed(event.backupType)
                 }

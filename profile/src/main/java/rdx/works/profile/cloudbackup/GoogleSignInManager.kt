@@ -33,12 +33,7 @@ class GoogleSignInManager @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
-    suspend fun createSignInIntent(): Intent {
-        return withContext(ioDispatcher) {
-            val client = getGoogleSignInClient(applicationContext)
-            client.signInIntent
-        }
-    }
+    fun createSignInIntent(): Intent = getGoogleSignInClient(applicationContext).signInIntent
 
     suspend fun handleSignInResult(result: ActivityResult): Result<GoogleAccount> {
         return withContext(ioDispatcher) {

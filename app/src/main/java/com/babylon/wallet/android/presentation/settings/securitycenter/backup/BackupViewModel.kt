@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.backup
 
-import android.content.Intent
 import android.net.Uri
-import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -10,11 +8,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.CanSignInToGoogle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -31,7 +31,9 @@ class BackupViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val googleSignInManager: GoogleSignInManager,
     getCloudBackupStateUseCase: GetCloudBackupStateUseCase
-) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<BackupViewModel.State>(),
+    CanSignInToGoogle,
+    OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
 
@@ -40,6 +42,22 @@ class BackupViewModel @Inject constructor(
             getCloudBackupStateUseCase().collect { backupState ->
                 _state.update { it.copy(cloudBackupState = backupState) }
             }
+        }
+    }
+
+    override fun signInManager(): GoogleSignInManager = googleSignInManager
+
+    override fun onSignInResult(result: Result<GoogleAccount>) {
+        viewModelScope.launch {
+            result
+                .onSuccess {
+                    changeBackupSettingUseCase(isChecked = true)
+                    Timber.d("cloud backup is authorized")
+                }
+                .onFailure { exception ->
+                    changeBackupSettingUseCase(isChecked = false)
+                    Timber.e("cloud backup authorization failed: $exception")
+                }
         }
     }
 
@@ -53,24 +71,9 @@ class BackupViewModel @Inject constructor(
 
     fun onBackupSettingChanged(isChecked: Boolean) = viewModelScope.launch {
         if (isChecked) {
-            val intent = googleSignInManager.createSignInIntent()
-            sendEvent(Event.SignInToGoogle(intent))
+            sendEvent(Event.SignInToGoogle)
         } else { // just turn off the cloud backup sync
             changeBackupSettingUseCase(isChecked = false)
-        }
-    }
-
-    fun handleSignInResult(result: ActivityResult) {
-        viewModelScope.launch {
-            googleSignInManager.handleSignInResult(result)
-                .onSuccess {
-                    changeBackupSettingUseCase(isChecked = true)
-                    Timber.d("cloud backup is authorized")
-                }
-                .onFailure { exception ->
-                    changeBackupSettingUseCase(isChecked = false)
-                    Timber.e("cloud backup authorization failed: $exception")
-                }
         }
     }
 
@@ -202,6 +205,6 @@ class BackupViewModel @Inject constructor(
         data object ProfileDeleted : Event
         data class ChooseExportFile(val fileName: String) : Event
         data class DeleteFile(val file: Uri) : Event
-        data class SignInToGoogle(val signInIntent: Intent) : Event
+        data object SignInToGoogle : Event
     }
 }

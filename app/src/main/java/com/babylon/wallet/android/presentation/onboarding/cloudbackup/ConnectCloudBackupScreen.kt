@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 
 @Composable
 fun ConnectCloudBackupScreen(
@@ -50,20 +51,13 @@ fun ConnectCloudBackupScreen(
 
     BackHandler { onBackClick() }
 
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleSignInResult(result)
-    }
-
-    val recoverSignInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleAuthDriveResult(result)
-    }
+    val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ConnectCloudBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(event.signInIntent)
+                is ConnectCloudBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
                 is ConnectCloudBackupViewModel.Event.Proceed -> onProceed(event.mode, event.isCloudBackupEnabled)
-                is ConnectCloudBackupViewModel.Event.RecoverUserAuthToDrive -> recoverSignInLauncher.launch(event.authIntent)
             }
         }
     }
