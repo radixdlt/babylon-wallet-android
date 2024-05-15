@@ -38,8 +38,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         val prompts = mutableSetOf<SecurityPromptType>().apply {
             if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
                 add(SecurityPromptType.NEEDS_RESTORE)
-            }
-            if (!backedUpFactorSourceIds.contains(factorSourceId)) {
+            } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
                 add(SecurityPromptType.NEEDS_BACKUP)
             }
         }.toSet()
