@@ -99,7 +99,6 @@ class CreateAccountViewModel @Inject constructor(
                 getProfileUseCase().mainBabylonFactorSource ?: return@launch
             }
 
-            // if main babylon factor source is not present, it will be created during the public key derivation
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
@@ -130,7 +129,7 @@ class CreateAccountViewModel @Inject constructor(
         } else {
             _state.update { state ->
                 if (throwable is ProfileException.NoMnemonic) {
-                    state.copy(isNoMnemonicErrorVisible = true)
+                    state.copy(shouldShowNoMnemonicError = true)
                 } else {
                     state.copy(
                         uiMessage = UiMessage.ErrorMessage(throwable)
@@ -201,13 +200,12 @@ class CreateAccountViewModel @Inject constructor(
         val accountName: String = "",
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
-        val isCancelable: Boolean = true,
         val uiMessage: UiMessage? = null,
-        val isNoMnemonicErrorVisible: Boolean = false
+        val shouldShowNoMnemonicError: Boolean = false
     ) : UiState
 
     fun dismissNoMnemonicError() {
-        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+        _state.update { it.copy(shouldShowNoMnemonicError = false) }
     }
 
     companion object {

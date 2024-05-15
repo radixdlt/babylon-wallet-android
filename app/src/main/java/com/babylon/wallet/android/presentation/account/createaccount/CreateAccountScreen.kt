@@ -99,7 +99,7 @@ fun CreateAccountScreen(
             }
         }
     }
-    if (state.isNoMnemonicErrorVisible) {
+    if (state.shouldShowNoMnemonicError) {
         NoMnemonicAlertDialog {
             viewModel.dismissNoMnemonicError()
         }

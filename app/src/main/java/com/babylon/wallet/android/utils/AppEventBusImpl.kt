@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
-import javax.inject.Singleton
 
 interface AppEventBus {
 
@@ -15,7 +14,6 @@ interface AppEventBus {
     suspend fun sendEvent(event: AppEvent, delayMs: Long = 0L)
 }
 
-@Singleton
 class AppEventBusImpl @Inject constructor() : AppEventBus {
 
     private val _events = MutableSharedFlow<AppEvent>()
