@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -161,7 +161,7 @@ class WalletViewModel @Inject constructor(
                     Timber.w(error)
                 }
             }
-            .onEach { accountsWithAssets ->
+            .mapLatest { accountsWithAssets ->
                 this.accountsWithAssets = accountsWithAssets
 
                 // keep the val here because the onAssetsReceived sets the refreshing to false
