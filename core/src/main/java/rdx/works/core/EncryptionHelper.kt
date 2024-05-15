@@ -11,7 +11,6 @@ import android.security.keystore.KeyProperties.ENCRYPTION_PADDING_NONE
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
-import android.security.keystore.StrongBoxUnavailableException
 import android.util.Base64
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_MNEMONIC
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_PROFILE
@@ -19,6 +18,7 @@ import rdx.works.core.KeystoreManager.Companion.PROVIDER
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
+import java.security.ProviderException
 import java.security.SecureRandom
 import java.security.spec.AlgorithmParameterSpec
 import javax.crypto.Cipher
@@ -78,7 +78,7 @@ private fun generateAesKey(keySpec: KeySpec): SecretKey {
                 try {
                     keyGenerator.init(keygenParameterSpecBuilder.build())
                     keyGenerator.generateKey()
-                } catch (e: StrongBoxUnavailableException) {
+                } catch (e: ProviderException) {
                     keygenParameterSpecBuilder.setIsStrongBoxBacked(false)
                     keyGenerator.init(keygenParameterSpecBuilder.build())
                     keyGenerator.generateKey()
