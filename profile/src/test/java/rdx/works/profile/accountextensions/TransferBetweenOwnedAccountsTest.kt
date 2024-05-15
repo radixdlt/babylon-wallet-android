@@ -139,7 +139,7 @@ class TransferBetweenOwnedAccountsTest {
     @Before
     fun setUp() {
         val mnemonicRepository = mockk<MnemonicRepository>()
-        coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
+        coEvery { mnemonicRepository.createNew() } returns Result.success(mnemonicWithPassphrase)
 
         val derivationPath = DerivationPath.Cap26.account(
             networkId = defaultNetwork,

@@ -191,7 +191,7 @@ private fun RestoreMnemonicsContent(
                             )
                         }
 
-                        if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
+                        if (state.isMainBabylonSeedPhrase) {
                             RadixTextButton(
                                 modifier = Modifier
                                     .fillMaxWidth()

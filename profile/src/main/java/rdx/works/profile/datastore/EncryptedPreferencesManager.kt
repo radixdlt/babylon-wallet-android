@@ -1,5 +1,6 @@
 package rdx.works.profile.datastore
 
+import android.security.keystore.UserNotAuthenticatedException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
@@ -58,15 +59,29 @@ class EncryptedPreferencesManager @Inject constructor(
             val preferencesKey = stringPreferencesKey(key)
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
-                return@map Result.failure(ProfileException.NoMnemonic)
+                Result.failure(ProfileException.NoMnemonic)
+            } else {
+                encryptedValue.decrypt(KeySpec.Mnemonic())
             }
-            val result = encryptedValue.decrypt(KeySpec.Mnemonic())
-            result
-        }.first()
+        }.first().fold(onSuccess = { Result.success(it) }, onFailure = {
+            if (it is UserNotAuthenticatedException) {
+                Result.failure(ProfileException.SecureStorageAccess)
+            } else {
+                Result.failure(it)
+            }
+        })
     }
 
-    suspend fun saveMnemonic(key: String, newValue: String?) {
-        putString(key, newValue, KeySpec.Mnemonic())
+    suspend fun saveMnemonic(key: String, newValue: String): Result<Unit> {
+        return putString(key, newValue, KeySpec.Mnemonic()).fold(onSuccess = {
+            Result.success(Unit)
+        }, onFailure = {
+            if (it is UserNotAuthenticatedException) {
+                Result.failure(ProfileException.SecureStorageAccess)
+            } else {
+                Result.failure(it)
+            }
+        })
     }
 
     suspend fun keyExist(key: String): Boolean {
@@ -76,8 +91,14 @@ class EncryptedPreferencesManager @Inject constructor(
         }.first()
     }
 
-    private suspend fun putString(key: String, newValue: String?, keySpec: KeySpec) {
-        putString(preferences, key, newValue, keySpec)
+    private suspend fun putString(key: String, newValue: String, keySpec: KeySpec): Result<Unit> {
+        val preferencesKey = stringPreferencesKey(key)
+        return newValue.encrypt(withKey = keySpec).mapCatching { encryptedValue ->
+            preferences.edit { mutablePreferences ->
+                mutablePreferences[preferencesKey] = encryptedValue
+            }
+            Unit
+        }
     }
 
     private suspend fun putString(prefs: DataStore<Preferences>, key: String, newValue: String?, keySpec: KeySpec) {

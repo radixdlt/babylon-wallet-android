@@ -68,7 +68,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                 phoneNumbers = CollectionOfPhoneNumbers(emptyList()),
                 emailAddresses = CollectionOfEmailAddresses(emptyList())
             )
-        )
+        ).getOrNull()
 
         assertEquals(newPersona, profileRepository.inMemoryProfileOrNull?.networks?.asIdentifiable()?.getBy(NetworkId.MAINNET)?.personas?.first())
     }

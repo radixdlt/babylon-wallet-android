@@ -14,7 +14,6 @@ inline fun <FirstResult, SecondResult> Result<FirstResult>.then(
         Result.failure(it)
     }
 )
-
 inline fun <T> Result<T>.mapError(
     map: (Throwable) -> Throwable
 ): Result<T> = fold(

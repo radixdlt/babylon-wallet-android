@@ -154,23 +154,27 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
-            if (exception is RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge) {
-                return
+            when (exception.cause) {
+                is ProfileException.SecureStorageAccess -> {
+                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                }
+
+                is ProfileException.NoMnemonic -> {
+                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                }
+
+                is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
+
+                else -> {
+                    dAppMessenger.sendWalletInteractionResponseFailure(
+                        remoteConnectorId = request.remoteConnectorId,
+                        requestId = args.requestId,
+                        error = exception.ceError,
+                        message = exception.getDappMessage()
+                    )
+                    _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
+                }
             }
-            if (exception.cause is RadixWalletException.SignatureCancelled) {
-                return
-            }
-            if (exception.cause is ProfileException.NoMnemonic) {
-                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-                return
-            }
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = request.remoteConnectorId,
-                requestId = args.requestId,
-                error = exception.ceError,
-                message = exception.getDappMessage()
-            )
-            _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
         } else {
             if (exception is ProfileException.NoMnemonic) {
                 _state.update { it.copy(isNoMnemonicErrorVisible = true) }

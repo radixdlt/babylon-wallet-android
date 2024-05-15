@@ -20,6 +20,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
 import com.radixdlt.sargon.FactorSource
@@ -46,6 +48,7 @@ import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.GetFactorSourceIdForOlympiaAccountsUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.olympiaimport.ChunkInfo
@@ -67,6 +70,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val olympiaWalletDataParser: OlympiaWalletDataParser,
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
+    private val appEventBus: AppEventBus,
     private val p2PLinksRepository: P2PLinksRepository
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
@@ -291,9 +295,20 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 val mnemonicExistForSoftwareAccounts = when {
                     hasOlympiaFactorSource -> {
                         if (biometricAuthProvider()) {
-                            val factorSourceId = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccountsToMigrate())
+                            val factorSourceIdResult = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccountsToMigrate())
+                            factorSourceIdResult.onFailure {
+                                if (it is ProfileException.SecureStorageAccess) {
+                                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                                } else {
+                                    _state.update { state ->
+                                        state.copy(uiMessage = UiMessage.ErrorMessage(it))
+                                    }
+                                }
+                                return@launch
+                            }
+                            val factorSourceId = factorSourceIdResult.getOrNull()
                             _state.update {
-                                it.copy(existingOlympiaFactorSourceId = factorSourceId)
+                                it.copy(existingOlympiaFactorSourceId = factorSourceIdResult.getOrNull())
                             }
                             factorSourceId != null
                         } else {
@@ -336,7 +351,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     else -> importAllAccounts(biometricAuthProvider)
                 }
             } else {
-                _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
             }
         }
     }
@@ -352,8 +367,24 @@ class ImportLegacyWalletViewModel @Inject constructor(
             if (softwareAccountsToMigrate.isNotEmpty()) {
                 val authenticated = biometricAuthProvider()
                 if (!authenticated) return@launch
-                val factorSourceID =
-                    state.value.existingOlympiaFactorSourceId ?: addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
+                val factorSourceID = if (state.value.existingOlympiaFactorSourceId != null) {
+                    state.value.existingOlympiaFactorSourceId!!
+                } else {
+                    val result = addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
+                    if (result.exceptionOrNull() != null) {
+                        val exception = result.exceptionOrNull()
+                        if (exception is ProfileException.SecureStorageAccess) {
+                            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                        } else {
+                            _state.update { state ->
+                                state.copy(uiMessage = UiMessage.ErrorMessage(exception))
+                            }
+                        }
+                        return@launch
+                    } else {
+                        result.getOrThrow()
+                    }
+                }
                 migrateOlympiaAccountsUseCase(
                     olympiaAccounts = softwareAccountsToMigrate,
                     factorSourceId = factorSourceID

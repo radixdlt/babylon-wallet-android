@@ -42,9 +42,9 @@ class MnemonicRepository @Inject constructor(
     suspend fun saveMnemonic(
         key: FactorSourceId.Hash,
         mnemonicWithPassphrase: MnemonicWithPassphrase
-    ) {
+    ): Result<Unit> {
         val serialised = mnemonicWithPassphrase.toJson()
-        encryptedPreferencesManager.saveMnemonic("mnemonic${key.value.body.hex}", serialised)
+        return encryptedPreferencesManager.saveMnemonic("mnemonic${key.value.body.hex}", serialised)
     }
 
     suspend fun deleteMnemonic(
@@ -53,32 +53,17 @@ class MnemonicRepository @Inject constructor(
         encryptedPreferencesManager.removeEntryForKey("mnemonic${key.value.body.hex}")
     }
 
-    /**
-     * Used to return or generate a new mnemonic. The mnemonic can:
-     * 1. Not exist in the first place or we didn't pass a key:
-     *    In this case we generate a new mnemonic, and based on that a "default" factor source id.`
-     * 2. Exist, but could not be deserialized properly:
-     *    This should not happen to the end users, but as we refactor the project we used to save
-     *    only the mnemonic words. Now we save a json representation of both the mnemonic words and
-     *    the passphrase. In such a scenario, when the user upgrades to the newest version, we will
-     *    not be able to deserialize properly. In this case we generate a new mnemonic like in (1).
-     * 3. We passed a key and the mnemonic exists:
-     *    We deserialize it properly and just return that back.
-     */
-    suspend operator fun invoke(mnemonicKey: FactorSourceId.Hash? = null): MnemonicWithPassphrase {
-        return mnemonicKey?.let { readMnemonic(key = it).getOrNull() } ?: withContext(defaultDispatcher) {
-            MnemonicWithPassphrase(
+    suspend fun createNew(): Result<MnemonicWithPassphrase> {
+        return withContext(defaultDispatcher) {
+            val generated = MnemonicWithPassphrase(
                 mnemonic = Mnemonic.init(
                     wordCount = Bip39WordCount.TWENTY_FOUR,
                     language = Bip39Language.ENGLISH
                 ),
                 passphrase = ""
-            ).also {
-                saveMnemonic(
-                    key = FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = it),
-                    mnemonicWithPassphrase = it
-                )
-            }
+            )
+            val key = FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = generated)
+            saveMnemonic(key = key, mnemonicWithPassphrase = generated).mapCatching { generated }
         }
     }
 }

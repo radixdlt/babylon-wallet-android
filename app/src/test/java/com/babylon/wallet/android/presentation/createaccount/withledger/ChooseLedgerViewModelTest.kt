@@ -43,6 +43,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.sargon.babylon
+import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
@@ -53,6 +54,7 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     private val p2pLinksRepository = mockk<P2PLinksRepository>()
     private val ledgerMessenger = mockk<LedgerMessenger>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+    private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
     private val eventBus = mockk<AppEventBus>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 

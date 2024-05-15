@@ -24,7 +24,7 @@ fun Context.biometricAuthenticate(
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit
 ) {
     findFragmentActivity()?.let { activity ->
-        activity.biometricAuthenticate(
+        activity.activityBiometricAuthenticate(
             authenticationCallback = { biometricAuthenticationResult ->
                 authenticationCallback(biometricAuthenticationResult)
             }

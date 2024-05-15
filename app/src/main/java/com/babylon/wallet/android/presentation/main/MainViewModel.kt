@@ -102,8 +102,7 @@ class MainViewModel @Inject constructor(
     }
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
-    val babylonMnemonicNeedsRecoveryEvent = appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceNeedsRecovery>()
-
+    val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
     init {
         viewModelScope.launch {
             combine(
@@ -272,9 +271,6 @@ class MainViewModel @Inject constructor(
                     countdownJob?.cancel()
                     countdownJob = startOlympiaErrorCountdown()
                     return@launch
-                }
-                checkMnemonicIntegrityUseCase.babylonMnemonicNeedsRecovery()?.let { factorSourceId ->
-                    appEventBus.sendEvent(AppEvent.BabylonFactorSourceNeedsRecovery(factorSourceId), delayMs = 500L)
                 }
             }
         }

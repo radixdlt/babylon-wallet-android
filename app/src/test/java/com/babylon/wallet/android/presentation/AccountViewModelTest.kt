@@ -10,6 +10,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -38,7 +39,7 @@ class AccountViewModelTest {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
 
-    private val appEventBus = Mockito.mock(AppEventBus::class.java)
+    private val appEventBus = Mockito.mock(AppEventBusImpl::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
     private val profile = Profile.sample()
     private val account = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!

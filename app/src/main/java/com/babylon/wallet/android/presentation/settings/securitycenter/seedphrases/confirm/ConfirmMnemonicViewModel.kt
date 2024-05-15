@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseVerificationDelegate
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +20,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,7 +28,8 @@ class ConfirmMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<ConfirmMnemonicViewModel.State>(),
     OneOffEventHandler<ConfirmMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -68,7 +72,13 @@ class ConfirmMnemonicViewModel @Inject constructor(
                     preferencesManager.markFactorSourceBackedUp(factorSource.value.id.asGeneral())
                     sendEvent(Event.MnemonicBackedUp)
                 } else {
-                    _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
+                }
+            }.onFailure { e ->
+                if (e is ProfileException.SecureStorageAccess) {
+                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                } else {
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(e)) }
                 }
             }
         }

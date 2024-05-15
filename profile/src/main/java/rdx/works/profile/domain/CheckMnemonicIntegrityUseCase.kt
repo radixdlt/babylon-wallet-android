@@ -1,14 +1,11 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
-import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.core.KeySpec
 import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
 import rdx.works.core.sargon.deviceFactorSources
-import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -34,16 +31,6 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
             keystoreManager.removeMnemonicEncryptionKey().onFailure {
                 Timber.d(it, "Failed to delete encryption key")
             }
-        }
-    }
-
-    suspend fun babylonMnemonicNeedsRecovery(): FactorSourceId.Hash? {
-        if (getProfileUseCase.isInitialized().not()) return null
-        val factSourceIdToRecover = getProfileUseCase.flow.firstOrNull()?.mainBabylonFactorSource?.value?.id?.asGeneral() ?: return null
-        return if (mnemonicRepository.mnemonicExist(factSourceIdToRecover).not()) {
-            factSourceIdToRecover
-        } else {
-            null
         }
     }
 }

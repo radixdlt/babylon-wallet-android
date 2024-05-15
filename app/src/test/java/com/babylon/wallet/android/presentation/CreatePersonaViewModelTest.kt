@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation
 
+import com.babylon.wallet.android.fakes.FakeAppEventBus
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaViewModel
@@ -46,13 +47,13 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
         coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
 
-        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns persona
+        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns Result.success(persona)
     }
 
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
+        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, FakeAppEventBus())
         advanceUntilIdle()
 
         // then
@@ -64,7 +65,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Test
     fun `given persona data provided, when create button hit, verify complete event sent and persona info shown`() = runTest {
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
+            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, FakeAppEventBus())
 
             viewModel.onDisplayNameChanged(persona.displayName.value)
 
@@ -88,6 +89,6 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
+        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, FakeAppEventBus())
     }
 }

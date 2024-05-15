@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-fun FragmentActivity.biometricAuthenticate(
+fun FragmentActivity.activityBiometricAuthenticate(
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit,
 ) {
     val biometricManager = BiometricManager.from(this)

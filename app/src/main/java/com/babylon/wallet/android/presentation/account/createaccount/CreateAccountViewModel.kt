@@ -33,6 +33,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
@@ -74,24 +75,17 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean, biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            val isBiometricsProvided = if (!getProfileUseCase.isInitialized()) {
-                if (biometricAuthProvider()) {
-                    // TODO To be checked with the secure folder PR.
-                    // Guard against problems with secure folder, even when the user has provided biometrics.
-                    val newMnemonic = runCatching { mnemonicRepository() }.getOrNull() ?: return@launch
-
+            if (biometricAuthProvider().not()) {
+                return@launch
+            }
+            if (!getProfileUseCase.isInitialized()) {
+                mnemonicRepository.createNew().mapCatching { newMnemonic ->
                     generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
-                    // Since we choose to create a new profile, this is the time
-                    // we discard the data copied from the cloud backup, since they represent
-                    // a previous instance.
                     discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
-
-                    true
-                } else {
+                }.onFailure { throwable ->
+                    handleAccountCreationError(throwable)
                     return@launch
                 }
-            } else {
-                false
             }
 
             // at the moment you can create a account either with device factor source or ledger factor source
@@ -105,12 +99,11 @@ class CreateAccountViewModel @Inject constructor(
                 getProfileUseCase().mainBabylonFactorSource ?: return@launch
             }
 
-            // if main babylon factor source is not present, it will be created during the public key derivation
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
-                    isBiometricsProvided = isBiometricsProvided
+                    isBiometricsProvided = true
                 )
             ).onSuccess {
                 handleAccountCreate { nameOfAccount ->
@@ -124,10 +117,22 @@ class CreateAccountViewModel @Inject constructor(
                         hdPublicKey = it.value
                     )
                 }
-            }.onFailure { error ->
-                _state.update { state ->
+            }.onFailure { throwable ->
+                handleAccountCreationError(throwable)
+            }
+        }
+    }
+
+    private suspend fun handleAccountCreationError(throwable: Throwable) {
+        if (throwable is ProfileException.SecureStorageAccess) {
+            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+        } else {
+            _state.update { state ->
+                if (throwable is ProfileException.NoMnemonic) {
+                    state.copy(shouldShowNoMnemonicError = true)
+                } else {
                     state.copy(
-                        uiMessage = UiMessage.ErrorMessage(error)
+                        uiMessage = UiMessage.ErrorMessage(throwable)
                     )
                 }
             }
@@ -195,8 +200,13 @@ class CreateAccountViewModel @Inject constructor(
         val accountName: String = "",
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val shouldShowNoMnemonicError: Boolean = false
     ) : UiState
+
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(shouldShowNoMnemonicError = false) }
+    }
 
     companion object {
         private const val ACCOUNT_NAME = "account_name"

@@ -25,11 +25,11 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) {
 
-    suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): FactorSourceId.Hash {
+    suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Result<FactorSourceId.Hash> {
         val olympiaFactorSource = FactorSource.Device.olympia(mnemonicWithPassphrase)
         val existingFactorSource = getProfileUseCase().factorSourceById(olympiaFactorSource.id) as? FactorSource.Device
         val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.value.id.asGeneral())
-        if (mnemonicExist) {
+        return if (mnemonicExist) {
             existingFactorSource?.let { existing ->
                 if (existingFactorSource.value.common.cryptoParameters.supportsBabylon) {
                     profileRepository.updateProfile { profile ->
@@ -49,24 +49,26 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
                     }
                 }
             }
-            return olympiaFactorSource.value.id.asGeneral()
+            Result.success(olympiaFactorSource.value.id.asGeneral())
         } else {
             // factor source exist without mnemonic, update mnemonic
             mnemonicRepository.saveMnemonic(
                 key = olympiaFactorSource.value.id.asGeneral(),
                 mnemonicWithPassphrase = mnemonicWithPassphrase
-            )
-            // Seed phrase was just typed by the user, mark it as backed up
-            preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.value.id.asGeneral())
-            // we save factor source id only if it does not exist
-            if (existingFactorSource == null) {
-                profileRepository.updateProfile { profile ->
-                    profile.copy(
-                        factorSources = FactorSources(profile.factorSources + olympiaFactorSource).asList()
-                    )
+            ).fold(onSuccess = {
+                preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.value.id.asGeneral())
+                // we save factor source id only if it does not exist
+                if (existingFactorSource == null) {
+                    profileRepository.updateProfile { profile ->
+                        profile.copy(
+                            factorSources = FactorSources(profile.factorSources + olympiaFactorSource).asList()
+                        )
+                    }
                 }
-            }
-            return olympiaFactorSource.value.id.asGeneral()
+                Result.success(olympiaFactorSource.value.id.asGeneral())
+            }, onFailure = {
+                Result.failure(ProfileException.SecureStorageAccess)
+            })
         }
     }
 }

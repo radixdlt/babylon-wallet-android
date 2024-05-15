@@ -27,6 +27,8 @@ import com.babylon.wallet.android.data.repository.tokenprice.Testnet
 import com.babylon.wallet.android.data.repository.tokenprice.TestnetFiatPriceRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepositoryImpl
+import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -115,4 +117,10 @@ interface DataModule {
     fun bindPreferenceManager(
         preferencesManager: PreferencesManagerImpl
     ): PreferencesManager
+
+    @Binds
+    @Singleton
+    fun bindAppEventBus(
+        appEventBus: AppEventBusImpl
+    ): AppEventBus
 }

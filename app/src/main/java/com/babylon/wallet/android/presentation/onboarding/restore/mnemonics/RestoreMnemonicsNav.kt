@@ -15,29 +15,25 @@ import kotlinx.serialization.json.Json
 import rdx.works.profile.domain.backup.BackupType
 
 private const val ARGS_BACKUP_TYPE = "backup_type"
-private const val ARGS_MANDATORY = "mandatory"
-private const val ROUTE = "restore_mnemonics?$ARGS_BACKUP_TYPE={$ARGS_BACKUP_TYPE}&$ARGS_MANDATORY={$ARGS_MANDATORY}"
+private const val ROUTE = "restore_mnemonics?$ARGS_BACKUP_TYPE={$ARGS_BACKUP_TYPE}"
 
 fun NavController.restoreMnemonics(
     args: RestoreMnemonicsArgs
 ) {
     val backupType = Json.encodeToString(args.backupType)
-    navigate(route = "restore_mnemonics?$ARGS_BACKUP_TYPE=$backupType&$ARGS_MANDATORY=${args.isMandatory}")
+    navigate(route = "restore_mnemonics?$ARGS_BACKUP_TYPE=$backupType")
 }
 
 @Serializable
 data class RestoreMnemonicsArgs(
-    val backupType: BackupType? = null,
-    val isMandatory: Boolean = false
+    val backupType: BackupType? = null
 ) {
     companion object {
         fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
             val backupType: BackupType? = savedStateHandle.get<String>(ARGS_BACKUP_TYPE)?.let {
                 Json.decodeFromString(it)
             }
-            val isMandatory: Boolean = requireNotNull(savedStateHandle[ARGS_MANDATORY])
-
-            return RestoreMnemonicsArgs(backupType, isMandatory)
+            return RestoreMnemonicsArgs(backupType)
         }
     }
 }
@@ -55,13 +51,6 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
             ) {
                 nullable = true
                 type = NavType.StringType
-            },
-            navArgument(
-                name = ARGS_MANDATORY,
-            ) {
-                nullable = false
-                type = NavType.BoolType
-                defaultValue = false
             }
         ),
         enterTransition = {

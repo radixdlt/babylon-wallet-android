@@ -72,7 +72,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     }
 
                     is ProfileException.InvalidSnapshot -> _state.update {
-                        it.copy(uiMessage = UiMessage.InfoMessage.InvalidSnapshot)
+                        it.copy(uiMessage = UiMessage.ErrorMessage(error))
                     }
                 }
             }
@@ -166,7 +166,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                             is ProfileException.InvalidSnapshot -> _state.update {
                                 it.copy(
                                     passwordSheetState = State.PasswordSheet.Closed,
-                                    uiMessage = UiMessage.InfoMessage.InvalidSnapshot
+                                    uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidSnapshot)
                                 )
                             }
                         }

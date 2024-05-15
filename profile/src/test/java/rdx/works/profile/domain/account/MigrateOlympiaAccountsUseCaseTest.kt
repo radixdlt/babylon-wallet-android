@@ -77,7 +77,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         )
 
         coEvery { mnemonicRepository.readMnemonic(any()) } returns Result.success(babylonMnemonic)
-        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } returns Result.success(Unit)
         coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
 

@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.FactorSourceId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -18,13 +20,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 @HiltViewModel
 class RevealSeedPhraseViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<RevealSeedPhraseViewModel.State>(),
     OneOffEventHandler<RevealSeedPhraseViewModel.Effect> by OneOffEventHandlerImpl() {
 
@@ -35,7 +39,7 @@ class RevealSeedPhraseViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             preferencesManager.getBackedUpFactorSourceIds().collect { backedUpIds ->
-                mnemonicRepository.readMnemonic(args.factorSourceId).getOrNull()?.let { mnemonicWithPassphrase ->
+                mnemonicRepository.readMnemonic(args.factorSourceId).onSuccess { mnemonicWithPassphrase ->
                     _state.update { state ->
                         state.copy(
                             mnemonicWordsChunked = mnemonicWithPassphrase
@@ -50,6 +54,13 @@ class RevealSeedPhraseViewModel @Inject constructor(
                             backedUp = backedUpIds.contains(args.factorSourceId),
                             mnemonicSize = mnemonicWithPassphrase.mnemonic.wordCount.value.toInt()
                         )
+                    }
+                }.onFailure { error ->
+                    if (error is ProfileException.SecureStorageAccess) {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    }
+                    _state.update {
+                        it.copy(uiMessage = UiMessage.ErrorMessage(error))
                     }
                 }
             }

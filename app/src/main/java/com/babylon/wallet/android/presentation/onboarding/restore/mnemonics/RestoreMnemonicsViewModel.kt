@@ -32,6 +32,7 @@ import rdx.works.core.sargon.usesEd25519
 import rdx.works.core.sargon.usesSECP256k1
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
@@ -59,9 +60,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
     lateinit var biometricAuthProvider: suspend () -> Boolean
 
-    override fun initialState(): State = State(
-        isMandatory = args.isMandatory
-    )
+    override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
@@ -122,11 +121,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 if (args.backupType is BackupType.File) {
                     discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
                 }
-                if (args.isMandatory) {
-                    sendEvent(Event.CloseApp)
-                } else {
-                    sendEvent(Event.FinishRestoration(isMovingToMain = false))
-                }
+                sendEvent(Event.FinishRestoration(isMovingToMain = false))
             }
         }
     }
@@ -189,13 +184,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { state -> state.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish(skipAuth = true)
-        }.onFailure {
-            _state.update { state ->
-                state.copy(
-                    uiMessage = UiMessage.InfoMessage.InvalidMnemonic,
-                    isRestoring = false
-                )
+        }.onFailure { error ->
+            if (error is ProfileException.SecureStorageAccess) {
+                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+            } else {
+                _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
+            _state.update { state -> state.copy(isRestoring = false) }
         }
     }
 
@@ -213,14 +208,17 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
                 args.backupType?.let { backupType ->
                     if (skipAuth.not() && biometricAuthProvider().not()) return
-                    restoreAndCreateMainSeedPhraseUseCase(backupType)
-                }
-
-                _state.update { state ->
-                    state.copy(
-                        isRestoring = false,
-                        hasSkippedMainSeedPhrase = false
-                    )
+                    restoreAndCreateMainSeedPhraseUseCase(backupType).onFailure { e ->
+                        _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(e), isRestoring = false) }
+                        return
+                    }.onSuccess {
+                        _state.update { state ->
+                            state.copy(
+                                isRestoring = false,
+                                hasSkippedMainSeedPhrase = false
+                            )
+                        }
+                    }
                 }
             } else {
                 args.backupType?.let { backupType ->
@@ -241,8 +239,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
         val hasSkippedMainSeedPhrase: Boolean = false,
-        val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
-        val isMandatory: Boolean = false
+        val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
         sealed interface ScreenType {

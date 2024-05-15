@@ -17,7 +17,6 @@ import org.junit.Before
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.init
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -48,7 +47,7 @@ class GenerateProfileUseCaseTest {
 
     @Before
     fun setUp() {
-        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } returns Result.success(Unit)
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
     }
 

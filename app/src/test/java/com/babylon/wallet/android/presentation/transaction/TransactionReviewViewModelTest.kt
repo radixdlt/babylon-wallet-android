@@ -37,7 +37,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Va
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
@@ -113,7 +113,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val transactionRepository = mockk<TransactionRepository>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
-    private val appEventBus = mockk<AppEventBus>()
+    private val appEventBus = mockk<AppEventBusImpl>()
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()

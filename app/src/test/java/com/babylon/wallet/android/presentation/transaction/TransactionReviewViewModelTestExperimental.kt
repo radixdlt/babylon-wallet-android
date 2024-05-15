@@ -18,7 +18,7 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.transaction.vectors.requestMetadata
 import com.babylon.wallet.android.presentation.transaction.vectors.sampleManifest
 import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
-import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.CompiledNotarizedIntent
@@ -79,7 +79,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
     private val stateRepository = mockk<StateRepository>()
     private val dAppMessenger = mockk<DappMessenger>()
-    private val appEventBus = mockk<AppEventBus>()
+    private val appEventBus = mockk<AppEventBusImpl>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val signTransactionUseCase = mockk<SignTransactionUseCase>().apply {
         every { signingState } returns flowOf()

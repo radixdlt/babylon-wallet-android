@@ -31,6 +31,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -174,21 +175,14 @@ class TransactionSubmitDelegate @Inject constructor(
             }
         }.onFailure { throwable ->
             throwable.asRadixWalletException()?.let { radixWalletException ->
+                if (radixWalletException.cause is ProfileException.SecureStorageAccess) {
+                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                }
                 when (radixWalletException) {
                     is RadixWalletException.SignatureCancelled,
+                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
                     is RadixWalletException.LedgerCommunicationException -> {
                         logNonFatalException(radixWalletException)
-                        _state.update {
-                            it.copy(
-                                isSubmitting = false,
-                                error = TransactionErrorMessage(radixWalletException)
-                            )
-                        }
-                        approvalJob = null
-                        return
-                    }
-
-                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> {
                         _state.update {
                             it.copy(
                                 isSubmitting = false,

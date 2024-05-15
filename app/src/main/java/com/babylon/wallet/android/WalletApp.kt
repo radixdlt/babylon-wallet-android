@@ -4,11 +4,13 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,8 +32,6 @@ import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
@@ -54,6 +54,7 @@ fun WalletApp(
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
+    var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
     NavigationHost(
         modifier = modifier.fillMaxSize(),
         startDestination = MAIN_ROUTE,
@@ -98,10 +99,8 @@ fun WalletApp(
         }
     }
     LaunchedEffect(Unit) {
-        mainViewModel.babylonMnemonicNeedsRecoveryEvent.collect {
-            navController.restoreMnemonics(
-                args = RestoreMnemonicsArgs(isMandatory = true)
-            )
+        mainViewModel.secureFolderWarning.collect {
+            showSecureFolderWarning = true
         }
     }
     HandleAccessFactorSourcesEvents(
@@ -127,6 +126,17 @@ fun WalletApp(
             showNotSecuredDialog = false
             onCloseApp()
         })
+    }
+    if (showSecureFolderWarning) {
+        BasicPromptAlertDialog(
+            finish = {
+                showSecureFolderWarning = false
+            },
+            message = {
+                Text(text = stringResource(id = R.string.homePage_secureFolder_warning))
+            },
+            dismissText = null
+        )
     }
     val olympiaErrorState = state.olympiaErrorState
     if (olympiaErrorState != null) {

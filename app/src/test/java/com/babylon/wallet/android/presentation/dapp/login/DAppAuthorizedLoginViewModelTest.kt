@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -72,7 +73,7 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
-    private val appEventBus = mockk<AppEventBus>()
+    private val appEventBus = mockk<AppEventBusImpl>()
     private val stateRepository = StateRepositoryFake()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
