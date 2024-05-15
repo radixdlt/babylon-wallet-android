@@ -30,16 +30,15 @@ class EulaViewModel @Inject constructor(
     private fun revokeAccessToGoogleDrive() {
         viewModelScope.launch {
             googleSignInManager.signOut()
-            googleSignInManager.revokeAccess()
         }
     }
 
     fun onAcceptClick() = viewModelScope.launch {
-        sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized()))
+        sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = googleSignInManager.isSignedIn()))
     }
 
     fun onBackClick() = viewModelScope.launch {
-        sendEvent(EulaEvent.NavigateBack(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized()))
+        sendEvent(EulaEvent.NavigateBack(isWithCloudBackupEnabled = googleSignInManager.isSignedIn()))
     }
 
     sealed interface EulaEvent : OneOffEvent {

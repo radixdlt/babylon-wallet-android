@@ -71,7 +71,7 @@ class GoogleSignInManager @Inject constructor(
             }.also { result ->
                 if (result.isFailure && result.exceptionOrNull() is SecurityException) {
                     // user signed in but didn't grant access to Drive therefore sign out
-                    signOut()
+                    googleSignOut()
                 }
             }
         }.mapCatching { googleAccount ->
@@ -81,37 +81,8 @@ class GoogleSignInManager @Inject constructor(
     }
 
     suspend fun signOut() {
-        return withContext(ioDispatcher) {
-            suspendCancellableCoroutine { continuation ->
-                getGoogleSignInClient(applicationContext).signOut()
-                    .addOnSuccessListener {
-                        continuation.resumeIfActive(Unit)
-                    }
-                    .addOnCanceledListener {
-                        continuation.resumeIfActive(Unit)
-                    }
-                    .addOnFailureListener {
-                        continuation.resumeIfActive(Unit)
-                    }
-            }
-        }
-    }
-
-    suspend fun revokeAccess() {
-        return withContext(ioDispatcher) {
-            suspendCancellableCoroutine { continuation ->
-                getGoogleSignInClient(applicationContext).revokeAccess()
-                    .addOnSuccessListener {
-                        continuation.resumeIfActive(Unit)
-                    }
-                    .addOnCanceledListener {
-                        continuation.resumeIfActive(Unit)
-                    }
-                    .addOnFailureListener {
-                        continuation.resumeIfActive(Unit)
-                    }
-            }
-        }
+        googleSignOut()
+        googleRevokeAccess()
     }
 
     // IMPORTANT NOTE
@@ -134,7 +105,41 @@ class GoogleSignInManager @Inject constructor(
         } ?: return null
     }
 
-    fun isCloudBackupAuthorized() = getSignedInGoogleAccount()?.email.isNullOrEmpty().not()
+    fun isSignedIn() = getSignedInGoogleAccount()?.email.isNullOrEmpty().not()
+
+    private suspend fun googleSignOut() {
+        return withContext(ioDispatcher) {
+            suspendCancellableCoroutine { continuation ->
+                getGoogleSignInClient(applicationContext).signOut()
+                    .addOnSuccessListener {
+                        continuation.resumeIfActive(Unit)
+                    }
+                    .addOnCanceledListener {
+                        continuation.resumeIfActive(Unit)
+                    }
+                    .addOnFailureListener {
+                        continuation.resumeIfActive(Unit)
+                    }
+            }
+        }
+    }
+
+    private suspend fun googleRevokeAccess() {
+        return withContext(ioDispatcher) {
+            suspendCancellableCoroutine { continuation ->
+                getGoogleSignInClient(applicationContext).revokeAccess()
+                    .addOnSuccessListener {
+                        continuation.resumeIfActive(Unit)
+                    }
+                    .addOnCanceledListener {
+                        continuation.resumeIfActive(Unit)
+                    }
+                    .addOnFailureListener {
+                        continuation.resumeIfActive(Unit)
+                    }
+            }
+        }
+    }
 
     private fun getCancelReason(resultData: Intent?) =
         try {

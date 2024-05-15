@@ -77,7 +77,6 @@ class BackupViewModel @Inject constructor(
     fun onDisconnectClick() {
         viewModelScope.launch {
             googleSignInManager.signOut()
-            googleSignInManager.revokeAccess()
             changeBackupSettingUseCase(isChecked = false)
         }
     }

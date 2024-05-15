@@ -18,7 +18,6 @@ class DeleteWalletUseCase @Inject constructor(
 
     suspend operator fun invoke() {
         googleSignInManager.signOut()
-        googleSignInManager.revokeAccess()
         peerdroidClient.terminate()
         stateRepository.clearCachedState()
         profileRepository.clearAllWalletData()
