@@ -32,6 +32,9 @@ import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.p2plinksmigration.upgrade.linkedConnectorsUpgrade
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
@@ -90,6 +93,12 @@ fun WalletApp(
     LaunchedEffect(state.showDeviceRootedWarning) {
         if (state.showDeviceRootedWarning) {
             navController.navigate(ROUTE_ROOT_DETECTION)
+        }
+    }
+
+    LaunchedEffect(state.showLinkedConnectorsUpgradeMessage) {
+        if (state.showLinkedConnectorsUpgradeMessage) {
+            navController.linkedConnectorsUpgrade()
         }
     }
 

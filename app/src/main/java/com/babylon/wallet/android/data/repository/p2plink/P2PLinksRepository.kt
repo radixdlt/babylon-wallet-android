@@ -10,10 +10,12 @@ import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -29,11 +31,16 @@ interface P2PLinksRepository {
     suspend fun addOrUpdateP2PLink(p2pLink: P2pLink)
 
     suspend fun removeP2PLink(id: PublicKeyHash)
+
+    suspend fun observeP2PLinkMigrationAcknowledged(): Flow<Boolean>
+
+    suspend fun acknowledgeP2PLinkMigration()
 }
 
 class P2PLinksRepositoryImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val preferencesManager: PreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : P2PLinksRepository {
 
@@ -85,6 +92,14 @@ class P2PLinksRepositoryImpl @Inject constructor(
             saveP2PLinks(newP2PLinks.asList())
             peerdroidClient.deleteLink(p2pLink.connectionPassword)
         }
+    }
+
+    override suspend fun observeP2PLinkMigrationAcknowledged(): Flow<Boolean> {
+        return preferencesManager.isP2PLinkMigrationAcknowledged.filterNotNull()
+    }
+
+    override suspend fun acknowledgeP2PLinkMigration() {
+        preferencesManager.setP2PLinkMigrationAcknowledged(true)
     }
 
     private suspend fun getSavedP2PLinks(): P2pLinks {

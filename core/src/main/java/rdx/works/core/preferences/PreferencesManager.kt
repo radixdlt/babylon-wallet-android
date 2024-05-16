@@ -41,6 +41,7 @@ interface PreferencesManager {
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
+    val isP2PLinkMigrationAcknowledged: Flow<Boolean?>
 
     suspend fun updateLastBackupInstant(backupInstant: Instant)
 
@@ -72,6 +73,8 @@ interface PreferencesManager {
 
     suspend fun removeLastSyncedAccountsWithCE()
 
+    suspend fun setP2PLinkMigrationAcknowledged(isAcknowledged: Boolean)
+
     suspend fun clear(): Preferences
 }
 
@@ -97,6 +100,11 @@ class PreferencesManagerImpl @Inject constructor(
             preferences[KEY_LAST_BACKUP_INSTANT]?.let {
                 Instant.parse(it)
             }
+        }
+
+    override val isP2PLinkMigrationAcknowledged: Flow<Boolean?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_P2P_LINK_MIGRATION_ACKNOWLEDGED]
         }
 
     override suspend fun updateLastBackupInstant(backupInstant: Instant) {
@@ -262,6 +270,12 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun setP2PLinkMigrationAcknowledged(isAcknowledged: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_P2P_LINK_MIGRATION_ACKNOWLEDGED] = isAcknowledged
+        }
+    }
+
     override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -278,5 +292,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
         val KEY_UUID = stringPreferencesKey("uuid")
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
+        val KEY_P2P_LINK_MIGRATION_ACKNOWLEDGED = booleanPreferencesKey("p2p_link_migration_acknowledged")
     }
 }

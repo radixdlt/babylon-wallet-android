@@ -107,14 +107,16 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 getProfileUseCase.state,
-                preferencesManager.isDeviceRootedDialogShown
-            ) { profileState, isDeviceRootedDialogShown ->
+                preferencesManager.isDeviceRootedDialogShown,
+                p2PLinksRepository.observeP2PLinkMigrationAcknowledged()
+            ) { profileState, isDeviceRootedDialogShown, p2pLinkMigrationAcknowledged ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
-                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
+                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
+                        showLinkedConnectorsUpgradeMessage = !p2pLinkMigrationAcknowledged
                     )
                 }
             }.collect()
@@ -306,7 +308,8 @@ data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
-    val olympiaErrorState: OlympiaErrorState? = null
+    val olympiaErrorState: OlympiaErrorState? = null,
+    val showLinkedConnectorsUpgradeMessage: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(
