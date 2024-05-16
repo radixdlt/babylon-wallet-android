@@ -70,7 +70,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 profileStateFlow.update { ProfileState.None }
             } else {
                 val snapshot = snapshotResult.getOrNull().orEmpty()
-                ensureP2PLinkMigrationIsAcknowledged(snapshot)
+                ensureP2PLinkMigrationAcknowledged(snapshot)
                 profileStateFlow.update { deriveProfileState(snapshot) }
             }
         }
@@ -136,14 +136,14 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     )
 
-    private suspend fun ensureP2PLinkMigrationIsAcknowledged(profileJson: String) {
-        val isP2PLinkMigrationCheckPerformed = preferencesManager.isP2PLinkMigrationAcknowledged.firstOrNull() != null
+    private suspend fun ensureP2PLinkMigrationAcknowledged(profileJson: String) {
+        val isP2PLinkMigrationCheckPerformed = preferencesManager.showRelinkConnectorsAfterUpdate.firstOrNull() != null
         if (isP2PLinkMigrationCheckPerformed) {
             return
         }
 
-        preferencesManager.setP2PLinkMigrationAcknowledged(
-            isAcknowledged = !Profile.checkIfProfileJsonContainsLegacyP2PLinks(profileJson)
+        preferencesManager.setShowRelinkConnectorsAfterUpdate(
+            show = Profile.checkIfProfileJsonContainsLegacyP2PLinks(profileJson)
         )
     }
 }

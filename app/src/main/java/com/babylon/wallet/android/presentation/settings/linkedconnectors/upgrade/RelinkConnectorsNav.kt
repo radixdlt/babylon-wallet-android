@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.p2plinksmigration.upgrade
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.upgrade
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -6,13 +6,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-private const val ROUTE = "linked_connectors_upgrade_route"
+private const val ROUTE = "relink_connectors_route"
 
-fun NavController.linkedConnectorsUpgrade() {
+fun NavController.relinkConnectors() {
     navigate(route = ROUTE)
 }
 
-fun NavGraphBuilder.linkedConnectorsUpgrade(
+fun NavGraphBuilder.relinkConnectors(
     onContinueClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -31,7 +31,7 @@ fun NavGraphBuilder.linkedConnectorsUpgrade(
             EnterTransition.None
         }
     ) {
-        LinkedConnectorsUpgradeScreen(
+        RelinkConnectorsScreen(
             onContinueClick = onContinueClick,
             onDismiss = onDismiss
         )

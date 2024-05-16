@@ -2,6 +2,10 @@ package rdx.works.profile.domain.backup
 
 import android.app.backup.BackupDataInputStream
 import android.net.Uri
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.checkIfEncryptedProfileJsonContainsLegacyP2PLinks
+import com.radixdlt.sargon.extensions.checkIfProfileJsonContainsLegacyP2PLinks
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.storage.FileRepository
 import rdx.works.core.then
 import rdx.works.profile.data.repository.BackupProfileRepository
@@ -9,7 +13,8 @@ import javax.inject.Inject
 
 class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository,
-    private val fileRepository: FileRepository
+    private val fileRepository: FileRepository,
+    private val preferencesManager: PreferencesManager
 ) {
 
     suspend fun forCloud(data: BackupDataInputStream): Result<Unit> = runCatching {
@@ -17,12 +22,28 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
         data.read(byteArray)
         byteArray.toString(Charsets.UTF_8)
     }.then { snapshot ->
-        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.Cloud)
+        val backupType = BackupType.Cloud
+        ensureP2PLinkMigrationAcknowledged(snapshot, backupType)
+        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, backupType)
     }
 
     suspend fun forFile(uri: Uri, fileBackupType: BackupType.File): Result<Unit> {
         return fileRepository.read(fromFile = uri).then { content ->
+            ensureP2PLinkMigrationAcknowledged(content, fileBackupType)
             backupProfileRepository.saveTemporaryRestoringSnapshot(content, fileBackupType)
         }
+    }
+
+    private suspend fun ensureP2PLinkMigrationAcknowledged(content: String, backupType: BackupType) {
+        val containsLegacyP2PLinks = when (backupType) {
+            is BackupType.File.Encrypted -> Profile.checkIfEncryptedProfileJsonContainsLegacyP2PLinks(
+                jsonString = content,
+                password = backupType.password
+            )
+            else -> Profile.checkIfProfileJsonContainsLegacyP2PLinks(
+                jsonString = content
+            )
+        }
+        preferencesManager.setShowRelinkConnectorsAfterProfileRestore(containsLegacyP2PLinks)
     }
 }

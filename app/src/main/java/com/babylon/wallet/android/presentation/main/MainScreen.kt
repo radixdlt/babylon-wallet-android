@@ -23,7 +23,8 @@ fun MainScreen(
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
-    showNPSSurvey: () -> Unit
+    showNPSSurvey: () -> Unit,
+    onNavigateToRelinkConnectors: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -36,7 +37,8 @@ fun MainScreen(
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
                 onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
-                showNPSSurvey = showNPSSurvey
+                showNPSSurvey = showNPSSurvey,
+                onNavigateToRelinkConnectors = onNavigateToRelinkConnectors
             )
         }
 

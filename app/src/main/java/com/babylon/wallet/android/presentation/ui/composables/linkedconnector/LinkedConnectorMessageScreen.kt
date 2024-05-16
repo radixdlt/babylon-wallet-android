@@ -34,15 +34,18 @@ fun LinkedConnectorMessageScreen(
     message: String,
     onPositiveClick: () -> Unit,
     onNegativeClick: () -> Unit,
+    modifier: Modifier = Modifier,
     isInProgress: Boolean = false,
     positiveButton: String = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
     negativeButton: String = stringResource(id = R.string.common_cancel),
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+        modifier = modifier.then(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+        )
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
@@ -115,7 +118,7 @@ private fun LinkedConnectorMessagePreview() {
             Radix Connector now supports linking multiple phones with one browser.
 
             To support this feature, we've had to disconnect your existing links – please re-link your Connector(s).
-        """.trimIndent(),
+            """.trimIndent(),
             isInProgress = false,
             onPositiveClick = {},
             onNegativeClick = {}

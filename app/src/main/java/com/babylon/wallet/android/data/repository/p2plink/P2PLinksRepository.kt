@@ -10,7 +10,8 @@ import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -32,9 +33,13 @@ interface P2PLinksRepository {
 
     suspend fun removeP2PLink(id: PublicKeyHash)
 
-    suspend fun observeP2PLinkMigrationAcknowledged(): Flow<Boolean>
+    fun showRelinkConnectors(): Flow<Boolean>
 
-    suspend fun acknowledgeP2PLinkMigration()
+    suspend fun showRelinkConnectorsAfterUpdate(): Boolean
+
+    suspend fun showRelinkConnectorsAfterProfileRestore(): Boolean
+
+    suspend fun clearShowRelinkConnectors()
 }
 
 class P2PLinksRepositoryImpl @Inject constructor(
@@ -94,12 +99,25 @@ class P2PLinksRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun observeP2PLinkMigrationAcknowledged(): Flow<Boolean> {
-        return preferencesManager.isP2PLinkMigrationAcknowledged.filterNotNull()
+    override fun showRelinkConnectors(): Flow<Boolean> {
+        return combine(
+            preferencesManager.showRelinkConnectorsAfterUpdate.map { it ?: false },
+            preferencesManager.showRelinkConnectorsAfterProfileRestore
+        ) { showAfterUpdate, showAfterProfileRestore ->
+            showAfterUpdate || showAfterProfileRestore
+        }.distinctUntilChanged()
     }
 
-    override suspend fun acknowledgeP2PLinkMigration() {
-        preferencesManager.setP2PLinkMigrationAcknowledged(true)
+    override suspend fun showRelinkConnectorsAfterUpdate(): Boolean {
+        return preferencesManager.showRelinkConnectorsAfterUpdate.firstOrNull() ?: false
+    }
+
+    override suspend fun showRelinkConnectorsAfterProfileRestore(): Boolean {
+        return preferencesManager.showRelinkConnectorsAfterProfileRestore.firstOrNull() ?: false
+    }
+
+    override suspend fun clearShowRelinkConnectors() {
+        preferencesManager.clearShowRelinkConnectors()
     }
 
     private suspend fun getSavedP2PLinks(): P2pLinks {

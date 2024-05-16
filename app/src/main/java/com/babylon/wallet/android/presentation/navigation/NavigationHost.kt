@@ -47,10 +47,10 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.Rest
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
-import com.babylon.wallet.android.presentation.p2plinksmigration.upgrade.linkedConnectorsUpgrade
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.upgrade.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
@@ -222,6 +222,9 @@ fun NavigationHost(
             },
             showNPSSurvey = {
                 navController.npsSurveyDialog()
+            },
+            onNavigateToRelinkConnectors = {
+                navController.relinkConnectors()
             }
         )
         account(
@@ -517,7 +520,7 @@ fun NavigationHost(
                 navController.popBackStack(MAIN_ROUTE, false)
             }
         )
-        linkedConnectorsUpgrade(
+        relinkConnectors(
             onContinueClick = {
                 navController.popBackStack()
                 navController.linkedConnectorsScreen(
