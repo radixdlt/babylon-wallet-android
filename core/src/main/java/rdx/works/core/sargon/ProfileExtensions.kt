@@ -50,14 +50,13 @@ val Header.isCompatible: Boolean
 /**
  * in order to do a cloud backup we must ensure that:
  * - profile has at least one network
- * - profile has at least one account
  * - isCloudProfileSyncEnabled is true
  *
- * The first two indicate if the profile is in an initialization process, e.g. onboarding flow.
+ * The first indicates if the profile is in an initialization process, e.g. onboarding flow.
  *
  */
-val Profile.isCloudBackupEnabled: Boolean
-    get() = hasNetworks && currentNetwork?.accounts?.isNotEmpty() == true && appPreferences.security.isCloudProfileSyncEnabled
+val Profile.canBackupToCloud: Boolean
+    get() = hasNetworks && appPreferences.security.isCloudProfileSyncEnabled
 
 val Profile.currentGateway: Gateway
     get() = appPreferences.gateways.current

@@ -2,6 +2,8 @@ package rdx.works.profile.cloudbackup
 
 import android.content.Context
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAuthIOException
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -16,6 +18,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
+import rdx.works.core.mapError
 import rdx.works.profile.BuildConfig
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -24,7 +27,6 @@ import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.toCloudBackupProperties
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.inject.Inject
@@ -87,21 +89,25 @@ class DriveClientImpl @Inject constructor(
     override suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
         profile: Profile
-    ): Result<CloudBackupFileEntity> {
-        return if (googleDriveFileId == null) { // if true then this is the first attempt to backup the profile!
-            createBackupFile(profile = profile)
-        } else {
-            updateBackupFile(
-                googleDriveFileId = googleDriveFileId,
-                profile = profile
-            )
-        }
+    ): Result<CloudBackupFileEntity> = if (googleDriveFileId == null) { // if true then this is the first attempt to backup the profile!
+        createBackupFile(profile = profile)
+    } else {
+        updateBackupFile(
+            googleDriveFileId = googleDriveFileId,
+            profile = profile
+        )
     }
 
     override suspend fun fetchCloudBackupFileEntities(): Result<List<CloudBackupFileEntity>> = withContext(ioDispatcher) {
-        runCatching {// TODO catch exception? e.g. authorization exception
-            getFiles().map { file -> CloudBackupFileEntity(file) }
-        }
+        runCatching {
+            getDrive().files()
+                .list()
+                .setSpaces(APP_DATA_FOLDER)
+                .setFields(getFilesFields)
+                .execute()
+                .files
+                .map { file -> CloudBackupFileEntity(file) }
+        }.mapDriveError()
     }
 
     override suspend fun downloadCloudBackup(
@@ -112,7 +118,7 @@ class DriveClientImpl @Inject constructor(
                 fileEntity = entity,
                 serializedProfile = it
             )
-        }
+        }.mapDriveError()
     }
 
     override suspend fun claimCloudBackup(file: CloudBackupFileEntity): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
@@ -128,7 +134,7 @@ class DriveClientImpl @Inject constructor(
             getDrive().files().delete(file.id.id).execute()
 
             CloudBackupFileEntity(copiedFile)
-        }
+        }.mapDriveError()
     }
 
     private suspend fun createBackupFile(
@@ -152,7 +158,7 @@ class DriveClientImpl @Inject constructor(
                 .execute().let { file ->
                     CloudBackupFileEntity(file)
                 }
-        }
+        }.mapDriveError()
     }
 
     private suspend fun updateBackupFile(
@@ -175,7 +181,7 @@ class DriveClientImpl @Inject constructor(
                 .let { file ->
                     CloudBackupFileEntity(file)
                 }
-        }
+        }.mapDriveError(throwClaimByAnotherDeviceError = true)
     }
 
     private suspend fun getFileContents(fileId: String): Result<String> = withContext(ioDispatcher) {
@@ -185,16 +191,7 @@ class DriveClientImpl @Inject constructor(
                 .setFields(getFilesFields)
                 .executeMediaAndDownloadTo(outputStream)
             outputStream.toByteArray().toString(Charsets.UTF_8)
-        }
-    }
-
-    private suspend fun getFiles(): List<File> = withContext(ioDispatcher) {
-        getDrive().files()
-            .list()
-            .setSpaces(APP_DATA_FOLDER)
-            .setFields(getFilesFields)
-            .execute()
-            .files
+        }.mapDriveError()
     }
 
     private fun getDrive(): Drive {
@@ -202,7 +199,7 @@ class DriveClientImpl @Inject constructor(
 
         if (email.isNullOrEmpty()) {
             Timber.tag("CloudBackup").e("☁\uFE0F not signed in")
-            throw IOException("not signed in")
+            throw BackupServiceException.UnauthorizedException
         }
 
         val credential = GoogleAccountCredential.usingOAuth2(
@@ -222,21 +219,21 @@ class DriveClientImpl @Inject constructor(
         ).build()
     }
 
+    private fun <T> Result<T>.mapDriveError(throwClaimByAnotherDeviceError: Boolean = false): Result<T> = mapError { error ->
+        when (error) {
+            is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
+            is GoogleJsonResponseException -> {
+                if (error.details.code == 404 && throwClaimByAnotherDeviceError) {
+                    BackupServiceException.ProfileClaimedByAnotherDeviceException
+                } else {
+                    BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
+                }
+            }
+            else -> BackupServiceException.Unknown(cause = error)
+        }
+    }
+
     companion object {
         private const val APP_DATA_FOLDER = "appDataFolder"
     }
-
-    /*
-    private fun printException(exception: Exception) {
-        when (exception) {
-            is GoogleJsonResponseException -> GoogleDriveError.HttpApiFailure
-            is GooglePlayServicesAvailabilityException -> GoogleDriveError.PlayServicesUnavailable
-            is UserRecoverableAuthException -> GoogleDriveError.UserPermissionDenied
-            is UserRecoverableAuthIOException -> GoogleDriveError.UserPermissionDenied
-            is GoogleAuthException -> GoogleDriveError.AuthFailure
-            is IOException -> GoogleDriveError.NetworkUnavailable
-            else -> GoogleDriveError.Unknown
-        }
-    }
-     */
 }

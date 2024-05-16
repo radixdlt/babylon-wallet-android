@@ -117,7 +117,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             backupEmail = "",
-                            uiMessage = UiMessage.GoogleAuthErrorMessage(exception)
+                            uiMessage = UiMessage.ErrorMessage(exception)
                         )
                     }
                 }
@@ -205,7 +205,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     onFailure = { exception ->
                         _state.update {
                             it.copy(
-                                uiMessage = UiMessage.GoogleAuthErrorMessage(exception),
+                                uiMessage = UiMessage.ErrorMessage(exception),
                                 isDownloadingSelectedCloudBackup = false
                             )
                         }
@@ -220,7 +220,11 @@ class RestoreFromBackupViewModel @Inject constructor(
     fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
 
     private suspend fun restoreProfilesFromCloudBackup() {
-        val availableCloudBackedUpProfiles = fetchBackedUpProfilesMetadataFromCloud().getOrNull() // TODO exception?
+        val availableCloudBackedUpProfiles = fetchBackedUpProfilesMetadataFromCloud()
+            .onFailure {
+                Timber.tag("CloudBackup").w(it)
+            }
+            .getOrNull()
 
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.mapNotNull { fileEntity ->

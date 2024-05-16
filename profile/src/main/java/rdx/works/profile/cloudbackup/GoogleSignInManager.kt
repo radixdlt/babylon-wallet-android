@@ -1,30 +1,30 @@
 package rdx.works.profile.cloudbackup
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.CommonStatusCodes.NETWORK_ERROR
 import com.google.android.gms.common.api.Scope
-import com.google.android.gms.common.api.Status
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.HttpTransport
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import rdx.works.core.mapError
+import rdx.works.core.then
+import rdx.works.profile.BuildConfig
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.di.coroutines.IoDispatcher
-import timber.log.Timber
-import java.io.IOException
+import java.util.logging.Level
+import java.util.logging.Logger
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -38,11 +38,6 @@ class GoogleSignInManager @Inject constructor(
     suspend fun handleSignInResult(result: ActivityResult): Result<GoogleAccount> {
         return withContext(ioDispatcher) {
             suspendCancellableCoroutine<Result<GoogleAccount>> { continuation ->
-
-                if (result.resultCode != Activity.RESULT_OK) {
-                    continuation.resumeIfActive(Result.failure(exception = getCancelReason(result.data)))
-                }
-
                 GoogleSignIn.getSignedInAccountFromIntent(result.data)
                     .addOnSuccessListener { googleSignInAccount ->
                         val email = googleSignInAccount.email
@@ -54,24 +49,22 @@ class GoogleSignInManager @Inject constructor(
                             )
                             continuation.resumeIfActive(Result.success(value = googleAccount))
                         } else {
-                            continuation.resumeIfActive(Result.failure(exception = SecurityException("PermissionNotGranted")))
+                            continuation.resumeIfActive(Result.failure(BackupServiceException.UnauthorizedException))
                         }
                     }
                     .addOnCanceledListener {
-                        continuation.resumeIfActive(Result.failure(exception = getCancelReason(result.data)))
+                        continuation.resumeIfActive(Result.failure(BackupServiceException.UnauthorizedException))
                     }
-                    .addOnFailureListener { exception ->
-                        continuation.resumeIfActive(Result.failure(exception = exception))
+                    .addOnFailureListener {
+                        continuation.resumeIfActive(Result.failure(BackupServiceException.UnauthorizedException))
                     }
-            }.also { result ->
-                if (result.isFailure && result.exceptionOrNull() is SecurityException) {
-                    // user signed in but didn't grant access to Drive therefore sign out
-                    googleSignOut()
-                }
             }
-        }.mapCatching { googleAccount ->
-            ensureGoogleAccountAuthorizationToDrive(googleAccount.email)
-            googleAccount
+        }.then { googleAccount ->
+            ensureGoogleAccountAuthorizationToDrive(googleAccount)
+        }.onFailure {
+            if (it is BackupServiceException.UnauthorizedException) {
+                signOut()
+            }
         }
     }
 
@@ -136,40 +129,30 @@ class GoogleSignInManager @Inject constructor(
         }
     }
 
-    private fun getCancelReason(resultData: Intent?) =
-        try {
-            val statusCode = resultData?.getParcelableExtra<Status>("googleSignInStatus")?.statusCode
-            if (statusCode == NETWORK_ERROR) {
-                IOException("network error")
-            } else {
-                CancellationException("something went wrong")
-            }
-        } catch (e: Exception) {
-            Timber.e("Google sign in failed with reason: ${e.message}")
-            CancellationException("something went wrong")
-        }
-
     // In order to confirm that wallet is authorized to access drive files,
     // we must start the Drive service and access the files.
     // If the account (email) is not authorized the function will throw an UserRecoverableAuthIOException.
     // This method is currently used ONLY when user signs in (see handleSignInResult fun)
     //
     // ⚠️ The Drive service might take even seconds to return a result.
-    private suspend fun ensureGoogleAccountAuthorizationToDrive(email: String) {
+    private suspend fun ensureGoogleAccountAuthorizationToDrive(account: GoogleAccount): Result<GoogleAccount> = runCatching {
         val credential = GoogleAccountCredential.usingOAuth2(
             applicationContext,
             listOf(DriveScopes.DRIVE_APPDATA)
         ).apply {
-            selectedAccountName = email
+            selectedAccountName = account.email
         }
 
         val drive = Drive.Builder(
-            NetHttpTransport(),
+            NetHttpTransport().apply {
+                NetHttpTransport().apply {
+                    val logger = Logger.getLogger(HttpTransport::class.java.name)
+                    logger.level = if (BuildConfig.DEBUG) Level.CONFIG else Level.OFF
+                }
+            },
             GsonFactory.getDefaultInstance(),
             credential
-        )
-            .setApplicationName("get a name")
-            .build()
+        ).build()
 
         withContext(ioDispatcher) {
             drive.files()
@@ -177,16 +160,19 @@ class GoogleSignInManager @Inject constructor(
                 .setSpaces("appDataFolder")
                 .execute()
         }
+
+        account
+    }.mapError {
+        BackupServiceException.UnauthorizedException
     }
 
     companion object {
 
         private val driveAppDataScope = Scope(DriveScopes.DRIVE_APPDATA)
-        private val driveMetadataScope = Scope(DriveScopes.DRIVE_METADATA)
 
         private fun getGoogleSignInClient(context: Context): GoogleSignInClient {
             val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(driveAppDataScope, driveMetadataScope)
+                .requestScopes(driveAppDataScope)
                 .requestEmail()
                 .build()
             return GoogleSignIn.getClient(context, signInOptions)
