@@ -5,15 +5,18 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
+import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.changeGatewayToNetworkId
+import rdx.works.core.then
 import rdx.works.profile.cloudbackup.DriveClient
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 class RestoreProfileFromBackupUseCase @Inject constructor(
@@ -44,34 +47,36 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
             )
         )
 
-        val profileToSave = if (mainSeedPhraseSkipped) {
-            val mnemonic = mnemonicRepository()
-            val deviceFactorSource = FactorSource.Device.babylon(
-                mnemonicWithPassphrase = mnemonic,
-                model = newDevice.model,
-                name = newDevice.name,
-                createdAt = TimestampGenerator(),
-                isMain = true
-            )
-            profileWithRestoredHeader.addMainBabylonDeviceFactorSource(mainBabylonFactorSource = deviceFactorSource)
+        return if (mainSeedPhraseSkipped) {
+            mnemonicRepository.createNew()
+                .mapCatching { mnemonic ->
+                    val deviceFactorSource = FactorSource.Device.babylon(
+                        mnemonicWithPassphrase = mnemonic,
+                        model = newDevice.model,
+                        name = newDevice.name,
+                        createdAt = TimestampGenerator(),
+                        isMain = true
+                    )
+                    profileWithRestoredHeader.addMainBabylonDeviceFactorSource(mainBabylonFactorSource = deviceFactorSource)
+                }
+                .mapError { ProfileException.SecureStorageAccess }
         } else {
-            profileWithRestoredHeader
-        }
-
-        return if (backupType is BackupType.Cloud) {
-            println("☁\uFE0F -----> Claiming Profile")
-            driveClient.claimCloudBackup(backupType.entity).onSuccess {
-                preferencesManager.setGoogleDriveFileId(it.id)
+            Result.success(profileWithRestoredHeader)
+        }.then { profileToSave ->
+            if (backupType is BackupType.Cloud) {
+                println("☁\uFE0F -----> Claiming Profile")
+                driveClient.claimCloudBackup(backupType.entity).onSuccess {
+                    preferencesManager.setGoogleDriveFileId(it.id)
+                    println("☁\uFE0F -----> Saving Profile")
+                    profileRepository.saveProfile(profileToSave)
+                    backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
+                }.map {  }
+            } else {
                 println("☁\uFE0F -----> Saving Profile")
                 profileRepository.saveProfile(profileToSave)
                 backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
-            }.map { }
-        } else {
-            println("☁\uFE0F -----> Saving Profile")
-            profileRepository.saveProfile(profileToSave)
-            backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
-
-            Result.success(Unit)
+                Result.success(Unit)
+            }
         }
     }
 }
