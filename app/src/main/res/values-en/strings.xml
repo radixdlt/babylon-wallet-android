@@ -593,6 +593,14 @@
   <string name="onboarding_eula_headerTitle">User Terms</string>
   <string name="onboarding_eula_headerSubtitle">To proceed, you must accept the user terms below.</string>
   <string name="onboarding_eula_accept">Accept</string>
+  <string name="onboarding_cloudAndroid_backupTitle">Back up your wallet settings</string>
+  <string name="onboarding_cloudAndroid_backupSubtitle">Connect to Google Drive to automatically backup your Radix wallet settings.</string>
+  <string name="onboarding_cloudAndroid_skip">Skip</string>
+  <string name="onboarding_cloudAndroid_backupButton">Back up to Google Drive</string>
+  <string name="onboarding_cloudAndroidRestore_BackupTitle">Restore wallet from backup</string>
+  <string name="onboarding_cloudAndroidRestore_BackupSubtitle">Log in to Google Drive to restore your Radix Wallet from backup.</string>
+  <string name="onboarding_cloudAndroidRestore_Skip">Skip</string>
+  <string name="onboarding_cloudAndroidRestore_LoginButton">Log in to Google Drive</string>
   <string name="splash_tapAnywhereToUnlock">Tap to unlock</string>
   <string name="splash_passcodeNotSetTitle">Passcode not set up</string>
   <string name="splash_passcodeNotSetMessage">This app requires your phone to have a passcode set up</string>
@@ -1071,6 +1079,7 @@
   <string name="configurationBackup_automated_toggleIOS">Automated iCloud Backups</string>
   <string name="configurationBackup_automated_toggleAndroid">Automated Google Drive Backups</string>
   <string name="configurationBackup_automated_lastBackup">Last backup: %s</string>
+  <string name="configurationBackup_automated_logInAndroid">Log in to Google Drive</string>
   <string name="configurationBackup_automated_loggedInAsAndroid">Logged in as:</string>
   <string name="configurationBackup_automated_disconnectAndroid">Disconnect</string>
   <string name="configurationBackup_automated_outdatedBackupIOS">Out-of-date backup still present on iCloud</string>
