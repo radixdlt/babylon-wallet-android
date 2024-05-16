@@ -47,12 +47,12 @@ data class StreamTransactionsRequestEventFilterItem (
     /**
      * 
      *
-     * Values: deposit,withdrawal
+     * Values: Deposit,Withdrawal
      */
     @Serializable
     enum class Event(val value: kotlin.String) {
-        @SerialName(value = "Deposit") deposit("Deposit"),
-        @SerialName(value = "Withdrawal") withdrawal("Withdrawal");
+        @SerialName(value = "Deposit") Deposit("Deposit"),
+        @SerialName(value = "Withdrawal") Withdrawal("Withdrawal");
     }
 }
 

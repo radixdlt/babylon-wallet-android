@@ -22,16 +22,16 @@ import kotlinx.serialization.Serializable
 /**
  * A status concerning the Gateway's handling status of this pending transaction. 
  *
- * Values: handlingSubmission,concluded
+ * Values: HandlingSubmission,Concluded
  */
 @Serializable
 enum class TransactionPayloadGatewayHandlingStatus(val value: kotlin.String) {
 
     @SerialName(value = "HandlingSubmission")
-    handlingSubmission("HandlingSubmission"),
+    HandlingSubmission("HandlingSubmission"),
 
     @SerialName(value = "Concluded")
-    concluded("Concluded");
+    Concluded("Concluded");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

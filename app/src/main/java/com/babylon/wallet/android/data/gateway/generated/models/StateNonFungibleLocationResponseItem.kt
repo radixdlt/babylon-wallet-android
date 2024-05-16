@@ -27,6 +27,8 @@ import kotlinx.serialization.Contextual
  * @param isBurned 
  * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  * @param owningVaultAddress Bech32m-encoded human readable version of the address.
+ * @param owningVaultParentAncestorAddress Bech32m-encoded human readable version of the address.
+ * @param owningVaultGlobalAncestorAddress Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
@@ -45,7 +47,15 @@ data class StateNonFungibleLocationResponseItem (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "owning_vault_address")
-    val owningVaultAddress: kotlin.String? = null
+    val owningVaultAddress: kotlin.String? = null,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "owning_vault_parent_ancestor_address")
+    val owningVaultParentAncestorAddress: kotlin.String? = null,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "owning_vault_global_ancestor_address")
+    val owningVaultGlobalAncestorAddress: kotlin.String? = null
 
 )
 

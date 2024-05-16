@@ -22,34 +22,34 @@ import kotlinx.serialization.Serializable
 /**
  * High-level manifest class type:   * `General`: A general manifest that involves any amount of arbitrary components and packages where nothing more concrete can be said about the manifest and its nature.   * `Transfer`: A manifest of a 1-to-1 transfer to a one-to-many transfer of resources.   * `PoolContribution`: A manifest that contributed some amount of resources to a liquidity pool that can be a one-resource pool, two-resource pool, or a multi-resource pool.   * `PoolRedemption`: A manifest that redeemed resources from a liquidity pool. Similar to contributions, this can be any of the three pool blueprints available in the pool package.   * `ValidatorStake`: A manifest where XRD is staked to one or more validators.   * `ValidatorUnstake`: A manifest where XRD is unstaked from one or more validators.   * `ValidatorClaim`: A manifest where XRD is claimed from one or more validators.   * `AccountDepositSettingsUpdate`: A manifest that updated the deposit settings of the account. 
  *
- * Values: general,transfer,poolContribution,poolRedemption,validatorStake,validatorUnstake,validatorClaim,accountDepositSettingsUpdate
+ * Values: General,Transfer,PoolContribution,PoolRedemption,ValidatorStake,ValidatorUnstake,ValidatorClaim,AccountDepositSettingsUpdate
  */
 @Serializable
 enum class ManifestClass(val value: kotlin.String) {
 
     @SerialName(value = "General")
-    general("General"),
+    General("General"),
 
     @SerialName(value = "Transfer")
-    transfer("Transfer"),
+    Transfer("Transfer"),
 
     @SerialName(value = "PoolContribution")
-    poolContribution("PoolContribution"),
+    PoolContribution("PoolContribution"),
 
     @SerialName(value = "PoolRedemption")
-    poolRedemption("PoolRedemption"),
+    PoolRedemption("PoolRedemption"),
 
     @SerialName(value = "ValidatorStake")
-    validatorStake("ValidatorStake"),
+    ValidatorStake("ValidatorStake"),
 
     @SerialName(value = "ValidatorUnstake")
-    validatorUnstake("ValidatorUnstake"),
+    ValidatorUnstake("ValidatorUnstake"),
 
     @SerialName(value = "ValidatorClaim")
-    validatorClaim("ValidatorClaim"),
+    ValidatorClaim("ValidatorClaim"),
 
     @SerialName(value = "AccountDepositSettingsUpdate")
-    accountDepositSettingsUpdate("AccountDepositSettingsUpdate");
+    AccountDepositSettingsUpdate("AccountDepositSettingsUpdate");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

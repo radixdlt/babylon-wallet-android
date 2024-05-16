@@ -22,16 +22,16 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: native,scryptoV1
+ * Values: Native,ScryptoV1
  */
 @Serializable
 enum class PackageVmType(val value: kotlin.String) {
 
     @SerialName(value = "Native")
-    native("Native"),
+    Native("Native"),
 
     @SerialName(value = "ScryptoV1")
-    scryptoV1("ScryptoV1");
+    ScryptoV1("ScryptoV1");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

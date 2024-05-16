@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.data.gateway.apis
 
+import com.babylon.wallet.android.data.gateway.generated.models.AccountDepositPreValidationRequest
+import com.babylon.wallet.android.data.gateway.generated.models.AccountDepositPreValidationResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionCommittedDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionConstructionResponse
@@ -14,6 +16,22 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface TransactionApi {
+    /**
+     * PreValidate deposit of resources to an account
+     * Helper endpoint that allows pre-validation if a deposit of certain resources to a given account can succeed or not.
+     * It is only meant for pre-validation usage, it does not guarantee that execution will succeed.
+     * Responses:
+     *  - 200: Pre-validation response, including all deciding factors that were used to generate that response.
+     *  - 4XX: Client-originated request error
+     *
+     * @param accountDepositPreValidationRequest
+     * @return [AccountDepositPreValidationResponse]
+     */
+    @POST("transaction/account-deposit-pre-validation")
+    fun accountDepositPreValidation(
+        @Body accountDepositPreValidationRequest: AccountDepositPreValidationRequest
+    ): Call<AccountDepositPreValidationResponse>
+
     /**
      * Get Committed Transaction Details
      * Returns the committed details and receipt of the transaction for a given transaction identifier.
@@ -43,8 +61,9 @@ interface TransactionApi {
 
     /**
      * Preview Transaction
-     * Previews transaction against the network. This endpoint is effectively a proxy towards the
-     * Core API &#x60;/v0/transaction/preview&#x60; endpoint. See the Core API documentation for more details.
+     * Previews transaction against the network.
+     * This endpoint is effectively a proxy towards the Core API &#x60;/v0/transaction/preview&#x60; endpoint.
+     * See the Core API documentation for more details.
      * Responses:
      *  - 200: Successful Preview
      *  - 4XX: Client-originated request error

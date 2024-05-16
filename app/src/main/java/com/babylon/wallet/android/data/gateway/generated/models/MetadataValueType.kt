@@ -22,106 +22,106 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: string,bool,u8,u32,u64,i32,i64,decimal,globalAddress,publicKey,nonFungibleGlobalId,nonFungibleLocalId,instant,url,origin,publicKeyHash,stringArray,boolArray,u8Array,u32Array,u64Array,i32Array,i64Array,decimalArray,globalAddressArray,publicKeyArray,nonFungibleGlobalIdArray,nonFungibleLocalIdArray,instantArray,urlArray,originArray,publicKeyHashArray
+ * Values: String,Bool,U8,U32,U64,I32,I64,Decimal,GlobalAddress,PublicKey,NonFungibleGlobalId,NonFungibleLocalId,Instant,Url,Origin,PublicKeyHash,StringArray,BoolArray,U8Array,U32Array,U64Array,I32Array,I64Array,DecimalArray,GlobalAddressArray,PublicKeyArray,NonFungibleGlobalIdArray,NonFungibleLocalIdArray,InstantArray,UrlArray,OriginArray,PublicKeyHashArray
  */
 @Serializable
 enum class MetadataValueType(val value: kotlin.String) {
 
     @SerialName(value = "String")
-    string("String"),
+    String("String"),
 
     @SerialName(value = "Bool")
-    bool("Bool"),
+    Bool("Bool"),
 
     @SerialName(value = "U8")
-    u8("U8"),
+    U8("U8"),
 
     @SerialName(value = "U32")
-    u32("U32"),
+    U32("U32"),
 
     @SerialName(value = "U64")
-    u64("U64"),
+    U64("U64"),
 
     @SerialName(value = "I32")
-    i32("I32"),
+    I32("I32"),
 
     @SerialName(value = "I64")
-    i64("I64"),
+    I64("I64"),
 
     @SerialName(value = "Decimal")
-    decimal("Decimal"),
+    Decimal("Decimal"),
 
     @SerialName(value = "GlobalAddress")
-    globalAddress("GlobalAddress"),
+    GlobalAddress("GlobalAddress"),
 
     @SerialName(value = "PublicKey")
-    publicKey("PublicKey"),
+    PublicKey("PublicKey"),
 
     @SerialName(value = "NonFungibleGlobalId")
-    nonFungibleGlobalId("NonFungibleGlobalId"),
+    NonFungibleGlobalId("NonFungibleGlobalId"),
 
     @SerialName(value = "NonFungibleLocalId")
-    nonFungibleLocalId("NonFungibleLocalId"),
+    NonFungibleLocalId("NonFungibleLocalId"),
 
     @SerialName(value = "Instant")
-    instant("Instant"),
+    Instant("Instant"),
 
     @SerialName(value = "Url")
-    url("Url"),
+    Url("Url"),
 
     @SerialName(value = "Origin")
-    origin("Origin"),
+    Origin("Origin"),
 
     @SerialName(value = "PublicKeyHash")
-    publicKeyHash("PublicKeyHash"),
+    PublicKeyHash("PublicKeyHash"),
 
     @SerialName(value = "StringArray")
-    stringArray("StringArray"),
+    StringArray("StringArray"),
 
     @SerialName(value = "BoolArray")
-    boolArray("BoolArray"),
+    BoolArray("BoolArray"),
 
     @SerialName(value = "U8Array")
-    u8Array("U8Array"),
+    U8Array("U8Array"),
 
     @SerialName(value = "U32Array")
-    u32Array("U32Array"),
+    U32Array("U32Array"),
 
     @SerialName(value = "U64Array")
-    u64Array("U64Array"),
+    U64Array("U64Array"),
 
     @SerialName(value = "I32Array")
-    i32Array("I32Array"),
+    I32Array("I32Array"),
 
     @SerialName(value = "I64Array")
-    i64Array("I64Array"),
+    I64Array("I64Array"),
 
     @SerialName(value = "DecimalArray")
-    decimalArray("DecimalArray"),
+    DecimalArray("DecimalArray"),
 
     @SerialName(value = "GlobalAddressArray")
-    globalAddressArray("GlobalAddressArray"),
+    GlobalAddressArray("GlobalAddressArray"),
 
     @SerialName(value = "PublicKeyArray")
-    publicKeyArray("PublicKeyArray"),
+    PublicKeyArray("PublicKeyArray"),
 
     @SerialName(value = "NonFungibleGlobalIdArray")
-    nonFungibleGlobalIdArray("NonFungibleGlobalIdArray"),
+    NonFungibleGlobalIdArray("NonFungibleGlobalIdArray"),
 
     @SerialName(value = "NonFungibleLocalIdArray")
-    nonFungibleLocalIdArray("NonFungibleLocalIdArray"),
+    NonFungibleLocalIdArray("NonFungibleLocalIdArray"),
 
     @SerialName(value = "InstantArray")
-    instantArray("InstantArray"),
+    InstantArray("InstantArray"),
 
     @SerialName(value = "UrlArray")
-    urlArray("UrlArray"),
+    UrlArray("UrlArray"),
 
     @SerialName(value = "OriginArray")
-    originArray("OriginArray"),
+    OriginArray("OriginArray"),
 
     @SerialName(value = "PublicKeyHashArray")
-    publicKeyHashArray("PublicKeyHashArray");
+    PublicKeyHashArray("PublicKeyHashArray");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

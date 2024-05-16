@@ -285,7 +285,7 @@ suspend fun StateApi.getNextNftItems(
 suspend fun StateApi.getSingleEntityDetails(
     address: String,
     metadataKeys: Set<ExplicitMetadataKey>,
-    aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.vault,
+    aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.Vault,
     stateVersion: Long? = null
 ): StateEntityDetailsResponseItem {
     return stateEntityDetails(
@@ -303,7 +303,7 @@ suspend fun StateApi.getSingleEntityDetails(
 suspend fun StateApi.paginateDetails(
     addresses: Set<String>,
     metadataKeys: Set<ExplicitMetadataKey> = setOf(),
-    aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.vault,
+    aggregationLevel: ResourceAggregationLevel = ResourceAggregationLevel.Vault,
     stateVersion: Long? = null,
     onPage: suspend (StateEntityDetailsResponse) -> Unit
 ) = addresses
@@ -334,7 +334,7 @@ suspend fun StateApi.paginateFungibles(
             StateEntityFungiblesPageRequest(
                 address = item.address,
                 cursor = nextCursor,
-                aggregationLevel = ResourceAggregationLevel.vault,
+                aggregationLevel = ResourceAggregationLevel.Vault,
                 atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion),
                 optIns = StateEntityFungiblesPageRequestOptIns(
                     explicitMetadata = ExplicitMetadataKey.forAssets.map { it.key }
@@ -358,7 +358,7 @@ suspend fun StateApi.paginateNonFungibles(
             StateEntityNonFungiblesPageRequest(
                 address = item.address,
                 cursor = nextCursor,
-                aggregationLevel = ResourceAggregationLevel.vault,
+                aggregationLevel = ResourceAggregationLevel.Vault,
                 atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion),
                 optIns = StateEntityNonFungiblesPageRequestOptIns(
                     explicitMetadata = ExplicitMetadataKey.forAssets.map { it.key }

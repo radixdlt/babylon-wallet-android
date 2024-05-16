@@ -15,9 +15,11 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.SerialName
+import com.babylon.wallet.android.data.gateway.coreapi.ComponentEntityState
+
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -29,6 +31,7 @@ import kotlinx.serialization.Serializable
  * @param state A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a custom JSON model defined in the Core API schema. 
  * @param roleAssignments 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
+ * @param royaltyConfig 
  */
 @Serializable
 
@@ -47,7 +50,7 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null,
 
-    /* A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a  custom JSON model defined in the Core API schema.  */
+    /* A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a custom JSON model defined in the Core API schema.  */
     @Contextual @SerialName(value = "state")
     val state: ComponentEntityState? = null,
 
@@ -56,49 +59,10 @@ data class StateEntityDetailsResponseComponentDetails (
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "royalty_vault_balance")
-    val royaltyVaultBalance: kotlin.String? = null
+    val royaltyVaultBalance: kotlin.String? = null,
+
+    @SerialName(value = "royalty_config")
+    val royaltyConfig: ComponentRoyaltyConfig? = null
 
 ) : StateEntityDetailsResponseItemDetails()
 
-@Serializable
-data class ComponentEntityState(
-
-    @SerialName(value = "stake_xrd_vault")
-    val stakeXrdVault: StakeXrdVault? = null,
-
-    @SerialName(value = "stake_unit_resource_address")
-    val stakeUnitResourceAddress: String? = null,
-
-    @SerialName(value = "claim_token_resource_address")
-    val claimTokenResourceAddress: String? = null,
-
-    @SerialName(value = "default_deposit_rule")
-    val defaultDepositRule: DefaultDepositRule? = null
-
-)
-
-@Serializable
-data class StakeXrdVault(
-
-    @SerialName(value = "is_global")
-    val isGlobal: Boolean? = null,
-
-    @SerialName(value = "entity_type")
-    val entityType: String? = null,
-
-    @SerialName(value = "entity_address")
-    val entityAddress: String? = null
-
-)
-
-@Serializable
-enum class DefaultDepositRule {
-    @SerialName("Accept")
-    Accept,
-
-    @SerialName("Reject")
-    Reject,
-
-    @SerialName("AllowExisting")
-    AllowExisting
-}

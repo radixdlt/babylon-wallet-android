@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.coreapi.DefaultDepositRule
 import com.babylon.wallet.android.data.gateway.extensions.defaultDepositRule
 import com.babylon.wallet.android.data.gateway.extensions.isEntityActive
 import com.babylon.wallet.android.data.gateway.extensions.toProfileDepositRule
-import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRule
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.di.ShortTimeoutStateApi

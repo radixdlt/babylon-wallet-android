@@ -27,14 +27,14 @@ class PollTransactionStatusUseCase @Inject constructor(
                 val txProcessingTime = ((endEpoch - currentEpoch) * 5.toULong()).toString()
 
                 when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
-                    TransactionPayloadStatus.unknown,
-                    TransactionPayloadStatus.commitPendingOutcomeUnknown,
-                    TransactionPayloadStatus.pending -> {
+                    TransactionPayloadStatus.Unknown,
+                    TransactionPayloadStatus.CommitPendingOutcomeUnknown,
+                    TransactionPayloadStatus.Pending -> {
                         delay(defaultPollDelayMs)
                         defaultPollDelayMs += POLL_INTERVAL_MS
                     }
 
-                    TransactionPayloadStatus.committedSuccess -> {
+                    TransactionPayloadStatus.CommittedSuccess -> {
                         // Stop Polling: MESSAGE 1
                         return TransactionStatusData(
                             txId = txID,
@@ -44,7 +44,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                         )
                     }
 
-                    TransactionPayloadStatus.committedFailure -> {
+                    TransactionPayloadStatus.CommittedFailure -> {
                         // Stop Polling: MESSAGE 2
                         val isAssertionFailure = statusCheckResult.errorMessage?.contains("AssertionFailed") == true
                         val exception = if (isAssertionFailure) {
@@ -64,7 +64,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                         )
                     }
 
-                    TransactionPayloadStatus.permanentlyRejected -> {
+                    TransactionPayloadStatus.PermanentlyRejected -> {
                         // Stop Polling: MESSAGE 4
                         return TransactionStatusData(
                             txId = txID,
@@ -78,7 +78,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                         )
                     }
 
-                    TransactionPayloadStatus.temporarilyRejected -> {
+                    TransactionPayloadStatus.TemporarilyRejected -> {
                         // Stop Polling: MESSAGE 3
                         return TransactionStatusData(
                             txId = txID,

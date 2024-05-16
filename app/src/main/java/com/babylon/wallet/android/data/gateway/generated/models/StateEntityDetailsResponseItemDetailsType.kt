@@ -22,28 +22,28 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: fungibleResource,nonFungibleResource,fungibleVault,nonFungibleVault,`package`,component
+ * Values: FungibleResource,NonFungibleResource,FungibleVault,NonFungibleVault,Package,Component
  */
 @Serializable
 enum class StateEntityDetailsResponseItemDetailsType(val value: kotlin.String) {
 
     @SerialName(value = "FungibleResource")
-    fungibleResource("FungibleResource"),
+    FungibleResource("FungibleResource"),
 
     @SerialName(value = "NonFungibleResource")
-    nonFungibleResource("NonFungibleResource"),
+    NonFungibleResource("NonFungibleResource"),
 
     @SerialName(value = "FungibleVault")
-    fungibleVault("FungibleVault"),
+    FungibleVault("FungibleVault"),
 
     @SerialName(value = "NonFungibleVault")
-    nonFungibleVault("NonFungibleVault"),
+    NonFungibleVault("NonFungibleVault"),
 
     @SerialName(value = "Package")
-    `package`("Package"),
+    Package("Package"),
 
     @SerialName(value = "Component")
-    component("Component");
+    Component("Component");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

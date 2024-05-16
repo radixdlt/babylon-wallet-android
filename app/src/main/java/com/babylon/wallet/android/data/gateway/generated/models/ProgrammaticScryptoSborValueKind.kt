@@ -22,76 +22,76 @@ import kotlinx.serialization.Serializable
 /**
  * These are the Scrypto SBOR `ValueKind`s, but with `Bytes` added as an alias for `Vec`, to display such values as hex-encoded strings. 
  *
- * Values: bool,i8,i16,i32,i64,i128,u8,u16,u32,u64,u128,string,`enum`,array,bytes,map,tuple,reference,own,decimal,preciseDecimal,nonFungibleLocalId
+ * Values: Bool,I8,I16,I32,I64,I128,U8,U16,U32,U64,U128,String,Enum,Array,Bytes,Map,Tuple,Reference,Own,Decimal,PreciseDecimal,NonFungibleLocalId
  */
 @Serializable
 enum class ProgrammaticScryptoSborValueKind(val value: kotlin.String) {
 
     @SerialName(value = "Bool")
-    bool("Bool"),
+    Bool("Bool"),
 
     @SerialName(value = "I8")
-    i8("I8"),
+    I8("I8"),
 
     @SerialName(value = "I16")
-    i16("I16"),
+    I16("I16"),
 
     @SerialName(value = "I32")
-    i32("I32"),
+    I32("I32"),
 
     @SerialName(value = "I64")
-    i64("I64"),
+    I64("I64"),
 
     @SerialName(value = "I128")
-    i128("I128"),
+    I128("I128"),
 
     @SerialName(value = "U8")
-    u8("U8"),
+    U8("U8"),
 
     @SerialName(value = "U16")
-    u16("U16"),
+    U16("U16"),
 
     @SerialName(value = "U32")
-    u32("U32"),
+    U32("U32"),
 
     @SerialName(value = "U64")
-    u64("U64"),
+    U64("U64"),
 
     @SerialName(value = "U128")
-    u128("U128"),
+    U128("U128"),
 
     @SerialName(value = "String")
-    string("String"),
+    String("String"),
 
     @SerialName(value = "Enum")
-    `enum`("Enum"),
+    Enum("Enum"),
 
     @SerialName(value = "Array")
-    array("Array"),
+    Array("Array"),
 
     @SerialName(value = "Bytes")
-    bytes("Bytes"),
+    Bytes("Bytes"),
 
     @SerialName(value = "Map")
-    map("Map"),
+    Map("Map"),
 
     @SerialName(value = "Tuple")
-    tuple("Tuple"),
+    Tuple("Tuple"),
 
     @SerialName(value = "Reference")
-    reference("Reference"),
+    Reference("Reference"),
 
     @SerialName(value = "Own")
-    own("Own"),
+    Own("Own"),
 
     @SerialName(value = "Decimal")
-    decimal("Decimal"),
+    Decimal("Decimal"),
 
     @SerialName(value = "PreciseDecimal")
-    preciseDecimal("PreciseDecimal"),
+    PreciseDecimal("PreciseDecimal"),
 
     @SerialName(value = "NonFungibleLocalId")
-    nonFungibleLocalId("NonFungibleLocalId");
+    NonFungibleLocalId("NonFungibleLocalId");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

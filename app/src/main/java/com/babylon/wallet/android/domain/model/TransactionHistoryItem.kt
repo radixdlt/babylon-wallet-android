@@ -169,27 +169,27 @@ sealed interface BalanceChange : Comparable<BalanceChange> {
 
 fun ManifestClass.toTransactionClass(): TransactionClass {
     return when (this) {
-        ManifestClass.general -> TransactionClass.General
-        ManifestClass.transfer -> TransactionClass.Transfer
-        ManifestClass.poolContribution -> TransactionClass.PoolContribution
-        ManifestClass.poolRedemption -> TransactionClass.PoolRedemption
-        ManifestClass.validatorStake -> TransactionClass.ValidatorStake
-        ManifestClass.validatorUnstake -> TransactionClass.ValidatorUnstake
-        ManifestClass.validatorClaim -> TransactionClass.ValidatorClaim
-        ManifestClass.accountDepositSettingsUpdate -> TransactionClass.AccountDespositSettingsUpdate
+        ManifestClass.General -> TransactionClass.General
+        ManifestClass.Transfer -> TransactionClass.Transfer
+        ManifestClass.PoolContribution -> TransactionClass.PoolContribution
+        ManifestClass.PoolRedemption -> TransactionClass.PoolRedemption
+        ManifestClass.ValidatorStake -> TransactionClass.ValidatorStake
+        ManifestClass.ValidatorUnstake -> TransactionClass.ValidatorUnstake
+        ManifestClass.ValidatorClaim -> TransactionClass.ValidatorClaim
+        ManifestClass.AccountDepositSettingsUpdate -> TransactionClass.AccountDespositSettingsUpdate
     }
 }
 
 fun TransactionClass.toManifestClass(): ManifestClass {
     return when (this) {
-        TransactionClass.General -> ManifestClass.general
-        TransactionClass.Transfer -> ManifestClass.transfer
-        TransactionClass.PoolContribution -> ManifestClass.poolContribution
-        TransactionClass.PoolRedemption -> ManifestClass.poolRedemption
-        TransactionClass.ValidatorStake -> ManifestClass.validatorStake
-        TransactionClass.ValidatorUnstake -> ManifestClass.validatorUnstake
-        TransactionClass.ValidatorClaim -> ManifestClass.validatorClaim
-        TransactionClass.AccountDespositSettingsUpdate -> ManifestClass.accountDepositSettingsUpdate
+        TransactionClass.General -> ManifestClass.General
+        TransactionClass.Transfer -> ManifestClass.Transfer
+        TransactionClass.PoolContribution -> ManifestClass.PoolContribution
+        TransactionClass.PoolRedemption -> ManifestClass.PoolRedemption
+        TransactionClass.ValidatorStake -> ManifestClass.ValidatorStake
+        TransactionClass.ValidatorUnstake -> ManifestClass.ValidatorUnstake
+        TransactionClass.ValidatorClaim -> ManifestClass.ValidatorClaim
+        TransactionClass.AccountDespositSettingsUpdate -> ManifestClass.AccountDepositSettingsUpdate
     }
 }
 
@@ -296,7 +296,7 @@ fun CommittedTransactionInfo.toDomainModel(accountAddress: AccountAddress, asset
         transactionClass = manifestClasses?.firstOrNull()?.toTransactionClass(),
         timestamp = confirmedAt?.toInstant(),
         message = message?.decode(),
-        isFailedTransaction = transactionStatus == TransactionStatus.committedFailure || transactionStatus == TransactionStatus.rejected
+        isFailedTransaction = transactionStatus == TransactionStatus.CommittedFailure || transactionStatus == TransactionStatus.Rejected
     )
 }
 

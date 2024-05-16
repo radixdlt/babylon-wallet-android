@@ -22,16 +22,16 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: explicit,owner
+ * Values: Explicit,Owner
  */
 @Serializable
 enum class RoleAssignmentResolution(val value: kotlin.String) {
 
     @SerialName(value = "Explicit")
-    explicit("Explicit"),
+    Explicit("Explicit"),
 
     @SerialName(value = "Owner")
-    owner("Owner");
+    Owner("Owner");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

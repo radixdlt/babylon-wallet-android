@@ -135,8 +135,8 @@ private enum class Role(val value: String) {
 
 private fun ComponentEntityRoleAssignmentEntry.parsedAssignment(owner: ComponentEntityRoleAssignmentOwner): Assignment {
     val type = when (assignment.resolution) {
-        RoleAssignmentResolution.explicit -> assignment.explicitRule?.type
-        RoleAssignmentResolution.owner -> owner.rule.type
+        RoleAssignmentResolution.Explicit -> assignment.explicitRule?.type
+        RoleAssignmentResolution.Owner -> owner.rule.type
     }
 
     return when (type) {
