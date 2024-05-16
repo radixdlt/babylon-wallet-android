@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
-import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -12,8 +9,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.CanSignInToGoogle
 import com.babylon.wallet.android.utils.Constants
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.radixdlt.sargon.ProfileId
 import com.radixdlt.sargon.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +24,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.sargon.isCompatible
 import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -35,7 +33,6 @@ import rdx.works.profile.domain.backup.FetchBackedUpProfilesMetadataFromCloud
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
 import timber.log.Timber
-import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -48,6 +45,7 @@ class RestoreFromBackupViewModel @Inject constructor(
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase,
     private val googleSignInManager: GoogleSignInManager
 ) : StateViewModel<RestoreFromBackupViewModel.State>(),
+    CanSignInToGoogle,
     OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
@@ -97,66 +95,33 @@ class RestoreFromBackupViewModel @Inject constructor(
     fun onLoginToGoogleClick() = viewModelScope.launch {
         _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
 
-        val intent = googleSignInManager.createSignInIntent()
-        sendEvent(Event.SignInToGoogle(intent))
+        sendEvent(Event.SignInToGoogle)
     }
 
-    fun handleSignInResult(result: ActivityResult) {
-        viewModelScope.launch {
-            googleSignInManager.handleSignInResult(result)
-                .onSuccess { googleAccount ->
-                    _state.update { it.copy(backupEmail = googleAccount.email) }
-                    Timber.d("cloud backup is authorized")
-                    println("☁\uFE0F -----> restoreProfilesFromCloudBackup at handleSignInResult")
-                    restoreProfilesFromCloudBackup()
-                }
-                .onFailure { exception ->
-                    if (exception is UserRecoverableAuthIOException) {
-                        Timber.e("cloud backup authorization has been revoked, try to recover")
-                        sendEvent(Event.RecoverUserAuthToDrive(exception.intent))
-                    } else {
-                        Timber.e("cloud backup authorization failed: $exception")
-                        if (exception !is CancellationException) {
-                            _state.update { state ->
-                                state.copy(
-                                    backupEmail = "",
-                                    uiMessage = UiMessage.GoogleAuthErrorMessage(exception)
-                                )
-                            }
-                        }
-                    }
-                }
-                .also {
-                    _state.update { state ->
-                        state.copy(isAccessToGoogleDriveInProgress = false)
-                    }
-                }
+    override fun signInManager(): GoogleSignInManager = googleSignInManager
+
+    override fun onSignInResult(result: Result<GoogleAccount>) {
+        _state.update { state ->
+            state.copy(isAccessToGoogleDriveInProgress = false)
         }
-    }
 
-    fun handleAuthDriveResult(result: ActivityResult) {
         viewModelScope.launch {
-            _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
-
-            val email = googleSignInManager.getSignedInGoogleAccount()?.email
-            if (result.resultCode == Activity.RESULT_OK && email != null) {
+            result.onSuccess {googleAccount ->
+                _state.update { it.copy(backupEmail = googleAccount.email) }
                 Timber.d("cloud backup is authorized")
-                _state.update { it.copy(backupEmail = email) }
                 println("☁\uFE0F -----> restoreProfilesFromCloudBackup at handleSignInResult")
                 restoreProfilesFromCloudBackup()
-            } else {
-                Timber.e("cloud backup authorization failed: ${result.resultCode}")
-                _state.update { state ->
-                    state.copy(
-                        backupEmail = "",
-                        uiMessage = UiMessage.GoogleAuthErrorMessage(
-                            IOException("Failed with result code: ${result.resultCode}")
+            }.onFailure { exception ->
+                Timber.e("cloud backup authorization failed: $exception")
+                if (exception !is CancellationException) {
+                    _state.update { state ->
+                        state.copy(
+                            backupEmail = "",
+                            uiMessage = UiMessage.ErrorMessage(exception)
                         )
-                    )
+                    }
                 }
             }
-
-            _state.update { it.copy(isAccessToGoogleDriveInProgress = false) }
         }
     }
 
@@ -240,7 +205,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     onFailure = { exception ->
                         _state.update {
                             it.copy(
-                                uiMessage = UiMessage.GoogleAuthErrorMessage(exception),
+                                uiMessage = UiMessage.ErrorMessage(exception),
                                 isDownloadingSelectedCloudBackup = false
                             )
                         }
@@ -255,7 +220,11 @@ class RestoreFromBackupViewModel @Inject constructor(
     fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
 
     private suspend fun restoreProfilesFromCloudBackup() {
-        val availableCloudBackedUpProfiles = fetchBackedUpProfilesMetadataFromCloud().getOrNull() // TODO exception?
+        val availableCloudBackedUpProfiles = fetchBackedUpProfilesMetadataFromCloud()
+            .onFailure {
+                Timber.tag("CloudBackup").w(it)
+            }
+            .getOrNull()
 
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.mapNotNull { fileEntity ->
@@ -352,8 +321,7 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data object OnDismiss : Event
-        data class SignInToGoogle(val signInIntent: Intent) : Event
-        data class RecoverUserAuthToDrive(val authIntent: Intent) : Event
+        data object SignInToGoogle : Event
         data class OnRestoreConfirmed(val backupType: BackupType): Event
     }
 }

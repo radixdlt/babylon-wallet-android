@@ -35,11 +35,11 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.ROUTE_RESTORE_FROM_BACKUP
-import com.babylon.wallet.android.presentation.onboarding.restore.backup.cloudBackupLoginScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
@@ -102,7 +102,7 @@ fun NavigationHost(
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
-                    navController.cloudBackupLoginScreen()
+                    navController.connectCloudBackupScreen(connectMode = ConnectMode.RestoreWallet)
                 }
             )
         }
@@ -114,7 +114,7 @@ fun NavigationHost(
                 if (isWithCloudBackupEnabled) {
                     navController.createAccountScreen()
                 } else {
-                    navController.connectCloudBackupScreen()
+                    navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet)
                 }
             }
         )
@@ -122,19 +122,15 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onContinueToCreateAccount = {
-                navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled)
-            },
-            onSkipClick = {
-                navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled)
-            }
-        )
-        cloudBackupLoginScreen(
-            onBackClick = {
-                navController.popBackStack()
-            },
-            onContinueToRestoreFromBackup = {
-                navController.restoreFromBackupScreen()
+            onProceed = { mode, isCloudBackupEnabled ->
+                when (mode) {
+                    ConnectMode.NewWallet -> if (isCloudBackupEnabled) {
+                        navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled)
+                    } else {
+                        navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled)
+                    }
+                    ConnectMode.RestoreWallet -> navController.restoreFromBackupScreen()
+                }
             }
         )
         restoreFromBackupScreen(

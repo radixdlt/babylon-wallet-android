@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.isCloudBackupEnabled
+import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
@@ -95,7 +95,7 @@ class ProfileRepositoryImpl @Inject constructor(
             // Store profile TODO remove
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
-            if (profileToSave.isCloudBackupEnabled) {
+            if (profileToSave.canBackupToCloud) {
                 cloudBackupSyncExecutor.syncProfile()
             } else {
                 encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()

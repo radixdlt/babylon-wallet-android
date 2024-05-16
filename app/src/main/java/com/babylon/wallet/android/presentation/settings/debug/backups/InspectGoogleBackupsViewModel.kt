@@ -34,7 +34,7 @@ class InspectGoogleBackupsViewModel @Inject constructor(
                     .onSuccess { files ->
                         _state.update { it.copy(files = files, isLoading = false) }
                     }.onFailure { error ->
-                        _state.update { it.copy(uiMessage = UiMessage.GoogleAuthErrorMessage(error), isLoading = false) }
+                        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), isLoading = false) }
                     }
             } else {
                 _state.update { it.copy(isLoading = false) }

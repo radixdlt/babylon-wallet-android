@@ -32,58 +32,50 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 
 @Composable
 fun ConnectCloudBackupScreen(
     modifier: Modifier = Modifier,
     viewModel: ConnectCloudBackupViewModel,
     onBackClick: () -> Unit,
-    onContinueToCreateAccount: () -> Unit,
-    onSkipClick: () -> Unit
+    onProceed: (mode: ConnectMode, isCloudBackupEnabled: Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     BackHandler { onBackClick() }
 
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleSignInResult(result)
-    }
+    val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ConnectCloudBackupViewModel.Event.SignInToGoogle -> {
-                    signInLauncher.launch(event.signInIntent)
-                }
-                is ConnectCloudBackupViewModel.Event.ProceedToCreateAccountWithCloudBackupEnabled -> {
-                    onContinueToCreateAccount()
-                }
+                is ConnectCloudBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
+                is ConnectCloudBackupViewModel.Event.Proceed -> onProceed(event.mode, event.isCloudBackupEnabled)
             }
         }
     }
 
     ConnectCloudBackupContent(
         modifier = modifier,
-        isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
-        errorMessage = state.errorMessage,
+        state = state,
         onErrorMessageShown = viewModel::onErrorMessageShown,
         onBackClick = onBackClick,
         onLoginToGoogleClick = viewModel::onLoginToGoogleClick,
-        onSkipClick = onSkipClick
+        onSkipClick = viewModel::onSkipClick
     )
 }
 
 @Composable
 private fun ConnectCloudBackupContent(
     modifier: Modifier = Modifier,
-    isAccessToGoogleDriveInProgress: Boolean,
-    errorMessage: UiMessage?,
+    state: ConnectCloudBackupViewModel.State,
     onErrorMessageShown: () -> Unit,
     onBackClick: () -> Unit,
     onLoginToGoogleClick: () -> Unit,
@@ -92,7 +84,7 @@ private fun ConnectCloudBackupContent(
     val snackBarHostState = remember { SnackbarHostState() }
 
     SnackbarUIMessage(
-        message = errorMessage,
+        message = state.errorMessage,
         snackbarHostState = snackBarHostState,
         onMessageShown = onErrorMessageShown
     )
@@ -111,7 +103,10 @@ private fun ConnectCloudBackupContent(
                         }
                     )
                 },
-                backIconType = BackIconType.Close,
+                backIconType = when (state.mode) {
+                    ConnectMode.NewWallet -> BackIconType.Close
+                    ConnectMode.RestoreWallet -> BackIconType.Back
+                },
                 windowInsets = WindowInsets.statusBars,
             )
         },
@@ -123,7 +118,6 @@ private fun ConnectCloudBackupContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -144,7 +138,10 @@ private fun ConnectCloudBackupContent(
                 modifier = Modifier
                     .widthIn(max = 250.dp)
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = "Back up your wallet settings", // TODO Crowdin
+                text = when (state.mode) { // TODO Crowdin
+                    ConnectMode.NewWallet -> "Back up your wallet settings"
+                    ConnectMode.RestoreWallet -> "Restore wallet from backup"
+                },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -152,7 +149,10 @@ private fun ConnectCloudBackupContent(
 
             Text(
                 modifier = Modifier.widthIn(max = 300.dp),
-                text = "Connect to Google Drive to automatically backup your Radix wallet settings.", // TODO Crowdin
+                text = when (state.mode) { // TODO Crowdin
+                    ConnectMode.NewWallet -> "Connect to Google Drive to automatically backup your Radix wallet settings."
+                    ConnectMode.RestoreWallet -> "Log in to Google Drive to restore your Radix Wallet from backup."
+                },
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
@@ -161,8 +161,11 @@ private fun ConnectCloudBackupContent(
             Spacer(Modifier.weight(0.4f))
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Back up to Google Drive", // TODO Crowdin
-                isLoading = isAccessToGoogleDriveInProgress,
+                text = when (state.mode) { // TODO Crowdin
+                    ConnectMode.NewWallet -> "Back up to Google Drive"
+                    ConnectMode.RestoreWallet -> "Log in to Google Drive"
+                },
+                isLoading = state.isConnecting,
                 onClick = onLoginToGoogleClick
             )
             Spacer(modifier = Modifier.weight(0.1f))
@@ -172,11 +175,24 @@ private fun ConnectCloudBackupContent(
 
 @Preview
 @Composable
-fun ConnectCloudBackupScreenPreview() {
+fun ConnectCloudBackupScreenNewWalletPreview() {
     RadixWalletPreviewTheme {
         ConnectCloudBackupContent(
-            errorMessage = null,
-            isAccessToGoogleDriveInProgress = false,
+            state = ConnectCloudBackupViewModel.State(mode = ConnectMode.NewWallet),
+            onErrorMessageShown = {},
+            onBackClick = {},
+            onLoginToGoogleClick = {},
+            onSkipClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ConnectCloudBackupScreenRestoreWalletPreview() {
+    RadixWalletPreviewTheme {
+        ConnectCloudBackupContent(
+            state = ConnectCloudBackupViewModel.State(mode = ConnectMode.RestoreWallet),
             onErrorMessageShown = {},
             onBackClick = {},
             onLoginToGoogleClick = {},

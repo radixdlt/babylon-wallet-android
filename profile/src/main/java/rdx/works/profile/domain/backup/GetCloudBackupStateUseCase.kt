@@ -3,7 +3,7 @@ package rdx.works.profile.domain.backup
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.isCloudBackupEnabled
+import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -21,7 +21,7 @@ class GetCloudBackupStateUseCase @Inject constructor(
     ) { profile, lastCloudBackupInstant ->
         val email = googleSignInManager.getSignedInGoogleAccount()?.email
 
-        if (profile.isCloudBackupEnabled && email != null) {
+        if (profile.canBackupToCloud && email != null) {
             CloudBackupState.Enabled(email = email)
         } else {
             CloudBackupState.Disabled(

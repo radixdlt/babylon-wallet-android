@@ -6,16 +6,10 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toUserFriendlyMessage
-import com.google.android.gms.auth.GoogleAuthException
-import com.google.android.gms.auth.GooglePlayServicesAvailabilityException
-import com.google.android.gms.auth.UserRecoverableAuthException
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.domain.ProfileException
-import java.io.IOException
 
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
@@ -89,21 +83,4 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         }
     }
 
-    data class GoogleAuthErrorMessage(
-        private val error: Throwable
-    ) : UiMessage() {
-
-        @Composable
-        override fun getMessage(): String { // TODO update copies accordingly
-            return when (error) {
-                is GoogleJsonResponseException -> stringResource(id = R.string.common_somethingWentWrong)
-                is GooglePlayServicesAvailabilityException -> stringResource(id = R.string.common_somethingWentWrong)
-                is UserRecoverableAuthException -> stringResource(id = R.string.common_somethingWentWrong)
-                is UserRecoverableAuthIOException -> stringResource(id = R.string.common_somethingWentWrong)
-                is GoogleAuthException -> stringResource(id = R.string.common_somethingWentWrong)
-                is IOException -> stringResource(id = R.string.common_somethingWentWrong) + ", ${error.message}"
-                else -> stringResource(id = R.string.common_somethingWentWrong)
-            }
-        }
-    }
 }

@@ -81,6 +81,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.cloudbackup.CloudBackupState
@@ -112,9 +113,7 @@ fun BackupScreen(
         onBackClick = viewModel::onBackClick,
     )
 
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleSignInResult(result)
-    }
+    val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument(mimeType = "application/json")
@@ -135,9 +134,7 @@ fun BackupScreen(
                 is BackupViewModel.Event.DeleteFile -> {
                     DocumentsContract.deleteDocument(context.contentResolver, event.file)
                 }
-                is BackupViewModel.Event.SignInToGoogle -> {
-                    signInLauncher.launch(event.signInIntent)
-                }
+                is BackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
             }
         }
     }
