@@ -171,7 +171,7 @@ private fun FactoryResetScreenContent(
                     Text(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.factoryReset_unrecoverable_message),
-                        color = RadixTheme.colors.orange1,
+                        color = RadixTheme.colors.orange3,
                         style = RadixTheme.typography.body1Link
                     )
                 }
@@ -257,15 +257,15 @@ fun UnrecoverableStatusCard(modifier: Modifier = Modifier, text: String) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange1, RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.orange3, RadixTheme.shapes.roundedRectMedium)
             .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
     ) {
-        Icon(painter = painterResource(id = DSR.ic_security_center), contentDescription = null, tint = RadixTheme.colors.white)
+        Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
         Text(
             text = text,
-            style = RadixTheme.typography.body1Regular,
+            style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.white
         )
     }
