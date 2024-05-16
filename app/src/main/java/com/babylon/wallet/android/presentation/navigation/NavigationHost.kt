@@ -97,6 +97,7 @@ fun NavigationHost(
             exitTransition = { ExitTransition.None }
         ) {
             OnboardingScreen(
+                viewModel = hiltViewModel(),
                 onCreateNewWalletClick = {
                     navController.navigateToEulaScreen()
                 },

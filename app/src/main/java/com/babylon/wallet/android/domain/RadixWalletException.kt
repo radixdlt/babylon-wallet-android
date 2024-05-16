@@ -396,6 +396,7 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(context: Con
     is BackupServiceException.ProfileClaimedByAnotherDeviceException -> "Profile claimed by another device"
     is BackupServiceException.ServiceException -> "${error.statusCode} - ${error.message}"
     is BackupServiceException.UnauthorizedException -> "Access to Google Drive denied."
+    is BackupServiceException.RecoverableUnauthorizedException -> "Access to Google Drive denied."
     is BackupServiceException.Unknown -> "Unknown error occurred cause: ${cause?.message}"
 }
 

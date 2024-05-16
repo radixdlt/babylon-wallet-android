@@ -10,11 +10,10 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import kotlinx.coroutines.launch
+import rdx.works.profile.cloudbackup.BackupServiceException
 import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
-import java.io.IOException
 
 interface CanSignInToGoogle {
 
@@ -35,7 +34,7 @@ fun rememberLauncherForSignInToGoogle(
             val result = if (activityResult.resultCode == Activity.RESULT_OK && account != null) {
                 Result.success(account)
             } else {
-                Result.failure(IOException()) // TODO change error
+                Result.failure(BackupServiceException.UnauthorizedException)
             }
             viewModel.onSignInResult(result)
         }
@@ -47,8 +46,8 @@ fun rememberLauncherForSignInToGoogle(
                 .onSuccess {
                     viewModel.onSignInResult(Result.success(it))
                 }.onFailure { error ->
-                    if (error is UserRecoverableAuthIOException) {
-                        recoverSignInLauncher.launch(error.intent)
+                    if (error is BackupServiceException.RecoverableUnauthorizedException) {
+                        recoverSignInLauncher.launch(error.recoverIntent)
                     } else {
                         viewModel.onSignInResult(Result.failure(error))
                     }
