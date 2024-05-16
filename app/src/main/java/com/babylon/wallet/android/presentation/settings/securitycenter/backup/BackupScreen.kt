@@ -379,7 +379,9 @@ private fun BackupStatusCard(
         if (cloudBackupState is CloudBackupState.Disabled) {
             Text(
                 modifier = Modifier.padding(start = 44.dp),
-                text = stringResource(id = R.string.configurationBackup_automated_lastBackup, cloudBackupState.lastBackup),
+                text = stringResource(id = R.string.configurationBackup_automated_lastBackup, cloudBackupState.lastBackup ?: stringResource(
+                    id = R.string.common_none
+                )),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )

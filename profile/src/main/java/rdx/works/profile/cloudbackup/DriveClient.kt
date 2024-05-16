@@ -16,6 +16,9 @@ import com.radixdlt.sargon.extensions.toJson
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.mapError
@@ -32,6 +35,8 @@ import java.util.logging.Logger
 import javax.inject.Inject
 
 interface DriveClient {
+
+    val backupErrors: StateFlow<BackupServiceException?>
 
     suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
@@ -86,6 +91,8 @@ class DriveClientImpl @Inject constructor(
         "appProperties"
     ).joinToString(prefix = "files(", postfix = ")", separator = ",")
 
+    override val backupErrors: MutableStateFlow<BackupServiceException?> = MutableStateFlow(null)
+
     override suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
         profile: Profile
@@ -96,6 +103,12 @@ class DriveClientImpl @Inject constructor(
             googleDriveFileId = googleDriveFileId,
             profile = profile
         )
+    }.onFailure { error ->
+        if (error is BackupServiceException){
+            backupErrors.update { error }
+        }
+    }.onSuccess {
+        backupErrors.update { null }
     }
 
     override suspend fun fetchCloudBackupFileEntities(): Result<List<CloudBackupFileEntity>> = withContext(ioDispatcher) {
@@ -223,10 +236,14 @@ class DriveClientImpl @Inject constructor(
         when (error) {
             is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
             is GoogleJsonResponseException -> {
-                if (error.details.code == 404 && throwClaimByAnotherDeviceError) {
-                    BackupServiceException.ProfileClaimedByAnotherDeviceException
-                } else {
-                    BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
+                when (error.details.code) {
+                    401, 403 -> BackupServiceException.UnauthorizedException
+                    404 -> if (throwClaimByAnotherDeviceError) {
+                        BackupServiceException.ProfileClaimedByAnotherDeviceException
+                    } else {
+                        BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
+                    }
+                    else -> BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
                 }
             }
             else -> BackupServiceException.Unknown(cause = error)

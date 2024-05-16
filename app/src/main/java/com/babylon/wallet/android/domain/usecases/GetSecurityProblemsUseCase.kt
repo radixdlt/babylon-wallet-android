@@ -37,7 +37,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
                         personasNeedBackup = personasNeedBackup
                     )
                 )
-                if (backupState.hasAnyProblems) {
+                if (backupState.isDisabled) {
                     add(SecurityProblem.BackupNotWorking)
                 }
             }
