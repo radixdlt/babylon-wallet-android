@@ -53,7 +53,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -140,7 +140,7 @@ fun SpecificDepositorScreen(
                 sheetState.show()
             }
         },
-        modifier = Modifier
+        modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.gray5),
@@ -149,32 +149,31 @@ fun SpecificDepositorScreen(
     )
 
     if (state.isAddDepositorSheetVisible) {
-        DefaultModalSheetLayout(
-            modifier = modifier.navigationBarsPadding(),
-            sheetContent = {
-                AddDepositorSheet(
-                    onResourceAddressChanged = sharedViewModel::depositorAddressTyped,
-                    onAddDepositor = {
-                        hideCallback()
-                        sharedViewModel.onAddDepositor()
-                    },
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .fillMaxWidth()
-                        .clip(RadixTheme.shapes.roundedRectTopDefault),
-                    depositor = state.depositorToAdd,
-                    onDismiss = {
-                        hideCallback()
-                    }
-                )
-            },
+        BottomSheetDialogWrapper(
+            addScrim = true,
             showDragHandle = true,
-            wrapContent = true,
-            sheetState = sheetState,
-            onDismissRequest = {
+            onDismiss = {
                 hideCallback()
-            }
-        )
+            },
+            showDefaultTopBar = false
+        ) {
+            AddDepositorSheet(
+                onResourceAddressChanged = sharedViewModel::depositorAddressTyped,
+                onAddDepositor = {
+                    hideCallback()
+                    sharedViewModel.onAddDepositor()
+                },
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .imePadding()
+                    .fillMaxWidth()
+                    .clip(RadixTheme.shapes.roundedRectTopDefault),
+                depositor = state.depositorToAdd,
+                onDismiss = {
+                    hideCallback()
+                }
+            )
+        }
     }
 }
 
