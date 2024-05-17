@@ -1152,12 +1152,4 @@
   <string name="factoryReset_resetWallet">Reset Wallet</string>
   <string name="factoryReset_dialog_title">Confirm factory reset</string>
   <string name="factoryReset_dialog_message">Return wallet to factory settings? You cannot undo this.</string>
-  <string name="linkedConnectors_relink_title">Re-link Connector</string>
-  <string name="linkedConnectors_upgrade_message">Radix Connector now supports linking multiple phones with one browser.
-\n\n
-To support this feature, we\'ve had to disconnect your existing links – **please re-link your Connector(s).**</string>
-  <string name="linkedConnectors_restore_message">Any Connectors you had linked to this wallet using a different phone have been disconnected.
-\n\n
-Please re-link your Connector(s) to use with this phone.</string>
-  <string name="linkedConnectors_relink_later_btn">Later</string>
 </resources>
