@@ -5,6 +5,7 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.NetworkId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
@@ -16,22 +17,37 @@ import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
-@Suppress("MagicNumber")
 @HiltViewModel
 class TroubleshootingSettingsViewModel @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val deviceCapabilityHelper: DeviceCapabilityHelper
 ) : StateViewModel<TroubleShootingUiState>() {
 
-    override fun initialState(): TroubleShootingUiState = TroubleShootingUiState(
-        settings = defaultSettings
-    )
+    override fun initialState(): TroubleShootingUiState {
+        return TroubleShootingUiState(
+            settings = persistentSetOf(
+                TroubleshootingUiItem.RecoverySection,
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.AccountRecovery),
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ImportFromLegacyWallet),
+                TroubleshootingUiItem.SupportSection,
+                TroubleshootingUiItem.Setting(
+                    SettingsItem.Troubleshooting.ContactSupport(
+                        body = deviceCapabilityHelper.supportEmailTemplate
+                    )
+                ),
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.Discord),
+                TroubleshootingUiItem.ResetSection,
+                TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.FactoryReset)
+            )
+        )
+    }
 
     init {
         viewModelScope.launch {
             if (getProfileUseCase().currentGateway.network.id != NetworkId.MAINNET || !BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
                 _state.update { state ->
                     val updatedSettings =
-                        defaultSettings.filterNot {
+                        state.settings.filterNot {
                             it is TroubleshootingUiItem.Setting && it.item is SettingsItem.Troubleshooting.ImportFromLegacyWallet
                         }.toPersistentSet()
                     state.copy(
@@ -40,19 +56,6 @@ class TroubleshootingSettingsViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    companion object {
-        private val defaultSettings: ImmutableSet<TroubleshootingUiItem> = persistentSetOf(
-            TroubleshootingUiItem.RecoverySection,
-            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.AccountRecovery),
-            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ImportFromLegacyWallet),
-            TroubleshootingUiItem.SupportSection,
-            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.ContactSupport),
-            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.Discord),
-            TroubleshootingUiItem.ResetSection,
-            TroubleshootingUiItem.Setting(SettingsItem.Troubleshooting.FactoryReset)
-        )
     }
 }
 

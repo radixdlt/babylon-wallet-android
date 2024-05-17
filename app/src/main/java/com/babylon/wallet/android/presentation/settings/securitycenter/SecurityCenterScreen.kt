@@ -186,7 +186,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.orange1, RadixTheme.shapes.roundedRectTopMedium)
+                .background(RadixTheme.colors.orange3, RadixTheme.shapes.roundedRectTopMedium)
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
@@ -209,9 +209,9 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
                 modifier = Modifier.weight(1f),
                 text = subtitle,
                 style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.orange1
+                color = RadixTheme.colors.orange3
             )
-            Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange1)
+            Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange3)
         }
     }
 }
@@ -262,7 +262,7 @@ private fun SecurityFactorsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
-                val color = if (needsAction) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+                val color = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
                 val text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
                 } else {
@@ -325,7 +325,7 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
-                val color = if (needsAction) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+                val color = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
                 val text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
                 } else {

@@ -99,7 +99,12 @@ sealed interface SettingsItem {
     sealed interface Troubleshooting {
         data object AccountRecovery : Troubleshooting
         data object ImportFromLegacyWallet : Troubleshooting
-        data object ContactSupport : Troubleshooting
+        data class ContactSupport(
+            val body: String,
+            val supportAddress: String = "hello@radixdlt.com",
+            val subject: String = "Customer Support Case"
+        ) : Troubleshooting
+
         data object Discord : Troubleshooting
         data object FactoryReset : Troubleshooting
 
@@ -108,7 +113,7 @@ sealed interface SettingsItem {
             return when (this) {
                 ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_title
                 AccountRecovery -> R.string.troubleshooting_accountScan_title
-                ContactSupport -> R.string.troubleshooting_contactSupport_title
+                is ContactSupport -> R.string.troubleshooting_contactSupport_title
                 Discord -> R.string.troubleshooting_discord_title
                 FactoryReset -> R.string.troubleshooting_factoryReset_title
             }
@@ -119,7 +124,7 @@ sealed interface SettingsItem {
             return when (this) {
                 ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_subtitle
                 AccountRecovery -> R.string.troubleshooting_accountScan_subtitle
-                ContactSupport -> R.string.troubleshooting_contactSupport_subtitle
+                is ContactSupport -> R.string.troubleshooting_contactSupport_subtitle
                 Discord -> R.string.troubleshooting_discord_subtitle
                 FactoryReset -> R.string.troubleshooting_factoryReset_subtitle
             }
@@ -130,7 +135,7 @@ sealed interface SettingsItem {
             return when (this) {
                 ImportFromLegacyWallet -> DSR.ic_recovery
                 AccountRecovery -> DSR.ic_recovery
-                ContactSupport -> DSR.ic_email
+                is ContactSupport -> DSR.ic_email
                 Discord -> DSR.ic_discord
                 FactoryReset -> DSR.ic_factory_reset
             }

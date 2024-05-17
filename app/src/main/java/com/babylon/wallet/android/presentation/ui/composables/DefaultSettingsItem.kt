@@ -190,12 +190,12 @@ fun DefaultSettingsItem(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_warning_error),
                                 contentDescription = null,
-                                tint = RadixTheme.colors.orange1
+                                tint = RadixTheme.colors.orange3
                             )
                             Text(
                                 text = warning,
                                 style = RadixTheme.typography.body2HighImportance,
-                                color = RadixTheme.colors.orange1
+                                color = RadixTheme.colors.orange3
                             )
                         }
                     }
