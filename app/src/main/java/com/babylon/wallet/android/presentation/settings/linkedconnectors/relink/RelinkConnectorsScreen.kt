@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.linkedconnectors.upgrade
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.relink
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -61,18 +61,18 @@ private fun RelinkConnectorsContent(
         ) {
             when (state) {
                 RelinkConnectorsViewModel.UiState.AppUpdate -> LinkedConnectorMessageScreen(
-                    title = stringResource(id = R.string.linkedConnectors_relink_title),
-                    message = stringResource(id = R.string.linkedConnectors_upgrade_message),
+                    title = stringResource(id = R.string.linkedConnectors_relinkConnectors_title),
+                    message = stringResource(id = R.string.linkedConnectors_relinkConnectors_afterUpdateMessage),
                     onPositiveClick = onContinueClick,
                     onNegativeClick = onDismiss,
-                    negativeButton = stringResource(id = R.string.linkedConnectors_relink_later_btn)
+                    negativeButton = stringResource(id = R.string.linkedConnectors_relinkConnectors_laterButton)
                 )
                 RelinkConnectorsViewModel.UiState.ProfileRestore -> LinkedConnectorMessageScreen(
-                    title = stringResource(id = R.string.linkedConnectors_relink_title),
-                    message = stringResource(id = R.string.linkedConnectors_restore_message),
+                    title = stringResource(id = R.string.linkedConnectors_relinkConnectors_title),
+                    message = stringResource(id = R.string.linkedConnectors_relinkConnectors_afterProfileRestoreMessage),
                     onPositiveClick = onContinueClick,
                     onNegativeClick = onDismiss,
-                    negativeButton = stringResource(id = R.string.linkedConnectors_relink_later_btn)
+                    negativeButton = stringResource(id = R.string.linkedConnectors_relinkConnectors_laterButton)
                 )
                 RelinkConnectorsViewModel.UiState.Idle -> {}
             }

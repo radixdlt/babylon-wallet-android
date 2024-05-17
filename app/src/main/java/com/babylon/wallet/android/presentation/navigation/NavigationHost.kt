@@ -50,7 +50,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
-import com.babylon.wallet.android.presentation.settings.linkedconnectors.upgrade.relinkConnectors
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen

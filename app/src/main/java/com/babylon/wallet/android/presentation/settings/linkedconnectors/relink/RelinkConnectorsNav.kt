@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.linkedconnectors.upgrade
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.relink
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition

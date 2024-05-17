@@ -112,7 +112,10 @@ class WalletViewModel @Inject constructor(
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
-
+        observePromptMessageStates()
+    }
+    
+    private fun observePromptMessageStates() {
         viewModelScope.launch {
             p2PLinksRepository.showRelinkConnectors()
                 .collect { showRelinkConnectors ->

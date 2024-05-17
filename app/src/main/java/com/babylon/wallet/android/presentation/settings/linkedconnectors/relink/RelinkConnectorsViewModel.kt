@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.linkedconnectors.upgrade
+package com.babylon.wallet.android.presentation.settings.linkedconnectors.relink
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
