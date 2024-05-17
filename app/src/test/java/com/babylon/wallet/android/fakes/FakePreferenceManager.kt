@@ -32,8 +32,11 @@ class FakePreferenceManager : PreferencesManager {
         get() = TODO("Not yet implemented")
     override val lastNPSSurveyInstant: Flow<Instant?>
         get() = _lastNPSSurveyInstant
-
     override val lastSyncedAccountsWithCE: Flow<String?>
+        get() = TODO("Not yet implemented")
+    override val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
+        get() = TODO("Not yet implemented")
+    override val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
         get() = TODO("Not yet implemented")
 
     override suspend fun updateLastBackupInstant(backupInstant: Instant) {
@@ -100,6 +103,18 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override suspend fun removeLastSyncedAccountsWithCE() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setShowRelinkConnectorsAfterUpdate(show: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearShowRelinkConnectors() {
         TODO("Not yet implemented")
     }
 
