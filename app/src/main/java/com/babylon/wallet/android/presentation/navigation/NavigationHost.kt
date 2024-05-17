@@ -26,6 +26,7 @@ import com.babylon.wallet.android.presentation.account.settings.devsettings.devS
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
+import com.babylon.wallet.android.presentation.claimed.claimedByAnotherDevice
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
@@ -97,7 +98,6 @@ fun NavigationHost(
             exitTransition = { ExitTransition.None }
         ) {
             OnboardingScreen(
-                viewModel = hiltViewModel(),
                 onCreateNewWalletClick = {
                     navController.navigateToEulaScreen()
                 },
@@ -130,6 +130,7 @@ fun NavigationHost(
                     } else {
                         navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled)
                     }
+
                     ConnectMode.RestoreWallet -> navController.restoreFromBackupScreen()
                 }
             }
@@ -363,9 +364,11 @@ fun NavigationHost(
                             }
                         }
                     }
+
                     is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.address to asset.amount).apply {
                         putAll(asset.contributionPerResource)
                     }
+
                     is TransferableAsset.Fungible.Token -> mapOf(asset.resource.address to asset.amount)
                 }
                 navController.fungibleAssetDialog(
@@ -471,6 +474,9 @@ fun NavigationHost(
                 onCloseApp = onCloseApp
             )
         }
+        claimedByAnotherDevice(onNavigateToOnboarding = {
+            navController.popBackStack(MAIN_ROUTE, false)
+        })
         dappInteractionDialog(
             onBackPress = {
                 navController.popBackStack()

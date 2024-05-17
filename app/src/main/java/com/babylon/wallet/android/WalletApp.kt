@@ -25,6 +25,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
+import com.babylon.wallet.android.presentation.claimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -87,8 +88,13 @@ fun WalletApp(
     }
     SyncStatusBarWithScreenChanges(navController)
 
-    LaunchedEffect(state.showDeviceRootedWarning) {
-        if (state.showDeviceRootedWarning) {
+    LaunchedEffect(
+        state.isWalletClaimedByAnotherDeviceWarningVisible,
+        state.showDeviceRootedWarning
+    ) {
+        if (state.isWalletClaimedByAnotherDeviceWarningVisible) {
+            navController.navigateToClaimedByAnotherDevice()
+        } else if (state.showDeviceRootedWarning) {
             navController.navigate(ROUTE_ROOT_DETECTION)
         }
     }

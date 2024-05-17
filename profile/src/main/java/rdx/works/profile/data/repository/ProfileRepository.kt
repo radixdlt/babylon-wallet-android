@@ -107,8 +107,8 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearAllWalletData() {
-        clearProfileDataOnly()
         preferencesManager.clear()
+        clearProfileDataOnly()
     }
 
     override suspend fun clearProfileDataOnly() {

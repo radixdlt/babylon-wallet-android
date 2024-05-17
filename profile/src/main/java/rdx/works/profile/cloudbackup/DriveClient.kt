@@ -29,6 +29,8 @@ interface DriveClient {
 
     val backupErrors: StateFlow<BackupServiceException?>
 
+    fun resetErrors()
+
     suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
         profile: Profile
@@ -82,6 +84,10 @@ class DriveClientImpl @Inject constructor(
     ).joinToString(prefix = "files(", postfix = ")", separator = ",")
 
     override val backupErrors: MutableStateFlow<BackupServiceException?> = MutableStateFlow(null)
+
+    override fun resetErrors() {
+        backupErrors.update { null }
+    }
 
     override suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,

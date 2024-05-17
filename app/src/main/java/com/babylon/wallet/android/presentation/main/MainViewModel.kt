@@ -39,6 +39,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.profile.cloudbackup.BackupServiceException.ProfileClaimedByAnotherDeviceException
+import rdx.works.profile.cloudbackup.DriveClient
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -60,7 +62,8 @@ class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
-    private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase
+    private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
+    private val driveClient: DriveClient
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -103,18 +106,21 @@ class MainViewModel @Inject constructor(
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
+
     init {
         viewModelScope.launch {
             combine(
                 getProfileUseCase.state,
-                preferencesManager.isDeviceRootedDialogShown
-            ) { profileState, isDeviceRootedDialogShown ->
+                preferencesManager.isDeviceRootedDialogShown,
+                driveClient.backupErrors
+            ) { profileState, isDeviceRootedDialogShown, backupError ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
-                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
+                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
+                        isWalletClaimedByAnotherDeviceWarningVisible = backupError is ProfileClaimedByAnotherDeviceException
                     )
                 }
             }.collect()
@@ -156,7 +162,7 @@ class MainViewModel @Inject constructor(
                                 val requestId = incomingRequest.id
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
-                                        "remote connector $remoteConnectorId with id $requestId"
+                                            "remote connector $remoteConnectorId with id $requestId"
                                 )
                                 verifyIncomingRequest(incomingRequest)
                             }
@@ -306,7 +312,8 @@ data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
-    val olympiaErrorState: OlympiaErrorState? = null
+    val olympiaErrorState: OlympiaErrorState? = null,
+    val isWalletClaimedByAnotherDeviceWarningVisible: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(
