@@ -96,7 +96,7 @@ class ProfileRepositoryImpl @Inject constructor(
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
             if (profileToSave.canBackupToCloud) {
-                cloudBackupSyncExecutor.syncProfile()
+                cloudBackupSyncExecutor.requestCloudBackup()
             } else {
                 encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
             }
