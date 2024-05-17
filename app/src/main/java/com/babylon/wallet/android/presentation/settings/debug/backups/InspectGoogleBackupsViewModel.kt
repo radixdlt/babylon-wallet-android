@@ -18,7 +18,6 @@ class InspectGoogleBackupsViewModel @Inject constructor(
     private val googleSignInManager: GoogleSignInManager
 ) : StateViewModel<InspectGoogleBackupsViewModel.State>() {
 
-
     override fun initialState(): State = State(isLoading = true)
 
     init {

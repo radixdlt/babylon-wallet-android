@@ -87,6 +87,6 @@ class ConnectCloudBackupViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
 
         data object SignInToGoogle : Event
-        data class Proceed(val mode: ConnectMode, val isCloudBackupEnabled: Boolean): Event
+        data class Proceed(val mode: ConnectMode, val isCloudBackupEnabled: Boolean) : Event
     }
 }

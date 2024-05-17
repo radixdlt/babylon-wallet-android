@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.babylon.wallet.android.utils
 
 import android.app.Activity
@@ -65,5 +67,4 @@ private class GoogleSignInResultLauncher(
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): ActivityResult = ActivityResult(resultCode, intent)
-
 }

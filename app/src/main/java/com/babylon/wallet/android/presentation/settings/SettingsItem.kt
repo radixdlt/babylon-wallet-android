@@ -188,7 +188,7 @@ sealed interface SettingsItem {
 
         data object LinkConnectionStatusIndicator : DebugSettingsItem
 
-        data object InspectCloudBackups: DebugSettingsItem
+        data object InspectCloudBackups : DebugSettingsItem
 
         @StringRes
         fun descriptionRes(): Int {

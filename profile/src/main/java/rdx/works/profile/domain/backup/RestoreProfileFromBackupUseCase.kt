@@ -3,7 +3,6 @@ package rdx.works.profile.domain.backup
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
-import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
@@ -71,7 +70,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                     Timber.tag("CloudBackup").d("Save claimed profile")
                     profileRepository.saveProfile(profileToSave)
                     backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
-                }.map {  }
+                }.map { }
             } else {
                 Timber.tag("CloudBackup").d("Save profile")
                 profileRepository.saveProfile(profileToSave)

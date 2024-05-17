@@ -133,7 +133,6 @@ private fun UserStatus(
     }
 }
 
-
 @Composable
 private fun GoogleDriveFile(
     modifier: Modifier = Modifier,
@@ -155,9 +154,12 @@ private fun GoogleDriveFile(
         ) {
             FileProperty(key = "ID", value = entity.id.id)
             FileProperty(key = "ProfileId", value = entity.profileId.toString())
-            FileProperty(key = "Backed up", value = remember(entity.lastUsedOnDeviceModified) {
-                entity.lastUsedOnDeviceModified.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-            })
+            FileProperty(
+                key = "Backed up",
+                value = remember(entity.lastUsedOnDeviceModified) {
+                    entity.lastUsedOnDeviceModified.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                }
+            )
             FileProperty(key = "Device", value = entity.lastUsedOnDeviceName)
             FileProperty(key = "Accounts", value = entity.totalNumberOfAccountsOnAllNetworks.toString())
             FileProperty(key = "Personas", value = entity.totalNumberOfPersonasOnAllNetworks.toString())

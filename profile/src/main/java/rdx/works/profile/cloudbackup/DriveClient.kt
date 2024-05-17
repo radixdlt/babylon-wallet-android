@@ -1,19 +1,19 @@
 package rdx.works.profile.cloudbackup
 
-import android.content.Context
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAuthIOException
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.model.File
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.toJson
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import okhttp3.internal.http.HTTP_FORBIDDEN
+import okhttp3.internal.http.HTTP_NOT_FOUND
+import okhttp3.internal.http.HTTP_UNAUTHORIZED
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.mapError
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -53,7 +53,6 @@ interface DriveClient {
 }
 
 class DriveClientImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val googleSignInManager: GoogleSignInManager,
     private val deviceInfoRepository: DeviceInfoRepository
@@ -116,7 +115,7 @@ class DriveClientImpl @Inject constructor(
 
     override suspend fun downloadCloudBackup(
         entity: CloudBackupFileEntity
-    ): Result<CloudBackupFile> = withContext(Dispatchers.IO) {
+    ): Result<CloudBackupFile> = withContext(ioDispatcher) {
         getFileContents(entity.id.id).map {
             CloudBackupFile(
                 fileEntity = entity,
@@ -203,8 +202,8 @@ class DriveClientImpl @Inject constructor(
             is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
             is GoogleJsonResponseException -> {
                 when (error.details.code) {
-                    401, 403 -> BackupServiceException.UnauthorizedException
-                    404 -> if (throwClaimByAnotherDeviceError) {
+                    HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> BackupServiceException.UnauthorizedException
+                    HTTP_NOT_FOUND -> if (throwClaimByAnotherDeviceError) {
                         BackupServiceException.ProfileClaimedByAnotherDeviceException
                     } else {
                         BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)

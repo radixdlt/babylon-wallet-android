@@ -105,7 +105,7 @@ class RestoreFromBackupViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            result.onSuccess {googleAccount ->
+            result.onSuccess { googleAccount ->
                 _state.update { it.copy(backupEmail = googleAccount.email) }
                 Timber.tag("CloudBackup").d("cloud backup is authorized")
                 restoreProfilesFromCloudBackup()
@@ -318,6 +318,6 @@ class RestoreFromBackupViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data object OnDismiss : Event
         data object SignInToGoogle : Event
-        data class OnRestoreConfirmed(val backupType: BackupType): Event
+        data class OnRestoreConfirmed(val backupType: BackupType) : Event
     }
 }

@@ -28,24 +28,28 @@ data class CloudBackupFileEntity(
         lastUsedOnDeviceModified: Timestamp,
         totalNumberOfAccountsOnAllNetworks: Int,
         totalNumberOfPersonasOnAllNetworks: Int
-    ): this(id = id, profileId = profileId, properties = mapOf(
-        LAST_USED_ON_DEVICE_KEY to lastUsedOnDeviceName,
-        LAST_MODIFIED_KEY to lastUsedOnDeviceModified.format(DateTimeFormatter.ISO_DATE_TIME),
-        TOTAL_NUMBER_OF_ACCOUNTS_KEY to totalNumberOfAccountsOnAllNetworks.toString(),
-        TOTAL_NUMBER_OF_PERSONAS_KEY to totalNumberOfPersonasOnAllNetworks.toString()
-    ))
+    ) : this(
+        id = id,
+        profileId = profileId,
+        properties = mapOf(
+            LAST_USED_ON_DEVICE_KEY to lastUsedOnDeviceName,
+            LAST_MODIFIED_KEY to lastUsedOnDeviceModified.format(DateTimeFormatter.ISO_DATE_TIME),
+            TOTAL_NUMBER_OF_ACCOUNTS_KEY to totalNumberOfAccountsOnAllNetworks.toString(),
+            TOTAL_NUMBER_OF_PERSONAS_KEY to totalNumberOfPersonasOnAllNetworks.toString()
+        )
+    )
 
     constructor(
         id: GoogleDriveFileId,
         profile: Profile,
         newDeviceName: String
-    ): this(
+    ) : this(
         id = id,
         profileId = profile.header.id,
         properties = profile.toCloudBackupProperties(claimedByDevice = newDeviceName)
     )
 
-    constructor(file: File): this(
+    constructor(file: File) : this(
         id = GoogleDriveFileId(file.id),
         profileId = ProfileId.fromString(file.name.removeSuffix(".json")),
         properties = file.appProperties

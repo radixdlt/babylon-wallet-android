@@ -204,7 +204,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
     data class CloudBackupException(
         val error: BackupServiceException
-    ): RadixWalletException()
+    ) : RadixWalletException()
 }
 
 typealias ConnectorExtensionError = WalletErrorType
@@ -392,7 +392,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
     )
 }
 
-fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(context: Context): String = when (error) {
+fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = when (error) {
     is BackupServiceException.ProfileClaimedByAnotherDeviceException -> "Profile claimed by another device"
     is BackupServiceException.ServiceException -> "${error.statusCode} - ${error.message}"
     is BackupServiceException.UnauthorizedException -> "Access to Google Drive denied."
@@ -421,7 +421,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
-        is RadixWalletException.CloudBackupException -> toUserFriendlyMessage(context)
+        is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
     }
 }
 

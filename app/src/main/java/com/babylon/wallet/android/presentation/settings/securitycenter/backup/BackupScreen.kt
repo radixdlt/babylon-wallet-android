@@ -62,6 +62,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,6 +83,8 @@ import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
+import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
 fun BackupScreen(
@@ -376,9 +379,12 @@ private fun BackupStatusCard(
         if (cloudBackupState is CloudBackupState.Disabled) {
             Text(
                 modifier = Modifier.padding(start = 44.dp),
-                text = stringResource(id = R.string.configurationBackup_automated_lastBackup, cloudBackupState.lastBackup ?: stringResource(
-                    id = R.string.common_none
-                )),
+                text = stringResource(
+                    id = R.string.configurationBackup_automated_lastBackup,
+                    cloudBackupState.lastBackup ?: stringResource(
+                        id = R.string.common_none
+                    )
+                ),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )

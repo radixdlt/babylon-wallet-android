@@ -82,5 +82,4 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             ProfileException.InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
         }
     }
-
 }

@@ -105,7 +105,7 @@ class CloudBackupSyncExecutor @Inject constructor(
 
     init {
         syncProfile
-            .debounce(1000L)
+            .debounce(ONE_SECOND_DEBOUNCE)
             .onEach {
                 val constraints = Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -139,5 +139,6 @@ class CloudBackupSyncExecutor @Inject constructor(
 
     companion object {
         private const val SYNC_CLOUD_PROFILE_WORK = "sync_cloud_profile"
+        private const val ONE_SECOND_DEBOUNCE = 1000L
     }
 }

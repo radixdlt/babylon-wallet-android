@@ -15,7 +15,7 @@ class OnboardingViewModel @Inject constructor(
 
     override fun initialState(): State = State(
         isProfileClaimedByAnotherDeviceWarningVisible = driveClient.backupErrors.value
-                is BackupServiceException.ProfileClaimedByAnotherDeviceException
+        is BackupServiceException.ProfileClaimedByAnotherDeviceException
     )
 
     fun claimedByAnotherDeviceWarningAcknowledged() {

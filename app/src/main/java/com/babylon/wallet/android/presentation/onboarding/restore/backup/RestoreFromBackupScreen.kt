@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.activity.compose.BackHandler
@@ -244,12 +246,12 @@ private fun RestoreFromBackupContent(
                         item {
                             LoadingCloudBackups()
                         }
-                    } else if (state.restoringProfiles.isEmpty()){
+                    } else if (state.restoringProfiles.isEmpty()) {
                         item {
                             EmptyCloudBackups()
                         }
                     } else {
-                        items(state.restoringProfiles) {restoringProfile ->
+                        items(state.restoringProfiles) { restoringProfile ->
                             RestoredProfileListItem(
                                 modifier = Modifier.fillMaxSize(),
                                 restoringProfile = restoringProfile.data,
