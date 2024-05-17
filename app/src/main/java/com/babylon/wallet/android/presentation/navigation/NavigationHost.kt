@@ -521,10 +521,10 @@ fun NavigationHost(
             }
         )
         relinkConnectors(
-            onContinueClick = {
-                navController.popBackStack()
+            onContinueClick = { popUpToRoute ->
                 navController.linkedConnectorsScreen(
-                    shouldShowAddLinkConnectorScreen = true
+                    shouldShowAddLinkConnectorScreen = true,
+                    popUpToRoute = popUpToRoute
                 )
             },
             onDismiss = {

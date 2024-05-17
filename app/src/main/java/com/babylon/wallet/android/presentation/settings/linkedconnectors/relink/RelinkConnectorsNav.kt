@@ -13,7 +13,7 @@ fun NavController.relinkConnectors() {
 }
 
 fun NavGraphBuilder.relinkConnectors(
-    onContinueClick: () -> Unit,
+    onContinueClick: (popUpToRoute: String) -> Unit,
     onDismiss: () -> Unit
 ) {
     composable(
@@ -32,7 +32,7 @@ fun NavGraphBuilder.relinkConnectors(
         }
     ) {
         RelinkConnectorsScreen(
-            onContinueClick = onContinueClick,
+            onContinueClick = { onContinueClick(ROUTE) },
             onDismiss = onDismiss
         )
     }
