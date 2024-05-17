@@ -208,6 +208,10 @@
   <string name="linkedConnectors_unknownPurposeErrorMessage">This type of Connector link is not supported.</string>
   <string name="linkedConnectors_changingPurposeNotSupportedErrorMessage">Changing a Connector’s type is not supported.</string>
   <string name="linkedConnectors_oldQRErrorMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
+  <string name="linkedConnectors_relinkConnectors_title">Re-link Connector</string>
+  <string name="linkedConnectors_relinkConnectors_afterUpdateMessage">Radix Connector now supports linking multiple phones with one browser.\n\nTo support this feature, we\'ve had to disconnect your existing links – **please re-link your Connector(s).**</string>
+  <string name="linkedConnectors_relinkConnectors_afterProfileRestoreMessage">Any Connectors you had linked to this wallet using a different phone have been disconnected\n\n**Please re-link your Connector(s) to use with this phone.**</string>
+  <string name="linkedConnectors_relinkConnectors_laterButton">Later</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -597,10 +601,10 @@
   <string name="onboarding_cloudAndroid_backupSubtitle">Connect to Google Drive to automatically backup your Radix wallet settings.</string>
   <string name="onboarding_cloudAndroid_skip">Skip</string>
   <string name="onboarding_cloudAndroid_backupButton">Back up to Google Drive</string>
-  <string name="onboarding_cloudAndroidRestore_BackupTitle">Restore wallet from backup</string>
-  <string name="onboarding_cloudAndroidRestore_BackupSubtitle">Log in to Google Drive to restore your Radix Wallet from backup.</string>
-  <string name="onboarding_cloudAndroidRestore_Skip">Skip</string>
-  <string name="onboarding_cloudAndroidRestore_LoginButton">Log in to Google Drive</string>
+  <string name="onboarding_cloudRestoreAndroid_backupTitle">Restore wallet from backup</string>
+  <string name="onboarding_cloudRestoreAndroid_backupSubtitle">Log in to Google Drive to restore your Radix Wallet from backup.</string>
+  <string name="onboarding_cloudRestoreAndroid_skip">Skip</string>
+  <string name="onboarding_cloudRestoreAndroid_loginButton">Log in to Google Drive</string>
   <string name="splash_tapAnywhereToUnlock">Tap to unlock</string>
   <string name="splash_passcodeNotSetTitle">Passcode not set up</string>
   <string name="splash_passcodeNotSetMessage">This app requires your phone to have a passcode set up</string>
@@ -1048,7 +1052,7 @@
   <string name="securityCenter_securityFactorsItem_subtitle">The keys you use to control your Accounts and Personas</string>
   <string name="securityCenter_securityFactorsItem_activeStatus">Active</string>
   <string name="securityCenter_configurationBackupItem_title">Configuration Backup</string>
-  <string name="securityCenter_configurationBackupItem_subtitle">A Backup of your Account, Persona and wallet settings</string>
+  <string name="securityCenter_configurationBackupItem_subtitle">A backup of your Account, Personas and wallet settings</string>
   <string name="securityCenter_configurationBackupItem_backedUpStatus">Backed up</string>
   <string name="securityCenter_anyItem_actionRequiredStatus">Action required</string>
   <string name="securityCenter_encryptWalletBackup_title">Encrypt Wallet Backup File</string>
@@ -1064,7 +1068,7 @@
   <string name="securityFactors_seedPhrases_counterSingular">1 Seed phrase</string>
   <string name="securityFactors_seedPhrases_counterPlural">%d Seed phrases</string>
   <string name="securityFactors_seedPhrases_enterSeedPhrase">Enter your seed phrase to recover Accounts</string>
-  <string name="securityFactors_ledgerWallet_title">Ledger Hardware Wallet</string>
+  <string name="securityFactors_ledgerWallet_title">Ledger Hardware Wallets</string>
   <string name="securityFactors_ledgerWallet_subtitle">Hardware wallet designed for holding crypto</string>
   <string name="securityFactors_ledgerWallet_counterSingular">1 set</string>
   <string name="securityFactors_ledgerWallet_counterPlural">%d set</string>
