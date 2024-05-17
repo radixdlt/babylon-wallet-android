@@ -4,9 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.google.api.services.drive.model.File
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.GoogleSignInManager
@@ -29,13 +27,7 @@ class InspectGoogleBackupsViewModel @Inject constructor(
             _state.update { it.copy(accountEmail = email) }
 
             if (email != null) {
-                delay(2000)
-                fetchBackedUpProfilesMetadataFromCloud()
-                    .onSuccess { files ->
-                        _state.update { it.copy(files = files, isLoading = false) }
-                    }.onFailure { error ->
-                        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), isLoading = false) }
-                    }
+                fetchFiles()
             } else {
                 _state.update { it.copy(isLoading = false) }
             }
@@ -44,6 +36,20 @@ class InspectGoogleBackupsViewModel @Inject constructor(
 
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
+    }
+
+    fun onRefresh() = viewModelScope.launch {
+        fetchFiles()
+    }
+
+    private suspend fun fetchFiles() {
+        _state.update { it.copy(isLoading = true) }
+        fetchBackedUpProfilesMetadataFromCloud()
+            .onSuccess { files ->
+                _state.update { it.copy(files = files, isLoading = false) }
+            }.onFailure { error ->
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), isLoading = false) }
+            }
     }
 
     data class State(

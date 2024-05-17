@@ -1,19 +1,24 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package com.babylon.wallet.android.presentation.settings.debug.backups
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -36,6 +41,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun InspectGoogleBackupsScreen(
@@ -68,56 +74,62 @@ fun InspectGoogleBackupsScreen(
             )
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            Row(
-                modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        val pullRefreshState = rememberPullRefreshState(state.isLoading, onRefresh = viewModel::onRefresh)
+        Box(
+            modifier = Modifier.pullRefresh(pullRefreshState).padding(padding)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
             ) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_personas),
-                    contentDescription = null
-                )
-
-                val emailText = remember(state) {
-                    if (state.accountEmail == null && !state.isLoading) {
-                        "Logged out"
-                    } else if (state.accountEmail != null) {
-                        requireNotNull(state.accountEmail)
-                    } else {
-                        ""
-                    }
+                item {
+                    UserStatus(state = state)
                 }
 
-                Text(
-                    text = emailText,
-                    color = RadixTheme.colors.gray2,
-                    style = RadixTheme.typography.body2Regular
-                )
+                items(state.files) {
+                    GoogleDriveFile(entity = it)
+                }
             }
 
-            if (state.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            PullRefreshIndicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                refreshing = state.isLoading,
+                state = pullRefreshState,
+                contentColor = RadixTheme.colors.gray1,
+                backgroundColor = RadixTheme.colors.defaultBackground
+            )
+        }
+    }
+}
+
+@Composable
+private fun UserStatus(
+    modifier: Modifier = Modifier,
+    state: InspectGoogleBackupsViewModel.State
+) {
+    Row(
+        modifier = modifier.padding(RadixTheme.dimensions.paddingDefault),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+    ) {
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_personas),
+            contentDescription = null
+        )
+
+        val emailText = remember(state) {
+            if (state.accountEmail == null && !state.isLoading) {
+                "Logged out"
+            } else if (state.accountEmail != null) {
+                requireNotNull(state.accountEmail)
             } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    items(state.files) {
-                        GoogleDriveFile(entity = it)
-                    }
-                }
+                ""
             }
         }
+
+        Text(
+            text = emailText,
+            color = RadixTheme.colors.gray2,
+            style = RadixTheme.typography.body2Regular
+        )
     }
 }
 
@@ -128,7 +140,9 @@ private fun GoogleDriveFile(
     entity: CloudBackupFileEntity
 ) {
     Surface(
-        modifier = modifier.padding(bottom = RadixTheme.dimensions.paddingMedium),
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(bottom = RadixTheme.dimensions.paddingMedium),
         color = RadixTheme.colors.gray5,
         shadowElevation = 8.dp,
         shape = RadixTheme.shapes.roundedRectMedium
@@ -142,7 +156,7 @@ private fun GoogleDriveFile(
             FileProperty(key = "ID", value = entity.id.id)
             FileProperty(key = "ProfileId", value = entity.profileId.toString())
             FileProperty(key = "Backed up", value = remember(entity.lastUsedOnDeviceModified) {
-                entity.lastUsedOnDeviceModified.toInstant().toString()
+                entity.lastUsedOnDeviceModified.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             })
             FileProperty(key = "Device", value = entity.lastUsedOnDeviceName)
             FileProperty(key = "Accounts", value = entity.totalNumberOfAccountsOnAllNetworks.toString())
