@@ -271,7 +271,7 @@ fun AddAssetSheet(
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetAllow),
-                    selected = asset.assetException?.exceptionRule == DepositAddressExceptionRule.ALLOW,
+                    selected = asset.rule == DepositAddressExceptionRule.ALLOW,
                     onSelected = {
                         onAssetExceptionRuleChanged(DepositAddressExceptionRule.ALLOW)
                     }
@@ -279,7 +279,7 @@ fun AddAssetSheet(
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetDeny),
-                    selected = asset.assetException?.exceptionRule == DepositAddressExceptionRule.DENY,
+                    selected = asset.rule == DepositAddressExceptionRule.DENY,
                     onSelected = {
                         onAssetExceptionRuleChanged(DepositAddressExceptionRule.DENY)
                     }
