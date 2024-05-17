@@ -234,7 +234,7 @@ class DriveClientImpl @Inject constructor(
                 when (error.details.code) {
                     HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> BackupServiceException.UnauthorizedException
                     HTTP_NOT_FOUND -> if (throwClaimByAnotherDeviceError) {
-                        BackupServiceException.ProfileClaimedByAnotherDeviceException
+                        BackupServiceException.CloudBackupNotFoundOrClaimed
                     } else {
                         BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
                     }

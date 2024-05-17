@@ -5,7 +5,7 @@ import android.content.Intent
 sealed class BackupServiceException : Exception() {
     data class ServiceException(val statusCode: Int, override val message: String) : BackupServiceException()
 
-    data object ProfileClaimedByAnotherDeviceException : BackupServiceException()
+    data object CloudBackupNotFoundOrClaimed : BackupServiceException()
 
     data object UnauthorizedException : BackupServiceException()
 
