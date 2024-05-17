@@ -29,6 +29,7 @@ val Gray5 = Color(0xFFF4F5F9)
 // alert
 val Orange1 = Color(0xFFF2AD21)
 val Orange2 = Color(0xFFEC633E)
+val Orange3 = Color(0xFFE59700)
 val LightOrange = Color(255, 244, 223)
 val Red1 = Color(0xFFC82020)
 

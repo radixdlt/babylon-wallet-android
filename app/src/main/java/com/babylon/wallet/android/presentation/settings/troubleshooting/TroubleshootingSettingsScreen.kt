@@ -96,7 +96,9 @@ private fun TroubleshootingSettingsContent(
                                     subtitle = stringResource(id = item.subtitleRes()),
                                     onClick = {
                                         when (item) {
-                                            Troubleshooting.ContactSupport -> context.openEmail()
+                                            is Troubleshooting.ContactSupport -> {
+                                                context.openEmail(item.supportAddress, item.subject, item.body)
+                                            }
                                             Troubleshooting.Discord -> context.openUrl("http://discord.gg/radixdlt")
                                             else -> {
                                                 onSettingItemClick(item)
@@ -104,7 +106,7 @@ private fun TroubleshootingSettingsContent(
                                         }
                                     },
                                     trailingIcon = when (item) {
-                                        Troubleshooting.ContactSupport,
+                                        is Troubleshooting.ContactSupport,
                                         Troubleshooting.Discord -> {
                                             {
                                                 Icon(
@@ -115,7 +117,15 @@ private fun TroubleshootingSettingsContent(
                                             }
                                         }
 
-                                        else -> null
+                                        else -> {
+                                            {
+                                                Icon(
+                                                    painter = painterResource(id = DSR.ic_chevron_right),
+                                                    contentDescription = null,
+                                                    tint = RadixTheme.colors.gray1
+                                                )
+                                            }
+                                        }
                                     }
                                 )
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
