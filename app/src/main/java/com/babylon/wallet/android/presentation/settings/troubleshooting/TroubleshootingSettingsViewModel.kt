@@ -17,7 +17,6 @@ import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
-@Suppress("MagicNumber")
 @HiltViewModel
 class TroubleshootingSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
