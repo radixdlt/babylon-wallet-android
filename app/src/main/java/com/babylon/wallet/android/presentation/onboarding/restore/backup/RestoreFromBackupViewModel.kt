@@ -55,7 +55,6 @@ class RestoreFromBackupViewModel @Inject constructor(
         googleSignInManager.getSignedInGoogleAccount()?.email?.let { email ->
             _state.update { it.copy(backupEmail = email) }
             viewModelScope.launch {
-                println("☁\uFE0F -----> restoreProfilesFromCloudBackup at init")
                 restoreProfilesFromCloudBackup()
             }
         }
@@ -108,11 +107,10 @@ class RestoreFromBackupViewModel @Inject constructor(
         viewModelScope.launch {
             result.onSuccess {googleAccount ->
                 _state.update { it.copy(backupEmail = googleAccount.email) }
-                Timber.d("cloud backup is authorized")
-                println("☁\uFE0F -----> restoreProfilesFromCloudBackup at handleSignInResult")
+                Timber.tag("CloudBackup").d("cloud backup is authorized")
                 restoreProfilesFromCloudBackup()
             }.onFailure { exception ->
-                Timber.e("cloud backup authorization failed: $exception")
+                Timber.tag("CloudBackup").e("cloud backup authorization failed: $exception")
                 if (exception !is CancellationException) {
                     _state.update { state ->
                         state.copy(
@@ -228,7 +226,6 @@ class RestoreFromBackupViewModel @Inject constructor(
 
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.mapNotNull { fileEntity ->
-                println("☁\uFE0F -----> at restore, profileId: ${fileEntity.profileId}")
                 Selectable(
                     data = State.RestoringProfile(
                         googleDriveFileId = fileEntity.id,
@@ -246,7 +243,6 @@ class RestoreFromBackupViewModel @Inject constructor(
         } else {
             getTemporaryRestoringProfileForBackupUseCase(BackupType.DeprecatedCloud)?.let { profile ->
                 if (profile.header.isCompatible) {
-                    println("☁\uFE0F -----> profileId of old: ${profile.header.id}")
                     val restoringProfile = Selectable(
                         data = State.RestoringProfile(
                             googleDriveFileId = null,

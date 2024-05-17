@@ -17,6 +17,7 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.ProfileException
+import timber.log.Timber
 import javax.inject.Inject
 
 class RestoreProfileFromBackupUseCase @Inject constructor(
@@ -64,15 +65,15 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
             Result.success(profileWithRestoredHeader)
         }.then { profileToSave ->
             if (backupType is BackupType.Cloud) {
-                println("☁\uFE0F -----> Claiming Profile")
+                Timber.tag("CloudBackup").d("Claiming Profile...")
                 driveClient.claimCloudBackup(backupType.entity).onSuccess {
                     preferencesManager.setGoogleDriveFileId(it.id)
-                    println("☁\uFE0F -----> Saving Profile")
+                    Timber.tag("CloudBackup").d("Save claimed profile")
                     profileRepository.saveProfile(profileToSave)
                     backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
                 }.map {  }
             } else {
-                println("☁\uFE0F -----> Saving Profile")
+                Timber.tag("CloudBackup").d("Save profile")
                 profileRepository.saveProfile(profileToSave)
                 backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
                 Result.success(Unit)
