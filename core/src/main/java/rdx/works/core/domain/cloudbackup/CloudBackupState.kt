@@ -1,7 +1,7 @@
 package rdx.works.core.domain.cloudbackup
 
 import android.text.format.DateUtils
-import java.time.Instant
+import com.radixdlt.sargon.Timestamp
 
 sealed class CloudBackupState {
 
@@ -12,11 +12,11 @@ sealed class CloudBackupState {
 
     data class Disabled(
         override val email: String?,
-        private val lastCloudBackupTime: Instant?
+        private val lastCloudBackupTime: Timestamp?
     ) : CloudBackupState() {
 
         val lastBackup: String?
-            get() = lastCloudBackupTime?.toEpochMilli()?.let { epochMilli ->
+            get() = lastCloudBackupTime?.toInstant()?.toEpochMilli()?.let { epochMilli ->
                 DateUtils.getRelativeTimeSpanString(epochMilli)
             }?.toString()
     }

@@ -5,7 +5,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapError
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.changeGatewayToNetworkId
@@ -24,8 +23,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
     private val mnemonicRepository: MnemonicRepository,
-    private val driveClient: DriveClient,
-    private val preferencesManager: PreferencesManager
+    private val driveClient: DriveClient
 ) {
 
     suspend operator fun invoke(
@@ -65,8 +63,10 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
         }.then { profileToSave ->
             if (backupType is BackupType.Cloud) {
                 Timber.tag("CloudBackup").d("Claiming Profile...")
-                driveClient.claimCloudBackup(backupType.entity).onSuccess {
-                    preferencesManager.setGoogleDriveFileId(it.id)
+                driveClient.claimCloudBackup(
+                    file = backupType.entity,
+                    profileModifiedTime = profileToSave.header.lastModified
+                ).onSuccess {
                     Timber.tag("CloudBackup").d("Save claimed profile")
                     profileRepository.saveProfile(profileToSave)
                     backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)

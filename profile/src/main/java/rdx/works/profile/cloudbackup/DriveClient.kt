@@ -5,6 +5,7 @@ import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.model.File
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,9 @@ import okhttp3.internal.http.HTTP_FORBIDDEN
 import okhttp3.internal.http.HTTP_NOT_FOUND
 import okhttp3.internal.http.HTTP_UNAUTHORIZED
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
+import rdx.works.core.domain.cloudbackup.LastBackupEvent
 import rdx.works.core.mapError
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
@@ -50,14 +53,16 @@ interface DriveClient {
     ): Result<CloudBackupFile>
 
     suspend fun claimCloudBackup(
-        file: CloudBackupFileEntity
+        file: CloudBackupFileEntity,
+        profileModifiedTime: Timestamp
     ): Result<CloudBackupFileEntity>
 }
 
 class DriveClientImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val googleSignInManager: GoogleSignInManager,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val deviceInfoRepository: DeviceInfoRepository,
+    private val preferencesManager: PreferencesManager
 ) : DriveClient {
 
     private val backupFields = listOf(
@@ -103,7 +108,14 @@ class DriveClientImpl @Inject constructor(
         if (error is BackupServiceException) {
             backupErrors.update { error }
         }
-    }.onSuccess {
+    }.onSuccess { entity ->
+        preferencesManager.updateLastBackupEvent(
+            LastBackupEvent(
+                fileId = entity.id,
+                profileModifiedTime = profile.header.lastModified,
+                cloudBackupTime = entity.lastUsedOnDeviceModified
+            )
+        )
         backupErrors.update { null }
     }
 
@@ -130,7 +142,10 @@ class DriveClientImpl @Inject constructor(
         }.mapDriveError()
     }
 
-    override suspend fun claimCloudBackup(file: CloudBackupFileEntity): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
+    override suspend fun claimCloudBackup(
+        file: CloudBackupFileEntity,
+        profileModifiedTime: Timestamp
+    ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
             googleSignInManager.getDrive().files()
                 .copy(
@@ -143,6 +158,14 @@ class DriveClientImpl @Inject constructor(
             googleSignInManager.getDrive().files().delete(file.id.id).execute()
 
             CloudBackupFileEntity(copiedFile)
+        }.onSuccess { entity ->
+            preferencesManager.updateLastBackupEvent(
+                LastBackupEvent(
+                    fileId = entity.id,
+                    profileModifiedTime = profileModifiedTime,
+                    cloudBackupTime = entity.lastUsedOnDeviceModified
+                )
+            )
         }.mapDriveError()
     }
 

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import rdx.works.core.domain.cloudbackup.LastBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.ApplicationScope
@@ -48,22 +49,20 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         val profile = profileRepository.inMemoryProfileOrNull
-        val googleDriveFileId = preferencesManager.googleDriveFileId.first()
+        val lastBackupEvent = preferencesManager.lastCloudBackupEvent.first()
 
         return if (profile != null) {
             driveClient.backupProfile(
-                googleDriveFileId = googleDriveFileId,
+                googleDriveFileId = lastBackupEvent?.fileId,
                 profile = profile
             ).fold(
                 onSuccess = { file ->
-                    if (googleDriveFileId == null) {
-                        preferencesManager.setGoogleDriveFileId(file.id)
-                        Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
-                    } else {
-                        Timber.tag("CloudBackup").d("\uD83D\uDD04 ✅")
-                    }
-                    val modifiedTimeInstant = file.lastUsedOnDeviceModified.toInstant()
-                    preferencesManager.updateLastCloudBackupInstant(modifiedTimeInstant)
+                    Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
+                    preferencesManager.updateLastBackupEvent(LastBackupEvent(
+                        fileId = file.id,
+                        profileModifiedTime = profile.header.lastModified,
+                        cloudBackupTime = file.lastUsedOnDeviceModified
+                    ))
                     Result.success()
                 },
                 onFailure = { exception ->
@@ -122,7 +121,7 @@ class CloudBackupSyncExecutor @Inject constructor(
 
                 val workManager = WorkManager.getInstance(context)
 
-                if (preferencesManager.googleDriveFileId.firstOrNull() == null) {
+                if (preferencesManager.lastCloudBackupEvent.firstOrNull() == null) {
                     Timber.tag("CloudBackup").d("\uD83C\uDD95 Enqueued")
                     workManager.enqueueUniqueWork(SYNC_CLOUD_PROFILE_WORK, ExistingWorkPolicy.KEEP, workRequest)
                 } else {

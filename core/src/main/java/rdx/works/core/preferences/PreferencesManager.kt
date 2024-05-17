@@ -25,15 +25,14 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.BuildConfig
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
+import rdx.works.core.domain.cloudbackup.LastBackupEvent
 import java.time.Instant
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 interface PreferencesManager {
-    val googleDriveFileId: Flow<GoogleDriveFileId?>
     val surveyUuid: Flow<String>
-    val lastCloudBackupInstant: Flow<Instant?>
+    val lastCloudBackupEvent: Flow<LastBackupEvent?>
     val firstPersonaCreated: Flow<Boolean>
     val isImportFromOlympiaSettingDismissed: Flow<Boolean>
     val isDeviceRootedDialogShown: Flow<Boolean>
@@ -44,11 +43,9 @@ interface PreferencesManager {
     val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
 
-    suspend fun setGoogleDriveFileId(googleDriveFileId: GoogleDriveFileId)
+    suspend fun updateLastBackupEvent(lastBackupEvent: LastBackupEvent)
 
-    suspend fun updateLastCloudBackupInstant(backupInstant: Instant)
-
-    suspend fun removeLastCloudBackupInstant()
+    suspend fun removeLastCloudBackupEvent()
 
     suspend fun markFirstPersonaCreated()
 
@@ -98,35 +95,20 @@ class PreferencesManagerImpl @Inject constructor(
             }
         }.filterNotNull()
 
-    override val googleDriveFileId: Flow<GoogleDriveFileId?> = dataStore.data
+    override val lastCloudBackupEvent: Flow<LastBackupEvent?> = dataStore.data
         .map { preferences ->
-            preferences[KEY_GOOGLE_DRIVE_FILE_ID]?.let {
-                GoogleDriveFileId(it)
-            }
+            preferences[KEY_LAST_CLOUD_BACKUP_EVENT]?.let { Json.decodeFromString(it) }
         }
 
-    override val lastCloudBackupInstant: Flow<Instant?> = dataStore.data
-        .map { preferences ->
-            preferences[KEY_LAST_CLOUD_BACKUP_INSTANT]?.let {
-                Instant.parse(it)
-            }
-        }
-
-    override suspend fun setGoogleDriveFileId(googleDriveFileId: GoogleDriveFileId) {
+    override suspend fun updateLastBackupEvent(lastBackupEvent: LastBackupEvent) {
         dataStore.edit { preferences ->
-            preferences[KEY_GOOGLE_DRIVE_FILE_ID] = googleDriveFileId.id
+            preferences[KEY_LAST_CLOUD_BACKUP_EVENT] = Json.encodeToString(lastBackupEvent)
         }
     }
 
-    override suspend fun updateLastCloudBackupInstant(backupInstant: Instant) {
+    override suspend fun removeLastCloudBackupEvent() {
         dataStore.edit { preferences ->
-            preferences[KEY_LAST_CLOUD_BACKUP_INSTANT] = backupInstant.toString()
-        }
-    }
-
-    override suspend fun removeLastCloudBackupInstant() {
-        dataStore.edit { preferences ->
-            preferences.remove(KEY_LAST_CLOUD_BACKUP_INSTANT)
+            preferences.remove(KEY_LAST_CLOUD_BACKUP_EVENT)
         }
     }
 
@@ -284,12 +266,11 @@ class PreferencesManagerImpl @Inject constructor(
     override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
-        val KEY_GOOGLE_DRIVE_FILE_ID = stringPreferencesKey("google_drive_file_id")
         val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
         val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
         val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
-        val KEY_LAST_CLOUD_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
+        val KEY_LAST_CLOUD_BACKUP_EVENT = stringPreferencesKey("last_cloud_backup_event")
         val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
         val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
         val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")

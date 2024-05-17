@@ -83,7 +83,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
-import rdx.works.core.InstantGenerator
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
@@ -833,7 +833,7 @@ fun BackupScreenOffPreview() {
             state = BackupViewModel.State(
                 cloudBackupState = CloudBackupState.Disabled(
                     email = "my cool email",
-                    lastCloudBackupTime = InstantGenerator()
+                    lastCloudBackupTime = TimestampGenerator()
                 )
             ),
             onBackupCheckChanged = {},

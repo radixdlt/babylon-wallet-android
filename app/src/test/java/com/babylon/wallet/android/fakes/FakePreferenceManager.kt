@@ -6,7 +6,7 @@ import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
+import rdx.works.core.domain.cloudbackup.LastBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import java.time.Instant
 
@@ -15,11 +15,9 @@ class FakePreferenceManager : PreferencesManager {
     private val _transactionCompleteCounter = MutableStateFlow(0)
 
     private val _lastNPSSurveyInstant = MutableStateFlow<Instant?>(null)
-    override val googleDriveFileId: Flow<GoogleDriveFileId?>
-        get() = TODO("Not yet implemented")
     override val surveyUuid: Flow<String>
         get() = TODO("Not yet implemented")
-    override val lastCloudBackupInstant: Flow<Instant?>
+    override val lastCloudBackupEvent: Flow<LastBackupEvent?>
         get() = TODO("Not yet implemented")
     override val firstPersonaCreated: Flow<Boolean>
         get() = TODO("Not yet implemented")
@@ -39,11 +37,11 @@ class FakePreferenceManager : PreferencesManager {
     override val lastSyncedAccountsWithCE: Flow<String?>
         get() = TODO("Not yet implemented")
 
-    override suspend fun updateLastCloudBackupInstant(backupInstant: Instant) {
+    override suspend fun updateLastBackupEvent(lastBackupEvent: LastBackupEvent) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeLastCloudBackupInstant() {
+    override suspend fun removeLastCloudBackupEvent() {
         TODO("Not yet implemented")
     }
 
@@ -89,10 +87,6 @@ class FakePreferenceManager : PreferencesManager {
 
     override val transactionCompleteCounter: Flow<Int>
         get() = _transactionCompleteCounter
-
-    override suspend fun setGoogleDriveFileId(googleDriveFileId: GoogleDriveFileId) {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun incrementTransactionCompleteCounter() {
         _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)
