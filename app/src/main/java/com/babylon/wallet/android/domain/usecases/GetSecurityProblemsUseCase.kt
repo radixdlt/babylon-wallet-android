@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.radixdlt.sargon.extensions.ProfileEntity
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
@@ -12,7 +13,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
     private val getCloudBackupStateUseCase: GetCloudBackupStateUseCase
 ) {
 
-    operator fun invoke() = combine(
+    operator fun invoke(): Flow<Set<SecurityProblem>> = combine(
         getEntitiesWithSecurityPromptUseCase(),
         getCloudBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, backupState ->

@@ -4,6 +4,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import rdx.works.core.preferences.PreferencesManager
@@ -20,7 +21,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository
 ) {
 
-    operator fun invoke() = combine(
+    operator fun invoke(): Flow<List<EntityWithSecurityPrompt>> = combine(
         getProfileUseCase.flow.map { it.activeEntitiesOnCurrentNetwork },
         preferencesManager.getBackedUpFactorSourceIds()
     ) { entities, backedUpFactorSourceIds ->

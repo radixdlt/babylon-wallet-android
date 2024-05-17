@@ -83,7 +83,7 @@ class WalletViewModel @Inject constructor(
     private var accountsWithAssets: List<AccountWithAssets>? = null
     private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
     private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
-    private var isBackupWarningVisible: Boolean = false
+    private var hasCloudBackupAnyProblems: Boolean = false
 
     override fun initialState() = WalletUiState()
 
@@ -194,7 +194,7 @@ class WalletViewModel @Inject constructor(
                 this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
                 _state.update {
                     it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
+                        isSettingsWarningVisible = hasCloudBackupAnyProblems || anyBackupSecurityPrompt()
                     )
                 }
             }
@@ -209,11 +209,11 @@ class WalletViewModel @Inject constructor(
     private fun observeProfileBackupState(getCloudBackupStateUseCase: GetCloudBackupStateUseCase) {
         viewModelScope.launch {
             getCloudBackupStateUseCase().collect { backupState ->
-                this@WalletViewModel.isBackupWarningVisible = backupState.isDisabled
+                this@WalletViewModel.hasCloudBackupAnyProblems = backupState.isDisabled
 
                 _state.update {
                     it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
+                        isSettingsWarningVisible = hasCloudBackupAnyProblems || anyBackupSecurityPrompt()
                     )
                 }
             }

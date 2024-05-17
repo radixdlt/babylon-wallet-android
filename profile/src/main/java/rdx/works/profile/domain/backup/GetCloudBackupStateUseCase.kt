@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.backup
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.preferences.PreferencesManager
@@ -17,7 +18,7 @@ class GetCloudBackupStateUseCase @Inject constructor(
     private val driveClient: DriveClient
 ) {
 
-    operator fun invoke() = combine(
+    operator fun invoke(): Flow<CloudBackupState> = combine(
         profileRepository.profile,
         preferencesManager.lastCloudBackupInstant,
         driveClient.backupErrors
