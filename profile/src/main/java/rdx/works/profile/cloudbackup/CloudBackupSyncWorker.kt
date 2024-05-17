@@ -70,7 +70,7 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
                     Timber.tag("CloudBackup").w(exception, "❌")
                     return when (exception) {
                         is BackupServiceException.ProfileClaimedByAnotherDeviceException -> {
-                            profileRepository.clearProfileDataOnly()
+                            profileRepository.clearAllWalletData()
                             Result.failure()
                         }
                         is BackupServiceException.UnauthorizedException -> {
