@@ -56,10 +56,12 @@ fun Context.openUrl(uri: Uri) {
 }
 
 @Suppress("SwallowedException")
-fun Context.openEmail() {
+fun Context.openEmail(recipientAddress: String? = null, subject: String? = null, body: String? = null) {
     val intent = Intent(Intent.ACTION_SENDTO).apply {
         data = Uri.parse("mailto:")
-        putExtra(Intent.EXTRA_EMAIL, arrayOf("hello@radixdlt.com"))
+        recipientAddress?.let { putExtra(Intent.EXTRA_EMAIL, arrayOf(it)) }
+        subject?.let { putExtra(Intent.EXTRA_SUBJECT, it) }
+        body?.let { putExtra(Intent.EXTRA_TEXT, it) }
     }
     try {
         startActivity(intent)

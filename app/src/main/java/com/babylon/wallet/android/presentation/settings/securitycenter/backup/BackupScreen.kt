@@ -62,7 +62,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -83,8 +82,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
-import rdx.works.core.InstantGenerator
-import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
 fun BackupScreen(
@@ -465,7 +462,7 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.orange1.copy(alpha = 0.1f), RadixTheme.shapes.roundedRectMedium)
+                .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingMedium
@@ -476,12 +473,12 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
             Icon(
                 painter = painterResource(id = DSR.ic_warning_error),
                 contentDescription = null,
-                tint = RadixTheme.colors.orange1
+                tint = RadixTheme.colors.orange3
             )
             Text(
                 text = stringResource(id = R.string.configurationBackup_problem5WarningAndroid),
                 style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.orange1
+                color = RadixTheme.colors.orange3
             )
         }
     }
@@ -503,7 +500,7 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (cloudBackupState.isDisabled) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+        val statusColor = if (cloudBackupState.isDisabled) RadixTheme.colors.orange3 else RadixTheme.colors.green1
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
