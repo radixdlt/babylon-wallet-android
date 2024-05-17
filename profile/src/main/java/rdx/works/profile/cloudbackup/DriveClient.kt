@@ -199,6 +199,7 @@ class DriveClientImpl @Inject constructor(
 
     private fun <T> Result<T>.mapDriveError(throwClaimByAnotherDeviceError: Boolean = false): Result<T> = mapError { error ->
         val mappedError = when (error) {
+            is BackupServiceException -> error
             is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
             is GoogleJsonResponseException -> {
                 when (error.details.code) {
