@@ -68,7 +68,7 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
                 onFailure = { exception ->
                     Timber.tag("CloudBackup").w(exception, "❌")
                     return when (exception) {
-                        is BackupServiceException.CloudBackupNotFoundOrClaimed -> {
+                        is BackupServiceException.ClaimedByAnotherDevice -> {
                             profileRepository.clearAllWalletData()
                             Result.failure()
                         }

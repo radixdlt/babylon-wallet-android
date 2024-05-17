@@ -89,10 +89,10 @@ fun WalletApp(
     SyncStatusBarWithScreenChanges(navController)
 
     LaunchedEffect(
-        state.isCloudBackupNotFoundOrClaimed,
+        state.isCloudBackupClaimedByAnotherDevice,
         state.showDeviceRootedWarning
     ) {
-        if (state.isCloudBackupNotFoundOrClaimed) {
+        if (state.isCloudBackupClaimedByAnotherDevice) {
             navController.navigateToClaimedByAnotherDevice()
         } else if (state.showDeviceRootedWarning) {
             navController.navigate(ROUTE_ROOT_DETECTION)

@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
-import rdx.works.profile.cloudbackup.BackupServiceException.CloudBackupNotFoundOrClaimed
+import rdx.works.profile.cloudbackup.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.cloudbackup.DriveClient
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
@@ -122,7 +122,7 @@ class MainViewModel @Inject constructor(
                             profileState = profileState
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
-                        isCloudBackupNotFoundOrClaimed = backupError is CloudBackupNotFoundOrClaimed
+                        isCloudBackupClaimedByAnotherDevice = backupError is ClaimedByAnotherDevice
                     )
                 }
             }.collect()
@@ -316,7 +316,7 @@ data class MainUiState(
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState? = null,
-    val isCloudBackupNotFoundOrClaimed: Boolean = false
+    val isCloudBackupClaimedByAnotherDevice: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(

@@ -17,6 +17,7 @@ import okhttp3.internal.http.HTTP_NOT_FOUND
 import okhttp3.internal.http.HTTP_UNAUTHORIZED
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.domain.cloudbackup.LastBackupEvent
+import rdx.works.core.flatMapError
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -213,7 +214,7 @@ class DriveClientImpl @Inject constructor(
                 .let { file ->
                     CloudBackupFileEntity(file)
                 }
-        }.mapDriveError(throwClaimByAnotherDeviceError = true)
+        }.mapDriveError().checkClaimedByAnotherDeviceError(profile = profile)
     }
 
     private suspend fun getFileContents(fileId: String): Result<String> = withContext(ioDispatcher) {
@@ -226,19 +227,40 @@ class DriveClientImpl @Inject constructor(
         }.mapDriveError()
     }
 
-    private fun <T> Result<T>.mapDriveError(throwClaimByAnotherDeviceError: Boolean = false): Result<T> = mapError { error ->
+    private suspend fun Result<CloudBackupFileEntity>.checkClaimedByAnotherDeviceError(profile: Profile): Result<CloudBackupFileEntity> =
+        flatMapError { error ->
+            when (error) {
+                is BackupServiceException.ServiceException -> {
+                    // In case we receive a 404 for the specific file id, but the file with the profile id as its name still exists on cloud,
+                    // It means that it was claimed by another device. It is safe to throw ClaimedByAnotherDevice exception
+                    if (error.statusCode == HTTP_NOT_FOUND) {
+                        fetchCloudBackupFileEntities()
+                            .mapCatching { files ->
+                                files.any { it.profileId == profile.header.id }
+                            }.fold(
+                                onSuccess = { existsOnDrive ->
+                                    Result.failure(if (existsOnDrive) BackupServiceException.ClaimedByAnotherDevice else error)
+                                },
+                                onFailure = {
+                                    Result.failure(it)
+                                }
+                            )
+                    } else {
+                        Result.failure(error)
+                    }
+                }
+
+                else -> Result.failure(error)
+            }
+        }
+
+    private fun <T> Result<T>.mapDriveError(): Result<T> = mapError { error ->
         val mappedError = when (error) {
             is BackupServiceException -> error
             is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
             is GoogleJsonResponseException -> {
                 when (error.details.code) {
                     HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> BackupServiceException.UnauthorizedException
-                    HTTP_NOT_FOUND -> if (throwClaimByAnotherDeviceError) {
-                        BackupServiceException.CloudBackupNotFoundOrClaimed
-                    } else {
-                        BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
-                    }
-
                     else -> BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
                 }
             }

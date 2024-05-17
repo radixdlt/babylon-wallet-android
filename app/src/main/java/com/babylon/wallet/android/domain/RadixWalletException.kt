@@ -393,7 +393,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
 }
 
 fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = when (error) {
-    is BackupServiceException.CloudBackupNotFoundOrClaimed -> "Profile claimed by another device"
+    is BackupServiceException.ClaimedByAnotherDevice -> "Profile claimed by another device"
     is BackupServiceException.ServiceException -> "${error.statusCode} - ${error.message}"
     is BackupServiceException.UnauthorizedException -> "Access to Google Drive denied."
     is BackupServiceException.RecoverableUnauthorizedException -> "Access to Google Drive denied."
