@@ -1,10 +1,10 @@
 package rdx.works.core.domain.cloudbackup
 
+import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.Timestamp
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.serializers.TimestampSerializer
-import com.radixdlt.sargon.Header
 
 /**
  * Event stored in local storage, whenever a backup or claim event is successfully occurred.

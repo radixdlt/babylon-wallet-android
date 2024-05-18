@@ -164,7 +164,7 @@ class MainViewModel @Inject constructor(
                                 val requestId = incomingRequest.id
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
-                                            "remote connector $remoteConnectorId with id $requestId"
+                                        "remote connector $remoteConnectorId with id $requestId"
                                 )
                                 verifyIncomingRequest(incomingRequest)
                             }

@@ -24,5 +24,4 @@ class CheckBackupStateWithCloudUseCase @Inject constructor(
             cloudBackupSyncExecutor.requestCloudBackup()
         }
     }
-
 }

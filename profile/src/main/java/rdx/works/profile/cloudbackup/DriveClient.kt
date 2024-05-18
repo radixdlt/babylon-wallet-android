@@ -231,8 +231,9 @@ class DriveClientImpl @Inject constructor(
         flatMapError { error ->
             when (error) {
                 is BackupServiceException.ServiceException -> {
-                    // In case we receive a 404 for the specific file id, but the file with the profile id as its name still exists on cloud,
-                    // It means that it was claimed by another device. It is safe to throw ClaimedByAnotherDevice exception
+                    // In case we receive a 404 for the specific file id, but the file
+                    // with name = profileId still exists on cloud, it means that it was claimed by another device.
+                    // It is safe to throw ClaimedByAnotherDevice exception
                     if (error.statusCode == HTTP_NOT_FOUND) {
                         fetchCloudBackupFileEntities()
                             .mapCatching { files ->

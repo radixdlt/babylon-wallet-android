@@ -92,7 +92,7 @@ class ProfileRepositoryImpl @Inject constructor(
         )
         withContext(ioDispatcher) {
             val profileContent = profileToSave.toJson()
-            // Store profile TODO remove
+            // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
             if (profileToSave.canBackupToCloud) {

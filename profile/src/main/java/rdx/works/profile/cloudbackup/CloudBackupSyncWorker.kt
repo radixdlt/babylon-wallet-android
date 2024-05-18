@@ -58,11 +58,13 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
             ).fold(
                 onSuccess = { file ->
                     Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
-                    preferencesManager.updateLastBackupEvent(LastBackupEvent(
-                        fileId = file.id,
-                        profileModifiedTime = profile.header.lastModified,
-                        cloudBackupTime = file.lastUsedOnDeviceModified
-                    ))
+                    preferencesManager.updateLastBackupEvent(
+                        LastBackupEvent(
+                            fileId = file.id,
+                            profileModifiedTime = profile.header.lastModified,
+                            cloudBackupTime = file.lastUsedOnDeviceModified
+                        )
+                    )
                     Result.success()
                 },
                 onFailure = { exception ->

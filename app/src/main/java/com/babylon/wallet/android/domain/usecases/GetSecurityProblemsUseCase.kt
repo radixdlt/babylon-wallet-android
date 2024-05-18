@@ -16,7 +16,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
     operator fun invoke(): Flow<Set<SecurityProblem>> = combine(
         getEntitiesWithSecurityPromptUseCase(),
         getCloudBackupStateUseCase()
-    ) { entitiesWithSecurityPrompts, backupState ->
+    ) { entitiesWithSecurityPrompts, cloudBackupState ->
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_BACKUP) }
         val entitiesNeedingRestore = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_RESTORE) }
         val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }
@@ -38,7 +38,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
                         personasNeedBackup = personasNeedBackup
                     )
                 )
-                if (backupState.isDisabled) {
+                if (cloudBackupState.isDisabled) {
                     add(SecurityProblem.BackupNotWorking)
                 }
             }

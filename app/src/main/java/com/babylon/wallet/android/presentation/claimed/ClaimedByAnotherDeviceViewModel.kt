@@ -13,14 +13,14 @@ import javax.inject.Inject
 @HiltViewModel
 class ClaimedByAnotherDeviceViewModel @Inject constructor(
     private val driveClient: DriveClient
-): ViewModel(), OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
+) : ViewModel(), OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
 
     fun onModalAcknowledged() = viewModelScope.launch {
         driveClient.resetErrors()
         sendEvent(Event.ResetToOnboarding)
     }
 
-    sealed interface Event: OneOffEvent {
-        data object ResetToOnboarding: Event
+    sealed interface Event : OneOffEvent {
+        data object ResetToOnboarding : Event
     }
 }
