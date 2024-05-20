@@ -95,7 +95,7 @@ fun LedgerHardwareWalletsScreen(
             when (event) {
                 is AddLinkConnectorViewModel.Event.Close -> {
                     if (event.isConnectionEstablished) {
-                        viewModel.onNewConnectorAdded()
+                        viewModel.disableAddLedgerButtonUntilConnectionIsEstablished()
                     } else {
                         viewModel.onNewConnectorCloseClick()
                     }

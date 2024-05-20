@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.extensions.string
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -17,6 +18,8 @@ import kotlinx.serialization.encodeToString
 import javax.inject.Inject
 
 interface LedgerMessenger {
+
+    val isAnyLinkedConnectorConnected: Flow<Boolean>
 
     suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>
 
@@ -53,6 +56,9 @@ interface LedgerMessenger {
 class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
 ) : LedgerMessenger {
+
+    override val isAnyLinkedConnectorConnected: Flow<Boolean>
+        get() = peerdroidClient.hasAtLeastOneConnection
 
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.GetDeviceInfo(interactionId)
