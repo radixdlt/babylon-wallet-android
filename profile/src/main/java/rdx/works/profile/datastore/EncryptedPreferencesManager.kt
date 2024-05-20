@@ -210,7 +210,7 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
         private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
         private const val P2P_LINKS_WALLET_PK_PREFERENCES_KEY = "p2p_links_wallet_pk_key"
-        private const val P2P_LINKS_CACHE_KEY_ALIAS = "P2P_LINKS_CACHE_KEY"
+        private const val P2P_LINKS_CACHE_KEY_ALIAS = "p2pLinksCacheKey"
         private const val RETRY_COUNT = 3L
         private const val RETRY_DELAY = 1500L
     }
