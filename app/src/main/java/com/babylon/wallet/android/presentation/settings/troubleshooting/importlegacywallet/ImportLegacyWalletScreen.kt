@@ -130,7 +130,7 @@ fun ImportLegacyWalletScreen(
         addLinkConnectorViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is AddLinkConnectorViewModel.Event.Close -> {
-                    if (event.isConnectionEstablished) {
+                    if (event.isLinkedConnectorAdded) {
                         viewModel.onNewConnectorAdded()
                     } else {
                         viewModel.onNewConnectorCloseClick()
