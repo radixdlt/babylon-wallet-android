@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
@@ -10,8 +9,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.dropWhile
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,7 +19,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LedgerHardwareWalletsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val ledgerMessenger: LedgerMessenger,
     private val p2PLinksRepository: P2PLinksRepository
 ) : StateViewModel<LedgerHardwareWalletsUiState>() {
 
@@ -73,18 +69,13 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
         }
     }
 
-    fun disableAddLedgerButtonUntilConnectionIsEstablished() {
+    fun onNewConnectorAdded() {
         _state.update {
-            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.Details)
+            it.copy(
+                showContent = LedgerHardwareWalletsUiState.ShowContent.Details,
+                isNewLinkedConnectorConnected = true
+            )
         }
-        ledgerMessenger.isAnyLinkedConnectorConnected
-            .dropWhile { isConnected ->
-                _state.update { state ->
-                    state.copy(isNewLinkedConnectorConnected = isConnected)
-                }
-                isConnected.not() // continue while isConnected is not true
-            }
-            .launchIn(viewModelScope)
     }
 
     fun onCloseClick() {

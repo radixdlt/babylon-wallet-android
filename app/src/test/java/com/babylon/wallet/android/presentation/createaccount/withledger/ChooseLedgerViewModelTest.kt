@@ -98,7 +98,6 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     @Before
     override fun setUp() {
         super.setUp()
-        coEvery { ledgerMessenger.isAnyLinkedConnectorConnected } returns flowOf(true)
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns profile
         every { getProfileUseCase.flow } returns flowOf(profile)

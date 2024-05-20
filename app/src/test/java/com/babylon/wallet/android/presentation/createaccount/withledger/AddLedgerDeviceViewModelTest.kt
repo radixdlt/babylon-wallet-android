@@ -32,7 +32,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import rdx.works.core.sargon.babylon
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
@@ -82,11 +81,6 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
             ledgerMessenger = ledgerMessengerMock,
             addLedgerFactorSourceUseCase = addLedgerFactorSourceUseCaseMock
         )
-    }
-
-    @Before
-    fun setup() {
-        coEvery { ledgerMessengerMock.isAnyLinkedConnectorConnected } returns flowOf(true)
     }
 
     @Test
