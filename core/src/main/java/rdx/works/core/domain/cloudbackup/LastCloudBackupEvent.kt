@@ -10,7 +10,7 @@ import rdx.works.core.serializers.TimestampSerializer
  * Event stored in local storage, whenever a backup or claim event is successfully occurred.
  */
 @Serializable
-data class LastBackupEvent(
+data class LastCloudBackupEvent(
     /**
      * The file ID stored in Google Drive
      */

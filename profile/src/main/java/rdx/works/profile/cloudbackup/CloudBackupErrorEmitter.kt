@@ -12,11 +12,9 @@ interface CloudBackupErrorStream {
     fun onError(error: BackupServiceException)
 
     fun resetErrors()
-
 }
 
-
-class CloudBackupErrorStreamImpl @Inject constructor(): CloudBackupErrorStream {
+class CloudBackupErrorStreamImpl @Inject constructor() : CloudBackupErrorStream {
 
     override val errors: MutableStateFlow<BackupServiceException?> = MutableStateFlow(null)
 
@@ -24,9 +22,7 @@ class CloudBackupErrorStreamImpl @Inject constructor(): CloudBackupErrorStream {
         errors.update { error }
     }
 
-
     override fun resetErrors() {
         errors.update { null }
     }
-
 }

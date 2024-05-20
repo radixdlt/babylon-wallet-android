@@ -21,15 +21,17 @@ class GetCloudBackupStateUseCase @Inject constructor(
     operator fun invoke(): Flow<CloudBackupState> = combine(
         profileRepository.profile,
         preferencesManager.lastCloudBackupEvent,
-        cloudBackupErrorStream.errors
-    ) { profile, lastCloudBackupEvent, backupError ->
+        cloudBackupErrorStream.errors,
+        preferencesManager.lastManualBackupInstant
+    ) { profile, lastCloudBackupEvent, backupError, lastManualBackupInstant ->
         val email = googleSignInManager.getSignedInGoogleAccount()?.email
         if (profile.canBackupToCloud && email != null && backupError == null) {
             CloudBackupState.Enabled(email = email)
         } else {
             CloudBackupState.Disabled(
                 email = email,
-                lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime
+                lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
+                lastManualBackupTime = lastManualBackupInstant
             )
         }
     }

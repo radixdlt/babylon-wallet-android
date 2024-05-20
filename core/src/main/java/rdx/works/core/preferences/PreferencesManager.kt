@@ -25,14 +25,15 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.BuildConfig
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.domain.cloudbackup.LastBackupEvent
+import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import java.time.Instant
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 interface PreferencesManager {
     val surveyUuid: Flow<String>
-    val lastCloudBackupEvent: Flow<LastBackupEvent?>
+    val lastCloudBackupEvent: Flow<LastCloudBackupEvent?>
+    val lastManualBackupInstant: Flow<Instant?>
     val firstPersonaCreated: Flow<Boolean>
     val isImportFromOlympiaSettingDismissed: Flow<Boolean>
     val isDeviceRootedDialogShown: Flow<Boolean>
@@ -43,9 +44,9 @@ interface PreferencesManager {
     val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
 
-    suspend fun updateLastBackupEvent(lastBackupEvent: LastBackupEvent)
+    suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
-    suspend fun removeLastCloudBackupEvent()
+    suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant)
 
     suspend fun markFirstPersonaCreated()
 
@@ -95,20 +96,26 @@ class PreferencesManagerImpl @Inject constructor(
             }
         }.filterNotNull()
 
-    override val lastCloudBackupEvent: Flow<LastBackupEvent?> = dataStore.data
+    override val lastCloudBackupEvent: Flow<LastCloudBackupEvent?> = dataStore.data
         .map { preferences ->
             preferences[KEY_LAST_CLOUD_BACKUP_EVENT]?.let { Json.decodeFromString(it) }
         }
+    override val lastManualBackupInstant: Flow<Instant?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_LAST_MANUAL_BACKUP_INSTANT]?.let {
+                Instant.parse(it)
+            }
+        }
 
-    override suspend fun updateLastBackupEvent(lastBackupEvent: LastBackupEvent) {
+    override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
         dataStore.edit { preferences ->
-            preferences[KEY_LAST_CLOUD_BACKUP_EVENT] = Json.encodeToString(lastBackupEvent)
+            preferences[KEY_LAST_CLOUD_BACKUP_EVENT] = Json.encodeToString(lastCloudBackupEvent)
         }
     }
 
-    override suspend fun removeLastCloudBackupEvent() {
+    override suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant) {
         dataStore.edit { preferences ->
-            preferences.remove(KEY_LAST_CLOUD_BACKUP_EVENT)
+            preferences[KEY_LAST_MANUAL_BACKUP_INSTANT] = lastManualBackupInstant.toString()
         }
     }
 
@@ -240,6 +247,7 @@ class PreferencesManagerImpl @Inject constructor(
                 Instant.parse(it)
             }
         }
+
     override val transactionCompleteCounter: Flow<Int>
         get() = dataStore.data.map { preferences ->
             preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
@@ -271,6 +279,7 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         val KEY_LAST_CLOUD_BACKUP_EVENT = stringPreferencesKey("last_cloud_backup_event")
+        val KEY_LAST_MANUAL_BACKUP_INSTANT = stringPreferencesKey("last_manual_backup_instant")
         val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
         val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
         val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")

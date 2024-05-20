@@ -83,6 +83,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
+import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 
@@ -276,7 +277,10 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
 
-            ManualBackupCard(onFileBackupClick = onFileBackupClick)
+            ManualBackupCard(
+                cloudBackupState = state.cloudBackupState,
+                onFileBackupClick = onFileBackupClick
+            )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
     }
@@ -306,6 +310,7 @@ private fun BackupScreenContent(
 @Composable
 private fun ManualBackupCard(
     modifier: Modifier = Modifier,
+    cloudBackupState: CloudBackupState,
     onFileBackupClick: () -> Unit
 ) {
     Column(
@@ -327,6 +332,22 @@ private fun ManualBackupCard(
             text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
+        if (cloudBackupState is CloudBackupState.Disabled) {
+            Text(
+                modifier = Modifier.padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    top = RadixTheme.dimensions.paddingSmall
+                ),
+                text = stringResource(
+                    id = R.string.configurationBackup_automated_lastBackup,
+                    cloudBackupState.lastManualBackup ?: stringResource(
+                        id = R.string.common_none
+                    )
+                ),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
+            )
+        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Row(
             modifier = Modifier
@@ -381,7 +402,7 @@ private fun BackupStatusCard(
                 modifier = Modifier.padding(start = 44.dp),
                 text = stringResource(
                     id = R.string.configurationBackup_automated_lastBackup,
-                    cloudBackupState.lastBackup ?: stringResource(
+                    cloudBackupState.lastCloudBackup ?: stringResource(
                         id = R.string.common_none
                     )
                 ),
@@ -781,6 +802,21 @@ fun BackupStatusCardPreview() {
 
 @Preview(showBackground = true)
 @Composable
+fun ManualBackupStatusCardPreview() {
+    RadixWalletPreviewTheme {
+        ManualBackupCard(
+            cloudBackupState = CloudBackupState.Disabled(
+                email = "my cool email",
+                lastCloudBackupTime = null,
+                lastManualBackupTime = InstantGenerator()
+            ),
+            onFileBackupClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 fun LoggedInStatusPreview() {
     RadixWalletPreviewTheme {
         LoggedInStatus(
@@ -833,7 +869,8 @@ fun BackupScreenOffPreview() {
             state = BackupViewModel.State(
                 cloudBackupState = CloudBackupState.Disabled(
                     email = "my cool email",
-                    lastCloudBackupTime = TimestampGenerator()
+                    lastCloudBackupTime = TimestampGenerator(),
+                    lastManualBackupTime = InstantGenerator()
                 )
             ),
             onBackupCheckChanged = {},

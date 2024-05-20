@@ -6,7 +6,7 @@ import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import rdx.works.core.domain.cloudbackup.LastBackupEvent
+import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import java.time.Instant
 
@@ -17,7 +17,9 @@ class FakePreferenceManager : PreferencesManager {
     private val _lastNPSSurveyInstant = MutableStateFlow<Instant?>(null)
     override val surveyUuid: Flow<String>
         get() = TODO("Not yet implemented")
-    override val lastCloudBackupEvent: Flow<LastBackupEvent?>
+    override val lastCloudBackupEvent: Flow<LastCloudBackupEvent?>
+        get() = TODO("Not yet implemented")
+    override val lastManualBackupInstant: Flow<Instant?>
         get() = TODO("Not yet implemented")
     override val firstPersonaCreated: Flow<Boolean>
         get() = TODO("Not yet implemented")
@@ -37,11 +39,11 @@ class FakePreferenceManager : PreferencesManager {
     override val lastSyncedAccountsWithCE: Flow<String?>
         get() = TODO("Not yet implemented")
 
-    override suspend fun updateLastBackupEvent(lastBackupEvent: LastBackupEvent) {
+    override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun removeLastCloudBackupEvent() {
+    override suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant) {
         TODO("Not yet implemented")
     }
 

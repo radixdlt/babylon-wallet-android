@@ -13,7 +13,7 @@ import okhttp3.internal.http.HTTP_FORBIDDEN
 import okhttp3.internal.http.HTTP_NOT_FOUND
 import okhttp3.internal.http.HTTP_UNAUTHORIZED
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
-import rdx.works.core.domain.cloudbackup.LastBackupEvent
+import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.flatMapError
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
@@ -93,8 +93,8 @@ class DriveClientImpl @Inject constructor(
             profile = profile
         )
     }.onSuccess { entity ->
-        preferencesManager.updateLastBackupEvent(
-            LastBackupEvent(
+        preferencesManager.updateLastCloudBackupEvent(
+            LastCloudBackupEvent(
                 fileId = entity.id,
                 profileModifiedTime = profile.header.lastModified,
                 cloudBackupTime = entity.lastUsedOnDeviceModified
@@ -142,8 +142,8 @@ class DriveClientImpl @Inject constructor(
 
             CloudBackupFileEntity(copiedFile)
         }.onSuccess { entity ->
-            preferencesManager.updateLastBackupEvent(
-                LastBackupEvent(
+            preferencesManager.updateLastCloudBackupEvent(
+                LastCloudBackupEvent(
                     fileId = entity.id,
                     profileModifiedTime = profileModifiedTime,
                     cloudBackupTime = entity.lastUsedOnDeviceModified

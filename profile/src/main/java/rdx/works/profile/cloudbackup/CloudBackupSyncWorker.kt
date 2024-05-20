@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rdx.works.core.domain.ProfileState
-import rdx.works.core.domain.cloudbackup.LastBackupEvent
+import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.ApplicationScope
@@ -64,8 +64,8 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
             ).fold(
                 onSuccess = { file ->
                     Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
-                    preferencesManager.updateLastBackupEvent(
-                        LastBackupEvent(
+                    preferencesManager.updateLastCloudBackupEvent(
+                        LastCloudBackupEvent(
                             fileId = file.id,
                             profileModifiedTime = profile.header.lastModified,
                             cloudBackupTime = file.lastUsedOnDeviceModified
