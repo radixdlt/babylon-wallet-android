@@ -65,7 +65,7 @@ fun LinkedConnectorsScreen(
     LaunchedEffect(Unit) {
         addLinkConnectorViewModel.oneOffEvent.collect { event ->
             when (event) {
-                AddLinkConnectorViewModel.Event.Close -> viewModel.onNewConnectorCloseClick()
+                is AddLinkConnectorViewModel.Event.Close -> viewModel.onNewConnectorCloseClick()
             }
         }
     }

@@ -70,6 +70,20 @@ fun ChooseLedgerScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        addLinkConnectorViewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is AddLinkConnectorViewModel.Event.Close -> {
+                    if (event.isConnectionEstablished) {
+                        viewModel.onNewLinkedConnectorAdded()
+                    } else {
+                        viewModel.onCloseClick()
+                    }
+                }
+            }
+        }
+    }
+
     val promptState = state.showLinkConnectorPromptState
     if (promptState is ShowLinkConnectorPromptState.Show) {
         BasicPromptAlertDialog(
@@ -124,14 +138,8 @@ fun ChooseLedgerScreen(
                 state = addLinkConnectorState,
                 onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                 onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-                onContinueClick = {
-                    addLinkConnectorViewModel.onContinueClick()
-                    viewModel.onNewLinkedConnectorAdded()
-                },
-                onCloseClick = {
-                    addLinkConnectorViewModel.onCloseClick()
-                    viewModel.onCloseClick()
-                },
+                onContinueClick = addLinkConnectorViewModel::onContinueClick,
+                onCloseClick = addLinkConnectorViewModel::onCloseClick,
                 onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss
             )
         }

@@ -108,11 +108,11 @@ class AddLinkConnectorViewModel @Inject constructor(
     }
 
     fun onCloseClick() {
-        exitLinking()
+        exitLinking(false)
     }
 
     fun onErrorDismiss() {
-        exitLinking()
+        exitLinking(false)
     }
 
     private fun establishLinkConnection(operation: suspend () -> Result<Unit>) {
@@ -127,23 +127,31 @@ class AddLinkConnectorViewModel @Inject constructor(
                         )
                     )
                 }
+                exitLinking(false)
+            }.onSuccess {
+                exitLinking(true)
             }
-
-            exitLinking()
         }
     }
 
-    private fun exitLinking() {
+    private fun exitLinking(isConnectionEstablished: Boolean) {
         linkConnectionPayload = null
         _state.value = AddLinkConnectorUiState.init
 
         viewModelScope.launch {
-            sendEvent(Event.Close)
+            sendEvent(
+                Event.Close(
+                    isConnectionEstablished = isConnectionEstablished
+                )
+            )
         }
     }
 
-    internal sealed interface Event : OneOffEvent {
-        data object Close : Event
+    sealed interface Event : OneOffEvent {
+
+        data class Close(
+            val isConnectionEstablished: Boolean
+        ) : Event
     }
 }
 

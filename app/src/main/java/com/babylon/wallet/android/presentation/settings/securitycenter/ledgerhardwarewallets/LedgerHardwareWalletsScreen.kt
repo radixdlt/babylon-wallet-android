@@ -19,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -88,6 +89,21 @@ fun LedgerHardwareWalletsScreen(
             confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
         )
     }
+
+    LaunchedEffect(Unit) {
+        addLinkConnectorViewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is AddLinkConnectorViewModel.Event.Close -> {
+                    if (event.isConnectionEstablished) {
+                        viewModel.disableAddLedgerButtonUntilConnectionIsEstablished()
+                    } else {
+                        viewModel.onNewConnectorCloseClick()
+                    }
+                }
+            }
+        }
+    }
+
     Box(
         modifier = modifier
     ) {
@@ -136,14 +152,8 @@ fun LedgerHardwareWalletsScreen(
                     state = addLinkConnectorState,
                     onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                     onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-                    onContinueClick = {
-                        addLinkConnectorViewModel.onContinueClick()
-                        viewModel.disableAddLedgerButtonUntilConnectionIsEstablished()
-                    },
-                    onCloseClick = {
-                        addLinkConnectorViewModel.onCloseClick()
-                        viewModel.onNewConnectorCloseClick()
-                    },
+                    onContinueClick = addLinkConnectorViewModel::onContinueClick,
+                    onCloseClick = addLinkConnectorViewModel::onCloseClick,
                     onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss
                 )
             }
