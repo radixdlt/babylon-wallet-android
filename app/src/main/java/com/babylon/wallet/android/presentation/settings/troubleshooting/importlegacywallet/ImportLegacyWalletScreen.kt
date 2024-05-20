@@ -125,6 +125,21 @@ fun ImportLegacyWalletScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        addLinkConnectorViewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is AddLinkConnectorViewModel.Event.Close -> {
+                    if (event.isLinkedConnectorAdded) {
+                        viewModel.onNewConnectorAdded()
+                    } else {
+                        viewModel.onNewConnectorCloseClick()
+                    }
+                }
+            }
+        }
+    }
+
     ImportLegacyWalletContent(
         modifier = modifier,
         onBackClick = viewModel::onBackClick,
@@ -163,14 +178,8 @@ fun ImportLegacyWalletScreen(
         addLinkConnectorState = addLinkConnectorState,
         onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
         onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-        onNewConnectorContinueClick = {
-            addLinkConnectorViewModel.onContinueClick()
-            viewModel.onNewConnectorAdded()
-        },
-        onNewConnectorCloseClick = {
-            addLinkConnectorViewModel.onCloseClick()
-            viewModel.onNewConnectorCloseClick()
-        },
+        onNewConnectorContinueClick = addLinkConnectorViewModel::onContinueClick,
+        onNewConnectorCloseClick = addLinkConnectorViewModel::onCloseClick,
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
