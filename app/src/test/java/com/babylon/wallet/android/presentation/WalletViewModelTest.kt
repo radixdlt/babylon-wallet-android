@@ -27,6 +27,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.domain.assets.Assets
@@ -84,7 +85,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         super.setUp()
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
-        every { getCloudBackupStateUseCase() } returns flowOf(CloudBackupState.Disabled(email = "email", lastCloudBackupTime = TimestampGenerator()))
+        every { getCloudBackupStateUseCase() } returns flowOf(CloudBackupState.Disabled(email = "email", lastCloudBackupTime = TimestampGenerator(), lastManualBackupTime = InstantGenerator()))
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
