@@ -105,8 +105,6 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
     )
 
     private fun ledgerMessengerFake() = object : LedgerMessenger {
-        override val isAnyLinkedConnectorConnected: Flow<Boolean>
-            get() = TODO("Not yet implemented")
 
         override suspend fun sendDeviceInfoRequest(
             interactionId: String
