@@ -7,16 +7,16 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import rdx.works.profile.cloudbackup.DriveClient
+import rdx.works.profile.cloudbackup.CloudBackupErrorStream
 import javax.inject.Inject
 
 @HiltViewModel
 class ClaimedByAnotherDeviceViewModel @Inject constructor(
-    private val driveClient: DriveClient
+    private val cloudBackupErrorStream: CloudBackupErrorStream
 ) : ViewModel(), OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
 
     fun onModalAcknowledged() = viewModelScope.launch {
-        driveClient.resetErrors()
+        cloudBackupErrorStream.resetErrors()
         sendEvent(Event.ResetToOnboarding)
     }
 

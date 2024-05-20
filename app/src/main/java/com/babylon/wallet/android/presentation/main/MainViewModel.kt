@@ -40,7 +40,7 @@ import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.cloudbackup.BackupServiceException.ClaimedByAnotherDevice
-import rdx.works.profile.cloudbackup.DriveClient
+import rdx.works.profile.cloudbackup.CloudBackupErrorStream
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -64,7 +64,7 @@ class MainViewModel @Inject constructor(
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
-    private val driveClient: DriveClient,
+    private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val checkBackupStateWithCloudUseCase: CheckBackupStateWithCloudUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
@@ -114,7 +114,7 @@ class MainViewModel @Inject constructor(
             combine(
                 getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown,
-                driveClient.backupErrors
+                cloudBackupErrorStream.errors
             ) { profileState, isDeviceRootedDialogShown, backupError ->
                 _state.update {
                     MainUiState(

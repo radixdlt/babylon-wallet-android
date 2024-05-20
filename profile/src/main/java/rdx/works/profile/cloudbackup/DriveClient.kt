@@ -8,9 +8,6 @@ import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import okhttp3.internal.http.HTTP_FORBIDDEN
 import okhttp3.internal.http.HTTP_NOT_FOUND
@@ -30,10 +27,6 @@ import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 
 interface DriveClient {
-
-    val backupErrors: StateFlow<BackupServiceException?>
-
-    fun resetErrors()
 
     suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
@@ -89,12 +82,6 @@ class DriveClientImpl @Inject constructor(
         "appProperties"
     ).joinToString(prefix = "files(", postfix = ")", separator = ",")
 
-    override val backupErrors: MutableStateFlow<BackupServiceException?> = MutableStateFlow(null)
-
-    override fun resetErrors() {
-        backupErrors.update { null }
-    }
-
     override suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
         profile: Profile
@@ -105,10 +92,6 @@ class DriveClientImpl @Inject constructor(
             googleDriveFileId = googleDriveFileId,
             profile = profile
         )
-    }.onFailure { error ->
-        if (error is BackupServiceException) {
-            backupErrors.update { error }
-        }
     }.onSuccess { entity ->
         preferencesManager.updateLastBackupEvent(
             LastBackupEvent(
@@ -117,7 +100,6 @@ class DriveClientImpl @Inject constructor(
                 cloudBackupTime = entity.lastUsedOnDeviceModified
             )
         )
-        backupErrors.update { null }
     }
 
     override suspend fun fetchCloudBackupFileEntities(): Result<List<CloudBackupFileEntity>> = withContext(ioDispatcher) {

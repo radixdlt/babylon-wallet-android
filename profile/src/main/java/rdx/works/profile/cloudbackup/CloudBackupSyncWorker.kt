@@ -46,7 +46,8 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
     @Assisted private val params: WorkerParameters,
     private val driveClient: DriveClient,
     private val profileRepository: ProfileRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val cloudBackupErrorStream: CloudBackupErrorStream
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -77,9 +78,11 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
                     return when (exception) {
                         is BackupServiceException.ClaimedByAnotherDevice -> {
                             profileRepository.clearAllWalletData()
+                            cloudBackupErrorStream.onError(exception)
                             Result.failure()
                         }
                         is BackupServiceException.UnauthorizedException -> {
+                            cloudBackupErrorStream.onError(exception)
                             Result.failure()
                         }
                         else -> {
@@ -87,6 +90,9 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
                                 Timber.tag("CloudBackup").w(exception, "Retry: $runAttemptCount")
                                 Result.retry()
                             } else {
+                                if (exception is BackupServiceException) {
+                                    cloudBackupErrorStream.onError(exception)
+                                }
                                 Result.failure()
                             }
                         }
