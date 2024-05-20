@@ -18,10 +18,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import rdx.works.core.domain.ProfileState
 import rdx.works.core.domain.cloudbackup.LastBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
@@ -48,7 +50,10 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val profile = profileRepository.inMemoryProfileOrNull
+        val profileState = profileRepository.profileState.filterNot {
+            it is ProfileState.NotInitialised
+        }.first()
+        val profile = (profileState as? ProfileState.Restored)?.profile
         val lastBackupEvent = preferencesManager.lastCloudBackupEvent.first()
 
         return if (profile != null) {
