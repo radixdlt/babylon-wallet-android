@@ -44,67 +44,11 @@ import javax.inject.Singleton
 internal class CloudBackupSyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted private val params: WorkerParameters,
-    private val driveClient: DriveClient,
-    private val profileRepository: ProfileRepository,
-    private val preferencesManager: PreferencesManager,
-    private val cloudBackupErrorStream: CloudBackupErrorStream
+    private val executeBackupUseCase: ExecuteBackupUseCase
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val profileState = profileRepository.profileState.filterNot {
-            it is ProfileState.NotInitialised
-        }.first()
-        val profile = (profileState as? ProfileState.Restored)?.profile
-        val lastBackupEvent = preferencesManager.lastCloudBackupEvent.first()
-
-        return if (profile != null) {
-            driveClient.backupProfile(
-                googleDriveFileId = lastBackupEvent?.fileId,
-                profile = profile
-            ).fold(
-                onSuccess = { file ->
-                    Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
-                    preferencesManager.updateLastCloudBackupEvent(
-                        LastCloudBackupEvent(
-                            fileId = file.id,
-                            profileModifiedTime = profile.header.lastModified,
-                            cloudBackupTime = file.lastUsedOnDeviceModified
-                        )
-                    )
-                    Result.success()
-                },
-                onFailure = { exception ->
-                    return when (exception) {
-                        is BackupServiceException.ClaimedByAnotherDevice -> {
-                            profileRepository.clearAllWalletData()
-                            cloudBackupErrorStream.onError(exception)
-                            Timber.tag("CloudBackup").w(exception, "❌")
-                            Result.failure()
-                        }
-                        is BackupServiceException.UnauthorizedException -> {
-                            cloudBackupErrorStream.onError(exception)
-                            Timber.tag("CloudBackup").w(exception, "❌")
-                            Result.failure()
-                        }
-                        else -> {
-                            if (runAttemptCount < 3) {
-                                Timber.tag("CloudBackup").w(exception, "❌ Retry: $runAttemptCount")
-                                Result.retry()
-                            } else {
-                                Timber.tag("CloudBackup").w(exception, "❌")
-                                if (exception is BackupServiceException) {
-                                    cloudBackupErrorStream.onError(exception)
-                                }
-                                Result.failure()
-                            }
-                        }
-                    }
-                }
-            )
-        } else {
-            Timber.tag("CloudBackup").d("❌ No profile snapshot")
-            Result.failure()
-        }
+        return executeBackupUseCase(this)
     }
 }
 
