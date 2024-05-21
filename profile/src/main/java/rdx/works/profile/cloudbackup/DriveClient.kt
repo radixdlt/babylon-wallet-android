@@ -222,6 +222,11 @@ class DriveClientImpl @Inject constructor(
                                 files.any { it.profileId == profile.header.id }
                             }.fold(
                                 onSuccess = { existsOnDrive ->
+                                    if (!existsOnDrive) {
+                                        // The user has deleted the file on drive, maybe by removing all hidden files
+                                        // from google drive settings
+                                        preferencesManager.removeLastCloudBackupEvent()
+                                    }
                                     Result.failure(if (existsOnDrive) BackupServiceException.ClaimedByAnotherDevice else error)
                                 },
                                 onFailure = {

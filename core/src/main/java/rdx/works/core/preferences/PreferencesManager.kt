@@ -46,6 +46,8 @@ interface PreferencesManager {
 
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
+    suspend fun removeLastCloudBackupEvent()
+
     suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant)
 
     suspend fun markFirstPersonaCreated()
@@ -110,6 +112,12 @@ class PreferencesManagerImpl @Inject constructor(
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_CLOUD_BACKUP_EVENT] = Json.encodeToString(lastCloudBackupEvent)
+        }
+    }
+
+    override suspend fun removeLastCloudBackupEvent() {
+        dataStore.edit { preferences ->
+            preferences.remove(KEY_LAST_CLOUD_BACKUP_EVENT)
         }
     }
 

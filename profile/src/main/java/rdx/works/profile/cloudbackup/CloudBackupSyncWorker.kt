@@ -74,22 +74,24 @@ internal class CloudBackupSyncWorker @AssistedInject constructor(
                     Result.success()
                 },
                 onFailure = { exception ->
-                    Timber.tag("CloudBackup").w(exception, "❌")
                     return when (exception) {
                         is BackupServiceException.ClaimedByAnotherDevice -> {
                             profileRepository.clearAllWalletData()
                             cloudBackupErrorStream.onError(exception)
+                            Timber.tag("CloudBackup").w(exception, "❌")
                             Result.failure()
                         }
                         is BackupServiceException.UnauthorizedException -> {
                             cloudBackupErrorStream.onError(exception)
+                            Timber.tag("CloudBackup").w(exception, "❌")
                             Result.failure()
                         }
                         else -> {
                             if (runAttemptCount < 3) {
-                                Timber.tag("CloudBackup").w(exception, "Retry: $runAttemptCount")
+                                Timber.tag("CloudBackup").w(exception, "❌ Retry: $runAttemptCount")
                                 Result.retry()
                             } else {
+                                Timber.tag("CloudBackup").w(exception, "❌")
                                 if (exception is BackupServiceException) {
                                     cloudBackupErrorStream.onError(exception)
                                 }
