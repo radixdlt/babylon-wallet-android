@@ -26,11 +26,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.ProfileState
 import rdx.works.core.generateX25519KeyPair
 import rdx.works.core.generateX25519SharedSecret
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.domain.GetProfileStateUseCase
+import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -42,7 +41,7 @@ class MobileConnectViewModel @Inject constructor(
     private val rcrRepository: RcrRepository,
     private val dappLinkRepository: DappLinkRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val profileStateUseCase: GetProfileStateUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
 ) : StateViewModel<State>(), OneOffEventHandler<MobileConnectViewModel.Event> by OneOffEventHandlerImpl() {
@@ -55,8 +54,7 @@ class MobileConnectViewModel @Inject constructor(
     init {
         observeAutoLink()
         viewModelScope.launch {
-            val profileState = profileStateUseCase().firstOrNull()
-            val profileInitialized = profileState is ProfileState.Restored && profileState.hasNetworks()
+            val profileInitialized = getProfileUseCase.isInitialized()
             if (!profileInitialized) {
                 _state.update {
                     it.copy(isProfileInitialized = false)
@@ -102,7 +100,7 @@ class MobileConnectViewModel @Inject constructor(
                         delay(Constants.SNACKBAR_SHOW_DURATION_MS)
                         sendEvent(Event.Close)
                     }
-                    if (_state.value.autoLink && _state.value.canLink) {
+                    if (_state.value.autoLink && _state.value.canLink && _state.value.dAppDefinition?.dAppDefinitionAddress?.string != null) {
                         linkWithDapp(withDelay = true)
                     }
                 }
@@ -126,6 +124,7 @@ class MobileConnectViewModel @Inject constructor(
         }
     }
 
+    @Suppress("MagicNumber")
     private suspend fun linkWithDapp(withDelay: Boolean = false) {
         _state.update {
             it.copy(isLinking = true)
@@ -158,7 +157,8 @@ class MobileConnectViewModel @Inject constructor(
                             Constants.RadixMobileConnect.CONNECT_URL_PARAM_PUBLIC_KEY,
                             publicKeyHex
                         )
-                    }.build().toString(), args.browser
+                    }.build().toString(),
+                    args.browser
                 )
             )
             _state.update {
@@ -185,7 +185,16 @@ class MobileConnectViewModel @Inject constructor(
 
     fun onLinkWithDapp() {
         viewModelScope.launch {
-            linkWithDapp()
+            if (_state.value.canLink) {
+                linkWithDapp()
+            } else {
+                _state.update {
+                    it.copy(
+                        uiMessage = UiMessage.ErrorMessage(IllegalStateException("No dAppDefinition found for dApp")),
+                        isLinking = false
+                    )
+                }
+            }
         }
     }
 
@@ -208,5 +217,4 @@ data class State(
 ) : UiState {
     val canLink: Boolean
         get() = dApp != null && dAppDefinition != null
-
 }

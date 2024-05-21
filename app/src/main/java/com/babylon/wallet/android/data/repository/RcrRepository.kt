@@ -27,7 +27,7 @@ class RcrRepositoryImpl @Inject constructor(
     private val dappLinkRepository: DappLinkRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 
-    ) : RcrRepository {
+) : RcrRepository {
 
     override suspend fun getRequest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
@@ -45,7 +45,7 @@ class RcrRepositoryImpl @Inject constructor(
         val encryptedData = data.toByteArray().encrypt(dappLink.secret.decodeHex()).getOrThrow().toHexString()
         api.executeRequest(RcrRequest.SendResponse(sessionId, encryptedData)).toResult().onSuccess {
             dappLinkRepository.persistDappLinkForSessionId(sessionId)
-        }.map {  }
+        }.map { }
     }
 
     override suspend fun sendHandshakeResponse(sessionId: String, publicKeyHex: String) = withContext(ioDispatcher) {
@@ -57,5 +57,4 @@ class RcrRepositoryImpl @Inject constructor(
             it.publicKeyHex
         }
     }
-
 }

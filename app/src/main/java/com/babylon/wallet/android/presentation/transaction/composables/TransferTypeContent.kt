@@ -63,7 +63,9 @@ fun TransactionPreviewTypePreview() {
         TransferTypeContent(
             state = TransactionReviewViewModel.State(
                 request = IncomingMessage.IncomingRequest.TransactionRequest(
-                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc"),
+                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(
+                        "b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc"
+                    ),
                     interactionId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
                     transactionManifestData = TransactionManifestData(
                         instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",

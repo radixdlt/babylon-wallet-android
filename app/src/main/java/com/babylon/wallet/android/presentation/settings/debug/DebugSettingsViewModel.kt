@@ -62,5 +62,3 @@ class DebugSettingsViewModel @Inject constructor(
         return State()
     }
 }
-
-

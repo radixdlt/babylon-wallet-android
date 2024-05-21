@@ -73,13 +73,13 @@ sealed interface IncomingMessage {
 
             fun needSignatures(): Boolean {
                 return authRequest is AuthRequest.LoginRequest.WithChallenge ||
-                        ongoingAccountsRequestItem?.challenge != null ||
-                        oneTimeAccountsRequestItem?.challenge != null
+                    ongoingAccountsRequestItem?.challenge != null ||
+                    oneTimeAccountsRequestItem?.challenge != null
             }
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             private fun isUsePersonaAuth(): Boolean {
@@ -96,12 +96,12 @@ sealed interface IncomingMessage {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
-                        oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
+                    oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
