@@ -146,7 +146,9 @@ private fun SecurityCenterContent(
             }
             SecurityFactorsCard(
                 onSecurityFactorsClick = onSecurityFactorsClick,
-                needsAction = state.securityProblems?.isNotEmpty() == true
+                needsAction = state.securityProblems?.any {
+                    it is SecurityProblem.EntitiesNeedRecovery || it is SecurityProblem.EntitiesNotRecoverable
+                } == true
             )
             BackupConfigurationCard(
                 needsAction = state.securityProblems?.contains(SecurityProblem.BackupNotWorking) == true,
@@ -362,7 +364,7 @@ fun SecurityProblem.toProblemHeading(): String {
 
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterContentPreviewAllOk() {
+fun SecurityCenterNoProblemsPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
@@ -380,12 +382,53 @@ fun SecurityCenterContentPreviewAllOk() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterContentPreviewAllNotOk() {
+fun SecurityCenterBackupProblemPreview() {
+    RadixWalletTheme {
+        SecurityCenterContent(
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityProblems = setOf(
+                    SecurityProblem.BackupNotWorking
+                )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SecurityCenterNeedRecoveryProblemPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
                     SecurityProblem.EntitiesNeedRecovery(FactorSource.Device.sample.invoke().id)
+                )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SecurityCenterNotRecoverableAndBackupProblemPreview() {
+    RadixWalletTheme {
+        SecurityCenterContent(
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityProblems = setOf(
+                    SecurityProblem.BackupNotWorking,
+                    SecurityProblem.EntitiesNotRecoverable(7, 2)
                 )
             ),
             onBackClick = {},
