@@ -39,6 +39,8 @@ interface DriveClient {
      */
     suspend fun fetchCloudBackupFileEntities(): Result<List<CloudBackupFileEntity>>
 
+    suspend fun getCloudBackupEntity(fileId: GoogleDriveFileId): Result<CloudBackupFileEntity>
+
     /**
      * It downloads and claims the actual backed up profile given a fileId.
      */
@@ -111,6 +113,17 @@ class DriveClientImpl @Inject constructor(
                 .execute()
                 .files
                 .map { file -> CloudBackupFileEntity(file) }
+        }.mapDriveError()
+    }
+
+    override suspend fun getCloudBackupEntity(fileId: GoogleDriveFileId): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
+        runCatching {
+            googleSignInManager
+                .getDrive()
+                .files()
+                .get(fileId.id)
+                .setFields(getFilesFields)
+                .execute().let { file -> CloudBackupFileEntity(file) }
         }.mapDriveError()
     }
 
