@@ -72,7 +72,7 @@ class DappLinkRepositoryImpl @Inject constructor(
 
     override suspend fun saveAsTemporary(link: DappLink): Result<DappLink> {
         return runCatching {
-            pendingDappLinks.removeIf { it.sessionId == link.sessionId}
+            pendingDappLinks.removeIf { it.sessionId == link.sessionId }
             pendingDappLinks.add(link)
             link
         }

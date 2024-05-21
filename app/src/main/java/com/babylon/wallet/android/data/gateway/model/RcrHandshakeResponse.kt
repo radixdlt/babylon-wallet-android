@@ -8,4 +8,3 @@ data class RcrHandshakeResponse(
     @SerialName("publicKey")
     val publicKeyHex: String
 )
-

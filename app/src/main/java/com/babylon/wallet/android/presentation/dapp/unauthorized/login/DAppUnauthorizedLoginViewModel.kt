@@ -132,7 +132,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                    == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -152,7 +152,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private fun handleRequestError(exception: Throwable) {
+    private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
             when (exception.cause) {

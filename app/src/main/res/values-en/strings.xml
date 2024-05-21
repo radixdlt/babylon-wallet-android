@@ -1197,4 +1197,7 @@
   <string name="securityProblems_common_accountPlural">%d accounts</string>
   <string name="securityProblems_common_personaSingular">1 persona</string>
   <string name="securityProblems_common_personaPlural">%d personas</string>
+\n\n
+  <string name="mobileConnect_autoConfirmTitle">Auto confirm</string>
+  <string name="mobileConnect_autoConfirmSubtitle">Auto confirm next dApp verification requests</string>
 </resources>
