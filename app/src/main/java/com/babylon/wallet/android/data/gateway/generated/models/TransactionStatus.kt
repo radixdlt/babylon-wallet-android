@@ -22,25 +22,25 @@ import kotlinx.serialization.Serializable
 /**
  * A top-level intent status, left in for backwards compatibility. It doesn't give much information. Rejected means PermanentRejection. 
  *
- * Values: unknown,committedSuccess,committedFailure,pending,rejected
+ * Values: Unknown,CommittedSuccess,CommittedFailure,Pending,Rejected
  */
 @Serializable
 enum class TransactionStatus(val value: kotlin.String) {
 
     @SerialName(value = "Unknown")
-    unknown("Unknown"),
+    Unknown("Unknown"),
 
     @SerialName(value = "CommittedSuccess")
-    committedSuccess("CommittedSuccess"),
+    CommittedSuccess("CommittedSuccess"),
 
     @SerialName(value = "CommittedFailure")
-    committedFailure("CommittedFailure"),
+    CommittedFailure("CommittedFailure"),
 
     @SerialName(value = "Pending")
-    pending("Pending"),
+    Pending("Pending"),
 
     @SerialName(value = "Rejected")
-    rejected("Rejected");
+    Rejected("Rejected");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

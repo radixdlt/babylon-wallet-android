@@ -58,8 +58,8 @@ data class ValidatorCollectionItem (
     val pendingOwnerStakeUnitUnlockVault: ValidatorVaultItem,
 
     /* Validator inner state representation. This type is defined in the Core API as `ValidatorFieldStateValue`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "state")
-    val state: kotlin.Any?,
+//    @Contextual @SerialName(value = "state")
+//    val state: kotlin.Any?,
 
     @SerialName(value = "metadata")
     val metadata: EntityMetadataCollection,

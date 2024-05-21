@@ -5,7 +5,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
+import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.state.StateRepository

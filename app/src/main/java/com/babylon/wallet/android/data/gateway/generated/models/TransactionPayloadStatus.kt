@@ -22,31 +22,31 @@ import kotlinx.serialization.Serializable
 /**
  * A more specific payload status. See the description field for further information. 
  *
- * Values: unknown,committedSuccess,committedFailure,commitPendingOutcomeUnknown,permanentlyRejected,temporarilyRejected,pending
+ * Values: Unknown,CommittedSuccess,CommittedFailure,CommitPendingOutcomeUnknown,PermanentlyRejected,TemporarilyRejected,Pending
  */
 @Serializable
 enum class TransactionPayloadStatus(val value: kotlin.String) {
 
     @SerialName(value = "Unknown")
-    unknown("Unknown"),
+    Unknown("Unknown"),
 
     @SerialName(value = "CommittedSuccess")
-    committedSuccess("CommittedSuccess"),
+    CommittedSuccess("CommittedSuccess"),
 
     @SerialName(value = "CommittedFailure")
-    committedFailure("CommittedFailure"),
+    CommittedFailure("CommittedFailure"),
 
     @SerialName(value = "CommitPendingOutcomeUnknown")
-    commitPendingOutcomeUnknown("CommitPendingOutcomeUnknown"),
+    CommitPendingOutcomeUnknown("CommitPendingOutcomeUnknown"),
 
     @SerialName(value = "PermanentlyRejected")
-    permanentlyRejected("PermanentlyRejected"),
+    PermanentlyRejected("PermanentlyRejected"),
 
     @SerialName(value = "TemporarilyRejected")
-    temporarilyRejected("TemporarilyRejected"),
+    TemporarilyRejected("TemporarilyRejected"),
 
     @SerialName(value = "Pending")
-    pending("Pending");
+    Pending("Pending");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

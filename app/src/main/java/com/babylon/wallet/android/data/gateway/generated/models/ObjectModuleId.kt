@@ -22,22 +22,22 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: main,metadata,royalty,roleAssignment
+ * Values: Main,Metadata,Royalty,RoleAssignment
  */
 @Serializable
 enum class ObjectModuleId(val value: kotlin.String) {
 
     @SerialName(value = "Main")
-    main("Main"),
+    Main("Main"),
 
     @SerialName(value = "Metadata")
-    metadata("Metadata"),
+    Metadata("Metadata"),
 
     @SerialName(value = "Royalty")
-    royalty("Royalty"),
+    Royalty("Royalty"),
 
     @SerialName(value = "RoleAssignment")
-    roleAssignment("RoleAssignment");
+    RoleAssignment("RoleAssignment");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

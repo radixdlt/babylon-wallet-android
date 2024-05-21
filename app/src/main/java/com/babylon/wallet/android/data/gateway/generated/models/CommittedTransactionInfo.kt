@@ -20,7 +20,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
-import com.babylon.wallet.android.data.gateway.serialisers.StateEntityDetailsResponseItemDetailsSerializer
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -110,3 +109,4 @@ data class CommittedTransactionInfo (
     val balanceChanges: TransactionBalanceChanges? = null
 
 )
+

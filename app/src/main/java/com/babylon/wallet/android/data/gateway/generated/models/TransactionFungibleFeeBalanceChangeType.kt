@@ -22,22 +22,22 @@ import kotlinx.serialization.Serializable
 /**
  * Indicates fee-related balance changes, for example:  - payment of the fee including tip and royalty, - distribution of royalties, - distribution of the fee and tip to the consensus-manager, for distributing to the relevant validator/s at end of epoch.  See https://www.radixdlt.com/blog/how-fees-work-in-babylon for further information on how fee payment works at Babylon. 
  *
- * Values: feePayment,feeDistributed,tipDistributed,royaltyDistributed
+ * Values: FeePayment,FeeDistributed,TipDistributed,RoyaltyDistributed
  */
 @Serializable
 enum class TransactionFungibleFeeBalanceChangeType(val value: kotlin.String) {
 
     @SerialName(value = "FeePayment")
-    feePayment("FeePayment"),
+    FeePayment("FeePayment"),
 
     @SerialName(value = "FeeDistributed")
-    feeDistributed("FeeDistributed"),
+    FeeDistributed("FeeDistributed"),
 
     @SerialName(value = "TipDistributed")
-    tipDistributed("TipDistributed"),
+    TipDistributed("TipDistributed"),
 
     @SerialName(value = "RoyaltyDistributed")
-    royaltyDistributed("RoyaltyDistributed");
+    RoyaltyDistributed("RoyaltyDistributed");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

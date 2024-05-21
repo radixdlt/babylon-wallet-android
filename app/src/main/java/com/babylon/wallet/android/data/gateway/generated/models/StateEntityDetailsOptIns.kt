@@ -24,6 +24,7 @@ import kotlinx.serialization.Contextual
  * Check detailed [OptIns](#section/Using-endpoints-with-opt-in-features) documentation for more details
  *
  * @param ancestorIdentities if set to `true`, ancestor addresses - `parent_address`, `owner_address` and `global_address` for entities are returned.
+ * @param componentRoyaltyConfig if set to `true`, `royalty_config` for component entities is returned.
  * @param componentRoyaltyVaultBalance if set to `true`, `royalty_vault_balance` for component entities is returned.
  * @param packageRoyaltyVaultBalance if set to `true`, `royalty_vault_balance` for package entities is returned.
  * @param nonFungibleIncludeNfids if set to `true`, first page of non fungible ids are returned for each non fungible resource, with `next_cursor` which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint.
@@ -36,6 +37,10 @@ data class StateEntityDetailsOptIns (
     /* if set to `true`, ancestor addresses - `parent_address`, `owner_address` and `global_address` for entities are returned. */
     @SerialName(value = "ancestor_identities")
     val ancestorIdentities: kotlin.Boolean? = false,
+
+    /* if set to `true`, `royalty_config` for component entities is returned. */
+    @SerialName(value = "component_royalty_config")
+    val componentRoyaltyConfig: kotlin.Boolean? = false,
 
     /* if set to `true`, `royalty_vault_balance` for component entities is returned. */
     @SerialName(value = "component_royalty_vault_balance")

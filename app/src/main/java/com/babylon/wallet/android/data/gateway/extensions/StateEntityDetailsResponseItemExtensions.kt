@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.gateway.extensions
 
-import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRule
+import com.babylon.wallet.android.data.gateway.coreapi.DefaultDepositRule
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.radixdlt.sargon.DepositRule
