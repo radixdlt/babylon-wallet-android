@@ -22,6 +22,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.RadixConnectPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +30,9 @@ import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.shareIn
@@ -68,8 +71,15 @@ class MainViewModel @Inject constructor(
     private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
 
-    val observeP2PLinks = p2PLinksRepository.observeP2PLinks()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val observeP2PLinks = getProfileUseCase.observeIsInitialized()
+        .filter { isInitialized -> isInitialized }
+        .flatMapLatest { p2PLinksRepository.observeP2PLinks() }
         .map { p2pLinks ->
+            if (!getProfileUseCase.isInitialized()) {
+                return@map
+            }
+
             Timber.d("found ${p2pLinks.size} p2p links")
             p2pLinks.asList().forEach { p2PLink ->
                 establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
@@ -103,6 +113,7 @@ class MainViewModel @Inject constructor(
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
+
     init {
         viewModelScope.launch {
             combine(
