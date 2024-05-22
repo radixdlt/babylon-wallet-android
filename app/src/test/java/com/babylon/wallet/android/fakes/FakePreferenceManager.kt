@@ -54,6 +54,14 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
+    override suspend fun isUsingDeprecatedCloudBackup(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun clearDeprecatedCloudBackupIndicator() {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun markFirstPersonaCreated() {
         TODO("Not yet implemented")
     }

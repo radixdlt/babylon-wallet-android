@@ -39,6 +39,7 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
@@ -53,6 +54,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
+    private val checkMigrationToNewBackupSystemUseCase = mockk<CheckMigrationToNewBackupSystemUseCase>()
     private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val preferencesManager = mockk<PreferencesManager>()
@@ -81,7 +83,8 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         npsSurveyStateObserver,
         getCloudBackupStateUseCase,
         p2PLinksRepository,
-        testDispatcher
+        checkMigrationToNewBackupSystemUseCase,
+        testDispatcher,
     )
 
     override fun setUp() {
@@ -98,6 +101,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     @Test
     fun `when view model init, view model will fetch accounts & resources`() = runTest {
+        coEvery { checkMigrationToNewBackupSystemUseCase() } returns false
         val viewModel = vm.value
         advanceUntilIdle()
         val accounts = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty()
@@ -126,6 +130,42 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         viewModel.state.test {
             assertEquals(
                 WalletUiState(isSettingsWarningVisible = true),
+                expectMostRecentItem()
+            )
+        }
+    }
+
+    @Test
+    fun `given old cloud backup system is used, when view model init, view model show migration dialog`() = runTest {
+        coEvery { checkMigrationToNewBackupSystemUseCase() } returns true
+        val viewModel = vm.value
+        advanceUntilIdle()
+        val accounts = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty()
+        coEvery {
+            getWalletAssetsUseCase(
+                accounts = accounts,
+                isRefreshing = false
+            )
+        } returns flowOf(
+            listOf(
+                AccountWithAssets(
+                    account = accounts[0],
+                    assets = Assets(
+                        tokens = listOf(Token(sampleXrdResource)),
+                        nonFungibles = emptyList(),
+                        poolUnits = emptyList()
+                    )
+                ),
+                AccountWithAssets(
+                    account = accounts[0],
+                    assets = Assets(tokens = emptyList(), nonFungibles = emptyList())
+                )
+            )
+        )
+
+        viewModel.state.test {
+            assertEquals(
+                WalletUiState(isSettingsWarningVisible = true, isOldBackupSystemBeingUsed = true),
                 expectMostRecentItem()
             )
         }
