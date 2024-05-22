@@ -22,16 +22,16 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: global,vault
+ * Values: Global,Vault
  */
 @Serializable
 enum class ResourceAggregationLevel(val value: kotlin.String) {
 
     @SerialName(value = "Global")
-    global("Global"),
+    Global("Global"),
 
     @SerialName(value = "Vault")
-    vault("Vault");
+    Vault("Vault");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

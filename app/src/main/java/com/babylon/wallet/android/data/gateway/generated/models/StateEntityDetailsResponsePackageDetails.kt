@@ -15,12 +15,13 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.EntitySchemaCollection
+import com.babylon.wallet.android.data.gateway.generated.models.PackageBlueprintCollection
+import com.babylon.wallet.android.data.gateway.generated.models.PackageCodeCollection
 import com.babylon.wallet.android.data.gateway.generated.models.PackageVmType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsBlueprintCollection
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsCodeCollection
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsSchemaCollection
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -37,6 +38,7 @@ import kotlinx.serialization.Contextual
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  * @param blueprints 
  * @param schemas 
+ * @param roleAssignments 
  */
 @Serializable
 
@@ -46,7 +48,7 @@ data class StateEntityDetailsResponsePackageDetails (
     override val type: StateEntityDetailsResponseItemDetailsType,
 
     @SerialName(value = "codes")
-    val codes: StateEntityDetailsResponsePackageDetailsCodeCollection,
+    val codes: PackageCodeCollection,
 
     @Contextual @SerialName(value = "vm_type")
     val vmType: PackageVmType,
@@ -64,10 +66,13 @@ data class StateEntityDetailsResponsePackageDetails (
     val royaltyVaultBalance: kotlin.String? = null,
 
     @SerialName(value = "blueprints")
-    val blueprints: StateEntityDetailsResponsePackageDetailsBlueprintCollection? = null,
+    val blueprints: PackageBlueprintCollection? = null,
 
     @SerialName(value = "schemas")
-    val schemas: StateEntityDetailsResponsePackageDetailsSchemaCollection? = null
+    val schemas: EntitySchemaCollection? = null,
+
+    @SerialName(value = "role_assignments")
+    val roleAssignments: ComponentEntityRoleAssignments? = null
 
 ) : StateEntityDetailsResponseItemDetails()
 

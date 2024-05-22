@@ -24,10 +24,15 @@ internal class LinkedConnectorsScreenArgs(
 }
 
 fun NavController.linkedConnectorsScreen(
-    shouldShowAddLinkConnectorScreen: Boolean = false
+    shouldShowAddLinkConnectorScreen: Boolean = false,
+    popUpToRoute: String? = null,
+    popUpInclusive: Boolean = true
 ) {
     navigate("$ROUTE/$shouldShowAddLinkConnectorScreen") {
         launchSingleTop = true
+        popUpToRoute?.let {
+            popBackStack(it, popUpInclusive)
+        }
     }
 }
 

@@ -30,8 +30,8 @@ import kotlinx.serialization.Contextual
  * @param keyKind 
  * @param valueKind 
  * @param propertyEntries 
- * @param typeName Object type name; available only when a schema is present and the type has a name.
- * @param fieldName Field name; available only when the value is a child of a `Tuple` or `Enum`, which has a type with named fields.
+ * @param typeName The name of the type of this value. This is only output when a schema is present and the type has a name. This property is ignored when the value is used as an input to the API. 
+ * @param fieldName The name of the field which hosts this value. This property is only included if this value is a child of a `Tuple` or `Enum` with named fields. This property is ignored when the value is used as an input to the API. 
  * @param keyTypeName 
  * @param valueTypeName 
  */
@@ -51,11 +51,11 @@ data class ProgrammaticScryptoSborValueMap (
     @SerialName(value = "entries")
     val propertyEntries: kotlin.collections.List<ProgrammaticScryptoSborValueMapEntry>,
 
-    /* Object type name; available only when a schema is present and the type has a name. */
+    /* The name of the type of this value. This is only output when a schema is present and the type has a name. This property is ignored when the value is used as an input to the API.  */
     @SerialName(value = "type_name")
     override val typeName: kotlin.String? = null,
 
-    /* Field name; available only when the value is a child of a `Tuple` or `Enum`, which has a type with named fields. */
+    /* The name of the field which hosts this value. This property is only included if this value is a child of a `Tuple` or `Enum` with named fields. This property is ignored when the value is used as an input to the API.  */
     @SerialName(value = "field_name")
     override val fieldName: kotlin.String? = null,
 

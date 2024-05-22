@@ -9,12 +9,12 @@ typealias GatewayPublicKeyEcdsaSecp256k1 = com.babylon.wallet.android.data.gatew
 
 fun com.radixdlt.sargon.PublicKey.asGatewayPublicKey(): GatewayPublicKey = when (this) {
     is com.radixdlt.sargon.PublicKey.Ed25519 -> GatewayPublicKeyEddsaEd25519(
-        keyType = PublicKeyType.eddsaEd25519,
+        keyType = PublicKeyType.EddsaEd25519,
         keyHex = hex
     )
 
     is com.radixdlt.sargon.PublicKey.Secp256k1 -> GatewayPublicKeyEcdsaSecp256k1(
-        keyType = PublicKeyType.ecdsaSecp256k1,
+        keyType = PublicKeyType.EcdsaSecp256k1,
         keyHex = hex
     )
 }

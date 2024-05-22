@@ -13,8 +13,8 @@ import kotlinx.serialization.json.jsonPrimitive
 object PublicKeyHashSerializer : JsonContentPolymorphicSerializer<PublicKeyHash>(PublicKeyHash::class) {
     override fun selectDeserializer(element: JsonElement): DeserializationStrategy<PublicKeyHash> {
         return when (PublicKeyHashType.decode(element.jsonObject["key_hash_type"]?.jsonPrimitive?.content.orEmpty())) {
-            PublicKeyHashType.ecdsaSecp256k1 -> PublicKeyHashEcdsaSecp256k1.serializer()
-            PublicKeyHashType.eddsaEd25519 -> PublicKeyHashEddsaEd25519.serializer()
+            PublicKeyHashType.EcdsaSecp256k1 -> PublicKeyHashEcdsaSecp256k1.serializer()
+            PublicKeyHashType.EddsaEd25519 -> PublicKeyHashEddsaEd25519.serializer()
             else -> error("")
         }
     }

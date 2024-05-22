@@ -34,6 +34,7 @@ import kotlinx.serialization.Contextual
  * @param kindFilter Limit returned transactions by their kind. Defaults to `user`.
  * @param manifestAccountsWithdrawnFromFilter 
  * @param manifestAccountsDepositedIntoFilter 
+ * @param manifestBadgesPresentedFilter 
  * @param manifestResourcesFilter 
  * @param affectedGlobalEntitiesFilter 
  * @param eventsFilter 
@@ -71,6 +72,9 @@ data class StreamTransactionsRequest (
     @SerialName(value = "manifest_accounts_deposited_into_filter")
     val manifestAccountsDepositedIntoFilter: kotlin.collections.List<kotlin.String>? = null,
 
+    @SerialName(value = "manifest_badges_presented_filter")
+    val manifestBadgesPresentedFilter: kotlin.collections.List<kotlin.String>? = null,
+
     @SerialName(value = "manifest_resources_filter")
     val manifestResourcesFilter: kotlin.collections.List<kotlin.String>? = null,
 
@@ -101,23 +105,23 @@ data class StreamTransactionsRequest (
     /**
      * Limit returned transactions by their kind. Defaults to `user`.
      *
-     * Values: user,epochChange,all
+     * Values: User,EpochChange,All
      */
     @Serializable
     enum class KindFilter(val value: kotlin.String) {
-        @SerialName(value = "User") user("User"),
-        @SerialName(value = "EpochChange") epochChange("EpochChange"),
-        @SerialName(value = "All") all("All");
+        @SerialName(value = "User") User("User"),
+        @SerialName(value = "EpochChange") EpochChange("EpochChange"),
+        @SerialName(value = "All") All("All");
     }
     /**
      * Configures the order of returned result set. Defaults to `desc`.
      *
-     * Values: asc,desc
+     * Values: Asc,Desc
      */
     @Serializable
     enum class Order(val value: kotlin.String) {
-        @SerialName(value = "Asc") asc("Asc"),
-        @SerialName(value = "Desc") desc("Desc");
+        @SerialName(value = "Asc") Asc("Asc"),
+        @SerialName(value = "Desc") Desc("Desc");
     }
 }
 

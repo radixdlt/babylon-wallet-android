@@ -1,6 +1,7 @@
 package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.checkIfProfileJsonContainsLegacyP2PLinks
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
@@ -70,6 +71,7 @@ class ProfileRepositoryImpl @Inject constructor(
                 profileStateFlow.update { ProfileState.None }
             } else {
                 val snapshot = snapshotResult.getOrNull().orEmpty()
+                ensureP2PLinkMigrationAcknowledged(snapshot)
                 profileStateFlow.update { deriveProfileState(snapshot) }
             }
         }
@@ -128,4 +130,15 @@ class ProfileRepositoryImpl @Inject constructor(
             ProfileState.Incompatible
         }
     )
+
+    private suspend fun ensureP2PLinkMigrationAcknowledged(profileJson: String) {
+        val isP2PLinkMigrationCheckPerformed = preferencesManager.showRelinkConnectorsAfterUpdate.firstOrNull() != null
+        if (isP2PLinkMigrationCheckPerformed) {
+            return
+        }
+
+        preferencesManager.setShowRelinkConnectorsAfterUpdate(
+            show = Profile.checkIfProfileJsonContainsLegacyP2PLinks(profileJson)
+        )
+    }
 }

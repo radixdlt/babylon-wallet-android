@@ -19,8 +19,8 @@ object PublicKeySerializer :
         element: JsonElement
     ): DeserializationStrategy<PublicKey> {
         return when (element.jsonObject["key_type"]?.jsonPrimitive?.content) {
-            PublicKeyType.eddsaEd25519.value -> PublicKeyEddsaEd25519.serializer()
-            PublicKeyType.ecdsaSecp256k1.value -> PublicKeyEcdsaSecp256k1.serializer()
+            PublicKeyType.EddsaEd25519.value -> PublicKeyEddsaEd25519.serializer()
+            PublicKeyType.EcdsaSecp256k1.value -> PublicKeyEcdsaSecp256k1.serializer()
             else -> error("")
         }
     }

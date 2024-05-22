@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -48,7 +49,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Gateway
@@ -112,6 +113,7 @@ private fun GatewaysContent(
                 is SettingsEditGatewayEvent.CreateProfileOnNetwork -> {
                     onCreateProfile(it.newUrl, it.networkId)
                 }
+
                 else -> {
                     addGatewaySheetVisible(false)
                     scope.launch {
@@ -123,6 +125,7 @@ private fun GatewaysContent(
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.gateways_title),
@@ -132,7 +135,9 @@ private fun GatewaysContent(
         }
     ) { padding ->
         Column(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.Start
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -197,35 +202,33 @@ private fun GatewaysContent(
     }
 
     if (state.isAddGatewaySheetVisible) {
-        DefaultModalSheetLayout(
-            modifier = modifier,
-            sheetState = bottomSheetState,
-            wrapContent = true,
-            enableImePadding = true,
-            sheetContent = {
-                AddGatewaySheet(
-                    onAddGatewayClick = onAddGatewayClick,
-                    newUrl = state.newUrl,
-                    onNewUrlChanged = onNewUrlChanged,
-                    onClose = {
-                        addGatewaySheetVisible(false)
-                        scope.launch {
-                            bottomSheetState.hide()
-                        }
-                    },
-                    newUrlValid = state.newUrlValid,
-                    addingGateway = state.addingGateway,
-                    modifier = Modifier.navigationBarsPadding(),
-                    gatewayAddFailure = state.gatewayAddFailure
-                )
-            },
-            onDismissRequest = {
+        BottomSheetDialogWrapper(
+            addScrim = true,
+            showDragHandle = true,
+            onDismiss = {
                 addGatewaySheetVisible(false)
                 scope.launch {
                     bottomSheetState.hide()
                 }
-            }
-        )
+            },
+            showDefaultTopBar = false,
+        ) {
+            AddGatewaySheet(
+                onAddGatewayClick = onAddGatewayClick,
+                newUrl = state.newUrl,
+                onNewUrlChanged = onNewUrlChanged,
+                onClose = {
+                    addGatewaySheetVisible(false)
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }
+                },
+                newUrlValid = state.newUrlValid,
+                addingGateway = state.addingGateway,
+                modifier = Modifier.navigationBarsPadding().imePadding(),
+                gatewayAddFailure = state.gatewayAddFailure
+            )
+        }
     }
 }
 
@@ -287,6 +290,7 @@ private fun AddGatewaySheet(
                 GatewayAddFailure.ErrorWhileAdding -> stringResource(
                     id = R.string.gateways_addNewGateway_establishingConnectionErrorMessage
                 )
+
                 else -> null
             }
         )

@@ -71,7 +71,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -171,7 +171,7 @@ fun SpecificAssetsDepositsScreen(
                 sheetState.show()
             }
         },
-        modifier = Modifier
+        modifier = modifier
             .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.gray5),
@@ -181,33 +181,32 @@ fun SpecificAssetsDepositsScreen(
     )
 
     if (state.isAddAssetSheetVisible) {
-        DefaultModalSheetLayout(
-            modifier = modifier,
-            wrapContent = true,
-            sheetContent = {
-                AddAssetSheet(
-                    onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
-                    asset = state.assetExceptionToAdd,
-                    onAddAsset = {
-                        hideCallback()
-                        sharedViewModel.onAddAssetException()
-                    },
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .fillMaxWidth()
-                        .clip(RadixTheme.shapes.roundedRectTopDefault),
-                    onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
-                    onDismiss = {
-                        hideCallback()
-                    }
-                )
-            },
+        BottomSheetDialogWrapper(
+            addScrim = true,
             showDragHandle = true,
-            sheetState = sheetState,
-            onDismissRequest = {
+            onDismiss = {
                 hideCallback()
-            }
-        )
+            },
+            showDefaultTopBar = false
+        ) {
+            AddAssetSheet(
+                onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
+                asset = state.assetExceptionToAdd,
+                onAddAsset = {
+                    hideCallback()
+                    sharedViewModel.onAddAssetException()
+                },
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .imePadding()
+                    .fillMaxWidth()
+                    .clip(RadixTheme.shapes.roundedRectTopDefault),
+                onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
+                onDismiss = {
+                    hideCallback()
+                }
+            )
+        }
     }
 }
 
@@ -272,7 +271,7 @@ fun AddAssetSheet(
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetAllow),
-                    selected = asset.assetException?.exceptionRule == DepositAddressExceptionRule.ALLOW,
+                    selected = asset.rule == DepositAddressExceptionRule.ALLOW,
                     onSelected = {
                         onAssetExceptionRuleChanged(DepositAddressExceptionRule.ALLOW)
                     }
@@ -280,7 +279,7 @@ fun AddAssetSheet(
                 LabeledRadioButton(
                     modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetDeny),
-                    selected = asset.assetException?.exceptionRule == DepositAddressExceptionRule.DENY,
+                    selected = asset.rule == DepositAddressExceptionRule.DENY,
                     onSelected = {
                         onAssetExceptionRuleChanged(DepositAddressExceptionRule.DENY)
                     }
@@ -424,6 +423,7 @@ private fun SpecificAssetsDepositsContent(
                                     .fillMaxSize()
                                     .padding(RadixTheme.dimensions.paddingDefault)
                             )
+
                             allowedAssets.isEmpty() -> {
                                 Text(
                                     modifier = Modifier

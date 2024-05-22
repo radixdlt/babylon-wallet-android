@@ -19,6 +19,7 @@ import com.babylon.wallet.android.data.gateway.serialisers.StateEntityDetailsRes
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 

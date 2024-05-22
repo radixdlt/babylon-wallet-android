@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -93,6 +94,7 @@ fun AddLedgerDeviceScreen(
                     .fillMaxSize()
                     .background(RadixTheme.colors.defaultBackground)
             ) {
+                val imeController = LocalSoftwareKeyboardController.current
                 var ledgerNameValue by remember {
                     mutableStateOf("")
                 }
@@ -198,8 +200,8 @@ fun AddLedgerDeviceScreen(
                                 text = stringResource(com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_continueButtonTitle),
                                 enabled = ledgerNameValue.trim().isNotEmpty(),
                                 onClick = {
+                                    imeController?.hide()
                                     onConfirmLedgerNameClick(ledgerNameValue)
-                                    ledgerNameValue = ""
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()

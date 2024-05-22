@@ -22,31 +22,31 @@ import kotlinx.serialization.Serializable
 /**
  * A more specific intent status. See the description field for further information. Note that `CommitPendingOutcomeUnknown` can either result in `CommittedSuccess` or `CommittedFailure`. 
  *
- * Values: unknown,committedSuccess,committedFailure,commitPendingOutcomeUnknown,permanentlyRejected,likelyButNotCertainRejection,pending
+ * Values: Unknown,CommittedSuccess,CommittedFailure,CommitPendingOutcomeUnknown,PermanentlyRejected,LikelyButNotCertainRejection,Pending
  */
 @Serializable
 enum class TransactionIntentStatus(val value: kotlin.String) {
 
     @SerialName(value = "Unknown")
-    unknown("Unknown"),
+    Unknown("Unknown"),
 
     @SerialName(value = "CommittedSuccess")
-    committedSuccess("CommittedSuccess"),
+    CommittedSuccess("CommittedSuccess"),
 
     @SerialName(value = "CommittedFailure")
-    committedFailure("CommittedFailure"),
+    CommittedFailure("CommittedFailure"),
 
     @SerialName(value = "CommitPendingOutcomeUnknown")
-    commitPendingOutcomeUnknown("CommitPendingOutcomeUnknown"),
+    CommitPendingOutcomeUnknown("CommitPendingOutcomeUnknown"),
 
     @SerialName(value = "PermanentlyRejected")
-    permanentlyRejected("PermanentlyRejected"),
+    PermanentlyRejected("PermanentlyRejected"),
 
     @SerialName(value = "LikelyButNotCertainRejection")
-    likelyButNotCertainRejection("LikelyButNotCertainRejection"),
+    LikelyButNotCertainRejection("LikelyButNotCertainRejection"),
 
     @SerialName(value = "Pending")
-    pending("Pending");
+    Pending("Pending");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +66,7 @@ import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -113,29 +116,40 @@ fun BottomSheetDialogWrapper(
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
+    val draggableState = remember {
+        AnchoredDraggableState(
+            initialValue = DragState.Collapsed,
+            positionalThreshold = { distance: Float -> distance * 0.4f },
+            velocityThreshold = { with(density) { 100.dp.toPx() } },
+            animationSpec = tween(),
+            anchors = DraggableAnchors {
+                DragState.Expanded at 0f
+                DragState.Collapsed at 0f
+            }
+        )
+    }
     Box(
         modifier = modifier
             .fillMaxSize()
             .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
-            .clickable(interactionSource = interactionSource, indication = null) { onDismiss() }
+            .clickable(interactionSource = interactionSource, indication = null) {
+                scope.launch {
+                    draggableState.animateTo(DragState.Collapsed)
+                }
+            }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
             val maxHeight = with(LocalDensity.current) {
                 maxHeight.toPx()
             }
-            val density = LocalDensity.current
-            val draggableState = remember {
-                AnchoredDraggableState(
-                    initialValue = DragState.Expanded,
-                    positionalThreshold = { distance: Float -> distance * 0.4f },
-                    velocityThreshold = { with(density) { 100.dp.toPx() } },
-                    animationSpec = tween(),
-                    anchors = DraggableAnchors {
-                        DragState.Expanded at 0f
-                        DragState.Collapsed at maxHeight
-                    }
-                )
-            }
+            draggableState.updateAnchors(
+                DraggableAnchors {
+                    DragState.Expanded at 0f
+                    DragState.Collapsed at maxHeight
+                }
+            )
             LaunchedEffect(draggableState) {
                 snapshotFlow {
                     draggableState.currentValue
@@ -178,7 +192,11 @@ fun BottomSheetDialogWrapper(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
-                        onDismissRequest = onDismiss,
+                        onDismissRequest = {
+                            scope.launch {
+                                draggableState.animateTo(DragState.Collapsed)
+                            }
+                        },
                         title = title
                     )
                 }

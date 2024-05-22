@@ -50,6 +50,8 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
@@ -213,6 +215,9 @@ fun NavigationHost(
             },
             showNPSSurvey = {
                 navController.npsSurveyDialog()
+            },
+            onNavigateToRelinkConnectors = {
+                navController.relinkConnectors()
             }
         )
         account(
@@ -511,6 +516,17 @@ fun NavigationHost(
         recoveryScanComplete(
             onContinueClick = {
                 navController.popBackStack(MAIN_ROUTE, false)
+            }
+        )
+        relinkConnectors(
+            onContinueClick = { popUpToRoute ->
+                navController.linkedConnectorsScreen(
+                    shouldShowAddLinkConnectorScreen = true,
+                    popUpToRoute = popUpToRoute
+                )
+            },
+            onDismiss = {
+                navController.popBackStack()
             }
         )
     }

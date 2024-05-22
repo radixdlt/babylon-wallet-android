@@ -22,16 +22,16 @@ import kotlinx.serialization.Serializable
 /**
  * 
  *
- * Values: ecdsaSecp256k1,eddsaEd25519
+ * Values: EcdsaSecp256k1,EddsaEd25519
  */
 @Serializable
 enum class PublicKeyHashType(val value: kotlin.String) {
 
     @SerialName(value = "EcdsaSecp256k1")
-    ecdsaSecp256k1("EcdsaSecp256k1"),
+    EcdsaSecp256k1("EcdsaSecp256k1"),
 
     @SerialName(value = "EddsaEd25519")
-    eddsaEd25519("EddsaEd25519");
+    EddsaEd25519("EddsaEd25519");
 
     /**
      * Override [toString()] to avoid using the enum variable name as the value, and instead use

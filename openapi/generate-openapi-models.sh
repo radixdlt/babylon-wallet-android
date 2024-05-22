@@ -16,7 +16,7 @@ fi
 
 cd $(dirname "$0")
 INPUTDIR=$PWD
-API_SPEC="$INPUTDIR/gateway-api-schema.yml"
+API_SPEC="$INPUTDIR/gateway-api-schema.yaml"
 OUTPUTDIR="$PWD/temp_generated"
 DESTINATION="../app/src/main/java/com/babylon/wallet/android/data/gateway/generated"
 

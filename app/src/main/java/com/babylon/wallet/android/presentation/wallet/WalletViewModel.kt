@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -44,7 +45,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -77,6 +78,7 @@ class WalletViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     getCloudBackupStateUseCase: GetCloudBackupStateUseCase,
+    private val p2PLinksRepository: P2PLinksRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -110,7 +112,20 @@ class WalletViewModel @Inject constructor(
         observeProfileBackupState(getCloudBackupStateUseCase)
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
-        observeNpsSurveyState()
+        observePromptMessageStates()
+    }
+
+    private fun observePromptMessageStates() {
+        viewModelScope.launch {
+            p2PLinksRepository.showRelinkConnectors()
+                .collect { showRelinkConnectors ->
+                    if (showRelinkConnectors) {
+                        sendEvent(WalletEvent.NavigateToRelinkConnectors)
+                    } else {
+                        observeNpsSurveyState()
+                    }
+                }
+        }
     }
 
     private fun observeNpsSurveyState() {
@@ -161,7 +176,7 @@ class WalletViewModel @Inject constructor(
                     Timber.w(error)
                 }
             }
-            .onEach { accountsWithAssets ->
+            .mapLatest { accountsWithAssets ->
                 this.accountsWithAssets = accountsWithAssets
 
                 // keep the val here because the onAssetsReceived sets the refreshing to false
@@ -427,6 +442,8 @@ internal sealed interface WalletEvent : OneOffEvent {
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
 
     data object ShowNpsSurvey : WalletEvent
+
+    data object NavigateToRelinkConnectors : WalletEvent
 }
 
 data class WalletUiState(

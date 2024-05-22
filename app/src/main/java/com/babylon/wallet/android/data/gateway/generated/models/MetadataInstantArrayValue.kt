@@ -27,6 +27,7 @@ import kotlinx.serialization.Contextual
  *
  * @param type 
  * @param propertyValues 
+ * @param valuesUnixTimestampSeconds 
  */
 @Serializable
 
@@ -36,7 +37,10 @@ data class MetadataInstantArrayValue (
     override val type: MetadataValueType,
 
     @SerialName(value = "values")
-    val propertyValues: kotlin.collections.List<kotlin.String>
+    val propertyValues: kotlin.collections.List<kotlin.String>,
+
+    @SerialName(value = "values_unix_timestamp_seconds")
+    val valuesUnixTimestampSeconds: kotlin.collections.List<kotlin.String>
 
 ) : MetadataTypedValue()
 

@@ -19,8 +19,8 @@ object FungibleResourcesCollectionItemSerializer :
         element: JsonElement
     ): DeserializationStrategy<FungibleResourcesCollectionItem> {
         return when (element.jsonObject["aggregation_level"]?.jsonPrimitive?.content) {
-            ResourceAggregationLevel.global.value -> FungibleResourcesCollectionItemGloballyAggregated.serializer()
-            ResourceAggregationLevel.vault.value -> FungibleResourcesCollectionItemVaultAggregated.serializer()
+            ResourceAggregationLevel.Global.value -> FungibleResourcesCollectionItemGloballyAggregated.serializer()
+            ResourceAggregationLevel.Vault.value -> FungibleResourcesCollectionItemVaultAggregated.serializer()
             else -> error("")
         }
     }

@@ -88,7 +88,8 @@ fun WalletScreen(
     onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
-    showNPSSurvey: () -> Unit
+    showNPSSurvey: () -> Unit,
+    onNavigateToRelinkConnectors: () -> Unit,
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -118,6 +119,7 @@ fun WalletScreen(
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
                 WalletEvent.ShowNpsSurvey -> showNPSSurvey()
+                WalletEvent.NavigateToRelinkConnectors -> onNavigateToRelinkConnectors()
             }
         }
     }

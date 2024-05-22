@@ -56,7 +56,7 @@ class StreamRepositoryImpl @Inject constructor(
             runCatching {
                 streamApi.streamTransactions(
                     StreamTransactionsRequest(
-                        order = StreamTransactionsRequest.Order.asc,
+                        order = StreamTransactionsRequest.Order.Asc,
                         fromLedgerState = LedgerStateSelector(stateVersion = 1),
                         affectedGlobalEntitiesFilter = listOf(accountAddress.string),
                         limitPerPage = 1
@@ -92,15 +92,15 @@ class StreamRepositoryImpl @Inject constructor(
             atLedgerState = if (ascending) null else ledgerState,
             fromLedgerState = if (ascending) ledgerState else genesisSelector,
             order = when (filters.sortOrder) {
-                HistoryFilters.SortOrder.Asc -> StreamTransactionsRequest.Order.asc
-                HistoryFilters.SortOrder.Desc -> StreamTransactionsRequest.Order.desc
+                HistoryFilters.SortOrder.Asc -> StreamTransactionsRequest.Order.Asc
+                HistoryFilters.SortOrder.Desc -> StreamTransactionsRequest.Order.Desc
             },
             eventsFilter = filters.transactionType?.let { type ->
                 when (type) {
                     HistoryFilters.TransactionType.DEPOSIT ->
                         listOf(
                             StreamTransactionsRequestEventFilterItem(
-                                StreamTransactionsRequestEventFilterItem.Event.deposit,
+                                StreamTransactionsRequestEventFilterItem.Event.Deposit,
                                 emitterAddress = accountAddress.string
                             )
                         )
@@ -108,7 +108,7 @@ class StreamRepositoryImpl @Inject constructor(
                     HistoryFilters.TransactionType.WITHDRAWAL ->
                         listOf(
                             StreamTransactionsRequestEventFilterItem(
-                                StreamTransactionsRequestEventFilterItem.Event.withdrawal,
+                                StreamTransactionsRequestEventFilterItem.Event.Withdrawal,
                                 emitterAddress = accountAddress.string
                             )
                         )
