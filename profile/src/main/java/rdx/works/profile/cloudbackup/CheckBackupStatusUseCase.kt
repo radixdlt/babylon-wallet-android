@@ -45,6 +45,7 @@ class CheckBackupStatusUseCase @AssistedInject constructor(
                 onSuccess = {
                     Timber.tag("CloudBackup").d("\uD83D\uDEDC Check Backup Status: All good ✅")
                     // File still exists, no further action required
+                    cloudBackupErrorStream.resetErrors()
                     Result.success()
                 },
                 onFailure = { exception ->

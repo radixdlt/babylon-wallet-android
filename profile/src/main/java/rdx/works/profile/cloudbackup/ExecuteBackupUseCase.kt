@@ -45,6 +45,7 @@ class ExecuteBackupUseCase @AssistedInject constructor(
                             cloudBackupTime = file.lastUsedOnDeviceModified
                         )
                     )
+                    cloudBackupErrorStream.resetErrors()
                     Result.success()
                 },
                 onFailure = { exception ->
