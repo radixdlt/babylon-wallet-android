@@ -44,6 +44,7 @@ import rdx.works.profile.cloudbackup.CloudBackupErrorStream
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -120,7 +121,7 @@ class MainViewModel @Inject constructor(
                             profileState = profileState
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
-                        isCloudBackupClaimedByAnotherDevice = backupError is ClaimedByAnotherDevice
+                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice
                     )
                 }
             }.collect()
@@ -313,7 +314,7 @@ data class MainUiState(
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState? = null,
-    val isCloudBackupClaimedByAnotherDevice: Boolean = false
+    val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null
 ) : UiState
 
 data class OlympiaErrorState(

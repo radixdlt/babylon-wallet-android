@@ -479,9 +479,14 @@ fun NavigationHost(
                 onCloseApp = onCloseApp
             )
         }
-        claimedByAnotherDevice(onNavigateToOnboarding = {
-            navController.popBackStack(MAIN_ROUTE, false)
-        })
+        claimedByAnotherDevice(
+            onNavigateToOnboarding = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            },
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
         dappInteractionDialog(
             onBackPress = {
                 navController.popBackStack()

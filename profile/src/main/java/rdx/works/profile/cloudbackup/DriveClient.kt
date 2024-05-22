@@ -240,15 +240,21 @@ class DriveClientImpl @Inject constructor(
                     if (error.statusCode == HTTP_NOT_FOUND) {
                         fetchCloudBackupFileEntities()
                             .mapCatching { files ->
-                                files.any { it.profileId == profile.header.id }
+                                files.find { it.profileId == profile.header.id }
                             }.fold(
-                                onSuccess = { existsOnDrive ->
-                                    if (!existsOnDrive) {
+                                onSuccess = { existingFile ->
+                                    if (existingFile == null) {
                                         // The user has deleted the file on drive, maybe by removing all hidden files
                                         // from google drive settings
                                         preferencesManager.removeLastCloudBackupEvent()
                                     }
-                                    Result.failure(if (existsOnDrive) BackupServiceException.ClaimedByAnotherDevice else error)
+                                    Result.failure(
+                                        if (existingFile != null) {
+                                            BackupServiceException.ClaimedByAnotherDevice(existingFile, profile.header.lastModified)
+                                        } else {
+                                            error
+                                        }
+                                    )
                                 },
                                 onFailure = {
                                     Result.failure(it)
