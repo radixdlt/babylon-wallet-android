@@ -21,7 +21,8 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val profileRepository: ProfileRepository,
     private val driveClient: DriveClient
-) : StateViewModel<ClaimedByAnotherDeviceViewModel.State>(), OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<ClaimedByAnotherDeviceViewModel.State>(),
+    OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = ClaimedByAnotherDeviceArgs(savedStateHandle)
 
@@ -44,16 +45,16 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
             sendEvent(Event.Dismiss)
         }.onFailure {
             // TODO check error
-            _state.update { it.copy(isReclaiming = false) }
+            _state.update { state -> state.copy(isReclaiming = false) }
         }
     }
 
     data class State(
         val isReclaiming: Boolean = false
-    ): UiState
+    ) : UiState
 
     sealed interface Event : OneOffEvent {
-        data object Dismiss: Event
+        data object Dismiss : Event
         data object ResetToOnboarding : Event
     }
 }

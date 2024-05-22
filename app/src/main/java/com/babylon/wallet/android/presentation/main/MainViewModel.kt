@@ -44,7 +44,6 @@ import rdx.works.profile.cloudbackup.CloudBackupErrorStream
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds

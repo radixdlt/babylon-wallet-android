@@ -19,7 +19,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 
 @Composable
 fun ClaimedByAnotherDeviceScreen(
@@ -48,13 +47,12 @@ fun ClaimedByAnotherDeviceScreen(
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
     ) {
         AlertDialog(
-            modifier = modifier,
             onDismissRequest = {},
             confirmButton = {
                 RadixTextButton(
                     text = "Claim Existing Wallet", // TODO Crowdin
                     onClick = viewModel::onReclaim,
-                    contentColor =  RadixTheme.colors.blue2,
+                    contentColor = RadixTheme.colors.blue2,
                     enabled = !state.isReclaiming
                 )
             },
@@ -82,7 +80,6 @@ fun ClaimedByAnotherDeviceScreen(
                         )
                     }
                 }
-
             },
             shape = RadixTheme.shapes.roundedRectSmall,
             containerColor = RadixTheme.colors.defaultBackground
