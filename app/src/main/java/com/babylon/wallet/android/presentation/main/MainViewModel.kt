@@ -76,10 +76,6 @@ class MainViewModel @Inject constructor(
         .filter { isInitialized -> isInitialized }
         .flatMapLatest { p2PLinksRepository.observeP2PLinks() }
         .map { p2pLinks ->
-            if (!getProfileUseCase.isInitialized()) {
-                return@map
-            }
-
             Timber.d("found ${p2pLinks.size} p2p links")
             p2pLinks.asList().forEach { p2PLink ->
                 establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
