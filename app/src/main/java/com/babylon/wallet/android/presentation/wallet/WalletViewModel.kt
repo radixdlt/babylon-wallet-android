@@ -58,6 +58,7 @@ import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
+import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
@@ -79,6 +80,7 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     getCloudBackupStateUseCase: GetCloudBackupStateUseCase,
     private val p2PLinksRepository: P2PLinksRepository,
+    private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -113,6 +115,13 @@ class WalletViewModel @Inject constructor(
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
         observePromptMessageStates()
+        checkForOldBackupSystem()
+    }
+
+    private fun checkForOldBackupSystem() = viewModelScope.launch {
+        if (checkMigrationToNewBackupSystemUseCase()) {
+            _state.update { it.copy(isOldBackupSystemBeingUsed = true) }
+        }
     }
 
     private fun observePromptMessageStates() {
@@ -132,7 +141,6 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             npsSurveyStateObserver.npsSurveyState.filterIsInstance<NPSSurveyState.Active>().collectLatest {
                 if (state.value.isNpsSurveyShown.not()) {
-                    sendEvent(WalletEvent.ShowNpsSurvey)
                     _state.update { state -> state.copy(isNpsSurveyShown = true) }
                 }
             }
@@ -441,8 +449,6 @@ internal sealed interface WalletEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
 
-    data object ShowNpsSurvey : WalletEvent
-
     data object NavigateToRelinkConnectors : WalletEvent
 }
 
@@ -454,6 +460,7 @@ data class WalletUiState(
     val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
     val isNpsSurveyShown: Boolean = false,
+    val isOldBackupSystemBeingUsed: Boolean = false,
     val totalFiatValueOfWallet: FiatPrice? = null,
     val isSettingsWarningVisible: Boolean = false
 ) : UiState {

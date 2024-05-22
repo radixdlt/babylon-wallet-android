@@ -52,6 +52,10 @@ interface PreferencesManager {
 
     suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant)
 
+    suspend fun isUsingDeprecatedCloudBackup(): Boolean
+
+    suspend fun clearDeprecatedCloudBackupIndicator()
+
     suspend fun markFirstPersonaCreated()
 
     suspend fun markImportFromOlympiaComplete()
@@ -142,6 +146,17 @@ class PreferencesManagerImpl @Inject constructor(
     override suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_MANUAL_BACKUP_INSTANT] = lastManualBackupInstant.toString()
+        }
+    }
+
+    override suspend fun isUsingDeprecatedCloudBackup(): Boolean = dataStore.data
+        .map { preferences ->
+            preferences[KEY_DEPRECATED_BACKUP_SYSTEM_INDICATOR] != null
+        }.firstOrNull() ?: false
+
+    override suspend fun clearDeprecatedCloudBackupIndicator() {
+        dataStore.edit { preferences ->
+            preferences.remove(KEY_DEPRECATED_BACKUP_SYSTEM_INDICATOR)
         }
     }
 
@@ -324,6 +339,7 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         val KEY_LAST_CLOUD_BACKUP_EVENT = stringPreferencesKey("last_cloud_backup_event")
+        val KEY_DEPRECATED_BACKUP_SYSTEM_INDICATOR = stringPreferencesKey("last_backup_instant")
         val KEY_LAST_MANUAL_BACKUP_INSTANT = stringPreferencesKey("last_manual_backup_instant")
         val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
         val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")

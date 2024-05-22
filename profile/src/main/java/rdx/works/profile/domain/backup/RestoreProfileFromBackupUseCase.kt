@@ -9,6 +9,7 @@ import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.then
+import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.cloudbackup.DriveClient
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -23,7 +24,8 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
     private val mnemonicRepository: MnemonicRepository,
-    private val driveClient: DriveClient
+    private val driveClient: DriveClient,
+    private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase
 ) {
 
     suspend operator fun invoke(
@@ -70,6 +72,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                     Timber.tag("CloudBackup").d("Save claimed profile")
                     profileRepository.saveProfile(profileToSave)
                     backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
+                    checkMigrationToNewBackupSystemUseCase.revokeAccessToDeprecatedCloudBackup()
                 }.map { }
             } else {
                 Timber.tag("CloudBackup").d("Save profile")

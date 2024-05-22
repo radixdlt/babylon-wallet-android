@@ -113,12 +113,19 @@ fun WalletScreen(
         }
     }
 
+    LaunchedEffect(walletState.isNpsSurveyShown, walletState.isOldBackupSystemBeingUsed) {
+        if (walletState.isNpsSurveyShown) {
+            showNPSSurvey()
+        } else if (walletState.isOldBackupSystemBeingUsed) {
+            // TODO
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
-                WalletEvent.ShowNpsSurvey -> showNPSSurvey()
                 WalletEvent.NavigateToRelinkConnectors -> onNavigateToRelinkConnectors()
             }
         }

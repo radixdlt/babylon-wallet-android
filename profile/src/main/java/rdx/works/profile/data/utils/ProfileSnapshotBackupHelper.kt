@@ -13,12 +13,14 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
+import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
 
 @Deprecated("New cloud backup system (Drive) in place. It is only used to fetch profile from old backup system.")
 class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
 
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase
+    private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase
 
     init {
         val entryPoint = EntryPointAccessors.fromApplication(
@@ -26,10 +28,17 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
             BackupHelperEntryPoint::class.java
         )
         saveTemporaryRestoringSnapshotUseCase = entryPoint.saveTemporaryRestoringSnapshotUseCase()
+        checkMigrationToNewBackupSystemUseCase = entryPoint.checkMigrationToNewBackupSystemUseCase()
     }
 
     override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?, newState: ParcelFileDescriptor) {
-        // not needed
+        runBlocking {
+            if (!checkMigrationToNewBackupSystemUseCase()) {
+                // Delete old data
+                data?.writeEntityHeader("snapshot", 0)
+                data?.writeEntityData(byteArrayOf(), 0)
+            }
+        }
     }
 
     override fun restoreEntity(data: BackupDataInputStream) {
@@ -61,6 +70,8 @@ class ProfileSnapshotBackupHelper(context: Context) : BackupHelper {
     @InstallIn(SingletonComponent::class)
     interface BackupHelperEntryPoint {
         fun saveTemporaryRestoringSnapshotUseCase(): SaveTemporaryRestoringSnapshotUseCase
+
+        fun checkMigrationToNewBackupSystemUseCase(): CheckMigrationToNewBackupSystemUseCase
     }
 
     companion object {
