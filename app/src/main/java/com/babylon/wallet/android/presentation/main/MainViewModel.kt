@@ -103,6 +103,7 @@ class MainViewModel @Inject constructor(
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
+
     init {
         viewModelScope.launch {
             combine(

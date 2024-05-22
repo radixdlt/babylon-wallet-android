@@ -18,7 +18,8 @@ fun NavGraphBuilder.main(
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
-    showNPSSurvey: () -> Unit
+    showNPSSurvey: () -> Unit,
+    onNavigateToRelinkConnectors: () -> Unit
 ) {
     composable(route = MAIN_ROUTE) {
         MainScreen(
@@ -30,7 +31,8 @@ fun NavGraphBuilder.main(
             onNavigateToIncompatibleProfile = onNavigateToIncompatibleProfile,
             onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
             onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
-            showNPSSurvey = showNPSSurvey
+            showNPSSurvey = showNPSSurvey,
+            onNavigateToRelinkConnectors = onNavigateToRelinkConnectors
         )
     }
 }

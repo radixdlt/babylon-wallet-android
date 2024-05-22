@@ -2,19 +2,14 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -26,10 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,14 +29,13 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
-import com.babylon.wallet.android.utils.formattedSpans
+import com.babylon.wallet.android.presentation.ui.composables.linkedconnector.LinkedConnectorMessageScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -114,21 +105,21 @@ private fun AddLinkConnectorContent(
                     }
                 }
                 is AddLinkConnectorUiState.Content.ApproveNewLinkConnector -> {
-                    ApproveConnector(
+                    LinkedConnectorMessageScreen(
                         title = stringResource(id = R.string.linkedConnectors_approveNewConnector_title),
                         message = stringResource(id = R.string.linkedConnectors_approveNewConnector_message),
                         isInProgress = state.isAddingNewLinkConnectorInProgress,
-                        onContinueClick = onContinueClick,
-                        onCancelClick = onCloseClick
+                        onPositiveClick = onContinueClick,
+                        onNegativeClick = onCloseClick
                     )
                 }
                 is AddLinkConnectorUiState.Content.UpdateLinkConnector -> {
-                    ApproveConnector(
+                    LinkedConnectorMessageScreen(
                         title = stringResource(id = R.string.linkedConnectors_approveExistingConnector_title),
                         message = stringResource(id = R.string.linkedConnectors_approveExistingConnector_message),
                         isInProgress = state.isAddingNewLinkConnectorInProgress,
-                        onContinueClick = onContinueClick,
-                        onCancelClick = onCloseClick
+                        onPositiveClick = onContinueClick,
+                        onNegativeClick = onCloseClick
                     )
                 }
                 is AddLinkConnectorUiState.Content.NameLinkConnector -> {
@@ -204,81 +195,6 @@ private fun ScanQrCode(
                 onQrCodeScanned(it)
             }
         )
-    }
-}
-
-@Composable
-private fun ApproveConnector(
-    title: String,
-    message: String,
-    isInProgress: Boolean,
-    onContinueClick: () -> Unit,
-    onCancelClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-    ) {
-        Spacer(modifier = Modifier.weight(1f))
-
-        Image(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.icon_desktop_connection_large
-            ),
-            contentDescription = null
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = title,
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = RadixTheme.dimensions.paddingLarge,
-                    end = RadixTheme.dimensions.paddingLarge,
-                    bottom = RadixTheme.dimensions.paddingLarge
-                ),
-            text = message.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.weight(10f))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadixSecondaryButton(
-                modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.common_cancel),
-                onClick = onCancelClick
-            )
-
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-
-            RadixPrimaryButton(
-                text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
-                onClick = onContinueClick,
-                modifier = Modifier.weight(1.5f),
-                isLoading = isInProgress
-            )
-        }
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
     }
 }
 

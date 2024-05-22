@@ -41,6 +41,8 @@ interface PreferencesManager {
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
     val lastSyncedAccountsWithCE: Flow<String?>
+    val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
+    val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
 
     suspend fun updateLastBackupInstant(backupInstant: Instant)
 
@@ -72,6 +74,12 @@ interface PreferencesManager {
 
     suspend fun removeLastSyncedAccountsWithCE()
 
+    suspend fun setShowRelinkConnectorsAfterUpdate(show: Boolean)
+
+    suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean)
+
+    suspend fun clearShowRelinkConnectors()
+
     suspend fun clear(): Preferences
 }
 
@@ -97,6 +105,16 @@ class PreferencesManagerImpl @Inject constructor(
             preferences[KEY_LAST_BACKUP_INSTANT]?.let {
                 Instant.parse(it)
             }
+        }
+
+    override val showRelinkConnectorsAfterUpdate: Flow<Boolean?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE]
+        }
+
+    override val showRelinkConnectorsAfterProfileRestore: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE] ?: false
         }
 
     override suspend fun updateLastBackupInstant(backupInstant: Instant) {
@@ -262,6 +280,25 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun setShowRelinkConnectorsAfterUpdate(show: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE] = show
+        }
+    }
+
+    override suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE] = show
+        }
+    }
+
+    override suspend fun clearShowRelinkConnectors() {
+        dataStore.edit { preferences ->
+            preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE] = false
+            preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE] = false
+        }
+    }
+
     override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -278,5 +315,7 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
         val KEY_UUID = stringPreferencesKey("uuid")
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
+        val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
+        val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")
     }
 }

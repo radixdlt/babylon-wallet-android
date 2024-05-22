@@ -10,10 +10,13 @@ import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
@@ -29,11 +32,20 @@ interface P2PLinksRepository {
     suspend fun addOrUpdateP2PLink(p2pLink: P2pLink)
 
     suspend fun removeP2PLink(id: PublicKeyHash)
+
+    fun showRelinkConnectors(): Flow<Boolean>
+
+    suspend fun showRelinkConnectorsAfterUpdate(): Boolean
+
+    suspend fun showRelinkConnectorsAfterProfileRestore(): Boolean
+
+    suspend fun clearShowRelinkConnectors()
 }
 
 class P2PLinksRepositoryImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val preferencesManager: PreferencesManager,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : P2PLinksRepository {
 
@@ -85,6 +97,27 @@ class P2PLinksRepositoryImpl @Inject constructor(
             saveP2PLinks(newP2PLinks.asList())
             peerdroidClient.deleteLink(p2pLink.connectionPassword)
         }
+    }
+
+    override fun showRelinkConnectors(): Flow<Boolean> {
+        return combine(
+            preferencesManager.showRelinkConnectorsAfterUpdate.map { it ?: false },
+            preferencesManager.showRelinkConnectorsAfterProfileRestore
+        ) { showAfterUpdate, showAfterProfileRestore ->
+            showAfterUpdate || showAfterProfileRestore
+        }.distinctUntilChanged()
+    }
+
+    override suspend fun showRelinkConnectorsAfterUpdate(): Boolean {
+        return preferencesManager.showRelinkConnectorsAfterUpdate.firstOrNull() ?: false
+    }
+
+    override suspend fun showRelinkConnectorsAfterProfileRestore(): Boolean {
+        return preferencesManager.showRelinkConnectorsAfterProfileRestore.firstOrNull() ?: false
+    }
+
+    override suspend fun clearShowRelinkConnectors() {
+        preferencesManager.clearShowRelinkConnectors()
     }
 
     private suspend fun getSavedP2PLinks(): P2pLinks {

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
@@ -55,6 +56,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
+    private val p2PLinksRepository = mockk<P2PLinksRepository>()
 
     private val sampleProfile = Profile.sample()
     private val sampleXrdResource = Resource.FungibleResource(
@@ -76,6 +78,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         preferencesManager,
         npsSurveyStateObserver,
         getBackupStateUseCase,
+        p2PLinksRepository,
         testDispatcher
     )
 
@@ -88,6 +91,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
         every { npsSurveyStateObserver.npsSurveyState } returns flowOf(NPSSurveyState.InActive)
+        coEvery { p2PLinksRepository.showRelinkConnectors() } returns flowOf(false)
     }
 
     @Test
