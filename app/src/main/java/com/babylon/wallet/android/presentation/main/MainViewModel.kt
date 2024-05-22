@@ -44,7 +44,6 @@ import rdx.works.profile.cloudbackup.CloudBackupErrorStream
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.CheckBackupStateWithCloudUseCase
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -64,8 +63,7 @@ class MainViewModel @Inject constructor(
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
-    private val cloudBackupErrorStream: CloudBackupErrorStream,
-    private val checkBackupStateWithCloudUseCase: CheckBackupStateWithCloudUseCase
+    private val cloudBackupErrorStream: CloudBackupErrorStream
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -281,7 +279,6 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
             }
-            checkBackupStateWithCloudUseCase()
         }
     }
 

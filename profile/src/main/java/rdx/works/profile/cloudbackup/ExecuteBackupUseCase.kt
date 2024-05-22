@@ -1,6 +1,11 @@
 package rdx.works.profile.cloudbackup
 
-import androidx.work.ListenableWorker
+import android.content.Context
+import androidx.hilt.work.HiltWorker
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.ProfileState
@@ -8,16 +13,18 @@ import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
-import javax.inject.Inject
 
-class ExecuteBackupUseCase @Inject constructor(
+@HiltWorker
+class ExecuteBackupUseCase @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted private val params: WorkerParameters,
     private val driveClient: DriveClient,
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
     private val cloudBackupErrorStream: CloudBackupErrorStream
-): DriveBackupExecutor {
+) : CoroutineWorker(context, params) {
 
-    override suspend operator fun invoke(worker: ListenableWorker): ListenableWorker.Result {
+    override suspend fun doWork(): Result {
         val profileState = profileRepository.profileState.filterNot {
             it is ProfileState.NotInitialised
         }.first()
@@ -38,7 +45,7 @@ class ExecuteBackupUseCase @Inject constructor(
                             cloudBackupTime = file.lastUsedOnDeviceModified
                         )
                     )
-                    ListenableWorker.Result.success()
+                    Result.success()
                 },
                 onFailure = { exception ->
                     return when (exception) {
@@ -46,23 +53,23 @@ class ExecuteBackupUseCase @Inject constructor(
                             profileRepository.clearAllWalletData()
                             cloudBackupErrorStream.onError(exception)
                             Timber.tag("CloudBackup").w(exception, "❌")
-                            ListenableWorker.Result.failure()
+                            Result.failure()
                         }
                         is BackupServiceException.UnauthorizedException -> {
                             cloudBackupErrorStream.onError(exception)
                             Timber.tag("CloudBackup").w(exception, "❌")
-                            ListenableWorker.Result.failure()
+                            Result.failure()
                         }
                         else -> {
-                            if (worker.runAttemptCount < 3) {
-                                Timber.tag("CloudBackup").w(exception, "❌ Retry: ${worker.runAttemptCount}")
-                                ListenableWorker.Result.retry()
+                            if (runAttemptCount < 3) {
+                                Timber.tag("CloudBackup").w(exception, "❌ Retry: $runAttemptCount")
+                                Result.retry()
                             } else {
                                 Timber.tag("CloudBackup").w(exception, "❌")
                                 if (exception is BackupServiceException) {
                                     cloudBackupErrorStream.onError(exception)
                                 }
-                                ListenableWorker.Result.failure()
+                                Result.failure()
                             }
                         }
                     }
@@ -70,7 +77,7 @@ class ExecuteBackupUseCase @Inject constructor(
             )
         } else {
             Timber.tag("CloudBackup").d("❌ No profile snapshot")
-            ListenableWorker.Result.failure()
+            Result.failure()
         }
     }
 

@@ -1,56 +1,31 @@
 package rdx.works.profile.cloudbackup
 
 import android.content.Context
-import androidx.hilt.work.HiltWorker
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
-import androidx.work.CoroutineWorker
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest.Companion.MIN_BACKOFF_MILLIS
-import androidx.work.WorkerParameters
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import rdx.works.core.domain.ProfileState
-import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.ApplicationScope
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
-
-// NOTE: All background work is given a maximum of ten minutes to finish its execution.
-// After this time has expired, the worker will be signalled to stop.
-//
-// Exercise caution in renaming classes derived from ListenableWorkers.
-// WorkManager stores the class name in its internal database when the WorkRequest is enqueued
-// so it can later create an instance of that worker when constraints are met. See link for more details:
-// https://developer.android.com/reference/androidx/work/WorkManager#renaming-and-removing-listenableworker-classes
-@HiltWorker
-internal class CloudBackupSyncWorker @AssistedInject constructor(
-    @Assisted context: Context,
-    @Assisted private val params: WorkerParameters,
-    private val executeBackupUseCase: ExecuteBackupUseCase
-) : CoroutineWorker(context, params) {
-
-    override suspend fun doWork(): Result {
-        return executeBackupUseCase(this)
-    }
-}
 
 @OptIn(FlowPreview::class)
 @Singleton
@@ -69,7 +44,7 @@ class CloudBackupSyncExecutor @Inject constructor(
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
 
-                val workRequest = OneTimeWorkRequestBuilder<CloudBackupSyncWorker>()
+                val workRequest = OneTimeWorkRequestBuilder<ExecuteBackupUseCase>()
                     .setBackoffCriteria( // try every 10 seconds
                         backoffPolicy = BackoffPolicy.LINEAR,
                         backoffDelay = MIN_BACKOFF_MILLIS,
@@ -91,12 +66,42 @@ class CloudBackupSyncExecutor @Inject constructor(
             }
             .launchIn(applicationScope)
     }
+
     suspend fun requestCloudBackup() {
         syncProfile.emit(Unit)
     }
 
+    fun startPeriodicChecks(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(PeriodicChecksLifecycleObserver(WorkManager.getInstance(context)))
+    }
+
+    private class PeriodicChecksLifecycleObserver(
+        private val workManager: WorkManager
+    ): DefaultLifecycleObserver {
+        override fun onStart(owner: LifecycleOwner) {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val workRequest = PeriodicWorkRequestBuilder<CheckBackupStatusUseCase>(15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                CHECK_CLOUD_STATUS_WORK,
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                workRequest
+            )
+        }
+
+        override fun onStop(owner: LifecycleOwner) {
+            workManager.cancelUniqueWork(CHECK_CLOUD_STATUS_WORK)
+        }
+    }
+
     companion object {
         private const val SYNC_CLOUD_PROFILE_WORK = "sync_cloud_profile"
+        private const val CHECK_CLOUD_STATUS_WORK = "check_cloud_status"
         private const val ONE_SECOND_DEBOUNCE = 1000L
     }
 }
