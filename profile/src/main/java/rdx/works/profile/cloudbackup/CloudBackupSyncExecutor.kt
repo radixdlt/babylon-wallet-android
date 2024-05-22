@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.onEach
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
 import timber.log.Timber
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -77,13 +79,13 @@ class CloudBackupSyncExecutor @Inject constructor(
 
     private class PeriodicChecksLifecycleObserver(
         private val workManager: WorkManager
-    ): DefaultLifecycleObserver {
+    ) : DefaultLifecycleObserver {
         override fun onStart(owner: LifecycleOwner) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val workRequest = PeriodicWorkRequestBuilder<CheckBackupStatusUseCase>(15, TimeUnit.MINUTES)
+            val workRequest = PeriodicWorkRequestBuilder<CheckBackupStatusUseCase>(CHECK_CLOUD_STATUS_INTERVAL)
                 .setConstraints(constraints)
                 .build()
 
@@ -103,5 +105,6 @@ class CloudBackupSyncExecutor @Inject constructor(
         private const val SYNC_CLOUD_PROFILE_WORK = "sync_cloud_profile"
         private const val CHECK_CLOUD_STATUS_WORK = "check_cloud_status"
         private const val ONE_SECOND_DEBOUNCE = 1000L
+        private val CHECK_CLOUD_STATUS_INTERVAL = Duration.of(15, ChronoUnit.MINUTES)
     }
 }

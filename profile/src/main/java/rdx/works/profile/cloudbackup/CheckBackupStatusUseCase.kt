@@ -15,6 +15,7 @@ import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
 
+@Suppress("LongParameterList")
 @HiltWorker
 class CheckBackupStatusUseCase @AssistedInject constructor(
     @Assisted context: Context,

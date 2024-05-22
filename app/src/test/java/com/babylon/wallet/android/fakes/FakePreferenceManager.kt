@@ -46,6 +46,10 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
+    override suspend fun removeLastCloudBackupEvent() {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant) {
         TODO("Not yet implemented")
     }

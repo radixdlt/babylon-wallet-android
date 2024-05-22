@@ -87,7 +87,7 @@ class DriveClientImpl @Inject constructor(
         "appProperties"
     ).joinToString(separator = ",")
 
-    private val getFilesFields = "files(${getFields})"
+    private val getFilesFields = "files($getFields)"
 
     override suspend fun backupProfile(
         googleDriveFileId: GoogleDriveFileId?,
