@@ -60,13 +60,13 @@ fun ClaimedByAnotherDeviceScreen(
             },
             dismissButton = {
                 RadixTextButton(
-                    text = "Clear Waller on This Phone", // TODO Crowdin
+                    text = "Clear Wallet on This Phone", // TODO Crowdin
                     onClick = viewModel::onResetWallet,
                     enabled = !state.isReclaiming
                 )
             },
             title = {
-                Text(text = "Claim this Wallet?")
+                Text(text = "Claim this Wallet?") // TODO Crowdin
             },
             text = {
                 Box {

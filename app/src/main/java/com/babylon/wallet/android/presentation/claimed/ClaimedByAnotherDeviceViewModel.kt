@@ -40,7 +40,7 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
             file = args.claimedEntity,
             profileModifiedTime = args.modifiedTime
         ).onSuccess {
-            _state.update { it.copy(isReclaiming = false) }
+            cloudBackupErrorStream.resetErrors()
             sendEvent(Event.Dismiss)
         }.onFailure {
             // TODO check error
