@@ -22,7 +22,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
         val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }
         val factorSourceIdsNeedRecovery = entitiesNeedingRestore.map { it.entity.securityState.factorSourceId }
         mutableSetOf<SecurityProblem>().apply {
-            if (cloudBackupState.isDisabled) {
+            if (cloudBackupState.isWorking) {
                 add(SecurityProblem.BackupNotWorking)
             }
             factorSourceIdsNeedRecovery.forEach {

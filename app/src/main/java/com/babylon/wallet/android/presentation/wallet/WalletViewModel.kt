@@ -232,7 +232,7 @@ class WalletViewModel @Inject constructor(
     private fun observeProfileBackupState(getCloudBackupStateUseCase: GetCloudBackupStateUseCase) {
         viewModelScope.launch {
             getCloudBackupStateUseCase().collect { backupState ->
-                this@WalletViewModel.hasCloudBackupAnyProblems = backupState.isDisabled
+                this@WalletViewModel.hasCloudBackupAnyProblems = backupState.isWorking
 
                 _state.update {
                     it.copy(

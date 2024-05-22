@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
+import rdx.works.profile.cloudbackup.BackupServiceException
 import rdx.works.profile.cloudbackup.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.data.repository.ProfileRepository
@@ -25,14 +26,26 @@ class GetCloudBackupStateUseCase @Inject constructor(
         preferencesManager.lastManualBackupInstant
     ) { profile, lastCloudBackupEvent, backupError, lastManualBackupInstant ->
         val email = googleSignInManager.getSignedInGoogleAccount()?.email
+
         if (profile.canBackupToCloud && email != null && backupError == null) {
             CloudBackupState.Enabled(email = email)
         } else {
-            CloudBackupState.Disabled(
-                email = email,
-                lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
-                lastManualBackupTime = lastManualBackupInstant
-            )
+            if (email != null &&
+                (backupError is BackupServiceException.ServiceException || backupError is BackupServiceException.Unknown)
+            ) {
+                CloudBackupState.Enabled(
+                    email = email,
+                    hasAnyErrors = true,
+                    lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
+                    lastManualBackupTime = lastManualBackupInstant
+                )
+            } else {
+                CloudBackupState.Disabled(
+                    email = email,
+                    lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
+                    lastManualBackupTime = lastManualBackupInstant
+                )
+            }
         }
     }
 }
