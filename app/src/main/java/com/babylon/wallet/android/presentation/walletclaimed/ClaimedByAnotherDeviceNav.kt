@@ -10,7 +10,7 @@ import androidx.navigation.navArgument
 import com.radixdlt.sargon.Timestamp
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.profile.cloudbackup.BackupServiceException
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import java.time.format.DateTimeFormatter
 

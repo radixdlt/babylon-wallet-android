@@ -13,8 +13,8 @@ import com.babylon.wallet.android.utils.CanSignInToGoogle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.cloudbackup.BackupServiceException
-import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.data.GoogleSignInManager
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import timber.log.Timber
 import javax.inject.Inject

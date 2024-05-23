@@ -1,8 +1,9 @@
-package rdx.works.profile.cloudbackup
+package rdx.works.profile.cloudbackup.domain
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import javax.inject.Inject
 
 interface CloudBackupErrorStream {

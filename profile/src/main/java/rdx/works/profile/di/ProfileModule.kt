@@ -4,10 +4,10 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import rdx.works.profile.cloudbackup.CloudBackupErrorStream
-import rdx.works.profile.cloudbackup.CloudBackupErrorStreamImpl
-import rdx.works.profile.cloudbackup.DriveClient
-import rdx.works.profile.cloudbackup.DriveClientImpl
+import rdx.works.profile.cloudbackup.data.DriveClient
+import rdx.works.profile.cloudbackup.data.DriveClientImpl
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStreamImpl
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.BackupProfileRepositoryImpl
 import rdx.works.profile.data.repository.DAppConnectionRepository

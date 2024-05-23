@@ -5,9 +5,9 @@ import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
-import rdx.works.profile.cloudbackup.BackupServiceException
-import rdx.works.profile.cloudbackup.CloudBackupErrorStream
-import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.data.GoogleSignInManager
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject

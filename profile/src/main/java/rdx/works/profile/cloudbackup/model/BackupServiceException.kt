@@ -1,4 +1,4 @@
-package rdx.works.profile.cloudbackup
+package rdx.works.profile.cloudbackup.model
 
 import android.content.Intent
 import com.radixdlt.sargon.Timestamp

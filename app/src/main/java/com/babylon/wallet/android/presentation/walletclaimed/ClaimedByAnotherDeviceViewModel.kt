@@ -10,8 +10,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.cloudbackup.CloudBackupErrorStream
-import rdx.works.profile.cloudbackup.DriveClient
+import rdx.works.profile.cloudbackup.data.DriveClient
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 

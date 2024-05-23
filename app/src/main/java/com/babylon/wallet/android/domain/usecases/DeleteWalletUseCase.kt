@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import rdx.works.core.KeystoreManager
-import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
 import javax.inject.Inject

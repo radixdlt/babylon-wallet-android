@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.cloudbackup.domain.CheckBackupStatusUseCase
+import rdx.works.profile.cloudbackup.domain.ExecuteBackupUseCase
 import rdx.works.profile.di.coroutines.ApplicationScope
 import timber.log.Timber
 import java.time.Duration

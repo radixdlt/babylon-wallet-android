@@ -1,4 +1,4 @@
-package rdx.works.profile.cloudbackup
+package rdx.works.profile.cloudbackup.data
 
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAuthIOException
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
@@ -17,6 +17,7 @@ import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.flatMapError
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile

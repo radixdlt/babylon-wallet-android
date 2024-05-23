@@ -13,7 +13,7 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.runBlocking
 import rdx.works.profile.BuildConfig
-import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
+import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
 
 @Deprecated("New cloud backup system (Drive) in place. It is only used to fetch profile from old backup system.")

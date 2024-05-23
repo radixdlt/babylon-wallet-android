@@ -7,7 +7,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.FetchBackedUpProfilesMetadataFromCloud
 import javax.inject.Inject

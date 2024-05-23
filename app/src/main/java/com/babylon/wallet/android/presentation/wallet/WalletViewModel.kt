@@ -58,7 +58,7 @@ import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
-import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
+import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase

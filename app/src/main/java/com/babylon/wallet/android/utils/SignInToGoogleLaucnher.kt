@@ -13,8 +13,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-import rdx.works.profile.cloudbackup.BackupServiceException
-import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.data.GoogleSignInManager
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 
 interface CanSignInToGoogle {

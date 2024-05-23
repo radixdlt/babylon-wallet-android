@@ -1,4 +1,4 @@
-package rdx.works.profile.cloudbackup
+package rdx.works.profile.cloudbackup.domain
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.cloudbackup.data.DriveClient
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
 

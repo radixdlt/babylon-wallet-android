@@ -39,8 +39,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
-import rdx.works.profile.cloudbackup.BackupServiceException.ClaimedByAnotherDevice
-import rdx.works.profile.cloudbackup.CloudBackupErrorStream
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
+import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase

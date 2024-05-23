@@ -1,6 +1,6 @@
 package rdx.works.profile.domain.backup
 
-import rdx.works.profile.cloudbackup.DriveClient
+import rdx.works.profile.cloudbackup.data.DriveClient
 import javax.inject.Inject
 
 class FetchBackedUpProfilesMetadataFromCloud @Inject constructor(

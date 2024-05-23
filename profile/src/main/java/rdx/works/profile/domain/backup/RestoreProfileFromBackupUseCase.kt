@@ -9,8 +9,8 @@ import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.then
-import rdx.works.profile.cloudbackup.CheckMigrationToNewBackupSystemUseCase
-import rdx.works.profile.cloudbackup.DriveClient
+import rdx.works.profile.cloudbackup.data.DriveClient
+import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository

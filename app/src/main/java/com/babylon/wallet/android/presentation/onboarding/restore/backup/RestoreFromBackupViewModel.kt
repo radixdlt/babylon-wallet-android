@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.sargon.isCompatible
-import rdx.works.profile.cloudbackup.GoogleSignInManager
+import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
