@@ -35,7 +35,7 @@ fun ClaimedByAnotherDeviceScreen(
     onNavigateToOnboarding: () -> Unit,
     onReclaimedBack: () -> Unit
 ) {
-    BackHandler(enabled = false) {}
+    BackHandler(enabled = true) { }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
