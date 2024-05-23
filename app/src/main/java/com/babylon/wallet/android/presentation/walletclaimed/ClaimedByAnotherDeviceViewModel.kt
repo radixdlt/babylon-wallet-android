@@ -44,7 +44,6 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
             cloudBackupErrorStream.resetErrors()
             sendEvent(Event.Reclaimed)
         }.onFailure {
-            // TODO check error
             _state.update { state -> state.copy(isReclaiming = false) }
         }
     }

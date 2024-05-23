@@ -26,6 +26,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
@@ -47,26 +48,29 @@ fun ClaimedByAnotherDeviceScreen(
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    Scaffold(
-        modifier = modifier.imePadding(),
-        containerColor = RadixTheme.colors.defaultBackground
-    ) { padding ->
-        ClaimedByAnotherDeviceContent(
-            modifier = Modifier
-                .padding(padding)
-                .padding(vertical = RadixTheme.dimensions.paddingLarge)
-                .fillMaxSize(),
-            isReclaiming = state.isReclaiming,
-            onClearWalletClick = viewModel::onClearWalletClick,
-            onTransferControlBackClick = viewModel::onTransferWalletBackClick
-        )
+
+    if (state.isReclaiming) {
+        FullscreenCircularProgressContent()
+    } else {
+        Scaffold(
+            modifier = modifier.imePadding(),
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
+            ClaimedByAnotherDeviceContent(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge)
+                    .fillMaxSize(),
+                onClearWalletClick = viewModel::onClearWalletClick,
+                onTransferControlBackClick = viewModel::onTransferWalletBackClick
+            )
+        }
     }
 }
 
 @Composable
 fun ClaimedByAnotherDeviceContent(
     modifier: Modifier = Modifier,
-    isReclaiming: Boolean,
     onClearWalletClick: () -> Unit,
     onTransferControlBackClick: () -> Unit
 ) {
@@ -122,7 +126,6 @@ fun ClaimedByAnotherDeviceContent(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = "Clear Wallet on This Phone",
-            enabled = isReclaiming.not(),
             onClick = onClearWalletClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -131,7 +134,6 @@ fun ClaimedByAnotherDeviceContent(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = "Transfer Control Back to This Phone",
-            enabled = isReclaiming.not(),
             onClick = onTransferControlBackClick
         )
     }
@@ -146,8 +148,7 @@ fun ClaimedByAnotherDeviceScreenPreview() {
     RadixWalletPreviewTheme {
         ClaimedByAnotherDeviceContent(
             onClearWalletClick = {},
-            onTransferControlBackClick = {},
-            isReclaiming = false
+            onTransferControlBackClick = {}
         )
     }
 }
