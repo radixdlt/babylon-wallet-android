@@ -57,13 +57,15 @@ class AccountDepositSettingsProcessor @Inject constructor(
     }
 
     private val DetailedManifestClass.AccountDepositSettingsUpdate.involvedResourceAddresses
-        get() = resourcePreferencesUpdates.map { entry ->
-            entry.value.map { it.key }
-        }.flatten().toSet() + authorizedDepositorsRemoved.map { entry ->
-            entry.value.map { it.resourceAddress }
-        }.flatten().toSet() + authorizedDepositorsAdded.map { entry ->
-            entry.value.map { it.resourceAddress }
-        }.flatten().toSet()
+        get() = (
+            resourcePreferencesUpdates.map { entry ->
+                entry.value.map { it.key }
+            } + authorizedDepositorsRemoved.map { entry ->
+                entry.value.map { it.resourceAddress }
+            } + authorizedDepositorsAdded.map { entry ->
+                entry.value.map { it.resourceAddress }
+            }
+            ).flatten().toSet()
 
     private fun DetailedManifestClass.AccountDepositSettingsUpdate.resolveDepositorChanges(
         involvedAccount: Account,

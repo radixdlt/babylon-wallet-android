@@ -167,7 +167,7 @@ class PreferencesManagerImpl @Inject constructor(
                 FactorSourceId.Hash(
                     FactorSourceIdFromHash(kind = FactorSourceKind.DEVICE, body = Exactly32Bytes.init(hex.hexToBagOfBytes()))
                 )
-            }.ifEmpty { emptySet() }.toSet()
+            }.toSet()
         }
     }
 

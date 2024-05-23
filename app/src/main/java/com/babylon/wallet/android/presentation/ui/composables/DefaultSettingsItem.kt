@@ -176,31 +176,29 @@ fun DefaultSettingsItem(
                 )
             }
         },
-        warningView = if (warnings?.isEmpty() == true) {
+        warningView = if (warnings.isNullOrEmpty()) {
             null
         } else {
-            warnings?.let {
-                {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-                    ) {
-                        it.forEach { warning ->
-                            Row(
-                                verticalAlignment = CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_warning_error),
-                                    contentDescription = null,
-                                    tint = RadixTheme.colors.orange3
-                                )
-                                Text(
-                                    text = warning,
-                                    style = RadixTheme.typography.body2HighImportance,
-                                    color = RadixTheme.colors.orange3
-                                )
-                            }
+            {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                ) {
+                    warnings.forEach { warning ->
+                        Row(
+                            verticalAlignment = CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_warning_error),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.orange3
+                            )
+                            Text(
+                                text = warning,
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.orange3
+                            )
                         }
                     }
                 }

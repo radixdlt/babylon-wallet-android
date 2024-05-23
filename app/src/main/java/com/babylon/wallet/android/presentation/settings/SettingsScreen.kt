@@ -135,7 +135,7 @@ private fun SettingsContent(
                                                     mutableListOf<String>().apply {
                                                         if (settingsItem.item.anyPersonaNeedRecovery) {
                                                             add(stringResource(R.string.walletSettings_personas_problem9Hint))
-                                                        } else if (settingsItem.item.anyPersonaNeedRecovery) {
+                                                        } else if (settingsItem.item.anyPersonaNeedBackup) {
                                                             add(stringResource(R.string.walletSettings_personas_problem3Hint))
                                                         }
                                                     }.toPersistentList()
