@@ -64,12 +64,12 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
             Result.success(profileWithRestoredHeader)
         }.then { profileToSave ->
             if (backupType is BackupType.Cloud) {
-                Timber.tag("CloudBackup").d("Claiming Profile...")
+                Timber.tag("CloudBackup").d("☁\uFE0F Claiming Profile...")
                 driveClient.claimCloudBackup(
                     file = backupType.entity,
                     profileModifiedTime = profileToSave.header.lastModified
                 ).onSuccess {
-                    Timber.tag("CloudBackup").d("Save claimed profile")
+                    Timber.tag("CloudBackup").d("☁\uFE0F Profile claimed, and now save it")
                     profileRepository.saveProfile(profileToSave)
                     backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
                     checkMigrationToNewBackupSystemUseCase.revokeAccessToDeprecatedCloudBackup()

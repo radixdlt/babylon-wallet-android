@@ -36,7 +36,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
     override fun onSignInResult(result: Result<GoogleAccount>) {
         viewModelScope.launch {
             result.onSuccess { googleAccount ->
-                Timber.tag("CloudBackup").d("Authorized for email: ${googleAccount.email}")
+                Timber.tag("CloudBackup").d("\uD83D\uDD11 Authorized for email: ${googleAccount.email}")
                 _state.update { it.copy(isConnecting = false) }
                 sendEvent(Event.Proceed(mode = state.value.mode, isCloudBackupEnabled = true))
             }.onFailure { exception ->

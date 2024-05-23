@@ -52,11 +52,11 @@ class BackupViewModel @Inject constructor(
             result
                 .onSuccess {
                     changeBackupSettingUseCase(isChecked = true)
-                    Timber.d("cloud backup is authorized")
+                    Timber.tag("CloudBackup").d("\uD83D\uDD11 Cloud backup is authorized")
                 }
                 .onFailure { exception ->
                     changeBackupSettingUseCase(isChecked = false)
-                    Timber.e("cloud backup authorization failed: $exception")
+                    Timber.tag("CloudBackup").w("cloud backup authorization failed: $exception")
                 }
         }
     }

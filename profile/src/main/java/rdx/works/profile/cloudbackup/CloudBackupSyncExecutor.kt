@@ -59,6 +59,8 @@ class CloudBackupSyncExecutor @Inject constructor(
 
                 val workManager = WorkManager.getInstance(context)
 
+                // If lastCloudBackupEvent = null then it's the first time wallet attempts to do a cloud backup
+                // thus it has to create the backup file in Drive, so KEEP this work until it's done.
                 if (preferencesManager.lastCloudBackupEvent.firstOrNull() == null) {
                     Timber.tag("CloudBackup").d("\uD83C\uDD95 Enqueued")
                     workManager.enqueueUniqueWork(SYNC_CLOUD_PROFILE_WORK, ExistingWorkPolicy.KEEP, workRequest)
@@ -82,6 +84,7 @@ class CloudBackupSyncExecutor @Inject constructor(
     private class PeriodicChecksLifecycleObserver(
         private val workManager: WorkManager
     ) : DefaultLifecycleObserver {
+
         override fun onStart(owner: LifecycleOwner) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -91,6 +94,7 @@ class CloudBackupSyncExecutor @Inject constructor(
                 .setConstraints(constraints)
                 .build()
 
+            Timber.tag("CloudBackup").d("⏰ Enqueued")
             workManager.enqueueUniquePeriodicWork(
                 CHECK_CLOUD_STATUS_WORK,
                 ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
@@ -99,6 +103,7 @@ class CloudBackupSyncExecutor @Inject constructor(
         }
 
         override fun onStop(owner: LifecycleOwner) {
+            Timber.tag("CloudBackup").d("Stop periodic checks for cloud backups")
             workManager.cancelUniqueWork(CHECK_CLOUD_STATUS_WORK)
         }
     }

@@ -107,10 +107,10 @@ class RestoreFromBackupViewModel @Inject constructor(
         viewModelScope.launch {
             result.onSuccess { googleAccount ->
                 _state.update { it.copy(backupEmail = googleAccount.email) }
-                Timber.tag("CloudBackup").d("cloud backup is authorized")
+                Timber.tag("CloudBackup").d("\uD83D\uDD11 Authorized for email: ${googleAccount.email}")
                 restoreProfilesFromCloudBackup()
             }.onFailure { exception ->
-                Timber.tag("CloudBackup").e("cloud backup authorization failed: $exception")
+                Timber.tag("CloudBackup").w("cloud backup authorization failed: $exception")
                 if (exception !is CancellationException) {
                     _state.update { state ->
                         state.copy(

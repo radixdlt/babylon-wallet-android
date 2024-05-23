@@ -113,7 +113,7 @@ class GoogleSignInManager @Inject constructor(
     fun getDrive(account: GoogleAccount? = getSignedInGoogleAccount()): Drive {
         val email = account?.email
         if (email.isNullOrEmpty()) {
-            Timber.tag("CloudBackup").e("☁\uFE0F not signed in")
+            Timber.tag("CloudBackup").e("\uD83D\uDD11 not signed in")
             throw BackupServiceException.UnauthorizedException
         }
 

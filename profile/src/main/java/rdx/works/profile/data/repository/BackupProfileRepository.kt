@@ -36,7 +36,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
         backupType: BackupType
     ): Result<Unit> = when (backupType) {
         is BackupType.Cloud, BackupType.DeprecatedCloud -> {
-            Timber.d("☁\uFE0F Save temporary restoring profile for $backupType")
+            Timber.tag("CloudBackup").d("Save temporary restoring profile from $backupType")
             if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
                 encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
                 Result.success(Unit)
@@ -79,7 +79,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun getTemporaryRestoringProfile(backupType: BackupType): Profile? = when (backupType) {
         is BackupType.DeprecatedCloud, is BackupType.Cloud -> {
-            Timber.d("☁\uFE0F Get temporary restoring profile from $backupType")
+            Timber.tag("CloudBackup").d("Get temporary restoring profile from $backupType")
             encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()
         }
         is BackupType.File -> encryptedPreferencesManager.getProfileSnapshotFromFileBackup()
