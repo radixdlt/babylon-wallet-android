@@ -26,7 +26,6 @@ import com.babylon.wallet.android.presentation.account.settings.devsettings.devS
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
-import com.babylon.wallet.android.presentation.claimed.claimedByAnotherDevice
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
@@ -76,6 +75,7 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
+import com.babylon.wallet.android.presentation.walletclaimed.claimedByAnotherDevice
 import com.radixdlt.sargon.extensions.networkId
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource

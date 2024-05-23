@@ -348,8 +348,8 @@ private fun SignInToGoogleDrive(
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            text = "Log in to Google Drive", // TODO Crowdin
+                .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+            text = stringResource(id = R.string.onboarding_cloudRestoreAndroid_loginButton),
             isLoading = isAccessToGoogleDriveInProgress,
             onClick = onLoginToGoogleClick
         )

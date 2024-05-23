@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.claimed
+package com.babylon.wallet.android.presentation.walletclaimed
 
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -14,8 +14,8 @@ import rdx.works.profile.cloudbackup.BackupServiceException
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import java.time.format.DateTimeFormatter
 
-private const val ARG_CLAIMED_ENTITY = "claimed_entity"
-private const val ARG_MODIFIED_TIME = "modified_time"
+private const val ARG_CLAIMED_ENTITY = "arg_claimed_entity"
+private const val ARG_MODIFIED_TIME = "arg_modified_time"
 private const val ROUTE = "route_claimed_by_another_device/{$ARG_CLAIMED_ENTITY}?$ARG_MODIFIED_TIME={$ARG_MODIFIED_TIME}"
 
 internal class ClaimedByAnotherDeviceArgs(

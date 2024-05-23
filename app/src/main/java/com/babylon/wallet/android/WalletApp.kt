@@ -25,7 +25,6 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
-import com.babylon.wallet.android.presentation.claimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -41,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
+import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow

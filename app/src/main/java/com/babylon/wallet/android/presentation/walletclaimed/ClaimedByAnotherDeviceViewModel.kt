@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.claimed
+package com.babylon.wallet.android.presentation.walletclaimed
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -28,13 +28,13 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    fun onResetWallet() = viewModelScope.launch {
+    fun onClearWalletClick() = viewModelScope.launch {
         profileRepository.clearAllWalletData()
         cloudBackupErrorStream.resetErrors()
         sendEvent(Event.ResetToOnboarding)
     }
 
-    fun onReclaim() = viewModelScope.launch {
+    fun onTransferWalletBackClick() = viewModelScope.launch {
         _state.update { it.copy(isReclaiming = true) }
 
         driveClient.claimCloudBackup(

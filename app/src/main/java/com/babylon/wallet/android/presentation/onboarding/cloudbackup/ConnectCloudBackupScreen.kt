@@ -23,10 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -95,7 +97,10 @@ private fun ConnectCloudBackupContent(
                 onBackClick = onBackClick,
                 actions = {
                     RadixTextButton(
-                        text = "Skip", // TODO crowdin
+                        text = when (state.mode) {
+                            ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_skip)
+                            ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_skip)
+                        },
                         onClick = {
                             onSkipClick() // continue without back up
                         }
@@ -136,9 +141,9 @@ private fun ConnectCloudBackupContent(
                 modifier = Modifier
                     .widthIn(max = 250.dp)
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = when (state.mode) { // TODO Crowdin
-                    ConnectMode.NewWallet -> "Back up your wallet settings"
-                    ConnectMode.RestoreWallet -> "Restore wallet from backup"
+                text = when (state.mode) {
+                    ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupTitle)
+                    ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_backupTitle)
                 },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -147,9 +152,9 @@ private fun ConnectCloudBackupContent(
 
             Text(
                 modifier = Modifier.widthIn(max = 300.dp),
-                text = when (state.mode) { // TODO Crowdin
-                    ConnectMode.NewWallet -> "Connect to Google Drive to automatically backup your Radix wallet settings."
-                    ConnectMode.RestoreWallet -> "Log in to Google Drive to restore your Radix Wallet from backup."
+                text = when (state.mode) {
+                    ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupSubtitle)
+                    ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_backupSubtitle)
                 },
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray2,
@@ -159,9 +164,9 @@ private fun ConnectCloudBackupContent(
             Spacer(Modifier.weight(0.4f))
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = when (state.mode) { // TODO Crowdin
-                    ConnectMode.NewWallet -> "Back up to Google Drive"
-                    ConnectMode.RestoreWallet -> "Log in to Google Drive"
+                text = when (state.mode) {
+                    ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupButton)
+                    ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_loginButton)
                 },
                 isLoading = state.isConnecting,
                 onClick = onLoginToGoogleClick
