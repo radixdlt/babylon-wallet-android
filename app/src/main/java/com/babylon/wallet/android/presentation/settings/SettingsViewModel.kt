@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
@@ -16,9 +17,11 @@ import com.radixdlt.sargon.extensions.Sargon
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.core.mapWhen
 import timber.log.Timber
@@ -27,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
-    p2PLinksRepository: P2PLinksRepository
+    p2PLinksRepository: P2PLinksRepository,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
@@ -63,7 +67,7 @@ class SettingsViewModel @Inject constructor(
             )
         }
         SettingsUiState(mutated.toPersistentList())
-    }.stateIn(
+    }.flowOn(defaultDispatcher).stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
         SettingsUiState(defaultSettings.toPersistentList())

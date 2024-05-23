@@ -88,11 +88,9 @@ class WalletViewModel @Inject constructor(
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
-        getEntitiesWithSecurityPromptUseCase(),
         getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
         refreshFlow
-    ) { entitiesWithSecurityPrompts, accounts, _ ->
-        this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompts
+    ) { accounts, _ ->
         accounts
     }
 
@@ -106,7 +104,7 @@ class WalletViewModel @Inject constructor(
                 return@launch
             }
         }
-        observeBannerVisibility()
+        observePrompts()
         observeAccounts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
@@ -193,12 +191,21 @@ class WalletViewModel @Inject constructor(
                 }.getOrNull()
             }
             _state.update { onAssetsReceived() }
-        }
-            .flowOn(ioDispatcher)
-            .launchIn(viewModelScope)
+        }.flowOn(ioDispatcher).launchIn(viewModelScope)
     }
 
-    private fun observeBannerVisibility() {
+    private fun observePrompts() {
+        viewModelScope.launch {
+            getEntitiesWithSecurityPromptUseCase().collect { entitiesWithSecurityPrompt ->
+                this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
+                _state.update {
+                    it.copy(
+                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt(),
+                        accountUiItems = buildAccountUiItems()
+                    )
+                }
+            }
+        }
         viewModelScope.launch {
             preferencesManager.isRadixBannerVisible.collect { isVisible ->
                 _state.update { it.copy(isRadixBannerVisible = isVisible) }
