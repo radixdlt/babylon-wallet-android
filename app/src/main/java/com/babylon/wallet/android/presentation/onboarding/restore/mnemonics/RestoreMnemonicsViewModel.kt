@@ -213,7 +213,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                             _state.update { state ->
                                 state.copy(
                                     isRestoring = false,
-                                    hasSkippedMainSeedPhrase = false // TODO check that
+                                    hasSkippedMainSeedPhrase = false
                                 )
                             }
                             sendEvent(Event.FinishRestoration(isMovingToMain = true))

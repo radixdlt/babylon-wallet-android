@@ -32,7 +32,7 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
         byteArray.toString(Charsets.UTF_8)
     }.then { snapshot ->
         ensureP2PLinkMigrationAcknowledged(snapshot, BackupType.DeprecatedCloud)
-        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.DeprecatedCloud) // TODO correct?
+        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.DeprecatedCloud)
     }
 
     suspend fun forFile(uri: Uri, fileBackupType: BackupType.File): Result<Unit> {

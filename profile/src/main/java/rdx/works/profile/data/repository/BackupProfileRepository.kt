@@ -89,12 +89,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType) = when (backupType) {
         is BackupType.Cloud -> {
-            // TODO what? probably nothing
-//            preferencesManager.removeLastCloudBackupInstant()
+            // do nothing
         }
         is BackupType.DeprecatedCloud -> {
             encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-//            preferencesManager.removeLastCloudBackupInstant()
         }
         is BackupType.File -> {
             encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()
