@@ -42,7 +42,7 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
             profileModifiedTime = args.modifiedTime
         ).onSuccess {
             cloudBackupErrorStream.resetErrors()
-            sendEvent(Event.Dismiss)
+            sendEvent(Event.Reclaimed)
         }.onFailure {
             // TODO check error
             _state.update { state -> state.copy(isReclaiming = false) }
@@ -54,7 +54,7 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
     ) : UiState
 
     sealed interface Event : OneOffEvent {
-        data object Dismiss : Event
+        data object Reclaimed : Event
         data object ResetToOnboarding : Event
     }
 }

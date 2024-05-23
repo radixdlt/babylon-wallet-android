@@ -483,7 +483,7 @@ fun NavigationHost(
             onNavigateToOnboarding = {
                 navController.popBackStack(MAIN_ROUTE, false)
             },
-            onDismiss = {
+            onReclaimedBack = {
                 navController.popBackStack()
             }
         )

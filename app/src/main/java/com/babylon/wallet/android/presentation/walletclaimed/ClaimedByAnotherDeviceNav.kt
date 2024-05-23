@@ -38,7 +38,7 @@ fun NavController.navigateToClaimedByAnotherDevice(error: BackupServiceException
 
 fun NavGraphBuilder.claimedByAnotherDevice(
     onNavigateToOnboarding: () -> Unit,
-    onDismiss: () -> Unit
+    onReclaimedBack: () -> Unit
 ) {
     composable(
         route = ROUTE,
@@ -54,7 +54,7 @@ fun NavGraphBuilder.claimedByAnotherDevice(
         ClaimedByAnotherDeviceScreen(
             viewModel = hiltViewModel(),
             onNavigateToOnboarding = onNavigateToOnboarding,
-            onDismiss = onDismiss
+            onReclaimedBack = onReclaimedBack
         )
     }
 }
