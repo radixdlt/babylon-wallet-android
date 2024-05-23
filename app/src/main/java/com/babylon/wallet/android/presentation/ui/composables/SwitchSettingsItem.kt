@@ -22,10 +22,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
 fun SwitchSettingsItem(
+    modifier: Modifier = Modifier,
     @StringRes titleRes: Int,
     checked: Boolean,
+    enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
     icon: @Composable (() -> Unit)? = null,
     @StringRes subtitleRes: Int? = null,
 ) {
@@ -55,7 +56,11 @@ fun SwitchSettingsItem(
             }
         }
 
-        RadixSwitch(checked = checked, onCheckedChange = onCheckedChange)
+        RadixSwitch(
+            checked = checked,
+            enabled = enabled,
+            onCheckedChange = onCheckedChange
+        )
     }
 }
 

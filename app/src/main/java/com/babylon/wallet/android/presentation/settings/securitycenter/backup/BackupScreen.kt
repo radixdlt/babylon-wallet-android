@@ -231,6 +231,7 @@ private fun BackupScreenContent(
             ) {
                 BackupStatusCard(
                     cloudBackupState = state.cloudBackupState,
+                    isCloudAuthorizationInProgress = state.isCloudAuthorizationInProgress,
                     onBackupCheckChanged = onBackupCheckChanged
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -376,6 +377,7 @@ private fun ManualBackupCard(
 @Composable
 private fun BackupStatusCard(
     modifier: Modifier = Modifier,
+    isCloudAuthorizationInProgress: Boolean,
     cloudBackupState: CloudBackupState,
     onBackupCheckChanged: (Boolean) -> Unit
 ) {
@@ -395,7 +397,8 @@ private fun BackupStatusCard(
                     contentDescription = null
                 )
             },
-            onCheckedChange = onBackupCheckChanged
+            enabled = isCloudAuthorizationInProgress.not(),
+            onCheckedChange = onBackupCheckChanged,
         )
         if (cloudBackupState is CloudBackupState.Disabled) {
             Text(
@@ -795,6 +798,7 @@ fun BackupStatusCardPreview() {
     RadixWalletPreviewTheme {
         BackupStatusCard(
             cloudBackupState = CloudBackupState.Enabled(email = "my cool email"),
+            isCloudAuthorizationInProgress = false,
             onBackupCheckChanged = {}
         )
     }

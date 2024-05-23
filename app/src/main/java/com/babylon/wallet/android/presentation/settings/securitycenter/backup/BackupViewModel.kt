@@ -52,11 +52,13 @@ class BackupViewModel @Inject constructor(
             result
                 .onSuccess {
                     changeBackupSettingUseCase(isChecked = true)
+                    _state.update { state -> state.copy(isCloudAuthorizationInProgress = false) }
                     Timber.tag("CloudBackup").d("\uD83D\uDD11 Cloud backup is authorized")
                 }
                 .onFailure { exception ->
                     changeBackupSettingUseCase(isChecked = false)
-                    Timber.tag("CloudBackup").w("cloud backup authorization failed: $exception")
+                    _state.update { state -> state.copy(isCloudAuthorizationInProgress = false) }
+                    Timber.tag("CloudBackup").w("Cloud backup authorization failed: $exception")
                 }
         }
     }
@@ -71,6 +73,8 @@ class BackupViewModel @Inject constructor(
 
     fun onBackupSettingChanged(isChecked: Boolean) = viewModelScope.launch {
         if (isChecked) {
+            Timber.tag("CloudBackup").d("Cloud backup authorization is in progress...")
+            _state.update { it.copy(isCloudAuthorizationInProgress = true) }
             sendEvent(Event.SignInToGoogle)
         } else { // just turn off the cloud backup sync
             changeBackupSettingUseCase(isChecked = false)
@@ -169,6 +173,7 @@ class BackupViewModel @Inject constructor(
 
     data class State(
         val cloudBackupState: CloudBackupState = CloudBackupState.Enabled(email = ""),
+        val isCloudAuthorizationInProgress: Boolean = false,
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
         val uiMessage: UiMessage? = null,
