@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
@@ -32,7 +33,7 @@ class SettingsViewModel @Inject constructor(
     private val defaultSettings = listOf(
         SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter()),
         SettingsUiItem.Spacer,
-        SettingsUiItem.Settings(Personas),
+        SettingsUiItem.Settings(Personas()),
         SettingsUiItem.Settings(SettingsItem.TopLevelSettings.ApprovedDapps),
         SettingsUiItem.Settings(SettingsItem.TopLevelSettings.LinkedConnectors),
         SettingsUiItem.Spacer,
@@ -55,6 +56,10 @@ class SettingsViewModel @Inject constructor(
             mutated = mutated.mapWhen(
                 predicate = { it is SettingsUiItem.Settings && it.item is SettingsItem.TopLevelSettings.SecurityCenter },
                 mutation = { SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter(securityProblems)) }
+            )
+            mutated = mutated.mapWhen(
+                predicate = { it is SettingsUiItem.Settings && it.item is Personas },
+                mutation = { SettingsUiItem.Settings(Personas(securityProblems)) }
             )
         }
         SettingsUiState(mutated.toPersistentList())
@@ -85,3 +90,9 @@ sealed interface SettingsUiItem {
     data object Spacer : SettingsUiItem
     data class Settings(val item: SettingsItem.TopLevelSettings) : SettingsUiItem
 }
+
+val Personas.anyPersonaNeedBackup
+    get() = securityProblems.any { it is SecurityProblem.EntitiesNotRecoverable && it.personasNeedBackup > 0 }
+
+val Personas.anyPersonaNeedRecovery
+    get() = securityProblems.any { it is SecurityProblem.SeedPhraseNeedRecovery && it.arePersonasAffected }

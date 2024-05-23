@@ -12,7 +12,7 @@ sealed interface SettingsItem {
         data object LinkToConnector : TopLevelSettings
 
         data class SecurityCenter(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
-        data object Personas : TopLevelSettings
+        data class Personas(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
         data object ApprovedDapps : TopLevelSettings
 
         data object LinkedConnectors : TopLevelSettings
@@ -68,7 +68,12 @@ sealed interface SettingsItem {
 
         val count: Int
 
-        data class SeedPhrases(override val count: Int, val needsRecovery: Boolean) : SecurityFactorsSettingsItem
+        data class SeedPhrases(
+            override val count: Int,
+            val needsRecovery: Boolean,
+            val anyEntitySeedPhraseNotWrittenDown: Boolean
+        ) : SecurityFactorsSettingsItem
+
         data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem
 
         @StringRes

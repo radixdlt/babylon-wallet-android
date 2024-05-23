@@ -67,14 +67,9 @@ class PersonasViewModel @Inject constructor(
         val entitiesWithSecurityPrompts: List<EntityWithSecurityPrompt> = emptyList()
     ) : UiState {
         fun securityPrompt(forEntity: Persona): SecurityPromptType? {
-            val prompt = entitiesWithSecurityPrompts.find {
+            return entitiesWithSecurityPrompts.find {
                 it.entity.address.string == forEntity.address.string
             }?.prompt
-            return if (prompt == SecurityPromptType.NEEDS_BACKUP) {
-                prompt
-            } else {
-                null
-            }
         }
     }
 

@@ -131,6 +131,16 @@ private fun SettingsContent(
                                                     }
                                                 }
 
+                                                is SettingsItem.TopLevelSettings.Personas -> {
+                                                    mutableListOf<String>().apply {
+                                                        if (settingsItem.item.anyPersonaNeedRecovery) {
+                                                            add(stringResource(R.string.walletSettings_personas_problem9Hint))
+                                                        } else if (settingsItem.item.anyPersonaNeedRecovery) {
+                                                            add(stringResource(R.string.walletSettings_personas_problem3Hint))
+                                                        }
+                                                    }.toPersistentList()
+                                                }
+
                                                 else -> null
                                             }
                                         )

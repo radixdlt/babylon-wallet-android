@@ -284,7 +284,8 @@ private fun SpecificDepositorContent(
                     onClick = onShowAddAssetSheet,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault)
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    enabled = allowedDepositors != null
                 )
             }
         },

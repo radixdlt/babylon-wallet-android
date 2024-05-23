@@ -33,5 +33,8 @@ class SecurityCenterViewModel @Inject constructor(
 
     data class SecurityCenterUiState(
         val securityProblems: Set<SecurityProblem>? = null
-    ) : UiState
+    ) : UiState {
+        val hasSecurityProblems: Boolean
+            get() = !securityProblems.isNullOrEmpty()
+    }
 }

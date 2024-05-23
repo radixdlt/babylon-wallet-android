@@ -21,8 +21,9 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun SecurityFactorsScreen(
@@ -104,10 +105,8 @@ private fun SecurityFactorsContent(
                                 }
                             }
                         },
-                        warnings = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases &&
-                            securityFactorsSettingsItem.needsRecovery
-                        ) {
-                            persistentListOf(stringResource(id = R.string.securityFactors_seedPhrases_enterSeedPhrase))
+                        warnings = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases) {
+                            getSecurityWarnings(securityFactorsSettingsItem = securityFactorsSettingsItem)
                         } else {
                             null
                         }
@@ -119,6 +118,17 @@ private fun SecurityFactorsContent(
             }
         }
     }
+}
+
+@Composable
+fun getSecurityWarnings(securityFactorsSettingsItem: SettingsItem.SecurityFactorsSettingsItem.SeedPhrases): PersistentList<String> {
+    return mutableListOf<String>().apply {
+        if (securityFactorsSettingsItem.needsRecovery) {
+            add(stringResource(id = R.string.securityFactors_seedPhrases_enterSeedPhrase))
+        } else if (securityFactorsSettingsItem.anyEntitySeedPhraseNotWrittenDown) {
+            add(stringResource(id = R.string.securityFactors_seedPhrases_writeDownSeedPhrase))
+        }
+    }.toPersistentList()
 }
 
 @Preview(showBackground = true)

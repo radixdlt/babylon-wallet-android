@@ -26,7 +26,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
@@ -53,9 +52,7 @@ import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -70,7 +67,7 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
+    getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
@@ -91,9 +88,11 @@ class WalletViewModel @Inject constructor(
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
+        getEntitiesWithSecurityPromptUseCase(),
         getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
         refreshFlow
-    ) { accounts, _ ->
+    ) { entitiesWithSecurityPrompts, accounts, _ ->
+        this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompts
         accounts
     }
 
@@ -107,8 +106,8 @@ class WalletViewModel @Inject constructor(
                 return@launch
             }
         }
+        observeBannerVisibility()
         observeAccounts()
-        observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
@@ -158,62 +157,48 @@ class WalletViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeAccounts() {
-        accountsFlow
-            .flatMapLatest { accounts ->
-                this.accountsWithAssets = accounts.map { account ->
-                    val current = accountsWithAssets?.find { account == it.account }
-                    AccountWithAssets(
-                        account = account,
-                        details = current?.details,
-                        assets = current?.assets
-                    )
-                }
-
-                _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
-
-                getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
-                    _state.update { onAssetsError(error) }
-                    Timber.w(error)
-                }
+        accountsFlow.flatMapLatest { accounts ->
+            this.accountsWithAssets = accounts.map { account ->
+                val current = accountsWithAssets?.find { account == it.account }
+                AccountWithAssets(
+                    account = account,
+                    details = current?.details,
+                    assets = current?.assets
+                )
             }
-            .mapLatest { accountsWithAssets ->
-                this.accountsWithAssets = accountsWithAssets
 
-                // keep the val here because the onAssetsReceived sets the refreshing to false
-                val isRefreshing = state.value.isRefreshing
+            _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
 
-                _state.update { onAssetsReceived() }
-
-                accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
-                    accountWithAssets.account.address to getFiatValueUseCase.forAccount(
-                        accountWithAssets = accountWithAssets,
-                        isRefreshing = isRefreshing
-                    ).onSuccess {
-                        shouldEnableFiatPrices(isEnabled = true)
-                    }.onFailure {
-                        if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                            shouldEnableFiatPrices(isEnabled = false)
-                        }
-                    }.getOrNull()
-                }
-
-                _state.update { onAssetsReceived() }
+            getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
+                _state.update { onAssetsError(error) }
+                Timber.w(error)
             }
+        }.mapLatest { accountsWithAssets ->
+            this.accountsWithAssets = accountsWithAssets
+
+            // keep the val here because the onAssetsReceived sets the refreshing to false
+            val isRefreshing = state.value.isRefreshing
+            _state.update { onAssetsReceived() }
+
+            accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
+                accountWithAssets.account.address to getFiatValueUseCase.forAccount(
+                    accountWithAssets = accountWithAssets,
+                    isRefreshing = isRefreshing
+                ).onSuccess {
+                    shouldEnableFiatPrices(isEnabled = true)
+                }.onFailure {
+                    if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                        shouldEnableFiatPrices(isEnabled = false)
+                    }
+                }.getOrNull()
+            }
+            _state.update { onAssetsReceived() }
+        }
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
     }
 
-    private fun observePrompts() {
-        viewModelScope.launch {
-            getEntitiesWithSecurityPromptUseCase().collect { entitiesWithSecurityPrompt ->
-                this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
-                _state.update {
-                    it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
-                    )
-                }
-            }
-        }
+    private fun observeBannerVisibility() {
         viewModelScope.launch {
             preferencesManager.isRadixBannerVisible.collect { isVisible ->
                 _state.update { it.copy(isRadixBannerVisible = isVisible) }
@@ -273,15 +258,9 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onApplySecuritySettings(account: Account, securityPromptType: SecurityPromptType) {
+    fun onApplySecuritySettings() {
         viewModelScope.launch {
-            val factorSourceId = getProfileUseCase().activeAccountOnCurrentNetwork(withAddress = account.address)
-                ?.factorSourceId as? FactorSourceId.Hash ?: return@launch
-
-            when (securityPromptType) {
-                SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
-                SecurityPromptType.NEEDS_RESTORE -> sendEvent(WalletEvent.NavigateToMnemonicRestore(factorSourceId))
-            }
+            sendEvent(WalletEvent.NavigateToSecurityCenter)
         }
     }
 
@@ -308,7 +287,8 @@ class WalletViewModel @Inject constructor(
             isLoading = false,
             isRefreshing = false,
             accountUiItems = accountUiItems,
-            totalFiatValueOfWallet = buildTotalFiatValue()
+            totalFiatValueOfWallet = buildTotalFiatValue(),
+            isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt(),
         )
     }
 
@@ -438,8 +418,7 @@ class WalletViewModel @Inject constructor(
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
-    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
+    data object NavigateToSecurityCenter : WalletEvent
 
     data object ShowNpsSurvey : WalletEvent
 

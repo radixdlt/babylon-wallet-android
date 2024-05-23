@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,16 +31,12 @@ import com.babylon.wallet.android.presentation.settings.personas.PersonasViewMod
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.core.sargon.factorSourceId
 
 @Composable
 fun PersonasScreen(
@@ -51,10 +45,9 @@ fun PersonasScreen(
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
     onPersonaClick: (IdentityAddress) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context: Context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
@@ -68,15 +61,7 @@ fun PersonasScreen(
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
         onPersonaClick = onPersonaClick,
-        onApplySecuritySettings = { factorSourceID ->
-            (factorSourceID as? FactorSourceId.Hash)?.let { id ->
-                context.biometricAuthenticate { result ->
-                    if (result == BiometricAuthenticationResult.Succeeded) {
-                        onNavigateToMnemonicBackup(id)
-                    }
-                }
-            }
-        }
+        onNavigateToSecurityCenter = onNavigateToSecurityCenter
     )
 }
 
@@ -87,7 +72,7 @@ fun PersonasContent(
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
     onPersonaClick: (IdentityAddress) -> Unit,
-    onApplySecuritySettings: ((FactorSourceId.Hash) -> Unit)
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -132,10 +117,8 @@ fun PersonasContent(
                             onPersonaClick(personaItem.address)
                         },
                         persona = personaItem,
-                        displaySecurityPrompt = state.securityPrompt(personaItem) != null,
-                        onApplySecuritySettings = {
-                            onApplySecuritySettings(personaItem.factorSourceId as FactorSourceId.Hash)
-                        }
+                        securityPromptType = state.securityPrompt(personaItem),
+                        onNavigateToSecurityCenter = onNavigateToSecurityCenter
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }

@@ -50,7 +50,7 @@ import rdx.works.core.sargon.isLedgerAccount
 fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: WalletUiState.AccountUiItem,
-    onApplySecuritySettings: (SecurityPromptType) -> Unit
+    onApplySecuritySettings: () -> Unit
 ) {
     ConstraintLayout(
         modifier
@@ -212,9 +212,7 @@ fun AccountCardView(
             accountWithAssets.securityPromptType?.let {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onApplySecuritySettings(it)
-                    },
+                    onClick = onApplySecuritySettings,
                     text = it.toText()
                 )
             }
