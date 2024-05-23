@@ -35,7 +35,8 @@ fun MainScreen(
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToSecurityCenter = onNavigateToSecurityCenter,
                 showNPSSurvey = showNPSSurvey,
-                onNavigateToRelinkConnectors = onNavigateToRelinkConnectors)
+                onNavigateToRelinkConnectors = onNavigateToRelinkConnectors
+            )
         }
 
         is AppState.IncompatibleProfile -> {
