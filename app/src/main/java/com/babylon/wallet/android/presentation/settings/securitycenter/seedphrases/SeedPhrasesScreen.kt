@@ -223,7 +223,7 @@ fun SeedPhraseCard(
         }
         if (data.mnemonicState == DeviceFactorSourceData.MnemonicState.NotBackedUp) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-            RedWarningText(text = AnnotatedString(stringResource(id = R.string.seedPhrases_seedPhrase_writeDown)))
+            RedWarningText(text = AnnotatedString(stringResource(id = R.string.seedPhrases_backupWarning)))
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         data.accounts.forEach { account ->
