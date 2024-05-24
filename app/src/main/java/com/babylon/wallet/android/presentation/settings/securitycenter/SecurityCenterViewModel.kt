@@ -36,5 +36,8 @@ class SecurityCenterViewModel @Inject constructor(
     ) : UiState {
         val hasSecurityProblems: Boolean
             get() = !securityProblems.isNullOrEmpty()
+
+        val hasSecurityRelatedProblems: Boolean
+            get() = securityProblems?.any { it.isSecurityFactorRelated } == true
     }
 }

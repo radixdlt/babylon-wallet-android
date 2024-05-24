@@ -105,7 +105,7 @@ private fun SecurityCenterContent(
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
             AnimatedVisibility(visible = state.hasSecurityProblems, enter = expandVertically()) {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
                     state.securityProblems?.forEach { problem ->
                         val title = problem.toProblemHeading()
                         when (problem) {
@@ -149,7 +149,7 @@ private fun SecurityCenterContent(
             }
             SecurityFactorsCard(
                 onSecurityFactorsClick = onSecurityFactorsClick,
-                needsAction = state.securityProblems?.isNotEmpty() == true
+                needsAction = state.hasSecurityRelatedProblems
             )
             BackupConfigurationCard(
                 needsAction = state.securityProblems?.contains(SecurityProblem.BackupNotWorking) == true,

@@ -17,7 +17,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -189,18 +188,6 @@ private fun WalletContent(
                                 ),
                                 contentDescription = null,
                                 tint = RadixTheme.colors.gray1
-                            )
-                        }
-
-                        if (state.isSettingsWarningVisible) {
-                            Badge(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingSmall,
-                                        end = RadixTheme.dimensions.paddingSmall
-                                    ),
-                                containerColor = RadixTheme.colors.red1
                             )
                         }
                     }
@@ -469,7 +456,6 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                     ),
                 ),
                 isLoading = true,
-                isSettingsWarningVisible = true,
                 totalFiatValueOfWallet = FiatPrice(
                     price = Decimal192.sample.invoke(),
                     currency = SupportedCurrency.USD

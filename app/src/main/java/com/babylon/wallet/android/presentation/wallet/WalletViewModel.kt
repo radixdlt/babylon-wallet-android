@@ -26,7 +26,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
@@ -57,7 +56,6 @@ import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -74,7 +72,6 @@ class WalletViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
-    getBackupStateUseCase: GetBackupStateUseCase,
     private val p2PLinksRepository: P2PLinksRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
@@ -82,7 +79,6 @@ class WalletViewModel @Inject constructor(
     private var accountsWithAssets: List<AccountWithAssets>? = null
     private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
     private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
-    private var isBackupWarningVisible: Boolean = false
 
     override fun initialState() = WalletUiState()
 
@@ -106,7 +102,6 @@ class WalletViewModel @Inject constructor(
         }
         observePrompts()
         observeAccounts()
-        observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
         observePromptMessageStates()
@@ -200,7 +195,6 @@ class WalletViewModel @Inject constructor(
                 this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
                 _state.update {
                     it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt(),
                         accountUiItems = buildAccountUiItems()
                     )
                 }
@@ -209,20 +203,6 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesManager.isRadixBannerVisible.collect { isVisible ->
                 _state.update { it.copy(isRadixBannerVisible = isVisible) }
-            }
-        }
-    }
-
-    private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
-        viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                this@WalletViewModel.isBackupWarningVisible = backupState.isWarningVisible
-
-                _state.update {
-                    it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
-                    )
-                }
             }
         }
     }
@@ -294,8 +274,7 @@ class WalletViewModel @Inject constructor(
             isLoading = false,
             isRefreshing = false,
             accountUiItems = accountUiItems,
-            totalFiatValueOfWallet = buildTotalFiatValue(),
-            isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt(),
+            totalFiatValueOfWallet = buildTotalFiatValue()
         )
     }
 
@@ -396,10 +375,6 @@ class WalletViewModel @Inject constructor(
         it.entity.address.string == forAccount.address.string
     }?.prompt
 
-    private fun anyBackupSecurityPrompt() = entitiesWithSecurityPrompt.any {
-        it.entity is ProfileEntity.PersonaEntity && it.prompt == SecurityPromptType.NEEDS_BACKUP
-    }
-
     private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
         return when {
             !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
@@ -440,8 +415,7 @@ data class WalletUiState(
     val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
     val isNpsSurveyShown: Boolean = false,
-    val totalFiatValueOfWallet: FiatPrice? = null,
-    val isSettingsWarningVisible: Boolean = false
+    val totalFiatValueOfWallet: FiatPrice? = null
 ) : UiState {
 
     enum class AccountTag {
