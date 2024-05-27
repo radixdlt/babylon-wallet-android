@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -85,7 +86,7 @@ class WalletViewModel @Inject constructor(
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
         getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
-        refreshFlow
+        refreshFlow.onStart { emit(Unit) }
     ) { accounts, _ ->
         accounts
     }
@@ -103,7 +104,6 @@ class WalletViewModel @Inject constructor(
         observePrompts()
         observeAccounts()
         observeGlobalAppEvents()
-        loadAssets(withRefresh = false)
         observePromptMessageStates()
     }
 
