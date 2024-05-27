@@ -16,7 +16,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
         getEntitiesWithSecurityPromptUseCase(),
         getBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, backupState ->
-        val entitiesNeedingRecovery = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_RESTORE) }
+        val entitiesNeedingRecovery = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_RECOVER) }
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_BACKUP) }
         val factorSourceIdsNeedRecovery = entitiesNeedingRecovery.map { it.entity.securityState.factorSourceId }
         val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }.toSet()

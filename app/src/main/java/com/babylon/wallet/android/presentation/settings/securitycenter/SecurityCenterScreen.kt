@@ -127,7 +127,7 @@ private fun SecurityCenterContent(
                                         .clip(RadixTheme.shapes.roundedRectMedium)
                                         .clickable { onRecoverEntitiesClick() },
                                     title = title,
-                                    subtitle = stringResource(id = R.string.securityCenter_problem9_text)
+                                    subtitle = stringResource(id = R.string.securityProblems_no9_securityCenterBody)
                                 )
                             }
 

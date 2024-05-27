@@ -98,8 +98,8 @@ fun PersonaCard(
 
 @Composable
 private fun SecurityPromptType.toText() = when (this) {
-    SecurityPromptType.NEEDS_BACKUP -> stringResource(id = R.string.personas_writeSeedPhrase)
-    SecurityPromptType.NEEDS_RESTORE -> stringResource(id = R.string.personas_recoverSeedPhrase)
+    SecurityPromptType.NEEDS_BACKUP -> stringResource(id = R.string.securityProblems_no3_personas)
+    SecurityPromptType.NEEDS_RECOVER -> stringResource(id = R.string.securityProblems_no9_walletSettingsPersonas)
 }
 
 @Composable

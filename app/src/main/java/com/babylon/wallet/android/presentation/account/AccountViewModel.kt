@@ -251,7 +251,7 @@ class AccountViewModel @Inject constructor(
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(NavigateToMnemonicBackup(factorSourceId))
-                SecurityPromptType.NEEDS_RESTORE -> sendEvent(NavigateToMnemonicRestore(factorSourceId))
+                SecurityPromptType.NEEDS_RECOVER -> sendEvent(NavigateToMnemonicRestore(factorSourceId))
             }
         }
     }

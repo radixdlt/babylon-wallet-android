@@ -124,9 +124,9 @@ private fun SecurityFactorsContent(
 fun getSecurityWarnings(securityFactorsSettingsItem: SettingsItem.SecurityFactorsSettingsItem.SeedPhrases): PersistentList<String> {
     return mutableListOf<String>().apply {
         if (securityFactorsSettingsItem.needsRecovery) {
-            add(stringResource(id = R.string.securityFactors_seedPhrases_enterSeedPhrase))
+            add(stringResource(id = R.string.securityProblems_no9_seedPhrases))
         } else if (securityFactorsSettingsItem.anyEntitySeedPhraseNotWrittenDown) {
-            add(stringResource(id = R.string.securityFactors_seedPhrases_writeDownSeedPhrase))
+            add(stringResource(id = R.string.securityProblems_no3_securityFactors))
         }
     }.toPersistentList()
 }
