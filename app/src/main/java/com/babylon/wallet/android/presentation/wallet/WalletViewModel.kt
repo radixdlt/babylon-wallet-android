@@ -319,7 +319,7 @@ class WalletViewModel @Inject constructor(
     }
 
     /**
-     * if at least one account failed to fetch at least one price then return Zero
+     * if at least one account failed to fetch prices then return null
      */
     private fun buildTotalFiatValue(): FiatPrice? {
         val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
@@ -355,7 +355,6 @@ class WalletViewModel @Inject constructor(
         }
 
         val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
-
         val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
 
         return if (hasAtLeastOnePrice) {
@@ -367,7 +366,7 @@ class WalletViewModel @Inject constructor(
             }
             FiatPrice(price = total, currency = currency)
         } else {
-            FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
+            null
         }
     }
 

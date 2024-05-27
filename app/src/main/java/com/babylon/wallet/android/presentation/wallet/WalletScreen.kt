@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -216,13 +214,6 @@ private fun WalletContent(
                 onRadixBannerDismiss = onRadixBannerDismiss
             )
 
-            AnimatedVisibility(
-                modifier = Modifier.align(Alignment.Center),
-                visible = state.isLoading
-            ) {
-                CircularProgressIndicator(color = RadixTheme.colors.gray1)
-            }
-
             PullRefreshIndicator(
                 refreshing = state.isRefreshing,
                 state = pullRefreshState,
@@ -265,7 +256,7 @@ private fun WalletAccountList(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
                 TotalFiatBalanceView(
                     fiatPrice = state.totalFiatValueOfWallet,
-                    isLoading = remember(state.totalFiatValueOfWallet) { state.totalFiatValueOfWallet == null },
+                    isLoading = state.isLoading,
                     currency = SupportedCurrency.USD,
                     formattedContentStyle = RadixTheme.typography.header,
                     onVisibilityToggle = onShowHideBalanceToggle,
