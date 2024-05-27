@@ -23,7 +23,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
         val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }.toSet()
         val anyPersonaNeedRecovery = entitiesNeedingRecovery.any { it.entity is ProfileEntity.PersonaEntity }
         mutableSetOf<SecurityProblem>().apply {
-            if (cloudBackupState.isWorking) {
+            if (cloudBackupState.isActive) {
                 add(SecurityProblem.BackupNotWorking)
             }
             if (factorSourceIdsNeedRecovery.isNotEmpty()) {

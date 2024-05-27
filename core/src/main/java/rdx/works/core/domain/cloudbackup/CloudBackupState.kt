@@ -47,7 +47,7 @@ sealed class CloudBackupState {
     val isEnabled: Boolean
         get() = this is Enabled
 
-    val isWorking: Boolean
+    val isActive: Boolean
         get() = this is Disabled || (this as Enabled).hasAnyErrors
 
     // It is used for the login status of the Configuration Backup screen.

@@ -126,7 +126,7 @@ fun ClaimedByAnotherDeviceContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Clear Wallet on This Phone",
+            text = stringResource(id = R.string.configurationBackup_automated_walletTransferredClearButton),
             onClick = onClearWalletClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -134,7 +134,7 @@ fun ClaimedByAnotherDeviceContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Transfer Control Back to This Phone",
+            text = stringResource(id = R.string.configurationBackup_automated_walletTransferredTransferBackButton),
             onClick = onTransferControlBackClick
         )
     }

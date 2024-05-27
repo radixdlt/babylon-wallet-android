@@ -219,7 +219,7 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            if (state.cloudBackupState.isWorking) {
+            if (state.cloudBackupState.isActive) {
                 BackupWarning()
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
@@ -333,7 +333,7 @@ private fun ManualBackupCard(
             text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
-        if (cloudBackupState.isWorking) {
+        if (cloudBackupState.isActive) {
             Text(
                 modifier = Modifier.padding(
                     start = RadixTheme.dimensions.paddingDefault,
@@ -530,14 +530,14 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (cloudBackupState.isWorking) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+        val statusColor = if (cloudBackupState.isActive) RadixTheme.colors.orange3 else RadixTheme.colors.green1
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Icon(
-                painter = painterResource(id = if (cloudBackupState.isWorking) DSR.ic_warning_error else DSR.ic_check_circle),
+                painter = painterResource(id = if (cloudBackupState.isActive) DSR.ic_warning_error else DSR.ic_check_circle),
                 tint = statusColor,
                 contentDescription = null
             )
