@@ -81,7 +81,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         ensureBabylonFactorSourceExistUseCase,
         preferencesManager,
         npsSurveyStateObserver,
-        getCloudBackupStateUseCase,
         p2PLinksRepository,
         checkMigrationToNewBackupSystemUseCase,
         testDispatcher,
