@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -87,7 +88,7 @@ class WalletViewModel @Inject constructor(
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
         getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
-        refreshFlow
+        refreshFlow.onStart { emit(Unit) }
     ) { accounts, _ ->
         accounts
     }
@@ -105,7 +106,6 @@ class WalletViewModel @Inject constructor(
         observePrompts()
         observeAccounts()
         observeGlobalAppEvents()
-        loadAssets(withRefresh = false)
         observePromptMessageStates()
         checkForOldBackupSystemToMigrate()
     }
@@ -327,7 +327,7 @@ class WalletViewModel @Inject constructor(
     }
 
     /**
-     * if at least one account failed to fetch at least one price then return Zero
+     * if at least one account failed to fetch prices then return null
      */
     private fun buildTotalFiatValue(): FiatPrice? {
         val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
@@ -363,7 +363,6 @@ class WalletViewModel @Inject constructor(
         }
 
         val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
-
         val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
 
         return if (hasAtLeastOnePrice) {
@@ -375,7 +374,7 @@ class WalletViewModel @Inject constructor(
             }
             FiatPrice(price = total, currency = currency)
         } else {
-            FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
+            null
         }
     }
 

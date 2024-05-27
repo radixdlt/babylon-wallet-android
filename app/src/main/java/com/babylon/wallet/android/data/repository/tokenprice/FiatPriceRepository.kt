@@ -17,7 +17,6 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
@@ -26,7 +25,6 @@ import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.peerdroid.di.IoDispatcher
 import timber.log.Timber
-import java.lang.IllegalStateException
 import javax.inject.Inject
 import javax.inject.Qualifier
 import kotlin.random.Random
@@ -62,6 +60,7 @@ interface FiatPriceRepository {
     // This will not be needed when using sargon's Address types
     sealed interface PriceRequestAddress {
         val address: ResourceAddress
+
         data class Regular(override val address: ResourceAddress) : PriceRequestAddress
         data class LSU(override val address: ResourceAddress) : PriceRequestAddress
     }
@@ -130,10 +129,7 @@ class MainnetFiatPriceRepository @Inject constructor(
                         addresses = allAddresses,
                         minValidity = tokenPriceCacheValidity()
                     ).toFiatPrices()
-                }.getOrElse {
-                    Timber.e("failed to fetch tokens prices with exception: ${it.message}")
-                    emptyMap()
-                }
+                }.getOrThrow()
             } else {
                 tokensPrices.toFiatPrices()
             }
@@ -187,22 +183,23 @@ class TestnetFiatPriceRepository @Inject constructor(
             currency = currency,
             isRefreshing = isRefreshing
         ).map { result ->
-            val prices = result.toMutableMap()
-            val xrdPrice = prices.remove(mainnetXrdAddress)
+            if (result.isNotEmpty()) {
+                val prices = result.toMutableMap()
+                val xrdPrice = prices.remove(mainnetXrdAddress)
 
-            addresses.associate { priceRequestAddress ->
-                if (prices.isEmpty()) {
-                    // if the token price service (getFiatPrices) returns emptyMap we can't give random price
-                    priceRequestAddress.address to FiatPrice(0.toDecimal192(), currency)
-                } else if (priceRequestAddress.address in XrdResource.addressesPerNetwork().values) {
-                    priceRequestAddress.address to xrdPrice
-                } else {
-                    val randomPrice = prices.entries.elementAt(Random.nextInt(prices.entries.size)).value
-                    priceRequestAddress.address to randomPrice
-                }
-            }.mapNotNull { addressAndFiatPrice ->
-                addressAndFiatPrice.value?.let { fiatPrice -> addressAndFiatPrice.key to fiatPrice }
-            }.toMap()
+                addresses.associate { priceRequestAddress ->
+                    if (priceRequestAddress.address in XrdResource.addressesPerNetwork().values) {
+                        priceRequestAddress.address to xrdPrice
+                    } else {
+                        val randomPrice = prices.entries.elementAt(Random.nextInt(prices.entries.size)).value
+                        priceRequestAddress.address to randomPrice
+                    }
+                }.mapNotNull { addressAndFiatPrice ->
+                    addressAndFiatPrice.value?.let { fiatPrice -> addressAndFiatPrice.key to fiatPrice }
+                }.toMap()
+            } else {
+                emptyMap()
+            }
         }
     }
 }
