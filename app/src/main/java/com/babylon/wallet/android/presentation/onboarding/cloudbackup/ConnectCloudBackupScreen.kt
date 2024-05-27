@@ -102,7 +102,7 @@ private fun ConnectCloudBackupContent(
                         text = when (state.mode) {
                             ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_skip)
                             ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_skip)
-                            ConnectMode.ExistingWallet -> stringResource(id = R.string.empty) // TODO test it
+                            ConnectMode.ExistingWallet -> stringResource(id = R.string.empty)
                         },
                         onClick = {
                             onSkipClick() // continue without back up
@@ -148,7 +148,7 @@ private fun ConnectCloudBackupContent(
                 text = when (state.mode) {
                     ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupTitle)
                     ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_backupTitle)
-                    ConnectMode.ExistingWallet -> "Backups on Google Drive Have Updated"
+                    ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedTitleAndroid)
                 },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -160,10 +160,7 @@ private fun ConnectCloudBackupContent(
                 text = when (state.mode) {
                     ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupSubtitle)
                     ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_backupSubtitle)
-                    ConnectMode.ExistingWallet ->
-                        "The Radix Wallet has an all new and improved backup system.\n" +
-                            "\n" +
-                            "To continue, log in with the Google Drive account you want to use for backups."
+                    ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedSubtitleAndroid)
                 },
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray2,
@@ -176,7 +173,7 @@ private fun ConnectCloudBackupContent(
                 text = when (state.mode) {
                     ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupButton)
                     ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_loginButton)
-                    ConnectMode.ExistingWallet -> "Login to Google Drive for Backups"
+                    ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedLoginButtonAndroid)
                 },
                 isLoading = state.isConnecting,
                 onClick = onLoginToGoogleClick
@@ -184,7 +181,7 @@ private fun ConnectCloudBackupContent(
             if (state.mode == ConnectMode.ExistingWallet) {
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Skip for now",
+                    text = stringResource(id = R.string.configurationBackup_automated_cloudUpdatedSkipButtonAndroid),
                     onClick = onSkipClick
                 )
             }

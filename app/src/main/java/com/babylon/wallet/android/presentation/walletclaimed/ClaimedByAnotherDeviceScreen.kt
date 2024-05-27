@@ -18,10 +18,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -90,29 +92,29 @@ fun ClaimedByAnotherDeviceContent(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
         ) {
-            Text( // TODO
-                text = "Wallet Control Has Been Transferred",
+            Text(
+                text = stringResource(id = R.string.configurationBackup_automated_walletTransferredTitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Text( // TODO
-                text = "The current wallet configuration is now controlled by another phone.",
+            Text(
+                text = stringResource(id = R.string.configurationBackup_automated_walletTransferredSubtitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Text( // TODO
-                text = "If this was done in error, you can reclaim control to this phone. You won’t be able to access it from your old phone after the transfer.",
+            Text(
+                text = stringResource(id = R.string.configurationBackup_automated_walletTransferredExplanation1),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Text( // TODO
-                text = "Or, you can clear the wallet configuration from this phone and start fresh.",
+            Text(
+                text = stringResource(id = R.string.configurationBackup_automated_walletTransferredExplanation2),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
