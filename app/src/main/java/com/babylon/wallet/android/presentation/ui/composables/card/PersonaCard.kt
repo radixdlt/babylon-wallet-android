@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -42,8 +43,8 @@ fun PersonaCard(
     persona: Persona,
     showChevron: Boolean = true,
     elevation: Dp = 8.dp,
-    onApplySecuritySettings: (() -> Unit)? = null,
-    displaySecurityPrompt: Boolean = false
+    onNavigateToSecurityCenter: (() -> Unit)? = null,
+    securityPromptType: SecurityPromptType? = null
 ) {
     Column(
         modifier = modifier
@@ -84,15 +85,21 @@ fun PersonaCard(
                 )
             }
         }
-        if (displaySecurityPrompt) {
+        securityPromptType?.let {
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = onApplySecuritySettings,
-                text = stringResource(id = R.string.personas_writeSeedPhrase),
+                onClick = onNavigateToSecurityCenter,
+                text = it.toText(),
                 labelColor = RadixTheme.colors.backgroundAlternate.copy(alpha = 0.3f),
             )
         }
     }
+}
+
+@Composable
+private fun SecurityPromptType.toText() = when (this) {
+    SecurityPromptType.NEEDS_BACKUP -> stringResource(id = R.string.securityProblems_no3_personas)
+    SecurityPromptType.NEEDS_RECOVER -> stringResource(id = R.string.securityProblems_no9_walletSettingsPersonas)
 }
 
 @Composable

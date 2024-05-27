@@ -37,7 +37,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         val factorSource = getProfileUseCase().factorSourceById(factorSourceId) as? FactorSource.Device ?: return null
         val prompts = mutableSetOf<SecurityPromptType>().apply {
             if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
-                add(SecurityPromptType.NEEDS_RESTORE)
+                add(SecurityPromptType.NEEDS_RECOVER)
             } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
                 add(SecurityPromptType.NEEDS_BACKUP)
             }
@@ -63,5 +63,5 @@ data class EntityWithSecurityPrompt(
 
 enum class SecurityPromptType {
     NEEDS_BACKUP,
-    NEEDS_RESTORE
+    NEEDS_RECOVER
 }

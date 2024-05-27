@@ -30,7 +30,7 @@ class SecurityFactorsViewModel @Inject constructor(
 
     override fun initialState(): SecurityFactorsUiState = SecurityFactorsUiState(
         settings = persistentSetOf(
-            SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(0, false),
+            SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(0, false, false),
             SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets(0)
         )
     )
@@ -44,12 +44,20 @@ class SecurityFactorsViewModel @Inject constructor(
             ) { deviceFactorSources, ledgerFactorSources, entitiesWithSecurityPrompts ->
                 val factorSourcesIds = deviceFactorSources.map { it.deviceFactorSource.id }
                 val anyEntityNeedRecovery = entitiesWithSecurityPrompts.any { entityWithSecurityPrompt ->
-                    entityWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_RESTORE &&
+                    entityWithSecurityPrompt.prompts.contains(SecurityPromptType.NEEDS_RECOVER) &&
+                        entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
+                }
+                val anyEntitySeedPhraseNotWrittenDown = entitiesWithSecurityPrompts.any { entityWithSecurityPrompt ->
+                    entityWithSecurityPrompt.prompts.contains(SecurityPromptType.NEEDS_BACKUP) &&
                         entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
                 }
                 SecurityFactorsUiState(
                     settings = persistentSetOf(
-                        SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(deviceFactorSources.size, anyEntityNeedRecovery),
+                        SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(
+                            deviceFactorSources.size,
+                            anyEntityNeedRecovery,
+                            anyEntitySeedPhraseNotWrittenDown
+                        ),
                         SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets(ledgerFactorSources.size)
                     )
                 )

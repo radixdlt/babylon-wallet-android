@@ -26,8 +26,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
@@ -53,14 +51,11 @@ import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -70,14 +65,13 @@ import javax.inject.Inject
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
+    getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
-    getBackupStateUseCase: GetBackupStateUseCase,
     private val p2PLinksRepository: P2PLinksRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
@@ -85,7 +79,6 @@ class WalletViewModel @Inject constructor(
     private var accountsWithAssets: List<AccountWithAssets>? = null
     private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
     private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
-    private var isBackupWarningVisible: Boolean = false
 
     override fun initialState() = WalletUiState()
 
@@ -107,9 +100,8 @@ class WalletViewModel @Inject constructor(
                 return@launch
             }
         }
-        observeAccounts()
         observePrompts()
-        observeProfileBackupState(getBackupStateUseCase)
+        observeAccounts()
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
         observePromptMessageStates()
@@ -158,49 +150,43 @@ class WalletViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeAccounts() {
-        accountsFlow
-            .flatMapLatest { accounts ->
-                this.accountsWithAssets = accounts.map { account ->
-                    val current = accountsWithAssets?.find { account == it.account }
-                    AccountWithAssets(
-                        account = account,
-                        details = current?.details,
-                        assets = current?.assets
-                    )
-                }
-
-                _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
-
-                getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
-                    _state.update { onAssetsError(error) }
-                    Timber.w(error)
-                }
+        accountsFlow.flatMapLatest { accounts ->
+            this.accountsWithAssets = accounts.map { account ->
+                val current = accountsWithAssets?.find { account == it.account }
+                AccountWithAssets(
+                    account = account,
+                    details = current?.details,
+                    assets = current?.assets
+                )
             }
-            .mapLatest { accountsWithAssets ->
-                this.accountsWithAssets = accountsWithAssets
 
-                // keep the val here because the onAssetsReceived sets the refreshing to false
-                val isRefreshing = state.value.isRefreshing
+            _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
 
-                _state.update { onAssetsReceived() }
-
-                accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
-                    accountWithAssets.account.address to getFiatValueUseCase.forAccount(
-                        accountWithAssets = accountWithAssets,
-                        isRefreshing = isRefreshing
-                    ).onSuccess {
-                        shouldEnableFiatPrices(isEnabled = true)
-                    }.onFailure {
-                        if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                            shouldEnableFiatPrices(isEnabled = false)
-                        }
-                    }.getOrNull()
-                }
-
-                _state.update { onAssetsReceived() }
+            getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
+                _state.update { onAssetsError(error) }
+                Timber.w(error)
             }
-            .flowOn(ioDispatcher)
-            .launchIn(viewModelScope)
+        }.mapLatest { accountsWithAssets ->
+            this.accountsWithAssets = accountsWithAssets
+
+            // keep the val here because the onAssetsReceived sets the refreshing to false
+            val isRefreshing = state.value.isRefreshing
+            _state.update { onAssetsReceived() }
+
+            accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
+                accountWithAssets.account.address to getFiatValueUseCase.forAccount(
+                    accountWithAssets = accountWithAssets,
+                    isRefreshing = isRefreshing
+                ).onSuccess {
+                    shouldEnableFiatPrices(isEnabled = true)
+                }.onFailure {
+                    if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                        shouldEnableFiatPrices(isEnabled = false)
+                    }
+                }.getOrNull()
+            }
+            _state.update { onAssetsReceived() }
+        }.flowOn(ioDispatcher).launchIn(viewModelScope)
     }
 
     private fun observePrompts() {
@@ -209,7 +195,7 @@ class WalletViewModel @Inject constructor(
                 this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
                 _state.update {
                     it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
+                        accountUiItems = buildAccountUiItems()
                     )
                 }
             }
@@ -217,20 +203,6 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesManager.isRadixBannerVisible.collect { isVisible ->
                 _state.update { it.copy(isRadixBannerVisible = isVisible) }
-            }
-        }
-    }
-
-    private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
-        viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                this@WalletViewModel.isBackupWarningVisible = backupState.isWarningVisible
-
-                _state.update {
-                    it.copy(
-                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
-                    )
-                }
             }
         }
     }
@@ -273,15 +245,9 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onApplySecuritySettings(account: Account, securityPromptType: SecurityPromptType) {
+    fun onApplySecuritySettings() {
         viewModelScope.launch {
-            val factorSourceId = getProfileUseCase().activeAccountOnCurrentNetwork(withAddress = account.address)
-                ?.factorSourceId as? FactorSourceId.Hash ?: return@launch
-
-            when (securityPromptType) {
-                SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
-                SecurityPromptType.NEEDS_RESTORE -> sendEvent(WalletEvent.NavigateToMnemonicRestore(factorSourceId))
-            }
+            sendEvent(WalletEvent.NavigateToSecurityCenter)
         }
     }
 
@@ -409,10 +375,6 @@ class WalletViewModel @Inject constructor(
         it.entity.address.string == forAccount.address.string
     }?.prompt
 
-    private fun anyBackupSecurityPrompt() = entitiesWithSecurityPrompt.any {
-        it.entity is ProfileEntity.PersonaEntity && it.prompt == SecurityPromptType.NEEDS_BACKUP
-    }
-
     private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
         return when {
             !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
@@ -438,8 +400,7 @@ class WalletViewModel @Inject constructor(
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
-    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
+    data object NavigateToSecurityCenter : WalletEvent
 
     data object ShowNpsSurvey : WalletEvent
 
@@ -454,8 +415,7 @@ data class WalletUiState(
     val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
     val isNpsSurveyShown: Boolean = false,
-    val totalFiatValueOfWallet: FiatPrice? = null,
-    val isSettingsWarningVisible: Boolean = false
+    val totalFiatValueOfWallet: FiatPrice? = null
 ) : UiState {
 
     enum class AccountTag {

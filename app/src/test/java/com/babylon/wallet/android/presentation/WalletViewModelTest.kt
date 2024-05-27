@@ -77,7 +77,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         ensureBabylonFactorSourceExistUseCase,
         preferencesManager,
         npsSurveyStateObserver,
-        getBackupStateUseCase,
         p2PLinksRepository,
         testDispatcher
     )
@@ -123,7 +122,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
         viewModel.state.test {
             assertEquals(
-                WalletUiState(isSettingsWarningVisible = true),
+                WalletUiState(),
                 expectMostRecentItem()
             )
         }

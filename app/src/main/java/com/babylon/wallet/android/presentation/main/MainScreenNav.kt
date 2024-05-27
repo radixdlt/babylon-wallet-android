@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.main
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.StateFlow
 
 const val MAIN_ROUTE = "main"
@@ -13,8 +12,7 @@ fun NavGraphBuilder.main(
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
-    onNavigateToMnemonicRestore: () -> Unit,
+    onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
@@ -29,8 +27,7 @@ fun NavGraphBuilder.main(
             onAccountCreationClick = onAccountCreationClick,
             onNavigateToOnBoarding = onNavigateToOnBoarding,
             onNavigateToIncompatibleProfile = onNavigateToIncompatibleProfile,
-            onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
-            onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
+            onNavigateToSecurityCenter = onNavigateToSecurityCenter,
             showNPSSurvey = showNPSSurvey,
             onNavigateToRelinkConnectors = onNavigateToRelinkConnectors
         )

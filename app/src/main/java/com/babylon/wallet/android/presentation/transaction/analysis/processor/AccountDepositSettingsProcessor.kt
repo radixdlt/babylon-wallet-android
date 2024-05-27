@@ -10,6 +10,8 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ResourcePreference
 import com.radixdlt.sargon.ResourcePreferenceUpdate
+import com.radixdlt.sargon.extensions.isFungible
+import com.radixdlt.sargon.extensions.isNonFungible
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
@@ -23,9 +25,10 @@ class AccountDepositSettingsProcessor @Inject constructor(
         summary: ExecutionSummary,
         classification: DetailedManifestClass.AccountDepositSettingsUpdate
     ): PreviewType {
+        val involvedResourceAddresses = classification.involvedResourceAddresses
         val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses(),
-            nonFungibleIds = summary.involvedNonFungibleIds()
+            fungibleAddresses = involvedResourceAddresses.filter { it.isFungible }.toSet(),
+            nonFungibleIds = involvedResourceAddresses.filter { it.isNonFungible }.toSet().associateWith { emptySet() }
         ).getOrThrow()
         val involvedAccountAddresses = classification.depositModeUpdates.keys +
             classification.resourcePreferencesUpdates.keys +
@@ -52,6 +55,17 @@ class AccountDepositSettingsProcessor @Inject constructor(
         }
         return PreviewType.AccountsDepositSettings(result)
     }
+
+    private val DetailedManifestClass.AccountDepositSettingsUpdate.involvedResourceAddresses
+        get() = (
+            resourcePreferencesUpdates.map { entry ->
+                entry.value.map { it.key }
+            } + authorizedDepositorsRemoved.map { entry ->
+                entry.value.map { it.resourceAddress }
+            } + authorizedDepositorsAdded.map { entry ->
+                entry.value.map { it.resourceAddress }
+            }
+            ).flatten().toSet()
 
     private fun DetailedManifestClass.AccountDepositSettingsUpdate.resolveDepositorChanges(
         involvedAccount: Account,

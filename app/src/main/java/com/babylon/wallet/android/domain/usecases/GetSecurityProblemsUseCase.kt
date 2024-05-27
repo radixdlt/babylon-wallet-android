@@ -16,30 +16,31 @@ class GetSecurityProblemsUseCase @Inject constructor(
         getEntitiesWithSecurityPromptUseCase(),
         getBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, backupState ->
+        val entitiesNeedingRecovery = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_RECOVER) }
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_BACKUP) }
-        val entitiesNeedingRestore = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.NEEDS_RESTORE) }
-        val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }
-        val factorSourceIdsNeedRecovery = entitiesNeedingRestore.map { it.entity.securityState.factorSourceId }
+        val factorSourceIdsNeedRecovery = entitiesNeedingRecovery.map { it.entity.securityState.factorSourceId }
+        val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }.toSet()
+        val anyPersonaNeedRecovery = entitiesNeedingRecovery.any { it.entity is ProfileEntity.PersonaEntity }
         mutableSetOf<SecurityProblem>().apply {
-            factorSourceIdsNeedRecovery.forEach {
-                add(SecurityProblem.EntitiesNeedRecovery(it))
+            if (factorSourceIdsNeedRecovery.isNotEmpty()) {
+                add(SecurityProblem.SeedPhraseNeedRecovery(anyPersonaNeedRecovery))
             }
-            factorSourceIdsNeedBackup.forEach { factorSourceId ->
-                val accountsNeedBackup = entitiesNeedingBackup.count {
-                    it.entity is ProfileEntity.AccountEntity && it.entity.securityState.factorSourceId == factorSourceId
-                }
-                val personasNeedBackup = entitiesNeedingBackup.count {
-                    it.entity is ProfileEntity.PersonaEntity && it.entity.securityState.factorSourceId == factorSourceId
-                }
+            val accountsNeedBackup = entitiesNeedingBackup.count {
+                it.entity is ProfileEntity.AccountEntity && factorSourceIdsNeedBackup.contains(it.entity.securityState.factorSourceId)
+            }
+            val personasNeedBackup = entitiesNeedingBackup.count {
+                it.entity is ProfileEntity.PersonaEntity && factorSourceIdsNeedBackup.contains(it.entity.securityState.factorSourceId)
+            }
+            if (factorSourceIdsNeedBackup.isNotEmpty()) {
                 add(
                     SecurityProblem.EntitiesNotRecoverable(
                         accountsNeedBackup = accountsNeedBackup,
                         personasNeedBackup = personasNeedBackup
                     )
                 )
-                if (backupState.isWarningVisible) {
-                    add(SecurityProblem.BackupNotWorking)
-                }
+            }
+            if (backupState.isWarningVisible) {
+                add(SecurityProblem.BackupNotWorking)
             }
         }.toSet()
     }

@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +38,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.id
-import rdx.works.core.sargon.sample
 
 @Composable
 fun SecurityCenterScreen(
@@ -105,39 +104,43 @@ private fun SecurityCenterContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-            state.securityProblems?.forEach { problem ->
-                val title = problem.toProblemHeading()
-                when (problem) {
-                    is SecurityProblem.EntitiesNotRecoverable -> {
-                        NotOkStatusCard(
-                            modifier = Modifier
-                                .clip(RadixTheme.shapes.roundedRectMedium)
-                                .clickable {
-                                    onBackupEntities()
-                                },
-                            title = title,
-                            subtitle = stringResource(id = R.string.securityCenter_problem3_text)
-                        )
-                    }
+            AnimatedVisibility(visible = state.hasSecurityProblems, enter = expandVertically()) {
+                Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
+                    state.securityProblems?.forEach { problem ->
+                        val title = problem.toProblemHeading()
+                        when (problem) {
+                            is SecurityProblem.EntitiesNotRecoverable -> {
+                                NotOkStatusCard(
+                                    modifier = Modifier
+                                        .clip(RadixTheme.shapes.roundedRectMedium)
+                                        .clickable {
+                                            onBackupEntities()
+                                        },
+                                    title = title,
+                                    subtitle = stringResource(id = R.string.securityCenter_problem3_text)
+                                )
+                            }
 
-                    is SecurityProblem.EntitiesNeedRecovery -> {
-                        NotOkStatusCard(
-                            modifier = Modifier
-                                .clip(RadixTheme.shapes.roundedRectMedium)
-                                .clickable { onRecoverEntitiesClick() },
-                            title = title,
-                            subtitle = stringResource(id = R.string.securityCenter_problem9_text)
-                        )
-                    }
+                            is SecurityProblem.SeedPhraseNeedRecovery -> {
+                                NotOkStatusCard(
+                                    modifier = Modifier
+                                        .clip(RadixTheme.shapes.roundedRectMedium)
+                                        .clickable { onRecoverEntitiesClick() },
+                                    title = title,
+                                    subtitle = stringResource(id = R.string.securityProblems_no9_securityCenterBody)
+                                )
+                            }
 
-                    SecurityProblem.BackupNotWorking -> {
-                        NotOkStatusCard(
-                            modifier = Modifier
-                                .clip(RadixTheme.shapes.roundedRectMedium)
-                                .clickable { onBackupConfigurationClick() },
-                            title = title,
-                            subtitle = stringResource(id = R.string.securityCenter_problem6_text)
-                        )
+                            SecurityProblem.BackupNotWorking -> {
+                                NotOkStatusCard(
+                                    modifier = Modifier
+                                        .clip(RadixTheme.shapes.roundedRectMedium)
+                                        .clickable { onBackupConfigurationClick() },
+                                    title = title,
+                                    subtitle = stringResource(id = R.string.securityCenter_problem6_text)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -146,7 +149,7 @@ private fun SecurityCenterContent(
             }
             SecurityFactorsCard(
                 onSecurityFactorsClick = onSecurityFactorsClick,
-                needsAction = state.securityProblems?.isNotEmpty() == true
+                needsAction = state.hasSecurityRelatedProblems
             )
             BackupConfigurationCard(
                 needsAction = state.securityProblems?.contains(SecurityProblem.BackupNotWorking) == true,
@@ -355,7 +358,7 @@ fun SecurityProblem.toProblemHeading(): String {
             personasNeedBackup
         )
 
-        is SecurityProblem.EntitiesNeedRecovery -> stringResource(id = R.string.securityCenter_problem9_heading)
+        is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityCenter_problem9_heading)
         SecurityProblem.BackupNotWorking -> stringResource(id = R.string.securityCenter_problem6_heading)
     }
 }
@@ -385,7 +388,7 @@ fun SecurityCenterContentPreviewAllNotOk() {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
-                    SecurityProblem.EntitiesNeedRecovery(FactorSource.Device.sample.invoke().id)
+                    SecurityProblem.SeedPhraseNeedRecovery(false)
                 )
             ),
             onBackClick = {},
