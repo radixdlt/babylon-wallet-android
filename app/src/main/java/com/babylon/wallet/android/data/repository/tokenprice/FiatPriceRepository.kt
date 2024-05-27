@@ -129,10 +129,7 @@ class MainnetFiatPriceRepository @Inject constructor(
                         addresses = allAddresses,
                         minValidity = tokenPriceCacheValidity()
                     ).toFiatPrices()
-                }.getOrElse {
-                    Timber.e("failed to fetch tokens prices with exception: ${it.message}")
-                    emptyMap()
-                }
+                }.getOrThrow()
             } else {
                 tokensPrices.toFiatPrices()
             }

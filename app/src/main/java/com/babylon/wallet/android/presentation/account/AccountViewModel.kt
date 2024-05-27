@@ -130,7 +130,7 @@ class AccountViewModel @Inject constructor(
                             _state.update { state ->
                                 state.copy(
                                     assetsWithAssetsPrices = assetsPrices.associateBy { it.asset },
-                                    hasFailedToFetchPricesForAccount = assetsPrices.any { it.price == null }
+                                    hasFailedToFetchPricesForAccount = false
                                 )
                             }
                         }
