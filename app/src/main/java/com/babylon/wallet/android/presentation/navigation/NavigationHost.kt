@@ -134,6 +134,7 @@ fun NavigationHost(
                     }
 
                     ConnectMode.RestoreWallet -> navController.restoreFromBackupScreen()
+                    ConnectMode.ExistingWallet -> navController.popBackStack()
                 }
             }
         )
@@ -218,6 +219,9 @@ fun NavigationHost(
             },
             onNavigateToRelinkConnectors = {
                 navController.relinkConnectors()
+            },
+            onNavigateToConnectCloudBackup = {
+                navController.connectCloudBackupScreen(connectMode = ConnectMode.ExistingWallet)
             }
         )
         account(

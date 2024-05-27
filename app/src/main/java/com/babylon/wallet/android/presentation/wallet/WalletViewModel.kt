@@ -115,12 +115,12 @@ class WalletViewModel @Inject constructor(
         observeGlobalAppEvents()
         loadAssets(withRefresh = false)
         observePromptMessageStates()
-        checkForOldBackupSystem()
+        checkForOldBackupSystemToMigrate()
     }
 
-    private fun checkForOldBackupSystem() = viewModelScope.launch {
+    private fun checkForOldBackupSystemToMigrate() = viewModelScope.launch {
         if (checkMigrationToNewBackupSystemUseCase()) {
-            _state.update { it.copy(isOldBackupSystemBeingUsed = true) }
+            sendEvent(WalletEvent.NavigateToConnectCloudBackup)
         }
     }
 
@@ -448,8 +448,8 @@ class WalletViewModel @Inject constructor(
 internal sealed interface WalletEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
-
     data object NavigateToRelinkConnectors : WalletEvent
+    data object NavigateToConnectCloudBackup : WalletEvent
 }
 
 data class WalletUiState(
@@ -460,7 +460,6 @@ data class WalletUiState(
     val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
     val isNpsSurveyShown: Boolean = false,
-    val isOldBackupSystemBeingUsed: Boolean = false,
     val totalFiatValueOfWallet: FiatPrice? = null,
     val isSettingsWarningVisible: Boolean = false
 ) : UiState {

@@ -90,6 +90,7 @@ fun WalletScreen(
     onAccountCreationClick: () -> Unit,
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
+    onNavigateToConnectCloudBackup: () -> Unit,
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -113,11 +114,9 @@ fun WalletScreen(
         }
     }
 
-    LaunchedEffect(walletState.isNpsSurveyShown, walletState.isOldBackupSystemBeingUsed) {
+    LaunchedEffect(walletState.isNpsSurveyShown) {
         if (walletState.isNpsSurveyShown) {
             showNPSSurvey()
-        } else if (walletState.isOldBackupSystemBeingUsed) {
-            // TODO
         }
     }
 
@@ -127,6 +126,7 @@ fun WalletScreen(
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
                 WalletEvent.NavigateToRelinkConnectors -> onNavigateToRelinkConnectors()
+                WalletEvent.NavigateToConnectCloudBackup -> onNavigateToConnectCloudBackup()
             }
         }
     }

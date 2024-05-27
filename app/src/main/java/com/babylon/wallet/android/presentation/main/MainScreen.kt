@@ -24,7 +24,8 @@ fun MainScreen(
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
     showNPSSurvey: () -> Unit,
-    onNavigateToRelinkConnectors: () -> Unit
+    onNavigateToRelinkConnectors: () -> Unit,
+    onNavigateToConnectCloudBackup: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -38,7 +39,8 @@ fun MainScreen(
                 onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
                 onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
                 showNPSSurvey = showNPSSurvey,
-                onNavigateToRelinkConnectors = onNavigateToRelinkConnectors
+                onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
+                onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup
             )
         }
 

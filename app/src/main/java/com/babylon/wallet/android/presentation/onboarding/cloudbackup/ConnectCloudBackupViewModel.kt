@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
+import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import timber.log.Timber
@@ -22,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ConnectCloudBackupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val googleSignInManager: GoogleSignInManager
+    private val googleSignInManager: GoogleSignInManager,
+    private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
 ) : StateViewModel<ConnectCloudBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<ConnectCloudBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -58,6 +60,8 @@ class ConnectCloudBackupViewModel @Inject constructor(
             googleSignInManager.signOut()
         }
 
+        checkIfExistingWalletAndRevokeAccessToDeprecatedCloud()
+
         sendEvent(Event.SignInToGoogle)
     }
 
@@ -70,7 +74,15 @@ class ConnectCloudBackupViewModel @Inject constructor(
             googleSignInManager.signOut()
         }
 
+        checkIfExistingWalletAndRevokeAccessToDeprecatedCloud()
+
         sendEvent(Event.Proceed(mode = state.value.mode, isCloudBackupEnabled = false))
+    }
+
+    private suspend fun checkIfExistingWalletAndRevokeAccessToDeprecatedCloud() {
+        if (state.value.mode == ConnectMode.ExistingWallet) {
+            checkMigrationToNewBackupSystemUseCase.revokeAccessToDeprecatedCloudBackup()
+        }
     }
 
     data class State(
@@ -81,7 +93,8 @@ class ConnectCloudBackupViewModel @Inject constructor(
 
     enum class ConnectMode {
         NewWallet,
-        RestoreWallet
+        RestoreWallet,
+        ExistingWallet
     }
 
     sealed interface Event : OneOffEvent {
