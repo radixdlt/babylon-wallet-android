@@ -54,6 +54,8 @@ class EncryptedPreferencesManager @Inject constructor(
         encryptedValue.decrypt(KeySpec.Profile())
     }.flowOn(ioDispatcher)
 
+    private val p2pLinksKeySpec by lazy { KeySpec.Cache(P2P_LINKS_CACHE_KEY_ALIAS) }
+
     suspend fun readMnemonic(key: String): Result<String> {
         return preferences.data.catchIOException().map { preferences ->
             val preferencesKey = stringPreferencesKey(key)
@@ -166,16 +168,16 @@ class EncryptedPreferencesManager @Inject constructor(
             .map { preferences ->
                 preferences[stringPreferencesKey(P2P_LINKS_PREFERENCES_KEY)]
                     .takeIf { !it.isNullOrEmpty() }
-                    ?.decrypt(KeySpec.Profile())
+                    ?.decrypt(p2pLinksKeySpec)
             }
     }
 
     suspend fun saveP2PLinkListJson(p2pLinkListJson: String) {
-        putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, p2pLinkListJson, KeySpec.Profile())
+        putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, p2pLinkListJson, p2pLinksKeySpec)
     }
 
     suspend fun saveP2PLinksWalletPrivateKey(privateKeyHex: String) {
-        putString(permanentPreferences, P2P_LINKS_WALLET_PK_PREFERENCES_KEY, privateKeyHex, KeySpec.Profile())
+        putString(permanentPreferences, P2P_LINKS_WALLET_PK_PREFERENCES_KEY, privateKeyHex, p2pLinksKeySpec)
     }
 
     suspend fun getP2PLinksWalletPrivateKey(): String? {
@@ -183,7 +185,7 @@ class EncryptedPreferencesManager @Inject constructor(
             .map { preferences ->
                 preferences[stringPreferencesKey(P2P_LINKS_WALLET_PK_PREFERENCES_KEY)]
                     .takeIf { !it.isNullOrEmpty() }
-                    ?.decrypt(KeySpec.Profile())
+                    ?.decrypt(p2pLinksKeySpec)
             }
             .firstOrNull()
             ?.getOrNull()
@@ -208,6 +210,7 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
         private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
         private const val P2P_LINKS_WALLET_PK_PREFERENCES_KEY = "p2p_links_wallet_pk_key"
+        private const val P2P_LINKS_CACHE_KEY_ALIAS = "p2pLinksCacheKey"
         private const val RETRY_COUNT = 3L
         private const val RETRY_DELAY = 1500L
     }

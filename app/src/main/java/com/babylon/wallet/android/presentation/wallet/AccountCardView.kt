@@ -50,7 +50,7 @@ import rdx.works.core.sargon.isLedgerAccount
 fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: WalletUiState.AccountUiItem,
-    onApplySecuritySettings: (SecurityPromptType) -> Unit
+    onApplySecuritySettings: () -> Unit
 ) {
     ConstraintLayout(
         modifier
@@ -212,9 +212,7 @@ fun AccountCardView(
             accountWithAssets.securityPromptType?.let {
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        onApplySecuritySettings(it)
-                    },
+                    onClick = onApplySecuritySettings,
                     text = it.toText()
                 )
             }
@@ -281,7 +279,7 @@ fun AccountCardPreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
@@ -313,7 +311,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false
@@ -345,7 +343,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
@@ -378,7 +376,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         ),
                         fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                         tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                        securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                        securityPromptType = SecurityPromptType.NEEDS_RECOVER,
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
@@ -409,7 +407,7 @@ fun AccountCardLoadingPreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true

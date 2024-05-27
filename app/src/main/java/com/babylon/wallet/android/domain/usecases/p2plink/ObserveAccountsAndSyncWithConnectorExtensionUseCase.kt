@@ -14,7 +14,6 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
@@ -48,7 +47,7 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
                 ?.let { Hash.init(it) }
                 ?.hex
 
-            if (messageHash != lastSyncedMessageHash) {
+            if (connectionIdsAndMessage.first.isNotEmpty() && messageHash != lastSyncedMessageHash) {
                 Timber.d("Accounts sync with CE is required")
 
                 sendAccountListMessage(connectionIdsAndMessage.first, connectionIdsAndMessage.second)
@@ -76,7 +75,6 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
                 generalPurposeConnectionIds.filter { connectionId -> connectionId in openConnectionIds }
                     .toSet()
             }
-            .filter { connectionIds -> connectionIds.isNotEmpty() }
     }
 
     private fun observeAccountsOnCurrentNetworkInteractionMessage(): Flow<String> {

@@ -377,7 +377,8 @@ private fun SpecificAssetsDepositsContent(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault)
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    enabled = allowedAssets != null && deniedAssets != null
                 )
             }
         },
@@ -403,7 +404,7 @@ private fun SpecificAssetsDepositsContent(
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
                     scope.launch {
-                        pagerState.animateScrollToPage(SpecificAssetsTab.values().indexOf(tab))
+                        pagerState.animateScrollToPage(SpecificAssetsTab.entries.indexOf(tab))
                     }
                     selectedTab = tab
                 }
@@ -415,7 +416,7 @@ private fun SpecificAssetsDepositsContent(
                 state = pagerState,
                 userScrollEnabled = false,
             ) { tabIndex ->
-                when (SpecificAssetsTab.values()[tabIndex]) {
+                when (SpecificAssetsTab.entries[tabIndex]) {
                     SpecificAssetsTab.Allowed -> {
                         when {
                             allowedAssets == null -> UnknownDepositRulesStateInfo(

@@ -120,7 +120,8 @@ private fun ConfirmMnemonicContent(
                 text = stringResource(
                     id = R.string.common_continue
                 ),
-                onClick = onSubmitClick
+                onClick = onSubmitClick,
+                enabled = state.seedPhraseState.allFieldsHaveValue
             )
         },
         snackbarHost = {

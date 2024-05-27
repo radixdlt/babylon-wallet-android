@@ -176,13 +176,15 @@ fun DefaultSettingsItem(
                 )
             }
         },
-        warningView = warnings?.let {
+        warningView = if (warnings.isNullOrEmpty()) {
+            null
+        } else {
             {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
-                    it.forEach { warning ->
+                    warnings.forEach { warning ->
                         Row(
                             verticalAlignment = CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)

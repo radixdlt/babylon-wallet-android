@@ -181,6 +181,7 @@ internal class PeerdroidConnectorImpl(
                 peerConnectionHolder.webRtcManager.close()
             }
             mapOfPeerConnections.clear()
+            _peerConnectionStatus.tryEmit(emptyMap())
             Timber.d("⚙️ \uD83D\uDEAB all link connection terminated and cleared ✅")
         }
     }

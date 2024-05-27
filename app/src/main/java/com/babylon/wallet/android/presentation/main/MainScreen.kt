@@ -9,7 +9,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.wallet.WalletScreen
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
@@ -18,8 +17,7 @@ fun MainScreen(
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit = { },
-    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
-    onNavigateToMnemonicRestore: () -> Unit,
+    onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
@@ -36,8 +34,7 @@ fun MainScreen(
                 onMenuClick = onMenuClick,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
-                onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
-                onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
+                onNavigateToSecurityCenter = onNavigateToSecurityCenter,
                 showNPSSurvey = showNPSSurvey,
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
                 onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup

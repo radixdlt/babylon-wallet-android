@@ -17,7 +17,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,7 +52,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -68,7 +66,6 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -85,8 +82,7 @@ fun WalletScreen(
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit = { },
-    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
-    onNavigateToMnemonicRestore: () -> Unit,
+    onNavigateToSecurityCenter: () -> Unit,
     onAccountCreationClick: () -> Unit,
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
@@ -123,8 +119,7 @@ fun WalletScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
-                is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
+                is WalletEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
                 WalletEvent.NavigateToRelinkConnectors -> onNavigateToRelinkConnectors()
                 WalletEvent.NavigateToConnectCloudBackup -> onNavigateToConnectCloudBackup()
             }
@@ -168,7 +163,7 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettings: (Account, SecurityPromptType) -> Unit
+    onApplySecuritySettings: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -200,18 +195,6 @@ private fun WalletContent(
                                 ),
                                 contentDescription = null,
                                 tint = RadixTheme.colors.gray1
-                            )
-                        }
-
-                        if (state.isSettingsWarningVisible) {
-                            Badge(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingSmall,
-                                        end = RadixTheme.dimensions.paddingSmall
-                                    ),
-                                containerColor = RadixTheme.colors.red1
                             )
                         }
                     }
@@ -266,7 +249,7 @@ private fun WalletAccountList(
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettings: (Account, SecurityPromptType) -> Unit,
+    onApplySecuritySettings: () -> Unit,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
@@ -308,9 +291,7 @@ private fun WalletAccountList(
                         onAccountClick(accountWithAssets.account)
                     },
                 accountWithAssets = accountWithAssets,
-                onApplySecuritySettings = {
-                    onApplySecuritySettings(accountWithAssets.account, it)
-                }
+                onApplySecuritySettings = onApplySecuritySettings
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -422,7 +403,7 @@ private fun WalletContentPreview(
             onAccountCreationClick = { },
             onRefresh = { },
             onMessageShown = {},
-            onApplySecuritySettings = { _, _ -> },
+            onApplySecuritySettings = {},
             onRadixBannerDismiss = {}
         )
     }
@@ -482,7 +463,6 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                     ),
                 ),
                 isLoading = true,
-                isSettingsWarningVisible = true,
                 totalFiatValueOfWallet = FiatPrice(
                     price = Decimal192.sample.invoke(),
                     currency = SupportedCurrency.USD

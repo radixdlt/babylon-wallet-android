@@ -85,6 +85,9 @@ class SeedPhraseVerificationDelegate(
 
         val wordsToConfirm: Map<Int, String>
             get() = blankIndices.associateWith { seedPhraseWords[it].value }
+
+        val allFieldsHaveValue: Boolean
+            get() = seedPhraseWords.all { it.state == SeedPhraseWord.State.HasValue || it.state == SeedPhraseWord.State.ValidDisabled }
     }
 
     override fun initialState(): State {

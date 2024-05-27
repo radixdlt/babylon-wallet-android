@@ -173,7 +173,7 @@ fun SeedPhraseCard(
             val icon = if (mnemonicNeedsRecovery) DSR.ic_warning_error else DSR.ic_seed_phrases
             val tint = if (mnemonicNeedsRecovery) RadixTheme.colors.red1 else RadixTheme.colors.gray1
             val text = if (mnemonicNeedsRecovery) {
-                stringResource(id = R.string.displayMnemonics_seedPhraseEntryWarning)
+                stringResource(id = R.string.securityProblems_no9_securityCenterBody)
             } else {
                 stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel)
             }
@@ -223,7 +223,7 @@ fun SeedPhraseCard(
         }
         if (data.mnemonicState == DeviceFactorSourceData.MnemonicState.NotBackedUp) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-            RedWarningText(text = AnnotatedString(stringResource(id = R.string.homePage_securityPromptBackup)))
+            RedWarningText(text = AnnotatedString(stringResource(id = R.string.securityProblems_no3_seedPhrases)))
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         data.accounts.forEach { account ->
