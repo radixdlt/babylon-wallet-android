@@ -20,6 +20,7 @@ hiltNavigation = "1.2.0"
 biometricKtx = "1.2.0-alpha05"
 coilCompose = "2.5.0"
 kotlinxSerialization = "1.6.2"
+crypto = "1.72"
 sargon = "1.0.10-b1fb6d6f"
 okhttpBom = "5.0.0-alpha.11"
 retrofit = "2.9.0"
@@ -156,6 +157,7 @@ googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive",
 workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManagerRuntimeKtx" }
 androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
 androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }

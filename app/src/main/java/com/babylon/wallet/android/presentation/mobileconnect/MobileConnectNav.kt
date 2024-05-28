@@ -16,10 +16,10 @@ private const val ARG_INTERACTION_ID = "interactionId"
 private const val ARG_BROWSER = "browser"
 
 private const val ROUTE_ARGS = "$ARG_PUBLIC_KEY={$ARG_PUBLIC_KEY}" +
-        "&$ARG_SESSION_ID={$ARG_SESSION_ID}" +
-        "&$ARG_DAPP_ORIGIN={$ARG_DAPP_ORIGIN}" +
-        "&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}" +
-        "&$ARG_BROWSER={$ARG_BROWSER}"
+    "&$ARG_SESSION_ID={$ARG_SESSION_ID}" +
+    "&$ARG_DAPP_ORIGIN={$ARG_DAPP_ORIGIN}" +
+    "&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}" +
+    "&$ARG_BROWSER={$ARG_BROWSER}"
 
 private const val ROUTE = "mobileConnect?$ROUTE_ARGS"
 
@@ -32,10 +32,10 @@ fun NavController.mobileConnect(
 ) {
     navigate(
         route = "mobileConnect?$$ARG_PUBLIC_KEY={$publicKeyHex}" +
-                "&$ARG_SESSION_ID={$sessionId}" +
-                "&$ARG_DAPP_ORIGIN={$origin}" +
-                "&$ARG_INTERACTION_ID={$interactionId}" +
-                "&$ARG_BROWSER={$browser}"
+            "&$ARG_SESSION_ID={$sessionId}" +
+            "&$ARG_DAPP_ORIGIN={$origin}" +
+            "&$ARG_INTERACTION_ID={$interactionId}" +
+            "&$ARG_BROWSER={$browser}"
     )
 }
 
