@@ -1,6 +1,5 @@
 package rdx.works.profile.domain.backup
 
-import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import rdx.works.core.TimestampGenerator
@@ -8,6 +7,7 @@ import rdx.works.core.mapError
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.changeGatewayToNetworkId
+import rdx.works.core.sargon.claim
 import rdx.works.core.then
 import rdx.works.profile.cloudbackup.data.DriveClient
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
@@ -37,15 +37,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
             ?.changeGatewayToNetworkId(NetworkId.MAINNET) ?: return Result.failure(RuntimeException("No restoring profile available"))
 
         val newDevice = deviceInfoRepository.getDeviceInfo()
-        val profileWithRestoredHeader = profile.copy(
-            header = profile.header.copy(
-                lastUsedOnDevice = DeviceInfo(
-                    id = profile.header.id,
-                    description = newDevice.displayName,
-                    date = TimestampGenerator()
-                )
-            )
-        )
+        val profileWithRestoredHeader = profile.claim(deviceInfo = newDevice)
 
         return if (mainSeedPhraseSkipped) {
             mnemonicRepository.createNew()

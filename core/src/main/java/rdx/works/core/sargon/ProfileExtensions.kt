@@ -9,6 +9,7 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
@@ -145,6 +146,18 @@ val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
  */
 @DebugOnly
 fun Profile.prettyPrinted(): String = profileToDebugString(profile = this)
+
+fun Profile.claim(
+    deviceInfo: rdx.works.core.domain.DeviceInfo
+): Profile = copy(
+    header = header.copy(
+        lastUsedOnDevice = DeviceInfo(
+            id = deviceInfo.id,
+            date = TimestampGenerator(),
+            description = deviceInfo.displayName
+        )
+    )
+)
 
 fun Profile.addAccounts(
     accounts: List<Account>,
