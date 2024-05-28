@@ -383,8 +383,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun setAddAssetSheetVisible(isVisible: Boolean) {
         _state.update {
             it.copy(
-                selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddAsset else null,
-                assetExceptionToAdd = if (isVisible) AssetType.ExceptionType() else it.assetExceptionToAdd
+                selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddAsset else null
             )
         }
     }
