@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.CanSignInToGoogle
 import com.babylon.wallet.android.utils.Constants
-import com.radixdlt.sargon.ProfileId
+import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.Timestamp
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -21,7 +21,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.sargon.isCompatible
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
@@ -176,26 +175,17 @@ class RestoreFromBackupViewModel @Inject constructor(
     }
 
     fun onContinueClick() = viewModelScope.launch {
-        val profileToRestore = state.value.restoringProfiles?.first { selectable -> selectable.selected }
+        val restoringProfile = state.value.restoringProfiles?.first { selectable -> selectable.selected }?.data ?: return@launch
 
-        profileToRestore?.let { selectableRestoringProfile ->
-            if (selectableRestoringProfile.data.isFromGoogleDrive && selectableRestoringProfile.data.googleDriveFileId != null) {
+        when (restoringProfile) {
+            is State.RestoringProfile.GoogleDrive -> {
                 _state.update { it.copy(isDownloadingSelectedCloudBackup = true) }
 
-                val entity = CloudBackupFileEntity(
-                    id = selectableRestoringProfile.data.googleDriveFileId,
-                    profileId = selectableRestoringProfile.data.profileId,
-                    lastUsedOnDeviceName = selectableRestoringProfile.data.deviceDescription,
-                    lastUsedOnDeviceModified = selectableRestoringProfile.data.lastModified,
-                    totalNumberOfAccountsOnAllNetworks = selectableRestoringProfile.data.totalNumberOfAccountsOnAllNetworks,
-                    totalNumberOfPersonasOnAllNetworks = selectableRestoringProfile.data.totalNumberOfPersonasOnAllNetworks
-                )
-
                 downloadBackedUpProfileFromCloud(
-                    entity = entity
+                    entity = restoringProfile.entity
                 ).fold(
                     onSuccess = { cloudBackupFile ->
-                        val backupType = BackupType.Cloud(entity)
+                        val backupType = BackupType.Cloud(restoringProfile.entity)
                         saveTemporaryRestoringSnapshotUseCase.forCloud(cloudBackupFile.serializedProfile, backupType)
                         _state.update { it.copy(isDownloadingSelectedCloudBackup = false) }
                         sendEvent(Event.OnRestoreConfirmed(backupType))
@@ -209,9 +199,9 @@ class RestoreFromBackupViewModel @Inject constructor(
                         }
                     }
                 )
-            } else {
-                sendEvent(Event.OnRestoreConfirmed(BackupType.DeprecatedCloud))
             }
+
+            is State.RestoringProfile.DeprecatedCloudBackup -> sendEvent(Event.OnRestoreConfirmed(BackupType.DeprecatedCloud))
         }
     }
 
@@ -225,17 +215,8 @@ class RestoreFromBackupViewModel @Inject constructor(
             .getOrNull()
 
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
-            val restoringProfiles = availableCloudBackedUpProfiles.mapNotNull { fileEntity ->
-                Selectable(
-                    data = State.RestoringProfile(
-                        googleDriveFileId = fileEntity.id,
-                        profileId = fileEntity.profileId,
-                        deviceDescription = fileEntity.lastUsedOnDeviceName,
-                        lastModified = fileEntity.lastUsedOnDeviceModified,
-                        totalNumberOfAccountsOnAllNetworks = fileEntity.totalNumberOfAccountsOnAllNetworks,
-                        totalNumberOfPersonasOnAllNetworks = fileEntity.totalNumberOfPersonasOnAllNetworks
-                    )
-                )
+            val restoringProfiles = availableCloudBackedUpProfiles.map { fileEntity ->
+                Selectable<State.RestoringProfile>(data = State.RestoringProfile.GoogleDrive(entity = fileEntity))
             }
             _state.update {
                 it.copy(restoringProfiles = restoringProfiles.toPersistentList())
@@ -243,15 +224,8 @@ class RestoreFromBackupViewModel @Inject constructor(
         } else {
             getTemporaryRestoringProfileForBackupUseCase(BackupType.DeprecatedCloud)?.let { profile ->
                 if (profile.header.isCompatible) {
-                    val restoringProfile = Selectable(
-                        data = State.RestoringProfile(
-                            googleDriveFileId = null,
-                            profileId = profile.header.id,
-                            deviceDescription = profile.header.lastUsedOnDevice.description,
-                            lastModified = profile.header.lastUsedOnDevice.date,
-                            totalNumberOfAccountsOnAllNetworks = profile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt(),
-                            totalNumberOfPersonasOnAllNetworks = profile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
-                        )
+                    val restoringProfile = Selectable<State.RestoringProfile>(
+                        data = State.RestoringProfile.DeprecatedCloudBackup(header = profile.header)
                     )
                     _state.update {
                         it.copy(restoringProfiles = persistentListOf(restoringProfile))
@@ -270,15 +244,32 @@ class RestoreFromBackupViewModel @Inject constructor(
         val uiMessage: UiMessage? = null
     ) : UiState {
 
-        data class RestoringProfile(
-            val googleDriveFileId: GoogleDriveFileId?,
-            val profileId: ProfileId,
-            val deviceDescription: String,
-            val lastModified: Timestamp,
-            val totalNumberOfAccountsOnAllNetworks: Int,
+        sealed interface RestoringProfile {
+
+            val deviceDescription: String
+            val lastModified: Timestamp
+            val totalNumberOfAccountsOnAllNetworks: Int
             val totalNumberOfPersonasOnAllNetworks: Int
-        ) {
-            val isFromGoogleDrive = googleDriveFileId?.id.isNullOrEmpty().not()
+
+            data class GoogleDrive(
+                val entity: CloudBackupFileEntity
+            ) : RestoringProfile {
+                override val deviceDescription: String = entity.header.lastUsedOnDevice.description
+                override val lastModified: Timestamp = entity.header.lastModified
+                override val totalNumberOfAccountsOnAllNetworks: Int =
+                    entity.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt()
+                override val totalNumberOfPersonasOnAllNetworks: Int =
+                    entity.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
+            }
+
+            data class DeprecatedCloudBackup(
+                val header: Header
+            ) : RestoringProfile {
+                override val deviceDescription: String = header.lastUsedOnDevice.description
+                override val lastModified: Timestamp = header.lastModified
+                override val totalNumberOfAccountsOnAllNetworks: Int = header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt()
+                override val totalNumberOfPersonasOnAllNetworks: Int = header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
+            }
         }
 
         val isCloudBackupAuthorized: Boolean

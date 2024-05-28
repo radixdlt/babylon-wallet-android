@@ -44,7 +44,7 @@ class ExecuteBackupUseCase @AssistedInject constructor(
                         LastCloudBackupEvent(
                             fileId = file.id,
                             profileModifiedTime = profile.header.lastModified,
-                            cloudBackupTime = file.lastUsedOnDeviceModified
+                            cloudBackupTime = file.lastBackup
                         )
                     )
                     cloudBackupErrorStream.resetErrors()

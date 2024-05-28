@@ -4,8 +4,8 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAuthIO
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.services.drive.model.File
+import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -18,7 +18,6 @@ import rdx.works.core.flatMapError
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.model.BackupServiceException
-import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -54,14 +53,13 @@ interface DriveClient {
 
     suspend fun claimCloudBackup(
         file: CloudBackupFileEntity,
-        profileModifiedTime: Timestamp
+        updatedHeader: Header
     ): Result<CloudBackupFileEntity>
 }
 
 class DriveClientImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val googleSignInManager: GoogleSignInManager,
-    private val deviceInfoRepository: DeviceInfoRepository,
     private val preferencesManager: PreferencesManager
 ) : DriveClient {
 
@@ -75,6 +73,7 @@ class DriveClientImpl @Inject constructor(
     private val claimFields = listOf(
         "id",
         "name",
+        "modifiedTime",
         "appProperties"
     ).joinToString(separator = ",")
 
@@ -105,7 +104,7 @@ class DriveClientImpl @Inject constructor(
             LastCloudBackupEvent(
                 fileId = entity.id,
                 profileModifiedTime = profile.header.lastModified,
-                cloudBackupTime = entity.lastUsedOnDeviceModified
+                cloudBackupTime = entity.lastBackup
             )
         )
     }
@@ -149,13 +148,13 @@ class DriveClientImpl @Inject constructor(
 
     override suspend fun claimCloudBackup(
         file: CloudBackupFileEntity,
-        profileModifiedTime: Timestamp
+        updatedHeader: Header
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
             googleSignInManager.getDrive().files()
                 .copy(
                     file.id.id,
-                    file.newFile(claimedByDevice = deviceInfoRepository.getDeviceInfo().displayName)
+                    file.newFile(header = updatedHeader)
                 )
                 .setFields(claimFields)
                 .execute()
@@ -167,8 +166,8 @@ class DriveClientImpl @Inject constructor(
             preferencesManager.updateLastCloudBackupEvent(
                 LastCloudBackupEvent(
                     fileId = entity.id,
-                    profileModifiedTime = profileModifiedTime,
-                    cloudBackupTime = entity.lastUsedOnDeviceModified
+                    profileModifiedTime = updatedHeader.lastModified,
+                    cloudBackupTime = entity.lastBackup
                 )
             )
         }.mapDriveError()
@@ -178,19 +177,13 @@ class DriveClientImpl @Inject constructor(
         profile: Profile
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         val profileSerialized = profile.toJson()
-        val backUpFileName = profile.header.id.toString()
 
         runCatching {
-            val backupFile = File()
-                .setParents(listOf(APP_DATA_FOLDER))
-                .setMimeType("application/json")
-                .setName("$backUpFileName.json")
-                .setAppProperties(profile.toCloudBackupProperties())
-
+            val driveFile = CloudBackupFileEntity.newDriveFile(profile.header)
             val backupContent = ByteArrayContent("application/json", profileSerialized.toByteArray())
 
             googleSignInManager.getDrive().files()
-                .create(backupFile, backupContent)
+                .create(driveFile, backupContent)
                 .setFields(backupFields)
                 .execute().let { file ->
                     CloudBackupFileEntity(file)
@@ -209,7 +202,7 @@ class DriveClientImpl @Inject constructor(
                 .update(
                     googleDriveFileId.id,
                     File().apply {
-                        appProperties = profile.toCloudBackupProperties()
+                        appProperties = profile.header.toCloudBackupProperties()
                     },
                     backupContent
                 )
@@ -241,7 +234,7 @@ class DriveClientImpl @Inject constructor(
                     if (error.statusCode == HTTP_NOT_FOUND) {
                         fetchCloudBackupFileEntities()
                             .mapCatching { files ->
-                                files.find { it.profileId == profile.header.id }
+                                files.find { it.header.id == profile.header.id }
                             }.fold(
                                 onSuccess = { existingFile ->
                                     if (existingFile == null) {
@@ -289,6 +282,6 @@ class DriveClientImpl @Inject constructor(
     }
 
     companion object {
-        private const val APP_DATA_FOLDER = "appDataFolder"
+        const val APP_DATA_FOLDER = "appDataFolder"
     }
 }

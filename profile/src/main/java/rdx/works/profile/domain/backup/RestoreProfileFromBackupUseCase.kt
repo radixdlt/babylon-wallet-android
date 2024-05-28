@@ -59,7 +59,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                 Timber.tag("CloudBackup").d("☁\uFE0F Claiming Profile...")
                 driveClient.claimCloudBackup(
                     file = backupType.entity,
-                    profileModifiedTime = profileToSave.header.lastModified
+                    updatedHeader = profileToSave.header
                 ).onSuccess {
                     Timber.tag("CloudBackup").d("☁\uFE0F Profile claimed, and now save it")
                     profileRepository.saveProfile(profileToSave)

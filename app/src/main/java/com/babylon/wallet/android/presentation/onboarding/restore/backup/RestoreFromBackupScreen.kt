@@ -68,10 +68,10 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.formattedSpans
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
-import com.radixdlt.sargon.ProfileId
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -569,38 +569,11 @@ fun RestoreFromBackupWithMultipleCloudBackupsPreview() {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(
                 backupEmail = "email",
-                restoringProfiles = listOf(
-                    Selectable(
-                        data = RestoreFromBackupViewModel.State.RestoringProfile(
-                            googleDriveFileId = null,
-                            profileId = ProfileId.randomUUID(),
-                            deviceDescription = "device",
-                            lastModified = Timestamp.now(),
-                            totalNumberOfAccountsOnAllNetworks = 1,
-                            totalNumberOfPersonasOnAllNetworks = 4
-                        )
-                    ),
-                    Selectable(
-                        data = RestoreFromBackupViewModel.State.RestoringProfile(
-                            googleDriveFileId = null,
-                            profileId = ProfileId.randomUUID(),
-                            deviceDescription = "device",
-                            lastModified = Timestamp.now(),
-                            totalNumberOfAccountsOnAllNetworks = 3,
-                            totalNumberOfPersonasOnAllNetworks = 0
-                        )
-                    ),
-                    Selectable(
-                        data = RestoreFromBackupViewModel.State.RestoringProfile(
-                            googleDriveFileId = null,
-                            profileId = ProfileId.randomUUID(),
-                            deviceDescription = "device",
-                            lastModified = Timestamp.now(),
-                            totalNumberOfAccountsOnAllNetworks = 6,
-                            totalNumberOfPersonasOnAllNetworks = 1
-                        )
+                restoringProfiles = CloudBackupFileEntity.sample.all.map {
+                    Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
+                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(it)
                     )
-                ).toImmutableList()
+                }.toPersistentList()
             ),
             onBackClick = {},
             onLoginToGoogleClick = {},
@@ -660,6 +633,7 @@ fun RestoreFromBackupLoadingProfilesPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun RestoreFromBackupLoadingProfilesPreview2() {
@@ -670,14 +644,9 @@ fun RestoreFromBackupLoadingProfilesPreview2() {
                 isDownloadingSelectedCloudBackup = true,
                 backupEmail = "email",
                 restoringProfiles = listOf(
-                    Selectable(
-                        data = RestoreFromBackupViewModel.State.RestoringProfile(
-                            googleDriveFileId = null,
-                            profileId = ProfileId.randomUUID(),
-                            deviceDescription = "device",
-                            lastModified = Timestamp.now(),
-                            totalNumberOfAccountsOnAllNetworks = 1,
-                            totalNumberOfPersonasOnAllNetworks = 4
+                    Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
+                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(
+                            entity = CloudBackupFileEntity.sample()
                         )
                     )
                 ).toImmutableList()

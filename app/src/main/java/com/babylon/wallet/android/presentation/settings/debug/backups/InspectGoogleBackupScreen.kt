@@ -153,16 +153,23 @@ private fun GoogleDriveFile(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             FileProperty(key = "ID", value = entity.id.id)
-            FileProperty(key = "ProfileId", value = entity.profileId.toString())
+            FileProperty(key = "ProfileId", value = entity.header.id.toString())
             FileProperty(
                 key = "Backed up",
-                value = remember(entity.lastUsedOnDeviceModified) {
-                    entity.lastUsedOnDeviceModified.toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                value = remember(entity.lastBackup) {
+                    entity.lastBackup.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 }
             )
-            FileProperty(key = "Device", value = entity.lastUsedOnDeviceName)
-            FileProperty(key = "Accounts", value = entity.totalNumberOfAccountsOnAllNetworks.toString())
-            FileProperty(key = "Personas", value = entity.totalNumberOfPersonasOnAllNetworks.toString())
+            FileProperty(
+                key = "Profile Modified",
+                value = remember(entity.header.lastModified) {
+                    entity.header.lastModified.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                }
+            )
+            FileProperty(key = "Current Device ID", value = entity.header.lastUsedOnDevice.id.toString())
+            FileProperty(key = "Current Device Name", value = entity.header.lastUsedOnDevice.description)
+            FileProperty(key = "Accounts", value = entity.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toString())
+            FileProperty(key = "Personas", value = entity.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toString())
         }
     }
 }
