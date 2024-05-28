@@ -2,7 +2,7 @@
 
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
+import com.radixdlt.sargon.WalletToDappInteractionResponse
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import timber.log.Timber
@@ -28,7 +28,7 @@ interface DappMessenger {
 
     suspend fun sendWalletInteractionSuccessResponse(
         remoteConnectorId: String,
-        response: WalletInteractionResponse
+        response: WalletToDappInteractionResponse
     ): Result<Unit>
 }
 
@@ -52,7 +52,7 @@ class DappMessengerImpl @Inject constructor(
 
     override suspend fun sendWalletInteractionSuccessResponse(
         remoteConnectorId: String,
-        response: WalletInteractionResponse
+        response: WalletToDappInteractionResponse
     ): Result<Unit> {
         val messageJson = try {
             Json.encodeToString(response)

@@ -1,31 +1,36 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.model.AccountProof
-import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.AuthRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestResponseItems
-import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.babylon.wallet.android.presentation.model.toPersonaDataRequestResponseItem
+import com.babylon.wallet.android.presentation.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DappWalletInteractionPersona
+import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Slip10Curve
+import com.radixdlt.sargon.WalletInteractionWalletAccount
+import com.radixdlt.sargon.WalletToDappInteractionAccountProof
+import com.radixdlt.sargon.WalletToDappInteractionAccountsRequestResponseItem
+import com.radixdlt.sargon.WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem
+import com.radixdlt.sargon.WalletToDappInteractionAuthLoginWithoutChallengeRequestResponseItem
+import com.radixdlt.sargon.WalletToDappInteractionAuthProof
+import com.radixdlt.sargon.WalletToDappInteractionAuthRequestResponseItem
+import com.radixdlt.sargon.WalletToDappInteractionAuthUsePersonaRequestResponseItem
+import com.radixdlt.sargon.WalletToDappInteractionAuthorizedRequestResponseItems
+import com.radixdlt.sargon.WalletToDappInteractionResponse
+import com.radixdlt.sargon.WalletToDappInteractionResponseItems
+import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
+import com.radixdlt.sargon.WalletToDappInteractionUnauthorizedRequestResponseItems
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.publicKey
+import com.radixdlt.sargon.extensions.signature
 import javax.inject.Inject
-
-private typealias DAppPersona = com.babylon.wallet.android.data.dapp.model.Persona
 
 open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
 
@@ -34,14 +39,14 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
     protected suspend fun buildAccountsResponseItem(
         request: IncomingMessage.IncomingRequest,
         accounts: List<Account>,
-        challengeHex: String?,
+        challenge: Exactly32Bytes?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean,
-    ): Result<AccountsRequestResponseItem?> {
+    ): Result<WalletToDappInteractionAccountsRequestResponseItem?> {
         if (accounts.isEmpty()) {
             return Result.success(null)
         }
-        var accountProofs: List<AccountProof>? = null
-        if (challengeHex != null) {
+        var accountProofs: List<WalletToDappInteractionAccountProof>? = null
+        if (challenge != null) {
             accountProofs = accounts.mapIndexed { index, account ->
                 // TODO this is hacky workaround to only ask for biometrics once - this will go away with MFA refactor
                 val biometricAuthProvider: suspend () -> Boolean = if (index == 0) {
@@ -50,7 +55,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                     { true }
                 }
                 val signRequest = SignRequest.SignAuthChallengeRequest(
-                    challengeHex,
+                    challenge.hex,
                     request.metadata.origin,
                     request.metadata.dAppDefinitionAddress
                 )
@@ -61,25 +66,32 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                         signatureWithPublicKey.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
                 }
-                AccountProof(
-                    account.address.string,
-                    signatureWithPublicKey.getOrThrow().toProof()
+                WalletToDappInteractionAccountProof(
+                    account.address,
+                    WalletToDappInteractionAuthProof(
+                        publicKey = signatureWithPublicKey.getOrThrow().publicKey,
+                        curve = when (signatureWithPublicKey.getOrThrow().publicKey) {
+                            is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
+                            is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
+                        },
+                        signature = signatureWithPublicKey.getOrThrow().signature
+                    )
                 )
             }
         }
 
         val accountsResponses = accounts.map { account ->
-            com.babylon.wallet.android.data.dapp.model.Account(
-                address = account.address.string,
+            WalletInteractionWalletAccount(
+                address = account.address,
                 label = account.displayName.value,
-                appearanceId = account.appearanceId.value.toInt()
+                appearanceId = account.appearanceId
             )
         }
 
         return Result.success(
-            AccountsRequestResponseItem(
+            WalletToDappInteractionAccountsRequestResponseItem(
                 accounts = accountsResponses,
-                challenge = challengeHex,
+                challenge = challenge,
                 proofs = accountProofs
             )
         )
@@ -99,9 +111,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         ongoingSharedPersonaData: PersonaData? = null,
         onetimeSharedPersonaData: PersonaData? = null,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }
-    ): Result<WalletInteractionResponse> {
+    ): Result<WalletToDappInteractionResponse> {
         val loginWithChallenge = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge
-        val authResponse: Result<AuthRequestResponseItem> =
+        val authResponse: Result<WalletToDappInteractionAuthRequestResponseItem> =
             buildAuthResponseItem(request, selectedPersona, deviceBiometricAuthenticationProvider)
         if (authResponse.isSuccess) {
             val authProvider = if (loginWithChallenge) {
@@ -113,7 +125,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 buildAccountsResponseItem(
                     request = request,
                     accounts = oneTimeAccounts,
-                    challengeHex = request.oneTimeAccountsRequestItem?.challenge?.hex,
+                    challenge = request.oneTimeAccountsRequestItem?.challenge,
                     deviceBiometricAuthenticationProvider = authProvider
                 )
             if (oneTimeAccountsResponseItem.isFailure) {
@@ -125,7 +137,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 buildAccountsResponseItem(
                     request = request,
                     accounts = ongoingAccounts,
-                    challengeHex = request.ongoingAccountsRequestItem?.challenge?.hex,
+                    challenge = request.ongoingAccountsRequestItem?.challenge,
                     deviceBiometricAuthenticationProvider = authProvider
                 )
             if (ongoingAccountsResponseItem.isFailure) {
@@ -134,14 +146,18 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             }
             return Result.success(
-                WalletInteractionSuccessResponse(
-                    interactionId = request.interactionId,
-                    items = WalletAuthorizedRequestResponseItems(
-                        auth = authResponse.getOrThrow(),
-                        oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
-                        ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
-                        ongoingPersonaData = ongoingSharedPersonaData?.toPersonaDataRequestResponseItem(),
-                        oneTimePersonaData = onetimeSharedPersonaData?.toPersonaDataRequestResponseItem()
+                WalletToDappInteractionResponse.Success(
+                    WalletToDappInteractionSuccessResponse(
+                        interactionId = request.interactionId,
+                        items = WalletToDappInteractionResponseItems.AuthorizedRequest(
+                            v1 = WalletToDappInteractionAuthorizedRequestResponseItems(
+                                auth = authResponse.getOrThrow(),
+                                oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
+                                ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
+                                ongoingPersonaData = ongoingSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
+                                oneTimePersonaData = onetimeSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem()
+                            ),
+                        )
                     )
                 )
             )
@@ -154,10 +170,14 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         request: AuthorizedRequest,
         selectedPersona: Persona,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<AuthRequestResponseItem> {
-        val authResponse: Result<AuthRequestResponseItem> = when (val authRequest = request.authRequest) {
+    ): Result<WalletToDappInteractionAuthRequestResponseItem> {
+        val dappInteractionPersona = DappWalletInteractionPersona(
+            identityAddress = selectedPersona.address,
+            label = selectedPersona.displayName.value
+        )
+        val authResponse: Result<WalletToDappInteractionAuthRequestResponseItem> = when (val authRequest = request.authRequest) {
             is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
-                var response: Result<AuthRequestResponseItem> = Result.failure(
+                var response: Result<WalletToDappInteractionAuthRequestResponseItem> = Result.failure(
                     RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
@@ -171,13 +191,19 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     deviceBiometricAuthenticationProvider
                 ).onSuccess { signature ->
                     response = Result.success(
-                        AuthLoginWithChallengeRequestResponseItem(
-                            persona = DAppPersona(
-                                identityAddress = selectedPersona.address.string,
-                                label = selectedPersona.displayName.value
-                            ),
-                            challenge = authRequest.challenge.hex,
-                            proof = signature.toProof()
+                        WalletToDappInteractionAuthRequestResponseItem.LoginWithChallenge(
+                            v1 = WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem(
+                                persona = dappInteractionPersona,
+                                challenge = authRequest.challenge,
+                                proof = WalletToDappInteractionAuthProof(
+                                    publicKey = signature.publicKey,
+                                    curve = when (signature.publicKey) {
+                                        is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
+                                        is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
+                                    },
+                                    signature = signature.signature
+                                )
+                            )
                         )
                     )
                 }.onFailure {
@@ -188,10 +214,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
             AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
                 Result.success(
-                    AuthLoginWithoutChallengeRequestResponseItem(
-                        persona = DAppPersona(
-                            identityAddress = selectedPersona.address.string,
-                            label = selectedPersona.displayName.value
+                    WalletToDappInteractionAuthRequestResponseItem.LoginWithoutChallenge(
+                        v1 = WalletToDappInteractionAuthLoginWithoutChallengeRequestResponseItem(
+                            persona = dappInteractionPersona
                         )
                     )
                 )
@@ -199,10 +224,9 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 Result.success(
-                    AuthUsePersonaRequestResponseItem(
-                        persona = DAppPersona(
-                            identityAddress = selectedPersona.address.string,
-                            label = selectedPersona.displayName.value
+                    WalletToDappInteractionAuthRequestResponseItem.UsePersona(
+                        v1 = WalletToDappInteractionAuthUsePersonaRequestResponseItem(
+                            persona = dappInteractionPersona
                         )
                     )
                 )
@@ -222,12 +246,12 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
         oneTimeAccounts: List<Account> = emptyList(),
         onetimeSharedPersonaData: PersonaData? = null,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },
-    ): Result<WalletInteractionResponse> {
+    ): Result<WalletToDappInteractionResponse> {
         val oneTimeAccountsResponseItem =
             buildAccountsResponseItem(
                 request = request,
                 accounts = oneTimeAccounts,
-                challengeHex = request.oneTimeAccountsRequestItem?.challenge?.hex,
+                challenge = request.oneTimeAccountsRequestItem?.challenge,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             )
         if (oneTimeAccountsResponseItem.isFailure) {
@@ -236,11 +260,15 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
             )
         }
         return Result.success(
-            WalletInteractionSuccessResponse(
-                interactionId = request.interactionId,
-                items = WalletUnauthorizedRequestResponseItems(
-                    oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
-                    oneTimePersonaData = onetimeSharedPersonaData?.toPersonaDataRequestResponseItem()
+            WalletToDappInteractionResponse.Success(
+                WalletToDappInteractionSuccessResponse(
+                    interactionId = request.interactionId,
+                    items = WalletToDappInteractionResponseItems.UnauthorizedRequest(
+                        v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(
+                            oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
+                            oneTimePersonaData = onetimeSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem()
+                        ),
+                    )
                 )
             )
         )

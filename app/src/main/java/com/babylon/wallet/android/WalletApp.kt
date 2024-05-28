@@ -69,16 +69,16 @@ fun WalletApp(
                     when (val incomingRequest = event.request) {
                         is IncomingMessage.IncomingRequest.TransactionRequest -> {
                             navController.transactionReview(
-                                requestId = incomingRequest.interactionId
+                                requestId = incomingRequest.interactionId.toString()
                             )
                         }
 
                         is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLoginAuthorized(incomingRequest.interactionId)
+                            navController.dAppLoginAuthorized(incomingRequest.interactionId.toString())
                         }
 
                         is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
-                            navController.dAppLoginUnauthorized(incomingRequest.interactionId)
+                            navController.dAppLoginUnauthorized(incomingRequest.interactionId.toString())
                         }
                     }
                 }

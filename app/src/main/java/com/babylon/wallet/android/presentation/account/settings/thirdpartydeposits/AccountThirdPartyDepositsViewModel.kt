@@ -22,6 +22,7 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.AssetsExceptionList
 import com.radixdlt.sargon.extensions.DepositorsAllowList
 import com.radixdlt.sargon.extensions.string
@@ -35,7 +36,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
@@ -142,7 +142,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 TransactionManifestData.from(it)
             }.onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
-                val requestId = UUIDGenerator.uuid().toString()
+                val requestId = WalletInteractionId.randomUUID()
                 incomingRequestRepository.add(
                     manifest.prepareInternalTransactionRequest(
                         requestId = requestId,
@@ -150,7 +150,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         blockUntilCompleted = true
                     )
                 )
-                handleRequestStatus(requestId)
+                handleRequestStatus(requestId.toString())
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage(t))

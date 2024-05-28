@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.radixdlt.sargon.NetworkId
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.WalletInteractionId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,7 +15,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import rdx.works.core.UUIDGenerator
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 class IncomingRequestRepositoryTest {
@@ -24,10 +23,10 @@ class IncomingRequestRepositoryTest {
     private val amountOfIncomingRequests = 100
     private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
-        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+        interactionId = WalletInteractionId.randomUUID(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
+        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
             numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
@@ -51,7 +50,7 @@ class IncomingRequestRepositoryTest {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
                             incomingRequestRepository.add(
                                 incomingRequest = sampleIncomingRequest.copy(
-                                    interactionId = UUIDGenerator.uuid().toString()
+                                    interactionId = WalletInteractionId.randomUUID()
                                 )
                             )
                         }
@@ -72,23 +71,24 @@ class IncomingRequestRepositoryTest {
         incomingRequestRepository.currentRequestToHandle
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-        for (i in 1..5) { // and in each of them, add an incoming request
-            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = i.toString()))
+        val interactionIds = (1..5).map { WalletInteractionId.randomUUID() }
+        interactionIds.forEach { id -> // and in each of them, add an incoming request
+            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = id))
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)
-        assert(currentRequest?.interactionId == "1")
-        incomingRequestRepository.requestHandled("1")
-        incomingRequestRepository.requestHandled("2")
+        assert(currentRequest?.interactionId.toString() == interactionIds[0].toString())
+        incomingRequestRepository.requestHandled(interactionIds[0].toString())
+        incomingRequestRepository.requestHandled(interactionIds[1].toString())
         advanceUntilIdle()
-        assert(currentRequest?.interactionId == "3")
+        assert(currentRequest?.interactionId.toString() == interactionIds[2].toString())
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 3)
-        incomingRequestRepository.requestHandled("3")
-        incomingRequestRepository.requestHandled("4")
+        incomingRequestRepository.requestHandled(interactionIds[2].toString())
+        incomingRequestRepository.requestHandled(interactionIds[3].toString())
         advanceUntilIdle()
-        assert(currentRequest?.interactionId == "5")
+        assert(currentRequest?.interactionId.toString() == interactionIds[4].toString())
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
-        incomingRequestRepository.requestHandled("5")
+        incomingRequestRepository.requestHandled(interactionIds[4].toString())
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 0)
     }
 }

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.utils
 
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -76,7 +76,7 @@ sealed interface AppEvent {
                 override val isInternal: Boolean,
                 override val blockUntilComplete: Boolean,
                 val errorMessage: String?,
-                val walletErrorType: WalletErrorType?
+                val walletErrorType: DappWalletInteractionErrorType?
             ) : Transaction()
         }
     }

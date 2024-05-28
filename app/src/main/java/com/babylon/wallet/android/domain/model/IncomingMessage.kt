@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
@@ -12,7 +13,7 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RequestedNumberQuantifier
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.WalletInteractionId
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.TransactionManifestData
@@ -37,7 +38,7 @@ sealed interface IncomingMessage {
 
     sealed class IncomingRequest(
         open val remoteEntityId: RemoteEntityID, // from which remote source message came
-        open val interactionId: String, // the id of the request
+        open val interactionId: WalletInteractionId, // the id of the request
         val metadata: RequestMetadata
     ) : IncomingMessage {
 
@@ -56,14 +57,14 @@ sealed interface IncomingMessage {
 
         data class AuthorizedRequest(
             override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
-            override val interactionId: String,
+            override val interactionId: WalletInteractionId,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
-            val resetRequestItem: ResetRequestItem? = null
+            val resetRequestItem: DappToWalletInteractionResetRequestItem? = null
         ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
 
             override val isInternal: Boolean
@@ -110,20 +111,13 @@ sealed interface IncomingMessage {
                     data object WithoutChallenge : LoginRequest()
                 }
 
-                data class UsePersonaRequest(val personaAddress: String) : AuthRequest {
-                    val identityAddress: IdentityAddress = IdentityAddress.init(personaAddress)
-                }
+                data class UsePersonaRequest(val identityAddress: IdentityAddress) : AuthRequest
             }
-
-            data class ResetRequestItem(
-                val accounts: Boolean,
-                val personaData: Boolean
-            )
         }
 
         data class UnauthorizedRequest(
             override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
-            override val interactionId: String,
+            override val interactionId: WalletInteractionId,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
@@ -139,7 +133,7 @@ sealed interface IncomingMessage {
 
         data class TransactionRequest(
             override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
-            override val interactionId: String,
+            override val interactionId: WalletInteractionId,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata,
             val transactionType: TransactionType = TransactionType.Generic

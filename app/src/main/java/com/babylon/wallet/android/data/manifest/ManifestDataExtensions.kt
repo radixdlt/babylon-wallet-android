@@ -4,11 +4,11 @@ package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.radixdlt.sargon.WalletInteractionId
 import rdx.works.core.domain.TransactionManifestData
-import java.util.UUID
 
 fun TransactionManifestData.prepareInternalTransactionRequest(
-    requestId: String = UUID.randomUUID().toString(),
+    requestId: WalletInteractionId = WalletInteractionId.randomUUID(),
     blockUntilCompleted: Boolean = false,
     transactionType: TransactionType = TransactionType.Generic
 ) = IncomingMessage.IncomingRequest.TransactionRequest(

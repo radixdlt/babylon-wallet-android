@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,7 +22,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
@@ -44,42 +44,42 @@ class ChooseAccountsViewModelTest {
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
 
-    private val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
-        interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+    private val accountsRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = WalletInteractionId.randomUUID(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
     )
-    private val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
-        interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+    private val accountsTwoRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = WalletInteractionId.randomUUID(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                 2,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
     )
 
-    private val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
-        interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+    private val accountsRequestAtLeast = IncomingMessage.IncomingRequest.UnauthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = WalletInteractionId.randomUUID(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                 2,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             ),
             challenge = null
         )

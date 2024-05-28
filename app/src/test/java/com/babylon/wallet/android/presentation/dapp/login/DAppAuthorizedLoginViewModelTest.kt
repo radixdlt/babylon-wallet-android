@@ -6,15 +6,11 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -22,7 +18,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERAC
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
-import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
@@ -37,6 +32,7 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -109,9 +105,9 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val requestWithNonExistingDappAddress = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = "1",
+        interactionId = WalletInteractionId.randomUUID(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
@@ -130,14 +126,14 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val usePersonaRequestOngoing = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = "1",
+        interactionId = WalletInteractionId.randomUUID(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
         ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             true, IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
@@ -149,14 +145,14 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val usePersonaRequestOngoingPlusOngoingData = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = "1",
+        interactionId = WalletInteractionId.randomUUID(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
         ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             true, IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
@@ -170,61 +166,22 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         )
     )
 
-    private val usePersonaRequestOngoingDataOnly = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = "1",
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            11,
-            "",
-            "address",
-            false
-        ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
-        ongoingPersonaDataRequestItem = IncomingMessage.IncomingRequest.PersonaRequestItem(
-            isRequestingName = true,
-            isOngoing = true
-        )
-    )
-
     private val usePersonaRequestOneTimeAccounts = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = "1",
+        interactionId = WalletInteractionId.randomUUID(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
         oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             false, IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
                 IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             ),
             null
-        )
-    )
-
-    private val usePersonaRequestOneTimeAccountsAndData = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = "1",
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
-        ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
-            false, IncomingMessage.IncomingRequest.NumberOfValues(
-                1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
-            ),
-            null
-        ),
-        oneTimePersonaDataRequestItem = IncomingMessage.IncomingRequest.PersonaRequestItem(
-            isRequestingName = true,
-            isOngoing = false
         )
     )
 

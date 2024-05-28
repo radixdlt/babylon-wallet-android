@@ -198,7 +198,7 @@ class MainViewModel @Inject constructor(
                     authorizeSpecifiedPersonaUseCase.invoke(request).onSuccess { dAppData ->
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
-                                requestId = dAppData.requestId,
+                                requestId = dAppData.interactionId.toString(),
                                 dAppName = dAppData.name
                             )
                         )
@@ -207,7 +207,7 @@ class MainViewModel @Inject constructor(
                             when (dappRequestFailure) {
                                 RadixWalletException.DappRequestException.InvalidPersona,
                                 RadixWalletException.DappRequestException.InvalidRequest -> {
-                                    incomingRequestRepository.requestHandled(request.interactionId)
+                                    incomingRequestRepository.requestHandled(request.interactionId.toString())
                                     _state.update { state ->
                                         state.copy(dappRequestFailure = dappRequestFailure)
                                     }

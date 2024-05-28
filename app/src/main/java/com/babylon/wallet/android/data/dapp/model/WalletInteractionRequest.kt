@@ -2,128 +2,51 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
+import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
+import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
+import com.radixdlt.sargon.DappToWalletInteractionItems
+import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
+import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
+import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
+import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
+import com.radixdlt.sargon.RequestedNumberQuantifier
+import com.radixdlt.sargon.RequestedQuantity
+import com.radixdlt.sargon.WalletInteractionId
+import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
-import com.radixdlt.sargon.extensions.init
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.newDappToWalletInteractionUnvalidatedFromJsonBytes
+import com.radixdlt.sargon.walletToDappInteractionResponseToJsonBytes
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.TransactionManifestData.TransactionMessage
 
-@Serializable
-data class WalletInteraction(
-    @SerialName("interactionId")
-    val interactionId: String,
-    @SerialName("items")
-    val items: WalletInteractionItems,
-    @SerialName("metadata")
-    val metadata: Metadata,
-) : ConnectorExtensionInteraction {
-
-    @Serializable
-    data class Metadata(
-        @SerialName("version")
-        val version: Long,
-        @SerialName("networkId")
-        val networkId: Int,
-        @SerialName("origin")
-        val origin: String,
-        @SerialName("dAppDefinitionAddress")
-        val dAppDefinitionAddress: String,
-    ) {
-
-        companion object {
-            const val VERSION = 2L
-        }
-    }
+fun DappToWalletInteractionUnvalidated.Companion.init(json: String) = runCatching {
+    newDappToWalletInteractionUnvalidatedFromJsonBytes(json.toByteArray().toBagOfBytes())
 }
 
-@Suppress("UnnecessaryAbstractClass")
-@Serializable
-sealed class WalletInteractionItems
-
-@Serializable
-@SerialName("unauthorizedRequest")
-data class WalletUnauthorizedRequestItems(
-    @SerialName("oneTimePersonaData")
-    val oneTimePersonaData: PersonaDataRequestItem? = null, // Wallet clients should validate that `oneTimeAccounts.isOneTime == true`
-    @SerialName("oneTimeAccounts")
-    val oneTimeAccounts: AccountsRequestItem? = null // Wallet clients should validate that `oneTimeAccounts.isOneTime == true`
-) : WalletInteractionItems()
-
-@Serializable
-@SerialName("authorizedRequest")
-data class WalletAuthorizedRequestItems(
-    @SerialName("auth")
-    val auth: AuthRequestItem,
-    @SerialName("oneTimeAccounts")
-    val oneTimeAccounts: AccountsRequestItem? = null,
-    @SerialName("ongoingAccounts")
-    val ongoingAccounts: AccountsRequestItem? = null,
-    @SerialName("oneTimePersonaData")
-    val oneTimePersonaData: PersonaDataRequestItem? = null,
-    @SerialName("ongoingPersonaData")
-    val ongoingPersonaData: PersonaDataRequestItem? = null,
-    @SerialName("reset")
-    val reset: ResetRequestItem? = null
-) : WalletInteractionItems()
-
-@Serializable
-@SerialName("transaction")
-data class WalletTransactionItems(
-    @SerialName("send")
-    val send: SendTransactionItem,
-) : WalletInteractionItems() {
-
-    @Serializable
-    data class SendTransactionItem(
-        @SerialName("transactionManifest")
-        val transactionManifest: String,
-        @SerialName("version")
-        val version: Long,
-        @SerialName("blobs")
-        val blobs: List<String>? = null,
-        @SerialName("message")
-        val message: String? = null
-    )
+fun WalletToDappInteractionResponse.asJsonString() = runCatching {
+    walletToDappInteractionResponseToJsonBytes(this).toString()
 }
 
-fun WalletTransactionItems.SendTransactionItem.toDomainModel(
-    remoteConnectorId: IncomingMessage.RemoteEntityID, // from which CE comes the message
-    requestId: String,
-    metadata: IncomingMessage.IncomingRequest.RequestMetadata
-) = IncomingMessage.IncomingRequest.TransactionRequest(
-    remoteEntityId = remoteConnectorId,
-    interactionId = requestId,
-    transactionManifestData = TransactionManifestData(
-        instructions = transactionManifest,
-        networkId = metadata.networkId,
-        message = message?.let { TransactionMessage.Public(it) } ?: TransactionMessage.None,
-        blobs = blobs?.map { it.hexToBagOfBytes() }.orEmpty(),
-        version = version
-    ),
-    requestMetadata = metadata
-)
-
-fun WalletInteraction.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID): IncomingMessage.IncomingRequest {
+fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID): IncomingMessage.IncomingRequest {
     try {
         val metadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            networkId = NetworkId.init(discriminant = metadata.networkId.toUByte()),
-            origin = metadata.origin,
-            dAppDefinitionAddress = metadata.dAppDefinitionAddress,
+            networkId = metadata.networkId,
+            origin = metadata.origin.toString(),
+            dAppDefinitionAddress = metadata.dappDefinitionAddress,
             isInternal = false
         )
-        return when (items) {
-            is WalletTransactionItems -> {
-                items.send.toDomainModel(remoteEntityId, interactionId, metadata)
+        return when (val itemsTemp = items) {
+            is DappToWalletInteractionItems.AuthorizedRequest -> {
+                itemsTemp.v1.parseAuthorizedRequest(remoteEntityId, interactionId, metadata)
             }
 
-            is WalletAuthorizedRequestItems -> {
-                items.parseAuthorizedRequest(remoteEntityId, interactionId, metadata)
+            is DappToWalletInteractionItems.Transaction -> {
+                itemsTemp.v1.send.toDomainModel(remoteEntityId, interactionId, metadata)
             }
 
-            is WalletUnauthorizedRequestItems -> {
-                items.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
+            is DappToWalletInteractionItems.UnauthorizedRequest -> {
+                itemsTemp.v1.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
             }
         }
     } catch (e: Exception) {
@@ -131,38 +54,113 @@ fun WalletInteraction.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntity
     }
 }
 
-private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
+fun DappToWalletInteractionSendTransactionItem.toDomainModel(
+    remoteConnectorId: IncomingMessage.RemoteEntityID, // from which CE comes the message
+    requestId: WalletInteractionId,
+    metadata: IncomingMessage.IncomingRequest.RequestMetadata
+) = IncomingMessage.IncomingRequest.TransactionRequest(
+    remoteEntityId = remoteConnectorId,
+    interactionId = requestId,
+    transactionManifestData = TransactionManifestData(
+        instructions = transactionManifest,
+        networkId = metadata.networkId,
+        message = message?.let { TransactionManifestData.TransactionMessage.Public(it) } ?: TransactionManifestData.TransactionMessage.None,
+        blobs = blobs?.map { it.hexToBagOfBytes() }.orEmpty(),
+        version = version.toLong()
+    ),
+    requestMetadata = metadata
+)
+
+
+private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedRequest(
     remoteEntityId: IncomingMessage.RemoteEntityID,
-    requestId: String,
+    requestId: WalletInteractionId,
     metadata: IncomingMessage.IncomingRequest.RequestMetadata
 ): IncomingMessage.IncomingRequest.UnauthorizedRequest {
     return IncomingMessage.IncomingRequest.UnauthorizedRequest(
         remoteEntityId = remoteEntityId,
         interactionId = requestId,
         requestMetadata = metadata,
-        oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
-        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
+        oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(false),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false),
     )
 }
 
-private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
+fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): IncomingMessage.IncomingRequest.PersonaRequestItem? {
+    if (isRequestingName == null && numberOfRequestedPhoneNumbers == null && numberOfRequestedEmailAddresses == null) return null
+    return IncomingMessage.IncomingRequest.PersonaRequestItem(
+        isRequestingName = isRequestingName == true,
+        numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),
+        numberOfRequestedPhoneNumbers = numberOfRequestedPhoneNumbers?.toDomainModel(),
+        isOngoing = isOngoing
+    )
+}
+
+fun DappToWalletInteractionAccountsRequestItem.toDomainModel(isOngoing: Boolean = true): IncomingMessage.IncomingRequest.AccountsRequestItem? {
+    // correct request but not actionable, return null
+    if (numberOfAccounts.quantity.toInt() == 0 &&
+        numberOfAccounts.quantifier == RequestedNumberQuantifier.EXACTLY
+    ) {
+        return null
+    }
+    return IncomingMessage.IncomingRequest.AccountsRequestItem(
+        isOngoing = isOngoing,
+        numberOfValues = numberOfAccounts.toDomainModel(),
+        challenge = challenge
+    )
+}
+
+fun RequestedQuantity.toDomainModel(): IncomingMessage.IncomingRequest.NumberOfValues {
+    return when (quantifier) {
+        RequestedNumberQuantifier.EXACTLY -> {
+            IncomingMessage.IncomingRequest.NumberOfValues(
+                quantity.toInt(),
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+            )
+        }
+
+        RequestedNumberQuantifier.AT_LEAST -> {
+            IncomingMessage.IncomingRequest.NumberOfValues(
+                quantity.toInt(),
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            )
+
+        }
+    }
+}
+
+private fun DappToWalletInteractionAuthorizedRequestItems.parseAuthorizedRequest(
     remoteEntityId: IncomingMessage.RemoteEntityID,
-    requestId: String,
+    interactionId: WalletInteractionId,
     metadata: IncomingMessage.IncomingRequest.RequestMetadata
 ): IncomingMessage.IncomingRequest {
-    val auth = when (this.auth) {
-        is AuthLoginRequestItem -> auth.toDomainModel()
-        is AuthUsePersonaRequestItem -> auth.toDomainModel()
+    val authDomainModel = when (val auth = auth) {
+        is DappToWalletInteractionAuthRequestItem.LoginWithChallenge -> {
+            IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge(
+                auth.v1.challenge
+            )
+        }
+
+        DappToWalletInteractionAuthRequestItem.LoginWithoutChallenge -> {
+            IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge
+        }
+
+        is DappToWalletInteractionAuthRequestItem.UsePersona -> {
+            IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
+                auth.v1.identityAddress
+            )
+
+        }
     }
     return IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = remoteEntityId,
-        interactionId = requestId,
+        interactionId = interactionId,
         requestMetadata = metadata,
-        authRequest = auth,
+        authRequest = authDomainModel,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(isOngoing = false),
-        ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(),
+        ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(isOngoing = true),
         oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(isOngoing = false),
-        ongoingPersonaDataRequestItem = ongoingPersonaData?.toDomainModel(),
-        resetRequestItem = reset?.toDomainModel()
+        ongoingPersonaDataRequestItem = ongoingPersonaData?.toDomainModel(isOngoing = true),
+        resetRequestItem = reset
     )
 }

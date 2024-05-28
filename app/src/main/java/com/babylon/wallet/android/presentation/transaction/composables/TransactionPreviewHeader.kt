@@ -38,6 +38,8 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.WalletInteractionId
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.sargon.default
@@ -170,6 +172,7 @@ fun TransactionPreviewHeader(
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
@@ -178,7 +181,7 @@ fun TransactionPreviewHeaderPreview() {
             state = State(
                 request = IncomingMessage.IncomingRequest.TransactionRequest(
                     remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
-                    interactionId = "",
+                    interactionId = WalletInteractionId.randomUUID(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = Gateway.default.network.id,

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
@@ -13,9 +12,11 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.TimestampGenerator
@@ -65,7 +66,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     .referencesToAuthorizedPersonas
                     .firstOrNull { authorizedPersonaSimple ->
                         authorizedPersonaSimple.identityAddress.string ==
-                            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
+                            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.identityAddress?.string
                     }
                 if (authorizedPersonaSimple == null) {
                     respondWithInvalidPersona(incomingRequest)
@@ -98,7 +99,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                 persona
                             )
                             operationResult = result.map { dAppName ->
-                                DAppData(requestId = request.interactionId, name = dAppName)
+                                DAppData(interactionId = request.interactionId, name = dAppName)
                             }
                         }
 
@@ -117,7 +118,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                     authorizedDApp = authorizedDapp
                                 )
                                 operationResult = result.map { dAppName ->
-                                    DAppData(requestId = request.interactionId, name = dAppName)
+                                    DAppData(interactionId = request.interactionId, name = dAppName)
                                 }
                             }
                         }
@@ -131,7 +132,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private suspend fun respondWithInvalidPersona(incomingRequest: AuthorizedRequest) {
         respondToIncomingRequestUseCase.respondWithFailure(
             request = incomingRequest,
-            error = WalletErrorType.InvalidPersona
+            error = DappWalletInteractionErrorType.INVALID_PERSONA
         )
     }
 
@@ -275,6 +276,6 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 }
 
 data class DAppData(
-    val requestId: String,
+    val interactionId: WalletInteractionId,
     val name: String?
 )

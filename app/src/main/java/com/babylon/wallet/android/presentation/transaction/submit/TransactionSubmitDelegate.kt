@@ -110,7 +110,7 @@ class TransactionSubmitDelegate @Inject constructor(
             _state.update {
                 it.copy(isTransactionDismissed = true)
             }
-            incomingRequestRepository.requestHandled(request.interactionId)
+            incomingRequestRepository.requestHandled(request.interactionId.toString())
         } else if (_state.value.interactionState != null) {
             approvalJob?.cancel()
             approvalJob = null
@@ -152,7 +152,7 @@ class TransactionSubmitDelegate @Inject constructor(
             }
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
-                    requestId = transactionRequest.interactionId,
+                    requestId = transactionRequest.interactionId.toString(),
                     transactionId = notarization.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete
@@ -160,7 +160,7 @@ class TransactionSubmitDelegate @Inject constructor(
             )
             transactionStatusClient.pollTransactionStatus(
                 txID = notarization.intentHash.bech32EncodedTxId,
-                requestId = transactionRequest.interactionId,
+                requestId = transactionRequest.interactionId.toString(),
                 transactionType = transactionRequest.transactionType,
                 endEpoch = notarization.endEpoch
             )
@@ -195,7 +195,7 @@ class TransactionSubmitDelegate @Inject constructor(
                         reportFailure(radixWalletException)
                         appEventBus.sendEvent(
                             AppEvent.Status.Transaction.Fail(
-                                requestId = transactionRequest.interactionId,
+                                requestId = transactionRequest.interactionId.toString(),
                                 transactionId = "",
                                 isInternal = transactionRequest.isInternal,
                                 errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),

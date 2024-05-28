@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
@@ -19,7 +18,7 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.transaction.vectors.requestMetadata
 import com.babylon.wallet.android.presentation.transaction.vectors.sampleManifest
 import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
-import com.babylon.wallet.android.utils.AppEventBusImpl
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.CompiledNotarizedIntent
@@ -31,6 +30,7 @@ import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.perRecipientTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
@@ -51,7 +51,6 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
-import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<TransactionReviewViewModel>(
@@ -61,7 +60,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
 
-    private val transactionId = UUID.randomUUID().toString()
+    private val transactionId = WalletInteractionId.randomUUID().toString()
     private val testProfile = Profile.sample()
 
     private val savedStateHandle = mockk<SavedStateHandle>().apply {
@@ -150,7 +149,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
         val transactionRequest = IncomingMessage.IncomingRequest.TransactionRequest(
             remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-            interactionId = transactionId,
+            interactionId = WalletInteractionId.fromString(transactionId),
             transactionManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
         ).also {

@@ -14,13 +14,13 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
@@ -89,7 +89,7 @@ class DevSettingsViewModel @Inject constructor(
                             return@launch
                         }
                     Timber.d("Approving: \n$manifest")
-                    val interactionId = UUIDGenerator.uuid().toString()
+                    val interactionId = WalletInteractionId.randomUUID()
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
                             requestId = interactionId,
@@ -98,7 +98,7 @@ class DevSettingsViewModel @Inject constructor(
                         )
                     )
                     _state.update { it.copy(isLoading = false) }
-                    listenForRolaKeyUploadTransactionResult(interactionId)
+                    listenForRolaKeyUploadTransactionResult(interactionId.toString())
                 }.onFailure {
                     if (it is ProfileException.SecureStorageAccess) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
