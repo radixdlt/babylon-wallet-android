@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.isCompatible
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
+import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -42,7 +43,8 @@ class RestoreFromBackupViewModel @Inject constructor(
     private val downloadBackedUpProfileFromCloud: DownloadBackedUpProfileFromCloud,
     private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase,
-    private val googleSignInManager: GoogleSignInManager
+    private val googleSignInManager: GoogleSignInManager,
+    private val deviceInfoRepository: DeviceInfoRepository
 ) : StateViewModel<RestoreFromBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -214,9 +216,13 @@ class RestoreFromBackupViewModel @Inject constructor(
             }
             .getOrNull()
 
+        val deviceInfo = deviceInfoRepository.getDeviceInfo()
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.map { fileEntity ->
-                Selectable<State.RestoringProfile>(data = State.RestoringProfile.GoogleDrive(entity = fileEntity))
+                Selectable<State.RestoringProfile>(data = State.RestoringProfile.GoogleDrive(
+                    entity = fileEntity,
+                    isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == deviceInfo.id
+                ))
             }
             _state.update {
                 it.copy(restoringProfiles = restoringProfiles.toPersistentList())
@@ -225,7 +231,10 @@ class RestoreFromBackupViewModel @Inject constructor(
             getTemporaryRestoringProfileForBackupUseCase(BackupType.DeprecatedCloud)?.let { profile ->
                 if (profile.header.isCompatible) {
                     val restoringProfile = Selectable<State.RestoringProfile>(
-                        data = State.RestoringProfile.DeprecatedCloudBackup(header = profile.header)
+                        data = State.RestoringProfile.DeprecatedCloudBackup(
+                            header = profile.header,
+                            isBackedUpByTheSameDevice = profile.header.lastUsedOnDevice.id == deviceInfo.id
+                        )
                     )
                     _state.update {
                         it.copy(restoringProfiles = persistentListOf(restoringProfile))
@@ -246,13 +255,15 @@ class RestoreFromBackupViewModel @Inject constructor(
 
         sealed interface RestoringProfile {
 
+            val isBackedUpByTheSameDevice: Boolean
             val deviceDescription: String
             val lastModified: Timestamp
             val totalNumberOfAccountsOnAllNetworks: Int
             val totalNumberOfPersonasOnAllNetworks: Int
 
             data class GoogleDrive(
-                val entity: CloudBackupFileEntity
+                val entity: CloudBackupFileEntity,
+                override val isBackedUpByTheSameDevice: Boolean
             ) : RestoringProfile {
                 override val deviceDescription: String = entity.header.lastUsedOnDevice.description
                 override val lastModified: Timestamp = entity.header.lastModified
@@ -263,7 +274,8 @@ class RestoreFromBackupViewModel @Inject constructor(
             }
 
             data class DeprecatedCloudBackup(
-                val header: Header
+                val header: Header,
+                override val isBackedUpByTheSameDevice: Boolean
             ) : RestoringProfile {
                 override val deviceDescription: String = header.lastUsedOnDevice.description
                 override val lastModified: Timestamp = header.lastModified

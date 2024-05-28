@@ -387,7 +387,11 @@ private fun RestoredProfileListItem(
                 Text(
                     text = stringResource(
                         id = R.string.recoverProfileBackup_backupFrom,
-                        restoringProfile.deviceDescription
+                        if (restoringProfile.isBackedUpByTheSameDevice) {
+                            stringResource(id = R.string.iOSProfileBackup_thisDevice)
+                        } else {
+                            restoringProfile.deviceDescription
+                        }
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body2Regular
@@ -571,7 +575,7 @@ fun RestoreFromBackupWithMultipleCloudBackupsPreview() {
                 backupEmail = "email",
                 restoringProfiles = CloudBackupFileEntity.sample.all.map {
                     Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
-                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(it)
+                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(it, false)
                     )
                 }.toPersistentList()
             ),
@@ -646,7 +650,8 @@ fun RestoreFromBackupLoadingProfilesPreview2() {
                 restoringProfiles = listOf(
                     Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
                         data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(
-                            entity = CloudBackupFileEntity.sample()
+                            entity = CloudBackupFileEntity.sample(),
+                            isBackedUpByTheSameDevice = false
                         )
                     )
                 ).toImmutableList()
