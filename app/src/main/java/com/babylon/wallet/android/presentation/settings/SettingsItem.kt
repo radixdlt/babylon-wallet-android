@@ -5,6 +5,8 @@ import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 
 sealed interface SettingsItem {
 
@@ -70,8 +72,7 @@ sealed interface SettingsItem {
 
         data class SeedPhrases(
             override val count: Int,
-            val needsRecovery: Boolean,
-            val anyEntitySeedPhraseNotWrittenDown: Boolean
+            val securityProblems: ImmutableSet<SecurityProblem> = persistentSetOf()
         ) : SecurityFactorsSettingsItem
 
         data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem

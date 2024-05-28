@@ -1,22 +1,19 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.ledgerFactorSources
-import rdx.works.profile.domain.GetFactorSourcesWithAccountsUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -24,13 +21,12 @@ import javax.inject.Inject
 @HiltViewModel
 class SecurityFactorsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getFactorSourcesWithAccountsUseCase: GetFactorSourcesWithAccountsUseCase,
-    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase
+    private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase
 ) : StateViewModel<SecurityFactorsUiState>() {
 
     override fun initialState(): SecurityFactorsUiState = SecurityFactorsUiState(
         settings = persistentSetOf(
-            SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(0, false, false),
+            SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(0, persistentSetOf()),
             SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets(0)
         )
     )
@@ -38,25 +34,16 @@ class SecurityFactorsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                getFactorSourcesWithAccountsUseCase(),
-                getProfileUseCase.flow.map { it.ledgerFactorSources },
-                getEntitiesWithSecurityPromptUseCase(),
-            ) { deviceFactorSources, ledgerFactorSources, entitiesWithSecurityPrompts ->
-                val factorSourcesIds = deviceFactorSources.map { it.deviceFactorSource.id }
-                val anyEntityNeedRecovery = entitiesWithSecurityPrompts.any { entityWithSecurityPrompt ->
-                    entityWithSecurityPrompt.prompts.contains(SecurityPromptType.NEEDS_RECOVER) &&
-                        entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
-                }
-                val anyEntitySeedPhraseNotWrittenDown = entitiesWithSecurityPrompts.any { entityWithSecurityPrompt ->
-                    entityWithSecurityPrompt.prompts.contains(SecurityPromptType.NEEDS_BACKUP) &&
-                        entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
-                }
+                getProfileUseCase.flow,
+                getSecurityProblemsUseCase()
+            ) { profile, securityProblems ->
+                val ledgerFactorSources = profile.ledgerFactorSources
+                val deviceFactorSources = profile.deviceFactorSources
                 SecurityFactorsUiState(
                     settings = persistentSetOf(
                         SettingsItem.SecurityFactorsSettingsItem.SeedPhrases(
                             deviceFactorSources.size,
-                            anyEntityNeedRecovery,
-                            anyEntitySeedPhraseNotWrittenDown
+                            securityProblems.toPersistentSet()
                         ),
                         SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets(ledgerFactorSources.size)
                     )
