@@ -9,8 +9,6 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.ProfileState
-import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.data.DriveClient
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.ProfileRepository
@@ -22,7 +20,6 @@ class ExecuteBackupUseCase @AssistedInject constructor(
     @Assisted private val params: WorkerParameters,
     private val driveClient: DriveClient,
     private val profileRepository: ProfileRepository,
-    private val preferencesManager: PreferencesManager,
     private val cloudBackupErrorStream: CloudBackupErrorStream
 ) : CoroutineWorker(context, params) {
 
@@ -31,22 +28,11 @@ class ExecuteBackupUseCase @AssistedInject constructor(
             it is ProfileState.NotInitialised
         }.first()
         val profile = (profileState as? ProfileState.Restored)?.profile
-        val lastBackupEvent = preferencesManager.lastCloudBackupEvent.first()
 
         return if (profile != null) {
-            driveClient.backupProfile(
-                googleDriveFileId = lastBackupEvent?.fileId,
-                profile = profile
-            ).fold(
-                onSuccess = { file ->
+            driveClient.backupProfile(profile = profile).fold(
+                onSuccess = {
                     Timber.tag("CloudBackup").d("\uD83C\uDD95 ✅")
-                    preferencesManager.updateLastCloudBackupEvent(
-                        LastCloudBackupEvent(
-                            fileId = file.id,
-                            profileModifiedTime = profile.header.lastModified,
-                            cloudBackupTime = file.lastBackup
-                        )
-                    )
                     cloudBackupErrorStream.resetErrors()
                     Result.success()
                 },

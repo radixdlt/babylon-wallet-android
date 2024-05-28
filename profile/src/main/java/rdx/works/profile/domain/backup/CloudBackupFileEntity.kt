@@ -58,8 +58,7 @@ data class CloudBackupFileEntity(
         )
     }
 
-    fun newFile(header: Header): File = File().apply {
-        parents = listOf(DriveClientImpl.APP_DATA_FOLDER)
+    fun claim(header: Header): File = File().apply {
         name = "${header.id}.json"
         appProperties = header.toCloudBackupProperties()
         mimeType = "application/json"

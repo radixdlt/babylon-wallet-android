@@ -8,8 +8,7 @@ sealed class BackupServiceException : Exception() {
     data class ServiceException(val statusCode: Int, override val message: String) : BackupServiceException()
 
     data class ClaimedByAnotherDevice(
-        val fileEntity: CloudBackupFileEntity,
-        val claimedProfileModifiedTime: Timestamp
+        val fileEntity: CloudBackupFileEntity
     ) : BackupServiceException()
 
     data object UnauthorizedException : BackupServiceException()

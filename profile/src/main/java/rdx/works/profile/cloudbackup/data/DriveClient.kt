@@ -8,16 +8,17 @@ import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import okhttp3.internal.http.HTTP_FORBIDDEN
 import okhttp3.internal.http.HTTP_NOT_FOUND
 import okhttp3.internal.http.HTTP_UNAUTHORIZED
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
-import rdx.works.core.flatMapError
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.model.BackupServiceException
+import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -29,7 +30,6 @@ import javax.inject.Inject
 interface DriveClient {
 
     suspend fun backupProfile(
-        googleDriveFileId: GoogleDriveFileId?,
         profile: Profile
     ): Result<CloudBackupFileEntity>
 
@@ -60,7 +60,8 @@ interface DriveClient {
 class DriveClientImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val googleSignInManager: GoogleSignInManager,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val deviceInfoRepository: DeviceInfoRepository
 ) : DriveClient {
 
     private val backupFields = listOf(
@@ -90,23 +91,26 @@ class DriveClientImpl @Inject constructor(
     private val getFilesFields = "files($getFields)"
 
     override suspend fun backupProfile(
-        googleDriveFileId: GoogleDriveFileId?,
         profile: Profile
-    ): Result<CloudBackupFileEntity> = if (googleDriveFileId == null) { // if true then this is the first attempt to backup the profile!
-        createBackupFile(profile = profile)
-    } else {
-        updateBackupFile(
-            googleDriveFileId = googleDriveFileId,
-            profile = profile
-        )
-    }.onSuccess { entity ->
-        preferencesManager.updateLastCloudBackupEvent(
-            LastCloudBackupEvent(
-                fileId = entity.id,
-                profileModifiedTime = profile.header.lastModified,
-                cloudBackupTime = entity.lastBackup
+    ): Result<CloudBackupFileEntity> {
+        val fileId = preferencesManager.lastCloudBackupEvent.firstOrNull()?.fileId
+
+        return if (fileId == null) {
+            createBackupFile(profile = profile)
+        } else {
+            updateBackupFile(
+                googleDriveFileId = fileId,
+                profile = profile
             )
-        )
+        }.onSuccess { entity ->
+            preferencesManager.updateLastCloudBackupEvent(
+                LastCloudBackupEvent(
+                    fileId = entity.id,
+                    profileModifiedTime = profile.header.lastModified,
+                    cloudBackupTime = entity.lastBackup
+                )
+            )
+        }
     }
 
     override suspend fun getCloudBackupEntity(
@@ -120,7 +124,13 @@ class DriveClientImpl @Inject constructor(
                 .get(fileId.id)
                 .setFields(getFields)
                 .execute().let { file -> CloudBackupFileEntity(file) }
-        }.mapDriveError().checkClaimedByAnotherDeviceError(profile = profile)
+        }.mapCatching { entity ->
+            if (entity.header.lastUsedOnDevice.id != deviceInfoRepository.getDeviceInfo().id) {
+                throw BackupServiceException.ClaimedByAnotherDevice(entity)
+            } else {
+                entity
+            }
+        }.mapDriveError()
     }
 
     override suspend fun fetchCloudBackupFileEntities(): Result<List<CloudBackupFileEntity>> = withContext(ioDispatcher) {
@@ -152,15 +162,13 @@ class DriveClientImpl @Inject constructor(
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
             googleSignInManager.getDrive().files()
-                .copy(
+                .update(
                     file.id.id,
-                    file.newFile(header = updatedHeader)
+                    file.claim(header = updatedHeader) // Updates the lastUsedOnDevice.id
                 )
                 .setFields(claimFields)
                 .execute()
         }.mapCatching { copiedFile ->
-            googleSignInManager.getDrive().files().delete(file.id.id).execute()
-
             CloudBackupFileEntity(copiedFile)
         }.onSuccess { entity ->
             preferencesManager.updateLastCloudBackupEvent(
@@ -176,11 +184,10 @@ class DriveClientImpl @Inject constructor(
     private suspend fun createBackupFile(
         profile: Profile
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
-        val profileSerialized = profile.toJson()
-
         runCatching {
+            // TODO check if needed to check the list of files first
             val driveFile = CloudBackupFileEntity.newDriveFile(profile.header)
-            val backupContent = ByteArrayContent("application/json", profileSerialized.toByteArray())
+            val backupContent = ByteArrayContent("application/json", profile.toJson().toByteArray())
 
             googleSignInManager.getDrive().files()
                 .create(driveFile, backupContent)
@@ -194,25 +201,25 @@ class DriveClientImpl @Inject constructor(
     private suspend fun updateBackupFile(
         googleDriveFileId: GoogleDriveFileId,
         profile: Profile
-    ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
-        runCatching {
-            val profileSerialized = profile.toJson()
-            val backupContent = ByteArrayContent("application/json", profileSerialized.toByteArray())
-            googleSignInManager.getDrive().files()
-                .update(
-                    googleDriveFileId.id,
-                    File().apply {
-                        appProperties = profile.header.toCloudBackupProperties()
-                    },
-                    backupContent
-                )
-                .setFields(backupFields)
-                .execute()
-                .let { file ->
-                    CloudBackupFileEntity(file)
-                }
-        }.mapDriveError().checkClaimedByAnotherDeviceError(profile = profile)
-    }
+    ): Result<CloudBackupFileEntity> = getCloudBackupEntity(fileId = googleDriveFileId, profile = profile)
+        .mapCatching {
+            withContext(ioDispatcher) {
+                googleSignInManager.getDrive().files()
+                    .update(
+                        googleDriveFileId.id,
+                        File().apply {
+                            appProperties = profile.header.toCloudBackupProperties()
+                        },
+                        ByteArrayContent("application/json", profile.toJson().toByteArray())
+                    )
+                    .setFields(backupFields)
+                    .execute()
+                    .let { file ->
+                        CloudBackupFileEntity(file)
+                    }
+            }
+        }.mapDriveError()
+
 
     private suspend fun getFileContents(fileId: String): Result<String> = withContext(ioDispatcher) {
         runCatching {
@@ -224,53 +231,19 @@ class DriveClientImpl @Inject constructor(
         }.mapDriveError()
     }
 
-    private suspend fun Result<CloudBackupFileEntity>.checkClaimedByAnotherDeviceError(profile: Profile): Result<CloudBackupFileEntity> =
-        flatMapError { error ->
-            when (error) {
-                is BackupServiceException.ServiceException -> {
-                    // In case we receive a 404 for the specific file id, but the file
-                    // with name = profileId still exists on cloud, it means that it was claimed by another device.
-                    // It is safe to throw ClaimedByAnotherDevice exception
-                    if (error.statusCode == HTTP_NOT_FOUND) {
-                        fetchCloudBackupFileEntities()
-                            .mapCatching { files ->
-                                files.find { it.header.id == profile.header.id }
-                            }.fold(
-                                onSuccess = { existingFile ->
-                                    if (existingFile == null) {
-                                        // The user has deleted the file on drive, maybe by removing all hidden files
-                                        // from google drive settings
-                                        preferencesManager.removeLastCloudBackupEvent()
-                                    }
-                                    Result.failure(
-                                        if (existingFile != null) {
-                                            BackupServiceException.ClaimedByAnotherDevice(existingFile, profile.header.lastModified)
-                                        } else {
-                                            error
-                                        }
-                                    )
-                                },
-                                onFailure = {
-                                    Result.failure(it)
-                                }
-                            )
-                    } else {
-                        Result.failure(error)
-                    }
-                }
-
-                else -> Result.failure(error)
-            }
-        }
-
-    private fun <T> Result<T>.mapDriveError(): Result<T> = mapError { error ->
+    private suspend fun <T> Result<T>.mapDriveError(): Result<T> = mapError { error ->
         val mappedError = when (error) {
             is BackupServiceException -> error
             is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
             is GoogleJsonResponseException -> {
                 when (error.details.code) {
                     HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> BackupServiceException.UnauthorizedException
-                    else -> BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
+                    else -> {
+                        if (error.details.code == HTTP_NOT_FOUND) {
+                            preferencesManager.removeLastCloudBackupEvent()
+                        }
+                        BackupServiceException.ServiceException(statusCode = error.details.code, message = error.details.message)
+                    }
                 }
             }
 

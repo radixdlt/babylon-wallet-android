@@ -76,11 +76,17 @@ fun InspectGoogleBackupsScreen(
     ) { padding ->
         val pullRefreshState = rememberPullRefreshState(state.isLoading, onRefresh = viewModel::onRefresh)
         Box(
-            modifier = Modifier.pullRefresh(pullRefreshState).padding(padding)
+            modifier = Modifier
+                .pullRefresh(pullRefreshState)
+                .padding(padding)
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
             ) {
+                item {
+                    DeviceId(state = state)
+                }
+
                 item {
                     UserStatus(state = state)
                 }
@@ -108,7 +114,8 @@ private fun UserStatus(
 ) {
     Row(
         modifier = modifier.padding(RadixTheme.dimensions.paddingDefault),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_personas),
@@ -127,6 +134,29 @@ private fun UserStatus(
 
         Text(
             text = emailText,
+            color = RadixTheme.colors.gray2,
+            style = RadixTheme.typography.body2Regular
+        )
+    }
+}
+
+@Composable
+private fun DeviceId(
+    modifier: Modifier = Modifier,
+    state: InspectGoogleBackupsViewModel.State
+) {
+    Row(
+        modifier = modifier.padding(RadixTheme.dimensions.paddingDefault),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_developer_mode),
+            contentDescription = null
+        )
+
+        Text(
+            text = state.deviceId.toString(),
             color = RadixTheme.colors.gray2,
             style = RadixTheme.typography.body2Regular
         )
@@ -166,8 +196,8 @@ private fun GoogleDriveFile(
                     entity.header.lastModified.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
                 }
             )
-            FileProperty(key = "Current Device ID", value = entity.header.lastUsedOnDevice.id.toString())
-            FileProperty(key = "Current Device Name", value = entity.header.lastUsedOnDevice.description)
+            FileProperty(key = "Claiming Device ID", value = entity.header.lastUsedOnDevice.id.toString())
+            FileProperty(key = "Claiming Device Name", value = entity.header.lastUsedOnDevice.description)
             FileProperty(key = "Accounts", value = entity.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toString())
             FileProperty(key = "Personas", value = entity.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toString())
         }
