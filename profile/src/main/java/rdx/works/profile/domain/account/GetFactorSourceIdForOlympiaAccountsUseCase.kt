@@ -31,10 +31,6 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
                 }
                 .find { fromHashId ->
                     val readMnemonicResult = mnemonicRepository.readMnemonic(fromHashId)
-                    val exception = readMnemonicResult.exceptionOrNull()
-                    if (exception != null) {
-                        return@withContext Result.failure(exception)
-                    }
                     readMnemonicResult.getOrNull()?.validatePublicKeysOf(olympiaAccounts) == true
                 }?.value?.asGeneral()
             Result.success(existingId)
