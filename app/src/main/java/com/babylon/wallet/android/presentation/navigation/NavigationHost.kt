@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectClo
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.ROUTE_RESTORE_FROM_BACKUP
+import com.babylon.wallet.android.presentation.onboarding.restore.backup.cloudBackupLoginScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
@@ -174,7 +175,7 @@ fun NavigationHost(
                 navController.addSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
             },
             onNewUserConfirmClick = {
-                navController.popBackStack(ROUTE_RESTORE_FROM_BACKUP, inclusive = true)
+                navController.popBackStack(Screen.OnboardingDestination.route, inclusive = false)
             }
         )
         accountRecoveryScan(
