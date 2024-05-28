@@ -88,6 +88,7 @@ fun WalletScreen(
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
+    val popUpScreen by viewModel.popUpScreen().collectAsStateWithLifecycle()
 
     WalletContent(
         modifier = modifier,
@@ -108,9 +109,12 @@ fun WalletScreen(
         }
     }
 
-    LaunchedEffect(walletState.isNpsSurveyShown) {
-        if (walletState.isNpsSurveyShown) {
-            showNPSSurvey()
+    LaunchedEffect(popUpScreen) {
+        when (popUpScreen) {
+            WalletViewModel.PopUpScreen.RELINK_CONNECTORS -> onNavigateToRelinkConnectors()
+            WalletViewModel.PopUpScreen.CONNECT_CLOUD_BACKUP -> onNavigateToConnectCloudBackup()
+            WalletViewModel.PopUpScreen.NPS_SURVEY -> showNPSSurvey()
+            null -> return@LaunchedEffect
         }
     }
 
@@ -118,26 +122,24 @@ fun WalletScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is WalletEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
-                WalletEvent.NavigateToRelinkConnectors -> onNavigateToRelinkConnectors()
-                WalletEvent.NavigateToConnectCloudBackup -> onNavigateToConnectCloudBackup()
             }
         }
     }
-    SyncNpsSurveyState(walletState, viewModel::dismissSurvey)
+
+    SyncPopUpScreensState(popUpScreen, viewModel::onPopUpScreenDismissed)
 }
 
 /**
- * NPS survey is new composable destination, so current lifecycle is paused when NPS takes over,
- * and resumed when wallet screen is shown again. We use that fact to mark survey as shown.
- *
+ * A [WalletViewModel.PopUpScreen] is a composable destination, so current lifecycle is stopped when it takes over,
+ * and started when wallet screen is shown again. We use that fact to mark it as shown.
  */
 @Composable
-fun SyncNpsSurveyState(walletState: WalletUiState, onDismiss: () -> Unit) {
+fun SyncPopUpScreensState(popUpScreen: WalletViewModel.PopUpScreen?, onDismiss: () -> Unit) {
     val owner = LocalLifecycleOwner.current
-    DisposableEffect(walletState.isNpsSurveyShown) {
+    DisposableEffect(popUpScreen) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (walletState.isNpsSurveyShown) {
+            if (event == Lifecycle.Event.ON_START) {
+                if (popUpScreen != null) {
                     onDismiss()
                 }
             }
