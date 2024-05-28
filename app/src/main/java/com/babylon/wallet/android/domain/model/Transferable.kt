@@ -29,14 +29,17 @@ sealed interface Transferable {
                     when (val transferable = transferable) {
                         is TransferableAsset.Fungible.Token -> GuaranteeAssertion.ForAmount(
                             amount = transferable.amount * predicted.guaranteeOffset,
+                            percentage = predicted.guaranteeOffset,
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.Fungible.PoolUnitAsset -> GuaranteeAssertion.ForAmount(
                             amount = transferable.amount * predicted.guaranteeOffset,
+                            percentage = predicted.guaranteeOffset,
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.Fungible.LSUAsset -> GuaranteeAssertion.ForAmount(
                             amount = transferable.amount * predicted.guaranteeOffset,
+                            percentage = predicted.guaranteeOffset,
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.NonFungible.NFTAssets -> GuaranteeAssertion.ForNFT(
@@ -89,6 +92,7 @@ sealed interface GuaranteeAssertion {
 
     data class ForAmount(
         val amount: Decimal192,
+        val percentage: Decimal192,
         override val instructionIndex: Long
     ) : GuaranteeAssertion
 

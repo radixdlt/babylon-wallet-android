@@ -258,7 +258,8 @@ class TransactionSubmitDelegate @Inject constructor(
                 amount = assertion.amount,
                 instructionIndex = assertion.instructionIndex.toULong(),
                 resourceAddress = resource.address,
-                resourceDivisibility = resource.divisibility?.value
+                resourceDivisibility = resource.divisibility?.value,
+                percentage = assertion.percentage
             )
         }
 
