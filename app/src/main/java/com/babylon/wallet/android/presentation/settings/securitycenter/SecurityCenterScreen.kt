@@ -117,7 +117,7 @@ private fun SecurityCenterContent(
                                             onBackupEntities()
                                         },
                                     title = title,
-                                    subtitle = stringResource(id = R.string.securityCenter_problem3_text)
+                                    subtitle = stringResource(id = R.string.securityProblems_no3_securityCenterBody)
                                 )
                             }
 
@@ -137,7 +137,7 @@ private fun SecurityCenterContent(
                                         .clip(RadixTheme.shapes.roundedRectMedium)
                                         .clickable { onBackupConfigurationClick() },
                                     title = title,
-                                    subtitle = stringResource(id = R.string.securityCenter_problem6_text)
+                                    subtitle = stringResource(id = R.string.securityProblems_no6_securityCenterBody)
                                 )
                             }
                         }
@@ -352,14 +352,26 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
 @Composable
 fun SecurityProblem.toProblemHeading(): String {
     return when (this) {
-        is SecurityProblem.EntitiesNotRecoverable -> stringResource(
-            id = R.string.securityCenter_problem3_heading,
-            accountsNeedBackup,
-            personasNeedBackup
-        )
+        is SecurityProblem.EntitiesNotRecoverable -> {
+            val accountsString = if (accountsNeedBackup == 1) {
+                stringResource(id = R.string.securityProblems_common_accountSingular)
+            } else {
+                stringResource(id = R.string.securityProblems_common_accountPlural, accountsNeedBackup)
+            }
+            val personasString = if (personasNeedBackup == 1) {
+                stringResource(id = R.string.securityProblems_common_personaSingular)
+            } else {
+                stringResource(id = R.string.securityProblems_common_personaPlural, personasNeedBackup)
+            }
+            stringResource(
+                id = R.string.securityProblems_no3_securityCenterTitle,
+                accountsString,
+                personasString
+            )
+        }
 
-        is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityCenter_problem9_heading)
-        SecurityProblem.BackupNotWorking -> stringResource(id = R.string.securityCenter_problem6_heading)
+        is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityProblems_no9_securityCenterTitle)
+        SecurityProblem.BackupNotWorking -> stringResource(id = R.string.securityProblems_no6_securityCenterTitle)
     }
 }
 
