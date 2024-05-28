@@ -102,7 +102,6 @@ data class CloudBackupFileEntity(
                     lastBackup = TimestampGenerator(),
                     properties = Header.sample.other().toCloudBackupProperties()
                 )
-
             }
     }
 }
@@ -123,5 +122,3 @@ fun Header.toCloudBackupProperties() = mapOf(
     CloudBackupFileEntity.HEADER_CONTENT_HINT_TOTAL_PERSONAS to contentHint.numberOfPersonasOnAllNetworksInTotal.toString(),
     CloudBackupFileEntity.HEADER_CONTENT_HINT_TOTAL_NETWORKS to contentHint.numberOfNetworks.toString()
 )
-
-

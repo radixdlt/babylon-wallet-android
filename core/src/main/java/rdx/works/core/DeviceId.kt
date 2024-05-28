@@ -31,5 +31,4 @@ object DeviceId {
 
         return uuid
     }
-
 }
