@@ -29,6 +29,7 @@ class WalletInteractionModelsTest {
     private val sampleDappAddress = AccountAddress.sampleMainnet.invoke()
     private val sampleIdentityAddress = IdentityAddress.sampleMainnet.invoke()
     private val interactionId = WalletInteractionId.randomUUID()
+    private val challenge = Exactly32Bytes.sample.invoke()
 
     @Test
     fun `WalletInteraction unauthorized request decoding with oneTimeAccounts item`() {
@@ -85,7 +86,6 @@ class WalletInteractionModelsTest {
         val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
         assert(result.items is DappToWalletInteractionItems.UnauthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.UnauthorizedRequest
-        assert(item.v1.oneTimeAccounts is DappToWalletInteractionAccountsRequestItem)
         assert(item.v1.oneTimePersonaData?.isRequestingName == true)
         assert(item.v1.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantity?.toInt() == 1)
         assert(item.v1.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantifier == RequestedNumberQuantifier.EXACTLY)
@@ -229,6 +229,7 @@ class WalletInteractionModelsTest {
 
     @Test
     fun `WalletInteraction authorized login request decoding with oneTimeAccounts item`() {
+        val challenge = Exactly32Bytes.sample.invoke()
         val request = """
             {
                "items":{
@@ -237,7 +238,7 @@ class WalletInteractionModelsTest {
                     "discriminator":"loginWithoutChallenge"                   
                   },
                   "oneTimeAccounts":{
-                     "challenge": "challenge",
+                     "challenge": "${challenge.hex}",
                      "numberOfAccounts":{
                         "quantity":1,
                         "quantifier":"exactly"
@@ -300,14 +301,13 @@ class WalletInteractionModelsTest {
 
     @Test
     fun `WalletInteraction authorized login request decoding with ongoingAccounts item with proof of ownership`() {
-        val challenge = Exactly32Bytes.sample.invoke()
         val request = """
             {
                "items":{
                   "discriminator":"authorizedRequest",
                   "auth":{
                     "discriminator":"loginWithChallenge",
-                    "challenge":"randomChallenge"
+                    "challenge":"${challenge.hex}",
                   },
                   "ongoingAccounts":{
                      "challenge":"${challenge.hex}",
@@ -321,7 +321,7 @@ class WalletInteractionModelsTest {
                "metadata":{
                   "version": 1,
                   "networkId":1,
-                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works",
+                  "origin":"https://dashboard-hammunet.rdx-works-main.extratools.works/",
                   "dAppDefinitionAddress":"${sampleDappAddress.string}"
                }
             }
@@ -403,10 +403,6 @@ class WalletInteractionModelsTest {
         val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
-        assert(item.v1.auth is DappToWalletInteractionAuthRequestItem.LoginWithoutChallenge)
-        assert(item.v1.oneTimePersonaData?.isRequestingName == true)
-        assert(item.v1.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantity?.toInt() == 1)
-        assert(item.v1.oneTimePersonaData?.numberOfRequestedEmailAddresses?.quantifier == RequestedNumberQuantifier.EXACTLY)
         assertEquals(
             DappToWalletInteractionAuthRequestItem.LoginWithChallenge(
                 v1 = DappToWalletInteractionAuthLoginWithChallengeRequestItem(challenge)

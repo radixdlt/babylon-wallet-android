@@ -19,13 +19,14 @@ import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.newDappToWalletInteractionUnvalidatedFromJsonBytes
 import com.radixdlt.sargon.walletToDappInteractionResponseToJsonBytes
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.toByteArray
 
 fun DappToWalletInteractionUnvalidated.Companion.init(json: String) = runCatching {
     newDappToWalletInteractionUnvalidatedFromJsonBytes(json.toByteArray().toBagOfBytes())
 }
 
 fun WalletToDappInteractionResponse.asJsonString() = runCatching {
-    walletToDappInteractionResponseToJsonBytes(this).toString()
+    String(walletToDappInteractionResponseToJsonBytes(this).toByteArray())
 }
 
 fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID): IncomingMessage.IncomingRequest {
