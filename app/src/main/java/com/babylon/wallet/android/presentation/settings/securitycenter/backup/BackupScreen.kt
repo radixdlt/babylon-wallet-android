@@ -448,7 +448,7 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
                 tint = RadixTheme.colors.orange3
             )
             Text(
-                text = stringResource(id = R.string.configurationBackup_problem5WarningAndroid),
+                text = stringResource(id = R.string.securityProblems_no5_configurationBackup),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.orange3
             )
