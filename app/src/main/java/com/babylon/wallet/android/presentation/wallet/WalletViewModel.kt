@@ -6,7 +6,7 @@ import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,6 +48,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -81,7 +83,7 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private var accountsWithAssets: List<AccountWithAssets>? = null
@@ -218,19 +220,22 @@ class WalletViewModel @Inject constructor(
                 }.getOrNull()
             }
             _state.update { onAssetsReceived() }
-        }.flowOn(ioDispatcher).launchIn(viewModelScope)
+        }.flowOn(defaultDispatcher).launchIn(viewModelScope)
     }
 
     private fun observePrompts() {
         viewModelScope.launch {
-            getEntitiesWithSecurityPromptUseCase().collect { entitiesWithSecurityPrompt ->
-                this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
-                _state.update {
-                    it.copy(
-                        accountUiItems = buildAccountUiItems()
-                    )
+            getEntitiesWithSecurityPromptUseCase()
+                .onEach { entitiesWithSecurityPrompt ->
+                    this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
+                    _state.update {
+                        it.copy(
+                            accountUiItems = buildAccountUiItems()
+                        )
+                    }
                 }
-            }
+                .flowOn(defaultDispatcher)
+                .collect()
         }
         viewModelScope.launch {
             preferencesManager.isRadixBannerVisible.collect { isVisible ->
