@@ -40,13 +40,13 @@ class GenerateProfileUseCase @Inject constructor(
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
         val device = deviceInfoRepository.getDeviceInfo()
 
-        val date = TimestampGenerator()
         val creatingDevice = DeviceInfo(
             id = device.id,
-            date = date,
+            date = device.date,
             description = device.displayName
         )
 
+        val date = TimestampGenerator()
         val header = Header(
             snapshotVersion = ProfileSnapshotVersion.V100,
             id = UUIDGenerator.uuid(),
@@ -91,10 +91,9 @@ class GenerateProfileUseCase @Inject constructor(
                 else -> withContext(defaultDispatcher) {
                     val device = deviceInfoRepository.getDeviceInfo()
 
-                    val date = TimestampGenerator()
                     val creatingDevice = DeviceInfo(
                         id = device.id,
-                        date = date,
+                        date = device.date,
                         description = device.displayName
                     )
 
@@ -103,7 +102,7 @@ class GenerateProfileUseCase @Inject constructor(
                         id = UUIDGenerator.uuid(),
                         creatingDevice = creatingDevice,
                         lastUsedOnDevice = creatingDevice,
-                        lastModified = date,
+                        lastModified = TimestampGenerator(),
                         contentHint = ContentHint(
                             numberOfAccountsOnAllNetworksInTotal = accounts.size.toUShort(),
                             numberOfPersonasOnAllNetworksInTotal = 0u,

@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
@@ -30,6 +31,7 @@ class GenerateProfileUseCaseTest {
     private val fakeDeviceInfoRepository = mockk<DeviceInfoRepository>().apply {
         every { getDeviceInfo() } returns DeviceInfo(
             id = UUID.randomUUID(),
+            date = TimestampGenerator(),
             name = "Unit",
             manufacturer = "Test",
             model = ""

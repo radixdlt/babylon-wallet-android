@@ -159,7 +159,7 @@ fun Profile.claim(
     header = header.copy(
         lastUsedOnDevice = DeviceInfo(
             id = deviceInfo.id,
-            date = TimestampGenerator(),
+            date = deviceInfo.date,
             description = deviceInfo.displayName
         )
     )

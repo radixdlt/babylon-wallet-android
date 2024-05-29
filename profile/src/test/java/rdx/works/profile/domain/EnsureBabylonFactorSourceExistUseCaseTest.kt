@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
@@ -36,6 +37,7 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
 
     private val deviceInfo = DeviceInfo(
         id = UUID.randomUUID(),
+        date = TimestampGenerator(),
         name = "device1",
         manufacturer = "manufacturer1",
         model = "model1"
