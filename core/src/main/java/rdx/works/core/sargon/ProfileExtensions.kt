@@ -62,9 +62,15 @@ val Profile.currentNetwork: ProfileNetwork?
 val Profile.isCurrentNetworkMainnet: Boolean
     get() = currentNetwork?.id == NetworkId.MAINNET
 
-val Profile.activeEntitiesOnCurrentNetwork: List<ProfileEntity>
-    get() = activeAccountsOnCurrentNetwork.map { it.asProfileEntity() } +
-        activePersonasOnCurrentNetwork.map { it.asProfileEntity() }
+val Profile.allAccountsOnCurrentNetwork: List<Account>
+    get() = currentNetwork?.accounts.orEmpty()
+
+val Profile.allPersonasOnCurrentNetwork: List<Persona>
+    get() = currentNetwork?.personas.orEmpty()
+
+val Profile.allEntitiesOnCurrentNetwork: List<ProfileEntity>
+    get() = allAccountsOnCurrentNetwork.map { it.asProfileEntity() } +
+        allPersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
     get() = currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
