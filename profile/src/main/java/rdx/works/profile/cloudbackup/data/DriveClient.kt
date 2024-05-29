@@ -17,6 +17,7 @@ import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.then
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -96,7 +97,24 @@ class DriveClientImpl @Inject constructor(
         val fileId = preferencesManager.lastCloudBackupEvent.firstOrNull()?.fileId
 
         return if (fileId == null) {
-            createBackupFile(profile = profile)
+            fetchCloudBackupFileEntities()
+                .then { existingBackups ->
+                    val existingBackup = existingBackups.find { it.header.id == profile.header.id }
+                    // Check if profile with the same id is already backed up
+                    if (existingBackup == null) {
+                        // Create a new one if none existed.
+                        createBackupFile(profile = profile)
+                    } else {
+                        // Claim the one existed before.
+                        // This scenario can play out as follows:
+                        // 1. The user creates a profile and backs it up to cloud
+                        // 2. The user exports the same profile to file.
+                        // 3. Either restores this device or in a new device, imports the exported file
+                        // 4. This file has the same profile id, but also exists on cloud. We need to claim it.
+                        claimCloudBackup(file = existingBackup, updatedHeader = profile.header)
+                    }
+                }
+
         } else {
             updateBackupFile(
                 googleDriveFileId = fileId,
@@ -185,7 +203,6 @@ class DriveClientImpl @Inject constructor(
         profile: Profile
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
-            // TODO check if needed to check the list of files first
             val driveFile = CloudBackupFileEntity.newDriveFile(profile.header)
             val backupContent = ByteArrayContent("application/json", profile.toJson().toByteArray())
 
