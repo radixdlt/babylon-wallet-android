@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
@@ -151,17 +152,21 @@ fun AccountTopBar(
                 modifier = Modifier
                     .layoutId("securityPrompt")
                     .padding(bottom = RadixTheme.dimensions.paddingLarge),
-                visible = state.securityPromptType != null,
+                visible = state.securityPrompts != null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                ApplySecuritySettingsLabel(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        state.securityPromptType?.let(onApplySecuritySettings)
-                    },
-                    text = state.securityPromptType?.toText().orEmpty()
-                )
+                Column {
+                    state.securityPrompts?.forEach { securityPromptType ->
+                        ApplySecuritySettingsLabel(
+                            modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
+                            onClick = {
+                                onApplySecuritySettings(securityPromptType)
+                            },
+                            text = securityPromptType.toText()
+                        )
+                    }
+                }
             }
         }
     }

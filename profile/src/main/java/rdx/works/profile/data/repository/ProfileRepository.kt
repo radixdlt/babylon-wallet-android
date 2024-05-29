@@ -1,6 +1,5 @@
 package rdx.works.profile.data.repository
 
-import android.app.backup.BackupManager
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.checkIfProfileJsonContainsLegacyP2PLinks
 import com.radixdlt.sargon.extensions.fromJson
@@ -20,6 +19,8 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.canBackupToCloud
+import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -57,7 +58,7 @@ val ProfileRepository.profile: Flow<Profile>
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
-    private val backupManager: BackupManager,
+    private val cloudBackupSyncExecutor: CloudBackupSyncExecutor,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
@@ -96,31 +97,25 @@ class ProfileRepositoryImpl @Inject constructor(
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
-            val lastBackupInstant = preferencesManager.lastBackupInstant.firstOrNull()
-            if (profileToSave.appPreferences.security.isCloudProfileSyncEnabled) {
-                if (lastBackupInstant != null) {
-                    encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(profileContent)
-                }
+            if (profileToSave.canBackupToCloud) {
+                cloudBackupSyncExecutor.requestCloudBackup()
             } else {
                 encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
             }
 
             // Update the flow and notify Backup Manager that it needs to backup
             profileStateFlow.update { ProfileState.Restored(profileToSave) }
-
-            backupManager.dataChanged()
         }
     }
 
     override suspend fun clearAllWalletData() {
-        clearProfileDataOnly()
         preferencesManager.clear()
+        clearProfileDataOnly()
     }
 
     override suspend fun clearProfileDataOnly() {
         encryptedPreferencesManager.clear()
         profileStateFlow.update { ProfileState.None }
-        backupManager.dataChanged()
     }
 
     @Suppress("SwallowedException")

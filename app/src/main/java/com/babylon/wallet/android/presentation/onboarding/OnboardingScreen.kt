@@ -36,17 +36,17 @@ fun OnboardingScreen(
     BackHandler { onBack() }
 
     OnboardingScreenContent(
+        modifier = modifier,
         onProceedClick = onCreateNewWalletClick,
         onRestoreWalletClick = onRestoreFromBackupClick,
-        modifier = modifier
     )
 }
 
 @Composable
 private fun OnboardingScreenContent(
-    onProceedClick: () -> Unit,
-    onRestoreWalletClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onProceedClick: () -> Unit,
+    onRestoreWalletClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -113,7 +113,7 @@ fun OnboardingScreenPreview() {
     RadixWalletTheme {
         OnboardingScreenContent(
             onProceedClick = {},
-            onRestoreWalletClick = {}
+            onRestoreWalletClick = {},
         )
     }
 }

@@ -27,6 +27,8 @@ import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
+import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
+import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -41,6 +43,9 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var balanceVisibilityObserver: BalanceVisibilityObserver
 
+    @Inject
+    lateinit var cloudBackupSyncExecutor: CloudBackupSyncExecutor
+
     // The actual ActionableAddressViewEntryPoint that is used in the app.
     // During development we use a mock ActionableAddressViewEntryPoint in order to have previews.
     @Inject
@@ -54,6 +59,9 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+
+        Timber.tag("CloudBackup").d("⌛ Start periodic checks for cloud backups")
+        cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         setContent {
             RadixWalletTheme {

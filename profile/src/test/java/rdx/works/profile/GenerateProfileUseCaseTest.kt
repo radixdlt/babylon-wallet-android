@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
@@ -21,6 +22,7 @@ import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GenerateProfileUseCase
+import java.util.UUID
 import kotlin.test.Test
 
 class GenerateProfileUseCaseTest {
@@ -28,6 +30,8 @@ class GenerateProfileUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val fakeDeviceInfoRepository = mockk<DeviceInfoRepository>().apply {
         every { getDeviceInfo() } returns DeviceInfo(
+            id = UUID.randomUUID(),
+            date = TimestampGenerator(),
             name = "Unit",
             manufacturer = "Test",
             model = ""

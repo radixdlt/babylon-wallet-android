@@ -7,13 +7,12 @@ import com.radixdlt.sargon.extensions.fromEncryptedJson
 import com.radixdlt.sargon.extensions.toEncryptedJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.ProfileState
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
+import timber.log.Timber
 import javax.inject.Inject
 
 interface BackupProfileRepository {
@@ -29,7 +28,6 @@ interface BackupProfileRepository {
 
 class BackupProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val preferencesManager: PreferencesManager,
     private val profileRepository: ProfileRepository
 ) : BackupProfileRepository {
 
@@ -37,10 +35,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
         snapshotSerialised: String,
         backupType: BackupType
     ): Result<Unit> = when (backupType) {
-        is BackupType.Cloud -> {
+        is BackupType.Cloud, BackupType.DeprecatedCloud -> {
+            Timber.tag("CloudBackup").d("Save temporary restoring profile from $backupType")
             if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
                 encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
-                preferencesManager.updateLastBackupInstant(InstantGenerator())
                 Result.success(Unit)
             } else {
                 Result.failure(ProfileException.InvalidSnapshot)
@@ -80,7 +78,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getTemporaryRestoringProfile(backupType: BackupType): Profile? = when (backupType) {
-        is BackupType.Cloud -> encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()
+        is BackupType.DeprecatedCloud, is BackupType.Cloud -> {
+            Timber.tag("CloudBackup").d("Get temporary restoring profile from $backupType")
+            encryptedPreferencesManager.getProfileSnapshotFromCloudBackup()
+        }
         is BackupType.File -> encryptedPreferencesManager.getProfileSnapshotFromFileBackup()
     }?.let { snapshot ->
         profileRepository.deriveProfileState(snapshot) as? ProfileState.Restored
@@ -88,8 +89,10 @@ class BackupProfileRepositoryImpl @Inject constructor(
 
     override suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType) = when (backupType) {
         is BackupType.Cloud -> {
+            // do nothing
+        }
+        is BackupType.DeprecatedCloud -> {
             encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-            preferencesManager.removeLastBackupInstant()
         }
         is BackupType.File -> {
             encryptedPreferencesManager.clearProfileSnapshotFromFileBackup()
@@ -103,7 +106,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
         val profile = profileRepository.profile.firstOrNull()
         if (profile == null || profile.mainBabylonFactorSource == null) return null
         return when (backupType) {
-            is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
+            is BackupType.DeprecatedCloud, is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
                 profile.toJson()
             } else {
                 null

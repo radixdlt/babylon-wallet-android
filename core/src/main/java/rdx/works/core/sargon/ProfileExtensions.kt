@@ -9,6 +9,7 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
@@ -47,6 +48,17 @@ import rdx.works.core.mapWhen
 val Header.isCompatible: Boolean
     get() = snapshotVersion.value >= ProfileSnapshotVersion.V100.value
 
+/**
+ * in order to do a cloud backup we must ensure that:
+ * - profile has at least one network
+ * - isCloudProfileSyncEnabled is true
+ *
+ * The first indicates if the profile is in an initialization process, e.g. onboarding flow.
+ *
+ */
+val Profile.canBackupToCloud: Boolean
+    get() = hasNetworks && appPreferences.security.isCloudProfileSyncEnabled
+
 val Profile.currentGateway: Gateway
     get() = appPreferences.gateways.current
 
@@ -62,9 +74,15 @@ val Profile.currentNetwork: ProfileNetwork?
 val Profile.isCurrentNetworkMainnet: Boolean
     get() = currentNetwork?.id == NetworkId.MAINNET
 
-val Profile.activeEntitiesOnCurrentNetwork: List<ProfileEntity>
-    get() = activeAccountsOnCurrentNetwork.map { it.asProfileEntity() } +
-        activePersonasOnCurrentNetwork.map { it.asProfileEntity() }
+val Profile.allAccountsOnCurrentNetwork: List<Account>
+    get() = currentNetwork?.accounts.orEmpty()
+
+val Profile.allPersonasOnCurrentNetwork: List<Persona>
+    get() = currentNetwork?.personas.orEmpty()
+
+val Profile.allEntitiesOnCurrentNetwork: List<ProfileEntity>
+    get() = allAccountsOnCurrentNetwork.map { it.asProfileEntity() } +
+        allPersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
     get() = currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
@@ -134,6 +152,18 @@ val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
  */
 @DebugOnly
 fun Profile.prettyPrinted(): String = profileToDebugString(profile = this)
+
+fun Profile.claim(
+    deviceInfo: rdx.works.core.domain.DeviceInfo
+): Profile = copy(
+    header = header.copy(
+        lastUsedOnDevice = DeviceInfo(
+            id = deviceInfo.id,
+            date = deviceInfo.date,
+            description = deviceInfo.displayName
+        )
+    )
+)
 
 fun Profile.addAccounts(
     accounts: List<Account>,

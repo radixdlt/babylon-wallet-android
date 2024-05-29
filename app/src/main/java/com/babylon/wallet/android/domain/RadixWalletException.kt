@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.utils.replaceDoublePercent
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.domain.ProfileException
 
 sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = cause) {
@@ -200,6 +201,10 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         data object PurposeChangeNotSupported : LinkConnectionException()
     }
+
+    data class CloudBackupException(
+        val error: BackupServiceException
+    ) : RadixWalletException()
 }
 
 typealias ConnectorExtensionError = WalletErrorType
@@ -387,6 +392,14 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
     )
 }
 
+fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = when (error) {
+    is BackupServiceException.ClaimedByAnotherDevice -> "Profile claimed by another device"
+    is BackupServiceException.ServiceException -> "${error.statusCode} - ${error.message}"
+    is BackupServiceException.UnauthorizedException -> "Access to Google Drive denied."
+    is BackupServiceException.RecoverableUnauthorizedException -> "Access to Google Drive denied."
+    is BackupServiceException.Unknown -> "Unknown error occurred cause: ${cause?.message}"
+}
+
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
         RadixWalletException.FailedToCollectLedgerSignature -> context.getString(
@@ -408,6 +421,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
+        is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
     }
 }
 

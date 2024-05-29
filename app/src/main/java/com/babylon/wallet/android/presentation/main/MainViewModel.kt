@@ -42,6 +42,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
+import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -63,7 +65,8 @@ class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
-    private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase
+    private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
+    private val cloudBackupErrorStream: CloudBackupErrorStream
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -114,14 +117,16 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 getProfileUseCase.state,
-                preferencesManager.isDeviceRootedDialogShown
-            ) { profileState, isDeviceRootedDialogShown ->
+                preferencesManager.isDeviceRootedDialogShown,
+                cloudBackupErrorStream.errors
+            ) { profileState, isDeviceRootedDialogShown, backupError ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
-                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
+                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
+                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice
                     )
                 }
             }.collect()
@@ -313,7 +318,8 @@ data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
-    val olympiaErrorState: OlympiaErrorState? = null
+    val olympiaErrorState: OlympiaErrorState? = null,
+    val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null
 ) : UiState
 
 data class OlympiaErrorState(
