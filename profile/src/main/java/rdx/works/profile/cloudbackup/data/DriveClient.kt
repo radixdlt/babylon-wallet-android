@@ -114,7 +114,6 @@ class DriveClientImpl @Inject constructor(
                         claimCloudBackup(file = existingBackup, updatedHeader = profile.header)
                     }
                 }
-
         } else {
             updateBackupFile(
                 googleDriveFileId = fileId,

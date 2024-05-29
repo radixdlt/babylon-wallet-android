@@ -8,7 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-object UuidSerializer: KSerializer<Uuid> {
+object UuidSerializer : KSerializer<Uuid> {
 
     private const val SERIAL_NAME = "com.radixdlt.sargon.Uuid"
 
