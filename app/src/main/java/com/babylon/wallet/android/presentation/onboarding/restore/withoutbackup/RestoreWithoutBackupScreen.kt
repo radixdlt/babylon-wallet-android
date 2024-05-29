@@ -51,10 +51,10 @@ fun RestoreWithoutBackupScreen(
     if (state.dialogPrompt != RestoreWithoutBackupViewModel.State.PromptState.None) {
         BasicPromptAlertDialog(
             finish = { accepted ->
+                viewModel.onDismissPrompt()
+
                 if (accepted) {
                     onNewUserConfirmClick()
-                } else {
-                    viewModel.onDismissPrompt()
                 }
             },
             titleText = stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertTitle),
