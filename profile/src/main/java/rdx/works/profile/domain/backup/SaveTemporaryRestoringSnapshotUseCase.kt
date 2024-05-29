@@ -17,14 +17,22 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) {
 
-    suspend fun forCloud(data: BackupDataInputStream): Result<Unit> = runCatching {
+    suspend fun forCloud(serializedProfile: String, backupType: BackupType.Cloud): Result<Unit> {
+        ensureP2PLinkMigrationAcknowledged(serializedProfile, backupType)
+        return backupProfileRepository.saveTemporaryRestoringSnapshot(
+            snapshotSerialised = serializedProfile,
+            backupType = backupType
+        )
+    }
+
+    @Deprecated("It is only used to fetch profile from old backup system.")
+    suspend fun forDeprecatedCloud(data: BackupDataInputStream): Result<Unit> = runCatching {
         val byteArray = ByteArray(data.size())
         data.read(byteArray)
         byteArray.toString(Charsets.UTF_8)
     }.then { snapshot ->
-        val backupType = BackupType.Cloud
-        ensureP2PLinkMigrationAcknowledged(snapshot, backupType)
-        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, backupType)
+        ensureP2PLinkMigrationAcknowledged(snapshot, BackupType.DeprecatedCloud)
+        backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.DeprecatedCloud)
     }
 
     suspend fun forFile(uri: Uri, fileBackupType: BackupType.File): Result<Unit> {
@@ -40,6 +48,7 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
                 jsonString = content,
                 password = backupType.password
             )
+
             else -> Profile.checkIfProfileJsonContainsLegacyP2PLinks(
                 jsonString = content
             )

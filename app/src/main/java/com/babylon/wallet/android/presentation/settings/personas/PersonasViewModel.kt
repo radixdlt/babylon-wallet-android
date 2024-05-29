@@ -66,10 +66,10 @@ class PersonasViewModel @Inject constructor(
         val personas: ImmutableList<Persona> = persistentListOf(),
         val entitiesWithSecurityPrompts: List<EntityWithSecurityPrompt> = emptyList()
     ) : UiState {
-        fun securityPrompt(forEntity: Persona): SecurityPromptType? {
+        fun securityPrompt(forEntity: Persona): List<SecurityPromptType>? {
             return entitiesWithSecurityPrompts.find {
                 it.entity.address.string == forEntity.address.string
-            }?.prompt
+            }?.prompts?.toList()
         }
     }
 

@@ -63,6 +63,13 @@ fun ApplySecuritySettingsLabel(
 
 @Composable
 fun SecurityPromptType.toText() = when (this) {
-    SecurityPromptType.NEEDS_BACKUP -> stringResource(id = com.babylon.wallet.android.R.string.securityProblems_no3_accountCard)
-    SecurityPromptType.NEEDS_RECOVER -> stringResource(id = com.babylon.wallet.android.R.string.securityProblems_no9_accountCard)
+    SecurityPromptType.WRITE_DOWN_SEED_PHRASE -> stringResource(id = com.babylon.wallet.android.R.string.securityProblems_no3_accountCard)
+    SecurityPromptType.RECOVERY_REQUIRED -> stringResource(id = com.babylon.wallet.android.R.string.securityProblems_no9_accountCard)
+    SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM -> stringResource(
+        id = com.babylon.wallet.android.R.string.securityProblems_no5_accountCard
+    )
+    SecurityPromptType.WALLET_NOT_RECOVERABLE -> stringResource(id = com.babylon.wallet.android.R.string.securityProblems_no6_accountCard)
+    SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> stringResource(
+        id = com.babylon.wallet.android.R.string.securityProblems_no7_accountCard
+    )
 }

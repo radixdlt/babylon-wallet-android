@@ -1,19 +1,27 @@
 package rdx.works.profile.domain
 
+import com.radixdlt.sargon.AppPreferences
+import com.radixdlt.sargon.ContentHint
+import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileNetwork
+import com.radixdlt.sargon.ProfileSnapshotVersion
 import com.radixdlt.sargon.extensions.Accounts
+import com.radixdlt.sargon.extensions.FactorSources
+import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.default
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
+import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -31,15 +39,40 @@ class GenerateProfileUseCase @Inject constructor(
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
         val device = deviceInfoRepository.getDeviceInfo()
-        return Profile.init(
-            deviceFactorSource = FactorSource.Device.babylon(
-                mnemonicWithPassphrase = mnemonicWithPassphrase,
-                model = device.model,
-                name = device.name,
-                createdAt = TimestampGenerator(),
-                isMain = true
-            ),
-            creatingDeviceName = device.displayName
+
+        val creatingDevice = DeviceInfo(
+            id = device.id,
+            date = device.date,
+            description = device.displayName
+        )
+
+        val date = TimestampGenerator()
+        val header = Header(
+            snapshotVersion = ProfileSnapshotVersion.V100,
+            id = UUIDGenerator.uuid(),
+            creatingDevice = creatingDevice,
+            lastUsedOnDevice = creatingDevice,
+            lastModified = date,
+            contentHint = ContentHint(
+                numberOfAccountsOnAllNetworksInTotal = 0u,
+                numberOfPersonasOnAllNetworksInTotal = 0u,
+                numberOfNetworks = 0u
+            )
+        )
+
+        val bdfs = FactorSource.Device.babylon(
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
+            model = device.model,
+            name = device.name,
+            createdAt = date,
+            isMain = true
+        )
+
+        return Profile(
+            header = header,
+            appPreferences = AppPreferences.default(),
+            factorSources = listOf(bdfs),
+            networks = emptyList()
         ).also {
             profileRepository.saveProfile(it)
         }
@@ -56,13 +89,41 @@ class GenerateProfileUseCase @Inject constructor(
             when (val state = profileRepository.profileState.first()) {
                 is ProfileState.Restored -> state.profile
                 else -> withContext(defaultDispatcher) {
-                    val profile = Profile.init(
-                        deviceFactorSource = deviceFactorSource,
-                        creatingDeviceName = deviceInfoRepository.getDeviceInfo().displayName
-                    ).addAccounts(
-                        accounts = accountsList,
-                        onNetwork = networkId
+                    val device = deviceInfoRepository.getDeviceInfo()
+
+                    val creatingDevice = DeviceInfo(
+                        id = device.id,
+                        date = device.date,
+                        description = device.displayName
                     )
+
+                    val header = Header(
+                        snapshotVersion = ProfileSnapshotVersion.V100,
+                        id = UUIDGenerator.uuid(),
+                        creatingDevice = creatingDevice,
+                        lastUsedOnDevice = creatingDevice,
+                        lastModified = TimestampGenerator(),
+                        contentHint = ContentHint(
+                            numberOfAccountsOnAllNetworksInTotal = accounts.size.toUShort(),
+                            numberOfPersonasOnAllNetworksInTotal = 0u,
+                            numberOfNetworks = 1u
+                        )
+                    )
+
+                    val network = ProfileNetwork(
+                        id = networkId,
+                        accounts = accounts.asList(),
+                        personas = emptyList(),
+                        authorizedDapps = emptyList()
+                    )
+
+                    val profile = Profile(
+                        header = header,
+                        appPreferences = AppPreferences.default(),
+                        factorSources = FactorSources(deviceFactorSource).asList(),
+                        networks = ProfileNetworks(network).asList()
+                    )
+
                     mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonicWithPassphrase).fold(onSuccess = {
                         profileRepository.saveProfile(profile)
                         preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())

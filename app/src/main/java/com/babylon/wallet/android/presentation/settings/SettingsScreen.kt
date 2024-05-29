@@ -37,6 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.securitycenter.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -298,6 +299,88 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
                 settings = listOf(
                     SettingsItem.TopLevelSettings.LinkToConnector,
                     SettingsItem.TopLevelSettings.SecurityCenter(),
+                    SettingsItem.TopLevelSettings.ApprovedDapps,
+                    SettingsItem.TopLevelSettings.LinkedConnectors,
+                    SettingsItem.TopLevelSettings.Preferences,
+                    SettingsItem.TopLevelSettings.Troubleshooting
+                ).map { SettingsUiItem.Settings(it) }.toPersistentList()
+            ),
+            onSettingClick = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenWithoutActiveConnectionAndCloudBackupErrorPreview() {
+    RadixWalletTheme {
+        SettingsContent(
+            state = SettingsUiState(
+                settings = listOf(
+                    SettingsItem.TopLevelSettings.LinkToConnector,
+                    SettingsItem.TopLevelSettings.SecurityCenter(
+                        securityProblems = setOf(
+                            SecurityProblem.BackupNotWorking.BackupServiceError
+                        )
+                    ),
+                    SettingsItem.TopLevelSettings.ApprovedDapps,
+                    SettingsItem.TopLevelSettings.LinkedConnectors,
+                    SettingsItem.TopLevelSettings.Preferences,
+                    SettingsItem.TopLevelSettings.Troubleshooting
+                ).map { SettingsUiItem.Settings(it) }.toPersistentList()
+            ),
+            onSettingClick = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenWithoutActiveConnectionAndEntityNotRecoverableErrorPreview() {
+    RadixWalletTheme {
+        SettingsContent(
+            state = SettingsUiState(
+                settings = listOf(
+                    SettingsItem.TopLevelSettings.LinkToConnector,
+                    SettingsItem.TopLevelSettings.SecurityCenter(
+                        securityProblems = setOf(
+                            SecurityProblem.EntitiesNotRecoverable(
+                                accountsNeedBackup = 0,
+                                personasNeedBackup = 2
+                            )
+                        )
+                    ),
+                    SettingsItem.TopLevelSettings.ApprovedDapps,
+                    SettingsItem.TopLevelSettings.LinkedConnectors,
+                    SettingsItem.TopLevelSettings.Preferences,
+                    SettingsItem.TopLevelSettings.Troubleshooting
+                ).map { SettingsUiItem.Settings(it) }.toPersistentList()
+            ),
+            onSettingClick = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenWithoutActiveConnectionAndEntityNotRecoverableAndBackupErrorPreview() {
+    RadixWalletTheme {
+        SettingsContent(
+            state = SettingsUiState(
+                settings = listOf(
+                    SettingsItem.TopLevelSettings.LinkToConnector,
+                    SettingsItem.TopLevelSettings.SecurityCenter(
+                        securityProblems = setOf(
+                            SecurityProblem.EntitiesNotRecoverable(
+                                accountsNeedBackup = 0,
+                                personasNeedBackup = 2
+                            ),
+                            SecurityProblem.BackupNotWorking.BackupDisabled(hasManualBackup = false)
+                        )
+                    ),
                     SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,

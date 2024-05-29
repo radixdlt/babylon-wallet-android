@@ -2,23 +2,39 @@ package com.babylon.wallet.android.presentation.onboarding.cloudbackup
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 
-const val ROUTE_CONNECT_CLOUD_BACKUP = "route_connect_cloud_backup_screen"
+private const val ARG_CONNECT_MODE = "connect_mode"
+const val ROUTE_CONNECT_CLOUD_BACKUP = "route_connect_cloud_backup_screen/{$ARG_CONNECT_MODE}"
 
-fun NavController.connectCloudBackupScreen() {
-    navigate(ROUTE_CONNECT_CLOUD_BACKUP)
+internal class ConnectCloudBackupArgs private constructor(
+    val mode: ConnectCloudBackupViewModel.ConnectMode
+) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        mode = ConnectCloudBackupViewModel.ConnectMode.valueOf(requireNotNull(savedStateHandle.get<String>(ARG_CONNECT_MODE)))
+    )
+}
+
+fun NavController.connectCloudBackupScreen(connectMode: ConnectCloudBackupViewModel.ConnectMode) {
+    navigate("route_connect_cloud_backup_screen/${connectMode.name}")
 }
 
 fun NavGraphBuilder.connectCloudBackupScreen(
     onBackClick: () -> Unit,
-    onContinueToCreateAccount: () -> Unit,
-    onSkipClick: () -> Unit
+    onProceed: (mode: ConnectCloudBackupViewModel.ConnectMode, isCloudBackupEnabled: Boolean) -> Unit
 ) {
     composable(
         route = ROUTE_CONNECT_CLOUD_BACKUP,
+        arguments = listOf(
+            navArgument(ARG_CONNECT_MODE) {
+                type = NavType.StringType
+            }
+        ),
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
@@ -29,8 +45,7 @@ fun NavGraphBuilder.connectCloudBackupScreen(
         ConnectCloudBackupScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onContinueToCreateAccount = onContinueToCreateAccount,
-            onSkipClick = onSkipClick
+            onProceed = onProceed
         )
     }
 }

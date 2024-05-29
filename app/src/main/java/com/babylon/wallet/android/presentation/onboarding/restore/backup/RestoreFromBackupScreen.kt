@@ -1,10 +1,14 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,15 +21,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
@@ -40,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -59,23 +61,28 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.formattedSpans
-import com.babylon.wallet.android.utils.toDateString
-import com.radixdlt.sargon.Profile
+import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
+import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.CloudBackupFileEntity
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun RestoreFromBackupScreen(
     viewModel: RestoreFromBackupViewModel,
     onBackClick: () -> Unit,
-    onRestoreConfirmed: (fromCloud: Boolean) -> Unit,
+    onRestoreConfirmed: (backupType: BackupType) -> Unit,
     onOtherRestoreOptionsClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -88,14 +95,7 @@ fun RestoreFromBackupScreen(
         }
     }
 
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleSignInResult(result)
-    }
-
-    val recoverDriveAuthLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            viewModel.handleAuthDriveResult(result)
-        }
+    val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
     RestoreFromBackupContent(
         state = state,
@@ -108,7 +108,7 @@ fun RestoreFromBackupScreen(
         onPasswordTyped = viewModel::onPasswordTyped,
         onPasswordRevealToggle = viewModel::onPasswordRevealToggle,
         onPasswordSubmitted = viewModel::onPasswordSubmitted,
-        onRestoringProfileCheckChanged = viewModel::toggleRestoringProfileCheck,
+        onRestoringProfileSelected = viewModel::onRestoringProfileSelected,
         onContinueClick = viewModel::onContinueClick,
         onOtherRestoreOptionsClick = onOtherRestoreOptionsClick
     )
@@ -119,15 +119,9 @@ fun RestoreFromBackupScreen(
                 when (event) {
                     is RestoreFromBackupViewModel.Event.OnDismiss -> onBackClick()
 
-                    is RestoreFromBackupViewModel.Event.SignInToGoogle -> {
-                        signInLauncher.launch(event.signInIntent)
-                    }
+                    is RestoreFromBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
 
-                    is RestoreFromBackupViewModel.Event.RecoverUserAuthToDrive -> {
-                        recoverDriveAuthLauncher.launch(event.authIntent)
-                    }
-
-                    is RestoreFromBackupViewModel.Event.OnRestoreConfirm -> onRestoreConfirmed(event.fromCloud)
+                    is RestoreFromBackupViewModel.Event.OnRestoreConfirmed -> onRestoreConfirmed(event.backupType)
                 }
             }
     }
@@ -145,7 +139,7 @@ private fun RestoreFromBackupContent(
     onPasswordTyped: (String) -> Unit,
     onPasswordRevealToggle: () -> Unit,
     onPasswordSubmitted: () -> Unit,
-    onRestoringProfileCheckChanged: (Boolean) -> Unit,
+    onRestoringProfileSelected: (RestoreFromBackupViewModel.State.RestoringProfile) -> Unit,
     onContinueClick: () -> Unit,
     onOtherRestoreOptionsClick: () -> Unit
 ) {
@@ -189,6 +183,7 @@ private fun RestoreFromBackupContent(
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.common_continue),
                     onClick = onContinueClick,
+                    isLoading = state.isDownloadingSelectedCloudBackup,
                     enabled = state.isContinueEnabled
                 )
             }
@@ -204,8 +199,7 @@ private fun RestoreFromBackupContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState()),
+                .padding(padding),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
@@ -239,23 +233,49 @@ private fun RestoreFromBackupContent(
                 color = RadixTheme.colors.gray1
             )
 
-            if (state.isCloudBackupAuthorized.not()) {
-                SignInToGoogleDrive(onLoginToGoogleClick = onLoginToGoogleClick)
-            } else {
-                RestoredProfilesList(
-                    state = state,
-                    onRestoringProfileCheckChanged = onRestoringProfileCheckChanged
-                )
-            }
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                if (!state.isCloudBackupAuthorized) {
+                    item {
+                        SignInToGoogleDrive(
+                            isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
+                            onLoginToGoogleClick = onLoginToGoogleClick
+                        )
+                    }
+                } else {
+                    if (state.restoringProfiles == null) {
+                        item {
+                            LoadingCloudBackups()
+                        }
+                    } else if (state.restoringProfiles.isEmpty()) {
+                        item {
+                            EmptyCloudBackups()
+                        }
+                    } else {
+                        items(state.restoringProfiles) { restoringProfile ->
+                            RestoredProfileListItem(
+                                modifier = Modifier.fillMaxSize(),
+                                restoringProfile = restoringProfile.data,
+                                isRestoringProfileSelected = restoringProfile.selected,
+                                onRadioButtonClick = { onRestoringProfileSelected(restoringProfile.data) }
+                            )
+                        }
+                    }
+                }
 
-            RadixTextButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
-                onClick = onRestoreFromFileClick
-            )
-            OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
+                item {
+                    RadixTextButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
+                        onClick = onRestoreFromFileClick
+                    )
+                }
+
+                item {
+                    OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
+                }
+            }
         }
     }
 
@@ -282,7 +302,42 @@ private fun RestoreFromBackupContent(
 }
 
 @Composable
+private fun EmptyCloudBackups() {
+    Box(
+        modifier = Modifier
+            .height(140.dp)
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingDefault)
+            .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingXXLarge),
+            text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
+            color = RadixTheme.colors.gray2,
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.secondaryHeader
+        )
+    }
+}
+
+@Composable
+private fun LoadingCloudBackups() {
+    Box(
+        modifier = Modifier
+            .height(140.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = RadixTheme.colors.gray1)
+    }
+}
+
+@Composable
 private fun SignInToGoogleDrive(
+    isAccessToGoogleDriveInProgress: Boolean,
     onLoginToGoogleClick: () -> Unit
 ) {
     Column(
@@ -293,45 +348,25 @@ private fun SignInToGoogleDrive(
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            text = "Log in to Google Drive", // TODO Crowdin
+                .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+            text = stringResource(id = R.string.onboarding_cloudRestoreAndroid_loginButton),
+            isLoading = isAccessToGoogleDriveInProgress,
             onClick = onLoginToGoogleClick
         )
     }
 }
 
 @Composable
-private fun RestoredProfilesList(
-    modifier: Modifier = Modifier,
-    state: RestoreFromBackupViewModel.State,
-    onRestoringProfileCheckChanged: (Boolean) -> Unit
-) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(140.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        items(state.restoringProfiles) { restoringProfile ->
-            RestoredProfileListItem(
-                modifier = Modifier.fillMaxSize(),
-                restoringProfile = restoringProfile,
-                isRestoringProfileChecked = state.isRestoringProfileChecked,
-                onRestoringProfileCheckChanged = onRestoringProfileCheckChanged
-            )
-        }
-    }
-}
-
-@Composable
 private fun RestoredProfileListItem(
     modifier: Modifier = Modifier,
-    restoringProfile: Profile,
-    isRestoringProfileChecked: Boolean,
-    onRestoringProfileCheckChanged: (Boolean) -> Unit
+    restoringProfile: RestoreFromBackupViewModel.State.RestoringProfile,
+    isRestoringProfileSelected: Boolean,
+    onRadioButtonClick: () -> Unit,
 ) {
     Surface(
-        modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+            .padding(bottom = RadixTheme.dimensions.paddingMedium),
         color = RadixTheme.colors.gray5,
         shadowElevation = 8.dp,
         shape = RadixTheme.shapes.roundedRectMedium
@@ -339,7 +374,7 @@ private fun RestoredProfileListItem(
         Row(
             modifier = Modifier
                 .clickable {
-                    onRestoringProfileCheckChanged(!isRestoringProfileChecked)
+                    onRadioButtonClick()
                 }
                 .padding(RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically
@@ -352,7 +387,11 @@ private fun RestoredProfileListItem(
                 Text(
                     text = stringResource(
                         id = R.string.recoverProfileBackup_backupFrom,
-                        restoringProfile.header.lastUsedOnDevice.description
+                        if (restoringProfile.isBackedUpByTheSameDevice) {
+                            stringResource(id = R.string.iOSProfileBackup_thisDevice)
+                        } else {
+                            restoringProfile.deviceDescription
+                        }
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body2Regular
@@ -361,7 +400,7 @@ private fun RestoredProfileListItem(
                 Text(
                     text = stringResource(
                         id = R.string.recoverProfileBackup_lastModified,
-                        restoringProfile.header.lastUsedOnDevice.date.toDateString()
+                        restoringProfile.lastModified.displayable()
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body2Regular
@@ -370,7 +409,7 @@ private fun RestoredProfileListItem(
                 Text(
                     text = stringResource(
                         id = R.string.recoverProfileBackup_numberOfAccounts,
-                        restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt()
+                        restoringProfile.totalNumberOfAccountsOnAllNetworks
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body2Regular
@@ -379,21 +418,20 @@ private fun RestoredProfileListItem(
                 Text(
                     text = stringResource(
                         id = R.string.recoverProfileBackup_numberOfPersonas,
-                        restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
+                        restoringProfile.totalNumberOfPersonasOnAllNetworks
                     ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body2Regular
                 )
             }
 
-            Checkbox(
-                checked = isRestoringProfileChecked,
-                onCheckedChange = onRestoringProfileCheckChanged,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = RadixTheme.colors.gray1,
-                    uncheckedColor = RadixTheme.colors.gray2,
-                    checkmarkColor = Color.White
-                )
+            RadioButton(
+                selected = isRestoringProfileSelected,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = RadixTheme.colors.gray1,
+                    unselectedColor = RadixTheme.colors.gray2,
+                ),
+                onClick = onRadioButtonClick
             )
         }
     }
@@ -426,10 +464,6 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
             onClick = onOtherRestoreOptionsClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            color = RadixTheme.colors.gray4
-        )
     }
 }
 
@@ -525,17 +559,25 @@ private fun PasswordSheet(
     }
 }
 
+@Composable
+private fun Timestamp.displayable() = remember(this) {
+    val formatter = DateTimeFormatter.ofPattern(CloudBackupFileEntity.LAST_USED_DATE_FORMAT_SHORT_MONTH).withZone(ZoneId.systemDefault())
+    formatter.format(this)
+}
+
 @UsesSampleValues
 @Preview
 @Composable
-fun RestoreFromBackupPreviewBackupExists() {
+fun RestoreFromBackupWithMultipleCloudBackupsPreview() {
     RadixWalletTheme {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(
                 backupEmail = "email",
-                restoringProfiles = listOf(
-                    Profile.sample()
-                ).toImmutableList()
+                restoringProfiles = CloudBackupFileEntity.sample.all.map {
+                    Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
+                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(it, false)
+                    )
+                }.toPersistentList()
             ),
             onBackClick = {},
             onLoginToGoogleClick = {},
@@ -544,7 +586,7 @@ fun RestoreFromBackupPreviewBackupExists() {
             onPasswordTyped = {},
             onPasswordRevealToggle = {},
             onPasswordSubmitted = {},
-            onRestoringProfileCheckChanged = {},
+            onRestoringProfileSelected = {},
             onContinueClick = {},
             onOtherRestoreOptionsClick = {}
         )
@@ -554,7 +596,7 @@ fun RestoreFromBackupPreviewBackupExists() {
 @UsesSampleValues
 @Preview
 @Composable
-fun RestoreFromBackupPreviewNoBackupExists() {
+fun RestoreFromBackupNotLoggedInPreview() {
     RadixWalletTheme {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(),
@@ -565,7 +607,63 @@ fun RestoreFromBackupPreviewNoBackupExists() {
             onPasswordTyped = {},
             onPasswordRevealToggle = {},
             onPasswordSubmitted = {},
-            onRestoringProfileCheckChanged = {},
+            onRestoringProfileSelected = {},
+            onContinueClick = {},
+            onOtherRestoreOptionsClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RestoreFromBackupLoadingProfilesPreview() {
+    RadixWalletTheme {
+        RestoreFromBackupContent(
+            state = RestoreFromBackupViewModel.State(
+                backupEmail = "email",
+                restoringProfiles = null
+            ),
+            onBackClick = {},
+            onLoginToGoogleClick = {},
+            onRestoreFromFileClick = {},
+            onMessageShown = {},
+            onPasswordTyped = {},
+            onPasswordRevealToggle = {},
+            onPasswordSubmitted = {},
+            onRestoringProfileSelected = {},
+            onContinueClick = {},
+            onOtherRestoreOptionsClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun RestoreFromBackupLoadingProfilesPreview2() {
+    RadixWalletTheme {
+        RestoreFromBackupContent(
+            state = RestoreFromBackupViewModel.State(
+                isAccessToGoogleDriveInProgress = false,
+                isDownloadingSelectedCloudBackup = true,
+                backupEmail = "email",
+                restoringProfiles = listOf(
+                    Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
+                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(
+                            entity = CloudBackupFileEntity.sample(),
+                            isBackedUpByTheSameDevice = false
+                        )
+                    )
+                ).toImmutableList()
+            ),
+            onBackClick = {},
+            onLoginToGoogleClick = {},
+            onRestoreFromFileClick = {},
+            onMessageShown = {},
+            onPasswordTyped = {},
+            onPasswordRevealToggle = {},
+            onPasswordSubmitted = {},
+            onRestoringProfileSelected = {},
             onContinueClick = {},
             onOtherRestoreOptionsClick = {}
         )

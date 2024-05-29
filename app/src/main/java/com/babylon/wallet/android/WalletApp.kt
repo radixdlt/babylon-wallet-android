@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
+import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
@@ -87,8 +88,14 @@ fun WalletApp(
     }
     SyncStatusBarWithScreenChanges(navController)
 
-    LaunchedEffect(state.showDeviceRootedWarning) {
-        if (state.showDeviceRootedWarning) {
+    LaunchedEffect(
+        state.claimedByAnotherDeviceError,
+        state.showDeviceRootedWarning
+    ) {
+        val claimedByAnotherDeviceError = state.claimedByAnotherDeviceError
+        if (claimedByAnotherDeviceError != null) {
+            navController.navigateToClaimedByAnotherDevice(claimedByAnotherDeviceError)
+        } else if (state.showDeviceRootedWarning) {
             navController.navigate(ROUTE_ROOT_DETECTION)
         }
     }

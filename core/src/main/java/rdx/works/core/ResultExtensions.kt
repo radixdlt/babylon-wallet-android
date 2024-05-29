@@ -21,4 +21,11 @@ inline fun <T> Result<T>.mapError(
     onFailure = { Result.failure(map(it)) }
 )
 
+inline fun <T> Result<T>.flatMapError(
+    map: (Throwable) -> Result<T>
+): Result<T> = fold(
+    onSuccess = { Result.success(it) },
+    onFailure = { map(it) }
+)
+
 fun <T> Result<T>.toUnitResult() = map {}

@@ -131,14 +131,32 @@ private fun SecurityCenterContent(
                                 )
                             }
 
-                            SecurityProblem.BackupNotWorking -> {
-                                NotOkStatusCard(
-                                    modifier = Modifier
-                                        .clip(RadixTheme.shapes.roundedRectMedium)
-                                        .clickable { onBackupConfigurationClick() },
-                                    title = title,
-                                    subtitle = stringResource(id = R.string.securityProblems_no6_securityCenterBody)
-                                )
+                            is SecurityProblem.BackupNotWorking -> {
+                                when (problem) {
+                                    is SecurityProblem.BackupNotWorking.BackupDisabled -> {
+                                        val text = if (problem.hasManualBackup) {
+                                            stringResource(id = R.string.securityProblems_no7_securityCenterBody)
+                                        } else {
+                                            stringResource(id = R.string.securityProblems_no6_securityCenterBody)
+                                        }
+                                        NotOkStatusCard(
+                                            modifier = Modifier
+                                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                                .clickable { onBackupConfigurationClick() },
+                                            title = title,
+                                            subtitle = text
+                                        )
+                                    }
+                                    SecurityProblem.BackupNotWorking.BackupServiceError -> {
+                                        NotOkStatusCard(
+                                            modifier = Modifier
+                                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                                .clickable { onBackupConfigurationClick() },
+                                            title = title,
+                                            subtitle = stringResource(id = R.string.securityProblems_no5_securityCenterBody)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -152,7 +170,7 @@ private fun SecurityCenterContent(
                 needsAction = state.hasSecurityRelatedProblems
             )
             BackupConfigurationCard(
-                needsAction = state.securityProblems?.contains(SecurityProblem.BackupNotWorking) == true,
+                needsAction = state.securityProblems?.any { it.hasBackupProblems } == true,
                 onBackupConfigurationClick = onBackupConfigurationClick
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
@@ -371,13 +389,20 @@ fun SecurityProblem.toProblemHeading(): String {
         }
 
         is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityProblems_no9_securityCenterTitle)
-        SecurityProblem.BackupNotWorking -> stringResource(id = R.string.securityProblems_no6_securityCenterTitle)
+        SecurityProblem.BackupNotWorking.BackupServiceError -> stringResource(id = R.string.securityProblems_no5_securityCenterTitle)
+        is SecurityProblem.BackupNotWorking.BackupDisabled -> {
+            if (this.hasManualBackup) {
+                stringResource(id = R.string.securityProblems_no7_securityCenterTitle)
+            } else {
+                stringResource(id = R.string.securityProblems_no6_securityCenterTitle)
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterContentPreviewAllOk() {
+fun SecurityCenterNoProblemsPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
@@ -395,12 +420,53 @@ fun SecurityCenterContentPreviewAllOk() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterContentPreviewAllNotOk() {
+fun SecurityCenterBackupProblemPreview() {
+    RadixWalletTheme {
+        SecurityCenterContent(
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityProblems = setOf(
+                    SecurityProblem.BackupNotWorking.BackupServiceError
+                )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SecurityCenterNeedRecoveryProblemPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
                     SecurityProblem.SeedPhraseNeedRecovery(false)
+                )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SecurityCenterNotRecoverableAndBackupProblemPreview() {
+    RadixWalletTheme {
+        SecurityCenterContent(
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityProblems = setOf(
+                    SecurityProblem.BackupNotWorking.BackupServiceError,
+                    SecurityProblem.EntitiesNotRecoverable(7, 2)
                 )
             ),
             onBackClick = {},

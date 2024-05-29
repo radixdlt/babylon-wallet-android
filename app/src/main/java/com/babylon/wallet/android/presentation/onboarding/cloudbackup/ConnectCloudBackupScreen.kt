@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding.cloudbackup
 
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -25,65 +23,61 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 
 @Composable
 fun ConnectCloudBackupScreen(
     modifier: Modifier = Modifier,
     viewModel: ConnectCloudBackupViewModel,
     onBackClick: () -> Unit,
-    onContinueToCreateAccount: () -> Unit,
-    onSkipClick: () -> Unit
+    onProceed: (mode: ConnectMode, isCloudBackupEnabled: Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     BackHandler { onBackClick() }
 
-    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        viewModel.handleSignInResult(result)
-    }
+    val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ConnectCloudBackupViewModel.Event.SignInToGoogle -> {
-                    signInLauncher.launch(event.signInIntent)
-                }
-                is ConnectCloudBackupViewModel.Event.ProceedToCreateAccountWithCloudBackupEnabled -> {
-                    onContinueToCreateAccount()
-                }
+                is ConnectCloudBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
+                is ConnectCloudBackupViewModel.Event.Proceed -> onProceed(event.mode, event.isCloudBackupEnabled)
             }
         }
     }
 
     ConnectCloudBackupContent(
         modifier = modifier,
-        isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
-        errorMessage = state.errorMessage,
+        state = state,
         onErrorMessageShown = viewModel::onErrorMessageShown,
         onBackClick = onBackClick,
         onLoginToGoogleClick = viewModel::onLoginToGoogleClick,
-        onSkipClick = onSkipClick
+        onSkipClick = viewModel::onSkipClick
     )
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun ConnectCloudBackupContent(
     modifier: Modifier = Modifier,
-    isAccessToGoogleDriveInProgress: Boolean,
-    errorMessage: UiMessage?,
+    state: ConnectCloudBackupViewModel.State,
     onErrorMessageShown: () -> Unit,
     onBackClick: () -> Unit,
     onLoginToGoogleClick: () -> Unit,
@@ -92,7 +86,7 @@ private fun ConnectCloudBackupContent(
     val snackBarHostState = remember { SnackbarHostState() }
 
     SnackbarUIMessage(
-        message = errorMessage,
+        message = state.errorMessage,
         snackbarHostState = snackBarHostState,
         onMessageShown = onErrorMessageShown
     )
@@ -105,13 +99,21 @@ private fun ConnectCloudBackupContent(
                 onBackClick = onBackClick,
                 actions = {
                     RadixTextButton(
-                        text = "Skip", // TODO crowdin
+                        text = when (state.mode) {
+                            ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_skip)
+                            ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_skip)
+                            ConnectMode.ExistingWallet -> stringResource(id = R.string.empty)
+                        },
                         onClick = {
                             onSkipClick() // continue without back up
                         }
                     )
                 },
-                backIconType = BackIconType.Close,
+                backIconType = when (state.mode) {
+                    ConnectMode.NewWallet -> BackIconType.Close
+                    ConnectMode.RestoreWallet -> BackIconType.Back
+                    ConnectMode.ExistingWallet -> BackIconType.Back
+                },
                 windowInsets = WindowInsets.statusBars,
             )
         },
@@ -123,7 +125,6 @@ private fun ConnectCloudBackupContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -144,7 +145,11 @@ private fun ConnectCloudBackupContent(
                 modifier = Modifier
                     .widthIn(max = 250.dp)
                     .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                text = "Back up your wallet settings", // TODO Crowdin
+                text = when (state.mode) {
+                    ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupTitle)
+                    ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_backupTitle)
+                    ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedTitleAndroid)
+                },
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -152,7 +157,11 @@ private fun ConnectCloudBackupContent(
 
             Text(
                 modifier = Modifier.widthIn(max = 300.dp),
-                text = "Connect to Google Drive to automatically backup your Radix wallet settings.", // TODO Crowdin
+                text = when (state.mode) {
+                    ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupSubtitle)
+                    ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_backupSubtitle)
+                    ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedSubtitleAndroid)
+                },
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
@@ -161,10 +170,21 @@ private fun ConnectCloudBackupContent(
             Spacer(Modifier.weight(0.4f))
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Back up to Google Drive", // TODO Crowdin
-                isLoading = isAccessToGoogleDriveInProgress,
+                text = when (state.mode) {
+                    ConnectMode.NewWallet -> stringResource(id = R.string.onboarding_cloudAndroid_backupButton)
+                    ConnectMode.RestoreWallet -> stringResource(id = R.string.onboarding_cloudRestoreAndroid_loginButton)
+                    ConnectMode.ExistingWallet -> stringResource(id = R.string.configurationBackup_automated_cloudUpdatedLoginButtonAndroid)
+                },
+                isLoading = state.isConnecting,
                 onClick = onLoginToGoogleClick
             )
+            if (state.mode == ConnectMode.ExistingWallet) {
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.configurationBackup_automated_cloudUpdatedSkipButtonAndroid),
+                    onClick = onSkipClick
+                )
+            }
             Spacer(modifier = Modifier.weight(0.1f))
         }
     }
@@ -172,11 +192,38 @@ private fun ConnectCloudBackupContent(
 
 @Preview
 @Composable
-fun ConnectCloudBackupScreenPreview() {
+fun ConnectCloudBackupScreenNewWalletPreview() {
     RadixWalletPreviewTheme {
         ConnectCloudBackupContent(
-            errorMessage = null,
-            isAccessToGoogleDriveInProgress = false,
+            state = ConnectCloudBackupViewModel.State(mode = ConnectMode.NewWallet),
+            onErrorMessageShown = {},
+            onBackClick = {},
+            onLoginToGoogleClick = {},
+            onSkipClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ConnectCloudBackupScreenRestoreWalletPreview() {
+    RadixWalletPreviewTheme {
+        ConnectCloudBackupContent(
+            state = ConnectCloudBackupViewModel.State(mode = ConnectMode.RestoreWallet),
+            onErrorMessageShown = {},
+            onBackClick = {},
+            onLoginToGoogleClick = {},
+            onSkipClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ConnectCloudBackupScreenExistingWalletPreview() {
+    RadixWalletPreviewTheme {
+        ConnectCloudBackupContent(
+            state = ConnectCloudBackupViewModel.State(mode = ConnectMode.ExistingWallet),
             onErrorMessageShown = {},
             onBackClick = {},
             onLoginToGoogleClick = {},

@@ -50,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -84,9 +85,11 @@ fun WalletScreen(
     onAccountCreationClick: () -> Unit,
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
+    onNavigateToConnectCloudBackup: () -> Unit,
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
+    val popUpScreen by viewModel.popUpScreen().collectAsStateWithLifecycle()
 
     WalletContent(
         modifier = modifier,
@@ -107,30 +110,37 @@ fun WalletScreen(
         }
     }
 
+    LaunchedEffect(popUpScreen) {
+        when (popUpScreen) {
+            WalletViewModel.PopUpScreen.RELINK_CONNECTORS -> onNavigateToRelinkConnectors()
+            WalletViewModel.PopUpScreen.CONNECT_CLOUD_BACKUP -> onNavigateToConnectCloudBackup()
+            WalletViewModel.PopUpScreen.NPS_SURVEY -> showNPSSurvey()
+            null -> return@LaunchedEffect
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
                 is WalletEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
-                WalletEvent.ShowNpsSurvey -> showNPSSurvey()
-                WalletEvent.NavigateToRelinkConnectors -> onNavigateToRelinkConnectors()
             }
         }
     }
-    SyncNpsSurveyState(walletState, viewModel::dismissSurvey)
+
+    SyncPopUpScreensState(popUpScreen, viewModel::onPopUpScreenDismissed)
 }
 
 /**
- * NPS survey is new composable destination, so current lifecycle is paused when NPS takes over,
- * and resumed when wallet screen is shown again. We use that fact to mark survey as shown.
- *
+ * A [WalletViewModel.PopUpScreen] is a composable destination, so current lifecycle is stopped when it takes over,
+ * and started when wallet screen is shown again. We use that fact to mark it as shown.
  */
 @Composable
-fun SyncNpsSurveyState(walletState: WalletUiState, onDismiss: () -> Unit) {
+fun SyncPopUpScreensState(popUpScreen: WalletViewModel.PopUpScreen?, onDismiss: () -> Unit) {
     val owner = LocalLifecycleOwner.current
-    DisposableEffect(walletState.isNpsSurveyShown) {
+    DisposableEffect(popUpScreen) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (walletState.isNpsSurveyShown) {
+            if (event == Lifecycle.Event.ON_START) {
+                if (popUpScreen != null) {
                     onDismiss()
                 }
             }
@@ -409,7 +419,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                             currency = SupportedCurrency.USD
                         ),
                         tag = null,
-                        securityPromptType = null,
+                        securityPrompts = null,
                         isFiatBalanceVisible = true,
                         isLoadingAssets = false,
                         isLoadingBalance = false
@@ -429,7 +439,10 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                             currency = SupportedCurrency.USD
                         ),
                         tag = null,
-                        securityPromptType = null,
+                        securityPrompts = listOf(
+                            SecurityPromptType.RECOVERY_REQUIRED,
+                            SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED
+                        ),
                         isFiatBalanceVisible = true,
                         isLoadingAssets = false,
                         isLoadingBalance = false
@@ -440,7 +453,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         assets = null,
                         fiatTotalValue = null,
                         tag = null,
-                        securityPromptType = null,
+                        securityPrompts = null,
                         isFiatBalanceVisible = false,
                         isLoadingAssets = true,
                         isLoadingBalance = true

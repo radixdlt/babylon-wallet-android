@@ -28,7 +28,9 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import rdx.works.core.domain.BackupState
+import rdx.works.core.InstantGenerator
+import rdx.works.core.TimestampGenerator
+import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -37,20 +39,22 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
-    private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
+    private val getCloudBackupStateUseCase = mockk<GetCloudBackupStateUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
+    private val checkMigrationToNewBackupSystemUseCase = mockk<CheckMigrationToNewBackupSystemUseCase>()
     private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val preferencesManager = mockk<PreferencesManager>()
@@ -78,14 +82,22 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         preferencesManager,
         npsSurveyStateObserver,
         p2PLinksRepository,
-        testDispatcher
+        checkMigrationToNewBackupSystemUseCase,
+        testDispatcher,
     )
 
     override fun setUp() {
         super.setUp()
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
-        every { getBackupStateUseCase() } returns flowOf(BackupState.Closed)
+        every { getCloudBackupStateUseCase() } returns flowOf(
+            CloudBackupState.Disabled(
+                email = "email",
+                lastCloudBackupTime = TimestampGenerator(),
+                lastManualBackupTime = InstantGenerator(),
+                lastModifiedProfileTime = TimestampGenerator()
+            )
+        )
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
@@ -95,6 +107,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     @Test
     fun `when view model init, view model will fetch accounts & resources`() = runTest {
+        coEvery { checkMigrationToNewBackupSystemUseCase() } returns false
         val viewModel = vm.value
         advanceUntilIdle()
         val accounts = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty()

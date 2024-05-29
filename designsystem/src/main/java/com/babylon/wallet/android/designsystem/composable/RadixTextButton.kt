@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -23,6 +24,7 @@ fun RadixTextButton(
     contentColor: Color = RadixTheme.colors.blue2,
     enabled: Boolean = true,
     isWithoutPadding: Boolean = false,
+    fontSize: TextUnit? = null,
     leadingIcon: (@Composable () -> Unit)? = null
 ) {
     TextButton(
@@ -41,7 +43,11 @@ fun RadixTextButton(
         },
     ) {
         leadingIcon?.invoke()
-        Text(text = text, style = textStyle)
+        Text(
+            text = text,
+            style = textStyle,
+            fontSize = fontSize ?: textStyle.fontSize
+        )
     }
 }
 

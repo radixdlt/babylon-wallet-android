@@ -189,8 +189,8 @@ fun AccountCardView(
                     start = parent.start,
                     end = parent.end,
                     top = spacer.bottom,
-                    bottom = if (accountWithAssets.securityPromptType != null) promptsContainer.top else parent.bottom,
-                    bottomMargin = if (accountWithAssets.securityPromptType != null) 18.dp else 0.dp
+                    bottom = if (accountWithAssets.securityPrompts != null) promptsContainer.top else parent.bottom,
+                    bottomMargin = if (accountWithAssets.securityPrompts != null) 18.dp else 0.dp
                 )
                 width = Dimension.fillToConstraints
             },
@@ -209,11 +209,11 @@ fun AccountCardView(
                 )
             }
         ) {
-            accountWithAssets.securityPromptType?.let {
+            accountWithAssets.securityPrompts?.forEach { securityPromptType ->
                 ApplySecuritySettingsLabel(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
                     onClick = onApplySecuritySettings,
-                    text = it.toText()
+                    text = securityPromptType.toText()
                 )
             }
         }
@@ -279,7 +279,7 @@ fun AccountCardPreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
+                    securityPrompts = null,
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
@@ -311,7 +311,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
+                    securityPrompts = listOf(SecurityPromptType.RECOVERY_REQUIRED),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false
@@ -343,7 +343,11 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
+                    securityPrompts = listOf(
+                        SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM,
+                        SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
+                        SecurityPromptType.RECOVERY_REQUIRED
+                    ),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
@@ -376,7 +380,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         ),
                         fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                         tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                        securityPromptType = SecurityPromptType.NEEDS_RECOVER,
+                        securityPrompts = listOf(SecurityPromptType.WALLET_NOT_RECOVERABLE),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
@@ -407,7 +411,7 @@ fun AccountCardLoadingPreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
-                    securityPromptType = SecurityPromptType.NEEDS_RECOVER,
+                    securityPrompts = null,
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true

@@ -33,7 +33,10 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -55,11 +58,14 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
+import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
+
+private const val DELAY_BETWEEN_POP_UP_SCREENS_MS = 1000L
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
@@ -74,14 +80,13 @@ class WalletViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
+    private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private var accountsWithAssets: List<AccountWithAssets>? = null
     private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
     private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
-
-    override fun initialState() = WalletUiState()
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
@@ -94,6 +99,9 @@ class WalletViewModel @Inject constructor(
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
 
+    private var popUpScreensQueue = setOf<PopUpScreen>()
+    private val popUpScreen = MutableStateFlow<PopUpScreen?>(null)
+
     init {
         viewModelScope.launch {
             if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
@@ -104,17 +112,49 @@ class WalletViewModel @Inject constructor(
         observePrompts()
         observeAccounts()
         observeGlobalAppEvents()
-        observePromptMessageStates()
+        observeNpsSurveyState()
+        observeShowRelinkConnectors()
+        checkForOldBackupSystemToMigrate()
     }
 
-    private fun observePromptMessageStates() {
+    override fun initialState() = WalletUiState()
+
+    fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
+
+    fun onPopUpScreenDismissed() {
+        val dismissedScreen = popUpScreen.value ?: return
+
+        viewModelScope.launch {
+            popUpScreen.emit(null)
+            popUpScreensQueue = popUpScreensQueue.minus(dismissedScreen)
+            delay(DELAY_BETWEEN_POP_UP_SCREENS_MS)
+            enqueuePopUpScreen()
+        }
+    }
+
+    private fun onNewPopUpScreen(popUpScreen: PopUpScreen) {
+        popUpScreensQueue = popUpScreensQueue + popUpScreen
+        enqueuePopUpScreen()
+    }
+
+    private fun enqueuePopUpScreen() {
+        viewModelScope.launch {
+            popUpScreen.emit(popUpScreensQueue.minByOrNull { it.order })
+        }
+    }
+
+    private fun checkForOldBackupSystemToMigrate() = viewModelScope.launch {
+        if (checkMigrationToNewBackupSystemUseCase()) {
+            onNewPopUpScreen(PopUpScreen.CONNECT_CLOUD_BACKUP)
+        }
+    }
+
+    private fun observeShowRelinkConnectors() {
         viewModelScope.launch {
             p2PLinksRepository.showRelinkConnectors()
                 .collect { showRelinkConnectors ->
                     if (showRelinkConnectors) {
-                        sendEvent(WalletEvent.NavigateToRelinkConnectors)
-                    } else {
-                        observeNpsSurveyState()
+                        onNewPopUpScreen(PopUpScreen.RELINK_CONNECTORS)
                     }
                 }
         }
@@ -122,18 +162,10 @@ class WalletViewModel @Inject constructor(
 
     private fun observeNpsSurveyState() {
         viewModelScope.launch {
-            npsSurveyStateObserver.npsSurveyState.filterIsInstance<NPSSurveyState.Active>().collectLatest {
-                if (state.value.isNpsSurveyShown.not()) {
-                    sendEvent(WalletEvent.ShowNpsSurvey)
-                    _state.update { state -> state.copy(isNpsSurveyShown = true) }
+            npsSurveyStateObserver.npsSurveyState.filterIsInstance<NPSSurveyState.Active>()
+                .collectLatest {
+                    onNewPopUpScreen(PopUpScreen.NPS_SURVEY)
                 }
-            }
-        }
-    }
-
-    fun dismissSurvey() {
-        viewModelScope.launch {
-            _state.update { it.copy(isNpsSurveyShown = false) }
         }
     }
 
@@ -303,7 +335,7 @@ class WalletViewModel @Inject constructor(
                     account = accountWithAssets.account,
                     address = ActionableAddress.Address(Address.Account(accountWithAssets.account.address)),
                     assets = accountWithAssets.assets,
-                    securityPromptType = securityPrompt(accountWithAssets.account),
+                    securityPrompts = securityPrompt(accountWithAssets.account)?.toList(),
                     tag = getTag(accountWithAssets.account),
                     isFiatBalanceVisible = state.value.isFiatBalancesEnabled && isFiatBalanceVisible,
                     fiatTotalValue = totalFiatValueForAccount(accountWithAssets.account.address),
@@ -372,7 +404,7 @@ class WalletViewModel @Inject constructor(
 
     private fun securityPrompt(forAccount: Account) = entitiesWithSecurityPrompt.find {
         it.entity.address.string == forAccount.address.string
-    }?.prompt
+    }?.prompts
 
     private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
         return when {
@@ -396,14 +428,18 @@ class WalletViewModel @Inject constructor(
             accountWithAssets.account.address == forAccount.address
         }?.isDappDefinitionAccountType ?: false
     }
+
+    @Suppress("MagicNumber")
+    enum class PopUpScreen(val order: Int) {
+
+        RELINK_CONNECTORS(1),
+        CONNECT_CLOUD_BACKUP(2),
+        NPS_SURVEY(3)
+    }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
     data object NavigateToSecurityCenter : WalletEvent
-
-    data object ShowNpsSurvey : WalletEvent
-
-    data object NavigateToRelinkConnectors : WalletEvent
 }
 
 data class WalletUiState(
@@ -413,7 +449,6 @@ data class WalletUiState(
     val isRadixBannerVisible: Boolean = false,
     val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
-    val isNpsSurveyShown: Boolean = false,
     val totalFiatValueOfWallet: FiatPrice? = null
 ) : UiState {
 
@@ -428,7 +463,7 @@ data class WalletUiState(
         val assets: Assets?,
         val fiatTotalValue: FiatPrice?,
         val tag: AccountTag?,
-        val securityPromptType: SecurityPromptType?,
+        val securityPrompts: List<SecurityPromptType>?,
         val isFiatBalanceVisible: Boolean,
         val isLoadingAssets: Boolean,
         val isLoadingBalance: Boolean

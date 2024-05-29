@@ -183,12 +183,12 @@ class AccountViewModel @Inject constructor(
     private fun observeSecurityPrompt() {
         viewModelScope.launch {
             getEntitiesWithSecurityPromptUseCase().collect { entities ->
-                val securityPrompt = entities.find {
+                val securityPrompts = entities.find {
                     (it.entity as? ProfileEntity.AccountEntity)?.account?.address == args.accountAddress
-                }?.prompt
+                }?.prompts?.toList()
 
                 _state.update { state ->
-                    state.copy(securityPromptType = securityPrompt)
+                    state.copy(securityPrompts = securityPrompts)
                 }
             }
         }
@@ -250,8 +250,11 @@ class AccountViewModel @Inject constructor(
             val factorSourceId = _state.value.accountWithAssets?.account?.factorSourceId as? FactorSourceId.Hash ?: return@launch
 
             when (securityPromptType) {
-                SecurityPromptType.NEEDS_BACKUP -> sendEvent(NavigateToMnemonicBackup(factorSourceId))
-                SecurityPromptType.NEEDS_RECOVER -> sendEvent(NavigateToMnemonicRestore(factorSourceId))
+                SecurityPromptType.WRITE_DOWN_SEED_PHRASE -> sendEvent(NavigateToMnemonicBackup(factorSourceId))
+                SecurityPromptType.RECOVERY_REQUIRED -> sendEvent(NavigateToMnemonicRestore(factorSourceId))
+                SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM -> sendEvent(AccountEvent.NavigateToConfigurationBackup)
+                SecurityPromptType.WALLET_NOT_RECOVERABLE -> sendEvent(AccountEvent.NavigateToConfigurationBackup)
+                SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> sendEvent(AccountEvent.NavigateToConfigurationBackup)
             }
         }
     }
@@ -338,6 +341,7 @@ class AccountViewModel @Inject constructor(
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
+    data object NavigateToConfigurationBackup : AccountEvent
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : AccountEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : AccountEvent
     data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Account) : AccountEvent
@@ -355,7 +359,7 @@ data class AccountUiState(
     private val hasFailedToFetchPricesForAccount: Boolean = false,
     val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
     val pendingStakeUnits: Boolean = false,
-    val securityPromptType: SecurityPromptType? = null,
+    val securityPrompts: List<SecurityPromptType>? = null,
     val assetsViewState: AssetsViewState = AssetsViewState.init(),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,

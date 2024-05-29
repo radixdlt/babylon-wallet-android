@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun PersonaCard(
@@ -44,7 +45,7 @@ fun PersonaCard(
     showChevron: Boolean = true,
     elevation: Dp = 8.dp,
     onNavigateToSecurityCenter: (() -> Unit)? = null,
-    securityPromptType: SecurityPromptType? = null
+    securityPrompts: ImmutableList<SecurityPromptType>? = null
 ) {
     Column(
         modifier = modifier
@@ -85,7 +86,7 @@ fun PersonaCard(
                 )
             }
         }
-        securityPromptType?.let {
+        securityPrompts?.forEach {
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onNavigateToSecurityCenter,
@@ -98,8 +99,11 @@ fun PersonaCard(
 
 @Composable
 private fun SecurityPromptType.toText() = when (this) {
-    SecurityPromptType.NEEDS_BACKUP -> stringResource(id = R.string.securityProblems_no3_personas)
-    SecurityPromptType.NEEDS_RECOVER -> stringResource(id = R.string.securityProblems_no9_walletSettingsPersonas)
+    SecurityPromptType.WRITE_DOWN_SEED_PHRASE -> stringResource(id = R.string.securityProblems_no3_personas)
+    SecurityPromptType.RECOVERY_REQUIRED -> stringResource(id = R.string.securityProblems_no9_walletSettingsPersonas)
+    SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM -> stringResource(id = R.string.securityProblems_no5_personas)
+    SecurityPromptType.WALLET_NOT_RECOVERABLE -> stringResource(id = R.string.securityProblems_no6_personas)
+    SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> stringResource(id = R.string.securityProblems_no7_personas)
 }
 
 @Composable

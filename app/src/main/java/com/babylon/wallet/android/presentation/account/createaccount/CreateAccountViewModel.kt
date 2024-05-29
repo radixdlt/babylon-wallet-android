@@ -30,7 +30,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.domain.DeleteProfileUseCase
+import rdx.works.profile.domain.DeleteNotInitializedProfileDataUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
@@ -49,7 +49,7 @@ class CreateAccountViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
-    private val deleteProfileUseCase: DeleteProfileUseCase,
+    private val deleteNotInitializedProfileDataUseCase: DeleteNotInitializedProfileDataUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val preferencesManager: PreferencesManager,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
@@ -81,7 +81,10 @@ class CreateAccountViewModel @Inject constructor(
             if (!getProfileUseCase.isInitialized()) {
                 mnemonicRepository.createNew().mapCatching { newMnemonic ->
                     generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
-                    discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
+                    // Since we choose to create a new profile, this is the time
+                    // we discard the data copied from the cloud backup, since they represent
+                    // a previous instance.
+                    discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
                 }.onFailure { throwable ->
                     handleAccountCreationError(throwable)
                     return@launch
@@ -141,7 +144,7 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onBackClick() = viewModelScope.launch {
         if (!getProfileUseCase.isInitialized()) {
-            deleteProfileUseCase.deleteProfileDataOnly()
+            deleteNotInitializedProfileDataUseCase()
         }
         sendEvent(CreateAccountEvent.Dismiss)
     }

@@ -28,7 +28,7 @@ class NPSSurveyRepositoryImpl @Inject constructor(
         reason: String,
     ): Result<SurveyResponse> {
         return with(ioDispatcher) {
-            val uuid = preferencesManager.uuid.first()
+            val uuid = preferencesManager.surveyUuid.first()
             nPSSurveyApi.storeSurveyResponse(
                 params = mapOf(
                     NPSSurveyApi.PARAM_ID to uuid,
