@@ -220,7 +220,6 @@ class DriveClientImpl @Inject constructor(
             }
         }.mapDriveError()
 
-
     private suspend fun getFileContents(fileId: String): Result<String> = withContext(ioDispatcher) {
         runCatching {
             val outputStream = ByteArrayOutputStream()

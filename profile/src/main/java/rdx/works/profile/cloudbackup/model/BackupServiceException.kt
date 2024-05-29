@@ -1,7 +1,6 @@
 package rdx.works.profile.cloudbackup.model
 
 import android.content.Intent
-import com.radixdlt.sargon.Timestamp
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 
 sealed class BackupServiceException : Exception() {

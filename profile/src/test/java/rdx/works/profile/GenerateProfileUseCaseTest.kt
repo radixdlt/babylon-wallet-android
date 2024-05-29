@@ -21,6 +21,7 @@ import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GenerateProfileUseCase
+import java.util.UUID
 import kotlin.test.Test
 
 class GenerateProfileUseCaseTest {
@@ -28,6 +29,7 @@ class GenerateProfileUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val fakeDeviceInfoRepository = mockk<DeviceInfoRepository>().apply {
         every { getDeviceInfo() } returns DeviceInfo(
+            id = UUID.randomUUID(),
             name = "Unit",
             manufacturer = "Test",
             model = ""

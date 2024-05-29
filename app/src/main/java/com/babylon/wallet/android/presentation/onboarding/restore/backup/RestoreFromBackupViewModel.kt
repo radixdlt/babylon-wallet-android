@@ -219,10 +219,12 @@ class RestoreFromBackupViewModel @Inject constructor(
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.map { fileEntity ->
-                Selectable<State.RestoringProfile>(data = State.RestoringProfile.GoogleDrive(
-                    entity = fileEntity,
-                    isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == deviceInfo.id
-                ))
+                Selectable<State.RestoringProfile>(
+                    data = State.RestoringProfile.GoogleDrive(
+                        entity = fileEntity,
+                        isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == deviceInfo.id
+                    )
+                )
             }
             _state.update {
                 it.copy(restoringProfiles = restoringProfiles.toPersistentList())

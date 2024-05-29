@@ -21,6 +21,7 @@ import rdx.works.core.sargon.olympia
 import rdx.works.profile.FakeProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -33,7 +34,12 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
     private val ensureBabylonFactorSourceExistUseCase =
         EnsureBabylonFactorSourceExistUseCase(mnemonicRepository, profileRepository, deviceInfoRepository, preferenceManager)
 
-    private val deviceInfo = DeviceInfo("device1", "manufacturer1", "model1")
+    private val deviceInfo = DeviceInfo(
+        id = UUID.randomUUID(),
+        name = "device1",
+        manufacturer = "manufacturer1",
+        model = "model1"
+    )
     private val mnemonic = MnemonicWithPassphrase.init(
         phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
                 "humble limb repeat video sudden possible story mask neutral prize goose mandate"
