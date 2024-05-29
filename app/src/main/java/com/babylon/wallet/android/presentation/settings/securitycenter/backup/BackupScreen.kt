@@ -85,6 +85,9 @@ import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
+import rdx.works.core.domain.cloudbackup.BackupWarning
+import rdx.works.core.domain.cloudbackup.CloudBackupDisabled
+import rdx.works.core.domain.cloudbackup.CloudBackupServiceError
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
@@ -219,8 +222,8 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            if (state.cloudBackupState.isActive) {
-                BackupWarning()
+            state.cloudBackupState.backupWarning?.let {
+                BackupWarning(backupWarning = it)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
             Column(
@@ -333,7 +336,7 @@ private fun ManualBackupCard(
             text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
-        if (cloudBackupState.isActive) {
+        if (cloudBackupState.isNotWorking) {
             Text(
                 modifier = Modifier.padding(
                     start = RadixTheme.dimensions.paddingDefault,
@@ -341,7 +344,7 @@ private fun ManualBackupCard(
                 ),
                 text = stringResource(
                     id = R.string.configurationBackup_automated_lastBackup,
-                    cloudBackupState.lastManualBackup ?: stringResource(
+                    cloudBackupState.lastManualBackupLabel ?: stringResource(
                         id = R.string.common_none
                     )
                 ),
@@ -405,7 +408,7 @@ private fun BackupStatusCard(
                 modifier = Modifier.padding(start = 44.dp),
                 text = stringResource(
                     id = R.string.configurationBackup_automated_lastBackup,
-                    cloudBackupState.lastCloudBackup ?: stringResource(
+                    cloudBackupState.lastCloudBackupLabel ?: stringResource(
                         id = R.string.common_none
                     )
                 ),
@@ -483,7 +486,10 @@ private fun LoggedInStatus(
 }
 
 @Composable
-private fun BackupWarning(modifier: Modifier = Modifier) {
+private fun BackupWarning(
+    modifier: Modifier = Modifier,
+    backupWarning: BackupWarning
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -505,8 +511,20 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
                 contentDescription = null,
                 tint = RadixTheme.colors.orange3
             )
+            val warningText = when (backupWarning) {
+                is CloudBackupDisabled -> {
+                    if (backupWarning.hasUpdatedManualBackup) {
+                        stringResource(id = R.string.securityProblems_no7_configurationBackup)
+                    } else {
+                        stringResource(id = R.string.securityProblems_no6_configurationBackup)
+                    }
+                }
+                CloudBackupServiceError -> {
+                    stringResource(id = R.string.securityProblems_no5_configurationBackup)
+                }
+            }
             Text(
-                text = stringResource(id = R.string.securityProblems_no5_configurationBackup),
+                text = warningText,
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.orange3
             )
@@ -530,14 +548,14 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (cloudBackupState.isActive) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+        val statusColor = if (cloudBackupState.isNotWorking) RadixTheme.colors.orange3 else RadixTheme.colors.green1
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Icon(
-                painter = painterResource(id = if (cloudBackupState.isActive) DSR.ic_warning_error else DSR.ic_check_circle),
+                painter = painterResource(id = if (cloudBackupState.isNotWorking) DSR.ic_warning_error else DSR.ic_check_circle),
                 tint = statusColor,
                 contentDescription = null
             )
@@ -786,14 +804,6 @@ private fun EncryptSheet(
 
 @Preview(showBackground = true)
 @Composable
-fun BackupWarningPreview() {
-    RadixWalletPreviewTheme {
-        BackupWarning()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 fun BackupStatusCardPreview() {
     RadixWalletPreviewTheme {
         BackupStatusCard(
@@ -812,7 +822,8 @@ fun ManualBackupStatusCardPreview() {
             cloudBackupState = CloudBackupState.Disabled(
                 email = "my cool email",
                 lastCloudBackupTime = null,
-                lastManualBackupTime = InstantGenerator()
+                lastManualBackupTime = InstantGenerator(),
+                lastModifiedProfileTime = TimestampGenerator()
             ),
             onFileBackupClick = {}
         )
@@ -865,16 +876,75 @@ fun BackupScreenPreview() {
     }
 }
 
+// refer to this table
+// https://radixdlt.atlassian.net/wiki/spaces/AT/pages/3392569357/Security-related+Problem+States+in+the+Wallet
+@Preview(showBackground = true)
+@Composable
+fun BackupSecurityProblem5Preview() {
+    RadixWalletPreviewTheme {
+        BackupWarning(backupWarning = CloudBackupServiceError)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BackupSecurityProblem6Preview() {
+    RadixWalletPreviewTheme {
+        BackupWarning(backupWarning = CloudBackupDisabled(hasUpdatedManualBackup = false))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BackupSecurityProblem7Preview() {
+    RadixWalletPreviewTheme {
+        BackupWarning(backupWarning = CloudBackupDisabled(hasUpdatedManualBackup = true))
+    }
+}
+
 @Preview
 @Composable
-fun BackupScreenOffPreview() {
+fun BackupDisabledAndNotUpdatedManualBackupPreview() {
     RadixWalletTheme {
+        val now = TimestampGenerator()
+        val oneDayBefore = now.minusDays(1)
         BackupScreenContent(
             state = BackupViewModel.State(
                 cloudBackupState = CloudBackupState.Disabled(
                     email = "my cool email",
-                    lastCloudBackupTime = TimestampGenerator(),
-                    lastManualBackupTime = InstantGenerator()
+                    lastCloudBackupTime = now,
+                    lastManualBackupTime = oneDayBefore.toInstant(),
+                    lastModifiedProfileTime = now
+                )
+            ),
+            onBackupCheckChanged = {},
+            onFileBackupClick = {},
+            onFileBackupConfirm = {},
+            onFileBackupDeny = {},
+            onEncryptPasswordTyped = {},
+            onEncryptPasswordRevealToggle = {},
+            onEncryptConfirmPasswordTyped = {},
+            onEncryptPasswordConfirmRevealToggle = {},
+            onEncryptSubmitClick = {},
+            onUiMessageShown = {},
+            onBackClick = {},
+            onDisconnectClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun BackupDisabledAndNeverManualBackupPreview() {
+    RadixWalletTheme {
+        val now = TimestampGenerator()
+        BackupScreenContent(
+            state = BackupViewModel.State(
+                cloudBackupState = CloudBackupState.Disabled(
+                    email = "my cool email",
+                    lastCloudBackupTime = now,
+                    lastManualBackupTime = null,
+                    lastModifiedProfileTime = now
                 )
             ),
             onBackupCheckChanged = {},

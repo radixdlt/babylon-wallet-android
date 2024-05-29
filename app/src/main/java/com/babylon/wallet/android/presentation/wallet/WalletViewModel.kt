@@ -335,7 +335,7 @@ class WalletViewModel @Inject constructor(
                     account = accountWithAssets.account,
                     address = ActionableAddress.Address(Address.Account(accountWithAssets.account.address)),
                     assets = accountWithAssets.assets,
-                    securityPromptType = securityPrompt(accountWithAssets.account),
+                    securityPrompts = securityPrompt(accountWithAssets.account)?.toList(),
                     tag = getTag(accountWithAssets.account),
                     isFiatBalanceVisible = state.value.isFiatBalancesEnabled && isFiatBalanceVisible,
                     fiatTotalValue = totalFiatValueForAccount(accountWithAssets.account.address),
@@ -404,7 +404,7 @@ class WalletViewModel @Inject constructor(
 
     private fun securityPrompt(forAccount: Account) = entitiesWithSecurityPrompt.find {
         it.entity.address.string == forAccount.address.string
-    }?.prompt
+    }?.prompts
 
     private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
         return when {
@@ -463,7 +463,7 @@ data class WalletUiState(
         val assets: Assets?,
         val fiatTotalValue: FiatPrice?,
         val tag: AccountTag?,
-        val securityPromptType: SecurityPromptType?,
+        val securityPrompts: List<SecurityPromptType>?,
         val isFiatBalanceVisible: Boolean,
         val isLoadingAssets: Boolean,
         val isLoadingBalance: Boolean

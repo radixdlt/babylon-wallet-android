@@ -80,6 +80,7 @@ fun AccountScreen(
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
+    onNavigateToConfigurationBackup: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Account) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
@@ -93,6 +94,7 @@ fun AccountScreen(
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
                 is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
+                AccountEvent.NavigateToConfigurationBackup -> onNavigateToConfigurationBackup()
             }
         }
     }
@@ -341,17 +343,21 @@ fun AssetsContent(
 
                         androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
-                            visible = state.securityPromptType != null,
+                            visible = state.securityPrompts != null,
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
-                            ApplySecuritySettingsLabel(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    state.securityPromptType?.let(onApplySecuritySettings)
-                                },
-                                text = state.securityPromptType?.toText().orEmpty()
-                            )
+                            Column {
+                                state.securityPrompts?.forEach { securityPromptType ->
+                                    ApplySecuritySettingsLabel(
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
+                                        onClick = {
+                                            onApplySecuritySettings(securityPromptType)
+                                        },
+                                        text = securityPromptType.toText()
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -453,7 +459,11 @@ fun AccountContentPreview() {
                 accountWithAssets = AccountWithAssets(
                     account = Account.sampleMainnet()
                 ),
-                assetsWithAssetsPrices = emptyMap()
+                assetsWithAssetsPrices = emptyMap(),
+                securityPrompts = listOf(
+                    SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
+                    SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM
+                )
             ),
             onShowHideBalanceToggle = {},
             onAccountPreferenceClick = { _ -> },

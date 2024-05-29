@@ -27,6 +27,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
@@ -34,9 +36,11 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun PersonasScreen(
@@ -117,7 +121,7 @@ fun PersonasContent(
                             onPersonaClick(personaItem.address)
                         },
                         persona = personaItem,
-                        securityPromptType = state.securityPrompt(personaItem),
+                        securityPrompts = state.securityPrompt(personaItem)?.toPersistentList(),
                         onNavigateToSecurityCenter = onNavigateToSecurityCenter
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -144,6 +148,33 @@ fun PersonasScreenPreview() {
         PersonasContent(
             PersonasViewModel.PersonasUiState(
                 personas = Persona.sampleMainnet.all.toImmutableList()
+            ),
+            modifier = Modifier,
+            onBackClick = {},
+            createNewPersona = {},
+            onPersonaClick = {},
+        ) {}
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun PersonasScreenWithSecurityPromptsPreview() {
+    RadixWalletTheme {
+        val personas = Persona.sampleMainnet.all.toImmutableList()
+        PersonasContent(
+            PersonasViewModel.PersonasUiState(
+                personas = personas,
+                entitiesWithSecurityPrompts = listOf(
+                    EntityWithSecurityPrompt(
+                        entity = ProfileEntity.PersonaEntity(personas.first()),
+                        prompts = setOf(
+                            SecurityPromptType.RECOVERY_REQUIRED,
+                            SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM
+                        )
+                    )
+                )
             ),
             modifier = Modifier,
             onBackClick = {},

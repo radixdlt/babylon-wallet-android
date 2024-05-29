@@ -43,7 +43,8 @@ class GetCloudBackupStateUseCase @Inject constructor(
                 CloudBackupState.Disabled(
                     email = email,
                     lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
-                    lastManualBackupTime = lastManualBackupInstant
+                    lastManualBackupTime = lastManualBackupInstant,
+                    lastModifiedProfileTime = profile.header.lastModified
                 )
             }
         }

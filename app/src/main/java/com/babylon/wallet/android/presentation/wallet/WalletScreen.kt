@@ -50,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -418,7 +419,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                             currency = SupportedCurrency.USD
                         ),
                         tag = null,
-                        securityPromptType = null,
+                        securityPrompts = null,
                         isFiatBalanceVisible = true,
                         isLoadingAssets = false,
                         isLoadingBalance = false
@@ -438,7 +439,10 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                             currency = SupportedCurrency.USD
                         ),
                         tag = null,
-                        securityPromptType = null,
+                        securityPrompts = listOf(
+                            SecurityPromptType.RECOVERY_REQUIRED,
+                            SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED
+                        ),
                         isFiatBalanceVisible = true,
                         isLoadingAssets = false,
                         isLoadingBalance = false
@@ -449,7 +453,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         assets = null,
                         fiatTotalValue = null,
                         tag = null,
-                        securityPromptType = null,
+                        securityPrompts = null,
                         isFiatBalanceVisible = false,
                         isLoadingAssets = true,
                         isLoadingBalance = true

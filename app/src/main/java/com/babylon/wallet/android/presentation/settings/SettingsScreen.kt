@@ -321,7 +321,7 @@ fun SettingsScreenWithoutActiveConnectionAndCloudBackupErrorPreview() {
                     SettingsItem.TopLevelSettings.LinkToConnector,
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
-                            SecurityProblem.BackupNotWorking
+                            SecurityProblem.BackupNotWorking.BackupServiceError
                         )
                     ),
                     SettingsItem.TopLevelSettings.ApprovedDapps,
@@ -350,6 +350,35 @@ fun SettingsScreenWithoutActiveConnectionAndEntityNotRecoverableErrorPreview() {
                                 accountsNeedBackup = 0,
                                 personasNeedBackup = 2
                             )
+                        )
+                    ),
+                    SettingsItem.TopLevelSettings.ApprovedDapps,
+                    SettingsItem.TopLevelSettings.LinkedConnectors,
+                    SettingsItem.TopLevelSettings.Preferences,
+                    SettingsItem.TopLevelSettings.Troubleshooting
+                ).map { SettingsUiItem.Settings(it) }.toPersistentList()
+            ),
+            onSettingClick = {},
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenWithoutActiveConnectionAndEntityNotRecoverableAndBackupErrorPreview() {
+    RadixWalletTheme {
+        SettingsContent(
+            state = SettingsUiState(
+                settings = listOf(
+                    SettingsItem.TopLevelSettings.LinkToConnector,
+                    SettingsItem.TopLevelSettings.SecurityCenter(
+                        securityProblems = setOf(
+                            SecurityProblem.EntitiesNotRecoverable(
+                                accountsNeedBackup = 0,
+                                personasNeedBackup = 2
+                            ),
+                            SecurityProblem.BackupNotWorking.BackupDisabled(hasManualBackup = false)
                         )
                     ),
                     SettingsItem.TopLevelSettings.ApprovedDapps,

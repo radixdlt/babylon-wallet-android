@@ -58,6 +58,7 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
@@ -233,6 +234,9 @@ fun NavigationHost(
                 navController.restoreMnemonics(
                     args = RestoreMnemonicsArgs()
                 )
+            },
+            onNavigateToConfigurationBackup = {
+                navController.backupScreen()
             },
             onFungibleResourceClick = { resource, account ->
                 val resourceWithAmount = resource.ownedAmount?.let {

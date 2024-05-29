@@ -90,7 +90,14 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         super.setUp()
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
-        every { getCloudBackupStateUseCase() } returns flowOf(CloudBackupState.Disabled(email = "email", lastCloudBackupTime = TimestampGenerator(), lastManualBackupTime = InstantGenerator()))
+        every { getCloudBackupStateUseCase() } returns flowOf(
+            CloudBackupState.Disabled(
+                email = "email",
+                lastCloudBackupTime = TimestampGenerator(),
+                lastManualBackupTime = InstantGenerator(),
+                lastModifiedProfileTime = TimestampGenerator()
+            )
+        )
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
