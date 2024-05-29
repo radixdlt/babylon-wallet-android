@@ -4,7 +4,6 @@ import com.radixdlt.sargon.Profile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -32,9 +31,6 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
         .firstOrNull()?.let { state ->
             isInitialized(state)
         } == true
-
-    fun observeIsInitialized(): Flow<Boolean> = profileRepository.profileState
-        .map { state -> isInitialized(state) }
 
     private fun isInitialized(state: ProfileState): Boolean {
         return state is ProfileState.Restored && state.hasNetworks()
