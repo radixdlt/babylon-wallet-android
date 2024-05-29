@@ -1,7 +1,10 @@
 package rdx.works.profile.data.repository
 
 import android.content.Context
+import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.core.domain.DeviceInfo
 import javax.inject.Inject
 
@@ -14,5 +17,31 @@ class DeviceInfoRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : DeviceInfoRepository {
 
-    override fun getDeviceInfo(): DeviceInfo = DeviceInfo.factory(context = context)
+    override fun getDeviceInfo(): DeviceInfo {
+        val storedDeviceInfo = getStoredDeviceInfo(context)
+
+        if (storedDeviceInfo != null) {
+            return storedDeviceInfo
+        }
+
+        val generated = DeviceInfo.factory(context)
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit(commit = true) {
+            putString(DEVICE_INFO, Json.encodeToString(generated))
+        }
+
+        return generated
+    }
+
+    private fun getStoredDeviceInfo(context: Context): DeviceInfo? {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(DEVICE_INFO, null)
+            ?.let {
+                Json.decodeFromString(it)
+            }
+    }
+
+    companion object {
+        private const val PREFS = "device_prefs"
+        private const val DEVICE_INFO = "key_device_info"
+    }
 }
