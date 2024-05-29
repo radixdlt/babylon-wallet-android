@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -123,10 +124,18 @@ private fun SecurityFactorsContent(
 @Composable
 fun getSecurityWarnings(securityFactorsSettingsItem: SettingsItem.SecurityFactorsSettingsItem.SeedPhrases): PersistentList<String> {
     return mutableListOf<String>().apply {
-        if (securityFactorsSettingsItem.needsRecovery) {
-            add(stringResource(id = R.string.securityProblems_no9_seedPhrases))
-        } else if (securityFactorsSettingsItem.anyEntitySeedPhraseNotWrittenDown) {
-            add(stringResource(id = R.string.securityProblems_no3_securityFactors))
+        securityFactorsSettingsItem.securityProblems.forEach { problem ->
+            when (problem) {
+                is SecurityProblem.EntitiesNotRecoverable -> {
+                    add(stringResource(id = R.string.securityProblems_no3_securityFactors))
+                }
+
+                is SecurityProblem.SeedPhraseNeedRecovery -> {
+                    add(stringResource(id = R.string.securityProblems_no9_seedPhrases))
+                }
+
+                else -> {}
+            }
         }
     }.toPersistentList()
 }

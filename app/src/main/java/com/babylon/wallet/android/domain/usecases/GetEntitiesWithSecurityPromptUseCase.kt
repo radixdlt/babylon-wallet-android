@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.activeEntitiesOnCurrentNetwork
+import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -22,7 +22,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 ) {
 
     operator fun invoke(): Flow<List<EntityWithSecurityPrompt>> = combine(
-        getProfileUseCase.flow.map { it.activeEntitiesOnCurrentNetwork },
+        getProfileUseCase.flow.map { it.allEntitiesOnCurrentNetwork },
         preferencesManager.getBackedUpFactorSourceIds()
     ) { entities, backedUpFactorSourceIds ->
         entities.mapNotNull { entity ->
