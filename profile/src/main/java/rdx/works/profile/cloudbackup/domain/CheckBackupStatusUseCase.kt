@@ -39,7 +39,7 @@ class CheckBackupStatusUseCase @AssistedInject constructor(
         if (!profile.canBackupToCloud) return Result.success()
 
         val lastBackupEvent = preferencesManager.lastCloudBackupEvent.firstOrNull()
-        // TODO add check for migration modal?
+        
         return if (lastBackupEvent == null || profile.header.lastModified > lastBackupEvent.profileModifiedTime) {
             cloudBackupSyncExecutor.requestCloudBackup()
             Result.success()

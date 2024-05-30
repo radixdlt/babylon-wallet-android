@@ -94,7 +94,7 @@ class CloudBackupSyncExecutor @Inject constructor(
                 .setConstraints(constraints)
                 .build()
 
-            Timber.tag("CloudBackup").d("⏰ Enqueued")
+            Timber.tag("CloudBackup").d("⌛ Register periodic checks for cloud backups")
             workManager.enqueueUniquePeriodicWork(
                 CHECK_CLOUD_STATUS_WORK,
                 ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
@@ -103,7 +103,7 @@ class CloudBackupSyncExecutor @Inject constructor(
         }
 
         override fun onStop(owner: LifecycleOwner) {
-            Timber.tag("CloudBackup").d("Stop periodic checks for cloud backups")
+            Timber.tag("CloudBackup").d("Unregister periodic checks for cloud backups")
             workManager.cancelUniqueWork(CHECK_CLOUD_STATUS_WORK)
         }
     }

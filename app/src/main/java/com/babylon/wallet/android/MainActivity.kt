@@ -60,7 +60,6 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
-        Timber.tag("CloudBackup").d("⌛ Start periodic checks for cloud backups")
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         setContent {
