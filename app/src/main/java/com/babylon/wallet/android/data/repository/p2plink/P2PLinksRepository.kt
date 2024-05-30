@@ -61,6 +61,7 @@ class P2PLinksRepositoryImpl @Inject constructor(
                     .orEmpty()
                     .asIdentifiable()
             }
+            .distinctUntilChanged()
             .flowOn(ioDispatcher)
     }
 
