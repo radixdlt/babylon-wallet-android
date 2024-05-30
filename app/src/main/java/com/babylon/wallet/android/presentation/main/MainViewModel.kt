@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -75,9 +75,20 @@ class MainViewModel @Inject constructor(
     private var countdownJob: Job? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val observeP2PLinks = getProfileUseCase.observeIsInitialized()
-        .filter { isInitialized -> isInitialized }
-        .flatMapLatest { p2PLinksRepository.observeP2PLinks() }
+    val observeP2PLinks = getProfileUseCase.state
+        .flatMapLatest { profileState ->
+            /**
+             * Observe p2p links after the profile has been restored,
+             * otherwise skip the first value and observe only the upcoming changes.
+             * This ensures the p2p links connection is not being unnecessarily established,
+             * but is being established upon request (e.g when a new p2p link has been added),
+             * even if the profile has not yet been restored
+             */
+            when (profileState) {
+                is ProfileState.Restored -> p2PLinksRepository.observeP2PLinks()
+                else -> p2PLinksRepository.observeP2PLinks().drop(1)
+            }
+        }
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
             p2pLinks.asList().forEach { p2PLink ->
