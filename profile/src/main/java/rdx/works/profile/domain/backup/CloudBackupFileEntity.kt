@@ -65,18 +65,18 @@ data class CloudBackupFileEntity(
     }
 
     companion object {
-        const val HEADER_SNAPSHOT_VERSION = "header.snapshot_version"
-        const val HEADER_PROFILE_ID = "header.profile_id"
-        const val HEADER_LAST_MODIFIED = "header.last_modified"
-        const val HEADER_CREATING_DEVICE_ID = "header.creating_device.id"
-        const val HEADER_CREATING_DEVICE_DATE = "header.creating_device.date"
-        const val HEADER_CREATING_DEVICE_DESCRIPTION = "header.creating_device.description"
-        const val HEADER_LAST_USED_ON_DEVICE_ID = "header.last_used_on_device.id"
-        const val HEADER_LAST_USED_ON_DEVICE_DATE = "header.last_used_on_device.date"
-        const val HEADER_LAST_USED_ON_DEVICE_DESCRIPTION = "header.last_used_on_device.description"
-        const val HEADER_CONTENT_HINT_TOTAL_ACCOUNTS = "header.content_hint.total_accounts"
-        const val HEADER_CONTENT_HINT_TOTAL_PERSONAS = "header.content_hint.total_personas"
-        const val HEADER_CONTENT_HINT_TOTAL_NETWORKS = "header.content_hint.total_networks"
+        const val HEADER_SNAPSHOT_VERSION = "snapshotVersion"
+        const val HEADER_PROFILE_ID = "profileID"
+        const val HEADER_LAST_MODIFIED = "lastModified"
+        const val HEADER_CREATING_DEVICE_ID = "creatingDeviceID"
+        const val HEADER_CREATING_DEVICE_DATE = "creatingDeviceDate"
+        const val HEADER_CREATING_DEVICE_DESCRIPTION = "creatingDeviceDescription"
+        const val HEADER_LAST_USED_ON_DEVICE_ID = "lastUsedOnDeviceID"
+        const val HEADER_LAST_USED_ON_DEVICE_DATE = "lastUsedOnDeviceDate"
+        const val HEADER_LAST_USED_ON_DEVICE_DESCRIPTION = "lastUsedOnDeviceDescription"
+        const val HEADER_CONTENT_HINT_TOTAL_ACCOUNTS = "numberOfAccounts"
+        const val HEADER_CONTENT_HINT_TOTAL_PERSONAS = "numberOfPersonas"
+        const val HEADER_CONTENT_HINT_TOTAL_NETWORKS = "numberOfNetworks"
 
         const val LAST_USED_DATE_FORMAT_SHORT_MONTH = "d MMM yyyy"
 

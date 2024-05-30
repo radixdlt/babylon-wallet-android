@@ -6,6 +6,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.domain.DeviceInfo
+import timber.log.Timber
 import javax.inject.Inject
 
 interface DeviceInfoRepository {
@@ -21,7 +22,9 @@ class DeviceInfoRepositoryImpl @Inject constructor(
         val storedDeviceInfo = getStoredDeviceInfo(context)
 
         if (storedDeviceInfo != null) {
-            return storedDeviceInfo
+            return storedDeviceInfo.also {
+                Timber.d("Device id exists: ${it.id}")
+            }
         }
 
         val generated = DeviceInfo.factory(context)
@@ -29,7 +32,9 @@ class DeviceInfoRepositoryImpl @Inject constructor(
             putString(DEVICE_INFO, Json.encodeToString(generated))
         }
 
-        return generated
+        return generated.also {
+            Timber.d("Generated device id: ${generated.id}")
+        }
     }
 
     private fun getStoredDeviceInfo(context: Context): DeviceInfo? {
