@@ -400,8 +400,8 @@ private fun BackupStatusCard(
                     contentDescription = null
                 )
             },
-            enabled = isCloudAuthorizationInProgress.not(),
             onCheckedChange = onBackupCheckChanged,
+            isLoading = isCloudAuthorizationInProgress
         )
         if (cloudBackupState is CloudBackupState.Disabled) {
             Text(
@@ -809,6 +809,18 @@ fun BackupStatusCardPreview() {
         BackupStatusCard(
             cloudBackupState = CloudBackupState.Enabled(email = "my cool email"),
             isCloudAuthorizationInProgress = false,
+            onBackupCheckChanged = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BackupStatusCarAuthInProgressPreview() {
+    RadixWalletPreviewTheme {
+        BackupStatusCard(
+            cloudBackupState = CloudBackupState.Enabled(email = "my cool email"),
+            isCloudAuthorizationInProgress = true,
             onBackupCheckChanged = {}
         )
     }

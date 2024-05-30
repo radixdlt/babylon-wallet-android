@@ -72,6 +72,7 @@ class BackupViewModel @Inject constructor(
     }
 
     fun onBackupSettingChanged(isChecked: Boolean) = viewModelScope.launch {
+        Timber.tag("CloudBackup").d("Cloud backup toggle is: $isChecked")
         if (isChecked) {
             Timber.tag("CloudBackup").d("Cloud backup authorization is in progress...")
             _state.update { it.copy(isCloudAuthorizationInProgress = true) }
