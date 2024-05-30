@@ -156,13 +156,7 @@ fun Profile.prettyPrinted(): String = profileToDebugString(profile = this)
 fun Profile.claim(
     deviceInfo: rdx.works.core.domain.DeviceInfo
 ): Profile = copy(
-    header = header.copy(
-        lastUsedOnDevice = DeviceInfo(
-            id = deviceInfo.id,
-            date = deviceInfo.date,
-            description = deviceInfo.displayName
-        )
-    )
+    header = header.copy(lastUsedOnDevice = deviceInfo.toSargonDeviceInfo())
 )
 
 fun Profile.addAccounts(

@@ -40,6 +40,12 @@ data class DeviceInfo(
             "$name $commercialName"
         }
 
+    fun toSargonDeviceInfo(): com.radixdlt.sargon.DeviceInfo = com.radixdlt.sargon.DeviceInfo(
+        id = id,
+        date = date,
+        description = displayName
+    )
+
     companion object {
 
         fun factory(context: Context) = DeviceInfo(
