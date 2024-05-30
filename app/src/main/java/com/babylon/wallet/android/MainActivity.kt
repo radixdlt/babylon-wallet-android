@@ -28,7 +28,6 @@ import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreview
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
-import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -60,7 +59,6 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
 
-        Timber.tag("CloudBackup").d("⌛ Start periodic checks for cloud backups")
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         setContent {

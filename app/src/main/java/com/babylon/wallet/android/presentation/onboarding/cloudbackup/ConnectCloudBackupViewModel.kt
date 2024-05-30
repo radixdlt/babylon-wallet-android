@@ -17,6 +17,7 @@ import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
+import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -25,6 +26,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val googleSignInManager: GoogleSignInManager,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
+    private val changeBackupSettingUseCase: ChangeBackupSettingUseCase
 ) : StateViewModel<ConnectCloudBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<ConnectCloudBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -40,6 +42,14 @@ class ConnectCloudBackupViewModel @Inject constructor(
             result.onSuccess { googleAccount ->
                 Timber.tag("CloudBackup").d("\uD83D\uDD11 Authorized for email: ${googleAccount.email}")
                 _state.update { it.copy(isConnecting = false) }
+
+                if (state.value.mode == ConnectMode.ExistingWallet) {
+                    // For existing users only who migrate to the new backup system, request an eager backup as soon as they opt in
+                    // We do that by "updating" the profile, thus updating the newly introduced device id.
+                    // See also in ProfileRepositoryImpl.saveProfile() the related comment.
+                    changeBackupSettingUseCase(isChecked = true)
+                }
+
                 sendEvent(Event.Proceed(mode = state.value.mode, isCloudBackupEnabled = true))
             }.onFailure { exception ->
                 _state.update { state -> state.copy(isConnecting = false) }
