@@ -23,6 +23,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.mapError
 import rdx.works.core.then
 import rdx.works.profile.BuildConfig
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -35,6 +36,7 @@ import kotlin.coroutines.resume
 class GoogleSignInManager @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val cloudBackupErrorStream: CloudBackupErrorStream
 ) {
 
     fun createSignInIntent(): Intent = getGoogleSignInClient(applicationContext).signInIntent
@@ -75,6 +77,7 @@ class GoogleSignInManager @Inject constructor(
                     }
             }
         }.then { googleAccount ->
+            cloudBackupErrorStream.resetErrors()
             ensureAccessToDrive(googleAccount)
         }.onFailure {
             if (it is BackupServiceException.UnauthorizedException) {
