@@ -2,7 +2,6 @@ package rdx.works.profile.domain
 
 import com.radixdlt.sargon.AppPreferences
 import com.radixdlt.sargon.ContentHint
-import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.MnemonicWithPassphrase
