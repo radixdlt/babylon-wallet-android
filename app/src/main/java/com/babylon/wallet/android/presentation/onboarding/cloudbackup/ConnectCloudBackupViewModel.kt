@@ -13,11 +13,11 @@ import com.babylon.wallet.android.utils.CanSignInToGoogle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
+import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -26,7 +26,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val googleSignInManager: GoogleSignInManager,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    private val cloudBackupSyncExecutor: CloudBackupSyncExecutor
+    private val changeBackupSettingUseCase: ChangeBackupSettingUseCase
 ) : StateViewModel<ConnectCloudBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<ConnectCloudBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -43,9 +43,11 @@ class ConnectCloudBackupViewModel @Inject constructor(
                 Timber.tag("CloudBackup").d("\uD83D\uDD11 Authorized for email: ${googleAccount.email}")
                 _state.update { it.copy(isConnecting = false) }
 
-                // For existing users only who migrate to the new backup system, request an eager backup as soon as they opt in
                 if (state.value.mode == ConnectMode.ExistingWallet) {
-                    cloudBackupSyncExecutor.requestCloudBackup()
+                    // For existing users only who migrate to the new backup system, request an eager backup as soon as they opt in
+                    // We do that by "updating" the profile, thus updating the newly introduced device id.
+                    // See also in ProfileRepositoryImpl.saveProfile() the related comment.
+                    changeBackupSettingUseCase(isChecked = true)
                 }
 
                 sendEvent(Event.Proceed(mode = state.value.mode, isCloudBackupEnabled = true))
