@@ -178,6 +178,7 @@ class DriveClientImpl @Inject constructor(
         updatedHeader: Header
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
+            Timber.tag("CloudBackup").d("Start claiming process with file id: ${file.id}")
             googleSignInManager.getDrive().files()
                 .update(
                     file.id.id,
@@ -202,6 +203,7 @@ class DriveClientImpl @Inject constructor(
         profile: Profile
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
+            Timber.tag("CloudBackup").d("Create backup file")
             val driveFile = CloudBackupFileEntity.newDriveFile(profile.header)
             val backupContent = ByteArrayContent("application/json", profile.toJson().toByteArray())
 
