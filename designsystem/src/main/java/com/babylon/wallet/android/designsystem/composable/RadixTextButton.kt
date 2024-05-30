@@ -6,6 +6,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -14,6 +16,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.utils.ClickListenerUtils
 
 @Composable
 fun RadixTextButton(
@@ -25,11 +28,20 @@ fun RadixTextButton(
     enabled: Boolean = true,
     isWithoutPadding: Boolean = false,
     fontSize: TextUnit? = null,
-    leadingIcon: (@Composable () -> Unit)? = null
+    leadingIcon: (@Composable () -> Unit)? = null,
+    throttleClicks: Boolean = false
 ) {
+    val lastClickMs = remember { mutableStateOf(0L) }
+
     TextButton(
         modifier = modifier,
-        onClick = onClick,
+        onClick = {
+            ClickListenerUtils.throttleOnClick(
+                lastClickMs = lastClickMs,
+                onClick = onClick,
+                enabled = throttleClicks
+            )
+        },
         shape = RadixTheme.shapes.roundedRectSmall,
         enabled = enabled,
         colors = ButtonDefaults.textButtonColors(
