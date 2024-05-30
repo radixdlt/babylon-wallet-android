@@ -13,6 +13,7 @@ import com.babylon.wallet.android.utils.CanSignInToGoogle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.cloudbackup.model.BackupServiceException
@@ -25,6 +26,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val googleSignInManager: GoogleSignInManager,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
+    private val cloudBackupSyncExecutor: CloudBackupSyncExecutor
 ) : StateViewModel<ConnectCloudBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<ConnectCloudBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -40,6 +42,12 @@ class ConnectCloudBackupViewModel @Inject constructor(
             result.onSuccess { googleAccount ->
                 Timber.tag("CloudBackup").d("\uD83D\uDD11 Authorized for email: ${googleAccount.email}")
                 _state.update { it.copy(isConnecting = false) }
+
+                // For existing users only who migrate to the new backup system, request an eager backup as soon as they opt in
+                if (state.value.mode == ConnectMode.ExistingWallet) {
+                    cloudBackupSyncExecutor.requestCloudBackup()
+                }
+
                 sendEvent(Event.Proceed(mode = state.value.mode, isCloudBackupEnabled = true))
             }.onFailure { exception ->
                 _state.update { state -> state.copy(isConnecting = false) }
