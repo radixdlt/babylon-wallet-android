@@ -54,11 +54,11 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
@@ -319,7 +319,7 @@ private fun SeedPhraseView(
 
         if (shouldDisplayInvalidSeedPhraseWarning) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            RedWarningText(
+            WarningText(
                 modifier = Modifier.fillMaxWidth(),
                 text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
             )

@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.model.toDisplayResource
-import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.core.sargon.PersonaDataField
 
@@ -25,7 +25,7 @@ fun RequiredPersonaInformationInfo(
         }
         append(requiredFields.map { stringResource(id = it.toDisplayResource()) }.joinToString())
     }
-    RedWarningText(
+    WarningText(
         modifier = modifier,
         text = finalText
     )
