@@ -9,6 +9,7 @@ import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.claim
 import rdx.works.core.then
+import rdx.works.core.toUnitResult
 import rdx.works.profile.cloudbackup.data.DriveClient
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.data.repository.BackupProfileRepository
@@ -65,8 +66,12 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                     profileRepository.saveProfile(profileToSave)
                     backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
                     checkMigrationToNewBackupSystemUseCase.revokeAccessToDeprecatedCloudBackup()
-                }.map { }
+                }.toUnitResult()
             } else {
+                if (backupType is BackupType.DeprecatedCloud) {
+                    checkMigrationToNewBackupSystemUseCase.revokeAccessToDeprecatedCloudBackup()
+                }
+
                 Timber.tag("CloudBackup").d("Save profile")
                 profileRepository.saveProfile(profileToSave)
                 backupProfileRepository.discardTemporaryRestoringSnapshot(backupType)
