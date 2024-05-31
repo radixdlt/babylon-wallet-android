@@ -134,9 +134,10 @@ private fun SettingsContent(
 
                                                 is SettingsItem.TopLevelSettings.Personas -> {
                                                     mutableListOf<String>().apply {
-                                                        if (settingsItem.item.anyPersonaNeedRecovery) {
+                                                        if (settingsItem.item.needRecovery) {
                                                             add(stringResource(R.string.securityProblems_no9_personas))
-                                                        } else if (settingsItem.item.anyPersonaNeedBackup) {
+                                                        }
+                                                        if (settingsItem.item.needBackup) {
                                                             add(stringResource(R.string.securityProblems_no7_walletSettingsPersonas))
                                                         }
                                                     }.toPersistentList()

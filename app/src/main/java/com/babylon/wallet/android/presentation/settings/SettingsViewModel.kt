@@ -63,7 +63,19 @@ class SettingsViewModel @Inject constructor(
             )
             mutated = mutated.mapWhen(
                 predicate = { it is SettingsUiItem.Settings && it.item is Personas },
-                mutation = { SettingsUiItem.Settings(Personas(securityProblems)) }
+                mutation = { _ ->
+                    SettingsUiItem.Settings(
+                        Personas(
+                            needBackup = securityProblems.any {
+                                (it is SecurityProblem.EntitiesNotRecoverable && it.personasNeedBackup > 0) ||
+                                    (it is SecurityProblem.BackupNotWorking.BackupDisabled)
+                            },
+                            needRecovery = securityProblems.any {
+                                it is SecurityProblem.SeedPhraseNeedRecovery && it.arePersonasAffected
+                            }
+                        )
+                    )
+                }
             )
         }
         SettingsUiState(mutated.toPersistentList())
@@ -94,9 +106,3 @@ sealed interface SettingsUiItem {
     data object Spacer : SettingsUiItem
     data class Settings(val item: SettingsItem.TopLevelSettings) : SettingsUiItem
 }
-
-val Personas.anyPersonaNeedBackup
-    get() = securityProblems.any { it is SecurityProblem.EntitiesNotRecoverable && it.personasNeedBackup > 0 }
-
-val Personas.anyPersonaNeedRecovery
-    get() = securityProblems.any { it is SecurityProblem.SeedPhraseNeedRecovery && it.arePersonasAffected }

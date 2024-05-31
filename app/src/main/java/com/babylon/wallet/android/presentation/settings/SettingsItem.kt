@@ -14,7 +14,10 @@ sealed interface SettingsItem {
         data object LinkToConnector : TopLevelSettings
 
         data class SecurityCenter(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
-        data class Personas(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
+        data class Personas(
+            val needBackup: Boolean = false,
+            val needRecovery: Boolean = false
+        ) : TopLevelSettings
         data object ApprovedDapps : TopLevelSettings
 
         data object LinkedConnectors : TopLevelSettings
