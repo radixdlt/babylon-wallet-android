@@ -63,7 +63,7 @@ class SettingsViewModel @Inject constructor(
             )
             mutated = mutated.mapWhen(
                 predicate = { it is SettingsUiItem.Settings && it.item is Personas },
-                mutation = {
+                mutation = { _ ->
                     SettingsUiItem.Settings(
                         Personas(
                             needBackup = securityProblems.any {
