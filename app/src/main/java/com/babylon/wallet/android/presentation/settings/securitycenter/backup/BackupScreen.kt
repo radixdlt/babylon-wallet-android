@@ -78,6 +78,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -549,28 +550,24 @@ private fun BackupStatusSection(
             .animateContentSize()
     ) {
         val statusColor = if (cloudBackupState.isNotWorking) RadixTheme.colors.orange3 else RadixTheme.colors.green1
-        Row(
+
+        SecurityPromptLabel(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-        ) {
-            Icon(
-                painter = painterResource(id = if (cloudBackupState.isNotWorking) DSR.ic_warning_error else DSR.ic_check_circle),
-                tint = statusColor,
-                contentDescription = null
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = title,
-                color = statusColor,
-                style = RadixTheme.typography.body2HighImportance
-            )
-            Icon(
-                painter = painterResource(id = if (expanded) DSR.ic_arrow_up else DSR.ic_arrow_down),
-                tint = RadixTheme.colors.gray2,
-                contentDescription = null
-            )
-        }
+            text = title,
+            textColor = statusColor,
+            iconRes = remember(cloudBackupState.isNotWorking) {
+                if (cloudBackupState.isNotWorking) DSR.ic_warning_error else DSR.ic_check_circle
+            },
+            iconTint = statusColor,
+            endContent = {
+                Icon(
+                    painter = painterResource(id = if (expanded) DSR.ic_arrow_up else DSR.ic_arrow_down),
+                    tint = RadixTheme.colors.gray2,
+                    contentDescription = null
+                )
+            }
+        )
+
         if (expanded) {
             Text(
                 text = subtitle,

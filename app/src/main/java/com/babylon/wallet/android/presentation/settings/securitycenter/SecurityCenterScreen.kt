@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +38,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
@@ -104,7 +105,7 @@ private fun SecurityCenterContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-            AnimatedVisibility(visible = state.hasSecurityProblems, enter = expandVertically()) {
+            AnimatedVisibility(visible = state.hasSecurityProblems, enter = fadeIn()) {
                 Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
                     state.securityProblems?.forEach { problem ->
                         val title = problem.toProblemHeading()
@@ -340,29 +341,20 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            Row(
+
+            val securityPromptColor = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+
+            SecurityPromptLabel(
                 modifier = Modifier.fillMaxWidth(),
-                Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
-                val color = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
-                val text = if (needsAction) {
+                text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
                 } else {
                     stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
-                }
-                Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    tint = color
-                )
-                Text(
-                    text = text,
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = color
-                )
-            }
+                },
+                textColor = securityPromptColor,
+                iconRes = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle,
+                iconTint = securityPromptColor
+            )
         }
     }
 }

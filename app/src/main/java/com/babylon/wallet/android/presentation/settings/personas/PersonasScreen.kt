@@ -87,13 +87,13 @@ fun PersonasContent(
                 windowInsets = WindowInsets.statusBars
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.gray5
     ) { padding ->
         Column(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.gray4)
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             Text(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -128,7 +128,7 @@ fun PersonasContent(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixSecondaryButton(
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona
