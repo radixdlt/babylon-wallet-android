@@ -34,8 +34,8 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -162,7 +162,6 @@ fun SeedPhraseCard(
     val mnemonicNeedsRecovery = data.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
         Row(
@@ -171,9 +170,9 @@ fun SeedPhraseCard(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             val icon = if (mnemonicNeedsRecovery) DSR.ic_warning_error else DSR.ic_seed_phrases
-            val tint = if (mnemonicNeedsRecovery) RadixTheme.colors.red1 else RadixTheme.colors.gray1
+            val tint = if (mnemonicNeedsRecovery) RadixTheme.colors.orange1 else RadixTheme.colors.gray1
             val text = if (mnemonicNeedsRecovery) {
-                stringResource(id = R.string.securityProblems_no9_securityCenterBody)
+                stringResource(id = R.string.securityProblems_no9_securityFactors)
             } else {
                 stringResource(id = R.string.displayMnemonics_cautionAlert_revealButtonLabel)
             }
@@ -223,7 +222,10 @@ fun SeedPhraseCard(
         }
         if (data.mnemonicState == DeviceFactorSourceData.MnemonicState.NotBackedUp) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-            RedWarningText(text = AnnotatedString(stringResource(id = R.string.securityProblems_no3_seedPhrases)))
+            WarningText(
+                text = AnnotatedString(stringResource(id = R.string.securityProblems_no3_seedPhrases)),
+                contentColor = RadixTheme.colors.orange1
+            )
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         data.accounts.forEach { account ->
