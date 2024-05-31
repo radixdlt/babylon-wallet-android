@@ -8,15 +8,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.utils.ClickListenerUtils
 
 @Composable
 fun ThrottleIconButton(
@@ -28,7 +27,7 @@ fun ThrottleIconButton(
     content: @Composable () -> Unit
 ) {
     // Dimensions and shapes were ported from IconButton source code
-    var lastClickMs by remember { mutableStateOf(0L) }
+    val lastClickMs = remember { mutableStateOf(0L) }
     Box(
         modifier = modifier
             .minimumInteractiveComponentSize()
@@ -36,11 +35,11 @@ fun ThrottleIconButton(
             .clip(CircleShape)
             .clickable(
                 onClick = {
-                    val now = System.currentTimeMillis()
-                    if (now - lastClickMs > thresholdMs) {
-                        onClick()
-                        lastClickMs = now
-                    }
+                    ClickListenerUtils.throttleOnClick(
+                        lastClickMs = lastClickMs,
+                        onClick = onClick,
+                        throttleMs = thresholdMs
+                    )
                 },
                 enabled = enabled,
                 role = Role.Button,

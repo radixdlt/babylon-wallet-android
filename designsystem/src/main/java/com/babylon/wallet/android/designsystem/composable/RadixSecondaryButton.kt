@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +25,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.utils.ClickListenerUtils
 
 @Composable
 fun RadixSecondaryButton(
@@ -43,19 +43,15 @@ fun RadixSecondaryButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    var lastClickMs by remember { mutableStateOf(0L) }
+    val lastClickMs = remember { mutableStateOf(0L) }
     Button(
         modifier = modifier,
         onClick = {
-            if (throttleClicks) {
-                val now = System.currentTimeMillis()
-                if (now - lastClickMs > 500) {
-                    onClick()
-                    lastClickMs = now
-                }
-            } else {
-                onClick()
-            }
+            ClickListenerUtils.throttleOnClick(
+                lastClickMs = lastClickMs,
+                onClick = onClick,
+                enabled = throttleClicks
+            )
         },
         shape = shape,
         enabled = enabled,

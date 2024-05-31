@@ -162,6 +162,7 @@ private fun AccountRecoveryScanContent(
                             id = R.string.accountRecoveryScan_scanComplete_scanNextBatchButton,
                             ACCOUNTS_PER_SCAN
                         ),
+                        throttleClicks = true,
                         onClick = onScanMoreClick
                     )
                 }
