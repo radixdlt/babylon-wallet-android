@@ -346,7 +346,7 @@
   <string name="dAppRequest_chooseAccountsOneTime_subtitleAtLeast">**%s** is making a one-time request for at least %d accounts.</string>
   <string name="dAppRequest_chooseAccountsOneTime_subtitleAtLeastZero">**%s** is making a one-time request for any number of accounts.</string>
   <string name="dAppRequest_chooseAccountsOneTime_subtitleAtLeastOne">**%s** is making a one-time request for at least 1 account.</string>
-  <string name="dAppRequest_chooseAccountsOneTime_subtitleExactly">*%s* is making a one-time request for at least %d accounts.</string>
+  <string name="dAppRequest_chooseAccountsOneTime_subtitleExactly">**%s** is making a one-time request for %d accounts.</string>
   <string name="dAppRequest_chooseAccountsOneTime_subtitleExactlyOne">**%s** is making a one-time request for 1 account.</string>
   <string name="dAppRequest_chooseAccountsOngoing_title">Account Permission</string>
   <string name="dAppRequest_chooseAccountsOngoing_subtitleAtLeast">Choose at least %d accounts you wish to use with **%s**.</string>
