@@ -179,7 +179,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
             olympiaWalletData?.let { data ->
                 this@ImportLegacyWalletViewModel.olympiaWalletData = data
                 seedPhraseInputDelegate.setSeedPhraseSize(data.mnemonicWordCount)
-                val allImported = data.accountData.all { it.alreadyImported }
+                val olympiaFactorSourceIdsForAccounts = getFactorSourceIdForOlympiaAccountsUseCase(data.accountData.toList()).getOrNull()
+                val allImported = data.accountData.all { it.alreadyImported } && olympiaFactorSourceIdsForAccounts != null
+
                 val nextPage =
                     if (allImported) ImportLegacyWalletUiState.Page.ImportComplete else ImportLegacyWalletUiState.Page.AccountsToImportList
                 _state.update { state ->
@@ -191,7 +193,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                                 it.copy(accountName = it.accountName.take(ACCOUNT_NAME_MAX_LENGTH))
                             }
                             .toPersistentList(),
-                        importButtonEnabled = data.accountData.any { !it.alreadyImported },
+                        importButtonEnabled = !allImported,
                         migratedAccounts = if (allImported) {
                             data.accountData.mapNotNull {
                                 getProfileUseCase().activeAccountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
@@ -283,9 +285,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onImportAccounts(biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            val selectedAccounts = _state.value.olympiaAccountsToImport.filter {
-                !it.alreadyImported
-            }
+            val selectedAccounts = _state.value.olympiaAccountsToImport
 
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
             if (softwareAccountsToMigrate.isNotEmpty()) {
