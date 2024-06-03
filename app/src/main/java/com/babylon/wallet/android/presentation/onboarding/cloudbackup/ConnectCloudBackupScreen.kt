@@ -67,7 +67,13 @@ fun ConnectCloudBackupScreen(
         modifier = modifier,
         state = state,
         onErrorMessageShown = viewModel::onErrorMessageShown,
-        onBackClick = onBackClick,
+        onBackClick = {
+            if (state.mode == ConnectMode.ExistingWallet) {
+                viewModel.onSkipClick()
+            } else {
+                onBackClick()
+            }
+        },
         onLoginToGoogleClick = viewModel::onLoginToGoogleClick,
         onSkipClick = viewModel::onSkipClick
     )
@@ -112,7 +118,7 @@ private fun ConnectCloudBackupContent(
                 backIconType = when (state.mode) {
                     ConnectMode.NewWallet -> BackIconType.Close
                     ConnectMode.RestoreWallet -> BackIconType.Back
-                    ConnectMode.ExistingWallet -> BackIconType.Back
+                    ConnectMode.ExistingWallet -> BackIconType.Close
                 },
                 windowInsets = WindowInsets.statusBars,
             )
