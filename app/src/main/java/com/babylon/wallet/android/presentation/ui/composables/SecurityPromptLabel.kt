@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun SecurityPromptLabel(
@@ -40,6 +42,8 @@ fun SecurityPromptLabel(
             tint = iconTint
         )
 
+        Spacer(modifier = Modifier.width(1.dp))
+
         Text(
             text = text,
             style = RadixTheme.typography.body2HighImportance,
@@ -55,9 +59,11 @@ fun SecurityPromptLabel(
 }
 
 @Composable
-@Preview
+@Preview(showBackground = true)
 private fun SecurityPromptLabelPreview() {
-    SecurityPromptLabel(
-        text = "Problem with Configuration Backup"
-    )
+    RadixWalletPreviewTheme {
+        SecurityPromptLabel(
+            text = "Problem with Configuration Backup"
+        )
+    }
 }
