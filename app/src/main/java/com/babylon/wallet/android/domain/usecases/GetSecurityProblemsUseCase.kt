@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.isHidden
+import rdx.works.core.sargon.isNotHidden
 import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import javax.inject.Inject
 
@@ -22,30 +24,41 @@ class GetSecurityProblemsUseCase @Inject constructor(
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.WRITE_DOWN_SEED_PHRASE) }
         val factorSourceIdsNeedRecovery = entitiesNeedingRecovery.map { it.entity.securityState.factorSourceId }
         val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }.toSet()
-        val anyPersonaNeedRecovery = entitiesNeedingRecovery.any { it.entity is ProfileEntity.PersonaEntity }
+        val isAnyActivePersonaAffected = entitiesNeedingRecovery.any { it.entity is ProfileEntity.PersonaEntity && it.entity.isNotHidden() }
 
         mutableSetOf<SecurityProblem>().apply {
-            if (cloudBackupState is CloudBackupState.Disabled) {
-                add(SecurityProblem.BackupNotWorking.BackupDisabled(hasManualBackup = cloudBackupState.lastManualBackupTime != null))
-            } else if (cloudBackupState is CloudBackupState.Enabled && cloudBackupState.hasAnyErrors) {
-                add(SecurityProblem.BackupNotWorking.BackupServiceError)
-            }
             if (factorSourceIdsNeedRecovery.isNotEmpty()) {
-                add(SecurityProblem.SeedPhraseNeedRecovery(anyPersonaNeedRecovery))
+                add(SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = isAnyActivePersonaAffected))
             }
-            val accountsNeedBackup = entitiesNeedingBackup.count {
+
+            val accountsNeedBackup = entitiesNeedingBackup.filter {
                 it.entity is ProfileEntity.AccountEntity && factorSourceIdsNeedBackup.contains(it.entity.securityState.factorSourceId)
             }
-            val personasNeedBackup = entitiesNeedingBackup.count {
+            val personasNeedBackup = entitiesNeedingBackup.filter {
                 it.entity is ProfileEntity.PersonaEntity && factorSourceIdsNeedBackup.contains(it.entity.securityState.factorSourceId)
             }
+            val activePersonasNeedBackup = personasNeedBackup.count { it.entity.isNotHidden() }
+
             if (factorSourceIdsNeedBackup.isNotEmpty()) {
                 add(
                     SecurityProblem.EntitiesNotRecoverable(
-                        accountsNeedBackup = accountsNeedBackup,
-                        personasNeedBackup = personasNeedBackup
+                        accountsNeedBackup = accountsNeedBackup.count { it.entity.isNotHidden() },
+                        personasNeedBackup = activePersonasNeedBackup,
+                        hiddenAccountsNeedBackup = accountsNeedBackup.count { it.entity.isHidden() },
+                        hiddenPersonasNeedBackup = personasNeedBackup.count { it.entity.isHidden() }
                     )
                 )
+            }
+
+            if (cloudBackupState is CloudBackupState.Disabled) {
+                add(
+                    SecurityProblem.CloudBackupNotWorking.Disabled(
+                        isAnyActivePersonaAffected = activePersonasNeedBackup > 0,
+                        hasManualBackup = cloudBackupState.lastManualBackupTime != null
+                    )
+                )
+            } else if (cloudBackupState is CloudBackupState.Enabled && cloudBackupState.hasAnyErrors) {
+                add(SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = activePersonasNeedBackup > 0))
             }
         }.toSet()
     }
