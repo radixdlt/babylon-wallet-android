@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
 import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
-import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -21,7 +20,6 @@ import javax.inject.Inject
 class RespondToIncomingRequestUseCase @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val rcrRepository: RcrRepository,
-    private val dAppLinkRepository: DappLinkRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 

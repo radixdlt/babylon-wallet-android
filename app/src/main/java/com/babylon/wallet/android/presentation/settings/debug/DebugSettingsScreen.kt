@@ -70,17 +70,6 @@ fun DebugSettingsScreen(
                                 )
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
                             }
-                            else -> {
-                                DefaultSettingsItem(
-                                    title = stringResource(id = debugSettingsItem.descriptionRes()),
-                                    leadingIcon = debugSettingsItem.getIcon(),
-                                    onClick = {
-                                        onItemClick(debugSettingsItem)
-                                    }
-                                )
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
-                            }
-
                             is SettingsItem.DebugSettingsItem.MobileConnectDelay -> {
                                 Column(
                                     modifier = Modifier
@@ -109,6 +98,16 @@ fun DebugSettingsScreen(
                                         ),
                                     )
                                 }
+                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                            }
+                            else -> {
+                                DefaultSettingsItem(
+                                    title = stringResource(id = debugSettingsItem.descriptionRes()),
+                                    leadingIcon = debugSettingsItem.getIcon(),
+                                    onClick = {
+                                        onItemClick(debugSettingsItem)
+                                    }
+                                )
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
                             }
                         }

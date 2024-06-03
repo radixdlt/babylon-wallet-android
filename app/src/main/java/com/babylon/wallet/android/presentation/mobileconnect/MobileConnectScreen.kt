@@ -164,7 +164,8 @@ fun MobileConnectContent(
                         style = RadixTheme.typography.body1HighImportance
                     )
                     Text(
-                        text = "$dAppName wants to make requests to your Radix Wallet. Click Continue to verify the identity of this dApp and proceed with the request. ",
+                        text = "$dAppName wants to make requests to your Radix Wallet. " +
+                            "Click Continue to verify the identity of this dApp and proceed with the request. ",
                         color = RadixTheme.colors.gray1,
                         style = RadixTheme.typography.body1Regular
                     )

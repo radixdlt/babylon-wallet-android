@@ -33,7 +33,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("UnsafeCallOnNullableType")
+@Suppress("UnsafeCallOnNullableType", "LongParameterList")
 @HiltViewModel
 class MobileConnectViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -100,7 +100,9 @@ class MobileConnectViewModel @Inject constructor(
                         delay(Constants.SNACKBAR_SHOW_DURATION_MS)
                         sendEvent(Event.Close)
                     }
-                    if (_state.value.autoLink && _state.value.canLink && _state.value.dAppDefinition?.dAppDefinitionAddress?.string != null) {
+                    if (_state.value.autoLink && _state.value.canLink &&
+                        _state.value.dAppDefinition?.dAppDefinitionAddress?.string != null
+                    ) {
                         linkWithDapp(withDelay = true)
                     }
                 }
@@ -161,8 +163,8 @@ class MobileConnectViewModel @Inject constructor(
                     args.browser
                 )
             )
-            _state.update {
-                it.copy(isLinking = false)
+            _state.update { state ->
+                state.copy(isLinking = false)
             }
         }.onFailure { error ->
             _state.update {
