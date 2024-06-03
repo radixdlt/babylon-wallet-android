@@ -23,6 +23,11 @@ jobs:
       - name: Cancel Previous Runs
         uses: RDXWorks-actions/cancel-workflow-action@main
 
+  phylum_analyze:
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/phylum-analyze.yml@main
+    secrets:
+      phylum_api_key: ${{ secrets.PHYLUM_API_KEY }}
+
   snyk_scan_deps_licences:
     name: "Snyk deps/licenses"
     runs-on: ubuntu-latest
