@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.dapp.authorized.login
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -35,6 +34,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
@@ -153,7 +153,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 if (dapp != null) {
                     setInitialDappLoginRouteForUsePersonaRequest(dapp, authRequest)
                 } else {
-                    onAbortDappLogin(WalletErrorType.InvalidPersona)
+                    onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
                 }
             }
 
@@ -176,7 +176,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     ) {
         val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.identityAddress)
         if (hasAuthorizedPersona.not()) {
-            onAbortDappLogin(WalletErrorType.InvalidPersona)
+            onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
             return
         }
         val resetAccounts = request.resetRequestItem?.accounts == true
@@ -585,9 +585,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onAbortDappLogin(walletWalletErrorType: WalletErrorType = WalletErrorType.RejectedByUser) {
+    fun onAbortDappLogin(walletWalletErrorType: DappWalletInteractionErrorType = DappWalletInteractionErrorType.REJECTED_BY_USER) {
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(request.interactionId)
+            incomingRequestRepository.requestHandled(request.interactionId.toString())
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
             }
@@ -692,7 +692,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 mutex.withLock {
                     editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                 }
-                incomingRequestRepository.requestHandled(request.interactionId)
+                incomingRequestRepository.requestHandled(request.interactionId.toString())
                 sendEvent(Event.LoginFlowCompleted)
             } else {
                 buildAuthorizedDappResponseUseCase(
@@ -717,7 +717,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
-                                requestId = request.interactionId,
+                                requestId = request.interactionId.toString(),
                                 dAppName = state.value.dapp?.name,
                                 isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                             )

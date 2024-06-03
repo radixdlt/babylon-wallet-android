@@ -3,14 +3,18 @@ package com.babylon.wallet.android.data.dapp
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
 import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.WalletInteraction
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
+import com.babylon.wallet.android.data.dapp.model.asJsonString
+import com.babylon.wallet.android.data.dapp.model.init
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.WalletInteractionId
+import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
+import com.radixdlt.sargon.WalletToDappInteractionResponse
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -20,8 +24,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
@@ -70,7 +72,7 @@ class PeerdroidClientImpl @Inject constructor(
         get() = peerdroidConnector.peerConnectionStatus
             .filter { connectionStatuses ->
                 connectionStatuses.isNotEmpty() &&
-                    !connectionStatuses.any { it.value == PeerConnectionStatus.CONNECTING }
+                        !connectionStatuses.any { it.value == PeerConnectionStatus.CONNECTING }
             }
             .map { statuses ->
                 statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
@@ -136,27 +138,25 @@ class PeerdroidClientImpl @Inject constructor(
         messageInJsonString: String
     ): IncomingMessage {
         return try {
-            when (val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)) {
-                is WalletInteraction -> payload.toDomainModel(
-                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(
-                        remoteConnectorId
-                    )
-                )
-
-                else -> (payload as LedgerInteractionResponse).toDomainModel()
+            val dappInteraction = DappToWalletInteractionUnvalidated.Companion.init(messageInJsonString).getOrNull()
+            if (dappInteraction != null) {
+                dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId))
+            } else {
+                val interaction = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)
+                (interaction as? LedgerInteractionResponse)?.toDomainModel() ?: IncomingMessage.ParsingError
             }
         } catch (serializationException: SerializationException) {
             // TODO a snackbar message error like iOS
             Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
             IncomingMessage.ParsingError
         } catch (incompatibleRequestVersionException: IncompatibleRequestVersionException) {
-            val requestVersion = incompatibleRequestVersionException.requestVersion
-            val currentVersion = WalletInteraction.Metadata.VERSION
-            Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
-            sendIncompatibleVersionRequestToDapp(
-                requestId = incompatibleRequestVersionException.requestId,
-                remoteConnectorId = remoteConnectorId
-            )
+//            val requestVersion = incompatibleRequestVersionException.requestVersion
+//            val currentVersion = WalletInteraction.Metadata.VERSION
+//            Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
+//            sendIncompatibleVersionRequestToDapp(
+//                requestId = incompatibleRequestVersionException.requestId,
+//                remoteConnectorId = remoteConnectorId
+//            ) TODO revisit after model update
             IncomingMessage.ParsingError
         } catch (e: RadixWalletException.IncomingMessageException.MessageParse) {
             IncomingMessage.Error(e)
@@ -172,12 +172,14 @@ class PeerdroidClientImpl @Inject constructor(
         remoteConnectorId: String,
         requestId: String
     ) {
-        val messageJson = Json.encodeToString(
-            WalletInteractionFailureResponse(
-                interactionId = requestId,
-                error = WalletErrorType.IncompatibleVersion
-            )
-        )
+        val messageJson =
+            WalletToDappInteractionResponse.Failure(
+                WalletToDappInteractionFailureResponse(
+                    interactionId = WalletInteractionId.fromString(requestId),
+                    error = DappWalletInteractionErrorType.INCOMPATIBLE_VERSION,
+                    message = null
+                )
+            ).asJsonString().getOrThrow() // TODO revisit after sargon change
         sendMessage(remoteConnectorId, messageJson)
     }
 }

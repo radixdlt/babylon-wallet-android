@@ -27,13 +27,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.extensions.init
 
@@ -80,17 +80,17 @@ fun TransactionStatusDialog(
                     exit = fadeOut()
                 ) {
                     val title = when (state.walletErrorType) {
-                        WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
+                        DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS -> {
                             stringResource(id = R.string.transactionStatus_failed_title)
                         }
 
-                        WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
+                        DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS -> {
                             stringResource(id = R.string.transactionStatus_rejected_title)
                         }
 
-                        WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                            stringResource(id = R.string.transactionStatus_error_title)
-                        }
+//                        DappWalletInteractionErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
+//                            stringResource(id = R.string.transactionStatus_error_title)
+//                        } // TODO verify if we want to add that error to sargon
 
                         else -> {
                             stringResource(id = R.string.common_somethingWentWrong)

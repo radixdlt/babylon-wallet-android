@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.DefaultLocaleRule
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
@@ -39,11 +38,12 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Va
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.babylon.wallet.android.utils.AppEventBusImpl
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
@@ -54,6 +54,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
@@ -163,7 +164,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
         endEpoch = 50u
     )
-    private val sampleRequestId = "requestId1"
+    private val sampleRequestId = WalletInteractionId.randomUUID()
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns NetworkId.MAINNET
         every { instructions } returns ""
@@ -179,7 +180,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         interactionId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            networkId = NetworkId.MAINNET.discriminant.toInt(),
+            networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
             dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
             isInternal = false
@@ -227,7 +228,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
-        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
+        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId.toString()
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
@@ -244,7 +245,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 request = any(),
                 txId = any(),
             )
-        } returns Result.success(Unit)
+        } returns Result.success(IncomingRequestResponse.SuccessCE)
         coEvery {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = any(),
@@ -317,7 +318,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.approveTransaction { true }
         advanceUntilIdle()
-        val errorSlot = slot<WalletErrorType>()
+        val errorSlot = slot<DappWalletInteractionErrorType>()
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = sampleRequest,
@@ -339,7 +340,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         vm.approveTransaction { true }
         advanceUntilIdle()
         val state = vm.state.first()
-        val errorSlot = slot<WalletErrorType>()
+        val errorSlot = slot<DappWalletInteractionErrorType>()
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = sampleRequest,

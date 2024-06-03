@@ -19,8 +19,10 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -28,7 +30,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
@@ -206,7 +207,7 @@ class DappDetailViewModel @Inject constructor(
                     )
                     val request = IncomingMessage.IncomingRequest.AuthorizedRequest(
                         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
-                        interactionId = UUIDGenerator.uuid().toString(),
+                        interactionId = WalletInteractionId.randomUUID(),
                         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkId,
                             "",
@@ -214,7 +215,7 @@ class DappDetailViewModel @Inject constructor(
                             isInternal = true
                         ),
                         authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
-                            persona.address.string
+                            persona.address
                         ),
                         ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
@@ -224,7 +225,7 @@ class DappDetailViewModel @Inject constructor(
                             ),
                             challenge = null
                         ),
-                        resetRequestItem = IncomingMessage.IncomingRequest.AuthorizedRequest.ResetRequestItem(
+                        resetRequestItem = DappToWalletInteractionResetRequestItem(
                             accounts = true,
                             personaData = false
                         )

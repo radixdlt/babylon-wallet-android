@@ -70,7 +70,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
-            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId }
+            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId }
             handleNextRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
@@ -106,7 +106,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId &&
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId &&
                 it.incomingRequest is IncomingRequest.UnauthorizedRequest
         }
         if (queueItem == null) {
@@ -117,7 +117,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId &&
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId &&
                 it.incomingRequest is IncomingRequest.TransactionRequest
         }
         if (queueItem == null) {
@@ -128,7 +128,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId &&
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId &&
                 it.incomingRequest is IncomingRequest.AuthorizedRequest
         }
         if (queueItem == null) {

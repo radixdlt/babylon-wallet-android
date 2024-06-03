@@ -67,7 +67,7 @@ data class TransactionManifestData(
                 is Public -> message
             }
 
-        object None : TransactionMessage
+        data object None : TransactionMessage
         data class Public(val message: String) : TransactionMessage
     }
 

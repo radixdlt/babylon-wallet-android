@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -10,8 +9,8 @@ import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.extensions.init
-import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -28,7 +27,7 @@ class VerifyDAppUseCase @Inject constructor(
         val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrElse {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = request,
-                error = WalletErrorType.InvalidRequest
+                error = DappWalletInteractionErrorType.INVALID_REQUEST
             )
             return Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }

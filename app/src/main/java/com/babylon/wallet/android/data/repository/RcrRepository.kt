@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.data.repository
 
-import com.babylon.wallet.android.data.dapp.model.WalletInteraction
-import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
+import com.babylon.wallet.android.data.dapp.model.init
 import com.babylon.wallet.android.data.gateway.apis.RcrApi
 import com.babylon.wallet.android.data.gateway.model.RcrHandshakeRequest
 import com.babylon.wallet.android.data.gateway.model.RcrRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.core.decodeHex
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 interface RcrRepository {
     suspend fun sendResponse(sessionId: String, data: String): Result<Unit>
-    suspend fun getRequest(sessionId: String, interactionId: String): Result<WalletInteraction>
+    suspend fun getRequest(sessionId: String, interactionId: String): Result<DappToWalletInteractionUnvalidated>
     suspend fun sendHandshakeResponse(sessionId: String, publicKeyHex: String): Result<Unit>
     suspend fun getHandshake(sessionId: String): Result<String>
 }
@@ -35,8 +35,8 @@ class RcrRepositoryImpl @Inject constructor(
             response.mapNotNull { d ->
                 val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.decodeHex()).getOrNull() ?: return@mapNotNull null
                 val decryptedRequestString = String(decryptedBytes, StandardCharsets.UTF_8)
-                peerdroidRequestJson.decodeFromString<WalletInteraction>(decryptedRequestString)
-            }.find { it.interactionId == interactionId } ?: error("No interaction with id $interactionId")
+                DappToWalletInteractionUnvalidated.Companion.init(decryptedRequestString).getOrNull() ?: error("Failed to parse request")
+            }.find { it.interactionId.toString() == interactionId } ?: error("No interaction with id $interactionId")
         }
     }
 

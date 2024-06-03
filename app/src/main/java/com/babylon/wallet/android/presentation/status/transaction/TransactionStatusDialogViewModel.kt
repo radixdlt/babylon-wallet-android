@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.status.transaction
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
@@ -17,6 +16,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -159,7 +159,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val failureError: String?
             get() = (status as? TransactionStatus.Failed)?.errorMessage
 
-        val walletErrorType: WalletErrorType?
+        val walletErrorType: DappWalletInteractionErrorType?
             get() = (status as? TransactionStatus.Failed)?.walletErrorType
 
         val transactionId: String
@@ -198,7 +198,7 @@ sealed interface TransactionStatus {
         override val isInternal: Boolean,
         override val blockUntilComplete: Boolean,
         val errorMessage: String?,
-        val walletErrorType: WalletErrorType?
+        val walletErrorType: DappWalletInteractionErrorType?
     ) : TransactionStatus
 
     companion object {

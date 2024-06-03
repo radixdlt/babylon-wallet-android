@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.login
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -28,6 +27,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.init
@@ -219,7 +219,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onRejectRequest() {
         viewModelScope.launch {
             incomingRequestRepository.requestHandled(requestId = args.requestId)
-            respondToIncomingRequestUseCase.respondWithFailure(request, WalletErrorType.RejectedByUser)
+            respondToIncomingRequestUseCase.respondWithFailure(request, DappWalletInteractionErrorType.REJECTED_BY_USER)
             sendEvent(Event.CloseLoginFlow)
         }
     }
@@ -260,7 +260,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 if (!request.isInternal) {
                     appEventBus.sendEvent(
                         AppEvent.Status.DappInteraction(
-                            requestId = request.interactionId,
+                            requestId = request.interactionId.toString(),
                             dAppName = state.value.dapp?.name,
                             isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                         )

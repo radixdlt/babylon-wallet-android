@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.utils.replaceDoublePercent
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.cloudbackup.model.BackupServiceException
@@ -67,17 +67,17 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 get() = requestNetworkId.string.replaceFirstChar(Char::titlecase)
         }
 
-        override val ceError: ConnectorExtensionError
+        override val ceError: DappWalletInteractionErrorType
             get() = when (this) {
-                GetEpoch -> WalletErrorType.FailedToPrepareTransaction
-                RejectedByUser -> WalletErrorType.RejectedByUser
-                is WrongNetwork -> WalletErrorType.WrongNetwork
-                InvalidPersona -> WalletErrorType.InvalidPersona
-                InvalidRequest -> WalletErrorType.InvalidRequest
-                is FailedToSignAuthChallenge -> WalletErrorType.FailedToSignAuthChallenge
-                UnacceptableManifest -> WalletErrorType.FailedToPrepareTransaction
-                is InvalidRequestChallenge -> WalletErrorType.InvalidRequest
-                NotPossibleToAuthenticateAutomatically -> WalletErrorType.InvalidRequest
+                is FailedToSignAuthChallenge -> DappWalletInteractionErrorType.FAILED_TO_SIGN_AUTH_CHALLENGE
+                GetEpoch -> DappWalletInteractionErrorType.INVALID_REQUEST
+                InvalidPersona -> DappWalletInteractionErrorType.INVALID_PERSONA
+                InvalidRequest -> DappWalletInteractionErrorType.INVALID_REQUEST
+                InvalidRequestChallenge -> DappWalletInteractionErrorType.FAILED_TO_SIGN_AUTH_CHALLENGE
+                NotPossibleToAuthenticateAutomatically -> DappWalletInteractionErrorType.INVALID_REQUEST
+                RejectedByUser -> DappWalletInteractionErrorType.REJECTED_BY_USER
+                UnacceptableManifest -> DappWalletInteractionErrorType.INVALID_REQUEST
+                is WrongNetwork -> DappWalletInteractionErrorType.WRONG_NETWORK
             }
     }
 
@@ -98,18 +98,18 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
-                is BuildTransactionHeader -> WalletErrorType.FailedToPrepareTransaction
-                is FailedToFindSigningEntities -> WalletErrorType.FailedToPrepareTransaction
-                is ConvertManifest -> WalletErrorType.FailedToPrepareTransaction
-                is PrepareNotarizedTransaction -> WalletErrorType.FailedToSignTransaction
-                is SubmitNotarizedTransaction -> WalletErrorType.FailedToSubmitTransaction
+                is BuildTransactionHeader -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+                is FailedToFindSigningEntities -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+                is ConvertManifest -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+                is PrepareNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
+                is SubmitNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION
                 is FailedToFindAccountWithEnoughFundsToLockFee -> {
-                    WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
+                    DappWalletInteractionErrorType.FAILED_TO_FIND_ACCOUNT_WITH_ENOUGH_FUNDS_TO_LOCK_FEE
                 }
 
-                is CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
-                is SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
-                is ReceivingAccountDoesNotAllowDeposits -> WalletErrorType.FailedToPrepareTransaction
+                is CompileTransactionIntent -> DappWalletInteractionErrorType.FAILED_TO_COMPILE_TRANSACTION
+                is SignCompiledTransactionIntent -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
+                is ReceivingAccountDoesNotAllowDeposits -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
             }
     }
 
@@ -140,20 +140,20 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
-                is FailedToPollTXStatus -> WalletErrorType.FailedToPollSubmittedTransaction
+                is FailedToPollTXStatus -> DappWalletInteractionErrorType.FAILED_TO_POLL_SUBMITTED_TRANSACTION
                 is GatewayCommittedException -> {
-                    WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
+                    DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS
                 }
 
                 is GatewayRejected -> {
-                    WalletErrorType.SubmittedTransactionHasRejectedTransactionStatus
+                    DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS
                 }
 
-                is InvalidTXDuplicate -> WalletErrorType.SubmittedTransactionWasDuplicate
-                is TransactionCommitted.Failure -> WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
-                is TransactionRejected.Permanently -> WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus
-                is TransactionRejected.Temporary -> WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus
-                is TransactionCommitted.AssertionFailed -> WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
+                is InvalidTXDuplicate -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_WAS_DUPLICATE
+                is TransactionCommitted.Failure -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS
+                is TransactionRejected.Permanently -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS
+                is TransactionRejected.Temporary -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS
+                is TransactionCommitted.AssertionFailed -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS
             }
     }
 
@@ -162,15 +162,13 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object UnknownWebsite : DappVerificationException()
         data object RadixJsonNotFound : DappVerificationException()
         data object UnknownDefinitionAddress : DappVerificationException()
-        data object ClaimedEntityAddressNotPresent : DappVerificationException()
 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
-                RadixJsonNotFound -> WalletErrorType.RadixJsonNotFound
-                UnknownDefinitionAddress -> WalletErrorType.UnknownDefinitionAddress
-                UnknownWebsite -> WalletErrorType.UnknownWebsite
-                WrongAccountType -> WalletErrorType.WrongAccountType
-                ClaimedEntityAddressNotPresent -> WalletErrorType.WrongAccountType
+                RadixJsonNotFound -> DappWalletInteractionErrorType.RADIX_JSON_NOT_FOUND
+                UnknownDefinitionAddress -> DappWalletInteractionErrorType.UNKNOWN_DAPP_DEFINITION_ADDRESS
+                UnknownWebsite -> DappWalletInteractionErrorType.UNKNOWN_WEBSITE
+                WrongAccountType -> DappWalletInteractionErrorType.WRONG_ACCOUNT_TYPE
             }
     }
 
@@ -183,11 +181,11 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
-                is FailedToDerivePublicKeys -> WalletErrorType.InvalidRequest
-                FailedToGetDeviceId -> WalletErrorType.InvalidRequest
-                is FailedToSignTransaction -> WalletErrorType.InvalidRequest
-                is FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
-                FailedToSignAuthChallenge -> WalletErrorType.InvalidRequest
+                is FailedToDerivePublicKeys -> DappWalletInteractionErrorType.INVALID_REQUEST
+                FailedToGetDeviceId -> DappWalletInteractionErrorType.INVALID_REQUEST
+                is FailedToSignTransaction -> DappWalletInteractionErrorType.INVALID_REQUEST
+                is FailedToDeriveAndDisplayAddress -> DappWalletInteractionErrorType.INVALID_REQUEST
+                FailedToSignAuthChallenge -> DappWalletInteractionErrorType.INVALID_REQUEST
             }
     }
 
@@ -209,10 +207,10 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     ) : RadixWalletException()
 }
 
-typealias ConnectorExtensionError = WalletErrorType
+typealias ConnectorExtensionError = DappWalletInteractionErrorType
 
 interface ConnectorExtensionThrowable {
-    val ceError: ConnectorExtensionError
+    val ceError: DappWalletInteractionErrorType
 }
 
 fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(context: Context): String {
@@ -257,10 +255,6 @@ fun RadixWalletException.DappVerificationException.toUserFriendlyMessage(context
             RadixWalletException.DappVerificationException.WrongAccountType -> {
                 R.string.dAppRequest_validationOutcome_devExplanationInvalidDappDefinitionAddress
             }
-
-            RadixWalletException.DappVerificationException.ClaimedEntityAddressNotPresent -> {
-                R.string.common_somethingWentWrong
-            } // TODO consider different copy
         }
     )
 }
@@ -370,7 +364,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
     // Consists of two strings
     if (this is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits) {
         return "${context.getString(R.string.error_transactionFailure_reviewFailure)}\n\n" +
-            context.getString(R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
+                context.getString(R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
     }
     return context.getString(
         when (this) {

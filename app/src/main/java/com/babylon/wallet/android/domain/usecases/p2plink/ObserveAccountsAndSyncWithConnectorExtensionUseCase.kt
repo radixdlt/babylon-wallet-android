@@ -80,7 +80,6 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
     private fun observeAccountsOnCurrentNetworkInteractionMessage(): Flow<String> {
         return getProfileUseCase.flow.map {
             val accounts = it.activeAccountsOnCurrentNetwork
-
             val accountListExchangeInteraction = ConnectorExtensionExchangeInteraction.AccountList(
                 accounts = accounts.map { account ->
                     Account(

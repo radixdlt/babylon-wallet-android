@@ -1,20 +1,22 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
+import com.babylon.wallet.android.data.dapp.model.asJsonString
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
+import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
+import com.radixdlt.sargon.WalletToDappInteractionResponse
+import com.radixdlt.sargon.WalletToDappInteractionResponseItems
+import com.radixdlt.sargon.WalletToDappInteractionSendTransactionResponseItem
+import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
+import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class RespondToIncomingRequestUseCase @Inject constructor(
@@ -25,45 +27,40 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
     suspend fun respondWithFailure(
         request: IncomingMessage.IncomingRequest,
-        error: WalletErrorType,
+        error: DappWalletInteractionErrorType,
         message: String? = null
     ) =
         withContext(ioDispatcher) {
-            val payload = Json.encodeToString(
-                WalletInteractionFailureResponse(
+            WalletToDappInteractionResponse.Failure(
+                v1 = WalletToDappInteractionFailureResponse(
                     interactionId = request.interactionId,
                     error = error,
                     message = message
                 )
-            )
-            when (request.remoteEntityId) {
-                is IncomingMessage.RemoteEntityID.ConnectorId -> {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteEntityId.value,
-                        payload = payload
-                    ).fold(onSuccess = {
-                        Result.success(IncomingRequestResponse.SuccessCE)
-                    }, onFailure = {
-                        Result.failure(it)
-                    })
-                }
+            ).asJsonString().mapCatching { payload ->
+                when (request.remoteEntityId) {
+                    is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                        dAppMessenger.sendWalletInteractionResponseFailure(
+                            remoteConnectorId = request.remoteEntityId.value,
+                            payload = payload
+                        ).mapCatching { IncomingRequestResponse.SuccessCE }.getOrThrow()
+                    }
 
-                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                    rcrRepository.sendResponse(
-                        sessionId = request.remoteEntityId.value,
-                        data = payload
-                    ).fold(onSuccess = {
-                        Result.success(IncomingRequestResponse.SuccessRadixMobileConnect)
-                    }, onFailure = {
-                        Result.failure(it)
-                    })
+                    is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                        rcrRepository.sendResponse(
+                            sessionId = request.remoteEntityId.value,
+                            data = payload
+                        ).mapCatching {
+                            IncomingRequestResponse.SuccessRadixMobileConnect
+                        }.getOrThrow()
+                    }
                 }
             }
         }
 
     suspend fun respondWithSuccess(
         request: IncomingMessage.IncomingRequest,
-        response: WalletInteractionResponse
+        response: WalletToDappInteractionResponse
     ) =
         withContext(ioDispatcher) {
             when (request.remoteEntityId) {
@@ -98,30 +95,34 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         txId: String
     ) =
         withContext(ioDispatcher) {
-            val response: WalletInteractionResponse = WalletInteractionSuccessResponse(
-                interactionId = request.interactionId,
-                items = WalletTransactionResponseItems(WalletTransactionResponseItems.SendTransactionResponseItem(txId))
-            )
-            val payload = peerdroidRequestJson.encodeToString(response)
-            when (request.remoteEntityId) {
-                is IncomingMessage.RemoteEntityID.ConnectorId -> {
-                    dAppMessenger.sendTransactionWriteResponseSuccess(
-                        remoteConnectorId = request.remoteEntityId.value,
-                        payload = payload
-                    )
-                }
-
-                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                    rcrRepository.sendResponse(
-                        sessionId = request.remoteEntityId.value,
-                        data = payload
-                    ).fold(onSuccess = {
-                        Result.success(
-                            IncomingRequestResponse.SuccessRadixMobileConnect
+            WalletToDappInteractionResponse.Success(
+                v1 = WalletToDappInteractionSuccessResponse(
+                    interactionId = request.interactionId,
+                    items = WalletToDappInteractionResponseItems.Transaction(
+                        v1 = WalletToDappInteractionTransactionResponseItems(
+                            send = WalletToDappInteractionSendTransactionResponseItem(
+                                bech32EncodedTxId = txId
+                            )
                         )
-                    }, onFailure = {
-                        Result.failure(it)
-                    })
+                    )
+                )
+            ).asJsonString().mapCatching { payload ->
+                when (request.remoteEntityId) {
+                    is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                        dAppMessenger.sendTransactionWriteResponseSuccess(
+                            remoteConnectorId = request.remoteEntityId.value,
+                            payload = payload
+                        ).mapCatching { IncomingRequestResponse.SuccessCE }.getOrThrow()
+                    }
+
+                    is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                        rcrRepository.sendResponse(
+                            sessionId = request.remoteEntityId.value,
+                            data = payload
+                        ).mapCatching {
+                            IncomingRequestResponse.SuccessRadixMobileConnect
+                        }.getOrThrow()
+                    }
                 }
             }
         }
