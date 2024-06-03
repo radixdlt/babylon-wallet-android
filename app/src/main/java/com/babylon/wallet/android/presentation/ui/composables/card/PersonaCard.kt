@@ -31,12 +31,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun PersonaCard(
@@ -57,7 +59,7 @@ fun PersonaCard(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault
             ),
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -87,11 +89,13 @@ fun PersonaCard(
             }
         }
         securityPrompts?.forEach {
-            ApplySecuritySettingsLabel(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = onNavigateToSecurityCenter,
-                text = it.toText(),
-                labelColor = RadixTheme.colors.backgroundAlternate.copy(alpha = 0.3f),
+            SecurityPromptLabel(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .throttleClickable(
+                        enabled = onNavigateToSecurityCenter != null
+                    ) { onNavigateToSecurityCenter?.invoke() },
+                text = it.toText()
             )
         }
     }
@@ -159,9 +163,23 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun DAppLoginContentPreview() {
+fun PersonaCardPreview() {
     RadixWalletTheme {
-        PersonaCard(persona = Persona.sampleMainnet())
+        PersonaCard(
+            persona = Persona.sampleMainnet(),
+            securityPrompts = listOf(
+                SecurityPromptType.RECOVERY_REQUIRED,
+                SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM
+            ).toPersistentList()
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun PersonaSelectableCardPreview() {
+    RadixWalletTheme {
         PersonaSelectableCard(
             modifier = Modifier
                 .fillMaxWidth()
