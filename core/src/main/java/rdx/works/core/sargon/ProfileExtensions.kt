@@ -9,7 +9,6 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DerivationPathScheme
-import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
