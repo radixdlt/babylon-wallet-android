@@ -1,15 +1,18 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
@@ -50,4 +53,16 @@ fun SecurityPromptType.toText() = when (this) {
     SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> stringResource(
         id = com.babylon.wallet.android.R.string.securityProblems_no7_accountCard
     )
+}
+
+@Composable
+@Preview(showBackground = false)
+private fun SecurityPromptLabelPreview() {
+    RadixWalletPreviewTheme {
+        ApplySecuritySettingsLabel(
+            modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
+            onClick = {},
+            text = "Recovery required"
+        )
+    }
 }
