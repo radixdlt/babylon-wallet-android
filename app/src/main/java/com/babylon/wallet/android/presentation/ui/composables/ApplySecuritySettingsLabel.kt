@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
@@ -34,6 +35,7 @@ fun ApplySecuritySettingsLabel(
         text = text,
         textColor = labelColor,
         iconTint = contentColor,
+        iconSize = 14.dp
     )
 }
 
