@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
@@ -231,9 +230,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId.toString()
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
-            Badge(address = ResourceAddress.sampleMainnet())
-        ))
+        coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(
+            listOf(
+                Badge(address = ResourceAddress.sampleMainnet())
+            )
+        )
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarizationResult)
         coEvery { signTransactionUseCase.signingState } returns emptyFlow()
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
@@ -326,7 +327,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 message = any()
             )
         }
-        assertEquals(WalletErrorType.WrongNetwork, errorSlot.captured)
+        assertEquals(DappWalletInteractionErrorType.WRONG_NETWORK, errorSlot.captured)
         assertTrue(vm.state.value.isTransactionDismissed)
     }
 
@@ -348,7 +349,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 message = any()
             )
         }
-        assertEquals(WalletErrorType.FailedToSubmitTransaction, errorSlot.captured)
+        assertEquals(DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION, errorSlot.captured)
         assertNotNull(state.error)
     }
 

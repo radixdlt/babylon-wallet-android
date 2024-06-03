@@ -166,6 +166,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun buildAuthResponseItem(
         request: AuthorizedRequest,
         selectedPersona: Persona,

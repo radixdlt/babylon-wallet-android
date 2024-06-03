@@ -16,6 +16,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.core.sargon.currentGateway
@@ -62,10 +63,12 @@ object NetworkApiModule {
     @Singleton
     fun providePeerdroidClient(
         peerdroidConnector: PeerdroidConnector,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+        json: Json
     ): PeerdroidClient = PeerdroidClientImpl(
         peerdroidConnector = peerdroidConnector,
-        ioDispatcher = ioDispatcher
+        ioDispatcher = ioDispatcher,
+        json = json
     )
 
     @Provides

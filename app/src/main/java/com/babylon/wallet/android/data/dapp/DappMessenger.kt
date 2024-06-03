@@ -2,9 +2,8 @@
 
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.asJsonString
 import com.radixdlt.sargon.WalletToDappInteractionResponse
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -55,7 +54,7 @@ class DappMessengerImpl @Inject constructor(
         response: WalletToDappInteractionResponse
     ): Result<Unit> {
         val messageJson = try {
-            Json.encodeToString(response)
+            response.asJsonString().getOrThrow()
         } catch (e: Exception) {
             Timber.d(e)
             ""

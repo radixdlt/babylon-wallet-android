@@ -12,9 +12,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
-sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
+@JsonClassDiscriminator("discriminator")
+sealed interface LedgerInteractionResponse
 
 @Serializable
 data class DerivedPublicKey(

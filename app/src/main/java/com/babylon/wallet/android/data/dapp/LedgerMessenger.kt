@@ -4,7 +4,6 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 interface LedgerMessenger {
@@ -55,6 +55,7 @@ interface LedgerMessenger {
 
 class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
+    private val json: Json
 ) : LedgerMessenger {
 
     override val isAnyLinkedConnectorConnected: Flow<Boolean>
@@ -154,7 +155,7 @@ class LedgerMessengerImpl @Inject constructor(
             IncomingMessage.LedgerResponse.LedgerErrorResponse
         ) -> RadixWalletException.LedgerCommunicationException
     ): Result<R> = flow<Result<R>> {
-        peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))
+        peerdroidClient.sendMessage(json.encodeToString(request))
             .onSuccess {
                 peerdroidClient.listenForLedgerResponses().filter { ledgerResponse ->
                     ledgerResponse.id == request.interactionId

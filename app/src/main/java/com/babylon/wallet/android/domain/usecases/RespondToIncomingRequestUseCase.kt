@@ -2,7 +2,6 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.asJsonString
-import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -16,7 +15,6 @@ import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import javax.inject.Inject
 
 class RespondToIncomingRequestUseCase @Inject constructor(
@@ -78,7 +76,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     rcrRepository.sendResponse(
                         sessionId = request.remoteEntityId.value,
-                        data = peerdroidRequestJson.encodeToString(response)
+                        data = response.asJsonString().getOrThrow()
                     ).fold(onSuccess = {
                         Result.success(
                             IncomingRequestResponse.SuccessRadixMobileConnect

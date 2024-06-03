@@ -6,8 +6,10 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.hex
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
+@JsonClassDiscriminator("discriminator")
 sealed interface LedgerInteractionRequest {
     val interactionId: String
 

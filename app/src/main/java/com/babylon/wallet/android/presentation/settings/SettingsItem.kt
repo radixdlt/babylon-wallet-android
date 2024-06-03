@@ -226,8 +226,8 @@ sealed interface SettingsItem {
             fun values() = setOf(
                 InspectProfile,
                 LinkConnectionStatusIndicator,
-                InspectCloudBackups,
-                MobileConnectDelay
+                MobileConnectDelay,
+                InspectCloudBackups
             )
         }
     }

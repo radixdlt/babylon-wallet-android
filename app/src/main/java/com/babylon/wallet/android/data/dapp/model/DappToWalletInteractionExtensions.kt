@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.PersonaRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
@@ -72,7 +73,6 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     requestMetadata = metadata
 )
 
-
 private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedRequest(
     remoteEntityId: IncomingMessage.RemoteEntityID,
     requestId: WalletInteractionId,
@@ -87,9 +87,9 @@ private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedReq
     )
 }
 
-fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): IncomingMessage.IncomingRequest.PersonaRequestItem? {
+fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): PersonaRequestItem? {
     if (isRequestingName == null && numberOfRequestedPhoneNumbers == null && numberOfRequestedEmailAddresses == null) return null
-    return IncomingMessage.IncomingRequest.PersonaRequestItem(
+    return PersonaRequestItem(
         isRequestingName = isRequestingName == true,
         numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),
         numberOfRequestedPhoneNumbers = numberOfRequestedPhoneNumbers?.toDomainModel(),
@@ -97,7 +97,9 @@ fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boole
     )
 }
 
-fun DappToWalletInteractionAccountsRequestItem.toDomainModel(isOngoing: Boolean = true): IncomingMessage.IncomingRequest.AccountsRequestItem? {
+fun DappToWalletInteractionAccountsRequestItem.toDomainModel(
+    isOngoing: Boolean = true
+): IncomingMessage.IncomingRequest.AccountsRequestItem? {
     // correct request but not actionable, return null
     if (numberOfAccounts.quantity.toInt() == 0 &&
         numberOfAccounts.quantifier == RequestedNumberQuantifier.EXACTLY
@@ -125,7 +127,6 @@ fun RequestedQuantity.toDomainModel(): IncomingMessage.IncomingRequest.NumberOfV
                 quantity.toInt(),
                 IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             )
-
         }
     }
 }
@@ -150,7 +151,6 @@ private fun DappToWalletInteractionAuthorizedRequestItems.parseAuthorizedRequest
             IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
                 auth.v1.identityAddress
             )
-
         }
     }
     return IncomingMessage.IncomingRequest.AuthorizedRequest(

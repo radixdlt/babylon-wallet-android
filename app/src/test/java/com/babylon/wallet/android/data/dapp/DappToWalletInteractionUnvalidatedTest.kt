@@ -24,7 +24,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class WalletInteractionModelsTest {
+class DappToWalletInteractionUnvalidatedTest {
 
     private val sampleDappAddress = AccountAddress.sampleMainnet.invoke()
     private val sampleIdentityAddress = IdentityAddress.sampleMainnet.invoke()
@@ -99,7 +99,7 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                   "auth":{
                     "discriminator":"usePersona",
-                    "identityAddress":"${sampleIdentityAddress.string}",
+                    "identityAddress":"${sampleIdentityAddress.string}"
                   },
                   "oneTimeAccounts":{
                      "numberOfAccounts":{
@@ -132,7 +132,7 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                   "auth":{
                     "discriminator":"usePersona",
-                    "identityAddress":"${sampleIdentityAddress.string}",
+                    "identityAddress":"${sampleIdentityAddress.string}"
                   },
                   "ongoingAccounts":{
                      "numberOfAccounts":{
@@ -165,7 +165,7 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                    "auth":{
                     "discriminator":"usePersona",
-                    "identityAddress":"${sampleIdentityAddress.string}",
+                    "identityAddress":"${sampleIdentityAddress.string}"
                   },
                   "oneTimePersonaData":{
                       "isRequestingName": true,
@@ -200,7 +200,7 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                    "auth":{
                     "discriminator":"usePersona",
-                    "identityAddress":"${sampleIdentityAddress.string}",
+                    "identityAddress":"${sampleIdentityAddress.string}"
                   },
                   "ongoingPersonaData":{
                       "isRequestingName": true,
@@ -307,7 +307,7 @@ class WalletInteractionModelsTest {
                   "discriminator":"authorizedRequest",
                   "auth":{
                     "discriminator":"loginWithChallenge",
-                    "challenge":"${challenge.hex}",
+                    "challenge":"${challenge.hex}"
                   },
                   "ongoingAccounts":{
                      "challenge":"${challenge.hex}",

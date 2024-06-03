@@ -153,7 +153,9 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is TransactionCommitted.Failure -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS
                 is TransactionRejected.Permanently -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS
                 is TransactionRejected.Temporary -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS
-                is TransactionCommitted.AssertionFailed -> DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS
+                is TransactionCommitted.AssertionFailed -> {
+                    DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS
+                }
             }
     }
 
@@ -289,7 +291,7 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         RadixWalletException.DappRequestException.RejectedByUser -> context.getString(R.string.error_transactionFailure_rejectedByUser)
         RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically -> context.getString(
             R.string.common_somethingWentWrong
-        ) // TODO consider different copy
+        )
     }
 }
 
@@ -364,7 +366,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
     // Consists of two strings
     if (this is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits) {
         return "${context.getString(R.string.error_transactionFailure_reviewFailure)}\n\n" +
-                context.getString(R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
+            context.getString(R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
     }
     return context.getString(
         when (this) {
