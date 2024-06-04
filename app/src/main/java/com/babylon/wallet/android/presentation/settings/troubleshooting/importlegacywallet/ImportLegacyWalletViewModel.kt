@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
@@ -179,7 +180,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
             olympiaWalletData?.let { data ->
                 this@ImportLegacyWalletViewModel.olympiaWalletData = data
                 seedPhraseInputDelegate.setSeedPhraseSize(data.mnemonicWordCount)
-                val allImported = data.accountData.all { it.alreadyImported }
+                val olympiaFactorSourceIdsForAccounts = getFactorSourceIdForOlympiaAccountsUseCase(data.accountData.toList()).getOrNull()
+                val allImported = data.accountData.all { it.alreadyImported } && olympiaFactorSourceIdsForAccounts != null
+
                 val nextPage =
                     if (allImported) ImportLegacyWalletUiState.Page.ImportComplete else ImportLegacyWalletUiState.Page.AccountsToImportList
                 _state.update { state ->
@@ -191,7 +194,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                                 it.copy(accountName = it.accountName.take(ACCOUNT_NAME_MAX_LENGTH))
                             }
                             .toPersistentList(),
-                        importButtonEnabled = data.accountData.any { !it.alreadyImported },
+                        importButtonEnabled = !allImported,
                         migratedAccounts = if (allImported) {
                             data.accountData.mapNotNull {
                                 getProfileUseCase().activeAccountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
@@ -283,14 +286,10 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onImportAccounts(biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            val selectedAccounts = _state.value.olympiaAccountsToImport.filter {
-                !it.alreadyImported
-            }
-
-            val softwareAccountsToMigrate = softwareAccountsToMigrate()
-            if (softwareAccountsToMigrate.isNotEmpty()) {
-                val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.factorSources?.any {
-                    it is FactorSource.Device && it.supportsOlympia
+            val selectedAccounts = _state.value.olympiaAccountsToImport
+            if (selectedAccounts.isNotEmpty()) {
+                val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.deviceFactorSources?.any {
+                    it.supportsOlympia
                 } == true
                 val mnemonicExistForSoftwareAccounts = when {
                     hasOlympiaFactorSource -> {
@@ -359,12 +358,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     @Suppress("UnsafeCallOnNullableType")
     fun importAllAccounts(biometricAuthProvider: suspend () -> Boolean = { true }) {
         viewModelScope.launch {
-            val softwareAccountsToMigrate = softwareAccountsToMigrate()
-            if (softwareAccountsToMigrate.isEmpty() && verifiedHardwareAccounts.isEmpty()) {
-                proceedToNextPage()
-                return@launch
-            }
-            if (softwareAccountsToMigrate.isNotEmpty()) {
+            if (_state.value.olympiaAccountsToImport.isNotEmpty()) {
                 val authenticated = biometricAuthProvider()
                 if (!authenticated) return@launch
                 val factorSourceID = if (state.value.existingOlympiaFactorSourceId != null) {
@@ -385,10 +379,13 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         result.getOrThrow()
                     }
                 }
-                migrateOlympiaAccountsUseCase(
-                    olympiaAccounts = softwareAccountsToMigrate,
-                    factorSourceId = factorSourceID
-                )
+                val softwareAccountsToMigrate = softwareAccountsToMigrate()
+                if (softwareAccountsToMigrate.isNotEmpty() && verifiedHardwareAccounts.isEmpty()) {
+                    migrateOlympiaAccountsUseCase(
+                        olympiaAccounts = softwareAccountsToMigrate,
+                        factorSourceId = factorSourceID
+                    )
+                }
             }
             if (verifiedHardwareAccounts.isNotEmpty()) {
                 verifiedHardwareAccounts.entries.forEach { entry ->
