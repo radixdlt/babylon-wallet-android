@@ -27,7 +27,6 @@ import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isHidden
 import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.core.sargon.supportsBabylon
 import rdx.works.core.sargon.usesEd25519
 import rdx.works.core.sargon.usesSECP256k1
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -92,16 +91,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
         return this?.factorSources
             ?.filterIsInstance<FactorSource.Device>()
             ?.filter { !mnemonicRepository.mnemonicExist(it.value.id.asGeneral()) }
-            ?.mapNotNull { factorSource ->
+            ?.map { factorSource ->
                 val associatedBabylonAccounts = allAccounts.filter {
                     it.factorSourceId == factorSource.id && it.usesEd25519
                 }
                 val associatedOlympiaAccounts = allAccounts.filter {
                     it.factorSourceId == factorSource.id && it.usesSECP256k1
-                }
-
-                if (associatedBabylonAccounts.isEmpty() && associatedOlympiaAccounts.isEmpty() && !factorSource.supportsBabylon) {
-                    return@mapNotNull null
                 }
 
                 RecoverableFactorSource(
@@ -293,5 +288,5 @@ data class RecoverableFactorSource(
         get() = associatedAccounts.filter { it.isHidden.not() }
 
     val areAllAccountsHidden: Boolean
-        get() = associatedAccounts.all { it.isHidden }
+        get() = associatedAccounts.isNotEmpty() && associatedAccounts.all { it.isHidden }
 }
