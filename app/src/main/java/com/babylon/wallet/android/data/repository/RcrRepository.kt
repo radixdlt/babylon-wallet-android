@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.data.repository
 
-import com.babylon.wallet.android.data.dapp.model.init
 import com.babylon.wallet.android.data.gateway.apis.RcrApi
 import com.babylon.wallet.android.data.gateway.model.RcrHandshakeRequest
 import com.babylon.wallet.android.data.gateway.model.RcrRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
+import com.radixdlt.sargon.extensions.fromJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.core.decodeHex
@@ -35,7 +35,7 @@ class RcrRepositoryImpl @Inject constructor(
             response.mapNotNull { d ->
                 val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.decodeHex()).getOrNull() ?: return@mapNotNull null
                 val decryptedRequestString = String(decryptedBytes, StandardCharsets.UTF_8)
-                DappToWalletInteractionUnvalidated.Companion.init(decryptedRequestString).getOrNull() ?: error("Failed to parse request")
+                DappToWalletInteractionUnvalidated.Companion.fromJson(decryptedRequestString)
             }.find { it.interactionId.toString() == interactionId } ?: error("No interaction with id $interactionId")
         }
     }

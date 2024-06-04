@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
-import com.babylon.wallet.android.data.dapp.model.asJsonString
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -13,6 +12,7 @@ import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSendTransactionResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -29,28 +29,27 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         message: String? = null
     ) =
         withContext(ioDispatcher) {
-            WalletToDappInteractionResponse.Failure(
+            val payload = WalletToDappInteractionResponse.Failure(
                 v1 = WalletToDappInteractionFailureResponse(
                     interactionId = request.interactionId,
                     error = error,
                     message = message
                 )
-            ).asJsonString().mapCatching { payload ->
-                when (request.remoteEntityId) {
-                    is IncomingMessage.RemoteEntityID.ConnectorId -> {
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            remoteConnectorId = request.remoteEntityId.value,
-                            payload = payload
-                        ).mapCatching { IncomingRequestResponse.SuccessCE }.getOrThrow()
-                    }
+            ).toJson()
+            when (request.remoteEntityId) {
+                is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                    dAppMessenger.sendWalletInteractionResponseFailure(
+                        remoteConnectorId = request.remoteEntityId.value,
+                        payload = payload
+                    ).mapCatching { IncomingRequestResponse.SuccessCE }
+                }
 
-                    is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                        rcrRepository.sendResponse(
-                            sessionId = request.remoteEntityId.value,
-                            data = payload
-                        ).mapCatching {
-                            IncomingRequestResponse.SuccessRadixMobileConnect
-                        }.getOrThrow()
+                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                    rcrRepository.sendResponse(
+                        sessionId = request.remoteEntityId.value,
+                        data = payload
+                    ).mapCatching {
+                        IncomingRequestResponse.SuccessRadixMobileConnect
                     }
                 }
             }
@@ -76,7 +75,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     rcrRepository.sendResponse(
                         sessionId = request.remoteEntityId.value,
-                        data = response.asJsonString().getOrThrow()
+                        data = response.toJson()
                     ).fold(onSuccess = {
                         Result.success(
                             IncomingRequestResponse.SuccessRadixMobileConnect
@@ -93,7 +92,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         txId: String
     ) =
         withContext(ioDispatcher) {
-            WalletToDappInteractionResponse.Success(
+            val payload = WalletToDappInteractionResponse.Success(
                 v1 = WalletToDappInteractionSuccessResponse(
                     interactionId = request.interactionId,
                     items = WalletToDappInteractionResponseItems.Transaction(
@@ -104,22 +103,21 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                         )
                     )
                 )
-            ).asJsonString().mapCatching { payload ->
-                when (request.remoteEntityId) {
-                    is IncomingMessage.RemoteEntityID.ConnectorId -> {
-                        dAppMessenger.sendTransactionWriteResponseSuccess(
-                            remoteConnectorId = request.remoteEntityId.value,
-                            payload = payload
-                        ).mapCatching { IncomingRequestResponse.SuccessCE }.getOrThrow()
-                    }
+            ).toJson()
+            when (request.remoteEntityId) {
+                is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                    dAppMessenger.sendTransactionWriteResponseSuccess(
+                        remoteConnectorId = request.remoteEntityId.value,
+                        payload = payload
+                    ).mapCatching { IncomingRequestResponse.SuccessCE }
+                }
 
-                    is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                        rcrRepository.sendResponse(
-                            sessionId = request.remoteEntityId.value,
-                            data = payload
-                        ).mapCatching {
-                            IncomingRequestResponse.SuccessRadixMobileConnect
-                        }.getOrThrow()
+                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                    rcrRepository.sendResponse(
+                        sessionId = request.remoteEntityId.value,
+                        data = payload
+                    ).mapCatching {
+                        IncomingRequestResponse.SuccessRadixMobileConnect
                     }
                 }
             }

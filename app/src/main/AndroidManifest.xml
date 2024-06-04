@@ -47,7 +47,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="https" />
-                <data android:host="d1rxdfxrfmemlj.cloudfront.net" />
+                <data android:host="dr6vsuukf8610.cloudfront.net" />
             </intent-filter>
         </activity>
         <meta-data

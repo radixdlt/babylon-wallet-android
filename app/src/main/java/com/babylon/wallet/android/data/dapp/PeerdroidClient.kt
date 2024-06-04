@@ -2,8 +2,6 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.asJsonString
-import com.babylon.wallet.android.data.dapp.model.init
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -14,6 +12,8 @@ import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -139,7 +139,9 @@ class PeerdroidClientImpl @Inject constructor(
         messageInJsonString: String
     ): IncomingMessage {
         return try {
-            val dappInteraction = DappToWalletInteractionUnvalidated.Companion.init(messageInJsonString).getOrNull()
+            val dappInteraction = runCatching {
+                DappToWalletInteractionUnvalidated.Companion.fromJson(messageInJsonString)
+            }.getOrNull()
             if (dappInteraction != null) {
                 val interactionVersion = dappInteraction.metadata.version.toLong()
                 if (interactionVersion != Constants.WALLET_INTERACTION_VERSION) {
@@ -187,7 +189,7 @@ class PeerdroidClientImpl @Inject constructor(
                     error = DappWalletInteractionErrorType.INCOMPATIBLE_VERSION,
                     message = null
                 )
-            ).asJsonString().getOrThrow() // TODO revisit after sargon change
+            ).toJson()
         sendMessage(remoteConnectorId, messageJson)
     }
 }
