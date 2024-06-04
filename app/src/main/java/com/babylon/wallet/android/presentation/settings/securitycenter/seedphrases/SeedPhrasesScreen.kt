@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -42,6 +42,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
@@ -200,6 +201,8 @@ fun SeedPhraseCard(
                         } else {
                             if (data.accounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsLabel_one
+                            } else if (data.accounts.isEmpty()) {
+                                R.string.seedPhrases_seedPhrase_noConnectedAccountsReveal
                             } else {
                                 R.string.displayMnemonics_connectedAccountsLabel_many
                             }
@@ -240,14 +243,36 @@ fun SeedPhraseCard(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun AccountPreferencePreview() {
-    RadixWalletTheme {
+fun SeedPhrasesWithAccountsAndPersonasPreview() {
+    RadixWalletPreviewTheme {
         SeedPhraseContent(
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample(),
-                    accounts = Account.sampleMainnet.all
+                    accounts = Account.sampleMainnet.all,
+                    personas = Persona.sampleMainnet.all
+                ),
+                DeviceFactorSourceData(
+                    deviceFactorSource = FactorSource.Device.sample.other(),
+                    accounts = persistentListOf(Account.sampleMainnet())
+                )
+            ),
+            onSeedPhraseClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SeedPhrasesWithoutAccountsAndPersonasPreview() {
+    RadixWalletPreviewTheme {
+        SeedPhraseContent(
+            onBackClick = {},
+            deviceFactorSourceData = persistentListOf(
+                DeviceFactorSourceData(
+                    deviceFactorSource = FactorSource.Device.sample(),
                 ),
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample.other(),
