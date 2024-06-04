@@ -69,7 +69,7 @@ fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
         deepLinks = listOf(
             navDeepLink {
                 uriPattern =
-                    "https://d1rxdfxrfmemlj.cloudfront.net/?$ROUTE_ARGS"
+                    "https://dr6vsuukf8610.cloudfront.net/?$ROUTE_ARGS"
             }
         ),
         arguments = listOf(

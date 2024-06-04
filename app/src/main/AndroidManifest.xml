@@ -71,5 +71,4 @@
             <data android:scheme="http" />
         </intent>
     </queries>
-
 </manifest>
