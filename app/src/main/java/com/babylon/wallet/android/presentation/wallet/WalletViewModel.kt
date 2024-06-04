@@ -185,6 +185,8 @@ class WalletViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeAccounts() {
         accountsFlow.flatMapLatest { accounts ->
+            _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
+
             this.accountsWithAssets = accounts.map { account ->
                 val current = accountsWithAssets?.find { account == it.account }
                 AccountWithAssets(
@@ -194,8 +196,6 @@ class WalletViewModel @Inject constructor(
                 )
             }
 
-            _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
-
             getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
                 _state.update { onAssetsError(error) }
                 Timber.w(error)
@@ -203,9 +203,14 @@ class WalletViewModel @Inject constructor(
         }.mapLatest { accountsWithAssets ->
             this.accountsWithAssets = accountsWithAssets
 
-            // keep the val here because the onAssetsReceived sets the refreshing to false
+            // keep the val here because it's set to false below
             val isRefreshing = state.value.isRefreshing
-            _state.update { onAssetsReceived() }
+            _state.update {
+                state.value.copy(
+                    isRefreshing = false,
+                    accountUiItems = buildAccountUiItems()
+                )
+            }
 
             accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
                 accountWithAssets.account.address to getFiatValueUseCase.forAccount(
@@ -219,7 +224,16 @@ class WalletViewModel @Inject constructor(
                     }
                 }.getOrNull()
             }
-            _state.update { onAssetsReceived() }
+
+            val isLoadingAssets = accountsWithAssets.all { it.assets == null }
+
+            _state.update {
+                state.value.copy(
+                    isLoading = isLoadingAssets,
+                    accountUiItems = buildAccountUiItems(),
+                    totalFiatValueOfWallet = buildTotalFiatValue().takeIf { !isLoadingAssets }
+                )
+            }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
     }
 
@@ -300,20 +314,9 @@ class WalletViewModel @Inject constructor(
 
     private fun loadingAssets(isRefreshing: Boolean): WalletUiState = state.value.copy(
         accountUiItems = buildAccountUiItems(),
-        isLoading = accountsWithAssets == null,
+        isLoading = true,
         isRefreshing = isRefreshing
     )
-
-    private fun onAssetsReceived(): WalletUiState {
-        val accountUiItems = buildAccountUiItems()
-
-        return state.value.copy(
-            isLoading = false,
-            isRefreshing = false,
-            accountUiItems = accountUiItems,
-            totalFiatValueOfWallet = buildTotalFiatValue()
-        )
-    }
 
     private fun onAssetsError(error: Throwable?): WalletUiState = state.value.copy(
         uiMessage = UiMessage.ErrorMessage(error),
