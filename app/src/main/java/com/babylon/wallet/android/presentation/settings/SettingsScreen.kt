@@ -539,8 +539,8 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenPersonasPreview() {
 fun SettingsWithSecurityProblems7And9AndOnlyHiddenPersonasPreview() {
     RadixWalletTheme {
         val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.Disabled(
-                isAnyActivePersonaAffected = false,
-                hasManualBackup = true
+            isAnyActivePersonaAffected = false,
+            hasManualBackup = true
         )
         SettingsContent(
             state = SettingsUiState(
