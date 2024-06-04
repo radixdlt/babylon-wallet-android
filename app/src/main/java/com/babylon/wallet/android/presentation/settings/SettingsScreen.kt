@@ -372,14 +372,14 @@ fun SettingsWithSecurityProblems3And6Preview() {
                                 hiddenPersonasNeedBackup = 0
                             ),
                             SecurityProblem.CloudBackupNotWorking.Disabled(
-                                isAnyActivePersonaAffected = false,
+                                isAnyActivePersonaAffected = true,
                                 hasManualBackup = false
                             )
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
                         isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.Disabled(
-                            isAnyActivePersonaAffected = false,
+                            isAnyActivePersonaAffected = true,
                             hasManualBackup = false
                         ),
                         isBackupNeeded = true,
@@ -407,7 +407,7 @@ fun SettingsWithSecurityProblems7And9Preview() {
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
                             SecurityProblem.CloudBackupNotWorking.Disabled(
-                                isAnyActivePersonaAffected = false,
+                                isAnyActivePersonaAffected = true,
                                 hasManualBackup = false
                             ),
                             SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true)
@@ -415,7 +415,7 @@ fun SettingsWithSecurityProblems7And9Preview() {
                     ),
                     SettingsItem.TopLevelSettings.Personas(
                         isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.Disabled(
-                            isAnyActivePersonaAffected = false,
+                            isAnyActivePersonaAffected = true,
                             hasManualBackup = true
                         ),
                         isBackupNeeded = false,
@@ -486,7 +486,7 @@ fun SettingsWithSecurityProblems3And5And9Preview() {
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true),
                         isBackupNeeded = true,
                         isRecoveryNeeded = true
                     ),
