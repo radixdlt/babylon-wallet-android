@@ -3,9 +3,7 @@ package com.babylon.wallet.android.data.gateway.model
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
@@ -24,7 +22,7 @@ data class TokensAndLsusPricesResponse(
         @SerialName(value = "resource_address")
         val resourceAddress: String,
         @SerialName(value = "usd_price")
-        val usdPrice: Double,
+        val usdPrice: String,
         @SerialName(value = "last_updated_at")
         val lastUpdatedAt: String
     )
@@ -36,7 +34,7 @@ data class TokensAndLsusPricesResponse(
         @SerialName(value = "xrd_redemption_value")
         val xrdRedemptionValue: Double,
         @SerialName(value = "usd_price")
-        val usdPrice: Double
+        val usdPrice: String
     )
 
     companion object {
@@ -46,7 +44,7 @@ data class TokensAndLsusPricesResponse(
             val lsus = this.lsus.map { lsuPrice ->
                 TokenPriceEntity(
                     resourceAddress = ResourceAddress.init(lsuPrice.resourceAddress),
-                    price = lsuPrice.usdPrice.toDecimal192OrNull().orZero(),
+                    price = lsuPrice.usdPrice.toDecimal192(),
                     currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )
@@ -54,7 +52,7 @@ data class TokensAndLsusPricesResponse(
             val tokens = this.tokens.map { tokenPrice ->
                 TokenPriceEntity(
                     resourceAddress = ResourceAddress.init(tokenPrice.resourceAddress),
-                    price = tokenPrice.usdPrice.toDecimal192OrNull().orZero(),
+                    price = tokenPrice.usdPrice.toDecimal192(),
                     currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )
