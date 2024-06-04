@@ -20,13 +20,15 @@ class GetSecurityProblemsUseCase @Inject constructor(
         getEntitiesWithSecurityPromptUseCase(),
         getCloudBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, cloudBackupState ->
-        // entities that need cloud backup
-        val entitiesNeedCloudBackup = entitiesWithSecurityPrompts.filter {
-            it.prompts.contains(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM) ||
-                it.prompts.contains(SecurityPromptType.WALLET_NOT_RECOVERABLE) ||
-                it.prompts.contains(SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED)
-        }
-        val activePersonasNeedCloudBackup = entitiesNeedCloudBackup.count { it.entity.isNotHidden() }
+        // personas that need cloud backup
+        val personasNeedCloudBackup = entitiesWithSecurityPrompts
+            .filter { it.entity is ProfileEntity.PersonaEntity }
+            .filter {
+                it.prompts.contains(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM) ||
+                    it.prompts.contains(SecurityPromptType.WALLET_NOT_RECOVERABLE) ||
+                    it.prompts.contains(SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED)
+            }
+        val activePersonasNeedCloudBackup = personasNeedCloudBackup.count { it.entity.isNotHidden() }
 
         // entities that need to write down seed phrase
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.WRITE_DOWN_SEED_PHRASE) }

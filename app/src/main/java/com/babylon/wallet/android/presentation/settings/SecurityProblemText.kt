@@ -32,12 +32,14 @@ fun SecurityProblem.toProblemHeading(): String {
                 accountsString,
                 personasString
             )
-            val hiddenEntitiesString = if (hiddenAccountsNeedBackup > 0 || hiddenPersonasNeedBackup > 0) {
-                " and hidden entities" // TODO crowdin
-            } else {
-                stringResource(R.string.empty)
-            }
-            accountsAndPersonasString + hiddenEntitiesString
+            // TODO when we have crowdin
+//            val hiddenEntitiesString = if (hiddenAccountsNeedBackup > 0 || hiddenPersonasNeedBackup > 0) {
+//                " and hidden entities"
+//            } else {
+//                stringResource(R.string.empty)
+//            }
+//            accountsAndPersonasString + hiddenEntitiesString
+            accountsAndPersonasString
         }
 
         is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityProblems_no9_securityCenterTitle)
