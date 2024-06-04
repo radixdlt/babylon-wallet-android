@@ -309,13 +309,16 @@ fun RadixWalletException.LinkConnectionException.toUserFriendlyMessage(context: 
     RadixWalletException.LinkConnectionException.OldQRVersion -> {
         context.getString(R.string.linkedConnectors_oldQRErrorMessage)
     }
+
     RadixWalletException.LinkConnectionException.InvalidQR,
     RadixWalletException.LinkConnectionException.InvalidSignature -> {
         context.getString(R.string.linkedConnectors_incorrectQrMessage)
     }
+
     RadixWalletException.LinkConnectionException.PurposeChangeNotSupported -> {
         context.getString(R.string.linkedConnectors_changingPurposeNotSupportedErrorMessage)
     }
+
     RadixWalletException.LinkConnectionException.UnknownPurpose -> {
         context.getString(R.string.linkedConnectors_unknownPurposeErrorMessage)
     }
@@ -380,12 +383,19 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
 
             is RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ->
-                if (this.cause is ProfileException.NoMnemonic) {
-                    R.string.transactionReview_noMnemonicError_text
-                } else {
-                    R.string.error_transactionFailure_prepare
-                }
+                when (val cause = this.cause) {
+                    is ProfileException.NoMnemonic -> {
+                        R.string.transactionReview_noMnemonicError_text
+                    }
 
+                    is RadixWalletException.LedgerCommunicationException -> {
+                        return cause.toUserFriendlyMessage(context)
+                    }
+
+                    else -> {
+                        R.string.error_transactionFailure_prepare
+                    }
+                }
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
         }
