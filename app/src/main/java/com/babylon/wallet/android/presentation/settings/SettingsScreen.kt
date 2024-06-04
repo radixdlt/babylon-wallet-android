@@ -329,18 +329,15 @@ fun SettingsWithoutActiveConnectionPreview() {
 @Composable
 fun SettingsWithSecurityProblem5Preview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false)
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
-                        securityProblems = setOf(
-                            SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false)
-                        )
+                        securityProblems = setOf(cloudBackupProblem)
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(
-                            isAnyActivePersonaAffected = true
-                        ),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
@@ -360,28 +357,26 @@ fun SettingsWithSecurityProblem5Preview() {
 @Composable
 fun SettingsWithSecurityProblems3And6Preview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.Disabled(
+            isAnyActivePersonaAffected = true,
+            hasManualBackup = true
+        )
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
+                            cloudBackupProblem,
                             SecurityProblem.EntitiesNotRecoverable(
                                 accountsNeedBackup = 3,
                                 personasNeedBackup = 4,
                                 hiddenAccountsNeedBackup = 0,
                                 hiddenPersonasNeedBackup = 0
-                            ),
-                            SecurityProblem.CloudBackupNotWorking.Disabled(
-                                isAnyActivePersonaAffected = true,
-                                hasManualBackup = false
                             )
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.Disabled(
-                            isAnyActivePersonaAffected = true,
-                            hasManualBackup = false
-                        ),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = true,
                         isRecoveryNeeded = false
                     ),
@@ -401,23 +396,21 @@ fun SettingsWithSecurityProblems3And6Preview() {
 @Composable
 fun SettingsWithSecurityProblems7And9Preview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.Disabled(
+            isAnyActivePersonaAffected = true,
+            hasManualBackup = true
+        )
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
-                            SecurityProblem.CloudBackupNotWorking.Disabled(
-                                isAnyActivePersonaAffected = true,
-                                hasManualBackup = false
-                            ),
+                            cloudBackupProblem,
                             SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true)
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.Disabled(
-                            isAnyActivePersonaAffected = true,
-                            hasManualBackup = true
-                        ),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = false,
                         isRecoveryNeeded = true
                     ),
@@ -447,7 +440,8 @@ fun SettingsWithSecurityProblems3And9Preview() {
                                 personasNeedBackup = 2,
                                 hiddenAccountsNeedBackup = 0,
                                 hiddenPersonasNeedBackup = 0
-                            )
+                            ),
+                            SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true)
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
@@ -470,12 +464,13 @@ fun SettingsWithSecurityProblems3And9Preview() {
 @Composable
 fun SettingsWithSecurityProblems3And5And9Preview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true)
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
-                            SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                            cloudBackupProblem,
                             SecurityProblem.EntitiesNotRecoverable(
                                 accountsNeedBackup = 4,
                                 personasNeedBackup = 2,
@@ -486,7 +481,7 @@ fun SettingsWithSecurityProblems3And5And9Preview() {
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = true,
                         isRecoveryNeeded = true
                     ),
@@ -506,12 +501,13 @@ fun SettingsWithSecurityProblems3And5And9Preview() {
 @Composable
 fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenPersonasPreview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false)
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
-                            SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                            cloudBackupProblem,
                             SecurityProblem.EntitiesNotRecoverable(
                                 accountsNeedBackup = 4,
                                 personasNeedBackup = 0,
@@ -522,7 +518,7 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenPersonasPreview() {
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
@@ -542,23 +538,21 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenPersonasPreview() {
 @Composable
 fun SettingsWithSecurityProblems7And9AndOnlyHiddenPersonasPreview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.Disabled(
+                isAnyActivePersonaAffected = false,
+                hasManualBackup = true
+        )
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
-                            SecurityProblem.CloudBackupNotWorking.Disabled(
-                                isAnyActivePersonaAffected = false,
-                                hasManualBackup = false
-                            ),
+                            cloudBackupProblem,
                             SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = false)
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.Disabled(
-                            isAnyActivePersonaAffected = false,
-                            hasManualBackup = true
-                        ),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
@@ -578,12 +572,13 @@ fun SettingsWithSecurityProblems7And9AndOnlyHiddenPersonasPreview() {
 @Composable
 fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenEntitiesPreview() {
     RadixWalletTheme {
+        val cloudBackupProblem = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false)
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.SecurityCenter(
                         securityProblems = setOf(
-                            SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                            cloudBackupProblem,
                             SecurityProblem.EntitiesNotRecoverable(
                                 accountsNeedBackup = 0,
                                 personasNeedBackup = 0,
@@ -594,7 +589,7 @@ fun SettingsWithSecurityProblems3And5And9AndOnlyHiddenEntitiesPreview() {
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
-                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                        isCloudBackupNotWorking = cloudBackupProblem,
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
