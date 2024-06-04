@@ -46,11 +46,6 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         val factorSource = getProfileUseCase().factorSourceById(factorSourceId) as? FactorSource.Device ?: return null
 
         val prompts = mutableSetOf<SecurityPromptType>().apply {
-            if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
-                add(SecurityPromptType.RECOVERY_REQUIRED)
-            } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
-                add(SecurityPromptType.WRITE_DOWN_SEED_PHRASE)
-            }
             cloudBackupState.backupWarning?.let { backupWarning ->
                 when (backupWarning) {
                     is CloudBackupDisabled -> {
@@ -62,6 +57,12 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
                     }
                     CloudBackupServiceError -> add(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM)
                 }
+            }
+
+            if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
+                add(SecurityPromptType.RECOVERY_REQUIRED)
+            } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
+                add(SecurityPromptType.WRITE_DOWN_SEED_PHRASE)
             }
         }.toSet()
 

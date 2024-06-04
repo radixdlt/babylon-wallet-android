@@ -64,14 +64,17 @@ class SettingsViewModel @Inject constructor(
             mutated = mutated.mapWhen(
                 predicate = { it is SettingsUiItem.Settings && it.item is Personas },
                 mutation = { _ ->
+
                     SettingsUiItem.Settings(
                         Personas(
-                            needBackup = securityProblems.any {
-                                (it is SecurityProblem.EntitiesNotRecoverable && it.personasNeedBackup > 0) ||
-                                    (it is SecurityProblem.BackupNotWorking.BackupDisabled)
+                            isCloudBackupNotWorking = securityProblems.find { securityProblem ->
+                                securityProblem is SecurityProblem.CloudBackupNotWorking
+                            }?.let { it as SecurityProblem.CloudBackupNotWorking },
+                            isBackupNeeded = securityProblems.any {
+                                (it is SecurityProblem.EntitiesNotRecoverable && it.personasNeedBackup > 0)
                             },
-                            needRecovery = securityProblems.any {
-                                it is SecurityProblem.SeedPhraseNeedRecovery && it.arePersonasAffected
+                            isRecoveryNeeded = securityProblems.any {
+                                it is SecurityProblem.SeedPhraseNeedRecovery && it.isAnyActivePersonaAffected
                             }
                         )
                     )

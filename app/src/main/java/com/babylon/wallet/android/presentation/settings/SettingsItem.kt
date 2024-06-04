@@ -15,8 +15,9 @@ sealed interface SettingsItem {
 
         data class SecurityCenter(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
         data class Personas(
-            val needBackup: Boolean = false,
-            val needRecovery: Boolean = false
+            val isCloudBackupNotWorking: SecurityProblem.CloudBackupNotWorking? = null, // security problem: 5,6,7
+            val isBackupNeeded: Boolean = false, // security problem 3
+            val isRecoveryNeeded: Boolean = false // security problem 9
         ) : TopLevelSettings
         data object ApprovedDapps : TopLevelSettings
 

@@ -36,6 +36,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
+import com.babylon.wallet.android.presentation.settings.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
@@ -132,9 +133,9 @@ private fun SecurityCenterContent(
                                 )
                             }
 
-                            is SecurityProblem.BackupNotWorking -> {
+                            is SecurityProblem.CloudBackupNotWorking -> {
                                 when (problem) {
-                                    is SecurityProblem.BackupNotWorking.BackupDisabled -> {
+                                    is SecurityProblem.CloudBackupNotWorking.Disabled -> {
                                         val text = if (problem.hasManualBackup) {
                                             stringResource(id = R.string.securityProblems_no7_securityCenterBody)
                                         } else {
@@ -148,7 +149,7 @@ private fun SecurityCenterContent(
                                             subtitle = text
                                         )
                                     }
-                                    SecurityProblem.BackupNotWorking.BackupServiceError -> {
+                                    is SecurityProblem.CloudBackupNotWorking.ServiceError -> {
                                         NotOkStatusCard(
                                             modifier = Modifier
                                                 .clip(RadixTheme.shapes.roundedRectMedium)
@@ -171,7 +172,7 @@ private fun SecurityCenterContent(
                 needsAction = state.hasSecurityRelatedProblems
             )
             BackupConfigurationCard(
-                needsAction = state.securityProblems?.any { it.hasBackupProblems } == true,
+                needsAction = state.securityProblems?.any { it.hasCloudBackupProblems } == true,
                 onBackupConfigurationClick = onBackupConfigurationClick
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
@@ -359,39 +360,6 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
     }
 }
 
-@Composable
-fun SecurityProblem.toProblemHeading(): String {
-    return when (this) {
-        is SecurityProblem.EntitiesNotRecoverable -> {
-            val accountsString = if (accountsNeedBackup == 1) {
-                stringResource(id = R.string.securityProblems_common_accountSingular)
-            } else {
-                stringResource(id = R.string.securityProblems_common_accountPlural, accountsNeedBackup)
-            }
-            val personasString = if (personasNeedBackup == 1) {
-                stringResource(id = R.string.securityProblems_common_personaSingular)
-            } else {
-                stringResource(id = R.string.securityProblems_common_personaPlural, personasNeedBackup)
-            }
-            stringResource(
-                id = R.string.securityProblems_no3_securityCenterTitle,
-                accountsString,
-                personasString
-            )
-        }
-
-        is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityProblems_no9_securityCenterTitle)
-        SecurityProblem.BackupNotWorking.BackupServiceError -> stringResource(id = R.string.securityProblems_no5_securityCenterTitle)
-        is SecurityProblem.BackupNotWorking.BackupDisabled -> {
-            if (this.hasManualBackup) {
-                stringResource(id = R.string.securityProblems_no7_securityCenterTitle)
-            } else {
-                stringResource(id = R.string.securityProblems_no6_securityCenterTitle)
-            }
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun SecurityCenterNoProblemsPreview() {
@@ -412,12 +380,12 @@ fun SecurityCenterNoProblemsPreview() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterBackupProblemPreview() {
+fun SecurityCenterWithSecurityProblem5Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
-                    SecurityProblem.BackupNotWorking.BackupServiceError
+                    SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true)
                 )
             ),
             onBackClick = {},
@@ -432,12 +400,12 @@ fun SecurityCenterBackupProblemPreview() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterNeedRecoveryProblemPreview() {
+fun SecurityCenterWithSecurityProblem9Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
-                    SecurityProblem.SeedPhraseNeedRecovery(false)
+                    SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true)
                 )
             ),
             onBackClick = {},
@@ -452,13 +420,45 @@ fun SecurityCenterNeedRecoveryProblemPreview() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterNotRecoverableAndBackupProblemPreview() {
+fun SecurityCenterWithSecurityProblems2And7Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
-                    SecurityProblem.BackupNotWorking.BackupServiceError,
-                    SecurityProblem.EntitiesNotRecoverable(7, 2)
+                    SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true),
+                    SecurityProblem.EntitiesNotRecoverable(
+                        accountsNeedBackup = 7,
+                        personasNeedBackup = 2,
+                        hiddenAccountsNeedBackup = 1,
+                        hiddenPersonasNeedBackup = 3
+                    )
+                )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SecurityCenterWithSecurityProblems2And7And9AndOnlyHiddenEntitiesPreview() {
+    RadixWalletTheme {
+        SecurityCenterContent(
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityProblems = setOf(
+                    SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
+                    SecurityProblem.EntitiesNotRecoverable(
+                        accountsNeedBackup = 0,
+                        personasNeedBackup = 0,
+                        hiddenAccountsNeedBackup = 1,
+                        hiddenPersonasNeedBackup = 3
+                    ),
+                    SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = false)
                 )
             ),
             onBackClick = {},

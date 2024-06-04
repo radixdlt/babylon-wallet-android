@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.isHidden
+import rdx.works.core.sargon.isNotHidden
 import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
 import javax.inject.Inject
 
@@ -18,34 +20,61 @@ class GetSecurityProblemsUseCase @Inject constructor(
         getEntitiesWithSecurityPromptUseCase(),
         getCloudBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, cloudBackupState ->
-        val entitiesNeedingRecovery = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.RECOVERY_REQUIRED) }
+        // personas that need cloud backup
+        val personasNeedCloudBackup = entitiesWithSecurityPrompts
+            .filter { it.entity is ProfileEntity.PersonaEntity }
+            .filter {
+                it.prompts.contains(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM) ||
+                    it.prompts.contains(SecurityPromptType.WALLET_NOT_RECOVERABLE) ||
+                    it.prompts.contains(SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED)
+            }
+        val activePersonasNeedCloudBackup = personasNeedCloudBackup.count { it.entity.isNotHidden() }
+
+        // entities that need to write down seed phrase
         val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.WRITE_DOWN_SEED_PHRASE) }
-        val factorSourceIdsNeedRecovery = entitiesNeedingRecovery.map { it.entity.securityState.factorSourceId }
         val factorSourceIdsNeedBackup = entitiesNeedingBackup.map { it.entity.securityState.factorSourceId }.toSet()
-        val anyPersonaNeedRecovery = entitiesNeedingRecovery.any { it.entity is ProfileEntity.PersonaEntity }
+
+        // entities that need recovery
+        val entitiesNeedingRecovery = entitiesWithSecurityPrompts.filter { it.prompts.contains(SecurityPromptType.RECOVERY_REQUIRED) }
+        val factorSourceIdsNeedRecovery = entitiesNeedingRecovery.map { it.entity.securityState.factorSourceId }
+        val isAnyActivePersonaNeedRecovery = entitiesNeedingRecovery.any {
+            it.entity is ProfileEntity.PersonaEntity && it.entity.isNotHidden()
+        }
 
         mutableSetOf<SecurityProblem>().apply {
+            // entities that need cloud backup
             if (cloudBackupState is CloudBackupState.Disabled) {
-                add(SecurityProblem.BackupNotWorking.BackupDisabled(hasManualBackup = cloudBackupState.lastManualBackupTime != null))
+                add(
+                    SecurityProblem.CloudBackupNotWorking.Disabled(
+                        isAnyActivePersonaAffected = activePersonasNeedCloudBackup > 0,
+                        hasManualBackup = cloudBackupState.lastManualBackupTime != null
+                    )
+                )
             } else if (cloudBackupState is CloudBackupState.Enabled && cloudBackupState.hasAnyErrors) {
-                add(SecurityProblem.BackupNotWorking.BackupServiceError)
+                add(SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = activePersonasNeedCloudBackup > 0))
             }
-            if (factorSourceIdsNeedRecovery.isNotEmpty()) {
-                add(SecurityProblem.SeedPhraseNeedRecovery(anyPersonaNeedRecovery))
-            }
-            val accountsNeedBackup = entitiesNeedingBackup.count {
+
+            // entities that need to write down seed phrase
+            val accountsNeedBackup = entitiesNeedingBackup.filter {
                 it.entity is ProfileEntity.AccountEntity && factorSourceIdsNeedBackup.contains(it.entity.securityState.factorSourceId)
             }
-            val personasNeedBackup = entitiesNeedingBackup.count {
+            val personasNeedBackup = entitiesNeedingBackup.filter {
                 it.entity is ProfileEntity.PersonaEntity && factorSourceIdsNeedBackup.contains(it.entity.securityState.factorSourceId)
             }
             if (factorSourceIdsNeedBackup.isNotEmpty()) {
                 add(
                     SecurityProblem.EntitiesNotRecoverable(
-                        accountsNeedBackup = accountsNeedBackup,
-                        personasNeedBackup = personasNeedBackup
+                        accountsNeedBackup = accountsNeedBackup.count { it.entity.isNotHidden() },
+                        personasNeedBackup = personasNeedBackup.count { it.entity.isNotHidden() },
+                        hiddenAccountsNeedBackup = accountsNeedBackup.count { it.entity.isHidden() },
+                        hiddenPersonasNeedBackup = personasNeedBackup.count { it.entity.isHidden() }
                     )
                 )
+            }
+
+            // entities that need recovery
+            if (factorSourceIdsNeedRecovery.isNotEmpty()) {
+                add(SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = isAnyActivePersonaNeedRecovery))
             }
         }.toSet()
     }

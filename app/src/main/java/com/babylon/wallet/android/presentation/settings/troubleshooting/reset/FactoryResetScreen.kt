@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.babylon.wallet.android.presentation.settings.troubleshooting.reset
 
 import androidx.compose.foundation.background

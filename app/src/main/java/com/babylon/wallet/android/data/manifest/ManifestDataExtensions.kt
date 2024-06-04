@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType

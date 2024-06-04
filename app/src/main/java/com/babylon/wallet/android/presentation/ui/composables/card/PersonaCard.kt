@@ -104,7 +104,7 @@ fun PersonaCard(
 @Composable
 private fun SecurityPromptType.toText() = when (this) {
     SecurityPromptType.WRITE_DOWN_SEED_PHRASE -> stringResource(id = R.string.securityProblems_no3_personas)
-    SecurityPromptType.RECOVERY_REQUIRED -> stringResource(id = R.string.securityProblems_no9_walletSettingsPersonas)
+    SecurityPromptType.RECOVERY_REQUIRED -> stringResource(id = R.string.securityProblems_no9_personas)
     SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM -> stringResource(id = R.string.securityProblems_no5_personas)
     SecurityPromptType.WALLET_NOT_RECOVERABLE -> stringResource(id = R.string.securityProblems_no6_personas)
     SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> stringResource(id = R.string.securityProblems_no7_personas)
@@ -165,11 +165,21 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
 @Composable
 fun PersonaCardPreview() {
     RadixWalletTheme {
+        PersonaCard(persona = Persona.sampleMainnet())
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun PersonaCardWithAllSecurityProblemsPreview() {
+    RadixWalletTheme {
         PersonaCard(
             persona = Persona.sampleMainnet(),
             securityPrompts = listOf(
+                SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM,
+                SecurityPromptType.WALLET_NOT_RECOVERABLE,
                 SecurityPromptType.RECOVERY_REQUIRED,
-                SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM
             ).toPersistentList()
         )
     }
