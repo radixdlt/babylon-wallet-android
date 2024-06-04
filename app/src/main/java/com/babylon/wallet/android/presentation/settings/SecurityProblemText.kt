@@ -8,6 +8,14 @@ import com.babylon.wallet.android.domain.model.SecurityProblem
 @Composable
 fun SecurityProblem.toProblemHeading(): String {
     return when (this) {
+        is SecurityProblem.CloudBackupNotWorking.Disabled -> {
+            if (this.hasManualBackup) {
+                stringResource(id = R.string.securityProblems_no7_securityCenterTitle)
+            } else {
+                stringResource(id = R.string.securityProblems_no6_securityCenterTitle)
+            }
+        }
+        is SecurityProblem.CloudBackupNotWorking.ServiceError -> stringResource(id = R.string.securityProblems_no5_securityCenterTitle)
         is SecurityProblem.EntitiesNotRecoverable -> {
             val accountsString = if (accountsNeedBackup == 1) {
                 stringResource(id = R.string.securityProblems_common_accountSingular)
@@ -33,14 +41,6 @@ fun SecurityProblem.toProblemHeading(): String {
         }
 
         is SecurityProblem.SeedPhraseNeedRecovery -> stringResource(id = R.string.securityProblems_no9_securityCenterTitle)
-        is SecurityProblem.CloudBackupNotWorking.ServiceError -> stringResource(id = R.string.securityProblems_no5_securityCenterTitle)
-        is SecurityProblem.CloudBackupNotWorking.Disabled -> {
-            if (this.hasManualBackup) {
-                stringResource(id = R.string.securityProblems_no7_securityCenterTitle)
-            } else {
-                stringResource(id = R.string.securityProblems_no6_securityCenterTitle)
-            }
-        }
     }
 }
 

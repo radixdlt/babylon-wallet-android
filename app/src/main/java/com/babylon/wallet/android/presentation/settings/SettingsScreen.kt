@@ -287,12 +287,12 @@ fun DependencyInformation.displayable(): String = remember(this) {
 
 @Composable
 fun personaWarnings(personaItem: SettingsItem.TopLevelSettings.Personas) = mutableListOf<String>().apply {
-    if (personaItem.isBackupNeeded) {
-        add(stringResource(R.string.securityProblems_no3_walletSettingsPersonas))
-    }
-
     personaItem.isCloudBackupNotWorking?.toText()?.let {
         add(it)
+    }
+
+    if (personaItem.isBackupNeeded) {
+        add(stringResource(R.string.securityProblems_no3_walletSettingsPersonas))
     }
 
     if (personaItem.isRecoveryNeeded) {
@@ -338,6 +338,9 @@ fun SettingsWithSecurityProblem5Preview() {
                         )
                     ),
                     SettingsItem.TopLevelSettings.Personas(
+                        isCloudBackupNotWorking = SecurityProblem.CloudBackupNotWorking.ServiceError(
+                            isAnyActivePersonaAffected = true
+                        ),
                         isBackupNeeded = false,
                         isRecoveryNeeded = false
                     ),
