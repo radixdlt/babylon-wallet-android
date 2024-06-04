@@ -43,11 +43,11 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
         val currentProfile = profileRepository.profile.firstOrNull() ?: return@launch
 
         _state.update { it.copy(isReclaiming = true) }
-        val updatedHeader = currentProfile.claim(deviceInfo = deviceInfoRepository.getDeviceInfo()).header
+        val claimingProfile = currentProfile.claim(deviceInfo = deviceInfoRepository.getDeviceInfo())
 
         driveClient.claimCloudBackup(
             file = args.claimedEntity,
-            updatedHeader = updatedHeader
+            claimingProfile = claimingProfile
         ).onSuccess {
             cloudBackupErrorStream.resetErrors()
             sendEvent(Event.Reclaimed)

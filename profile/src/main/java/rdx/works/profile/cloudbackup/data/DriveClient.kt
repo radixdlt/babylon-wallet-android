@@ -54,7 +54,7 @@ interface DriveClient {
 
     suspend fun claimCloudBackup(
         file: CloudBackupFileEntity,
-        updatedHeader: Header
+        claimingProfile: Profile
     ): Result<CloudBackupFileEntity>
 }
 
@@ -111,7 +111,7 @@ class DriveClientImpl @Inject constructor(
                         // 2. The user exports the same profile to file.
                         // 3. Either restores this device or in a new device, imports the exported file
                         // 4. This file has the same profile id, but also exists on cloud. We need to claim it.
-                        claimCloudBackup(file = existingBackup, updatedHeader = profile.header)
+                        claimCloudBackup(file = existingBackup, claimingProfile = profile)
                     }
                 }
         } else {
@@ -175,14 +175,15 @@ class DriveClientImpl @Inject constructor(
 
     override suspend fun claimCloudBackup(
         file: CloudBackupFileEntity,
-        updatedHeader: Header
+        claimingProfile: Profile
     ): Result<CloudBackupFileEntity> = withContext(ioDispatcher) {
         runCatching {
             Timber.tag("CloudBackup").d("Start claiming process with file id: ${file.id}")
             googleSignInManager.getDrive().files()
                 .update(
                     file.id.id,
-                    file.claim(header = updatedHeader) // Updates the lastUsedOnDevice.id
+                    file.claim(header = claimingProfile.header), // Updates the lastUsedOnDevice.id
+                    ByteArrayContent("application/json", claimingProfile.toJson().toByteArray())
                 )
                 .setFields(claimFields)
                 .execute()
@@ -192,7 +193,7 @@ class DriveClientImpl @Inject constructor(
             preferencesManager.updateLastCloudBackupEvent(
                 LastCloudBackupEvent(
                     fileId = entity.id,
-                    profileModifiedTime = updatedHeader.lastModified,
+                    profileModifiedTime = claimingProfile.header.lastModified,
                     cloudBackupTime = entity.lastBackup
                 )
             )
