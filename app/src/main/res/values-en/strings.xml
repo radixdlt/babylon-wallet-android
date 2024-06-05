@@ -1163,6 +1163,7 @@
   <string name="factoryReset_dialog_message">Return wallet to factory settings? You cannot undo this.</string>
   <string name="securityProblems_no3_accountCard">You need to write down a seed phrase</string>
   <string name="securityProblems_no3_securityCenterTitle">%s and %s are not recoverable.</string>
+  <string name="securityProblems_no3_securityCenterTitleHidden">%s and %s (plus some hidden) are not recoverable.</string>
   <string name="securityProblems_no3_securityCenterBody">View and write down your seed phrase so Accounts and Personas are recoverable.</string>
   <string name="securityProblems_no3_securityFactors">View and write down seed phrase</string>
   <string name="securityProblems_no3_seedPhrases">View and write down seed phrase</string>
