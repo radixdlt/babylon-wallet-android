@@ -145,7 +145,6 @@ private fun NFTHeader(
                     )
                 }
 
-
                 Text(
                     collection.currentSupply?.let { currentSupply ->
                         stringResource(
