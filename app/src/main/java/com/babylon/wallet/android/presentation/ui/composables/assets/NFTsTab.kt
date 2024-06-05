@@ -145,17 +145,17 @@ private fun NFTHeader(
                     )
                 }
 
-                collection.currentSupply?.let { currentSupply ->
-                    Text(
+                Text(
+                    collection.currentSupply?.let { currentSupply ->
                         stringResource(
                             id = R.string.assetDetails_NFTDetails_ownedOfTotal,
                             collection.items.size,
                             currentSupply
-                        ),
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray2,
-                    )
-                }
+                        )
+                    } ?: collection.amount.toString(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2,
+                )
             }
         }
     }
