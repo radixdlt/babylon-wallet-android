@@ -141,7 +141,7 @@ class SeedPhraseInputDelegate(
     ) : UiState {
 
         private val isInputEmpty: Boolean
-            get() = seedPhraseWords.all { it.state == SeedPhraseWord.State.Empty }
+            get() = seedPhraseWords.any { it.state == SeedPhraseWord.State.Empty }
 
         private val isSeedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
