@@ -1,43 +1,54 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
 class SecurityCenterViewModel @Inject constructor(
-    private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase
+    getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
+    @DefaultDispatcher dispatcher: CoroutineDispatcher
 ) : StateViewModel<SecurityCenterViewModel.SecurityCenterUiState>() {
 
     override fun initialState(): SecurityCenterUiState {
-        return SecurityCenterUiState()
+        return SecurityCenterUiState.Loading
     }
 
     init {
-        viewModelScope.launch {
-            getSecurityProblemsUseCase().collect { problems ->
-                _state.update { state ->
-                    state.copy(
-                        securityProblems = problems
+        getSecurityProblemsUseCase()
+            .onEach { securityProblems ->
+                _state.emit(
+                    SecurityCenterUiState.Data(
+                        securityProblems = securityProblems
                     )
-                }
+                )
             }
-        }
+            .flowOn(dispatcher)
+            .launchIn(viewModelScope)
     }
 
-    data class SecurityCenterUiState(
-        val securityProblems: Set<SecurityProblem>? = null
-    ) : UiState {
-        val hasSecurityProblems: Boolean
-            get() = !securityProblems.isNullOrEmpty()
+    sealed interface SecurityCenterUiState : UiState {
 
-        val hasSecurityRelatedProblems: Boolean
-            get() = securityProblems?.any { it.isSecurityFactorRelated } == true
+        data object Loading : SecurityCenterUiState
+
+        data class Data(
+            val securityProblems: Set<SecurityProblem>
+        ) : SecurityCenterUiState {
+
+            val hasSecurityProblems = securityProblems.isNotEmpty()
+
+            val hasSecurityRelatedProblems = securityProblems.any { it.isSecurityFactorRelated }
+
+            val hasCloudBackupProblems = securityProblems.any { it.hasCloudBackupProblems }
+        }
     }
 }
