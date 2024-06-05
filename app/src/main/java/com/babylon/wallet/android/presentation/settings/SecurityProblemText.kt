@@ -27,18 +27,20 @@ fun SecurityProblem.toProblemHeading(): String {
             } else {
                 stringResource(id = R.string.securityProblems_common_personaPlural, personasNeedBackup)
             }
-            val accountsAndPersonasString = stringResource(
-                id = R.string.securityProblems_no3_securityCenterTitle,
-                accountsString,
-                personasString
-            )
-            // TODO when we have crowdin
-//            val hiddenEntitiesString = if (hiddenAccountsNeedBackup > 0 || hiddenPersonasNeedBackup > 0) {
-//                " and hidden entities"
-//            } else {
-//                stringResource(R.string.empty)
-//            }
-//            accountsAndPersonasString + hiddenEntitiesString
+
+            val accountsAndPersonasString = if (hiddenAccountsNeedBackup > 0 || hiddenPersonasNeedBackup > 0) {
+                stringResource(
+                    R.string.securityProblems_no3_securityCenterTitleHidden,
+                    accountsString,
+                    personasString
+                )
+            } else {
+                stringResource(
+                    id = R.string.securityProblems_no3_securityCenterTitle,
+                    accountsString,
+                    personasString
+                )
+            }
             accountsAndPersonasString
         }
 
