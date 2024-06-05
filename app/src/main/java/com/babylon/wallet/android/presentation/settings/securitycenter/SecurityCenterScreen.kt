@@ -106,76 +106,82 @@ private fun SecurityCenterContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-            AnimatedVisibility(visible = state.hasSecurityProblems, enter = fadeIn()) {
-                Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
-                    state.securityProblems?.forEach { problem ->
-                        val title = problem.toProblemHeading()
-                        when (problem) {
-                            is SecurityProblem.EntitiesNotRecoverable -> {
-                                NotOkStatusCard(
-                                    modifier = Modifier
-                                        .clip(RadixTheme.shapes.roundedRectMedium)
-                                        .clickable {
-                                            onBackupEntities()
-                                        },
-                                    title = title,
-                                    subtitle = stringResource(id = R.string.securityProblems_no3_securityCenterBody)
-                                )
-                            }
 
-                            is SecurityProblem.SeedPhraseNeedRecovery -> {
-                                NotOkStatusCard(
-                                    modifier = Modifier
-                                        .clip(RadixTheme.shapes.roundedRectMedium)
-                                        .clickable { onRecoverEntitiesClick() },
-                                    title = title,
-                                    subtitle = stringResource(id = R.string.securityProblems_no9_securityCenterBody)
-                                )
-                            }
-
-                            is SecurityProblem.CloudBackupNotWorking -> {
+            when (state) {
+                is SecurityCenterViewModel.SecurityCenterUiState.Data -> {
+                    AnimatedVisibility(visible = state.hasSecurityProblems, enter = fadeIn()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)) {
+                            state.securityProblems.forEach { problem ->
+                                val title = problem.toProblemHeading()
                                 when (problem) {
-                                    is SecurityProblem.CloudBackupNotWorking.Disabled -> {
-                                        val text = if (problem.hasManualBackup) {
-                                            stringResource(id = R.string.securityProblems_no7_securityCenterBody)
-                                        } else {
-                                            stringResource(id = R.string.securityProblems_no6_securityCenterBody)
-                                        }
+                                    is SecurityProblem.EntitiesNotRecoverable -> {
                                         NotOkStatusCard(
                                             modifier = Modifier
                                                 .clip(RadixTheme.shapes.roundedRectMedium)
-                                                .clickable { onBackupConfigurationClick() },
+                                                .clickable {
+                                                    onBackupEntities()
+                                                },
                                             title = title,
-                                            subtitle = text
+                                            subtitle = stringResource(id = R.string.securityProblems_no3_securityCenterBody)
                                         )
                                     }
-                                    is SecurityProblem.CloudBackupNotWorking.ServiceError -> {
+
+                                    is SecurityProblem.SeedPhraseNeedRecovery -> {
                                         NotOkStatusCard(
                                             modifier = Modifier
                                                 .clip(RadixTheme.shapes.roundedRectMedium)
-                                                .clickable { onBackupConfigurationClick() },
+                                                .clickable { onRecoverEntitiesClick() },
                                             title = title,
-                                            subtitle = stringResource(id = R.string.securityProblems_no5_securityCenterBody)
+                                            subtitle = stringResource(id = R.string.securityProblems_no9_securityCenterBody)
                                         )
+                                    }
+
+                                    is SecurityProblem.CloudBackupNotWorking -> {
+                                        when (problem) {
+                                            is SecurityProblem.CloudBackupNotWorking.Disabled -> {
+                                                val text = if (problem.hasManualBackup) {
+                                                    stringResource(id = R.string.securityProblems_no7_securityCenterBody)
+                                                } else {
+                                                    stringResource(id = R.string.securityProblems_no6_securityCenterBody)
+                                                }
+                                                NotOkStatusCard(
+                                                    modifier = Modifier
+                                                        .clip(RadixTheme.shapes.roundedRectMedium)
+                                                        .clickable { onBackupConfigurationClick() },
+                                                    title = title,
+                                                    subtitle = text
+                                                )
+                                            }
+                                            is SecurityProblem.CloudBackupNotWorking.ServiceError -> {
+                                                NotOkStatusCard(
+                                                    modifier = Modifier
+                                                        .clip(RadixTheme.shapes.roundedRectMedium)
+                                                        .clickable { onBackupConfigurationClick() },
+                                                    title = title,
+                                                    subtitle = stringResource(id = R.string.securityProblems_no5_securityCenterBody)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    if (!state.hasSecurityProblems) {
+                        RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
+                    }
+                    SecurityFactorsCard(
+                        onSecurityFactorsClick = onSecurityFactorsClick,
+                        needsAction = state.hasSecurityRelatedProblems
+                    )
+                    BackupConfigurationCard(
+                        needsAction = state.hasCloudBackupProblems,
+                        onBackupConfigurationClick = onBackupConfigurationClick
+                    )
+                    Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
                 }
+                SecurityCenterViewModel.SecurityCenterUiState.Loading -> {}
             }
-            if (state.securityProblems?.isEmpty() == true) {
-                RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
-            }
-            SecurityFactorsCard(
-                onSecurityFactorsClick = onSecurityFactorsClick,
-                needsAction = state.hasSecurityRelatedProblems
-            )
-            BackupConfigurationCard(
-                needsAction = state.securityProblems?.any { it.hasCloudBackupProblems } == true,
-                onBackupConfigurationClick = onBackupConfigurationClick
-            )
-            Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
         }
     }
 }
@@ -365,7 +371,7 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
 fun SecurityCenterNoProblemsPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState(
+            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
                 securityProblems = emptySet()
             ),
             onBackClick = {},
@@ -383,7 +389,7 @@ fun SecurityCenterNoProblemsPreview() {
 fun SecurityCenterWithSecurityProblem5Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState(
+            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
                 securityProblems = setOf(
                     SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true)
                 )
@@ -403,7 +409,7 @@ fun SecurityCenterWithSecurityProblem5Preview() {
 fun SecurityCenterWithSecurityProblem9Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState(
+            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
                 securityProblems = setOf(
                     SecurityProblem.SeedPhraseNeedRecovery(isAnyActivePersonaAffected = true)
                 )
@@ -423,7 +429,7 @@ fun SecurityCenterWithSecurityProblem9Preview() {
 fun SecurityCenterWithSecurityProblems2And7Preview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState(
+            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
                 securityProblems = setOf(
                     SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = true),
                     SecurityProblem.EntitiesNotRecoverable(
@@ -449,7 +455,7 @@ fun SecurityCenterWithSecurityProblems2And7Preview() {
 fun SecurityCenterWithSecurityProblems2And7And9AndOnlyHiddenEntitiesPreview() {
     RadixWalletTheme {
         SecurityCenterContent(
-            state = SecurityCenterViewModel.SecurityCenterUiState(
+            state = SecurityCenterViewModel.SecurityCenterUiState.Data(
                 securityProblems = setOf(
                     SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = false),
                     SecurityProblem.EntitiesNotRecoverable(
