@@ -84,7 +84,7 @@ android {
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
         buildConfigField "String", "NPS_SURVEY_URL", '"https://dev-wallet-net-promoter-score.radixdlt.com/"'
-        buildConfigField "String", "RCR_URL", '"https://radix-connect-relay-dev.rdx-works-main.extratools.works/"'
+        buildConfigField "String", "RCR_URL", '"https://radix-connect-relay.radixdlt.com"'
         buildConfigField "String", "REFINER_FORM_UUID", '"281622a0-dc6b-11ee-8fd1-23c96056fbd2"'
         resValue "string", "app_name", "Radix Wallet"
 
