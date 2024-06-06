@@ -7,6 +7,7 @@ import kotlinx.coroutines.CancellationException
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.awaitResponse
+import java.net.UnknownHostException
 
 @Suppress("SwallowedException")
 suspend inline fun <T> Call<T>.toResult(
@@ -28,12 +29,18 @@ suspend inline fun <T> Call<T>.toResult(
             }
         }
     } catch (e: Exception) {
-        if (e is CancellationException) {
-            // In this case we don't need to swallow this error but throw it,
-            // so the coroutines can cancel themselves
-            throw e
-        } else {
-            Result.failure(RadixWalletException.GatewayException.ClientError(cause = e))
+        when (e) {
+            is CancellationException -> {
+                // In this case we don't need to swallow this error but throw it,
+                // so the coroutines can cancel themselves
+                throw e
+            }
+            is UnknownHostException -> {
+                Result.failure(RadixWalletException.GatewayException.NetworkError(cause = e))
+            }
+            else -> {
+                Result.failure(RadixWalletException.GatewayException.ClientError(cause = e))
+            }
         }
     }
 }
