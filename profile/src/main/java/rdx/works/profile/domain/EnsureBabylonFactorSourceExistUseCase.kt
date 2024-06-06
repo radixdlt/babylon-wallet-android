@@ -55,7 +55,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         })
     }
 
-    suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Result<Profile> {
+    suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Result<Unit> {
         val profile = profileRepository.profile.first()
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         val deviceFactorSource = FactorSource.Device.babylon(
@@ -68,41 +68,47 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         val existingFactorSource = profile.factorSources.filterIsInstance<FactorSource.Device>().find {
             it.id == deviceFactorSource.id
         }
-        return if (existingFactorSource != null) {
-            val updatedProfile = if (existingFactorSource.supportsOlympia) {
-                profileRepository.updateProfile { p ->
-                    p.copy(
-                        factorSources = FactorSources(
-                            p.factorSources.mapWhen(predicate = {
-                                it.id == existingFactorSource.id
-                            }, mutation = {
-                                existingFactorSource.copy(
-                                    value = existingFactorSource.value.copy(
-                                        common = existingFactorSource.value.common.copy(
-                                            cryptoParameters = FactorSourceCryptoParameters.olympiaBackwardsCompatible
-                                        )
-                                    )
-                                )
-                            })
-                        ).asList()
-                    )
-                }
-            } else {
-                profile
-            }
-            preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
-            Result.success(updatedProfile)
-        } else {
+        val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.value.id.asGeneral())
+        return if (mnemonicExist.not()) {
             mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonic).fold(onSuccess = {
                 preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
-                Result.success(
-                    profileRepository.updateProfile { p ->
-                        p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
-                    }
-                )
+                handleProfileUpdate(existingFactorSource, deviceFactorSource)
+                Result.success(Unit)
             }, onFailure = {
                 Result.failure(ProfileException.SecureStorageAccess)
             })
+        } else {
+            handleProfileUpdate(existingFactorSource, deviceFactorSource)
+            Result.success(Unit)
+        }
+    }
+
+    private suspend fun handleProfileUpdate(
+        existingFactorSource: FactorSource.Device?,
+        deviceFactorSource: FactorSource.Device
+    ) {
+        if (existingFactorSource == null) {
+            profileRepository.updateProfile { p ->
+                p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
+            }
+        } else if (existingFactorSource.supportsOlympia) {
+            profileRepository.updateProfile { p ->
+                p.copy(
+                    factorSources = FactorSources(
+                        p.factorSources.mapWhen(predicate = {
+                            it.id == existingFactorSource.id
+                        }, mutation = {
+                            existingFactorSource.copy(
+                                value = existingFactorSource.value.copy(
+                                    common = existingFactorSource.value.common.copy(
+                                        cryptoParameters = FactorSourceCryptoParameters.olympiaBackwardsCompatible
+                                    )
+                                )
+                            )
+                        })
+                    ).asList()
+                )
+            }
         }
     }
 
