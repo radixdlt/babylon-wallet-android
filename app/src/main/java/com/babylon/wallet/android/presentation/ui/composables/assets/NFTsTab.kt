@@ -146,13 +146,7 @@ private fun NFTHeader(
                 }
 
                 Text(
-                    collection.currentSupply?.let { currentSupply ->
-                        stringResource(
-                            id = R.string.assetDetails_NFTDetails_ownedOfTotal,
-                            collection.items.size,
-                            currentSupply
-                        )
-                    } ?: collection.amount.toString(),
+                    text = collection.amount.toString(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2,
                 )
