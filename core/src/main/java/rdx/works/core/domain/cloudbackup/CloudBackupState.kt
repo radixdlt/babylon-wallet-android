@@ -51,7 +51,7 @@ sealed class CloudBackupState {
     val isEnabled: Boolean
         get() = this is Enabled
 
-    val isNotWorking: Boolean
+    val isNotUpdated: Boolean
         get() = backupWarning != null
 
     // It is used for the login status of the Configuration Backup screen.
@@ -65,18 +65,19 @@ sealed class CloudBackupState {
                 val lastManualBackupTimestamp = lastManualBackupTime?.let {
                     Timestamp.ofInstant(it, ZoneId.systemDefault())
                 }
-                val hasUpdatedManualBackupFile = lastManualBackupTimestamp?.isBefore(lastModifiedProfileTime) == true
 
-                if (hasUpdatedManualBackupFile) {
-                    CloudBackupDisabled(hasUpdatedManualBackup = true)
+                if (lastManualBackupTimestamp == null) {
+                    BackupWarning.CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP
+                } else if (lastManualBackupTimestamp.isBefore(lastModifiedProfileTime)) {
+                    BackupWarning.CLOUD_BACKUP_DISABLED_WITH_OUTDATED_MANUAL_BACKUP
                 } else {
-                    CloudBackupDisabled(hasUpdatedManualBackup = false)
+                    null // here is the case where we have an updated manual backup file so we don't need to show warning
                 }
             }
 
             is Enabled -> {
                 if (hasAnyErrors) {
-                    CloudBackupServiceError
+                    BackupWarning.CLOUD_BACKUP_SERVICE_ERROR
                 } else {
                     null
                 }
@@ -86,6 +87,8 @@ sealed class CloudBackupState {
 
 // refer to this table
 // https://radixdlt.atlassian.net/wiki/spaces/AT/pages/3392569357/Security-related+Problem+States+in+the+Wallet
-sealed interface BackupWarning
-data object CloudBackupServiceError : BackupWarning
-data class CloudBackupDisabled(val hasUpdatedManualBackup: Boolean) : BackupWarning
+enum class BackupWarning {
+    CLOUD_BACKUP_SERVICE_ERROR,
+    CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP,
+    CLOUD_BACKUP_DISABLED_WITH_OUTDATED_MANUAL_BACKUP
+}

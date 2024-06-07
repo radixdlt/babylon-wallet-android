@@ -43,7 +43,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
 
         mutableSetOf<SecurityProblem>().apply {
             // entities that need cloud backup
-            if (cloudBackupState is CloudBackupState.Disabled) {
+            if (cloudBackupState is CloudBackupState.Disabled && cloudBackupState.isNotUpdated) {
                 add(
                     SecurityProblem.CloudBackupNotWorking.Disabled(
                         isAnyActivePersonaAffected = activePersonasNeedCloudBackup > 0,
