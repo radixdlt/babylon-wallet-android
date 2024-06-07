@@ -4,10 +4,20 @@ import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.factorSourceId
 import java.time.Instant
 
 class FakePreferenceManager : PreferencesManager {
@@ -71,7 +81,16 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override fun getBackedUpFactorSourceIds(): Flow<Set<FactorSourceId.Hash>> {
-        TODO("Not yet implemented")
+        val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+        return flowOf(
+            profile.factorSources
+                .filter {
+                    it.id is FactorSourceId.Hash
+                }.map {
+                    it.id as FactorSourceId.Hash
+                }
+                .toSet()
+        )
     }
 
     override suspend fun markFactorSourceBackedUp(id: FactorSourceId.Hash) {
