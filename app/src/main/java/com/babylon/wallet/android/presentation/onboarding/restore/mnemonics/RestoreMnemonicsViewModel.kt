@@ -67,11 +67,15 @@ class RestoreMnemonicsViewModel @Inject constructor(
             } ?: run {
                 getProfileUseCase.flow.firstOrNull()
             }
-            val factorSources = profile.recoverableFactorSources()
+            val mainBabylonFactorSourceId = profile?.mainBabylonFactorSource?.value?.id?.asGeneral()
+            // we want main factor source to go first
+            val factorSources = profile.recoverableFactorSources().sortedByDescending {
+                it.factorSource.value.id.asGeneral() == mainBabylonFactorSourceId
+            }
             _state.update {
                 it.copy(
                     recoverableFactorSources = factorSources,
-                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource?.value?.id?.asGeneral()
+                    mainBabylonFactorSourceId = mainBabylonFactorSourceId
                 )
             }
 
