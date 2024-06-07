@@ -20,9 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -146,13 +144,7 @@ private fun NFTHeader(
                 }
 
                 Text(
-                    collection.currentSupply?.let { currentSupply ->
-                        stringResource(
-                            id = R.string.assetDetails_NFTDetails_ownedOfTotal,
-                            collection.items.size,
-                            currentSupply
-                        )
-                    } ?: collection.amount.toString(),
+                    text = collection.amount.toString(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2,
                 )
