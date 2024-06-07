@@ -28,6 +28,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 const val RATE_LIMIT_REACHED = 429
             }
         }
+
+        data class NetworkError(override val cause: Throwable? = null) : GatewayException(cause)
     }
 
     data object DappMetadataEmpty : RadixWalletException()
@@ -299,6 +301,7 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
 
 fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context): String = when (this) {
     is RadixWalletException.GatewayException.ClientError -> cause?.message.orEmpty()
+    is RadixWalletException.GatewayException.NetworkError -> "The Internet connection appears to be offline."
     is RadixWalletException.GatewayException.HttpError -> when (code) {
         RadixWalletException.GatewayException.HttpError.RATE_LIMIT_REACHED -> context.getString(R.string.common_rateLimitReached)
         else -> message
