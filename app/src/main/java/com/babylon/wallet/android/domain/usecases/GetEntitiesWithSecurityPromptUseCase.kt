@@ -7,8 +7,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import rdx.works.core.domain.cloudbackup.CloudBackupDisabled
-import rdx.works.core.domain.cloudbackup.CloudBackupServiceError
+import rdx.works.core.domain.cloudbackup.BackupWarning
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
@@ -48,14 +47,11 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         val prompts = mutableSetOf<SecurityPromptType>().apply {
             cloudBackupState.backupWarning?.let { backupWarning ->
                 when (backupWarning) {
-                    is CloudBackupDisabled -> {
-                        if (backupWarning.hasUpdatedManualBackup) {
-                            add(SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED)
-                        } else {
-                            add(SecurityPromptType.WALLET_NOT_RECOVERABLE)
-                        }
-                    }
-                    CloudBackupServiceError -> add(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM)
+                    BackupWarning.CLOUD_BACKUP_SERVICE_ERROR -> add(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM)
+                    BackupWarning.CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP -> add(SecurityPromptType.WALLET_NOT_RECOVERABLE)
+                    BackupWarning.CLOUD_BACKUP_DISABLED_WITH_OUTDATED_MANUAL_BACKUP -> add(
+                        SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED
+                    )
                 }
             }
 

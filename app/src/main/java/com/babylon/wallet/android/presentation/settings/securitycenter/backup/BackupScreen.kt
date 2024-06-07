@@ -87,8 +87,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.cloudbackup.BackupWarning
-import rdx.works.core.domain.cloudbackup.CloudBackupDisabled
-import rdx.works.core.domain.cloudbackup.CloudBackupServiceError
 import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
@@ -223,9 +221,11 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            state.cloudBackupState.backupWarning?.let {
-                BackupWarning(backupWarning = it)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            if (state.cloudBackupState.isNotUpdated) {
+                state.cloudBackupState.backupWarning?.let {
+                    BackupWarning(backupWarning = it)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                }
             }
             Column(
                 modifier = Modifier
@@ -337,7 +337,7 @@ private fun ManualBackupCard(
             text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
-        if (cloudBackupState.isNotWorking) {
+        cloudBackupState.lastManualBackupLabel?.let {
             Text(
                 modifier = Modifier.padding(
                     start = RadixTheme.dimensions.paddingDefault,
@@ -513,16 +513,13 @@ private fun BackupWarning(
                 tint = RadixTheme.colors.orange3
             )
             val warningText = when (backupWarning) {
-                is CloudBackupDisabled -> {
-                    if (backupWarning.hasUpdatedManualBackup) {
-                        stringResource(id = R.string.securityProblems_no7_configurationBackup)
-                    } else {
-                        stringResource(id = R.string.securityProblems_no6_configurationBackup)
-                    }
-                }
-                CloudBackupServiceError -> {
-                    stringResource(id = R.string.securityProblems_no5_configurationBackup)
-                }
+                BackupWarning.CLOUD_BACKUP_SERVICE_ERROR -> stringResource(id = R.string.securityProblems_no5_configurationBackup)
+                BackupWarning.CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP -> stringResource(
+                    id = R.string.securityProblems_no6_configurationBackup
+                )
+                BackupWarning.CLOUD_BACKUP_DISABLED_WITH_OUTDATED_MANUAL_BACKUP -> stringResource(
+                    id = R.string.securityProblems_no7_configurationBackup
+                )
             }
             Text(
                 text = warningText,
@@ -549,14 +546,14 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (cloudBackupState.isNotWorking) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+        val statusColor = if (cloudBackupState.isNotUpdated) RadixTheme.colors.orange3 else RadixTheme.colors.green1
 
         SecurityPromptLabel(
             modifier = Modifier.fillMaxWidth(),
             text = title,
             textColor = statusColor,
-            iconRes = remember(cloudBackupState.isNotWorking) {
-                if (cloudBackupState.isNotWorking) DSR.ic_warning_error else DSR.ic_check_circle
+            iconRes = remember(cloudBackupState.isNotUpdated) {
+                if (cloudBackupState.isNotUpdated) DSR.ic_warning_error else DSR.ic_check_circle
             },
             iconTint = statusColor,
             endContent = {
@@ -891,7 +888,7 @@ fun BackupScreenPreview() {
 @Composable
 fun BackupSecurityProblem5Preview() {
     RadixWalletPreviewTheme {
-        BackupWarning(backupWarning = CloudBackupServiceError)
+        BackupWarning(backupWarning = BackupWarning.CLOUD_BACKUP_SERVICE_ERROR)
     }
 }
 
@@ -899,7 +896,7 @@ fun BackupSecurityProblem5Preview() {
 @Composable
 fun BackupSecurityProblem6Preview() {
     RadixWalletPreviewTheme {
-        BackupWarning(backupWarning = CloudBackupDisabled(hasUpdatedManualBackup = false))
+        BackupWarning(backupWarning = BackupWarning.CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP)
     }
 }
 
@@ -907,7 +904,7 @@ fun BackupSecurityProblem6Preview() {
 @Composable
 fun BackupSecurityProblem7Preview() {
     RadixWalletPreviewTheme {
-        BackupWarning(backupWarning = CloudBackupDisabled(hasUpdatedManualBackup = true))
+        BackupWarning(backupWarning = BackupWarning.CLOUD_BACKUP_DISABLED_WITH_OUTDATED_MANUAL_BACKUP)
     }
 }
 
@@ -953,6 +950,37 @@ fun BackupDisabledAndNeverManualBackupPreview() {
                     email = "my cool email",
                     lastCloudBackupTime = now,
                     lastManualBackupTime = null,
+                    lastModifiedProfileTime = now
+                )
+            ),
+            onBackupCheckChanged = {},
+            onFileBackupClick = {},
+            onFileBackupConfirm = {},
+            onFileBackupDeny = {},
+            onEncryptPasswordTyped = {},
+            onEncryptPasswordRevealToggle = {},
+            onEncryptConfirmPasswordTyped = {},
+            onEncryptPasswordConfirmRevealToggle = {},
+            onEncryptSubmitClick = {},
+            onUiMessageShown = {},
+            onBackClick = {},
+            onDisconnectClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun BackupDisabledAndUpdatedManualBackupPreview() {
+    RadixWalletTheme {
+        val now = TimestampGenerator()
+        val oneDayBefore = now.minusDays(1)
+        BackupScreenContent(
+            state = BackupViewModel.State(
+                cloudBackupState = CloudBackupState.Disabled(
+                    email = "my cool email",
+                    lastCloudBackupTime = oneDayBefore,
+                    lastManualBackupTime = now.toInstant(),
                     lastModifiedProfileTime = now
                 )
             ),
