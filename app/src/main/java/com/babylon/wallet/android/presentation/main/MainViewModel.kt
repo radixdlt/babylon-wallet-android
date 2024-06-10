@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
@@ -89,6 +90,7 @@ class MainViewModel @Inject constructor(
                 else -> p2PLinksRepository.observeP2PLinks().drop(1)
             }
         }
+        .distinctUntilChanged()
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
             p2pLinks.asList().forEach { p2PLink ->
