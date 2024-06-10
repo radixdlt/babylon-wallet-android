@@ -20,11 +20,13 @@ fun CameraPreview(
     modifier: Modifier,
     disableBackHandler: Boolean = true,
     isVisible: Boolean = true,
+    onError: ((Throwable) -> Unit)? = null,
     onQrCodeDetected: (qrCode: String) -> Unit,
 ) {
     BarcodePreviewView(
         modifier = modifier,
         onQrCodeDetected = onQrCodeDetected,
+        onError = { onError?.invoke(it) },
         isVisible = isVisible
     )
     BackHandler(enabled = disableBackHandler) { }
@@ -33,15 +35,14 @@ fun CameraPreview(
 @Composable
 private fun BarcodePreviewView(
     onQrCodeDetected: (qrCode: String) -> Unit,
+    onError: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
-    isVisible: Boolean = true
+    isVisible: Boolean = true,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
         factory = { context ->
-            PreviewView(context)
-        },
-        update = { previewView ->
+            val previewView = PreviewView(context)
             val cameraSelector: CameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build()
@@ -55,13 +56,16 @@ private fun BarcodePreviewView(
                 }
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-                val barcodeAnalyser = QrcodeAnalyser { qrCodes ->
-                    qrCodes.forEach { barcode ->
-                        barcode.rawValue?.let { barcodeValue ->
-                            onQrCodeDetected(barcodeValue.replace("radix:", ""))
+                val barcodeAnalyser = QrcodeAnalyser(
+                    onBarcodeDetected = { qrCodes ->
+                        qrCodes.forEach { barcode ->
+                            barcode.rawValue?.let { barcodeValue ->
+                                onQrCodeDetected(barcodeValue.replace("radix:", ""))
+                            }
                         }
-                    }
-                }
+                    },
+                    onError = onError
+                )
                 val imageAnalysis: ImageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
@@ -80,6 +84,7 @@ private fun BarcodePreviewView(
                     cameraProvider.unbindAll()
                 }
             }, ContextCompat.getMainExecutor(previewView.context))
+            previewView
         },
         modifier = modifier
     )

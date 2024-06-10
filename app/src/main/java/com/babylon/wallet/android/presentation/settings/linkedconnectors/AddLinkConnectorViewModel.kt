@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.logNonFatalException
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -61,6 +62,15 @@ class AddLinkConnectorViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    fun onQrCodeScanFailure(error: Throwable) {
+        logNonFatalException(error)
+        _state.update { state ->
+            state.copy(
+                error = AddLinkConnectorUiState.Error.Other(UiMessage.ErrorMessage(error))
+            )
         }
     }
 
