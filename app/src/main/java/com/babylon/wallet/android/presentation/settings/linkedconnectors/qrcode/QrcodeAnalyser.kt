@@ -7,10 +7,12 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import timber.log.Timber
 
 @SuppressLint("UnsafeOptInUsageError")
 class QrcodeAnalyser(
     private val onBarcodeDetected: (barcodes: List<Barcode>) -> Unit,
+    private val onError: (Throwable) -> Unit
 ) : ImageAnalysis.Analyzer {
 
     override fun analyze(image: ImageProxy) {
@@ -26,6 +28,10 @@ class QrcodeAnalyser(
                     if (barcodes.isNotEmpty()) {
                         onBarcodeDetected(barcodes)
                     }
+                }
+                .addOnFailureListener { error ->
+                    Timber.d("Failed to scan QR. Error: ${error.message}")
+                    onError(error)
                 }
                 .addOnCompleteListener {
                     image.close()

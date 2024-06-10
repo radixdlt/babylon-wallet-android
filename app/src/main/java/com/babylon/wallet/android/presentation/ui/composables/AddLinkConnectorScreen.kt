@@ -46,6 +46,7 @@ fun AddLinkConnectorScreen(
     modifier: Modifier,
     state: AddLinkConnectorUiState,
     onQrCodeScanned: (String) -> Unit,
+    onQrCodeScanFailure: (Throwable) -> Unit,
     onConnectorDisplayNameChanged: (String) -> Unit,
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit,
@@ -63,6 +64,7 @@ fun AddLinkConnectorScreen(
         state = state,
         isCameraPermissionGranted = cameraPermissionState.status.isGranted,
         onQrCodeScanned = onQrCodeScanned,
+        onQrCodeScanFailure = onQrCodeScanFailure,
         onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
         onContinueClick = onContinueClick,
         onCloseClick = onCloseClick,
@@ -76,6 +78,7 @@ private fun AddLinkConnectorContent(
     state: AddLinkConnectorUiState,
     isCameraPermissionGranted: Boolean,
     onQrCodeScanned: (String) -> Unit,
+    onQrCodeScanFailure: (Throwable) -> Unit,
     onConnectorDisplayNameChanged: (String) -> Unit,
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit,
@@ -100,7 +103,8 @@ private fun AddLinkConnectorContent(
                     if (isCameraPermissionGranted) {
                         ScanQrCode(
                             isCameraOn = state.content.isCameraOn,
-                            onQrCodeScanned = onQrCodeScanned
+                            onQrCodeScanned = onQrCodeScanned,
+                            onQrCodeScanFailure = onQrCodeScanFailure
                         )
                     }
                 }
@@ -158,6 +162,7 @@ private fun ScanQrCode(
     modifier: Modifier = Modifier,
     isCameraOn: Boolean,
     onQrCodeScanned: (String) -> Unit,
+    onQrCodeScanFailure: (Throwable) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -187,13 +192,11 @@ private fun ScanQrCode(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 )
-                .imePadding()
                 .clip(RadixTheme.shapes.roundedRectMedium),
             disableBackHandler = false,
             isVisible = isCameraOn,
-            onQrCodeDetected = {
-                onQrCodeScanned(it)
-            }
+            onQrCodeDetected = onQrCodeScanned,
+            onError = onQrCodeScanFailure
         )
     }
 }
@@ -302,6 +305,7 @@ private fun AddLinkConnectorPreview(
             state = state,
             isCameraPermissionGranted = true,
             onQrCodeScanned = {},
+            onQrCodeScanFailure = {},
             onConnectorDisplayNameChanged = {},
             onContinueClick = {},
             onCloseClick = {},

@@ -151,6 +151,7 @@ fun LedgerHardwareWalletsScreen(
                     modifier = Modifier,
                     state = addLinkConnectorState,
                     onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
+                    onQrCodeScanFailure = addLinkConnectorViewModel::onQrCodeScanFailure,
                     onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
                     onContinueClick = addLinkConnectorViewModel::onContinueClick,
                     onCloseClick = addLinkConnectorViewModel::onCloseClick,
