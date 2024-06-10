@@ -10,37 +10,63 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest.Companion.MIN_BACKOFF_MILLIS
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.domain.CheckBackupStatusUseCase
+import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.domain.ExecuteBackupUseCase
+import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.di.coroutines.ApplicationScope
 import timber.log.Timber
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(FlowPreview::class)
 @Singleton
 class CloudBackupSyncExecutor @Inject constructor(
     @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val cloudBackupErrorStream: CloudBackupErrorStream
 ) {
     private val syncProfile = MutableSharedFlow<Unit>()
+    private var enqueuedBackupTaskTimeout: Job? = null
 
     init {
+        WorkManager.getInstance(context)
+            .getWorkInfosByTagFlow(SYNC_CLOUD_PROFILE_WORK)
+            .mapNotNull { it.getOrNull(0) }
+            .onEach {
+                enqueuedBackupTaskTimeout?.cancel()
+                if (it.state == WorkInfo.State.ENQUEUED) {
+                    enqueuedBackupTaskTimeout = applicationScope.launch {
+                        delay(ENQUEUED_WORK_TIMEOUT.inWholeMilliseconds)
+                        cloudBackupErrorStream.onError(BackupServiceException.Unknown(TimeoutException("Timed out")))
+                    }
+                }
+            }
+            .launchIn(applicationScope)
+
         syncProfile
             .debounce(ONE_SECOND_DEBOUNCE)
             .onEach {
@@ -54,6 +80,7 @@ class CloudBackupSyncExecutor @Inject constructor(
                         backoffDelay = MIN_BACKOFF_MILLIS,
                         timeUnit = TimeUnit.MILLISECONDS
                     )
+                    .addTag(SYNC_CLOUD_PROFILE_WORK)
                     .setConstraints(constraints)
                     .build()
 
@@ -111,7 +138,8 @@ class CloudBackupSyncExecutor @Inject constructor(
     companion object {
         private const val SYNC_CLOUD_PROFILE_WORK = "sync_cloud_profile"
         private const val CHECK_CLOUD_STATUS_WORK = "check_cloud_status"
-        private const val ONE_SECOND_DEBOUNCE = 1000L
+        private val ONE_SECOND_DEBOUNCE = 1.seconds
+        private val ENQUEUED_WORK_TIMEOUT = 1.minutes
         private val CHECK_CLOUD_STATUS_INTERVAL = Duration.of(15, ChronoUnit.MINUTES)
     }
 }
