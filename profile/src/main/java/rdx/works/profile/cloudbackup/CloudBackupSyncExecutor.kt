@@ -98,7 +98,6 @@ class CloudBackupSyncExecutor @Inject constructor(
                 }
             }
             .launchIn(applicationScope)
-
     }
 
     suspend fun requestCloudBackup() {
