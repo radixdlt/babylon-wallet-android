@@ -49,6 +49,7 @@ fun Context.openUrl(uri: Uri, browserName: String? = null) {
     browserName?.let { name ->
         val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
         info.find { resolveInfo ->
+            Timber.d("Handling browser: ${resolveInfo.activityInfo.packageName}")
             val appName = resolveInfo.loadLabel(packageManager).toString()
             appName.lowercase().contains(name.lowercase())
         }?.let { resolveInfo ->

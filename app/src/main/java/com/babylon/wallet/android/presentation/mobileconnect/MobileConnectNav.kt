@@ -70,6 +70,9 @@ fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
             navDeepLink {
                 uriPattern =
                     "https://dr6vsuukf8610.cloudfront.net/?$ROUTE_ARGS"
+            },
+            navDeepLink {
+                uriPattern = "radixwallet://?${ROUTE_ARGS}"
             }
         ),
         arguments = listOf(

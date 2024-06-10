@@ -21,7 +21,6 @@ import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.decodeHex
@@ -60,11 +59,6 @@ class MobileConnectViewModel @Inject constructor(
                     it.copy(isProfileInitialized = false)
                 }
                 return@launch
-            }
-            preferencesManager.mobileConnectDelaySeconds.firstOrNull()?.let { delay ->
-                _state.update {
-                    it.copy(linkDelaySeconds = delay)
-                }
             }
             when {
                 args.isValidRequest() -> {
@@ -132,8 +126,7 @@ class MobileConnectViewModel @Inject constructor(
             it.copy(isLinking = true)
         }
         if (withDelay) {
-            val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 1
-            delay(connectDelaySeconds * 1000L)
+            delay(2 * 1000L)
         }
         val keyPair = generateX25519KeyPair().getOrNull() ?: error("Failed to generate X25519 key pair")
         val publicKeyHex = keyPair.second

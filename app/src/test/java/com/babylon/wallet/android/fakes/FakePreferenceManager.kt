@@ -15,9 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.changeGateway
-import rdx.works.core.sargon.factorSourceId
 import java.time.Instant
 
 class FakePreferenceManager : PreferencesManager {
@@ -127,15 +125,8 @@ class FakePreferenceManager : PreferencesManager {
 
     override val transactionCompleteCounter: Flow<Int>
         get() = _transactionCompleteCounter
-
-    override val mobileConnectDelaySeconds: Flow<Int>
-        get() = TODO("Not yet implemented")
     override val mobileConnectAutoLink: Flow<Boolean>
         get() = TODO("Not yet implemented")
-
-    override suspend fun updateMobileConnectDelaySeconds(seconds: Int) {
-        TODO("Not yet implemented")
-    }
 
     override suspend fun incrementTransactionCompleteCounter() {
         _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)

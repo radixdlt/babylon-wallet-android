@@ -42,7 +42,6 @@ interface PreferencesManager {
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
-    val mobileConnectDelaySeconds: Flow<Int>
     val mobileConnectAutoLink: Flow<Boolean>
     val lastSyncedAccountsWithCE: Flow<String?>
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
@@ -51,8 +50,6 @@ interface PreferencesManager {
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
     suspend fun removeLastCloudBackupEvent()
-    suspend fun updateMobileConnectDelaySeconds(seconds: Int)
-
     suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant)
 
     suspend fun isUsingDeprecatedCloudBackup(): Boolean
@@ -304,20 +301,10 @@ class PreferencesManagerImpl @Inject constructor(
         get() = dataStore.data.map { preferences ->
             preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
         }
-    override val mobileConnectDelaySeconds: Flow<Int>
-        get() = dataStore.data.map { preferences ->
-            preferences[DEV_KEY_MOBILE_CONNECT_DELAY_S] ?: 0
-        }
     override val mobileConnectAutoLink: Flow<Boolean>
         get() = dataStore.data.map { preferences ->
             preferences[AUTO_LINK_WITH_DAPPS] ?: false
         }
-
-    override suspend fun updateMobileConnectDelaySeconds(seconds: Int) {
-        dataStore.edit { preferences ->
-            preferences[DEV_KEY_MOBILE_CONNECT_DELAY_S] = seconds
-        }
-    }
 
     override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
         dataStore.edit { preferences ->

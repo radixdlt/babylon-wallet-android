@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.asJsonString
-import com.babylon.wallet.android.data.dapp.model.init
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthLoginWithChallengeRequestItem
@@ -17,8 +15,10 @@ import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSendTransactionResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
+import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toJson
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import org.junit.Assert.assertEquals
@@ -54,7 +54,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.UnauthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.UnauthorizedRequest
         assert(item.v1.oneTimeAccounts is DappToWalletInteractionAccountsRequestItem)
@@ -83,7 +83,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.UnauthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.UnauthorizedRequest
         assert(item.v1.oneTimePersonaData?.isRequestingName == true)
@@ -117,7 +117,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assert(item.v1.auth is DappToWalletInteractionAuthRequestItem.UsePersona)
@@ -150,7 +150,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assert(item.v1.auth is DappToWalletInteractionAuthRequestItem.UsePersona)
@@ -184,7 +184,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assert(item.v1.oneTimePersonaData?.isRequestingName == true)
@@ -219,7 +219,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assert(item.v1.ongoingPersonaData?.isRequestingName == true)
@@ -254,7 +254,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assert(item.v1.auth is DappToWalletInteractionAuthRequestItem.LoginWithoutChallenge)
@@ -288,7 +288,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assertEquals(
@@ -326,7 +326,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assertEquals(
@@ -363,7 +363,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assert(item.v1.auth is DappToWalletInteractionAuthRequestItem.LoginWithoutChallenge)
@@ -400,7 +400,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.AuthorizedRequest)
         val item = result.items as DappToWalletInteractionItems.AuthorizedRequest
         assertEquals(
@@ -435,7 +435,7 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.init(request).getOrThrow()
+        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.Transaction)
         val item = result.items as DappToWalletInteractionItems.Transaction
         assert(item.v1.send.transactionManifest == "manifest")
@@ -458,7 +458,7 @@ class DappToWalletInteractionUnvalidatedTest {
                 )
             )
         )
-        val result = response.asJsonString().getOrThrow()
+        val result = response.toJson()
         assertEquals(expected, result)
     }
 
