@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
@@ -34,13 +33,11 @@ fun NavController.account(accountAddress: AccountAddress) {
 fun NavGraphBuilder.account(
     onAccountPreferenceClick: (AccountAddress) -> Unit,
     onBackClick: () -> Unit,
-    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
-    onNavigateToMnemonicRestore: () -> Unit,
-    onNavigateToConfigurationBackup: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Account) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
-    onHistoryClick: (AccountAddress) -> Unit
+    onHistoryClick: (AccountAddress) -> Unit,
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     composable(
         route = "$ROUTE_ACCOUNT/{$ARG_ACCOUNT_ADDRESS}",
@@ -54,9 +51,7 @@ fun NavGraphBuilder.account(
             viewModel = hiltViewModel(),
             onAccountPreferenceClick = onAccountPreferenceClick,
             onBackClick = onBackClick,
-            onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
-            onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
-            onNavigateToConfigurationBackup = onNavigateToConfigurationBackup,
+            onNavigateToSecurityCenter = onNavigateToSecurityCenter,
             onFungibleResourceClick = onFungibleResourceClick,
             onNonFungibleResourceClick = onNonFungibleResourceClick,
             onTransferClick = onTransferClick,
