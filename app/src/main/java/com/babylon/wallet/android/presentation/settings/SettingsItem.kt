@@ -200,15 +200,12 @@ sealed interface SettingsItem {
 
         data object InspectCloudBackups : DebugSettingsItem
 
-        data object MobileConnectDelay : DebugSettingsItem
-
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
                 InspectCloudBackups -> R.string.settings_debugSettings_inspectCloudBackups
-                is MobileConnectDelay -> R.string.settings_debugSettings_mobileConnectDelay
             }
         }
 
@@ -218,7 +215,6 @@ sealed interface SettingsItem {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 InspectCloudBackups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
-                is MobileConnectDelay -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
             }
         }
 
@@ -226,7 +222,6 @@ sealed interface SettingsItem {
             fun values() = setOf(
                 InspectProfile,
                 LinkConnectionStatusIndicator,
-                MobileConnectDelay,
                 InspectCloudBackups
             )
         }
