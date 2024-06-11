@@ -9,6 +9,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
@@ -36,6 +37,7 @@ import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
 
 interface PeerdroidLink {
 
@@ -235,6 +237,9 @@ internal class PeerdroidLinkImpl(
                     PeerConnectionEvent.Connected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection connected 🟢")
 
+                        // give some time to ensure the CE got the connected event too and
+                        // started listening the data channel
+                        delay(0.5.seconds)
                         connectionListener.completeLinking(connectionId)
                             .onSuccess {
                                 Timber.d("🗼️ linking completed")
