@@ -44,7 +44,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            if (getProfileUseCase().currentGateway.network.id != NetworkId.MAINNET || !BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+            if (getProfileUseCase().currentGateway.network.id != NetworkId.MAINNET && !BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
                 _state.update { state ->
                     val updatedSettings =
                         state.settings.filterNot {
