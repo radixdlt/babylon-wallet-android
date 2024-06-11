@@ -100,7 +100,7 @@ fun WalletScreen(
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onRadixBannerDismiss = viewModel::onRadixBannerDismiss
     )
 
@@ -164,7 +164,7 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettingsClick: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -220,7 +220,7 @@ private fun WalletContent(
                 onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
-                onApplySecuritySettings = onApplySecuritySettings,
+                onApplySecuritySettingsClick = onApplySecuritySettingsClick,
                 onRadixBannerDismiss = onRadixBannerDismiss
             )
 
@@ -243,7 +243,7 @@ private fun WalletAccountList(
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettings: () -> Unit,
+    onApplySecuritySettingsClick: () -> Unit,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
@@ -285,7 +285,7 @@ private fun WalletAccountList(
                         onAccountClick(accountWithAssets.account)
                     },
                 accountWithAssets = accountWithAssets,
-                onApplySecuritySettings = onApplySecuritySettings
+                onApplySecuritySettingsClick = onApplySecuritySettingsClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -397,7 +397,7 @@ private fun WalletContentPreview(
             onAccountCreationClick = { },
             onRefresh = { },
             onMessageShown = {},
-            onApplySecuritySettings = {},
+            onApplySecuritySettingsClick = {},
             onRadixBannerDismiss = {}
         )
     }

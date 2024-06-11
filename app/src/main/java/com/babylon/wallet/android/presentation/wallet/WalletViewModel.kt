@@ -296,7 +296,7 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onApplySecuritySettings() {
+    fun onApplySecuritySettingsClick() {
         viewModelScope.launch {
             sendEvent(WalletEvent.NavigateToSecurityCenter)
         }

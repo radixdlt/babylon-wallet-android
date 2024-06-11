@@ -50,7 +50,7 @@ import rdx.works.core.sargon.isLedgerAccount
 fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: WalletUiState.AccountUiItem,
-    onApplySecuritySettings: () -> Unit
+    onApplySecuritySettingsClick: () -> Unit
 ) {
     ConstraintLayout(
         modifier
@@ -212,7 +212,7 @@ fun AccountCardView(
             accountWithAssets.securityPrompts?.forEach { securityPromptType ->
                 ApplySecuritySettingsLabel(
                     modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
-                    onClick = onApplySecuritySettings,
+                    onClick = onApplySecuritySettingsClick,
                     text = securityPromptType.toText()
                 )
             }
@@ -284,7 +284,7 @@ fun AccountCardPreview() {
                     isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
-                onApplySecuritySettings = {}
+                onApplySecuritySettingsClick = {}
             )
         }
     }
@@ -316,7 +316,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     isLoadingAssets = false,
                     isLoadingBalance = false
                 ),
-                onApplySecuritySettings = {}
+                onApplySecuritySettingsClick = {}
             )
         }
     }
@@ -352,7 +352,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
-                onApplySecuritySettings = {}
+                onApplySecuritySettingsClick = {}
             )
         }
     }
@@ -385,7 +385,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
                     ),
-                    onApplySecuritySettings = {}
+                    onApplySecuritySettingsClick = {}
                 )
             }
         }
@@ -416,7 +416,7 @@ fun AccountCardLoadingPreview() {
                     isLoadingAssets = true,
                     isLoadingBalance = true
                 ),
-                onApplySecuritySettings = {}
+                onApplySecuritySettingsClick = {}
             )
         }
     }
