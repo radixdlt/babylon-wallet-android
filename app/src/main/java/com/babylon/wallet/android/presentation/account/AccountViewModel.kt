@@ -330,9 +330,6 @@ class AccountViewModel @Inject constructor(
 
 internal sealed interface AccountEvent : OneOffEvent {
     data object NavigateToSecurityCenter : AccountEvent
-
-//    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : AccountEvent
-//    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : AccountEvent
     data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Account) : AccountEvent
     data class OnNonFungibleClick(
         val resource: Resource.NonFungibleResource,
