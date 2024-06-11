@@ -14,8 +14,6 @@ import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
-import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
-import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -27,7 +25,6 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewS
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.orZero
@@ -57,7 +54,6 @@ import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
-import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
@@ -245,17 +241,9 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onApplySecuritySettings(securityPromptType: SecurityPromptType) {
+    fun onApplySecuritySettingsClick() {
         viewModelScope.launch {
-            val factorSourceId = _state.value.accountWithAssets?.account?.factorSourceId as? FactorSourceId.Hash ?: return@launch
-
-            when (securityPromptType) {
-                SecurityPromptType.WRITE_DOWN_SEED_PHRASE -> sendEvent(NavigateToMnemonicBackup(factorSourceId))
-                SecurityPromptType.RECOVERY_REQUIRED -> sendEvent(NavigateToMnemonicRestore(factorSourceId))
-                SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM -> sendEvent(AccountEvent.NavigateToConfigurationBackup)
-                SecurityPromptType.WALLET_NOT_RECOVERABLE -> sendEvent(AccountEvent.NavigateToConfigurationBackup)
-                SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED -> sendEvent(AccountEvent.NavigateToConfigurationBackup)
-            }
+            sendEvent(AccountEvent.NavigateToSecurityCenter)
         }
     }
 
@@ -341,9 +329,7 @@ class AccountViewModel @Inject constructor(
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
-    data object NavigateToConfigurationBackup : AccountEvent
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : AccountEvent
-    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : AccountEvent
+    data object NavigateToSecurityCenter : AccountEvent
     data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Account) : AccountEvent
     data class OnNonFungibleClick(
         val resource: Resource.NonFungibleResource,

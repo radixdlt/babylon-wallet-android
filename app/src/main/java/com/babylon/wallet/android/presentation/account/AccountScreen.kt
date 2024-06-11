@@ -63,7 +63,6 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AppearanceId
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -78,23 +77,19 @@ fun AccountScreen(
     onAccountPreferenceClick: (address: AccountAddress) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
-    onNavigateToMnemonicRestore: () -> Unit,
-    onNavigateToConfigurationBackup: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Account) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
-    onHistoryClick: (AccountAddress) -> Unit
+    onHistoryClick: (AccountAddress) -> Unit,
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
-                is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
+                is AccountEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
                 is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
-                AccountEvent.NavigateToConfigurationBackup -> onNavigateToConfigurationBackup()
             }
         }
     }
@@ -117,7 +112,7 @@ fun AccountScreen(
         onMessageShown = viewModel::onMessageShown,
         onFungibleItemClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onPoolUnitClick = viewModel::onPoolUnitClicked,
         onLSUUnitClicked = viewModel::onLSUUnitClicked,
         onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
@@ -143,7 +138,7 @@ private fun AccountScreenContent(
     onCollectionClick: (String) -> Unit,
     onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-    onApplySecuritySettings: (SecurityPromptType) -> Unit,
+    onApplySecuritySettingsClick: () -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -219,7 +214,7 @@ private fun AccountScreenContent(
                 gradient = gradient,
                 onTransferClick = onTransferClick,
                 onHistoryClick = onHistoryClick,
-                onApplySecuritySettings = onApplySecuritySettings,
+                onApplySecuritySettingsClick = onApplySecuritySettingsClick,
                 onPoolUnitClick = {
                     onPoolUnitClick(it)
                 },
@@ -250,7 +245,7 @@ fun AssetsContent(
     gradient: Brush,
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
-    onApplySecuritySettings: (SecurityPromptType) -> Unit,
+    onApplySecuritySettingsClick: () -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
@@ -352,7 +347,7 @@ fun AssetsContent(
                                     ApplySecuritySettingsLabel(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
                                         onClick = {
-                                            onApplySecuritySettings(securityPromptType)
+                                            onApplySecuritySettingsClick()
                                         },
                                         text = securityPromptType.toText()
                                     )
@@ -475,7 +470,7 @@ fun AccountContentPreview() {
             onCollectionClick = {},
             onFungibleItemClicked = {},
             onNonFungibleItemClicked = { _, _ -> },
-            onApplySecuritySettings = {},
+            onApplySecuritySettingsClick = {},
             onPoolUnitClick = {},
             onLSUUnitClicked = {},
             onNextNFTsPageRequest = {},
@@ -508,7 +503,7 @@ fun AccountContentWithFiatBalancesDisabledPreview() {
             onCollectionClick = {},
             onFungibleItemClicked = {},
             onNonFungibleItemClicked = { _, _ -> },
-            onApplySecuritySettings = {},
+            onApplySecuritySettingsClick = {},
             onPoolUnitClick = {},
             onLSUUnitClicked = {},
             onNextNFTsPageRequest = {},
