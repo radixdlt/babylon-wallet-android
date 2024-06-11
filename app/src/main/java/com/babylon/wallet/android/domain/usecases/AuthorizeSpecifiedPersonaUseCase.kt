@@ -47,7 +47,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         var operationResult: Result<DAppData> = Result.failure(
             RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
         )
-        if (incomingRequest.isRcrRequest) {
+        if (incomingRequest.isMobileConnectRequest) {
             return operationResult
         }
         (incomingRequest as? AuthorizedRequest)?.let { request ->

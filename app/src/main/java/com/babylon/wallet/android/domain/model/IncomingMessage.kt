@@ -47,7 +47,7 @@ sealed interface IncomingMessage {
                 return metadata.isInternal
             }
 
-        val isRcrRequest: Boolean
+        val isMobileConnectRequest: Boolean
             get() = remoteEntityId is RemoteEntityID.RadixMobileConnectRemoteSession
 
         val blockUntilComplete: Boolean

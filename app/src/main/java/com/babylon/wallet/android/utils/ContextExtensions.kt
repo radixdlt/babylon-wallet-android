@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.domain.model.Browser
 import timber.log.Timber
 
 val backupSettingsScreenIntent: Intent
@@ -39,23 +40,19 @@ suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boole
     return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
 }
 
-fun Context.openUrl(url: String, browserName: String? = null) = openUrl(url.toUri(), browserName)
+fun Context.openUrl(url: String, browser: Browser? = null) = openUrl(url.toUri(), browser)
 
 @Suppress("SwallowedException")
-fun Context.openUrl(uri: Uri, browserName: String? = null) {
+fun Context.openUrl(uri: Uri, browser: Browser? = null) {
     val intent = Intent(Intent.ACTION_VIEW).apply {
         data = uri
     }
-    browserName?.let { name ->
-        val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-        info.find { resolveInfo ->
-            Timber.d("Handling browser: ${resolveInfo.activityInfo.packageName}")
-            val appName = resolveInfo.loadLabel(packageManager).toString()
-            appName.lowercase().contains(name.lowercase())
-        }?.let { resolveInfo ->
-            Timber.d("Handling browser: ${resolveInfo.activityInfo.packageName}")
-            intent.setComponent(ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name))
-        }
+    val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+    info.find { resolveInfo ->
+        Timber.d("Handling browser: ${resolveInfo.activityInfo.packageName}")
+        resolveInfo.activityInfo.packageName == browser?.packageName
+    }?.let { resolveInfo ->
+        intent.setComponent(ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name))
     }
     try {
         startActivity(intent)

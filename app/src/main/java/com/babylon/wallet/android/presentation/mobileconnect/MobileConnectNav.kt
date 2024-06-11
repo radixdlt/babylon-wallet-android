@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import java.net.URLDecoder
 
 private const val ARG_DAPP_ORIGIN = "origin"
 private const val ARG_PUBLIC_KEY = "publicKey"
@@ -51,7 +52,7 @@ internal class MobileConnectArgs(
         savedStateHandle.get<String>(ARG_SESSION_ID),
         savedStateHandle.get<String>(ARG_DAPP_ORIGIN),
         savedStateHandle.get<String>(ARG_INTERACTION_ID),
-        savedStateHandle.get<String>(ARG_BROWSER)
+        savedStateHandle.get<String>(ARG_BROWSER)?.let { URLDecoder.decode(it, "UTF-8") }
     )
 
     fun isValidRequest(): Boolean {

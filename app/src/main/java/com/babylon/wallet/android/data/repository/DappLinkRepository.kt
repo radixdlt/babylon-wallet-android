@@ -52,8 +52,8 @@ class DappLinkRepositoryImpl @Inject constructor(
                 val toPersist =
                     pendingDappLinks.firstOrNull { it.sessionId == sessionId } ?: error("No dapp link found for session id $sessionId")
                 val links = getPersistedDappLinks().getOrThrow().toMutableSet()
-                val updatedLinks = if (links.any { it.dAppDefinitionAddress == toPersist.dAppDefinitionAddress }) {
-                    links.mapWhen({ it.dAppDefinitionAddress == toPersist.dAppDefinitionAddress }) {
+                val updatedLinks = if (links.any { it.origin == toPersist.origin }) {
+                    links.mapWhen({ it.origin == toPersist.origin }) {
                         Timber.d("Dapp link: Updating existing link")
                         toPersist
                     }

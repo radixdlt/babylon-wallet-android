@@ -8,7 +8,9 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.DappDefinition
+import com.babylon.wallet.android.domain.model.Browser
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -18,8 +20,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
-import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -42,7 +44,8 @@ class MobileConnectViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
+    private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase,
+    @ApplicationScope private val appScope: CoroutineScope
 ) : StateViewModel<State>(), OneOffEventHandler<MobileConnectViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = MobileConnectArgs(savedStateHandle)
@@ -54,6 +57,7 @@ class MobileConnectViewModel @Inject constructor(
         observeAutoLink()
         viewModelScope.launch {
             val profileInitialized = getProfileUseCase.isInitialized()
+            val developerMode = getProfileUseCase().appPreferences.security.isDeveloperModeEnabled
             if (!profileInitialized) {
                 _state.update {
                     it.copy(isProfileInitialized = false)
@@ -62,14 +66,15 @@ class MobileConnectViewModel @Inject constructor(
             }
             when {
                 args.isValidRequest() -> {
-                    viewModelScope.launch {
+                    appScope.launch {
                         rcrRepository.getRequest(args.sessionId!!, args.interactionId!!).mapCatching { walletInteraction ->
                             walletInteraction.toDomainModel(
                                 IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(args.sessionId)
                             )
                         }.onSuccess { request ->
-                            incomingRequestRepository.add(request)
                             sendEvent(Event.Close)
+                            delay(SCREEN_CLOSE_DELAY_MS)
+                            incomingRequestRepository.add(request)
                         }.onFailure {
                             Timber.d(it)
                         }
@@ -83,20 +88,23 @@ class MobileConnectViewModel @Inject constructor(
                     wellKnownDAppDefinitionRepository.getWellKnownDappDefinitions(args.origin!!).mapCatching { dAppDefinitions ->
                         dAppDefinitions.dAppDefinitions.firstOrNull()?.let { dAppDefinition ->
                             getDAppWithResourcesUseCase(dAppDefinition.dAppDefinitionAddress, false).getOrNull()?.dApp?.let { dApp ->
-                                val callbackPath = dAppDefinitions.callbackPath ?: error("No callback path found for origin ${args.origin}")
+                                val callbackPath =
+                                    dAppDefinitions.callbackPath ?: error("No callback path found for origin ${args.origin}")
                                 _state.update { it.copy(dApp = dApp, dAppDefinition = dAppDefinition, callbackPath = callbackPath) }
                             }
                         }
                     }.onFailure { error ->
-                        _state.update {
-                            it.copy(uiMessage = UiMessage.ErrorMessage(error))
+                        if (!developerMode) {
+                            _state.update {
+                                it.copy(uiMessage = UiMessage.ErrorMessage(error))
+                            }
+                            delay(Constants.SNACKBAR_SHOW_DURATION_MS)
+                            sendEvent(Event.Close)
+                        } else if (_state.value.autoLink) {
+                            linkWithDapp(withDelay = true)
                         }
-                        delay(Constants.SNACKBAR_SHOW_DURATION_MS)
-                        sendEvent(Event.Close)
                     }
-                    if (_state.value.autoLink && _state.value.canLink &&
-                        _state.value.dAppDefinition?.dAppDefinitionAddress?.string != null
-                    ) {
+                    if (_state.value.autoLink) {
                         linkWithDapp(withDelay = true)
                     }
                 }
@@ -134,26 +142,34 @@ class MobileConnectViewModel @Inject constructor(
         val secret =
             generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey).getOrNull()
                 ?: error("Failed to generate ecdh curve25519 shared secret")
-        val dappLink = DappLink(
-            origin = args.origin!!,
-            address = _state.value.dAppDefinition!!.dAppDefinitionAddress.string,
-            secret = secret,
-            sessionId = args.sessionId.orEmpty(),
-            x25519PrivateKeyCompressed = keyPair.first,
-            callbackPath = _state.value.callbackPath
-        )
+        val dappLink = if (_state.value.callbackPath != null) {
+            DappLink(
+                origin = args.origin!!,
+                secret = secret,
+                sessionId = args.sessionId.orEmpty(),
+                x25519PrivateKeyCompressed = keyPair.first,
+                callbackPath = _state.value.callbackPath!!
+            )
+        } else {
+            DappLink(
+                origin = args.origin!!,
+                secret = secret,
+                sessionId = args.sessionId.orEmpty(),
+                x25519PrivateKeyCompressed = keyPair.first
+            )
+        }
         dappLinkRepository.saveAsTemporary(dappLink).onSuccess {
             sendEvent(
                 Event.OpenUrl(
                     Uri.parse(args.origin).buildUpon().apply {
-                        appendPath(dappLink.callbackPath?.replace("/", ""))
+                        appendPath(dappLink.callbackPath.replace("/", ""))
                         appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, args.sessionId)
                         appendQueryParameter(
                             Constants.RadixMobileConnect.CONNECT_URL_PARAM_PUBLIC_KEY,
                             publicKeyHex
                         )
                     }.build().toString(),
-                    args.browser
+                    Browser.fromBrowserName(args.browser)
                 )
             )
             _state.update { state ->
@@ -180,22 +196,17 @@ class MobileConnectViewModel @Inject constructor(
 
     fun onLinkWithDapp() {
         viewModelScope.launch {
-            if (_state.value.canLink) {
-                linkWithDapp()
-            } else {
-                _state.update {
-                    it.copy(
-                        uiMessage = UiMessage.ErrorMessage(IllegalStateException("No dAppDefinition found for dApp")),
-                        isLinking = false
-                    )
-                }
-            }
+            linkWithDapp()
         }
     }
 
     sealed class Event : OneOffEvent {
-        data class OpenUrl(val url: String, val browserName: String? = null) : Event()
+        data class OpenUrl(val url: String, val browserName: Browser) : Event()
         data object Close : Event()
+    }
+
+    companion object {
+        const val SCREEN_CLOSE_DELAY_MS = 500L
     }
 }
 
@@ -206,10 +217,7 @@ data class State(
     val isProfileInitialized: Boolean = true,
     val isLoading: Boolean = true,
     val linkDelaySeconds: Int = 0,
-    val callbackPath: String = "",
+    val callbackPath: String? = null,
     val autoLink: Boolean = false,
     val isLinking: Boolean = false
-) : UiState {
-    val canLink: Boolean
-        get() = dApp != null && dAppDefinition != null
-}
+) : UiState
