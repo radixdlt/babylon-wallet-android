@@ -62,6 +62,7 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
                         }
                     val walletClientKey = Curve25519SecretKey(Exactly32Bytes.init(walletClientKeyBytes.toBagOfBytes()))
 
+                    Timber.tag("LinkingCE").d("send link client message")
                     val linkClientInteraction = PeerdroidLink.LinkClientExchangeInteraction(
                         publicKey = walletClientKey.toPublicKey(),
                         signature = walletClientKey.sign(
@@ -77,9 +78,9 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
                 }
             }
         ).onSuccess {
-            Timber.d("Successfully connected to remote peer.")
+            Timber.tag("LinkingCE").d("Successfully connected to remote peer.")
         }.onFailure {
-            Timber.d("Failed to connect to remote peer.")
+            Timber.tag("LinkingCE").d("Failed to connect to remote peer.")
         }
     }
 
