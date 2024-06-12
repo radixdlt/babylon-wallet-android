@@ -246,7 +246,7 @@ fun SeedPhraseCard(
                 color = RadixTheme.colors.gray2
             )
         } else {
-            data.allAccounts.forEach { account ->
+            data.notHiddenAccounts.forEach { account ->
                 SimpleAccountCard(
                     modifier = Modifier.fillMaxWidth(),
                     account = account
