@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.map
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.hasBabylonSeedPhraseLength
-import rdx.works.core.sargon.isHidden
 import rdx.works.core.sargon.usesEd25519
 import rdx.works.core.sargon.usesSECP256k1
 import javax.inject.Inject
@@ -41,8 +40,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                                 deviceFactorSource = deviceFactorSource,
                                 allAccounts = babylonAccounts,
                                 isBabylon = true,
-                                personas = babylonPersonas,
-                                hasOnlyHiddenAccounts = babylonAccounts.all { it.isHidden }
+                                personas = babylonPersonas
                             )
                         )
                     }
@@ -50,8 +48,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,
                             allAccounts = olympiaAccounts,
-                            isBabylon = false,
-                            hasOnlyHiddenAccounts = olympiaAccounts.all { it.isHidden }
+                            isBabylon = false
                         )
                     )
                 } else {
@@ -66,8 +63,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                             deviceFactorSource = deviceFactorSource,
                             allAccounts = accounts,
                             isBabylon = deviceFactorSource.supportsBabylon,
-                            personas = personas,
-                            hasOnlyHiddenAccounts = accounts.all { it.isHidden }
+                            personas = personas
                         )
                     )
                 }

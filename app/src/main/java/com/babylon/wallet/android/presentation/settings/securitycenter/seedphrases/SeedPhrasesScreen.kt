@@ -267,13 +267,11 @@ fun SeedPhrasesWithAccountsAndPersonasPreview() {
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample(),
                     allAccounts = Account.sampleMainnet.all,
-                    personas = Persona.sampleMainnet.all,
-                    hasOnlyHiddenAccounts = false
+                    personas = Persona.sampleMainnet.all
                 ),
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample.other(),
-                    allAccounts = persistentListOf(Account.sampleMainnet()),
-                    hasOnlyHiddenAccounts = true
+                    allAccounts = persistentListOf(Account.sampleMainnet())
                 )
             ),
             onSeedPhraseClick = {}
