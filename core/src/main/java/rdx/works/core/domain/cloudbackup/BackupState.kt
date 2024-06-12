@@ -9,11 +9,11 @@ import java.time.ZoneId
  * BackupState reflects the state of Backup screen and
  * takes into consideration the cloud backup state and the manual backup state.
  *
- * Enabled and Disabled express the toggle button state. Enabled = on / Disabled = off
+ * CloudBackupEnabled and CloudBackupDisabled express the toggle button state. CloudBackupEnabled = on / CloudBackupDisabled = off
  *
- * Important note: Enabled doesn't necessarily means that cloud backup is working properly.
- * Thus, the hasAnyErrors in the Enabled. If this is true the backup screen shows warnings
- * and toggle remains on.
+ * Important note: CloudBackupEnabled doesn't necessarily means that cloud backup is working properly.
+ * Thus, the hasAnyErrors in the CloudBackupEnabled.
+ * If this is true the backup screen shows warnings and toggle remains on.
  *
  */
 sealed class BackupState {
