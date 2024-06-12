@@ -12,14 +12,14 @@ import com.babylon.wallet.android.utils.CanSignInToGoogle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.cloudbackup.CloudBackupState
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -30,7 +30,7 @@ class BackupViewModel @Inject constructor(
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val googleSignInManager: GoogleSignInManager,
-    getCloudBackupStateUseCase: GetCloudBackupStateUseCase
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -39,8 +39,8 @@ class BackupViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getCloudBackupStateUseCase().collect { backupState ->
-                _state.update { it.copy(cloudBackupState = backupState) }
+            getBackupStateUseCase().collect { backupState ->
+                _state.update { it.copy(backupState = backupState) }
             }
         }
     }
@@ -173,7 +173,7 @@ class BackupViewModel @Inject constructor(
     }
 
     data class State(
-        val cloudBackupState: CloudBackupState = CloudBackupState.Enabled(email = ""),
+        val backupState: BackupState = BackupState.CloudBackupEnabled(email = ""),
         val isCloudAuthorizationInProgress: Boolean = false,
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
