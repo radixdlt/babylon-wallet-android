@@ -138,7 +138,7 @@ fun MobileConnectLinkContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.mobileConnect_verifyingDApp_title, dAppDisplayName),
                 color = RadixTheme.colors.gray1,
-                style = RadixTheme.typography.title, // TODO FIX THIS
+                style = RadixTheme.typography.title, // TODO Mobile Connect (UI)
                 textAlign = TextAlign.Center
             )
 
@@ -157,13 +157,13 @@ fun MobileConnectLinkContent(
 
                     val startOfSpan = valueToDisplay.indexOf(dAppDisplayName)
                     addStyle(
-                        style = RadixTheme.typography.body1StandaloneLink.toSpanStyle(), // TODO FIX THIS
+                        style = RadixTheme.typography.body1StandaloneLink.toSpanStyle(), // TODO Mobile Connect (UI)
                         start = startOfSpan,
                         end = startOfSpan + dAppDisplayName.length,
                     )
                 },
                 color = RadixTheme.colors.gray2,
-                style = RadixTheme.typography.body1HighImportance, // TODO FIX THIS
+                style = RadixTheme.typography.body1HighImportance, // TODO Mobile Connect (UI)
                 textAlign = TextAlign.Center
             )
 
@@ -174,7 +174,7 @@ fun MobileConnectLinkContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.mobileConnect_verifyingDApp_body),
                 color = RadixTheme.colors.gray1,
-                style = RadixTheme.typography.body1Regular, // TODO FIX THIS
+                style = RadixTheme.typography.body1Regular, // TODO Mobile Connect (UI)
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.weight(1f))
@@ -189,12 +189,12 @@ fun MobileConnectLinkContent(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(id = R.string.mobileConnect_verifyingDApp_autoConfirmTitle),
-                        style = RadixTheme.typography.body1Header, // TODO FIX THIS
+                        style = RadixTheme.typography.body1Header, // TODO Mobile Connect (UI)
                         color = RadixTheme.colors.gray1
                     )
                     Text(
                         text = stringResource(id = R.string.mobileConnect_verifyingDApp_autoConfirmSubtitle),
-                        style = RadixTheme.typography.body1Regular, // TODO FIX THIS
+                        style = RadixTheme.typography.body1Regular, // TODO Mobile Connect (UI)
                         color = RadixTheme.colors.gray1
                     )
                 }

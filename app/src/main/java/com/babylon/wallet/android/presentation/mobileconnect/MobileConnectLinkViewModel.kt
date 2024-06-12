@@ -15,6 +15,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.keyAgreementPublicKeyToBytes
+import com.radixdlt.sargon.keyAgreementPublicKeyToHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -24,6 +26,7 @@ import rdx.works.core.domain.DApp
 import rdx.works.core.generateX25519KeyPair
 import rdx.works.core.generateX25519SharedSecret
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.toByteArray
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -50,11 +53,11 @@ class MobileConnectLinkViewModel @Inject constructor(
             _state.update {
                 it.copy(isLoading = false)
             }
-            wellKnownDAppDefinitionRepository.getWellKnownDappDefinitions(args.origin).mapCatching { dAppDefinitions ->
+            wellKnownDAppDefinitionRepository.getWellKnownDappDefinitions(args.request.origin.toString()).mapCatching { dAppDefinitions ->
                 dAppDefinitions.dAppDefinitions.firstOrNull()?.let { dAppDefinition ->
                     getDAppWithResourcesUseCase(dAppDefinition.dAppDefinitionAddress, false).getOrNull()?.dApp?.let { dApp ->
                         val callbackPath =
-                            dAppDefinitions.callbackPath ?: error("No callback path found for origin ${args.origin}")
+                            dAppDefinitions.callbackPath ?: error("No callback path found for origin ${args.request.origin}")
                         _state.update { it.copy(dApp = dApp, dAppDefinition = dAppDefinition, callbackPath = callbackPath) }
                     }
                 }
@@ -95,38 +98,37 @@ class MobileConnectLinkViewModel @Inject constructor(
         }
         val keyPair = generateX25519KeyPair().getOrNull() ?: error("Failed to generate X25519 key pair")
         val publicKeyHex = keyPair.second
-        val receivedPublicKey = args.publicKey.decodeHex()
-        val secret =
-            generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey).getOrNull()
-                ?: error("Failed to generate ecdh curve25519 shared secret")
+        val receivedPublicKey = keyAgreementPublicKeyToBytes(args.request.publicKey)
+        val secret = generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey.toByteArray()).getOrNull()
+            ?: error("Failed to generate ecdh curve25519 shared secret")
         val dappLink = if (_state.value.callbackPath != null) {
             DappLink(
-                origin = args.origin,
+                origin = args.request.origin.toString(),
                 secret = secret,
-                sessionId = args.sessionId,
+                sessionId = args.request.sessionId.toString(),
                 x25519PrivateKeyCompressed = keyPair.first,
                 callbackPath = _state.value.callbackPath!!
             )
         } else {
             DappLink(
-                origin = args.origin,
+                origin = args.request.origin.toString(),
                 secret = secret,
-                sessionId = args.sessionId,
+                sessionId = args.request.sessionId.toString(),
                 x25519PrivateKeyCompressed = keyPair.first
             )
         }
         dappLinkRepository.saveAsTemporary(dappLink).onSuccess {
             sendEvent(
                 Event.OpenUrl(
-                    Uri.parse(args.origin).buildUpon().apply {
+                    Uri.parse(args.request.origin.toString()).buildUpon().apply {
                         appendPath(dappLink.callbackPath.replace("/", ""))
-                        appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, args.sessionId)
+                        appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, args.request.sessionId.toString())
                         appendQueryParameter(
                             Constants.RadixMobileConnect.CONNECT_URL_PARAM_PUBLIC_KEY,
                             publicKeyHex
                         )
                     }.build().toString(),
-                    Browser.fromBrowserName(args.browser)
+                    Browser.fromBrowserName(args.request.browser)
                 )
             )
             _state.update { state ->

@@ -8,7 +8,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.radixdlt.sargon.RadixConnectMobileLinkRequest
+import com.radixdlt.sargon.SessionId
 import com.radixdlt.sargon.keyAgreementPublicKeyToHex
+import com.radixdlt.sargon.newKeyAgreementPublicKeyFromHex
+import rdx.works.core.sargon.toUrl
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -24,27 +27,27 @@ private const val ROUTE = "mobileConnect/$ROUTE_ARGS"
 fun NavController.mobileConnect(
     request: RadixConnectMobileLinkRequest
 ) {
-    // TODO use json serialization instead
-    val originEncoded = URLEncoder.encode(request.origin.toString(), "UTF-8")
-    val publicKeyHex = keyAgreementPublicKeyToHex(request.publicKey)
-    val sessionId = request.sessionId.toString()
-    val browser = request.browser
+    // TODO Mobile connect (toJson)
     navigate(
-        route = "mobileConnect/$publicKeyHex/$sessionId/$originEncoded/$browser"
+        route = "mobileConnect" +
+                "/${keyAgreementPublicKeyToHex(publicKey = request.publicKey)}" +
+                "/${request.sessionId}" +
+                "/${URLEncoder.encode(request.origin.toString(), "UTF-8")}" +
+                "/${request.browser}"
     )
 }
 
 internal class MobileConnectArgs(
-    val publicKey: String,
-    val sessionId: String,
-    val origin: String,
-    val browser: String
+    val request: RadixConnectMobileLinkRequest
 ) {
+    // TODO Mobile connect (fromJson)
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle.get<String>(ARG_PUBLIC_KEY)),
-        checkNotNull(savedStateHandle.get<String>(ARG_SESSION_ID)),
-        checkNotNull((savedStateHandle.get<String>(ARG_DAPP_ORIGIN))).let { URLDecoder.decode(it, "UTF-8") },
-        checkNotNull(savedStateHandle.get<String>(ARG_BROWSER)).let { URLDecoder.decode(it, "UTF-8") }
+        request = RadixConnectMobileLinkRequest(
+            origin = checkNotNull((savedStateHandle.get<String>(ARG_DAPP_ORIGIN))).let { URLDecoder.decode(it, "UTF-8") }.toUrl(),
+            sessionId = SessionId.fromString(checkNotNull(savedStateHandle.get<String>(ARG_SESSION_ID))),
+            publicKey = newKeyAgreementPublicKeyFromHex(checkNotNull(savedStateHandle.get<String>(ARG_PUBLIC_KEY))),
+            browser = checkNotNull(savedStateHandle.get<String>(ARG_BROWSER))
+        )
     )
 }
 
@@ -54,19 +57,15 @@ fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
         arguments = listOf(
             navArgument(ARG_PUBLIC_KEY) {
                 type = NavType.StringType
-                nullable = true
             },
             navArgument(ARG_SESSION_ID) {
                 type = NavType.StringType
-                nullable = true
             },
             navArgument(ARG_DAPP_ORIGIN) {
                 type = NavType.StringType
-                nullable = true
             },
             navArgument(ARG_BROWSER) {
                 type = NavType.StringType
-                nullable = true
             }
         ),
         enterTransition = {
