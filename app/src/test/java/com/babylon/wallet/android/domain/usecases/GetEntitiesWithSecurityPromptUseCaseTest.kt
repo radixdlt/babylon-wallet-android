@@ -22,11 +22,11 @@ import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.cloudbackup.CloudBackupState
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 
 @ExperimentalCoroutinesApi
 class GetEntitiesWithSecurityPromptUseCaseTest {
@@ -36,13 +36,13 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
     private val mnemonicRepositoryMock = mockk<MnemonicRepository>()
-    private val getCloudBackupStateUseCaseMock = mockk<GetCloudBackupStateUseCase>()
+    private val getBackupStateUseCaseMock = mockk<GetBackupStateUseCase>()
 
     private val getEntitiesWithSecurityPromptUseCase = GetEntitiesWithSecurityPromptUseCase(
         getProfileUseCase = GetProfileUseCase(profileRepository = FakeProfileRepository(profile)),
         preferencesManager = FakePreferenceManager(),
         mnemonicRepository = mnemonicRepositoryMock,
-        getCloudBackupStateUseCase = getCloudBackupStateUseCaseMock
+        getBackupStateUseCase = getBackupStateUseCaseMock
     )
 
     @Test
@@ -53,8 +53,8 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
         val now = TimestampGenerator()
         val oneDayBefore = now.minusDays(1)
         // when cloud backup disabled but user has exported an updated manual backup file
-        coEvery { getCloudBackupStateUseCaseMock() } returns flowOf(
-            CloudBackupState.Disabled(
+        coEvery { getBackupStateUseCaseMock() } returns flowOf(
+            BackupState.CloudBackupDisabled(
                 email = "email",
                 lastCloudBackupTime = oneDayBefore,
                 lastManualBackupTime = now.toInstant(),
@@ -83,8 +83,8 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
         val now = TimestampGenerator()
         val oneDayBefore = now.minusDays(1)
         // when cloud backup is enabled but not working, for example unavailable service
-        coEvery { getCloudBackupStateUseCaseMock() } returns flowOf(
-            CloudBackupState.Enabled(
+        coEvery { getBackupStateUseCaseMock() } returns flowOf(
+            BackupState.CloudBackupEnabled(
                 email = "email",
                 hasAnyErrors = true,
                 lastCloudBackupTime = oneDayBefore,

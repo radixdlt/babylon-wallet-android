@@ -86,8 +86,8 @@ import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.domain.cloudbackup.BackupWarning
-import rdx.works.core.domain.cloudbackup.CloudBackupState
 
 @Composable
 fun BackupScreen(
@@ -221,8 +221,8 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            if (state.cloudBackupState.isNotUpdated) {
-                state.cloudBackupState.backupWarning?.let {
+            if (state.backupState.isNotUpdated) {
+                state.backupState.backupWarning?.let {
                     BackupWarning(backupWarning = it)
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 }
@@ -234,19 +234,19 @@ private fun BackupScreenContent(
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
             ) {
                 BackupStatusCard(
-                    cloudBackupState = state.cloudBackupState,
+                    backupState = state.backupState,
                     isCloudAuthorizationInProgress = state.isCloudAuthorizationInProgress,
                     onBackupCheckChanged = onBackupCheckChanged
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                if (state.cloudBackupState.isAuthorized) {
+                if (state.backupState.isAuthorized) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
                         color = RadixTheme.colors.gray4
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                     LoggedInStatus(
-                        email = state.cloudBackupState.email.orEmpty(),
+                        email = state.backupState.email.orEmpty(),
                         onDisconnectClick = onDisconnectClick
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -283,7 +283,7 @@ private fun BackupScreenContent(
             )
 
             ManualBackupCard(
-                cloudBackupState = state.cloudBackupState,
+                backupState = state.backupState,
                 onFileBackupClick = onFileBackupClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -315,7 +315,7 @@ private fun BackupScreenContent(
 @Composable
 private fun ManualBackupCard(
     modifier: Modifier = Modifier,
-    cloudBackupState: CloudBackupState,
+    backupState: BackupState,
     onFileBackupClick: () -> Unit
 ) {
     Column(
@@ -337,7 +337,7 @@ private fun ManualBackupCard(
             text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
-        cloudBackupState.lastManualBackupLabel?.let {
+        backupState.lastManualBackupLabel?.let {
             Text(
                 modifier = Modifier.padding(
                     start = RadixTheme.dimensions.paddingDefault,
@@ -345,7 +345,7 @@ private fun ManualBackupCard(
                 ),
                 text = stringResource(
                     id = R.string.configurationBackup_automated_lastBackup,
-                    cloudBackupState.lastManualBackupLabel ?: stringResource(
+                    backupState.lastManualBackupLabel ?: stringResource(
                         id = R.string.common_none
                     )
                 ),
@@ -382,7 +382,7 @@ private fun ManualBackupCard(
 private fun BackupStatusCard(
     modifier: Modifier = Modifier,
     isCloudAuthorizationInProgress: Boolean,
-    cloudBackupState: CloudBackupState,
+    backupState: BackupState,
     onBackupCheckChanged: (Boolean) -> Unit
 ) {
     Column(
@@ -393,7 +393,7 @@ private fun BackupStatusCard(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         SwitchSettingsItem(
             titleRes = R.string.configurationBackup_automated_toggleAndroid,
-            checked = cloudBackupState.isEnabled,
+            checked = backupState.isCloudBackupEnabled,
             icon = {
                 Icon(
                     painter = painterResource(id = DSR.ic_backup),
@@ -404,12 +404,12 @@ private fun BackupStatusCard(
             onCheckedChange = onBackupCheckChanged,
             isLoading = isCloudAuthorizationInProgress
         )
-        if (cloudBackupState is CloudBackupState.Disabled) {
+        if (backupState is BackupState.CloudBackupDisabled) {
             Text(
                 modifier = Modifier.padding(start = 44.dp),
                 text = stringResource(
                     id = R.string.configurationBackup_automated_lastBackup,
-                    cloudBackupState.lastCloudBackupLabel ?: stringResource(
+                    backupState.lastCloudBackupLabel ?: stringResource(
                         id = R.string.common_none
                     )
                 ),
@@ -430,22 +430,22 @@ private fun BackupStatusCard(
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_accountsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_accountsItemSubtitle),
-            cloudBackupState = cloudBackupState
+            backupState = backupState
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_personasItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_personasItemSubtitle),
-            cloudBackupState = cloudBackupState
+            backupState = backupState
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemSubtitle),
-            cloudBackupState = cloudBackupState
+            backupState = backupState
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemSubtitle),
-            cloudBackupState = cloudBackupState
+            backupState = backupState
         )
     }
 }
@@ -534,7 +534,7 @@ private fun BackupWarning(
 private fun BackupStatusSection(
     title: String,
     subtitle: String,
-    cloudBackupState: CloudBackupState
+    backupState: BackupState
 ) {
     var expanded by rememberSaveable {
         mutableStateOf(false)
@@ -546,14 +546,14 @@ private fun BackupStatusSection(
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (cloudBackupState.isNotUpdated) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+        val statusColor = if (backupState.isCloudBackupNotUpdated) RadixTheme.colors.orange3 else RadixTheme.colors.green1
 
         SecurityPromptLabel(
             modifier = Modifier.fillMaxWidth(),
             text = title,
             textColor = statusColor,
-            iconRes = remember(cloudBackupState.isNotUpdated) {
-                if (cloudBackupState.isNotUpdated) DSR.ic_warning_error else DSR.ic_check_circle
+            iconRes = remember(backupState.isCloudBackupNotUpdated) {
+                if (backupState.isCloudBackupNotUpdated) DSR.ic_warning_error else DSR.ic_check_circle
             },
             iconTint = statusColor,
             endContent = {
@@ -801,7 +801,7 @@ private fun EncryptSheet(
 fun BackupStatusCardPreview() {
     RadixWalletPreviewTheme {
         BackupStatusCard(
-            cloudBackupState = CloudBackupState.Enabled(email = "my cool email"),
+            backupState = BackupState.CloudBackupEnabled(email = "my cool email"),
             isCloudAuthorizationInProgress = false,
             onBackupCheckChanged = {}
         )
@@ -813,7 +813,7 @@ fun BackupStatusCardPreview() {
 fun BackupStatusCarAuthInProgressPreview() {
     RadixWalletPreviewTheme {
         BackupStatusCard(
-            cloudBackupState = CloudBackupState.Enabled(email = "my cool email"),
+            backupState = BackupState.CloudBackupEnabled(email = "my cool email"),
             isCloudAuthorizationInProgress = true,
             onBackupCheckChanged = {}
         )
@@ -825,7 +825,7 @@ fun BackupStatusCarAuthInProgressPreview() {
 fun ManualBackupStatusCardPreview() {
     RadixWalletPreviewTheme {
         ManualBackupCard(
-            cloudBackupState = CloudBackupState.Disabled(
+            backupState = BackupState.CloudBackupDisabled(
                 email = "my cool email",
                 lastCloudBackupTime = null,
                 lastManualBackupTime = InstantGenerator(),
@@ -855,7 +855,7 @@ fun BackupStatusSectionPreview() {
         BackupStatusSection(
             title = "title",
             subtitle = "subtitle",
-            cloudBackupState = CloudBackupState.Enabled(email = "email@mail.com")
+            backupState = BackupState.CloudBackupEnabled(email = "email@mail.com")
         )
     }
 }
@@ -865,7 +865,7 @@ fun BackupStatusSectionPreview() {
 fun BackupScreenPreview() {
     RadixWalletTheme {
         BackupScreenContent(
-            state = BackupViewModel.State(cloudBackupState = CloudBackupState.Enabled(email = "email@mail.com")),
+            state = BackupViewModel.State(backupState = BackupState.CloudBackupEnabled(email = "email@mail.com")),
             onBackupCheckChanged = {},
             onFileBackupClick = {},
             onFileBackupConfirm = {},
@@ -916,7 +916,7 @@ fun BackupDisabledAndNotUpdatedManualBackupPreview() {
         val oneDayBefore = now.minusDays(1)
         BackupScreenContent(
             state = BackupViewModel.State(
-                cloudBackupState = CloudBackupState.Disabled(
+                backupState = BackupState.CloudBackupDisabled(
                     email = "my cool email",
                     lastCloudBackupTime = now,
                     lastManualBackupTime = oneDayBefore.toInstant(),
@@ -946,7 +946,7 @@ fun BackupDisabledAndNeverManualBackupPreview() {
         val now = TimestampGenerator()
         BackupScreenContent(
             state = BackupViewModel.State(
-                cloudBackupState = CloudBackupState.Disabled(
+                backupState = BackupState.CloudBackupDisabled(
                     email = "my cool email",
                     lastCloudBackupTime = now,
                     lastManualBackupTime = null,
@@ -977,8 +977,40 @@ fun BackupDisabledAndUpdatedManualBackupPreview() {
         val oneDayBefore = now.minusDays(1)
         BackupScreenContent(
             state = BackupViewModel.State(
-                cloudBackupState = CloudBackupState.Disabled(
+                backupState = BackupState.CloudBackupDisabled(
                     email = "my cool email",
+                    lastCloudBackupTime = oneDayBefore,
+                    lastManualBackupTime = now.toInstant(),
+                    lastModifiedProfileTime = now
+                )
+            ),
+            onBackupCheckChanged = {},
+            onFileBackupClick = {},
+            onFileBackupConfirm = {},
+            onFileBackupDeny = {},
+            onEncryptPasswordTyped = {},
+            onEncryptPasswordRevealToggle = {},
+            onEncryptConfirmPasswordTyped = {},
+            onEncryptPasswordConfirmRevealToggle = {},
+            onEncryptSubmitClick = {},
+            onUiMessageShown = {},
+            onBackClick = {},
+            onDisconnectClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun BackupHasErrorAndUpdatedManualBackupPreview() {
+    RadixWalletTheme {
+        val now = TimestampGenerator()
+        val oneDayBefore = now.minusDays(1)
+        BackupScreenContent(
+            state = BackupViewModel.State(
+                backupState = BackupState.CloudBackupEnabled(
+                    email = "my cool email",
+                    hasAnyErrors = true,
                     lastCloudBackupTime = oneDayBefore,
                     lastManualBackupTime = now.toInstant(),
                     lastModifiedProfileTime = now

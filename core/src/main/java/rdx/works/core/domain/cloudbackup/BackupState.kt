@@ -6,14 +6,17 @@ import java.time.Instant
 import java.time.ZoneId
 
 /**
- * CloudBackupState reflects the state of the toggle button in BackupScreen.
- * Enabled = on / Disabled = off
+ * BackupState reflects the state of Backup screen and
+ * takes into consideration the cloud backup state and the manual backup state.
  *
- * Important note: Enabled doesn't necessarily means that cloud backup is working properly.
- * Thus, the hasAnyErrors in the Enabled. If this is true the backup screen shows warnings
- * and toggle remains on.
+ * CloudBackupEnabled and CloudBackupDisabled express the toggle button state. CloudBackupEnabled = on / CloudBackupDisabled = off
+ *
+ * Important note: CloudBackupEnabled doesn't necessarily means that cloud backup is working properly.
+ * Thus, the hasAnyErrors in the CloudBackupEnabled.
+ * If this is true the backup screen shows warnings and toggle remains on.
+ *
  */
-sealed class CloudBackupState {
+sealed class BackupState {
 
     // email for cloud backup authorization
     abstract val email: String?
@@ -21,20 +24,25 @@ sealed class CloudBackupState {
     abstract val lastManualBackupTime: Instant?
     abstract val lastModifiedProfileTime: Timestamp?
 
-    data class Enabled(
+    data class CloudBackupEnabled(
         override val email: String,
         val hasAnyErrors: Boolean = false,
         override val lastCloudBackupTime: Timestamp? = null,
         override val lastManualBackupTime: Instant? = null,
         override val lastModifiedProfileTime: Timestamp? = null,
-    ) : CloudBackupState()
+    ) : BackupState()
 
-    data class Disabled(
+    data class CloudBackupDisabled(
         override val email: String?,
         override val lastCloudBackupTime: Timestamp?,
         override val lastManualBackupTime: Instant?,
         override val lastModifiedProfileTime: Timestamp?
-    ) : CloudBackupState()
+    ) : BackupState()
+
+    // It is used for the login status of the Configuration Backup screen.
+    // Cloud backup might be authorized even if state is disabled.
+    val isAuthorized: Boolean
+        get() = email.isNullOrEmpty().not()
 
     // it is needed to inform the user when the last cloud backup happened
     val lastCloudBackupLabel: String?
@@ -48,20 +56,29 @@ sealed class CloudBackupState {
             DateUtils.getRelativeTimeSpanString(epochMilli)
         }?.toString()
 
-    val isEnabled: Boolean
-        get() = this is Enabled
+    val isCloudBackupEnabled: Boolean
+        get() = this is CloudBackupEnabled
 
+    val isCloudBackupNotUpdated: Boolean
+        get() {
+            return when (this) {
+                is CloudBackupDisabled -> {
+                    true
+                }
+                is CloudBackupEnabled -> {
+                    hasAnyErrors
+                }
+            }
+        }
+
+    // neither an updated cloud backup nor an updated manual backup
     val isNotUpdated: Boolean
         get() = backupWarning != null
 
-    // It is used for the login status of the Configuration Backup screen.
-    // Cloud backup might be authorized even if state is disabled.
-    val isAuthorized: Boolean
-        get() = email.isNullOrEmpty().not()
-
+    // warnings in Backup screen take into consideration the cloud backup state AND the manual backup state
     val backupWarning: BackupWarning?
         get() = when (this) {
-            is Disabled -> {
+            is CloudBackupDisabled -> {
                 val lastManualBackupTimestamp = lastManualBackupTime?.let {
                     Timestamp.ofInstant(it, ZoneId.systemDefault())
                 }
@@ -75,7 +92,7 @@ sealed class CloudBackupState {
                 }
             }
 
-            is Enabled -> {
+            is CloudBackupEnabled -> {
                 if (hasAnyErrors) {
                     BackupWarning.CLOUD_BACKUP_SERVICE_ERROR
                 } else {
