@@ -49,7 +49,7 @@ class ChooseSeedPhraseViewModel @Inject constructor(
                 var updated = factorSources.map { entry ->
                     val data = DeviceFactorSourceData(
                         deviceFactorSource = entry.key,
-                        accounts = entry.value.toPersistentList()
+                        allAccounts = entry.value.toPersistentList()
                     )
                     Selectable(data, selected = existing.any { it.data.deviceFactorSource.id == entry.key.id && it.selected })
                 }
