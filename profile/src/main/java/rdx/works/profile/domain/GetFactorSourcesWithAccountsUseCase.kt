@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.map
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.hasBabylonSeedPhraseLength
-import rdx.works.core.sargon.notHiddenAccounts
-import rdx.works.core.sargon.notHiddenPersonas
 import rdx.works.core.sargon.usesEd25519
 import rdx.works.core.sargon.usesSECP256k1
 import javax.inject.Inject
@@ -23,8 +21,8 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
         return getProfileUseCase.flow.map { profile ->
             val result = mutableListOf<DeviceFactorSourceData>()
             val deviceFactorSources = profile.factorSources.filterIsInstance<FactorSource.Device>()
-            val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
-            val allPersonasOnNetwork = profile.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+            val allAccountsOnNetwork = profile.currentNetwork?.accounts.orEmpty()
+            val allPersonasOnNetwork = profile.currentNetwork?.personas.orEmpty()
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
                     val olympiaAccounts = allAccountsOnNetwork.filter {
@@ -40,7 +38,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                         result.add(
                             DeviceFactorSourceData(
                                 deviceFactorSource = deviceFactorSource,
-                                accounts = babylonAccounts,
+                                allAccounts = babylonAccounts,
                                 isBabylon = true,
                                 personas = babylonPersonas
                             )
@@ -49,7 +47,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     result.add(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,
-                            accounts = olympiaAccounts,
+                            allAccounts = olympiaAccounts,
                             isBabylon = false
                         )
                     )
@@ -63,7 +61,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     result.add(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,
-                            accounts = accounts,
+                            allAccounts = accounts,
                             isBabylon = deviceFactorSource.supportsBabylon,
                             personas = personas
                         )

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -193,21 +195,21 @@ fun SeedPhraseCard(
                 Text(
                     text = stringResource(
                         id = if (data.personas.isNotEmpty()) {
-                            if (data.accounts.size == 1) {
+                            if (data.allAccounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsPersonasLabel_one
                             } else {
                                 R.string.displayMnemonics_connectedAccountsPersonasLabel_many
                             }
                         } else {
-                            if (data.accounts.size == 1) {
+                            if (data.allAccounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsLabel_one
-                            } else if (data.accounts.isEmpty()) {
+                            } else if (data.allAccounts.isEmpty()) {
                                 R.string.seedPhrases_seedPhrase_noConnectedAccountsReveal
                             } else {
                                 R.string.displayMnemonics_connectedAccountsLabel_many
                             }
                         },
-                        data.accounts.size
+                        data.allAccounts.size
                     ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
@@ -231,11 +233,25 @@ fun SeedPhraseCard(
             )
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-        data.accounts.forEach { account ->
-            SimpleAccountCard(
-                modifier = Modifier.fillMaxWidth(),
-                account = account
+        if (data.hasOnlyHiddenAccounts) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge)
+                    .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
+                    .padding(RadixTheme.dimensions.paddingXXLarge),
+                text = stringResource(id = R.string.seedPhrases_hiddenAccountsOnly),
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
             )
+        } else {
+            data.notHiddenAccounts.forEach { account ->
+                SimpleAccountCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    account = account
+                )
+            }
         }
     }
 }
@@ -250,12 +266,12 @@ fun SeedPhrasesWithAccountsAndPersonasPreview() {
             deviceFactorSourceData = persistentListOf(
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample(),
-                    accounts = Account.sampleMainnet.all,
+                    allAccounts = Account.sampleMainnet.all,
                     personas = Persona.sampleMainnet.all
                 ),
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample.other(),
-                    accounts = persistentListOf(Account.sampleMainnet())
+                    allAccounts = persistentListOf(Account.sampleMainnet())
                 )
             ),
             onSeedPhraseClick = {}
@@ -276,7 +292,7 @@ fun SeedPhrasesWithoutAccountsAndPersonasPreview() {
                 ),
                 DeviceFactorSourceData(
                     deviceFactorSource = FactorSource.Device.sample.other(),
-                    accounts = persistentListOf(Account.sampleMainnet())
+                    allAccounts = persistentListOf(Account.sampleMainnet())
                 )
             ),
             onSeedPhraseClick = {}

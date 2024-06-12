@@ -222,12 +222,12 @@ fun SeedPhraseCard(
                 )
                 Text(
                     text = stringResource(
-                        id = if (data.accounts.size == 1) {
+                        id = if (data.allAccounts.size == 1) {
                             R.string.displayMnemonics_connectedAccountsLabel_one
                         } else {
                             R.string.displayMnemonics_connectedAccountsLabel_many
                         },
-                        data.accounts.size
+                        data.allAccounts.size
                     ),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
@@ -245,9 +245,9 @@ fun SeedPhraseCard(
                 onClick = onSelectionChanged,
             )
         }
-        if (data.accounts.isNotEmpty()) {
+        if (data.allAccounts.isNotEmpty()) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-            data.accounts.forEach { account ->
+            data.allAccounts.forEach { account ->
                 SimpleAccountCard(
                     modifier = Modifier.fillMaxWidth(),
                     account = account
