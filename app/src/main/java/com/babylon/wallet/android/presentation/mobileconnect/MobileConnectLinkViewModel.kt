@@ -36,7 +36,7 @@ class MobileConnectLinkViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
-) : StateViewModel<MobileConnectViewModel.State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<MobileConnectLinkViewModel.State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = MobileConnectArgs(savedStateHandle)
     override fun initialState(): State {

@@ -76,7 +76,7 @@ fun MobileConnectLinkScreen(
 @Composable
 fun MobileConnectLinkContent(
     modifier: Modifier = Modifier,
-    state: MobileConnectViewModel.State,
+    state: MobileConnectLinkViewModel.State,
     onCloseClick: () -> Unit,
     onMessageShown: () -> Unit,
     onLinkWithDapp: () -> Unit,
@@ -209,8 +209,8 @@ fun MobileConnectLinkContent(
 @Preview
 fun MobileConnectScreenPreview() {
     RadixWalletPreviewTheme {
-        MobileConnectContent(
-            state = MobileConnectViewModel.State(),
+        MobileConnectLinkContent(
+            state = MobileConnectLinkViewModel.State(),
             onCloseClick = {},
             onMessageShown = {},
             onLinkWithDapp = {},
