@@ -36,7 +36,7 @@ class MobileConnectLinkViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
-) : StateViewModel<State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<MobileConnectViewModel.State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = MobileConnectArgs(savedStateHandle)
     override fun initialState(): State {
@@ -161,12 +161,28 @@ class MobileConnectLinkViewModel @Inject constructor(
         data class OpenUrl(val url: String, val browserName: Browser) : Event()
         data object Close : Event()
     }
+
+    data class State(
+        val dApp: DApp? = null,
+        val dAppDefinition: DappDefinition? = null,
+        val uiMessage: UiMessage? = null,
+        val isLoading: Boolean = true,
+        val linkDelaySeconds: Int = 0,
+        val callbackPath: String? = null,
+        val autoLink: Boolean = false,
+        val isLinking: Boolean = false
+    ) : UiState
+
+    companion object {
+        const val SCREEN_CLOSE_DELAY_MS = 500L
+    }
 }
 
 data class State(
     val dApp: DApp? = null,
     val dAppDefinition: DappDefinition? = null,
     val uiMessage: UiMessage? = null,
+    val isProfileInitialized: Boolean = true,
     val isLoading: Boolean = true,
     val linkDelaySeconds: Int = 0,
     val callbackPath: String? = null,
