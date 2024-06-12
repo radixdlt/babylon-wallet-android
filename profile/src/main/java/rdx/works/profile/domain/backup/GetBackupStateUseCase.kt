@@ -2,7 +2,7 @@ package rdx.works.profile.domain.backup
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import rdx.works.core.domain.cloudbackup.CloudBackupState
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
@@ -12,14 +12,14 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
-class GetCloudBackupStateUseCase @Inject constructor(
+class GetBackupStateUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val preferencesManager: PreferencesManager,
     private val googleSignInManager: GoogleSignInManager,
     private val cloudBackupErrorStream: CloudBackupErrorStream
 ) {
 
-    operator fun invoke(): Flow<CloudBackupState> = combine(
+    operator fun invoke(): Flow<BackupState> = combine(
         profileRepository.profile,
         preferencesManager.lastCloudBackupEvent,
         cloudBackupErrorStream.errors,
@@ -28,19 +28,19 @@ class GetCloudBackupStateUseCase @Inject constructor(
         val email = googleSignInManager.getSignedInGoogleAccount()?.email
 
         if (profile.canBackupToCloud && email != null && backupError == null) {
-            CloudBackupState.Enabled(email = email)
+            BackupState.CloudBackupEnabled(email = email)
         } else {
             if (email != null &&
                 (backupError is BackupServiceException.ServiceException || backupError is BackupServiceException.Unknown)
             ) {
-                CloudBackupState.Enabled(
+                BackupState.CloudBackupEnabled(
                     email = email,
                     hasAnyErrors = true,
                     lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
                     lastManualBackupTime = lastManualBackupInstant
                 )
             } else {
-                CloudBackupState.Disabled(
+                BackupState.CloudBackupDisabled(
                     email = email,
                     lastCloudBackupTime = lastCloudBackupEvent?.cloudBackupTime,
                     lastManualBackupTime = lastManualBackupInstant,
