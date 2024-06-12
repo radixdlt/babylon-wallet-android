@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
@@ -82,6 +83,10 @@ fun WalletApp(
                             navController.dAppLoginUnauthorized(incomingRequest.interactionId.toString())
                         }
                     }
+                }
+
+                is MainEvent.MobileConnectLink -> {
+                    navController.mobileConnect(event.publicKeyHex, event.sessionId, event.origin, event.browser)
                 }
             }
         }
@@ -169,6 +174,17 @@ fun WalletApp(
             confirmText = stringResource(
                 id = R.string.common_ok
             ),
+            dismissText = null
+        )
+    }
+    if (!state.isProfileInitialized) {
+        BasicPromptAlertDialog(
+            finish = {
+                onCloseApp()
+            },
+            titleText = "No profile found",
+            messageText = "You need to create a profile to respond to dApp requests",
+            confirmText = stringResource(id = R.string.common_ok),
             dismissText = null
         )
     }

@@ -29,16 +29,15 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.openUrl
 
 @Composable
-fun MobileConnectScreen(
+fun MobileConnectLinkScreen(
     modifier: Modifier = Modifier,
-    viewModel: MobileConnectViewModel = hiltViewModel(),
+    viewModel: MobileConnectLinkViewModel = hiltViewModel(),
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -46,37 +45,26 @@ fun MobileConnectScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is MobileConnectViewModel.Event.OpenUrl -> {
+                is MobileConnectLinkViewModel.Event.OpenUrl -> {
                     context.openUrl(event.url, event.browserName)
                     onBackClick()
                 }
 
-                MobileConnectViewModel.Event.Close -> onBackClick()
+                MobileConnectLinkViewModel.Event.Close -> onBackClick()
             }
         }
     }
-    MobileConnectContent(
+    MobileConnectLinkContent(
         modifier = modifier.fillMaxSize(),
         state = state,
         onMessageShown = viewModel::onMessageShown,
         onLinkWithDapp = viewModel::onLinkWithDapp,
         onAutoConfirmChange = viewModel::onAutoConfirmChange
     )
-    if (!state.isProfileInitialized) {
-        BasicPromptAlertDialog(
-            finish = {
-                onBackClick()
-            },
-            titleText = "No profile found",
-            messageText = "You need to create a profile to respond to dApp requests",
-            confirmText = stringResource(id = R.string.common_ok),
-            dismissText = null
-        )
-    }
 }
 
 @Composable
-fun MobileConnectContent(
+fun MobileConnectLinkContent(
     modifier: Modifier,
     state: State,
     onMessageShown: () -> Unit,

@@ -62,6 +62,7 @@ class MainActivity : FragmentActivity() {
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         Timber.d("Dapp deep link: ${intent.data}")
+        intent.data?.let { viewModel.handleDeepLink(it) }
         setContent {
             RadixWalletTheme {
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
