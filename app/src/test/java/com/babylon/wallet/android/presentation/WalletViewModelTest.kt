@@ -30,7 +30,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.cloudbackup.CloudBackupState
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -42,13 +42,13 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
-    private val getCloudBackupStateUseCase = mockk<GetCloudBackupStateUseCase>()
+    private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
@@ -90,8 +90,8 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         super.setUp()
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
-        every { getCloudBackupStateUseCase() } returns flowOf(
-            CloudBackupState.Disabled(
+        every { getBackupStateUseCase() } returns flowOf(
+            BackupState.CloudBackupDisabled(
                 email = "email",
                 lastCloudBackupTime = TimestampGenerator(),
                 lastManualBackupTime = InstantGenerator(),

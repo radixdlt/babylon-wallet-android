@@ -4,21 +4,21 @@ import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.radixdlt.sargon.extensions.ProfileEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import rdx.works.core.domain.cloudbackup.CloudBackupState
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isHidden
 import rdx.works.core.sargon.isNotHidden
-import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 class GetSecurityProblemsUseCase @Inject constructor(
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
-    private val getCloudBackupStateUseCase: GetCloudBackupStateUseCase
+    private val getBackupStateUseCase: GetBackupStateUseCase
 ) {
 
     operator fun invoke(): Flow<Set<SecurityProblem>> = combine(
         getEntitiesWithSecurityPromptUseCase(),
-        getCloudBackupStateUseCase()
+        getBackupStateUseCase()
     ) { entitiesWithSecurityPrompts, cloudBackupState ->
         // personas that need cloud backup
         val personasNeedCloudBackup = entitiesWithSecurityPrompts
@@ -43,14 +43,14 @@ class GetSecurityProblemsUseCase @Inject constructor(
 
         mutableSetOf<SecurityProblem>().apply {
             // entities that need cloud backup
-            if (cloudBackupState is CloudBackupState.Disabled && cloudBackupState.isNotUpdated) {
+            if (cloudBackupState is BackupState.CloudBackupDisabled && cloudBackupState.isNotUpdated) {
                 add(
                     SecurityProblem.CloudBackupNotWorking.Disabled(
                         isAnyActivePersonaAffected = activePersonasNeedCloudBackup > 0,
                         hasManualBackup = cloudBackupState.lastManualBackupTime != null
                     )
                 )
-            } else if (cloudBackupState is CloudBackupState.Enabled && cloudBackupState.hasAnyErrors) {
+            } else if (cloudBackupState is BackupState.CloudBackupEnabled && cloudBackupState.hasAnyErrors) {
                 add(SecurityProblem.CloudBackupNotWorking.ServiceError(isAnyActivePersonaAffected = activePersonasNeedCloudBackup > 0))
             }
 

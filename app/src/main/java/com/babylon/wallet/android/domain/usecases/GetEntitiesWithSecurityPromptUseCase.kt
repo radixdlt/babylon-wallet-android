@@ -7,28 +7,28 @@ import com.radixdlt.sargon.extensions.asGeneral
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.domain.cloudbackup.BackupWarning
-import rdx.works.core.domain.cloudbackup.CloudBackupState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetCloudBackupStateUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
 class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val mnemonicRepository: MnemonicRepository,
-    private val getCloudBackupStateUseCase: GetCloudBackupStateUseCase
+    private val getBackupStateUseCase: GetBackupStateUseCase
 ) {
 
     operator fun invoke(): Flow<List<EntityWithSecurityPrompt>> = combine(
         getProfileUseCase.flow.map { it.allEntitiesOnCurrentNetwork },
         preferencesManager.getBackedUpFactorSourceIds(),
-        getCloudBackupStateUseCase()
+        getBackupStateUseCase()
     ) { entities, backedUpFactorSourceIds, cloudBackupState ->
         entities.mapNotNull { entity ->
             mapToEntityWithSecurityPrompt(entity, backedUpFactorSourceIds, cloudBackupState)
@@ -39,13 +39,13 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
     private suspend fun mapToEntityWithSecurityPrompt(
         entity: ProfileEntity,
         backedUpFactorSourceIds: Set<FactorSourceId.Hash>,
-        cloudBackupState: CloudBackupState
+        backupState: BackupState
     ): EntityWithSecurityPrompt? {
         val factorSourceId = entity.securityState.factorSourceId as? FactorSourceId.Hash ?: return null
         val factorSource = getProfileUseCase().factorSourceById(factorSourceId) as? FactorSource.Device ?: return null
 
         val prompts = mutableSetOf<SecurityPromptType>().apply {
-            cloudBackupState.backupWarning?.let { backupWarning ->
+            backupState.backupWarning?.let { backupWarning ->
                 when (backupWarning) {
                     BackupWarning.CLOUD_BACKUP_SERVICE_ERROR -> add(SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM)
                     BackupWarning.CLOUD_BACKUP_DISABLED_WITH_NO_MANUAL_BACKUP -> add(SecurityPromptType.WALLET_NOT_RECOVERABLE)
