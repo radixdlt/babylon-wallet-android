@@ -31,7 +31,6 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
         data.read(byteArray)
         byteArray.toString(Charsets.UTF_8)
     }.then { snapshot ->
-        ensureP2PLinkMigrationAcknowledged(snapshot, BackupType.DeprecatedCloud)
         backupProfileRepository.saveTemporaryRestoringSnapshot(snapshot, BackupType.DeprecatedCloud)
     }
 
@@ -53,6 +52,8 @@ class SaveTemporaryRestoringSnapshotUseCase @Inject constructor(
                 jsonString = content
             )
         }
-        preferencesManager.setShowRelinkConnectorsAfterProfileRestore(containsLegacyP2PLinks)
+        if (containsLegacyP2PLinks) {
+            preferencesManager.setShowRelinkConnectorsAfterProfileRestore(true)
+        }
     }
 }
