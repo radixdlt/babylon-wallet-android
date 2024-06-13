@@ -7,6 +7,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.radixdlt.sargon.RadixConnectMobileLinkRequest
+import com.radixdlt.sargon.keyAgreementPublicKeyToHex
 import java.net.URLDecoder
 import java.net.URLEncoder
 
@@ -20,12 +22,13 @@ private const val ROUTE_ARGS = "{$ARG_PUBLIC_KEY}/{$ARG_SESSION_ID}/{$ARG_DAPP_O
 private const val ROUTE = "mobileConnect/$ROUTE_ARGS"
 
 fun NavController.mobileConnect(
-    publicKeyHex: String = "",
-    sessionId: String = "",
-    origin: String = "",
-    browser: String = ""
+    request: RadixConnectMobileLinkRequest
 ) {
-    val originEncoded = URLEncoder.encode(origin, "UTF-8")
+    // TODO use json serialization instead
+    val originEncoded = URLEncoder.encode(request.origin.toString(), "UTF-8")
+    val publicKeyHex = keyAgreementPublicKeyToHex(request.publicKey)
+    val sessionId = request.sessionId.toString()
+    val browser = request.browser
     navigate(
         route = "mobileConnect/$publicKeyHex/$sessionId/$originEncoded/$browser"
     )

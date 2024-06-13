@@ -86,7 +86,7 @@ fun WalletApp(
                 }
 
                 is MainEvent.MobileConnectLink -> {
-                    navController.mobileConnect(event.publicKeyHex, event.sessionId, event.origin, event.browser)
+                    navController.mobileConnect(event.request)
                 }
             }
         }
