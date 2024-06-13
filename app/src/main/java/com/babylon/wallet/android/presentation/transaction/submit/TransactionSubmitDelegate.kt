@@ -155,7 +155,8 @@ class TransactionSubmitDelegate @Inject constructor(
                     requestId = transactionRequest.interactionId.toString(),
                     transactionId = notarization.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
-                    blockUntilComplete = transactionRequest.blockUntilComplete
+                    blockUntilComplete = transactionRequest.blockUntilComplete,
+                    isMobileConnect = transactionRequest.isMobileConnectRequest
                 )
             )
             transactionStatusClient.pollTransactionStatus(
@@ -200,7 +201,8 @@ class TransactionSubmitDelegate @Inject constructor(
                                 isInternal = transactionRequest.isInternal,
                                 errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
                                 blockUntilComplete = transactionRequest.blockUntilComplete,
-                                walletErrorType = radixWalletException.toConnectorExtensionError()
+                                walletErrorType = radixWalletException.toConnectorExtensionError(),
+                                isMobileConnect = transactionRequest.isMobileConnectRequest
                             )
                         )
                     }

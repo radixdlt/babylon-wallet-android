@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.utils.removeTrailingSlash
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Hash
@@ -125,6 +126,7 @@ sealed interface SignRequest {
         val dAppDefinitionAddress: String
     ) : SignRequest {
 
+        // TODO removeTrailingSlash is a hack to fix the issue with dapp login, it should be removed after logic is moved to sargon
         override val dataToSign: BagOfBytes
             get() {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
@@ -133,7 +135,7 @@ sealed interface SignRequest {
                         challengeHex.hexToBagOfBytes().toByteArray() +
                         dAppDefinitionAddress.length.toUByte().toByte() +
                         dAppDefinitionAddress.toByteArray() +
-                        origin.toByteArray()
+                        origin.removeTrailingSlash().toByteArray()
                 )
             }
 

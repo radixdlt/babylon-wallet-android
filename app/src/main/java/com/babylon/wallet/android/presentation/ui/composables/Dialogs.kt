@@ -52,6 +52,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
@@ -422,7 +424,8 @@ fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionAddress: String
+    transactionAddress: String,
+    isMobileConnect: Boolean
 ) {
     Column(
         modifier
@@ -479,14 +482,27 @@ fun FailureDialogContent(
                 )
             }
         }
+        if (isMobileConnect) {
+            Text(
+                text = "You can return back to the dApp!",
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+        }
     }
+}
+
+internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean> {
+    override val values: Sequence<Boolean> = sequenceOf(true, false)
 }
 
 @Composable
 @Preview
-fun SomethingWentWrongDialogPreview() {
+fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean) {
     RadixWalletTheme {
         FailureDialogContent(
+            isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
             transactionAddress = "rdx1239j329fj292r32e23"
