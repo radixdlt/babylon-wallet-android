@@ -404,7 +404,7 @@ private fun BackupStatusCard(
             onCheckedChange = onBackupCheckChanged,
             isLoading = isCloudAuthorizationInProgress
         )
-        if (backupState is BackupState.CloudBackupDisabled) {
+        if (backupState.isCloudBackupNotUpdated) {
             Text(
                 modifier = Modifier.padding(start = 44.dp),
                 text = stringResource(

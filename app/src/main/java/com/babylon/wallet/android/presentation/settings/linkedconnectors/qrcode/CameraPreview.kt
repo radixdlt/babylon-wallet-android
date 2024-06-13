@@ -42,7 +42,9 @@ private fun BarcodePreviewView(
     val lifecycleOwner = LocalLifecycleOwner.current
     AndroidView(
         factory = { context ->
-            val previewView = PreviewView(context)
+            PreviewView(context)
+        },
+        update = { previewView ->
             val cameraSelector: CameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build()
@@ -84,7 +86,6 @@ private fun BarcodePreviewView(
                     cameraProvider.unbindAll()
                 }
             }, ContextCompat.getMainExecutor(previewView.context))
-            previewView
         },
         modifier = modifier
     )
