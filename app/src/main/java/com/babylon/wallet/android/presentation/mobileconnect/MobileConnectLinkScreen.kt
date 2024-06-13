@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.mobileconnect
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,7 +34,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -55,7 +55,7 @@ fun MobileConnectLinkScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is MobileConnectLinkViewModel.Event.OpenUrl -> {
-                    context.openUrl(event.url, event.browserName)
+                    context.openUrl(url = event.url, browser = event.browser)
                     onBackClick()
                 }
 
@@ -66,9 +66,9 @@ fun MobileConnectLinkScreen(
     MobileConnectLinkContent(
         modifier = modifier.fillMaxSize(),
         state = state,
-        onCloseClick = {},
+        onCloseClick = onBackClick,
         onMessageShown = viewModel::onMessageShown,
-        onLinkWithDapp = viewModel::onLinkWithDapp,
+        onLinkWithDapp = viewModel::onLinkWithDApp,
         onAutoConfirmChange = viewModel::onAutoConfirmChange
     )
 }

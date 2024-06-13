@@ -14,8 +14,6 @@ import javax.inject.Inject
 interface DappLinkRepository {
     suspend fun getDappLink(sessionId: String): Result<DappLink>
     suspend fun persistDappLinkForSessionId(sessionId: String): Result<DappLink>
-
-    suspend fun saveAsTemporary(link: DappLink): Result<DappLink>
 }
 
 class DappLinkRepositoryImpl @Inject constructor(
@@ -67,14 +65,6 @@ class DappLinkRepositoryImpl @Inject constructor(
                 Timber.d("Pending dApp links: ${pendingDappLinks.size}")
                 toPersist
             }
-        }
-    }
-
-    override suspend fun saveAsTemporary(link: DappLink): Result<DappLink> {
-        return runCatching {
-            pendingDappLinks.removeIf { it.sessionId == link.sessionId }
-            pendingDappLinks.add(link)
-            link
         }
     }
 }

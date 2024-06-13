@@ -12,13 +12,13 @@ import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 
 private const val ARG_REQUEST = "request"
-private const val ROUTE_ARGS = "$ARG_REQUEST={${ARG_REQUEST}}"
+private const val ROUTE_ARGS = "$ARG_REQUEST={$ARG_REQUEST}"
 private const val ROUTE = "mobileConnect?$ROUTE_ARGS"
 
 fun NavController.mobileConnect(
     request: RadixConnectMobileLinkRequest
 ) {
-    navigate(route = "mobileConnect/$ARG_REQUEST=${request.toJson()}")
+    navigate(route = "mobileConnect?$ARG_REQUEST=${request.toJson()}")
 }
 
 internal class MobileConnectArgs(
