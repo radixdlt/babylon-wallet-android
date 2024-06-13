@@ -15,6 +15,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.keyAgreementPublicKeyToBytes
 import com.radixdlt.sargon.keyAgreementPublicKeyToHex
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,7 +39,8 @@ class MobileConnectLinkViewModel @Inject constructor(
     private val dappLinkRepository: DappLinkRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
+    private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase,
+    private val radixConnectMobile: RadixConnectMobile
 ) : StateViewModel<MobileConnectLinkViewModel.State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = MobileConnectArgs(savedStateHandle)
