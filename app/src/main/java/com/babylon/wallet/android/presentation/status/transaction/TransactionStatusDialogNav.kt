@@ -104,7 +104,8 @@ fun AppEvent.Status.Transaction.toTransactionStatusFields(): TransactionStatusFi
         isInternal = isInternal,
         error = errorSerialized,
         walletErrorType = walletErrorType,
-        blockUntilComplete = blockUntilComplete
+        blockUntilComplete = blockUntilComplete,
+        isMobileConnect = isMobileConnect
     )
 }
 
@@ -118,20 +119,23 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             errorMessage = transactionStatusFields.error?.let { Json.decodeFromString(it) },
             blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
             walletErrorType = transactionStatusFields.walletErrorType?.let { Json.decodeFromString(it) },
+            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect)
         )
 
         VALUE_STATUS_SUCCESS -> AppEvent.Status.Transaction.Success(
             requestId = checkNotNull(transactionStatusFields.requestId),
             transactionId = checkNotNull(transactionStatusFields.transactionId),
             isInternal = checkNotNull(transactionStatusFields.isInternal),
-            blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete)
+            blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
+            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect)
         )
 
         VALUE_STATUS_IN_PROGRESS -> AppEvent.Status.Transaction.InProgress(
             requestId = checkNotNull(transactionStatusFields.requestId),
             transactionId = checkNotNull(transactionStatusFields.transactionId),
             isInternal = checkNotNull(transactionStatusFields.isInternal),
-            blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete)
+            blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
+            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect)
         )
 
         else -> error("Status not received")

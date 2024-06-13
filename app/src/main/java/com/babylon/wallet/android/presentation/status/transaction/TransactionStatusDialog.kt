@@ -24,6 +24,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -99,7 +101,8 @@ fun TransactionStatusDialog(
                     FailureDialogContent(
                         title = title,
                         subtitle = state.failureError,
-                        transactionAddress = state.transactionId
+                        transactionAddress = state.transactionId,
+                        isMobileConnect = state.status.isMobileConnect
                     )
                 }
 
@@ -109,7 +112,10 @@ fun TransactionStatusDialog(
                     exit = fadeOut()
                 ) {
                     // Need to send the correct transaction id
-                    SuccessContent(transactionAddress = state.transactionId)
+                    SuccessContent(
+                        transactionAddress = state.transactionId,
+                        isMobileConnect = state.status.isMobileConnect
+                    )
                 }
 
                 if (state.isIgnoreTransactionModalShowing) {
@@ -136,7 +142,8 @@ fun TransactionStatusDialog(
 @Composable
 private fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionAddress: String
+    transactionAddress: String,
+    isMobileConnect: Boolean
 ) {
     Column(
         modifier
@@ -184,6 +191,14 @@ private fun SuccessContent(
                 )
             }
         }
+        if (isMobileConnect) {
+            Text(
+                text = "You can return back to the dApp!",
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -215,11 +230,20 @@ private fun CompletingContent(
     }
 }
 
+internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean> {
+    override val values: Sequence<Boolean> = sequenceOf(true, false)
+}
+
 @Preview(showBackground = true)
 @Composable
-fun SuccessBottomDialogPreview() {
+fun SuccessBottomDialogPreview(
+    @PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean
+) {
     RadixWalletTheme {
-        SuccessContent(transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s")
+        SuccessContent(
+            transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s",
+            isMobileConnect = isMobileConnect
+        )
     }
 }
 

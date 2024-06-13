@@ -55,19 +55,22 @@ sealed interface AppEvent {
             abstract val transactionId: String
             abstract val isInternal: Boolean
             abstract val blockUntilComplete: Boolean
+            abstract val isMobileConnect: Boolean
 
             data class InProgress(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
-                override val blockUntilComplete: Boolean
+                override val blockUntilComplete: Boolean,
+                override val isMobileConnect: Boolean
             ) : Transaction()
 
             data class Success(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
-                override val blockUntilComplete: Boolean
+                override val blockUntilComplete: Boolean,
+                override val isMobileConnect: Boolean
             ) : Transaction()
 
             data class Fail(
@@ -76,7 +79,8 @@ sealed interface AppEvent {
                 override val isInternal: Boolean,
                 override val blockUntilComplete: Boolean,
                 val errorMessage: String?,
-                val walletErrorType: DappWalletInteractionErrorType?
+                val walletErrorType: DappWalletInteractionErrorType?,
+                override val isMobileConnect: Boolean
             ) : Transaction()
         }
     }

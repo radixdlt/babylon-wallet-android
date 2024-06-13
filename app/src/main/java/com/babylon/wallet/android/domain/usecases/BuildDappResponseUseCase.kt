@@ -183,7 +183,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
                     challengeHex = authRequest.challenge.hex,
-                    origin = request.metadata.origin,
+                    origin = request.metadata.origin.substring(0, request.metadata.origin.length - 1),
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 )
                 rolaClient.signAuthChallenge(
