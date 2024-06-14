@@ -6,12 +6,14 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSendTransactionResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -98,7 +100,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     items = WalletToDappInteractionResponseItems.Transaction(
                         v1 = WalletToDappInteractionTransactionResponseItems(
                             send = WalletToDappInteractionSendTransactionResponseItem(
-                                bech32EncodedTxId = txId
+                                transactionIntentHash = IntentHash.init(txId),
                             )
                         )
                     )

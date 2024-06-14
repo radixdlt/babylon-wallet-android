@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -26,6 +25,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
+import java.util.UUID
 
 @Composable
 fun TransferTypeContent(
@@ -67,7 +67,7 @@ fun TransactionPreviewTypePreview() {
                     remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(
                         "b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc"
                     ),
-                    interactionId = WalletInteractionId.randomUUID(),
+                    interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
                         networkId = NetworkId.MAINNET,

@@ -38,11 +38,11 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.sargon.default
+import java.util.UUID
 
 @Composable
 fun TransactionPreviewHeader(
@@ -181,7 +181,7 @@ fun TransactionPreviewHeaderPreview() {
             state = State(
                 request = IncomingMessage.IncomingRequest.TransactionRequest(
                     remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
-                    interactionId = WalletInteractionId.randomUUID(),
+                    interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = Gateway.default.network.id,

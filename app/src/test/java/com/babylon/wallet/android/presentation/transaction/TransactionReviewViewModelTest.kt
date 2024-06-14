@@ -93,6 +93,7 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import java.util.UUID
 
 @Ignore("TODO Integration")
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -163,7 +164,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
         endEpoch = 50u
     )
-    private val sampleRequestId = WalletInteractionId.randomUUID()
+    private val sampleRequestId = UUID.randomUUID().toString()
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns NetworkId.MAINNET
         every { instructions } returns ""

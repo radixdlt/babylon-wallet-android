@@ -8,6 +8,7 @@ import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.WalletToDappInteractionResponse
@@ -17,23 +18,25 @@ import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toJson
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.util.UUID
 
 class DappToWalletInteractionUnvalidatedTest {
 
     private val sampleDappAddress = AccountAddress.sampleMainnet.invoke()
     private val sampleIdentityAddress = IdentityAddress.sampleMainnet.invoke()
-    private val interactionId = WalletInteractionId.randomUUID()
+    private val interactionId = UUID.randomUUID().toString()
     private val challenge = Exactly32Bytes.sample.invoke()
 
     @Test
     fun `WalletInteraction unauthorized request decoding with oneTimeAccounts item`() {
-        val interactionId = WalletInteractionId.randomUUID()
+        val interactionId = UUID.randomUUID().toString()
         val request = """
             {
                "items":{
@@ -438,12 +441,12 @@ class DappToWalletInteractionUnvalidatedTest {
         val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.Transaction)
         val item = result.items as DappToWalletInteractionItems.Transaction
-        assert(item.v1.send.transactionManifest == "manifest")
+        assert(item.v1.send.unvalidatedManifest.transactionManifestString == "manifest")
     }
 
     @Test
     fun `transaction approval response matches expected`() {
-        val interacionId = WalletInteractionId.randomUUID()
+        val interacionId = UUID.randomUUID().toString()
         val expected =
             """{"discriminator":"success","interactionId":"$interacionId","items":{"discriminator":"transaction","send":{"transactionIntentHash":"1"}}}"""
         val response: WalletToDappInteractionResponse = WalletToDappInteractionResponse.Success(
@@ -452,7 +455,7 @@ class DappToWalletInteractionUnvalidatedTest {
                 items = WalletToDappInteractionResponseItems.Transaction(
                     v1 = WalletToDappInteractionTransactionResponseItems(
                         send = WalletToDappInteractionSendTransactionResponseItem(
-                            bech32EncodedTxId = "1",
+                            IntentHash.init("1"),
                         )
                     )
                 )

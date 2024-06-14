@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 class IncomingRequestRepositoryTest {
@@ -23,7 +24,7 @@ class IncomingRequestRepositoryTest {
     private val amountOfIncomingRequests = 100
     private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
@@ -50,7 +51,7 @@ class IncomingRequestRepositoryTest {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
                             incomingRequestRepository.add(
                                 incomingRequest = sampleIncomingRequest.copy(
-                                    interactionId = WalletInteractionId.randomUUID()
+                                    interactionId = UUID.randomUUID().toString()
                                 )
                             )
                         }
@@ -71,7 +72,7 @@ class IncomingRequestRepositoryTest {
         incomingRequestRepository.currentRequestToHandle
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-        val interactionIds = (1..5).map { WalletInteractionId.randomUUID() }
+        val interactionIds = (1..5).map { UUID.randomUUID().toString() }
         interactionIds.forEach { id -> // and in each of them, add an incoming request
             incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = id))
         }

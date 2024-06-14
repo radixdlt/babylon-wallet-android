@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.domain.model.deeplink
 
-import com.radixdlt.sargon.RadixConnectMobileLinkRequest
+import com.radixdlt.sargon.RadixConnectMobileSessionRequest
 
 sealed interface DeepLinkEvent {
 
-    data class MobileConnectLinkRequest(
-        val link: RadixConnectMobileLinkRequest
+    data class MobileConnectVerifyRequest(
+        val request: RadixConnectMobileSessionRequest
     ) : DeepLinkEvent
 }
