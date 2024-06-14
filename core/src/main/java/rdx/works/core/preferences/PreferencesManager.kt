@@ -42,7 +42,6 @@ interface PreferencesManager {
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
-    val mobileConnectAutoLink: Flow<Boolean>
     val lastSyncedAccountsWithCE: Flow<String?>
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
     val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
@@ -65,8 +64,6 @@ interface PreferencesManager {
     suspend fun markFactorSourceBackedUp(id: FactorSourceId.Hash)
 
     suspend fun enableCrashReporting(enabled: Boolean)
-
-    suspend fun autoLinkWithDapps(enabled: Boolean)
 
     suspend fun setRadixBannerVisibility(isVisible: Boolean)
 
@@ -227,12 +224,6 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun autoLinkWithDapps(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[AUTO_LINK_WITH_DAPPS] = enabled
-        }
-    }
-
     override val isRadixBannerVisible: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_RADIX_BANNER_VISIBLE] ?: false
@@ -301,10 +292,6 @@ class PreferencesManagerImpl @Inject constructor(
         get() = dataStore.data.map { preferences ->
             preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
         }
-    override val mobileConnectAutoLink: Flow<Boolean>
-        get() = dataStore.data.map { preferences ->
-            preferences[AUTO_LINK_WITH_DAPPS] ?: false
-        }
 
     override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
         dataStore.edit { preferences ->
@@ -363,7 +350,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")
-        val AUTO_LINK_WITH_DAPPS = booleanPreferencesKey("mobile_connect_auto_link")
 
         val DEV_KEY_MOBILE_CONNECT_DELAY_S = intPreferencesKey("mobile_connect_delay_s")
     }

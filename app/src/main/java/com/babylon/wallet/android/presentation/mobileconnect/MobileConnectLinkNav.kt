@@ -7,7 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.radixdlt.sargon.RadixConnectMobileLinkRequest
+import com.radixdlt.sargon.RadixConnectMobileSessionRequest
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 
@@ -16,17 +16,17 @@ private const val ROUTE_ARGS = "$ARG_REQUEST={$ARG_REQUEST}"
 private const val ROUTE = "mobileConnect?$ROUTE_ARGS"
 
 fun NavController.mobileConnect(
-    request: RadixConnectMobileLinkRequest
+    request: RadixConnectMobileSessionRequest
 ) {
     navigate(route = "mobileConnect?$ARG_REQUEST=${request.toJson()}")
 }
 
 internal class MobileConnectArgs(
-    val request: RadixConnectMobileLinkRequest
+    val request: RadixConnectMobileSessionRequest
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         request = checkNotNull(savedStateHandle.get<String>(ARG_REQUEST)).let {
-            RadixConnectMobileLinkRequest.fromJson(it)
+            RadixConnectMobileSessionRequest.fromJson(it)
         }
     )
 }
@@ -46,6 +46,6 @@ fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
-        MobileConnectLinkScreen(onBackClick = onBackClick)
+        MobileConnectLinkScreen(onClose = onBackClick)
     }
 }

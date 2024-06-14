@@ -1,8 +1,7 @@
 package com.babylon.wallet.android.presentation.mobileconnect
 
-import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -30,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
@@ -40,36 +37,28 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
-import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
 fun MobileConnectLinkScreen(
     modifier: Modifier = Modifier,
     viewModel: MobileConnectLinkViewModel = hiltViewModel(),
-    onBackClick: () -> Unit
+    onClose: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is MobileConnectLinkViewModel.Event.OpenUrl -> {
-                    context.openUrl(url = event.url, browser = event.browser)
-                    onBackClick()
-                }
-
-                MobileConnectLinkViewModel.Event.Close -> onBackClick()
+                MobileConnectLinkViewModel.Event.Close -> onClose()
             }
         }
     }
     MobileConnectLinkContent(
         modifier = modifier.fillMaxSize(),
         state = state,
-        onCloseClick = onBackClick,
         onMessageShown = viewModel::onMessageShown,
-        onLinkWithDapp = viewModel::onLinkWithDApp,
-        onAutoConfirmChange = viewModel::onAutoConfirmChange
+        onVerify = viewModel::onVerifyOrigin,
+        onDeny = viewModel::onDenyOrigin
     )
 }
 
@@ -77,10 +66,9 @@ fun MobileConnectLinkScreen(
 fun MobileConnectLinkContent(
     modifier: Modifier = Modifier,
     state: MobileConnectLinkViewModel.State,
-    onCloseClick: () -> Unit,
     onMessageShown: () -> Unit,
-    onLinkWithDapp: () -> Unit,
-    onAutoConfirmChange: (Boolean) -> Unit
+    onVerify: () -> Unit,
+    onDeny: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -88,6 +76,8 @@ fun MobileConnectLinkContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
+
+    BackHandler(onBack = onDeny)
 
     Scaffold(
         modifier = modifier,
@@ -102,7 +92,7 @@ fun MobileConnectLinkContent(
             RadixCenteredTopAppBar(
                 backIconType = BackIconType.Close,
                 title = stringResource(id = R.string.empty),
-                onBackClick = onCloseClick,
+                onBackClick = onDeny,
                 windowInsets = WindowInsets.statusBars
             )
         },
@@ -111,9 +101,9 @@ fun MobileConnectLinkContent(
                 BottomPrimaryButton(
                     modifier = Modifier.navigationBarsPadding(),
                     text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
-                    onClick = onLinkWithDapp,
-                    isLoading = state.isLinking,
-                    enabled = !state.isLinking
+                    onClick = onVerify,
+                    isLoading = state.isVerifying,
+                    enabled = !state.isVerifying
                 )
             }
         }
@@ -178,28 +168,6 @@ fun MobileConnectLinkContent(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.weight(1f))
-
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(id = R.string.mobileConnect_verifyingDApp_autoConfirmTitle),
-                        style = RadixTheme.typography.body1Header, // TODO Mobile Connect (UI)
-                        color = RadixTheme.colors.gray1
-                    )
-                    Text(
-                        text = stringResource(id = R.string.mobileConnect_verifyingDApp_autoConfirmSubtitle),
-                        style = RadixTheme.typography.body1Regular, // TODO Mobile Connect (UI)
-                        color = RadixTheme.colors.gray1
-                    )
-                }
-                RadixSwitch(checked = state.autoLink, onCheckedChange = onAutoConfirmChange)
-            }
         }
     }
 }
@@ -211,10 +179,9 @@ fun MobileConnectScreenPreview() {
     RadixWalletPreviewTheme {
         MobileConnectLinkContent(
             state = MobileConnectLinkViewModel.State(),
-            onCloseClick = {},
             onMessageShown = {},
-            onLinkWithDapp = {},
-            onAutoConfirmChange = {}
+            onVerify = {},
+            onDeny = {}
         )
     }
 }
