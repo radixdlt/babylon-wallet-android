@@ -269,7 +269,7 @@ class MainViewModel @Inject constructor(
                     rcrRepository.getRequest(sessionId!!, interactionId!!).mapCatching { walletInteraction ->
                         walletInteraction.toDomainModel(
                             IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(sessionId)
-                        )
+                        ).getOrThrow()
                     }.onSuccess { request ->
                         incomingRequestRepository.add(request)
                     }.onFailure {

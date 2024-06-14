@@ -55,7 +55,7 @@ interface LedgerMessenger {
 
 class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
-    private val json: Json
+    private val jsonSerializer: Json
 ) : LedgerMessenger {
 
     override val isAnyLinkedConnectorConnected: Flow<Boolean>
@@ -155,7 +155,7 @@ class LedgerMessengerImpl @Inject constructor(
             IncomingMessage.LedgerResponse.LedgerErrorResponse
         ) -> RadixWalletException.LedgerCommunicationException
     ): Result<R> = flow<Result<R>> {
-        peerdroidClient.sendMessage(json.encodeToString(request))
+        peerdroidClient.sendMessage(jsonSerializer.encodeToString(request))
             .onSuccess {
                 peerdroidClient.listenForLedgerResponses().filter { ledgerResponse ->
                     ledgerResponse.id == request.interactionId
