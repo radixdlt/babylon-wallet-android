@@ -34,6 +34,7 @@ import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -128,7 +129,7 @@ class PersonaDetailViewModel @Inject constructor(
                                 _state.update { state -> state.copy(loading = false) }
                                 return@launch
                             }
-                        uploadAuthKeyRequestId = WalletInteractionId.randomUUID()
+                        uploadAuthKeyRequestId = UUID.randomUUID().toString()
                         incomingRequestRepository.add(
                             manifest.prepareInternalTransactionRequest(
                                 requestId = uploadAuthKeyRequestId

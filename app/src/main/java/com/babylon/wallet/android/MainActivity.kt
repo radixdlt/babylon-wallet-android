@@ -1,6 +1,7 @@
 package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -28,7 +29,6 @@ import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreview
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
-import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -61,7 +61,6 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
-        Timber.d("Dapp deep link: ${intent.data}")
         intent.data?.let { viewModel.handleDeepLink(it) }
         setContent {
             RadixWalletTheme {
@@ -97,6 +96,11 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.data?.let { viewModel.handleDeepLink(it) }
     }
 
     private fun setSplashExitAnimation(splashScreen: SplashScreen) {

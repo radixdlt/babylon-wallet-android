@@ -1198,7 +1198,10 @@
   <string name="securityProblems_common_accountPlural">%d accounts</string>
   <string name="securityProblems_common_personaSingular">1 persona</string>
   <string name="securityProblems_common_personaPlural">%d personas</string>
-\n\n
-  <string name="mobileConnect_autoConfirmTitle">Auto confirm</string>
-  <string name="mobileConnect_autoConfirmSubtitle">Auto confirm next dApp verification requests</string>
+
+    <string name="mobileConnect_verifyingDApp_title">Connecting to %s</string>
+    <string name="mobileConnect_verifyingDApp_subtitle">You’re connecting to %s for the first time</string>
+    <string name="mobileConnect_verifyingDApp_body">For this first connection, we’re going to run some quick automatic checks to verify the dApp.</string>
+  <string name="mobileConnect_verifyingDApp_autoConfirmTitle">Never show this screen again</string>
+  <string name="mobileConnect_verifyingDApp_autoConfirmSubtitle">Run all future verification checks automatically</string>
 </resources>

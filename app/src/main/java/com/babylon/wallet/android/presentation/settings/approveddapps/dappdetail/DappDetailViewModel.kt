@@ -22,7 +22,6 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -39,6 +38,7 @@ import rdx.works.core.sargon.getDataFieldKind
 import rdx.works.core.then
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -207,7 +207,7 @@ class DappDetailViewModel @Inject constructor(
                     )
                     val request = IncomingMessage.IncomingRequest.AuthorizedRequest(
                         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
-                        interactionId = WalletInteractionId.randomUUID(),
+                        interactionId = UUID.randomUUID().toString(),
                         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkId,
                             "",

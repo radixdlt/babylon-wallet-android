@@ -63,7 +63,6 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -73,6 +72,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionManifestData.TransactionMessage
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Resource
+import java.util.UUID
 
 @Composable
 fun TransactionReviewScreen(
@@ -488,7 +488,7 @@ fun TransactionPreviewContentPreview() {
             state = State(
                 request = IncomingMessage.IncomingRequest.TransactionRequest(
                     remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
-                    interactionId = WalletInteractionId.randomUUID(),
+                    interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = NetworkId.MAINNET,

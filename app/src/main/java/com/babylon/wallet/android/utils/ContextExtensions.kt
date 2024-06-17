@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.Browser
+import okhttp3.HttpUrl
 import timber.log.Timber
 
 val backupSettingsScreenIntent: Intent
@@ -40,6 +41,7 @@ suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boole
     return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
 }
 
+fun Context.openUrl(url: HttpUrl, browser: Browser? = null) = openUrl(url.toString(), browser)
 fun Context.openUrl(url: String, browser: Browser? = null) = openUrl(url.toUri(), browser)
 
 @Suppress("SwallowedException")

@@ -87,9 +87,57 @@ fun RadixCenteredTopAppBar(
 
 @Preview
 @Composable
-fun RadixCenteredTopAppBarPreview() {
+fun RadixCenteredTopAppBarDefaultPreview() {
     RadixWalletTheme {
         RadixCenteredTopAppBar(title = "App bar", onBackClick = {})
+    }
+}
+
+@Preview
+@Composable
+fun RadixCenteredTopAppBarBackPreview() {
+    RadixWalletTheme {
+        RadixCenteredTopAppBar(
+            title = "App bar",
+            backIconType = BackIconType.Back,
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixCenteredTopAppBarClosePreview() {
+    RadixWalletTheme {
+        RadixCenteredTopAppBar(
+            title = "App bar",
+            backIconType = BackIconType.Close,
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixCenteredTopAppBarCancelPreview() {
+    RadixWalletTheme {
+        RadixCenteredTopAppBar(
+            title = "App bar",
+            backIconType = BackIconType.Cancel,
+            onBackClick = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RadixCenteredTopAppBarNonePreview() {
+    RadixWalletTheme {
+        RadixCenteredTopAppBar(
+            title = "App bar",
+            backIconType = BackIconType.None,
+            onBackClick = {}
+        )
     }
 }
 

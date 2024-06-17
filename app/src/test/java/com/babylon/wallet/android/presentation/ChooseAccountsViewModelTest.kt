@@ -25,6 +25,7 @@ import org.junit.Test
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChooseAccountsViewModelTest {
@@ -46,7 +47,7 @@ class ChooseAccountsViewModelTest {
 
     private val accountsRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = false,
@@ -59,7 +60,7 @@ class ChooseAccountsViewModelTest {
     )
     private val accountsTwoRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = false,
@@ -73,7 +74,7 @@ class ChooseAccountsViewModelTest {
 
     private val accountsRequestAtLeast = IncomingMessage.IncomingRequest.UnauthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = false,

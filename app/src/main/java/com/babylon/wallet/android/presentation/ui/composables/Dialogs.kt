@@ -499,7 +499,7 @@ internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean
 
 @Composable
 @Preview
-fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean) {
+private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean) {
     RadixWalletTheme {
         FailureDialogContent(
             isMobileConnect = isMobileConnect,

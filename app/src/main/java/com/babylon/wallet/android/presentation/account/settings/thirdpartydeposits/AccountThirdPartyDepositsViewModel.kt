@@ -22,7 +22,6 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.AssetsExceptionList
 import com.radixdlt.sargon.extensions.DepositorsAllowList
 import com.radixdlt.sargon.extensions.string
@@ -43,6 +42,7 @@ import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -142,7 +142,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 TransactionManifestData.from(it)
             }.onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
-                val requestId = WalletInteractionId.randomUUID()
+                val requestId = UUID.randomUUID().toString()
                 incomingRequestRepository.add(
                     manifest.prepareInternalTransactionRequest(
                         requestId = requestId,

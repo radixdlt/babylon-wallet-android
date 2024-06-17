@@ -11,12 +11,15 @@ import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
+import com.radixdlt.sargon.RadixConnectMobile
+import com.radixdlt.sargon.extensions.init
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -82,4 +85,14 @@ object ApplicationModule {
     ): BackupManager {
         return BackupManager(applicationContext)
     }
+
+    @Provides
+    @Singleton
+    fun provideRadixConnectMobile(
+        @ApplicationContext context: Context,
+        @SimpleHttpClient httpClient: OkHttpClient
+    ): RadixConnectMobile = RadixConnectMobile.init(
+        context = context,
+        okHttpClient = httpClient
+    )
 }
