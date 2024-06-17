@@ -185,7 +185,7 @@ class PeerdroidClientImpl @Inject constructor(
         val messageJson =
             WalletToDappInteractionResponse.Failure(
                 WalletToDappInteractionFailureResponse(
-                    interactionId = WalletInteractionId.fromString(requestId),
+                    interactionId = requestId,
                     error = DappWalletInteractionErrorType.INCOMPATIBLE_VERSION,
                     message = null
                 )

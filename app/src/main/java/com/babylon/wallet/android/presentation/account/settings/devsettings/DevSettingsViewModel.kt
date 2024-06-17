@@ -14,7 +14,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -27,6 +26,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -89,7 +89,7 @@ class DevSettingsViewModel @Inject constructor(
                             return@launch
                         }
                     Timber.d("Approving: \n$manifest")
-                    val interactionId = WalletInteractionId.randomUUID()
+                    val interactionId = UUID.randomUUID().toString()
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
                             requestId = interactionId,

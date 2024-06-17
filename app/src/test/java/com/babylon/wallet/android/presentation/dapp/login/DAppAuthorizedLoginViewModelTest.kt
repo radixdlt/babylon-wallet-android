@@ -69,6 +69,7 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import java.util.UUID
 
 class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
 
@@ -105,7 +106,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val requestWithNonExistingDappAddress = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
@@ -126,7 +127,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val usePersonaRequestOngoing = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
@@ -145,7 +146,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val usePersonaRequestOngoingPlusOngoingData = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
@@ -168,7 +169,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     private val usePersonaRequestOneTimeAccounts = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = WalletInteractionId.randomUUID(),
+        interactionId = UUID.randomUUID().toString(),
         requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",

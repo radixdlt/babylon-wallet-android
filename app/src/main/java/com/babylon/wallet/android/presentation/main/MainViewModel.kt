@@ -23,7 +23,7 @@ import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.RadixConnectMobileLinkRequest
+import com.radixdlt.sargon.RadixConnectMobileSessionRequest
 import com.radixdlt.sargon.RadixConnectPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -261,8 +261,8 @@ class MainViewModel @Inject constructor(
 
             processDeepLinkUseCase(deepLink.toString())?.let { event ->
                 when (event) {
-                    is DeepLinkEvent.MobileConnectLinkRequest -> {
-                        sendEvent(MainEvent.MobileConnectLink(event.link))
+                    is DeepLinkEvent.MobileConnectVerifyRequest -> {
+                        sendEvent(MainEvent.MobileConnectLink(event.request))
                     }
                 }
             }
@@ -352,7 +352,7 @@ class MainViewModel @Inject constructor(
 
 sealed class MainEvent : OneOffEvent {
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-    data class MobileConnectLink(val request: RadixConnectMobileLinkRequest) : MainEvent()
+    data class MobileConnectLink(val request: RadixConnectMobileSessionRequest) : MainEvent()
 }
 
 data class MainUiState(

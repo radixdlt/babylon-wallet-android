@@ -83,7 +83,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
         val accountsResponses = accounts.map { account ->
             WalletInteractionWalletAccount(
                 address = account.address,
-                label = account.displayName.value,
+                label = account.displayName,
                 appearanceId = account.appearanceId
             )
         }

@@ -18,7 +18,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -30,7 +29,6 @@ class MobileConnectLinkViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val wellKnownDAppDefinitionRepository: WellKnownDAppDefinitionRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val preferencesManager: PreferencesManager,
     private val getDAppsUseCase: GetDAppsUseCase,
     private val radixConnectMobile: RadixConnectMobile,
     private val incomingRequestRepository: IncomingRequestRepository

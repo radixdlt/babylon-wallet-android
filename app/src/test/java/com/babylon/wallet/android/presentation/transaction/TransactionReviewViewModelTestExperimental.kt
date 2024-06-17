@@ -51,6 +51,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<TransactionReviewViewModel>(
@@ -60,7 +61,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
 
-    private val transactionId = WalletInteractionId.randomUUID().toString()
+    private val transactionId = UUID.randomUUID().toString()
     private val testProfile = Profile.sample()
 
     private val savedStateHandle = mockk<SavedStateHandle>().apply {
@@ -149,7 +150,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
         val transactionRequest = IncomingMessage.IncomingRequest.TransactionRequest(
             remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
-            interactionId = WalletInteractionId.fromString(transactionId),
+            interactionId = transactionId,
             transactionManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
         ).also {
