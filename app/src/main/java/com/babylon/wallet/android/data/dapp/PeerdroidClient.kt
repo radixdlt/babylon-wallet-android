@@ -9,7 +9,6 @@ import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.RadixConnectPassword
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.extensions.fromJson

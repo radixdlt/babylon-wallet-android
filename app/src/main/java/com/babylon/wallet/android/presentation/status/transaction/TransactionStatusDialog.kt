@@ -236,7 +236,7 @@ internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean
 
 @Preview(showBackground = true)
 @Composable
-fun SuccessBottomDialogPreview(
+private fun SuccessBottomDialogPreview(
     @PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean
 ) {
     RadixWalletTheme {
@@ -249,7 +249,7 @@ fun SuccessBottomDialogPreview(
 
 @Preview(showBackground = true)
 @Composable
-fun CompletingBottomDialogPreview() {
+private fun CompletingBottomDialogPreview() {
     RadixWalletTheme {
         CompletingContent()
     }

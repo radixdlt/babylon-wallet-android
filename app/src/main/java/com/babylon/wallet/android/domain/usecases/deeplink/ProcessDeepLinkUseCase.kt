@@ -27,7 +27,7 @@ class ProcessDeepLinkUseCase @Inject constructor(
             incomingRequestRepository.add(
                 sessionRequest.interaction.toDomainModel(
                     remoteEntityId = IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(sessionRequest.sessionId.toString())
-                )
+                ).getOrThrow()
             )
             null
         }

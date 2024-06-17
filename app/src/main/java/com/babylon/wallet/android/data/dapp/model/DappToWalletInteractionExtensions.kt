@@ -15,7 +15,6 @@ import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
@@ -55,7 +54,7 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
         instructions = unvalidatedManifest.transactionManifestString,
         networkId = metadata.networkId,
         message = message?.let { TransactionManifestData.TransactionMessage.Public(it) } ?: TransactionManifestData.TransactionMessage.None,
-        blobs = unvalidatedManifest.blobs .toList().map { it.bytes },
+        blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
         version = version.toLong()
     ),
     requestMetadata = metadata

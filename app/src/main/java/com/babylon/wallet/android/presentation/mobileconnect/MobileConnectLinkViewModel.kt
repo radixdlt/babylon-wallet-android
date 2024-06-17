@@ -79,10 +79,10 @@ class MobileConnectLinkViewModel @Inject constructor(
 
         runCatching {
             radixConnectMobile.requestOriginVerified(sessionId = args.request.sessionId)
-        }.onSuccess {
-            val request = args.request.interaction.toDomainModel(
+            args.request.interaction.toDomainModel(
                 remoteEntityId = RadixMobileConnectRemoteSession(id = args.request.sessionId.toString())
-            )
+            ).getOrThrow()
+        }.onSuccess { request ->
             incomingRequestRepository.add(request)
             sendEvent(Event.Close)
         }.onFailure { error ->

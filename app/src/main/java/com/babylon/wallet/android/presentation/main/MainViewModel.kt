@@ -259,12 +259,14 @@ class MainViewModel @Inject constructor(
                 return@launch
             }
 
-            processDeepLinkUseCase(deepLink.toString())?.let { event ->
-                when (event) {
-                    is DeepLinkEvent.MobileConnectVerifyRequest -> {
-                        sendEvent(MainEvent.MobileConnectLink(event.request))
-                    }
+            runCatching {
+                processDeepLinkUseCase(deepLink.toString())
+            }.onSuccess { event ->
+                if (event is DeepLinkEvent.MobileConnectVerifyRequest) {
+                    sendEvent(MainEvent.MobileConnectLink(event.request))
                 }
+            }.onFailure {
+                Timber.d(it)
             }
         }
     }
