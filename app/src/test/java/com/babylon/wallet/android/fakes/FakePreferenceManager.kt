@@ -99,10 +99,6 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
-    override suspend fun autoLinkWithDapps(enabled: Boolean) {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun setRadixBannerVisibility(isVisible: Boolean) {
         TODO("Not yet implemented")
     }
@@ -125,8 +121,6 @@ class FakePreferenceManager : PreferencesManager {
 
     override val transactionCompleteCounter: Flow<Int>
         get() = _transactionCompleteCounter
-    override val mobileConnectAutoLink: Flow<Boolean>
-        get() = TODO("Not yet implemented")
 
     override suspend fun incrementTransactionCompleteCounter() {
         _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)
