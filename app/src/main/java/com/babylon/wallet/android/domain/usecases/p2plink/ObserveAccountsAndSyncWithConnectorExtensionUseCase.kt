@@ -30,7 +30,7 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val preferencesManager: PreferencesManager,
-    private val json: Json
+    private val jsonSerializer: Json
 ) {
 
     suspend operator fun invoke() {
@@ -89,7 +89,7 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
                     )
                 }
             )
-            json.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
+            jsonSerializer.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
         }
     }
 

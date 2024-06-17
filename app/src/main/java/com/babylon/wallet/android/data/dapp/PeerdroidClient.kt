@@ -140,7 +140,7 @@ class PeerdroidClientImpl @Inject constructor(
     ): IncomingMessage {
         return try {
             val dappInteraction = runCatching {
-                DappToWalletInteractionUnvalidated.Companion.fromJson(messageInJsonString)
+                DappToWalletInteractionUnvalidated.fromJson(messageInJsonString)
             }.getOrNull()
             if (dappInteraction != null) {
                 val interactionVersion = dappInteraction.metadata.version.toLong()
@@ -150,7 +150,7 @@ class PeerdroidClientImpl @Inject constructor(
                         requestId = dappInteraction.interactionId.toString()
                     )
                 }
-                dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId))
+                dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()
             } else {
                 val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
                 interaction.toDomainModel()

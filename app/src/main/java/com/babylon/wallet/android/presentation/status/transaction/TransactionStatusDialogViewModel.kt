@@ -87,7 +87,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             requestId = status.requestId,
                             transactionId = status.transactionId,
                             isInternal = status.isInternal,
-                            blockUntilComplete = status.blockUntilComplete
+                            blockUntilComplete = status.blockUntilComplete,
+                            isMobileConnect = status.isMobileConnect
                         )
                     )
                 }.onFailure { error ->
@@ -111,7 +112,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             isInternal = status.isInternal,
                             errorMessage = exceptionMessageProvider.throwableMessage(error),
                             blockUntilComplete = status.blockUntilComplete,
-                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError()
+                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError(),
+                            isMobileConnect = status.isMobileConnect
                         )
                     )
                 }
@@ -177,19 +179,22 @@ sealed interface TransactionStatus {
     val transactionId: String
     val isInternal: Boolean
     val blockUntilComplete: Boolean
+    val isMobileConnect: Boolean
 
     data class Completing(
         override val requestId: String,
         override val transactionId: String,
         override val isInternal: Boolean,
-        override val blockUntilComplete: Boolean
+        override val blockUntilComplete: Boolean,
+        override val isMobileConnect: Boolean
     ) : TransactionStatus
 
     data class Success(
         override val requestId: String,
         override val transactionId: String,
         override val isInternal: Boolean,
-        override val blockUntilComplete: Boolean
+        override val blockUntilComplete: Boolean,
+        override val isMobileConnect: Boolean
     ) : TransactionStatus
 
     data class Failed(
@@ -198,7 +203,8 @@ sealed interface TransactionStatus {
         override val isInternal: Boolean,
         override val blockUntilComplete: Boolean,
         val errorMessage: String?,
-        val walletErrorType: DappWalletInteractionErrorType?
+        val walletErrorType: DappWalletInteractionErrorType?,
+        override val isMobileConnect: Boolean
     ) : TransactionStatus
 
     companion object {
@@ -209,21 +215,24 @@ sealed interface TransactionStatus {
                 isInternal = event.isInternal,
                 errorMessage = event.errorMessage,
                 blockUntilComplete = event.blockUntilComplete,
-                walletErrorType = event.walletErrorType
+                walletErrorType = event.walletErrorType,
+                isMobileConnect = event.isMobileConnect
             )
 
             is AppEvent.Status.Transaction.InProgress -> Completing(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
-                blockUntilComplete = event.blockUntilComplete
+                blockUntilComplete = event.blockUntilComplete,
+                isMobileConnect = event.isMobileConnect
             )
 
             is AppEvent.Status.Transaction.Success -> Success(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
-                blockUntilComplete = event.blockUntilComplete
+                blockUntilComplete = event.blockUntilComplete,
+                isMobileConnect = event.isMobileConnect
             )
         }
     }

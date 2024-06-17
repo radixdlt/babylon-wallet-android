@@ -18,31 +18,30 @@ import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.mapError
 
-fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID): IncomingMessage.IncomingRequest {
-    try {
-        val metadata = IncomingMessage.IncomingRequest.RequestMetadata(
-            networkId = metadata.networkId,
-            origin = metadata.origin.toString(),
-            dAppDefinitionAddress = metadata.dappDefinitionAddress,
-            isInternal = false
-        )
-        return when (val itemsTemp = items) {
-            is DappToWalletInteractionItems.AuthorizedRequest -> {
-                itemsTemp.v1.parseAuthorizedRequest(remoteEntityId, interactionId, metadata)
-            }
-
-            is DappToWalletInteractionItems.Transaction -> {
-                itemsTemp.v1.send.toDomainModel(remoteEntityId, interactionId, metadata)
-            }
-
-            is DappToWalletInteractionItems.UnauthorizedRequest -> {
-                itemsTemp.v1.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
-            }
+fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID) = runCatching {
+    val metadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        networkId = metadata.networkId,
+        origin = metadata.origin.toString(),
+        dAppDefinitionAddress = metadata.dappDefinitionAddress,
+        isInternal = false
+    )
+    when (val itemsTemp = items) {
+        is DappToWalletInteractionItems.AuthorizedRequest -> {
+            itemsTemp.v1.parseAuthorizedRequest(remoteEntityId, interactionId, metadata)
         }
-    } catch (e: Exception) {
-        throw RadixWalletException.IncomingMessageException.MessageParse(e)
+
+        is DappToWalletInteractionItems.Transaction -> {
+            itemsTemp.v1.send.toDomainModel(remoteEntityId, interactionId, metadata)
+        }
+
+        is DappToWalletInteractionItems.UnauthorizedRequest -> {
+            itemsTemp.v1.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
+        }
     }
+}.mapError {
+    RadixWalletException.IncomingMessageException.MessageParse(it)
 }
 
 fun DappToWalletInteractionSendTransactionItem.toDomainModel(

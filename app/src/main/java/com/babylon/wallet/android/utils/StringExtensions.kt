@@ -38,6 +38,14 @@ fun String.toMnemonicWords(expectedWordCount: Int): List<String> {
     }
 }
 
+fun String.removeTrailingSlash(): String {
+    return if (endsWith("/")) {
+        substring(0, length - 1)
+    } else {
+        this
+    }
+}
+
 fun String.formattedSpans(
     boldStyle: SpanStyle
 ): AnnotatedString {
