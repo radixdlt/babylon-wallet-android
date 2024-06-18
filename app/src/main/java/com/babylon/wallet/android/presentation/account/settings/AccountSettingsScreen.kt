@@ -257,16 +257,17 @@ private fun AccountSettingsContent(
                 .background(RadixTheme.colors.gray5)
         ) {
             item {
-                ActionableAddressView(
-                    address = Address.Account(accountAddress),
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
-                    textStyle = RadixTheme.typography.body2Regular,
-                    textColor = RadixTheme.colors.gray2,
-                    truncateAddress = false
-                )
+                // TODO ActionableAddressView
+//                ActionableAddressView(
+//                    address = Address.Account(accountAddress),
+//                    modifier = Modifier.padding(
+//                        horizontal = RadixTheme.dimensions.paddingLarge,
+//                        vertical = RadixTheme.dimensions.paddingSmall
+//                    ),
+//                    textStyle = RadixTheme.typography.body2Regular,
+//                    textColor = RadixTheme.colors.gray2,
+//                    truncateAddress = false
+//                )
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()

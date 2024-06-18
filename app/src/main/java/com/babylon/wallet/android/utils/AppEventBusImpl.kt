@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.utils
 
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -35,6 +36,9 @@ sealed interface AppEvent {
     data object SecureFolderWarning : AppEvent
     data class DeferRequestHandling(val interactionId: String) : AppEvent
     data object ProcessBufferedDeepLinkRequest : AppEvent
+
+    data class AddressDetails(val address: ActionableAddress): AppEvent
+
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources

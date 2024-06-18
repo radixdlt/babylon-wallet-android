@@ -123,6 +123,10 @@ fun WalletApp(
         navController = navController,
         statusEvents = mainViewModel.statusEvents
     )
+    HandleAddressDetailsEvents(
+        navController = navController,
+        addressDetailsEvents = mainViewModel.addressDetailsEvents
+    )
     ObserveHighPriorityScreens(
         navController = navController,
         onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
@@ -236,6 +240,18 @@ private fun HandleStatusEvents(
                     navController.dappInteractionDialog(event)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun HandleAddressDetailsEvents(
+    navController: NavController,
+    addressDetailsEvents: Flow<AppEvent.AddressDetails>
+) {
+    LaunchedEffect(Unit) {
+        addressDetailsEvents.collect { event ->
+            //navController.navigate()
         }
     }
 }

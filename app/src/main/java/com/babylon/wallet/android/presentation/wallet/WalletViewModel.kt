@@ -19,13 +19,11 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
@@ -347,7 +345,6 @@ class WalletViewModel @Inject constructor(
 
                 WalletUiState.AccountUiItem(
                     account = accountWithAssets.account,
-                    address = ActionableAddress.Address(Address.Account(accountWithAssets.account.address)),
                     assets = accountWithAssets.assets,
                     securityPrompts = securityPrompt(accountWithAssets.account)?.toList(),
                     tag = getTag(accountWithAssets.account),
@@ -473,7 +470,6 @@ data class WalletUiState(
     @SuppressLint("VisibleForTests")
     data class AccountUiItem(
         val account: Account,
-        val address: ActionableAddress,
         val assets: Assets?,
         val fiatTotalValue: FiatPrice?,
         val tag: AccountTag?,

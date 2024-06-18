@@ -25,6 +25,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.extensions.formatted
@@ -177,11 +178,15 @@ fun Metadata.ValueView(
                 }
             )
 
-            MetadataType.NonFungibleLocalId -> ActionableAddressView(
+            MetadataType.NonFungibleLocalId -> Text(
                 modifier = modifier,
-                localId = remember(value) {
-                    NonFungibleLocalId.init(value)
-                }
+                text = remember(value) {
+                    NonFungibleLocalId.init(value).formatted(AddressFormat.DEFAULT)
+                },
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
+                maxLines = 2
             )
 
             MetadataType.Decimal -> Text(
