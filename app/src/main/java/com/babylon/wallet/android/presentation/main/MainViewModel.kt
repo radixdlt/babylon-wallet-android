@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.appsflyer.AppsFlyerLib
+import com.appsflyer.deeplink.DeepLinkResult
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -153,6 +155,7 @@ class MainViewModel @Inject constructor(
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
         processBufferedDeepLinkRequest()
+        subscribeForDeepLink()
     }
 
     private fun processBufferedDeepLinkRequest() {
@@ -362,6 +365,17 @@ class MainViewModel @Inject constructor(
                         )
                     )
                 }
+            }
+        }
+    }
+
+    private fun subscribeForDeepLink() {
+        AppsFlyerLib.getInstance().subscribeForDeepLink { result ->
+            if (result.status == DeepLinkResult.Status.FOUND) {
+                val deepLink = result.deepLink
+                Timber.d("Did resolve deep link. Is deferred: ${deepLink.isDeferred}. Click event: ${deepLink.clickEvent}")
+            } else {
+                Timber.d("Failed to resolve deep link")
             }
         }
     }
