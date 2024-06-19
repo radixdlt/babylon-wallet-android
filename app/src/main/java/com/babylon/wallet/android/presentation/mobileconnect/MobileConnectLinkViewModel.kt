@@ -62,7 +62,7 @@ class MobileConnectLinkViewModel @Inject constructor(
                 _state.update { it.copy(dApp = dApp, isLoading = false) }
             }.onFailure { error ->
                 _state.update {
-                    it.copy(uiMessage = UiMessage.ErrorMessage(error), isLoading = false)
+                    it.copy(uiMessage = if (!developerMode) UiMessage.ErrorMessage(error) else null, isLoading = false)
                 }
             }
         }

@@ -10,7 +10,6 @@ import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.RequestedNumberQuantifier
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSendTransactionResponseItem
@@ -418,16 +417,18 @@ class DappToWalletInteractionUnvalidatedTest {
 
     @Test
     fun `WalletInteraction request decoding with transaction item`() {
+
         val request = """
             {
                "items":{
                   "discriminator":"transaction",
-                  "send":{
-                      "transactionManifest":"manifest",
-                      "version":1,
-                      "blobs":["blob1", "blob2"],
-                      "message":"manifest"
-                  }                                  
+                   "send" : {
+                       "version" : 1,
+                        "blobs": [
+                            "deadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafedeadbeefabbafadecafe"
+                        ],
+                        "transactionManifest" : "CALL_METHOD\n    Address(\"account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q\")\n    \"lock_fee\"\n    Decimal(\"500\")\n;\nCALL_METHOD\n    Address(\"account_sim1cyvgx33089ukm2pl97pv4max0x40ruvfy4lt60yvya744cve475w0q\")\n    \"withdraw\"\n    Address(\"resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3\")\n    Decimal(\"330\")\n;\nTAKE_FROM_WORKTOP\n    Address(\"resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3\")\n    Decimal(\"150\")\n    Bucket(\"bucket1\")\n;\nCALL_METHOD\n    Address(\"account_sim1c8mulhl5yrk6hh4jsyldps5sdrp08r5v9wusupvzxgqvhlp4c4nwjz\")\n    \"try_deposit_or_abort\"\n    Bucket(\"bucket1\")\n    Enum<0u8>()\n;\nTAKE_FROM_WORKTOP\n    Address(\"resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3\")\n    Decimal(\"130\")\n    Bucket(\"bucket2\")\n;\nCALL_METHOD\n    Address(\"account_sim1c8s2hass5g62ckwpv78y8ykdqljtetv4ve6etcz64gveykxznj36tr\")\n    \"try_deposit_or_abort\"\n    Bucket(\"bucket2\")\n    Enum<0u8>()\n;\nTAKE_FROM_WORKTOP\n    Address(\"resource_sim1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxakj8n3\")\n    Decimal(\"50\")\n    Bucket(\"bucket3\")\n;\nCALL_METHOD\n    Address(\"account_sim1c8ct6jdcwqrg3gzskyxuy0z933fe55fyjz6p56730r95ulzwl3ppva\")\n    \"try_deposit_or_abort\"\n    Bucket(\"bucket3\")\n    Enum<0u8>()\n;\n"
+                   }                                  
                },
                "interactionId":"$interactionId",
                "metadata":{
@@ -438,24 +439,22 @@ class DappToWalletInteractionUnvalidatedTest {
                }
             }
         """
-        val result = DappToWalletInteractionUnvalidated.Companion.fromJson(request)
+        val result = DappToWalletInteractionUnvalidated.fromJson(request)
         assert(result.items is DappToWalletInteractionItems.Transaction)
-        val item = result.items as DappToWalletInteractionItems.Transaction
-        assert(item.v1.send.unvalidatedManifest.transactionManifestString == "manifest")
     }
 
     @Test
     fun `transaction approval response matches expected`() {
         val interacionId = UUID.randomUUID().toString()
         val expected =
-            """{"discriminator":"success","interactionId":"$interacionId","items":{"discriminator":"transaction","send":{"transactionIntentHash":"1"}}}"""
+            """{"discriminator":"success","interactionId":"$interacionId","items":{"discriminator":"transaction","send":{"transactionIntentHash":"txid_rdx1frcm6zzyfd08z0deu9x24sh64eccxeux4j2dv3dsqeuh9qsz4y6szm3ltd"}}}"""
         val response: WalletToDappInteractionResponse = WalletToDappInteractionResponse.Success(
             v1 = WalletToDappInteractionSuccessResponse(
                 interactionId = interacionId,
                 items = WalletToDappInteractionResponseItems.Transaction(
                     v1 = WalletToDappInteractionTransactionResponseItems(
                         send = WalletToDappInteractionSendTransactionResponseItem(
-                            IntentHash.init("1"),
+                            IntentHash.init("txid_rdx1frcm6zzyfd08z0deu9x24sh64eccxeux4j2dv3dsqeuh9qsz4y6szm3ltd"),
                         )
                     )
                 )
