@@ -61,20 +61,26 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import rdx.works.core.sargon.dashboardUrl
+import rdx.works.core.sargon.serializers.AddressSerializer
+import rdx.works.core.sargon.serializers.IntentHashSerializer
+import rdx.works.core.sargon.serializers.NonFungibleGlobalIdSerializer
 
 @Composable
 fun ActionableAddressView(
     modifier: Modifier = Modifier,
     address: Address,
-    visitableInDashboard: Boolean = true,
+    isVisitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
     val actionableAddress by ActionableAddress.remember(
         address = address,
-        visitableInDashboard = visitableInDashboard
+        isVisitableInDashboard = isVisitableInDashboard
     )
 
     ActionableAddressView(
@@ -90,14 +96,14 @@ fun ActionableAddressView(
 fun ActionableAddressView(
     modifier: Modifier = Modifier,
     globalId: NonFungibleGlobalId,
-    visitableInDashboard: Boolean = true,
+    isVisitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
     val actionableAddress by ActionableAddress.remember(
         globalId = globalId,
-        visitableInDashboard = visitableInDashboard
+        isVisitableInDashboard = isVisitableInDashboard
     )
 
     ActionableAddressView(
@@ -113,14 +119,14 @@ fun ActionableAddressView(
 fun ActionableAddressView(
     modifier: Modifier = Modifier,
     transactionId: IntentHash,
-    visitableInDashboard: Boolean = true,
+    isVisitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
     val actionableAddress by ActionableAddress.remember(
         intentHash = transactionId,
-        visitableInDashboard = visitableInDashboard
+        isVisitableInDashboard = isVisitableInDashboard
     )
 
     ActionableAddressView(
@@ -225,14 +231,17 @@ private fun DropDown(
     }
 }
 
+@Serializable
 sealed interface ActionableAddress {
 
     val truncated: String
     val icon: AccompaniedIcon
     val action: Action
-    val visitableInDashboard: Boolean
+    val isVisitableInDashboard: Boolean
 
     fun copyableAddress(): String
+
+    fun fullAddress(): String
 
     fun dashboardUrl(): String?
 
@@ -242,19 +251,27 @@ sealed interface ActionableAddress {
     @Composable
     fun contentDescription(): String
 
-
-    private data class Address(
+    @Serializable
+    @SerialName("address")
+    data class Address(
+        @Serializable(with = AddressSerializer::class)
         val address: com.radixdlt.sargon.Address,
-        override val visitableInDashboard: Boolean
+        @SerialName("is_visitable_in_dashboard")
+        override val isVisitableInDashboard: Boolean
     ) : ActionableAddress {
 
+        @Transient
         override val truncated: String = address.formatted(AddressFormat.DEFAULT)
 
+        @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
 
+        @Transient
         override val action: Action = Action.Modal
 
         override fun copyableAddress(): String = address.formatted(format = AddressFormat.RAW)
+
+        override fun fullAddress(): String = address.formatted(format = AddressFormat.FULL)
 
         override fun dashboardUrl(): String? = when (address) {
             is com.radixdlt.sargon.Address.AccessController -> null
@@ -281,20 +298,29 @@ sealed interface ActionableAddress {
         }
     }
 
-    private data class GlobalId(
+    @Serializable
+    @SerialName("global_id")
+    data class GlobalId(
+        @Serializable(with = NonFungibleGlobalIdSerializer::class)
         val address: NonFungibleGlobalId,
-        override val visitableInDashboard: Boolean
+        @SerialName("is_visitable_in_dashboard")
+        override val isVisitableInDashboard: Boolean
     ) : ActionableAddress {
 
+        @Transient
         override val truncated: String = address.nonFungibleLocalId.formatted(AddressFormat.DEFAULT)
 
+        @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
 
+        @Transient
         override val action: Action = Action.Modal
 
         override fun copyableAddress(): String = address.formatted(format = AddressFormat.RAW)
 
         override fun dashboardUrl(): String = "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
+
+        override fun fullAddress(): String = address.formatted(format = AddressFormat.FULL)
 
         @Composable
         override fun icon() = when (icon) {
@@ -307,21 +333,28 @@ sealed interface ActionableAddress {
         }
     }
 
-    private data class TransactionId(
+    @Serializable
+    @SerialName("transaction_id")
+    data class TransactionId(
+        @Serializable(with = IntentHashSerializer::class)
         val hash: IntentHash,
-        override val visitableInDashboard: Boolean
+        @SerialName("is_visitable_in_dashboard")
+        override val isVisitableInDashboard: Boolean
     ) : ActionableAddress {
 
+        @Transient
         override val truncated: String = hash.formatted(AddressFormat.DEFAULT)
 
+        @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
 
+        @Transient
         override val action: Action = Action.DropDown(
             isExpanded = mutableStateOf(false),
             actions = mutableSetOf<Action.DropDown.ActionItem>(
                 Action.DropDown.ActionItem.Copy(value = copyableAddress())
             ).apply {
-                if (visitableInDashboard) {
+                if (isVisitableInDashboard) {
                     add(Action.DropDown.ActionItem.Dashboard(url = dashboardUrl()))
                 }
             }
@@ -330,6 +363,8 @@ sealed interface ActionableAddress {
         override fun copyableAddress(): String = hash.formatted(format = AddressFormat.RAW)
 
         override fun dashboardUrl(): String = "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
+
+        override fun fullAddress(): String = hash.formatted(format = AddressFormat.FULL)
 
         @Composable
         override fun icon() = when (icon) {
@@ -407,14 +442,14 @@ sealed interface ActionableAddress {
         @Composable
         fun remember(
             address: com.radixdlt.sargon.Address,
-            visitableInDashboard: Boolean = true
+            isVisitableInDashboard: Boolean = true,
         ): State<ActionableAddress?> {
             val actionableAddress = remember {
                 mutableStateOf<Address?>(null)
             }
 
             LaunchedEffect(key1 = address) {
-                actionableAddress.value = Address(address, visitableInDashboard)
+                actionableAddress.value = Address(address, isVisitableInDashboard)
             }
 
             return actionableAddress
@@ -423,14 +458,14 @@ sealed interface ActionableAddress {
         @Composable
         fun remember(
             globalId: NonFungibleGlobalId,
-            visitableInDashboard: Boolean = true
+            isVisitableInDashboard: Boolean = true
         ): State<ActionableAddress?> {
             val actionableAddress = remember {
                 mutableStateOf<GlobalId?>(null)
             }
 
             LaunchedEffect(key1 = globalId) {
-                actionableAddress.value = GlobalId(globalId, visitableInDashboard)
+                actionableAddress.value = GlobalId(globalId, isVisitableInDashboard)
             }
 
             return actionableAddress
@@ -439,14 +474,14 @@ sealed interface ActionableAddress {
         @Composable
         fun remember(
             intentHash: IntentHash,
-            visitableInDashboard: Boolean = true
+            isVisitableInDashboard: Boolean = true
         ): State<ActionableAddress?> {
             val actionableAddress = remember {
                 mutableStateOf<TransactionId?>(null)
             }
 
             LaunchedEffect(key1 = intentHash) {
-                actionableAddress.value = TransactionId(intentHash, visitableInDashboard)
+                actionableAddress.value = TransactionId(intentHash, isVisitableInDashboard)
             }
 
             return actionableAddress

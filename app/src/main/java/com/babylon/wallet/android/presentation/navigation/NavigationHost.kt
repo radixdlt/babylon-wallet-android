@@ -67,6 +67,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.seedphras
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
+import com.babylon.wallet.android.presentation.status.address.addressDetails
 import com.babylon.wallet.android.presentation.status.assets.assetDialog
 import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
@@ -514,6 +515,11 @@ fun NavigationHost(
             onNonFungibleClick = {
                 navController.nftAssetDialog(resourceAddress = it.address)
             },
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        addressDetails(
             onDismiss = {
                 navController.popBackStack()
             }

@@ -1,4 +1,4 @@
-package rdx.works.core.sargon
+package rdx.works.core.sargon.serializers
 
 import com.radixdlt.sargon.ProfileId
 import kotlinx.serialization.KSerializer
