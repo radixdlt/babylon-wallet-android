@@ -1,12 +1,14 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
-import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.RadixConnectMobile
+import com.radixdlt.sargon.RadixConnectMobileWalletResponse
+import com.radixdlt.sargon.SessionId
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
@@ -21,7 +23,7 @@ import javax.inject.Inject
 
 class RespondToIncomingRequestUseCase @Inject constructor(
     private val dAppMessenger: DappMessenger,
-    private val rcrRepository: RcrRepository,
+    private val radixConnectMobile: RadixConnectMobile,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
@@ -37,20 +39,21 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     error = error,
                     message = message
                 )
-            ).toJson()
+            )
             when (request.remoteEntityId) {
                 is IncomingMessage.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         remoteConnectorId = request.remoteEntityId.value,
-                        payload = payload
+                        payload = payload.toJson()
                     ).mapCatching { IncomingRequestResponse.SuccessCE }
                 }
 
                 is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                    rcrRepository.sendResponse(
-                        sessionId = request.remoteEntityId.value,
-                        data = payload
-                    ).mapCatching {
+                    runCatching {
+                        radixConnectMobile.sendDappInteractionResponse(
+                            RadixConnectMobileWalletResponse(SessionId.fromString(request.remoteEntityId.value), payload)
+                        )
+                    }.mapCatching {
                         IncomingRequestResponse.SuccessRadixMobileConnect
                     }
                 }
@@ -75,10 +78,14 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 }
 
                 is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                    rcrRepository.sendResponse(
-                        sessionId = request.remoteEntityId.value,
-                        data = response.toJson()
-                    ).fold(onSuccess = {
+                    runCatching {
+                        radixConnectMobile.sendDappInteractionResponse(
+                            RadixConnectMobileWalletResponse(
+                                sessionId = SessionId.fromString(request.remoteEntityId.value),
+                                response = response
+                            )
+                        )
+                    }.fold(onSuccess = {
                         Result.success(
                             IncomingRequestResponse.SuccessRadixMobileConnect
                         )
@@ -105,20 +112,24 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                         )
                     )
                 )
-            ).toJson()
+            )
             when (request.remoteEntityId) {
                 is IncomingMessage.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendTransactionWriteResponseSuccess(
                         remoteConnectorId = request.remoteEntityId.value,
-                        payload = payload
+                        payload = payload.toJson()
                     ).mapCatching { IncomingRequestResponse.SuccessCE }
                 }
 
                 is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
-                    rcrRepository.sendResponse(
-                        sessionId = request.remoteEntityId.value,
-                        data = payload
-                    ).mapCatching {
+                    runCatching {
+                        radixConnectMobile.sendDappInteractionResponse(
+                            RadixConnectMobileWalletResponse(
+                                sessionId = SessionId.fromString(request.remoteEntityId.value),
+                                response = payload
+                            )
+                        )
+                    }.mapCatching {
                         IncomingRequestResponse.SuccessRadixMobileConnect
                     }
                 }
