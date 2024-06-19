@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
+import rdx.works.profile.cloudbackup.domain.CheckCloudBackupFileAvailabilityUseCase
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
@@ -30,6 +31,7 @@ class BackupViewModel @Inject constructor(
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val googleSignInManager: GoogleSignInManager,
+    private val checkCloudBackupFileAvailabilityUseCase: CheckCloudBackupFileAvailabilityUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(),
     CanSignInToGoogle,
@@ -77,8 +79,16 @@ class BackupViewModel @Inject constructor(
             Timber.tag("CloudBackup").d("Cloud backup authorization is in progress...")
             _state.update { it.copy(isCloudAuthorizationInProgress = true) }
             sendEvent(Event.SignInToGoogle)
-        } else { // just turn off the cloud backup sync
+        } else {
+            _state.update { it.copy(isCloudAuthorizationInProgress = true) }
+            ensureBabylonFactorSourceExistUseCase()
+                .onSuccess { profile ->
+                    // in case the backup file has been deleted
+                    // the wallet should not show the "last cloud backup" label
+                    checkCloudBackupFileAvailabilityUseCase(profile)
+                }
             changeBackupSettingUseCase(isChecked = false)
+            _state.update { it.copy(isCloudAuthorizationInProgress = false) }
         }
     }
 
