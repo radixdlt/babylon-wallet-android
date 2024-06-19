@@ -139,7 +139,7 @@ class ProfileRepositoryImpl @Inject constructor(
         },
         onFailure = {
             Timber.w(it)
-            ProfileState.Incompatible
+            ProfileState.Incompatible(cause = it)
         }
     )
 
