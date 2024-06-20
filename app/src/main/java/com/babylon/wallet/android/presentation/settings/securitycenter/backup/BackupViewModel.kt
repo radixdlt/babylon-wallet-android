@@ -17,6 +17,7 @@ import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.domain.CheckCloudBackupFileAvailabilityUseCase
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
@@ -24,7 +25,7 @@ import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
@@ -32,6 +33,7 @@ class BackupViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val googleSignInManager: GoogleSignInManager,
     private val checkCloudBackupFileAvailabilityUseCase: CheckCloudBackupFileAvailabilityUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(),
     CanSignInToGoogle,
@@ -81,12 +83,11 @@ class BackupViewModel @Inject constructor(
             sendEvent(Event.SignInToGoogle)
         } else {
             _state.update { it.copy(isCloudAuthorizationInProgress = true) }
-            ensureBabylonFactorSourceExistUseCase()
-                .onSuccess { profile ->
-                    // in case the backup file has been deleted
-                    // the wallet should not show the "last cloud backup" label
-                    checkCloudBackupFileAvailabilityUseCase(profile)
-                }
+            val profile = getProfileUseCase()
+            // in case the backup file has been deleted
+            // the wallet should not show the "last cloud backup" label
+            checkCloudBackupFileAvailabilityUseCase(profile)
+
             changeBackupSettingUseCase(isChecked = false)
             _state.update { it.copy(isCloudAuthorizationInProgress = false) }
         }
