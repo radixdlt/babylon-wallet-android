@@ -8,8 +8,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.babylon.wallet.android.utils.decodeUtf8
+import com.babylon.wallet.android.utils.encodeUtf8
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 
 private const val ROUTE = "address_details"
 private const val ARG_ACTIONABLE_ADDRESS = "actionable_address"
@@ -20,7 +23,7 @@ internal class AddressDetailsArgs(
 
     constructor(savedStateHandle: SavedStateHandle): this(
         actionableAddress = checkNotNull(savedStateHandle.get<String>(ARG_ACTIONABLE_ADDRESS)).let {
-            Json.decodeFromString(it)
+            Json.decodeFromString(it.decodeUtf8())
         }
     )
 
@@ -29,8 +32,7 @@ internal class AddressDetailsArgs(
 fun NavController.addressDetails(
     actionableAddress: ActionableAddress
 ) {
-    val addressSerialized = Json.encodeToString(actionableAddress)
-
+    val addressSerialized = Json.encodeToString(actionableAddress).encodeUtf8()
     navigate(route = "$ROUTE?$ARG_ACTIONABLE_ADDRESS=$addressSerialized")
 }
 

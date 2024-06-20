@@ -1,7 +1,15 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.status.address
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,22 +20,32 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.getSystemService
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -38,6 +56,8 @@ import com.babylon.wallet.android.presentation.status.address.AddressDetailsDial
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.babylon.wallet.android.utils.openUrl
+import com.babylon.wallet.android.utils.shareText
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
@@ -58,7 +78,23 @@ fun AddressDetailsDialog(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    HandleEvents(events = viewModel.oneOffEvent)
+    var enlargedAddress: EnlargedAddressState? by remember {
+        mutableStateOf(null)
+    }
+
+    HandleEvents(
+        events = viewModel.oneOffEvent,
+        onShowEnlargedAddress = { address, numberRanges ->
+            enlargedAddress = EnlargedAddressState(
+                address = address,
+                numberRanges = numberRanges,
+                isVisible = true
+            )
+        },
+        onHideEnlargedAddress = {
+            enlargedAddress = enlargedAddress?.copy(isVisible = false)
+        }
+    )
 
     AddressDetailsDialogContent(
         state = state,
@@ -69,6 +105,13 @@ fun AddressDetailsDialog(
         onVerifyAddressOnLedger = viewModel::onVerifyOnLedgerDeviceClick,
         onDismiss = onDismiss
     )
+
+    enlargedAddress?.let {
+        EnlargedAddressView(
+            enlargedAddressState = it,
+            onDismiss = viewModel::onHideEnlargeClick
+        )
+    }
 }
 
 @Composable
@@ -106,7 +149,7 @@ private fun AddressDetailsDialogContent(
                     when (section) {
                         is Section.AccountAddressQRCode -> AccountAddressQRCode(accountAddress = section.accountAddress)
                         is Section.FullAddress -> FullAddress(
-                            fullAddress = section.fullAddress,
+                            fullAddress = section.rawAddress,
                             boldRanges = section.boldRanges,
                             onCopy = onCopy,
                             onEnlarge = onEnlarge,
@@ -160,7 +203,7 @@ private fun AccountAddressQRCode(
 }
 
 @Composable
-fun FullAddress(
+private fun FullAddress(
     modifier: Modifier = Modifier,
     fullAddress: String,
     boldRanges: List<OpenEndRange<Int>>,
@@ -254,7 +297,7 @@ fun FullAddress(
 }
 
 @Composable
-fun VisitDashboard(
+private fun VisitDashboard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -276,7 +319,7 @@ fun VisitDashboard(
 }
 
 @Composable
-fun VerifyAddressOnLedger(
+private fun VerifyAddressOnLedger(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -289,18 +332,106 @@ fun VerifyAddressOnLedger(
     )
 }
 
-
 @Composable
-private fun HandleEvents(events: Flow<AddressDetailsDialogViewModel.Event>) {
+private fun HandleEvents(
+    events: Flow<AddressDetailsDialogViewModel.Event>,
+    onShowEnlargedAddress: (
+        value: String,
+        numberRanges: List<OpenEndRange<Int>>
+    ) -> Unit,
+    onHideEnlargedAddress: () -> Unit
+) {
+    val context = LocalContext.current
     LaunchedEffect(key1 = events) {
         events.collect { event ->
             when (event) {
-                is AddressDetailsDialogViewModel.Event.CloseEnlarged -> TODO()
-                is AddressDetailsDialogViewModel.Event.PerformEnlarge -> TODO()
-                is AddressDetailsDialogViewModel.Event.PerformCopy -> TODO()
-                is AddressDetailsDialogViewModel.Event.PerformShare -> TODO()
-                is AddressDetailsDialogViewModel.Event.PerformVisitDashBoard -> TODO()
-                is AddressDetailsDialogViewModel.Event.ShowLedgerVerificationResult -> TODO()
+                is AddressDetailsDialogViewModel.Event.CloseEnlarged -> onHideEnlargedAddress()
+                is AddressDetailsDialogViewModel.Event.PerformEnlarge -> onShowEnlargedAddress(event.value, event.numberRanges)
+                is AddressDetailsDialogViewModel.Event.PerformCopy -> {
+                    context.getSystemService<ClipboardManager>()?.let { clipboardManager ->
+                        val clipData = ClipData.newPlainText(
+                            "Radix Address",
+                            event.valueToCopy
+                        )
+
+                        clipboardManager.setPrimaryClip(clipData)
+
+                        // From Android 13, the system handles the copy confirmation
+                        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                            Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                is AddressDetailsDialogViewModel.Event.PerformShare -> context.shareText(
+                    title = event.shareTitle,
+                    value = event.shareValue
+                )
+                is AddressDetailsDialogViewModel.Event.PerformVisitDashBoard -> context.openUrl(event.url)
+                is AddressDetailsDialogViewModel.Event.ShowLedgerVerificationResult -> if (event.isVerified) {
+                    Toast.makeText(
+                        context,
+                        R.string.addressAction_verifyAddressLedger_success,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        context,
+                        R.string.addressAction_verifyAddressLedger_error,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+}
+
+private data class EnlargedAddressState(
+    val address: String,
+    val numberRanges: List<OpenEndRange<Int>>,
+    val isVisible: Boolean
+)
+
+@Composable
+private fun EnlargedAddressView(
+    modifier: Modifier = Modifier,
+    enlargedAddressState: EnlargedAddressState,
+    onDismiss: () -> Unit
+) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = enlargedAddressState.isVisible
+    ) {
+        BasicAlertDialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
+                    .clickable { onDismiss() },
+                shape = RadixTheme.shapes.roundedRectMedium,
+                color = RadixTheme.colors.gray1.copy(alpha = 0.74f)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingLarge),
+                    text = buildAnnotatedString {
+                        append(enlargedAddressState.address)
+
+                        val greenSpan = SpanStyle(color = RadixTheme.colors.green3)
+                        enlargedAddressState.numberRanges.forEach { range ->
+                            addStyle(style = greenSpan, start = range.start, end = range.endExclusive)
+                        }
+                    },
+                    textAlign = TextAlign.Center,
+                    fontSize = 50.sp,
+                    lineHeight = 64.sp,
+                    letterSpacing = 2.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = RadixTheme.colors.white
+                )
             }
         }
     }
@@ -325,8 +456,8 @@ fun AddressDetailsDialogContentAccountAddressPreview() {
                 sections = listOf(
                     Section.AccountAddressQRCode(accountAddress = address),
                     Section.FullAddress(
-                        fullAddress = address.formatted(format = AddressFormat.FULL),
-                        truncatedAddress = address.formatted(format = AddressFormat.DEFAULT)
+                        rawAddress = address.formatted(format = AddressFormat.RAW),
+                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
                     ),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl().orEmpty()),
                     Section.VerifyAddressOnLedger(accountAddress = address)
@@ -360,8 +491,8 @@ fun AddressDetailsDialogContentResourceAddressPreview() {
                 title = "Radix (XRD)",
                 sections = listOf(
                     Section.FullAddress(
-                        fullAddress = address.formatted(format = AddressFormat.FULL),
-                        truncatedAddress = address.formatted(format = AddressFormat.DEFAULT)
+                        rawAddress = address.formatted(format = AddressFormat.RAW),
+                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
                     ),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl().orEmpty()),
                 )
@@ -394,8 +525,8 @@ fun AddressDetailsDialogContentGlobalIdPreview() {
                 title = "NFT Collection",
                 sections = listOf(
                     Section.FullAddress(
-                        fullAddress = address.formatted(format = AddressFormat.FULL),
-                        truncatedAddress = address.formatted(format = AddressFormat.DEFAULT)
+                        rawAddress = address.formatted(format = AddressFormat.RAW),
+                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
                     ),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl()),
                 )
@@ -428,8 +559,8 @@ fun AddressDetailsDialogContentRandomComponentAddressPreview() {
                 title = null,
                 sections = listOf(
                     Section.FullAddress(
-                        fullAddress = address.formatted(format = AddressFormat.FULL),
-                        truncatedAddress = address.formatted(format = AddressFormat.DEFAULT)
+                        rawAddress = address.formatted(format = AddressFormat.RAW),
+                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
                     ),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl().orEmpty()),
                 )

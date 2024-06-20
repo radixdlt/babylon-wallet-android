@@ -56,8 +56,8 @@ class AddressDetailsDialogViewModel @Inject constructor(
 
             sections.add(
                 State.Section.FullAddress(
-                    fullAddress = actionableAddress.fullAddress(),
-                    truncatedAddress = actionableAddress.truncated
+                    rawAddress = actionableAddress.rawAddress(),
+                    truncatedPart = actionableAddress.truncatedPart()
                 )
             )
 
@@ -170,19 +170,56 @@ class AddressDetailsDialogViewModel @Inject constructor(
 
     fun onCopyClick() {
         viewModelScope.launch {
-            sendEvent(Event.PerformCopy(value = _state.value.actionableAddress.copyableAddress()))
+            sendEvent(Event.PerformCopy(valueToCopy = _state.value.actionableAddress.rawAddress()))
         }
     }
 
     fun onEnlargeClick() {
         viewModelScope.launch {
-            sendEvent(Event.PerformEnlarge(value = _state.value.actionableAddress.fullAddress()))
+            val address = _state.value.actionableAddress.rawAddress()
+            val ranges = mutableListOf<OpenEndRange<Int>>()
+            var latestNumberRange: OpenEndRange<Int>? = null
+            address.forEachIndexed { index, char ->
+                if (!char.isDigit()) {
+                    latestNumberRange?.let {
+                        ranges.add(it)
+                        latestNumberRange = null
+                    }
+                } else {
+                    latestNumberRange = latestNumberRange?.let {
+                        it.start until index + 1
+                    } ?: run {
+                        index until index + 1
+                    }
+                }
+            }
+            latestNumberRange?.let {
+                ranges.add(it)
+            }
+
+            sendEvent(
+                Event.PerformEnlarge(
+                    value = address,
+                    numberRanges = ranges
+                )
+            )
+        }
+    }
+
+    fun onHideEnlargeClick() {
+        viewModelScope.launch {
+            sendEvent(Event.CloseEnlarged)
         }
     }
 
     fun onShareClick() {
         viewModelScope.launch {
-            sendEvent(Event.PerformShare(value = _state.value.actionableAddress.copyableAddress()))
+            sendEvent(
+                Event.PerformShare(
+                    shareTitle = _state.value.title,
+                    shareValue = _state.value.actionableAddress.rawAddress()
+                )
+            )
         }
     }
 
@@ -230,17 +267,17 @@ class AddressDetailsDialogViewModel @Inject constructor(
 
             data class FullAddress(
                 override val order: Short = 1,
-                val fullAddress: String,
-                val truncatedAddress: String
+                val rawAddress: String,
+                val truncatedPart: String
             ) : Section {
 
                 val boldRanges: List<OpenEndRange<Int>> = run {
-                    val visibleCharsWhenTruncated = truncatedAddress.split("...")
+                    val visibleCharsWhenTruncated = rawAddress.split(truncatedPart)
 
                     if (visibleCharsWhenTruncated.size != 2) return@run emptyList()
 
                     val startRange = 0 until visibleCharsWhenTruncated[0].length
-                    val endRange = fullAddress.length - visibleCharsWhenTruncated[1].length until fullAddress.length
+                    val endRange = rawAddress.length - visibleCharsWhenTruncated[1].length until rawAddress.length
 
                     listOf(
                         startRange,
@@ -263,10 +300,16 @@ class AddressDetailsDialogViewModel @Inject constructor(
     }
 
     sealed interface Event: OneOffEvent {
-        data class PerformCopy(val value: String): Event
-        data class PerformEnlarge(val value: String): Event
+        data class PerformCopy(val valueToCopy: String): Event
+        data class PerformEnlarge(
+            val value: String,
+            val numberRanges: List<OpenEndRange<Int>>
+        ): Event
         data object CloseEnlarged: Event
-        data class PerformShare(val value: String): Event
+        data class PerformShare(
+            val shareTitle: String?,
+            val shareValue: String,
+        ): Event
         data class PerformVisitDashBoard(val url: String): Event
         data class ShowLedgerVerificationResult(val isVerified: Boolean): Event
     }

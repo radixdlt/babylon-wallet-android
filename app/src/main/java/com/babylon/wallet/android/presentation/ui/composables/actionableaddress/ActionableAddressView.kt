@@ -163,7 +163,7 @@ private fun ActionableAddressView(
                     }
                 },
                 text = buildAnnotatedString {
-                    append(address.truncated)
+                    append(address.displayable)
                     append(" ")
                     appendInlineContent(id = INLINE_ICON_ID)
                 },
@@ -234,14 +234,14 @@ private fun DropDown(
 @Serializable
 sealed interface ActionableAddress {
 
-    val truncated: String
+    val displayable: String
     val icon: AccompaniedIcon
     val action: Action
     val isVisitableInDashboard: Boolean
 
-    fun copyableAddress(): String
+    fun rawAddress(): String
 
-    fun fullAddress(): String
+    fun truncatedPart(): String
 
     fun dashboardUrl(): String?
 
@@ -261,7 +261,7 @@ sealed interface ActionableAddress {
     ) : ActionableAddress {
 
         @Transient
-        override val truncated: String = address.formatted(AddressFormat.DEFAULT)
+        override val displayable: String = address.formatted(AddressFormat.DEFAULT)
 
         @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
@@ -269,9 +269,9 @@ sealed interface ActionableAddress {
         @Transient
         override val action: Action = Action.Modal
 
-        override fun copyableAddress(): String = address.formatted(format = AddressFormat.RAW)
+        override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
 
-        override fun fullAddress(): String = address.formatted(format = AddressFormat.FULL)
+        override fun truncatedPart(): String = address.formatted(format = AddressFormat.MIDDLE)
 
         override fun dashboardUrl(): String? = when (address) {
             is com.radixdlt.sargon.Address.AccessController -> null
@@ -308,7 +308,7 @@ sealed interface ActionableAddress {
     ) : ActionableAddress {
 
         @Transient
-        override val truncated: String = address.nonFungibleLocalId.formatted(AddressFormat.DEFAULT)
+        override val displayable: String = address.nonFungibleLocalId.formatted(AddressFormat.DEFAULT)
 
         @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
@@ -316,11 +316,11 @@ sealed interface ActionableAddress {
         @Transient
         override val action: Action = Action.Modal
 
-        override fun copyableAddress(): String = address.formatted(format = AddressFormat.RAW)
+        override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
+
+        override fun truncatedPart(): String = address.formatted(format = AddressFormat.MIDDLE)
 
         override fun dashboardUrl(): String = "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
-
-        override fun fullAddress(): String = address.formatted(format = AddressFormat.FULL)
 
         @Composable
         override fun icon() = when (icon) {
@@ -343,7 +343,7 @@ sealed interface ActionableAddress {
     ) : ActionableAddress {
 
         @Transient
-        override val truncated: String = hash.formatted(AddressFormat.DEFAULT)
+        override val displayable: String = hash.formatted(AddressFormat.DEFAULT)
 
         @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
@@ -352,7 +352,7 @@ sealed interface ActionableAddress {
         override val action: Action = Action.DropDown(
             isExpanded = mutableStateOf(false),
             actions = mutableSetOf<Action.DropDown.ActionItem>(
-                Action.DropDown.ActionItem.Copy(value = copyableAddress())
+                Action.DropDown.ActionItem.Copy(value = rawAddress())
             ).apply {
                 if (isVisitableInDashboard) {
                     add(Action.DropDown.ActionItem.Dashboard(url = dashboardUrl()))
@@ -360,11 +360,11 @@ sealed interface ActionableAddress {
             }
         )
 
-        override fun copyableAddress(): String = hash.formatted(format = AddressFormat.RAW)
+        override fun rawAddress(): String = hash.formatted(format = AddressFormat.RAW)
+
+        override fun truncatedPart(): String = hash.formatted(format = AddressFormat.MIDDLE)
 
         override fun dashboardUrl(): String = "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
-
-        override fun fullAddress(): String = hash.formatted(format = AddressFormat.FULL)
 
         @Composable
         override fun icon() = when (icon) {
