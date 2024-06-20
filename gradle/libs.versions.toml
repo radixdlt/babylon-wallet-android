@@ -1,6 +1,5 @@
 [versions]
-#noinspection GradleDependency
-androidxCore = "1.12.0"
+androidxCore = "1.13.1"
 androidx-lifecycle-runtime-ktx = "2.8.2"
 androidx-lifecycle-viewmodel-ktx = "2.8.2"
 detektGradlePlugin = "1.23.6"
