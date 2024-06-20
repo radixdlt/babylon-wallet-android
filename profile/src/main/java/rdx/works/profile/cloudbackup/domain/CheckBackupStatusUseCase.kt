@@ -43,9 +43,7 @@ class CheckBackupStatusUseCase @AssistedInject constructor(
             Result.success()
         } else {
             Timber.tag("CloudBackup").d("\uD83D\uDEDC Check Backup Status")
-            return lastCloudBackupEvent?.let {
-                checkCloudBackupFileAvailabilityUseCase(profile)
-            } ?: Result.success()
+            return checkCloudBackupFileAvailabilityUseCase(profile)
         }
     }
 }
