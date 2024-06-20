@@ -554,6 +554,9 @@
   <string name="error_accountLabel_tooLong">Account label too long</string>
   <string name="error_accountLabel_missing">Account label required</string>
   <string name="error_transactionFailure_doesNotAllowThirdPartyDeposits">One of the receiving accounts does not allow Third-Party deposits</string>
+  <string name="error_emailSupportButtonTitle">Email Support</string>
+  <string name="error_emailSupportMessage">Please email support to automatically provide debugging info, and get assistance.
+Code: %s</string>
   <string name="importOlympiaAccounts_scanQR_title">Import Legacy Olympia Accounts</string>
   <string name="importOlympiaAccounts_scanQR_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="importOlympiaAccounts_scanQR_scannedLabel">Scanned: %d/%d</string>
