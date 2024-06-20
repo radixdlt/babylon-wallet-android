@@ -57,7 +57,10 @@ fun CreateAccountScreen(
     onAddLedgerDevice: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
     BackHandler(onBack = viewModel::onBackClick)
+
     if (state.loading) {
         FullscreenCircularProgressContent()
     } else {
@@ -65,21 +68,17 @@ fun CreateAccountScreen(
         val buttonEnabled by viewModel.buttonEnabled.collectAsStateWithLifecycle()
         val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
 
-        val context = LocalContext.current
         CreateAccountContent(
             onAccountNameChange = viewModel::onAccountNameChange,
             onAccountCreateClick = {
-                viewModel.onAccountCreateClick(
-                    isWithLedger = it,
-                    biometricAuthProvider = { context.biometricAuthenticateSuspend() }
-                )
+                viewModel.onAccountCreateClick(isWithLedger = it)
             },
             accountName = accountName,
             isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
             buttonEnabled = buttonEnabled,
             onBackClick = viewModel::onBackClick,
             modifier = modifier,
-            firstTime = state.firstTime,
+            firstTime = state.isFirstAccount,
             isWithLedger = state.isWithLedger,
             onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
             uiMessage = state.uiMessage,
@@ -93,9 +92,15 @@ fun CreateAccountScreen(
                     event.accountId,
                     event.requestSource
                 )
-
                 is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
                 is CreateAccountEvent.Dismiss -> onBackClick()
+                is CreateAccountEvent.RequestBiometricAuthForFirstAccount -> {
+                    val isAuthenticated = context.biometricAuthenticateSuspend()
+                    viewModel.handleNewProfileCreation(
+                        isAuthenticated = isAuthenticated,
+                        isWithLedger = event.isWithLedger
+                    )
+                }
             }
         }
     }
