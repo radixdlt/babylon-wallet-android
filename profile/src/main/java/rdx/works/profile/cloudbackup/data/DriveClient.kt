@@ -251,7 +251,14 @@ class DriveClientImpl @Inject constructor(
     private suspend fun <T> Result<T>.mapDriveError(): Result<T> = mapError { error ->
         val mappedError = when (error) {
             is BackupServiceException -> error
-            is GoogleAuthIOException -> BackupServiceException.UnauthorizedException
+            is GoogleAuthIOException -> {
+                // User either revoked access to Google Drive from inside Google Drive settings
+                // or deleted the hidden app data (backup files)
+                // or both (revoke and delete hidden app data).
+                // Therefore remove last cloud backup event.
+                preferencesManager.removeLastCloudBackupEvent()
+                BackupServiceException.UnauthorizedException
+            }
             is GoogleJsonResponseException -> {
                 when (error.details.code) {
                     HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> BackupServiceException.UnauthorizedException
