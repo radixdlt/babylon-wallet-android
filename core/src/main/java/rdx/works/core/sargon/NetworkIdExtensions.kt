@@ -1,6 +1,6 @@
 package rdx.works.core.sargon
 
-import com.radixdlt.sargon. CommonException
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.SargonException
