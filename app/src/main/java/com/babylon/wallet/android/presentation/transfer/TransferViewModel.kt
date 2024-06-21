@@ -17,6 +17,7 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.formattedTextField
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
@@ -121,7 +122,7 @@ class TransferViewModel @Inject constructor(
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
         val remainingAmount = (maxAmount - spentAmount).clamped
-        val remainingAmountString = remainingAmount.string
+        val remainingAmountString = remainingAmount.formattedTextField()
 
         if (fungibleAsset.resource.isXrd && remainingAmount > 0.toDecimal192()) {
             _state.update {
@@ -156,7 +157,7 @@ class TransferViewModel @Inject constructor(
                 state.updateAssetAmount(
                     account = maxXrdError.account,
                     asset = fungibleAsset,
-                    amountString = remainingAmountString.string
+                    amountString = remainingAmountString.formattedTextField()
                 )
                     .copy(
                         maxXrdError = null
