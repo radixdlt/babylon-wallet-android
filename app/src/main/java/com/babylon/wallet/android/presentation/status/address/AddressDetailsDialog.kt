@@ -132,7 +132,7 @@ private fun AddressDetailsDialogContent(
         onDismiss = onDismiss,
         showDragHandle = true,
         content = {
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 if (state.title != null) {
                     Text(
                         modifier = Modifier
