@@ -10,7 +10,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-class AddressSerializer: KSerializer<Address> {
+class AddressSerializer : KSerializer<Address> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("com.radixdlt.sargon.Address", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Address) {

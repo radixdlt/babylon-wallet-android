@@ -15,6 +15,8 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
@@ -91,80 +93,74 @@ class AddressDetailsDialogViewModel @Inject constructor(
         }
     }
 
-    private fun resolveTitle() {
-        viewModelScope.launch {
-            when (val actionableAddress = _state.value.actionableAddress) {
-                is ActionableAddress.Address -> when (actionableAddress.address) {
-                    is Address.Account -> {
-                        val accountOnProfile = getProfileUseCase().activeAccountsOnCurrentNetwork.find {
-                            it.address == actionableAddress.address.v1
-                        }
-
-                        if (accountOnProfile != null) {
-                            _state.update { it.copy(title = accountOnProfile.displayName.value) }
-                        }
-                    }
-                    is Address.Identity -> {
-                        val personaOnProfile = getProfileUseCase().activePersonasOnCurrentNetwork.find {
-                            it.address == actionableAddress.address.v1
-                        }
-
-                        if (personaOnProfile != null) {
-                            _state.update { it.copy(title = personaOnProfile.displayName.value) }
-                        }
-                    }
-                    is Address.Resource -> {
-                        getResourcesUseCase(addresses = setOf(actionableAddress.address.v1))
-                            .onSuccess { resources ->
-                                val resource = resources.firstOrNull()
-                                if (resource != null) {
-                                    val name = if (resource is Resource.FungibleResource) {
-                                        resource.addressDialogTitle
-                                    } else {
-                                        resource.name
-                                    }
-
-                                    _state.update { state -> state.copy(title = name.takeIf { it.isNotBlank() }) }
-                                }
-                            }
-                    }
-                    is Address.Pool -> {
-                        getPoolsUseCase(poolAddresses = setOf(actionableAddress.address.v1))
-                            .onSuccess { pools ->
-                                val pool = pools.firstOrNull()
-                                if (pool != null) {
-                                    _state.update { state -> state.copy(title = pool.name.takeIf { it.isNotBlank() }) }
-                                }
-                            }
-                    }
-                    is Address.Validator -> {
-                        getValidatorsUseCase(validatorAddresses = setOf(actionableAddress.address.v1))
-                            .onSuccess { validators ->
-                                val validator = validators.firstOrNull()
-                                if (validator != null) {
-                                    _state.update { state -> state.copy(title = validator.name.takeIf { it.isNotBlank() }) }
-                                }
-                            }
-                    }
-                    else -> {}
+    private fun resolveTitle() = viewModelScope.launch {
+        val title = when (val actionableAddress = _state.value.actionableAddress) {
+            is ActionableAddress.Address -> resolveAddressTitle(actionableAddress)
+            is ActionableAddress.GlobalId -> getResourcesUseCase(addresses = setOf(actionableAddress.address.resourceAddress))
+                .getOrNull()?.let { resources ->
+                    val resource = resources.firstOrNull()
+                    if (resource is Resource.FungibleResource) {
+                        resource.addressDialogTitle
+                    } else {
+                        resource?.name
+                    }?.takeIf { it.isNotBlank() }
                 }
-                is ActionableAddress.GlobalId -> {
-                    getResourcesUseCase(addresses = setOf(actionableAddress.address.resourceAddress))
-                        .onSuccess { resources ->
-                            val resource = resources.firstOrNull()
-                            if (resource != null) {
-                                val name = if (resource is Resource.FungibleResource) {
-                                    resource.addressDialogTitle
-                                } else {
-                                    resource.name
-                                }
 
-                                _state.update { state -> state.copy(title = name.takeIf { it.isNotBlank() }) }
-                            }
-                        }
-                }
-                is ActionableAddress.TransactionId -> {}
+            is ActionableAddress.TransactionId -> {
+                null
             }
+        }
+
+        _state.update { it.copy(title = title) }
+    }
+
+    private suspend fun AddressDetailsDialogViewModel.resolveAddressTitle(
+        actionableAddress: ActionableAddress.Address,
+    ) = when (val address = actionableAddress.address) {
+        is Address.Account -> {
+            val accountOnProfile = getProfileUseCase().activeAccountsOnCurrentNetwork.find {
+                it.address == address.v1
+            }
+
+            accountOnProfile?.displayName?.value
+        }
+
+        is Address.Identity -> {
+            val personaOnProfile = getProfileUseCase().activePersonasOnCurrentNetwork.find {
+                it.address == address.v1
+            }
+
+            personaOnProfile?.displayName?.value
+        }
+
+        is Address.Resource -> {
+            getResourcesUseCase(addresses = setOf(address.v1))
+                .getOrNull()?.let { resources ->
+                    val resource = resources.firstOrNull()
+                    if (resource is Resource.FungibleResource) {
+                        resource.addressDialogTitle
+                    } else {
+                        resource?.name
+                    }?.takeIf { it.isNotBlank() }
+                }
+        }
+
+        is Address.Pool -> {
+            getPoolsUseCase(poolAddresses = setOf(address.v1))
+                .getOrNull()?.let { pools ->
+                    pools.firstOrNull()?.name?.takeIf { it.isNotBlank() }
+                }
+        }
+
+        is Address.Validator -> {
+            getValidatorsUseCase(validatorAddresses = setOf(address.v1))
+                .getOrNull()?.let { validators ->
+                    validators.firstOrNull()?.name?.takeIf { it.isNotBlank() }
+                }
+        }
+
+        else -> {
+            null
         }
     }
 
@@ -258,7 +254,9 @@ class AddressDetailsDialogViewModel @Inject constructor(
 
             return if (symbol != null && name != null) {
                 "$name ($symbol)"
-            } else symbol ?: name.orEmpty()
+            } else {
+                symbol ?: name.orEmpty()
+            }
         }
 
     data class State(
@@ -281,15 +279,15 @@ class AddressDetailsDialogViewModel @Inject constructor(
                 val truncatedPart: String
             ) : Section {
 
-                val boldRanges: List<OpenEndRange<Int>> = run {
+                val boldRanges: ImmutableList<OpenEndRange<Int>> = run {
                     val visibleCharsWhenTruncated = rawAddress.split(truncatedPart)
 
-                    if (visibleCharsWhenTruncated.size != 2) return@run emptyList()
+                    if (visibleCharsWhenTruncated.size != 2) return@run persistentListOf()
 
                     val startRange = 0 until visibleCharsWhenTruncated[0].length
                     val endRange = rawAddress.length - visibleCharsWhenTruncated[1].length until rawAddress.length
 
-                    listOf(
+                    persistentListOf(
                         startRange,
                         endRange
                     )
@@ -306,21 +304,22 @@ class AddressDetailsDialogViewModel @Inject constructor(
                 val accountAddress: AccountAddress
             ) : Section
         }
-
     }
 
-    sealed interface Event: OneOffEvent {
-        data class PerformCopy(val valueToCopy: String): Event
+    sealed interface Event : OneOffEvent {
+        data class PerformCopy(val valueToCopy: String) : Event
         data class PerformEnlarge(
             val value: String,
             val numberRanges: List<OpenEndRange<Int>>
-        ): Event
-        data object CloseEnlarged: Event
+        ) : Event
+
+        data object CloseEnlarged : Event
         data class PerformShare(
             val shareTitle: String?,
             val shareValue: String,
-        ): Event
-        data class PerformVisitDashBoard(val url: String): Event
-        data class ShowLedgerVerificationResult(val isVerified: Boolean): Event
+        ) : Event
+
+        data class PerformVisitDashBoard(val url: String) : Event
+        data class ShowLedgerVerificationResult(val isVerified: Boolean) : Event
     }
 }

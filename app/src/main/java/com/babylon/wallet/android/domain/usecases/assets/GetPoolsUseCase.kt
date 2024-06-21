@@ -7,5 +7,4 @@ import javax.inject.Inject
 class GetPoolsUseCase @Inject constructor(private val stateRepository: StateRepository) {
 
     suspend operator fun invoke(poolAddresses: Set<PoolAddress>) = stateRepository.getPools(poolAddresses)
-
 }

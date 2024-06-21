@@ -19,7 +19,6 @@ import javax.inject.Inject
 interface ActionableAddressViewEntryPointI {
 
     fun appEventBus(): AppEventBus
-
 }
 
 @ActivityRetainedScoped
@@ -30,7 +29,6 @@ class ActionableAddressViewEntryPoint @Inject constructor(
     private val provider = EntryPoints.get(context, ActionableAddressViewEntryPointI::class.java)
 
     override fun appEventBus(): AppEventBus = provider.appEventBus()
-
 }
 
 val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPointI {

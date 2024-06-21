@@ -9,7 +9,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-class IntentHashSerializer: KSerializer<IntentHash> {
+class IntentHashSerializer : KSerializer<IntentHash> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("com.radixdlt.sargon.IntentHash", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: IntentHash) {

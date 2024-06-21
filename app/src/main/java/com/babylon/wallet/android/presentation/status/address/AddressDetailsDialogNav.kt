@@ -13,9 +13,9 @@ import com.babylon.wallet.android.utils.encodeUtf8
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.annotations.VisibleForTesting
-import timber.log.Timber
 
 private const val ROUTE = "address_details"
+
 @VisibleForTesting
 const val ARG_ACTIONABLE_ADDRESS = "actionable_address"
 
@@ -23,12 +23,11 @@ internal class AddressDetailsArgs(
     val actionableAddress: ActionableAddress
 ) {
 
-    constructor(savedStateHandle: SavedStateHandle): this(
+    constructor(savedStateHandle: SavedStateHandle) : this(
         actionableAddress = checkNotNull(savedStateHandle.get<String>(ARG_ACTIONABLE_ADDRESS)).let {
             Json.decodeFromString(it.decodeUtf8())
         }
     )
-
 }
 
 fun NavController.addressDetails(

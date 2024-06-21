@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
+@file:Suppress("TooManyFunctions")
 
 package com.babylon.wallet.android.presentation.status.address
 
@@ -68,6 +69,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.qr.QRCodeGenerator
 
@@ -162,7 +164,6 @@ private fun AddressDetailsDialogContent(
                 }
                 Spacer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault))
             }
-
         }
     )
 }
@@ -192,7 +193,7 @@ private fun AccountAddressQRCode(
         )
 
         AsyncImage(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge)
                 .aspectRatio(ratio = 1f),
@@ -206,7 +207,7 @@ private fun AccountAddressQRCode(
 private fun FullAddress(
     modifier: Modifier = Modifier,
     fullAddress: String,
-    boldRanges: List<OpenEndRange<Int>>,
+    boldRanges: ImmutableList<OpenEndRange<Int>>,
     onCopy: () -> Unit,
     onEnlarge: () -> Unit,
     onShare: () -> Unit
@@ -245,7 +246,6 @@ private fun FullAddress(
                         end = range.endExclusive
                     )
                 }
-
             },
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray2,

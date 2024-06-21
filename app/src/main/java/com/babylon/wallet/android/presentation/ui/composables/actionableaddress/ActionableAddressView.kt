@@ -486,7 +486,6 @@ sealed interface ActionableAddress {
 
             return actionableAddress
         }
-
     }
 }
 

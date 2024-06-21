@@ -87,11 +87,14 @@ fun Context.openEmail(recipientAddress: String? = null, subject: String? = null,
 }
 
 fun Context.shareText(value: String, title: String? = null) {
-    val shareIntent = Intent.createChooser(Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, value)
-        type = "text/plain"
-    }, title)
+    val shareIntent = Intent.createChooser(
+        Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, value)
+            type = "text/plain"
+        },
+        title
+    )
     startActivity(shareIntent)
 }
 

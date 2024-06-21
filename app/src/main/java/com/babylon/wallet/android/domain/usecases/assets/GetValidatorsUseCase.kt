@@ -7,5 +7,4 @@ import javax.inject.Inject
 class GetValidatorsUseCase @Inject constructor(private val stateRepository: StateRepository) {
 
     suspend operator fun invoke(validatorAddresses: Set<ValidatorAddress>) = stateRepository.getValidators(validatorAddresses)
-
 }

@@ -37,7 +37,7 @@ sealed interface AppEvent {
     data class DeferRequestHandling(val interactionId: String) : AppEvent
     data object ProcessBufferedDeepLinkRequest : AppEvent
 
-    data class AddressDetails(val address: ActionableAddress): AppEvent
+    data class AddressDetails(val address: ActionableAddress) : AppEvent
 
     sealed interface AccessFactorSources : AppEvent {
 
