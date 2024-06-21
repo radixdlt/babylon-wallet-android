@@ -119,7 +119,7 @@ class AddressDetailsDialogViewModel @Inject constructor(
                                 val resource = resources.firstOrNull()
                                 if (resource != null) {
                                     val name = if (resource is Resource.FungibleResource) {
-                                        resource.displayTitle
+                                        resource.addressDialogTitle
                                     } else {
                                         resource.name
                                     }
@@ -154,7 +154,7 @@ class AddressDetailsDialogViewModel @Inject constructor(
                             val resource = resources.firstOrNull()
                             if (resource != null) {
                                 val name = if (resource is Resource.FungibleResource) {
-                                    resource.displayTitle
+                                    resource.addressDialogTitle
                                 } else {
                                     resource.name
                                 }
@@ -250,6 +250,16 @@ class AddressDetailsDialogViewModel @Inject constructor(
             }
         }
     }
+
+    private val Resource.FungibleResource.addressDialogTitle: String
+        get() {
+            val symbol = symbol.takeIf { it.isNotBlank() }
+            val name = name.takeIf { it.isNotBlank() }
+
+            return if (symbol != null && name != null) {
+                "$name ($symbol)"
+            } else symbol ?: name.orEmpty()
+        }
 
     data class State(
         val actionableAddress: ActionableAddress,
