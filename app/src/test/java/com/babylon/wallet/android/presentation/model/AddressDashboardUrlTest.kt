@@ -28,14 +28,14 @@ internal class AddressDashboardUrlTest(
     @Test
     fun `convert of address to dashboard url`() {
         val actionableAddress = runCatching {
-            ActionableAddress.Address(Address.init(address))
+            ActionableAddress.Address(Address.init(address), true)
         }.getOrNull() ?: runCatching {
-            ActionableAddress.GlobalId(NonFungibleGlobalId.init(address))
+            ActionableAddress.GlobalId(NonFungibleGlobalId.init(address), true)
         }.getOrNull() ?: runCatching {
-            ActionableAddress.TransactionId(IntentHash.init(address))
+            ActionableAddress.TransactionId(IntentHash.init(address), true)
         }.getOrNull()
 
-        assertEquals(url, actionableAddress?.dashboardUrl(networkId = NetworkId.MAINNET))
+        assertEquals(url, actionableAddress?.dashboardUrl())
     }
 
 

@@ -12,10 +12,12 @@ import com.babylon.wallet.android.utils.decodeUtf8
 import com.babylon.wallet.android.utils.encodeUtf8
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.jetbrains.annotations.VisibleForTesting
 import timber.log.Timber
 
 private const val ROUTE = "address_details"
-private const val ARG_ACTIONABLE_ADDRESS = "actionable_address"
+@VisibleForTesting
+const val ARG_ACTIONABLE_ADDRESS = "actionable_address"
 
 internal class AddressDetailsArgs(
     val actionableAddress: ActionableAddress
