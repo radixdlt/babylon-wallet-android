@@ -333,7 +333,8 @@ private fun VerifyAddressOnLedger(
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         text = stringResource(id = R.string.addressDetails_verifyOnLedger),
         onClick = onClick,
-        isLoading = isVerifying
+        isLoading = isVerifying,
+        enabled = !isVerifying
     )
 }
 
