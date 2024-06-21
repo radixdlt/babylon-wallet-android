@@ -20,6 +20,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.isLedgerAccount
@@ -235,6 +236,18 @@ class AddressDetailsDialogViewModel @Inject constructor(
             }?.v1
 
             if (accountAddress != null) {
+                val ledgerSection = state.value.sections.find {
+                    it is State.Section.VerifyAddressOnLedger
+                } as? State.Section.VerifyAddressOnLedger ?: return@launch
+
+                _state.update { state ->
+                    state.copy(sections = state.sections.mapWhen(
+                        predicate = { it is State.Section.VerifyAddressOnLedger },
+                        mutation = {
+                            ledgerSection.copy(isVerifying = true)
+                        }
+                    ))
+                }
                 val isVerified = verifyAddressOnLedgerUseCase(address = accountAddress).fold(
                     onSuccess = { true },
                     onFailure = {
@@ -242,6 +255,15 @@ class AddressDetailsDialogViewModel @Inject constructor(
                         false
                     }
                 )
+
+                _state.update { state ->
+                    state.copy(sections = state.sections.mapWhen(
+                        predicate = { it is State.Section.VerifyAddressOnLedger },
+                        mutation = {
+                            ledgerSection.copy(isVerifying = false)
+                        }
+                    ))
+                }
                 sendEvent(Event.ShowLedgerVerificationResult(isVerified = isVerified))
             }
         }
@@ -301,7 +323,8 @@ class AddressDetailsDialogViewModel @Inject constructor(
 
             data class VerifyAddressOnLedger(
                 override val order: Short = 3,
-                val accountAddress: AccountAddress
+                val accountAddress: AccountAddress,
+                val isVerifying: Boolean = false
             ) : Section
         }
     }

@@ -159,7 +159,10 @@ private fun AddressDetailsDialogContent(
                         )
 
                         is Section.VisitDashboard -> VisitDashboard(onClick = onVisitDashboard)
-                        is Section.VerifyAddressOnLedger -> VerifyAddressOnLedger(onClick = onVerifyAddressOnLedger)
+                        is Section.VerifyAddressOnLedger -> VerifyAddressOnLedger(
+                            isVerifying = section.isVerifying,
+                            onClick = onVerifyAddressOnLedger
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault))
@@ -321,6 +324,7 @@ private fun VisitDashboard(
 @Composable
 private fun VerifyAddressOnLedger(
     modifier: Modifier = Modifier,
+    isVerifying: Boolean,
     onClick: () -> Unit
 ) {
     RadixSecondaryButton(
@@ -328,7 +332,8 @@ private fun VerifyAddressOnLedger(
             .fillMaxWidth()
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         text = stringResource(id = R.string.addressDetails_verifyOnLedger),
-        onClick = onClick
+        onClick = onClick,
+        isLoading = isVerifying
     )
 }
 
