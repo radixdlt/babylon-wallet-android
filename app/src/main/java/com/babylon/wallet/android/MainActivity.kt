@@ -61,7 +61,10 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
-        intent.data?.let { viewModel.handleDeepLink(it) }
+        intent.data?.let {
+            intent.replaceExtras(Bundle())
+            viewModel.handleDeepLink(it)
+        }
         setContent {
             RadixWalletTheme {
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
@@ -100,7 +103,10 @@ class MainActivity : FragmentActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        intent?.data?.let { viewModel.handleDeepLink(it) }
+        intent?.data?.let {
+            this.intent.replaceExtras(Bundle())
+            viewModel.handleDeepLink(it)
+        }
     }
 
     private fun setSplashExitAnimation(splashScreen: SplashScreen) {

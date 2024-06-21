@@ -45,6 +45,7 @@ import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -92,9 +93,16 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
     init {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.CloseLoginFlow)
+                }
+            }
+        }
         observeSigningState()
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getAuthorizedRequest(args.interactionId)
+            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? AuthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch

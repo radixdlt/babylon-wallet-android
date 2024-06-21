@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -17,24 +19,24 @@ interface IncomingRequestRepository {
 
     suspend fun add(incomingRequest: IncomingRequest)
 
+    suspend fun addFirst(incomingRequest: IncomingRequest)
+
     suspend fun requestHandled(requestId: String)
 
     suspend fun pauseIncomingRequests()
 
     suspend fun resumeIncomingRequests()
 
-    fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest?
-
-    fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest?
-
-    fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest?
+    fun getRequest(requestId: String): IncomingRequest?
 
     fun removeAll()
 
     fun getAmountOfRequests(): Int
 }
 
-class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepository {
+class IncomingRequestRepositoryImpl @Inject constructor(
+    private val appEventBus: AppEventBus
+) : IncomingRequestRepository {
 
     private val requestQueue = LinkedList<QueueItem>()
 
@@ -68,9 +70,36 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         }
     }
 
+    /**
+     * There are two path of execution when using this method:
+     * - there is high priority screen in the queue, so the incoming request is added below it,
+     * taking priority over requests currently in the queue
+     * - there is no high priority screen: request is added at the top of queue and if there other request currently handled,
+     * we send a dismiss event for it so that UI can react and dismiss handling, without removing it from the queue.
+     * Dismissed request will be handled again when top priority one handling completes
+     */
+    override suspend fun addFirst(incomingRequest: IncomingRequest) {
+        mutex.withLock {
+            if (requestQueue.firstOrNull() is QueueItem.HighPriorityScreen) {
+                requestQueue.add(1, QueueItem.RequestItem(incomingRequest))
+            } else {
+                requestQueue.addFirst(QueueItem.RequestItem(incomingRequest))
+                _currentRequestToHandle.value?.let {
+                    Timber.d("🗂 Dismissing request with id ${it.interactionId}")
+                    appEventBus.sendEvent(AppEvent.DismissRequestHandling(it.interactionId))
+                }
+                handleNextRequest()
+                Timber.d(
+                    "🗂 new incoming request with id ${incomingRequest.interactionId} " +
+                        "added in list, so size now is ${getAmountOfRequests()}"
+                )
+            }
+        }
+    }
+
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
-            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId }
+            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId }
             handleNextRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
@@ -83,9 +112,11 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
                 return
             }
 
-            // Put high priority item below any internal request
+            // Put high priority item below any internal request and mobile connect requests
             val topQueueItem = requestQueue.peekFirst()
-            if (topQueueItem is QueueItem.RequestItem && topQueueItem.incomingRequest.isInternal) {
+            if (topQueueItem is QueueItem.RequestItem &&
+                (topQueueItem.incomingRequest.isInternal || topQueueItem.incomingRequest.isMobileConnectRequest)
+            ) {
                 requestQueue.add(1, QueueItem.HighPriorityScreen)
             } else {
                 requestQueue.addFirst(QueueItem.HighPriorityScreen)
@@ -104,37 +135,14 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
         }
     }
 
-    override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest? {
+    override fun getRequest(requestId: String): IncomingRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId &&
-                it.incomingRequest is IncomingRequest.UnauthorizedRequest
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId
         }
         if (queueItem == null) {
-            Timber.w("Unauthorized request with id $requestId is null")
+            Timber.w("Request with id $requestId is null")
         }
-        return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.UnauthorizedRequest
-    }
-
-    override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest? {
-        val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId &&
-                it.incomingRequest is IncomingRequest.TransactionRequest
-        }
-        if (queueItem == null) {
-            Timber.w("Transaction request with id $requestId is null")
-        }
-        return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.TransactionRequest
-    }
-
-    override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest? {
-        val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId.toString() == requestId &&
-                it.incomingRequest is IncomingRequest.AuthorizedRequest
-        }
-        if (queueItem == null) {
-            Timber.w("Authorized request with id $requestId is null")
-        }
-        return (queueItem as? QueueItem.RequestItem)?.incomingRequest as? IncomingRequest.AuthorizedRequest
+        return (queueItem as? QueueItem.RequestItem)?.incomingRequest
     }
 
     override fun removeAll() {
@@ -156,7 +164,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     private sealed interface QueueItem {
         data object HighPriorityScreen : QueueItem
-
         data class RequestItem(val incomingRequest: IncomingRequest) : QueueItem
+        data class MobileConnectItem(val incomingRequest: IncomingRequest) : QueueItem
     }
 }

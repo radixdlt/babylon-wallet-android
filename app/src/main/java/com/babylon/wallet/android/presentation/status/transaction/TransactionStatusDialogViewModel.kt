@@ -94,7 +94,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                 }.onFailure { error ->
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
-                            incomingRequestRepository.getTransactionWriteRequest(status.requestId)?.let { transactionRequest ->
+                            incomingRequestRepository.getRequest(status.requestId)?.let { transactionRequest ->
                                 respondToIncomingRequestUseCase.respondWithFailure(
                                     request = transactionRequest,
                                     error = exception.ceError,

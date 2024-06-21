@@ -146,7 +146,7 @@ class PeerdroidClientImpl @Inject constructor(
                 if (interactionVersion != Constants.WALLET_INTERACTION_VERSION) {
                     throw IncompatibleRequestVersionException(
                         requestVersion = interactionVersion,
-                        requestId = dappInteraction.interactionId.toString()
+                        requestId = dappInteraction.interactionId
                     )
                 }
                 dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()

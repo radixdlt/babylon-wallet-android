@@ -33,6 +33,7 @@ sealed interface AppEvent {
     data object NPSSurveySubmitted : AppEvent
 
     data object SecureFolderWarning : AppEvent
+    data class DismissRequestHandling(val interactionId: String) : AppEvent
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources

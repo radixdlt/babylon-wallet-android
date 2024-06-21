@@ -484,8 +484,8 @@ fun FailureDialogContent(
         }
         if (isMobileConnect) {
             Text(
-                text = "You can return back to the dApp!",
-                style = RadixTheme.typography.body1HighImportance,
+                text = "Switch back to your browser to continue", // TODO crowdin
+                style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )

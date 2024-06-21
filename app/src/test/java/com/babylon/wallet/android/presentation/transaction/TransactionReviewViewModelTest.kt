@@ -53,7 +53,6 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
@@ -114,9 +113,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val transactionRepository = mockk<TransactionRepository>()
-    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
     private val appEventBus = mockk<AppEventBus>()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl(appEventBus)
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
@@ -295,7 +294,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
-            getDAppsUseCase = getDAppsUseCase
+            getDAppsUseCase = getDAppsUseCase,
+            appEventBus = appEventBus
         )
     }
 

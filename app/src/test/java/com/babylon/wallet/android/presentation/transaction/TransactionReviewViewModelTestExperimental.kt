@@ -18,7 +18,7 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.transaction.vectors.requestMetadata
 import com.babylon.wallet.android.presentation.transaction.vectors.sampleManifest
 import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
-import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.CompiledNotarizedIntent
@@ -30,7 +30,6 @@ import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.perRecipientTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
@@ -80,7 +79,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
     private val stateRepository = mockk<StateRepository>()
     private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
-    private val appEventBus = mockk<AppEventBus>()
+    private val appEventBus = AppEventBusImpl()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val signTransactionUseCase = mockk<SignTransactionUseCase>().apply {
         every { signingState } returns flowOf()
@@ -106,7 +105,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
 
     @Test
     fun `given transaction id, when this id does not exist in the queue, then dismiss the transaction`() = runTest {
-        every { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns null
+        every { incomingRequestRepository.getRequest(transactionId) } returns null
 
         vm.value.state.test {
             assertTrue("The transaction should be dismissed, but didn't", awaitItem().isTransactionDismissed)
@@ -156,7 +155,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         ).also {
             println(it.transactionManifestData.instructions)
         }
-        coEvery { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns transactionRequest
+        coEvery { incomingRequestRepository.getRequest(transactionId) } returns transactionRequest
     }
 
     private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData =

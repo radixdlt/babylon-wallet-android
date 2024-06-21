@@ -35,6 +35,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -69,7 +70,14 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     init {
         observeSigningState()
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getUnauthorizedRequest(args.requestId)
+            appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.CloseLoginFlow)
+                }
+            }
+        }
+        viewModelScope.launch {
+            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.UnauthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
@@ -187,7 +195,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
-        incomingRequestRepository.requestHandled(requestId = args.requestId)
+        incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
     fun onMessageShown() {
@@ -218,7 +226,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onRejectRequest() {
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(requestId = args.requestId)
+            incomingRequestRepository.requestHandled(requestId = args.interactionId)
             respondToIncomingRequestUseCase.respondWithFailure(request, DappWalletInteractionErrorType.REJECTED_BY_USER)
             sendEvent(Event.CloseLoginFlow)
         }

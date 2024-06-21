@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.WalletInteractionId
+import io.mockk.coVerify
+import io.mockk.spyk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,7 +23,8 @@ import java.util.UUID
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 class IncomingRequestRepositoryTest {
 
-    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
+    private val eventBus = spyk<AppEventBusImpl>()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl(eventBus)
     private val amountOfIncomingRequests = 100
     private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
@@ -78,18 +82,58 @@ class IncomingRequestRepositoryTest {
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)
-        assert(currentRequest?.interactionId.toString() == interactionIds[0].toString())
-        incomingRequestRepository.requestHandled(interactionIds[0].toString())
-        incomingRequestRepository.requestHandled(interactionIds[1].toString())
+        assert(currentRequest?.interactionId.toString() == interactionIds[0])
+        incomingRequestRepository.requestHandled(interactionIds[0])
+        incomingRequestRepository.requestHandled(interactionIds[1])
         advanceUntilIdle()
-        assert(currentRequest?.interactionId.toString() == interactionIds[2].toString())
+        assert(currentRequest?.interactionId.toString() == interactionIds[2])
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 3)
-        incomingRequestRepository.requestHandled(interactionIds[2].toString())
-        incomingRequestRepository.requestHandled(interactionIds[3].toString())
+        incomingRequestRepository.requestHandled(interactionIds[2])
+        incomingRequestRepository.requestHandled(interactionIds[3])
         advanceUntilIdle()
-        assert(currentRequest?.interactionId.toString() == interactionIds[4].toString())
+        assert(currentRequest?.interactionId.toString() == interactionIds[4])
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
-        incomingRequestRepository.requestHandled(interactionIds[4].toString())
+        incomingRequestRepository.requestHandled(interactionIds[4])
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 0)
+    }
+
+    @Test
+    fun `addFirst takes priority over current and sends dismiss event for previous current`() = runTest {
+        var currentRequest: IncomingMessage.IncomingRequest? = null
+        val interactionId1 = UUID.randomUUID().toString()
+        val interactionId2 = UUID.randomUUID().toString()
+        incomingRequestRepository.currentRequestToHandle
+            .onEach { currentRequest = it }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+        advanceUntilIdle()
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
+        assert(currentRequest?.interactionId == interactionId1)
+        incomingRequestRepository.addFirst(sampleIncomingRequest.copy(interactionId = interactionId2))
+        advanceUntilIdle()
+        assert(currentRequest?.interactionId == interactionId2)
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
+        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.DismissRequestHandling(interactionId1)) }
+    }
+
+    @Test
+    fun `addFirst inserts item at 2nd position when there is high priority screen`() = runTest {
+        var currentRequest: IncomingMessage.IncomingRequest? = null
+        val interactionId1 = UUID.randomUUID().toString()
+        val interactionId2 = UUID.randomUUID().toString()
+        incomingRequestRepository.currentRequestToHandle
+            .onEach { currentRequest = it }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        incomingRequestRepository.pauseIncomingRequests()
+        incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+        advanceUntilIdle()
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
+        assert(currentRequest?.interactionId == null)
+        incomingRequestRepository.addFirst(sampleIncomingRequest.copy(interactionId = interactionId2))
+        advanceUntilIdle()
+        incomingRequestRepository.resumeIncomingRequests()
+        advanceUntilIdle()
+        assert(currentRequest?.interactionId == interactionId2)
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
     }
 }

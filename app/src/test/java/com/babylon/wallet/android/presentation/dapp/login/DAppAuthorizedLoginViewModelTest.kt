@@ -32,7 +32,6 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -203,12 +202,13 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     @Before
     override fun setUp() {
         super.setUp()
+        every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
         coEvery { getProfileUseCase() } returns sampleProfile
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
+        coEvery { incomingRequestRepository.getRequest(any()) } returns requestWithNonExistingDappAddress
     }
 
     @Test
@@ -243,7 +243,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     @Test
     fun `init sets correct state for use persona ongoing request`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoing
+        coEvery { incomingRequestRepository.getRequest(any()) } returns usePersonaRequestOngoing
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         val vm = vm.value
         advanceUntilIdle()
@@ -255,7 +255,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     @Test
     fun `init sets correct state for use persona accounts and data when accounts are already granted`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
+        coEvery { incomingRequestRepository.getRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(
             AccountAddress.sampleMainnet.random()
@@ -270,7 +270,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     @Test
     fun `init sets correct state for use persona onetime request`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOneTimeAccounts
+        coEvery { incomingRequestRepository.getRequest(any()) } returns usePersonaRequestOneTimeAccounts
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         val vm = vm.value
         advanceUntilIdle()

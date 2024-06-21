@@ -17,7 +17,7 @@ internal const val ARG_REQUEST_ID = "request_id"
 const val ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH = "dapp_login_unauthorized/{$ARG_REQUEST_ID}"
 const val ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN = "dapp_login_unauthorized_screen/{$ARG_REQUEST_ID}"
 
-internal class DAppUnauthorizedLoginArgs(val requestId: String) {
+internal class DAppUnauthorizedLoginArgs(val interactionId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 

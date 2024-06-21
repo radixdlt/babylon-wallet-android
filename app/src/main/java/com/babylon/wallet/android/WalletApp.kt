@@ -68,25 +68,25 @@ fun WalletApp(
         mainViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is MainEvent.IncomingRequestEvent -> {
+                    if (event.request.needVerification) {
+                        navController.mobileConnect(event.request.interactionId)
+                        return@collect
+                    }
                     when (val incomingRequest = event.request) {
                         is IncomingMessage.IncomingRequest.TransactionRequest -> {
                             navController.transactionReview(
-                                requestId = incomingRequest.interactionId.toString()
+                                requestId = incomingRequest.interactionId
                             )
                         }
 
                         is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLoginAuthorized(incomingRequest.interactionId.toString())
+                            navController.dAppLoginAuthorized(incomingRequest.interactionId)
                         }
 
                         is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
-                            navController.dAppLoginUnauthorized(incomingRequest.interactionId.toString())
+                            navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                         }
                     }
-                }
-
-                is MainEvent.MobileConnectLink -> {
-                    navController.mobileConnect(event.request)
                 }
             }
         }

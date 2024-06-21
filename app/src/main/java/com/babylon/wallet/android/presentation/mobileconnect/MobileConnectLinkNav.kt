@@ -7,35 +7,36 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.radixdlt.sargon.RadixConnectMobileSessionRequest
-import com.radixdlt.sargon.extensions.fromJson
-import com.radixdlt.sargon.extensions.toJson
+import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
-private const val ARG_REQUEST = "request"
-private const val ROUTE_ARGS = "$ARG_REQUEST={$ARG_REQUEST}"
-private const val ROUTE = "mobileConnect?$ROUTE_ARGS"
+private const val ARG_INTERACTION_ID = "interactionId"
+private const val ROUTE = "mobileConnect/{$ARG_INTERACTION_ID}"
 
 fun NavController.mobileConnect(
-    request: RadixConnectMobileSessionRequest
+    interactionId: String
 ) {
-    navigate(route = "mobileConnect?$ARG_REQUEST=${request.toJson()}")
+    navigate(route = "mobileConnect/$interactionId")
 }
 
 internal class MobileConnectArgs(
-    val request: RadixConnectMobileSessionRequest
+    val interactionId: String
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        request = checkNotNull(savedStateHandle.get<String>(ARG_REQUEST)).let {
-            RadixConnectMobileSessionRequest.fromJson(it)
-        }
+        interactionId = checkNotNull(savedStateHandle.get<String>(ARG_INTERACTION_ID))
     )
 }
 
-fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
+fun NavGraphBuilder.mobileConnect(
+    onBackClick: () -> Unit,
+    onHandleRequestAuthorizedRequest: (String) -> Unit,
+    onHandleUnauthorizedRequest: (String) -> Unit,
+    onHandleTransactionRequest: (String) -> Unit
+) {
+    markAsHighPriority(route = ROUTE)
     composable(
         route = ROUTE,
         arguments = listOf(
-            navArgument(ARG_REQUEST) {
+            navArgument(ARG_INTERACTION_ID) {
                 type = NavType.StringType
             }
         ),
@@ -46,6 +47,11 @@ fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
-        MobileConnectLinkScreen(onClose = onBackClick)
+        MobileConnectLinkScreen(
+            onClose = onBackClick,
+            onHandleRequestAuthorizedRequest = onHandleRequestAuthorizedRequest,
+            onHandleUnauthorizedRequest = onHandleUnauthorizedRequest,
+            onHandleTransactionRequest = onHandleTransactionRequest
+        )
     }
 }

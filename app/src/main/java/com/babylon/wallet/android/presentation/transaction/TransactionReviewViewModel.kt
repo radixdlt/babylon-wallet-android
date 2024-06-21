@@ -24,6 +24,8 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -45,6 +47,7 @@ import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -60,6 +63,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
+    private val appEventBus: AppEventBus,
     private val signTransactionUseCase: SignTransactionUseCase,
     private val analysis: TransactionAnalysisDelegate,
     private val guarantees: TransactionGuaranteesDelegate,
@@ -84,7 +88,7 @@ class TransactionReviewViewModel @Inject constructor(
         fees(scope = viewModelScope, state = _state)
         submit(scope = viewModelScope, state = _state)
 
-        val request = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
+        val request = incomingRequestRepository.getRequest(args.requestId) as? IncomingMessage.IncomingRequest.TransactionRequest
         if (request == null) {
             viewModelScope.launch {
                 _state.update { state ->
@@ -109,6 +113,13 @@ class TransactionReviewViewModel @Inject constructor(
                     getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false).onSuccess { dApp ->
                         _state.update { it.copy(proposingDApp = dApp) }
                     }
+                }
+            }
+        }
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
+                _state.update { state ->
+                    state.copy(isTransactionDismissed = true)
                 }
             }
         }

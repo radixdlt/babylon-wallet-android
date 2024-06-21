@@ -25,9 +25,11 @@ sealed interface IncomingMessage {
 
         val value: String
 
-        data class RadixMobileConnectRemoteSession(val id: String) : RemoteEntityID {
+        data class RadixMobileConnectRemoteSession(val id: String, val originVerificationUrl: String? = null) : RemoteEntityID {
             override val value: String
                 get() = id
+
+            val needOriginVerification: Boolean = originVerificationUrl != null
         }
 
         data class ConnectorId(val id: String) : RemoteEntityID {
@@ -49,6 +51,9 @@ sealed interface IncomingMessage {
 
         val isMobileConnectRequest: Boolean
             get() = remoteEntityId is RemoteEntityID.RadixMobileConnectRemoteSession
+
+        val needVerification: Boolean
+            get() = (remoteEntityId as? RemoteEntityID.RadixMobileConnectRemoteSession)?.needOriginVerification == true
 
         val blockUntilComplete: Boolean
             get() {
