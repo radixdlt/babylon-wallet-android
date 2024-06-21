@@ -7,7 +7,6 @@ import android.content.ClipboardManager
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,10 +19,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -362,10 +362,12 @@ private fun HandleEvents(
                         }
                     }
                 }
+
                 is AddressDetailsDialogViewModel.Event.PerformShare -> context.shareText(
                     title = event.shareTitle,
                     value = event.shareValue
                 )
+
                 is AddressDetailsDialogViewModel.Event.PerformVisitDashBoard -> context.openUrl(event.url)
                 is AddressDetailsDialogViewModel.Event.ShowLedgerVerificationResult -> if (event.isVerified) {
                     Toast.makeText(
@@ -397,42 +399,38 @@ private fun EnlargedAddressView(
     enlargedAddressState: EnlargedAddressState,
     onDismiss: () -> Unit
 ) {
-    AnimatedVisibility(
-        modifier = modifier,
-        visible = enlargedAddressState.isVisible
-    ) {
+    if (enlargedAddressState.isVisible) {
         BasicAlertDialog(
+            modifier = modifier,
             onDismissRequest = onDismiss,
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Surface(
+            Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
-                    .clickable { onDismiss() },
-                shape = RadixTheme.shapes.roundedRectMedium,
-                color = RadixTheme.colors.gray1.copy(alpha = 0.74f)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingLarge),
-                    text = buildAnnotatedString {
-                        append(enlargedAddressState.address)
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingXXXLarge,
+                        vertical = RadixTheme.dimensions.paddingDefault
+                    )
+                    .clickable { onDismiss() }
+                    .background(color = RadixTheme.colors.gray1.copy(alpha = 0.74f), shape = RadixTheme.shapes.roundedRectMedium)
+                    .padding(RadixTheme.dimensions.paddingLarge)
+                    .verticalScroll(rememberScrollState()),
+                text = buildAnnotatedString {
+                    append(enlargedAddressState.address)
 
-                        val greenSpan = SpanStyle(color = RadixTheme.colors.green3)
-                        enlargedAddressState.numberRanges.forEach { range ->
-                            addStyle(style = greenSpan, start = range.start, end = range.endExclusive)
-                        }
-                    },
-                    textAlign = TextAlign.Center,
-                    fontSize = 50.sp,
-                    lineHeight = 64.sp,
-                    letterSpacing = 2.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = RadixTheme.colors.white
-                )
-            }
+                    val greenSpan = SpanStyle(color = RadixTheme.colors.green3)
+                    enlargedAddressState.numberRanges.forEach { range ->
+                        addStyle(style = greenSpan, start = range.start, end = range.endExclusive)
+                    }
+                },
+                textAlign = TextAlign.Center,
+                fontSize = 50.sp,
+                lineHeight = 64.sp,
+                letterSpacing = 2.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = RadixTheme.colors.white
+            )
         }
     }
 }
