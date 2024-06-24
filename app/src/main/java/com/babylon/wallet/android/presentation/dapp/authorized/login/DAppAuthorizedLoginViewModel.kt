@@ -97,6 +97,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
                 if (it.interactionId == args.interactionId) {
                     sendEvent(Event.CloseLoginFlow)
+                    incomingRequestRepository.requestDismissed(args.interactionId)
                 }
             }
         }

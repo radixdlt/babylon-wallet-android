@@ -18,7 +18,7 @@ class ProcessDeepLinkUseCase @Inject constructor(
             return
         }.getOrThrow()
 
-        incomingRequestRepository.addFirst(
+        incomingRequestRepository.addMobileConnectRequest(
             sessionRequest.interaction.toDomainModel(
                 remoteEntityId = IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(
                     id = sessionRequest.sessionId.toString(),

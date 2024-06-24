@@ -106,9 +106,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     @Test
     fun `given transaction id, when this id does not exist in the queue, then dismiss the transaction`() = runTest {
         every { incomingRequestRepository.getRequest(transactionId) } returns null
-
-        vm.value.state.test {
-            assertTrue("The transaction should be dismissed, but didn't", awaitItem().isTransactionDismissed)
+        vm.value.oneOffEvent.test {
+            assertTrue(awaitItem() is Event.Dismiss)
         }
     }
 

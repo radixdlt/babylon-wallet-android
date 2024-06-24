@@ -15,6 +15,9 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -70,9 +73,9 @@ class TransactionReviewViewModel @Inject constructor(
     private val fees: TransactionFeesDelegate,
     private val submit: TransactionSubmitDelegate,
     private val getDAppsUseCase: GetDAppsUseCase,
-    incomingRequestRepository: IncomingRequestRepository,
+    private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<State>() {
+) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = TransactionReviewArgs(savedStateHandle)
 
@@ -87,13 +90,12 @@ class TransactionReviewViewModel @Inject constructor(
         guarantees(scope = viewModelScope, state = _state)
         fees(scope = viewModelScope, state = _state)
         submit(scope = viewModelScope, state = _state)
+        submit.oneOffEventHandler = this
 
-        val request = incomingRequestRepository.getRequest(args.requestId) as? IncomingMessage.IncomingRequest.TransactionRequest
+        val request = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.TransactionRequest
         if (request == null) {
             viewModelScope.launch {
-                _state.update { state ->
-                    state.copy(isTransactionDismissed = true)
-                }
+                sendEvent(Event.Dismiss)
             }
         } else {
             _state.update { it.copy(request = request) }
@@ -118,8 +120,9 @@ class TransactionReviewViewModel @Inject constructor(
         }
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
-                _state.update { state ->
-                    state.copy(isTransactionDismissed = true)
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.Dismiss)
+                    incomingRequestRepository.requestDismissed(args.interactionId)
                 }
             }
         }
@@ -261,8 +264,7 @@ class TransactionReviewViewModel @Inject constructor(
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val interactionState: InteractionState? = null,
-        val isTransactionDismissed: Boolean = false
+        val interactionState: InteractionState? = null
     ) : UiState {
 
         val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
@@ -430,6 +432,10 @@ class TransactionReviewViewModel @Inject constructor(
             ) : Sheet
         }
     }
+}
+
+sealed interface Event : OneOffEvent {
+    data object Dismiss : Event
 }
 
 data class TransactionErrorMessage(

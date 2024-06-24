@@ -73,11 +73,14 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
                 if (it.interactionId == args.interactionId) {
                     sendEvent(Event.CloseLoginFlow)
+                    incomingRequestRepository.requestDismissed(args.interactionId)
                 }
             }
         }
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.UnauthorizedRequest
+            val requestToHandle = incomingRequestRepository.getRequest(
+                args.interactionId
+            ) as? IncomingMessage.IncomingRequest.UnauthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch

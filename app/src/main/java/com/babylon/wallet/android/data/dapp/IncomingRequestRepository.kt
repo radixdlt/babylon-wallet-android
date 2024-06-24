@@ -19,7 +19,7 @@ interface IncomingRequestRepository {
 
     suspend fun add(incomingRequest: IncomingRequest)
 
-    suspend fun addFirst(incomingRequest: IncomingRequest)
+    suspend fun addMobileConnectRequest(incomingRequest: IncomingRequest)
 
     suspend fun requestHandled(requestId: String)
 
@@ -32,6 +32,7 @@ interface IncomingRequestRepository {
     fun removeAll()
 
     fun getAmountOfRequests(): Int
+    suspend fun requestDismissed(requestId: String)
 }
 
 class IncomingRequestRepositoryImpl @Inject constructor(
@@ -78,21 +79,12 @@ class IncomingRequestRepositoryImpl @Inject constructor(
      * we send a dismiss event for it so that UI can react and dismiss handling, without removing it from the queue.
      * Dismissed request will be handled again when top priority one handling completes
      */
-    override suspend fun addFirst(incomingRequest: IncomingRequest) {
+    override suspend fun addMobileConnectRequest(incomingRequest: IncomingRequest) {
         mutex.withLock {
-            if (requestQueue.firstOrNull() is QueueItem.HighPriorityScreen) {
-                requestQueue.add(1, QueueItem.RequestItem(incomingRequest))
-            } else {
-                requestQueue.addFirst(QueueItem.RequestItem(incomingRequest))
-                _currentRequestToHandle.value?.let {
-                    Timber.d("🗂 Dismissing request with id ${it.interactionId}")
-                    appEventBus.sendEvent(AppEvent.DismissRequestHandling(it.interactionId))
-                }
-                handleNextRequest()
-                Timber.d(
-                    "🗂 new incoming request with id ${incomingRequest.interactionId} " +
-                        "added in list, so size now is ${getAmountOfRequests()}"
-                )
+            requestQueue.addFirst(QueueItem.RequestItem(incomingRequest))
+            _currentRequestToHandle.value?.let {
+                Timber.d("🗂 Dismissing request with id ${it.interactionId}")
+                appEventBus.sendEvent(AppEvent.DismissRequestHandling(it.interactionId))
             }
         }
     }
@@ -100,6 +92,13 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
             requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId }
+            handleNextRequest()
+            Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
+        }
+    }
+
+    override suspend fun requestDismissed(requestId: String) {
+        mutex.withLock {
             handleNextRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
@@ -157,7 +156,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         // In order to emit an incoming request, the topmost item should be
         // a. An incoming request
         // b. It should not be the same as the one being handled already
-        if (nextRequest is QueueItem.RequestItem && _currentRequestToHandle.value != nextRequest) {
+        if (nextRequest is QueueItem.RequestItem && _currentRequestToHandle.value != nextRequest.incomingRequest) {
             _currentRequestToHandle.emit(nextRequest.incomingRequest)
         }
     }
@@ -165,6 +164,5 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     private sealed interface QueueItem {
         data object HighPriorityScreen : QueueItem
         data class RequestItem(val incomingRequest: IncomingRequest) : QueueItem
-        data class MobileConnectItem(val incomingRequest: IncomingRequest) : QueueItem
     }
 }

@@ -85,7 +85,6 @@ fun TransactionReviewScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
@@ -139,10 +138,11 @@ fun TransactionReviewScreen(
             )
         }
     }
-
-    LaunchedEffect(state.isTransactionDismissed) {
-        if (state.isTransactionDismissed) {
-            onDismiss()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Dismiss -> onDismiss()
+            }
         }
     }
 }

@@ -98,7 +98,7 @@ class IncomingRequestRepositoryTest {
     }
 
     @Test
-    fun `addFirst takes priority over current and sends dismiss event for previous current`() = runTest {
+    fun `adding mobile connect request and dismissing current makes mobile request new current, while dismissed event stays in queue`() = runTest {
         var currentRequest: IncomingMessage.IncomingRequest? = null
         val interactionId1 = UUID.randomUUID().toString()
         val interactionId2 = UUID.randomUUID().toString()
@@ -109,7 +109,8 @@ class IncomingRequestRepositoryTest {
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
         assert(currentRequest?.interactionId == interactionId1)
-        incomingRequestRepository.addFirst(sampleIncomingRequest.copy(interactionId = interactionId2))
+        incomingRequestRepository.addMobileConnectRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
+        incomingRequestRepository.requestDismissed(interactionId1)
         advanceUntilIdle()
         assert(currentRequest?.interactionId == interactionId2)
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
@@ -129,7 +130,7 @@ class IncomingRequestRepositoryTest {
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
         assert(currentRequest?.interactionId == null)
-        incomingRequestRepository.addFirst(sampleIncomingRequest.copy(interactionId = interactionId2))
+        incomingRequestRepository.addMobileConnectRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
         advanceUntilIdle()
         incomingRequestRepository.resumeIncomingRequests()
         advanceUntilIdle()

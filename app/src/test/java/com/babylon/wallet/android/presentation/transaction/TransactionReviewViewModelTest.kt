@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
@@ -68,6 +69,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
+import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
@@ -77,7 +79,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -329,7 +330,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             )
         }
         assertEquals(DappWalletInteractionErrorType.WRONG_NETWORK, errorSlot.captured)
-        assertTrue(vm.state.value.isTransactionDismissed)
+        vm.oneOffEvent.test {
+            TestCase.assertTrue(awaitItem() is Event.Dismiss)
+        }
     }
 
     @Test

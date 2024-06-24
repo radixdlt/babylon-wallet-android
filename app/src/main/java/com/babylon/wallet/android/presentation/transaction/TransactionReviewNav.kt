@@ -18,7 +18,7 @@ internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
 
 const val ROUTE_TRANSACTION_REVIEW = "transaction_review_route/{$ARG_TRANSACTION_REQUEST_ID}"
 
-internal class TransactionReviewArgs(val requestId: String) {
+internal class TransactionReviewArgs(val interactionId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_TRANSACTION_REQUEST_ID]) as String
     )

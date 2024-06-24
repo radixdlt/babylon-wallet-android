@@ -13,7 +13,9 @@ import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
+import com.babylon.wallet.android.presentation.transaction.Event
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -51,6 +53,8 @@ class TransactionSubmitDelegate @Inject constructor(
     private val logger = Timber.tag("TransactionSubmit")
 
     private var approvalJob: Job? = null
+
+    var oneOffEventHandler: OneOffEventHandler<Event>? = null
 
     @Suppress("SwallowedException")
     fun onSubmit(
@@ -97,29 +101,29 @@ class TransactionSubmitDelegate @Inject constructor(
     suspend fun onDismiss(
         signTransactionUseCase: SignTransactionUseCase,
         exception: RadixWalletException.DappRequestException
-    ) {
-        if (approvalJob == null) {
-            val request = _state.value.requestNonNull
-            if (!request.isInternal) {
-                respondToIncomingRequestUseCase.respondWithFailure(
-                    request = request,
-                    error = exception.ceError,
-                    message = exception.getDappMessage()
-                )
+    ): Result<Unit> {
+        return runCatching {
+            if (approvalJob == null) {
+                val request = _state.value.requestNonNull
+                if (!request.isInternal) {
+                    respondToIncomingRequestUseCase.respondWithFailure(
+                        request = request,
+                        error = exception.ceError,
+                        message = exception.getDappMessage()
+                    )
+                }
+                oneOffEventHandler?.sendEvent(Event.Dismiss)
+                incomingRequestRepository.requestHandled(request.interactionId)
+            } else if (_state.value.interactionState != null) {
+                approvalJob?.cancel()
+                approvalJob = null
+                signTransactionUseCase.cancelSigning()
+                _state.update {
+                    it.copy(isSubmitting = false)
+                }
+            } else {
+                logger.d("Cannot dismiss transaction while is in progress")
             }
-            _state.update {
-                it.copy(isTransactionDismissed = true)
-            }
-            incomingRequestRepository.requestHandled(request.interactionId.toString())
-        } else if (_state.value.interactionState != null) {
-            approvalJob?.cancel()
-            approvalJob = null
-            signTransactionUseCase.cancelSigning()
-            _state.update {
-                it.copy(isSubmitting = false)
-            }
-        } else {
-            logger.d("Cannot dismiss transaction while is in progress")
         }
     }
 
