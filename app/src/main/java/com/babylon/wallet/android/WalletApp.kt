@@ -177,10 +177,10 @@ fun WalletApp(
             dismissText = null
         )
     }
-    if (!state.isProfileInitialized) {
+    if (state.showMobileConnectWarning) {
         BasicPromptAlertDialog(
             finish = {
-                onCloseApp()
+                mainViewModel.onMobileConnectWarningShown()
             },
             titleText = "No profile found",
             messageText = "You need to create a profile to respond to dApp requests",

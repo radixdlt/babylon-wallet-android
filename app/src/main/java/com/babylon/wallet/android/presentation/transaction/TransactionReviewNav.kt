@@ -5,6 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -24,8 +25,8 @@ internal class TransactionReviewArgs(val interactionId: String) {
     )
 }
 
-fun NavController.transactionReview(requestId: String) {
-    navigate("transaction_review_route/$requestId")
+fun NavController.transactionReview(requestId: String, navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}) {
+    navigate("transaction_review_route/$requestId", navOptionsBuilder)
 }
 
 fun NavGraphBuilder.transactionReviewScreen(

@@ -10,7 +10,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 private const val ARG_INTERACTION_ID = "interactionId"
-private const val ROUTE = "mobileConnect/{$ARG_INTERACTION_ID}"
+const val ROUTE_MOBILE_CONNECT = "mobileConnect/{$ARG_INTERACTION_ID}"
 
 fun NavController.mobileConnect(
     interactionId: String
@@ -32,9 +32,9 @@ fun NavGraphBuilder.mobileConnect(
     onHandleUnauthorizedRequest: (String) -> Unit,
     onHandleTransactionRequest: (String) -> Unit
 ) {
-    markAsHighPriority(route = ROUTE)
+    markAsHighPriority(route = ROUTE_MOBILE_CONNECT)
     composable(
-        route = ROUTE,
+        route = ROUTE_MOBILE_CONNECT,
         arguments = listOf(
             navArgument(ARG_INTERACTION_ID) {
                 type = NavType.StringType

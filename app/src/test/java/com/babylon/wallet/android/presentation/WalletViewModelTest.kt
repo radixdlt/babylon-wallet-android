@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
+import com.babylon.wallet.android.data.repository.BufferedDeepLinkRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
@@ -16,8 +17,10 @@ import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
+import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,9 +33,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
@@ -60,6 +63,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
+    private val bufferedDeepLinkRepository = mockk<BufferedDeepLinkRepository>()
     private val p2PLinksRepository = mockk<P2PLinksRepository>()
 
     private val sampleProfile = Profile.sample()
@@ -83,11 +87,13 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         npsSurveyStateObserver,
         p2PLinksRepository,
         checkMigrationToNewBackupSystemUseCase,
+        bufferedDeepLinkRepository,
         testDispatcher,
     )
 
     override fun setUp() {
         super.setUp()
+        coEvery { bufferedDeepLinkRepository.processBufferedRequest() } just Runs
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
         every { getBackupStateUseCase() } returns flowOf(

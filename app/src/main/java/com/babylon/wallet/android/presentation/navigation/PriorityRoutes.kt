@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.navigation
 
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
 
 object PriorityRoutes {
 
@@ -13,6 +14,6 @@ object PriorityRoutes {
     }
 }
 
-fun markAsHighPriority(route: String) {
+fun NavGraphBuilder.markAsHighPriority(route: String) {
     PriorityRoutes.add(route = route)
 }

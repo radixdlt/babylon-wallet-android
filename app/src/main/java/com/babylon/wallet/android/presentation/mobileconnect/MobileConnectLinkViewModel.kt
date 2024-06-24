@@ -4,16 +4,20 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -28,7 +32,9 @@ class MobileConnectLinkViewModel @Inject constructor(
     private val wellKnownDAppDefinitionRepository: WellKnownDAppDefinitionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val getDAppsUseCase: GetDAppsUseCase,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
+    @ApplicationScope private val appScope: CoroutineScope
 ) : StateViewModel<MobileConnectLinkViewModel.State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = MobileConnectArgs(savedStateHandle)
@@ -91,6 +97,9 @@ class MobileConnectLinkViewModel @Inject constructor(
     fun onDenyOrigin() = viewModelScope.launch {
         _state.update {
             it.copy(isVerifying = true)
+        }
+        appScope.launch {
+            respondToIncomingRequestUseCase.respondWithFailure(request, DappWalletInteractionErrorType.REJECTED_BY_USER)
         }
         viewModelScope.launch {
             incomingRequestRepository.requestHandled(args.interactionId)

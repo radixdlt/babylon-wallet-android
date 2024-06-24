@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
+import com.babylon.wallet.android.data.repository.BufferedDeepLinkRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
@@ -83,6 +84,7 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
+    private val bufferedDeepLinkRepository: BufferedDeepLinkRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -111,12 +113,19 @@ class WalletViewModel @Inject constructor(
                 return@launch
             }
         }
+        processBufferedDeepLinkRequest()
         observePrompts()
         observeAccounts()
         observeGlobalAppEvents()
         observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
+    }
+
+    private fun processBufferedDeepLinkRequest() {
+        viewModelScope.launch {
+            bufferedDeepLinkRepository.processBufferedRequest()
+        }
     }
 
     override fun initialState() = WalletUiState()

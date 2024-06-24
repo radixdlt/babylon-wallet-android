@@ -82,9 +82,19 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     override suspend fun addMobileConnectRequest(incomingRequest: IncomingRequest) {
         mutex.withLock {
             requestQueue.addFirst(QueueItem.RequestItem(incomingRequest))
-            _currentRequestToHandle.value?.let {
-                Timber.d("🗂 Dismissing request with id ${it.interactionId}")
-                appEventBus.sendEvent(AppEvent.DismissRequestHandling(it.interactionId))
+            val currentRequest = _currentRequestToHandle.value
+            val handlingPaused = requestQueue.contains(QueueItem.HighPriorityScreen)
+            when {
+                currentRequest != null -> {
+                    Timber.d("🗂 Dismissing request with id ${currentRequest.interactionId}")
+                    appEventBus.sendEvent(AppEvent.DismissRequestHandling(currentRequest.interactionId))
+                }
+
+                else -> {
+                    if (!handlingPaused) {
+                        handleNextRequest()
+                    }
+                }
             }
         }
     }
@@ -92,6 +102,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
             requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId }
+            clearCurrent(requestId)
             handleNextRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
@@ -99,8 +110,15 @@ class IncomingRequestRepositoryImpl @Inject constructor(
 
     override suspend fun requestDismissed(requestId: String) {
         mutex.withLock {
+            clearCurrent(requestId)
             handleNextRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
+        }
+    }
+
+    private suspend fun clearCurrent(requestId: String) {
+        if (_currentRequestToHandle.value?.interactionId == requestId) {
+            _currentRequestToHandle.emit(null)
         }
     }
 
@@ -112,11 +130,12 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             }
 
             // Put high priority item below any internal request and mobile connect requests
-            val topQueueItem = requestQueue.peekFirst()
-            if (topQueueItem is QueueItem.RequestItem &&
-                (topQueueItem.incomingRequest.isInternal || topQueueItem.incomingRequest.isMobileConnectRequest)
-            ) {
-                requestQueue.add(1, QueueItem.HighPriorityScreen)
+            val index = requestQueue.indexOfFirst {
+                val item = it as? QueueItem.RequestItem
+                item != null && !item.incomingRequest.isInternal && !item.incomingRequest.isMobileConnectRequest
+            }
+            if (index != -1) {
+                requestQueue.add(index, QueueItem.HighPriorityScreen)
             } else {
                 requestQueue.addFirst(QueueItem.HighPriorityScreen)
             }

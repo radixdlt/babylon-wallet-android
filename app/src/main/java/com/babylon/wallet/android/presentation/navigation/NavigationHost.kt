@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPA
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
+import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
@@ -535,16 +536,19 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onHandleRequestAuthorizedRequest = {
-                navController.popBackStack()
-                navController.dAppLoginAuthorized(it)
+                navController.dAppLoginAuthorized(it) {
+                    popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
+                }
             },
             onHandleUnauthorizedRequest = {
-                navController.popBackStack()
-                navController.dAppLoginUnauthorized(it)
+                navController.dAppLoginUnauthorized(it) {
+                    popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
+                }
             },
             onHandleTransactionRequest = {
-                navController.popBackStack()
-                navController.transactionReview(it)
+                navController.transactionReview(it) {
+                    popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
+                }
             }
         )
     }

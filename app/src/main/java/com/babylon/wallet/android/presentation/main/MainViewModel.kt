@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
+import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -247,20 +248,21 @@ class MainViewModel @Inject constructor(
 
     fun handleDeepLink(deepLink: Uri) {
         viewModelScope.launch {
-            delay(REQUEST_HANDLING_DELAY)
-            val profileInitialized = getProfileUseCase.isInitialized()
-            if (!profileInitialized) {
-                _state.update {
-                    it.copy(isProfileInitialized = false)
+            processDeepLinkUseCase(deepLink.toString()).onSuccess { result ->
+                if (result == DeepLinkProcessingResult.BUFFERED) {
+                    _state.update {
+                        it.copy(showMobileConnectWarning = true)
+                    }
                 }
-                return@launch
-            }
-
-            runCatching {
-                processDeepLinkUseCase(deepLink.toString())
             }.onFailure {
                 Timber.d(it)
             }
+        }
+    }
+
+    fun onMobileConnectWarningShown() {
+        _state.update {
+            it.copy(showMobileConnectWarning = false)
         }
     }
 
@@ -359,7 +361,7 @@ data class MainUiState(
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState? = null,
     val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
-    val isProfileInitialized: Boolean = true
+    val showMobileConnectWarning: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(
