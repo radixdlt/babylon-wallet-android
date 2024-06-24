@@ -859,6 +859,9 @@ Code: %s</string>
   <string name="androidRecoverProfileBackup_choose_title">Choose a backup</string>
   <string name="iOSRecoverProfileBackup_choose_title">Choose a backup on iCloud</string>
   <string name="iOSRecoverProfileBackup_noBackupsAvailable">No wallet backups available on current iCloud account</string>
+  <string name="iOSRecoverProfileBackup_notLoggedInToICloud">Not logged in to iCloud</string>
+  <string name="iOSRecoverProfileBackup_networkUnavailable">Network unavailable</string>
+  <string name="iOSRecoverProfileBackup_couldNotLoadBackups">Could not load backups</string>
   <string name="androidRecoverProfileBackup_noBackupsAvailable">No wallet backups available</string>
   <string name="recoverProfileBackup_backupFrom">**Backup from:** %s</string>
   <string name="recoverProfileBackup_lastModified">**Last modified:** %s</string>
