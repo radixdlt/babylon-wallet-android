@@ -99,7 +99,7 @@ data class ResourceEntity(
                 metadata = metadata
                     .filterNot { it.key in setOf(ExplicitMetadataKey.POOL.key, ExplicitMetadataKey.VALIDATOR.key) }
                     .takeIf { it.isNotEmpty() }
-                    ?.let { MetadataColumn(it) },
+                    ?.let { MetadataColumn(it, MetadataColumn.ImplicitMetadataState.Unknown) },
                 synced = synced
             )
 
@@ -114,7 +114,7 @@ data class ResourceEntity(
                 metadata = metadata
                     .filterNot { it.key in setOf(ExplicitMetadataKey.POOL.key, ExplicitMetadataKey.VALIDATOR.key) }
                     .takeIf { it.isNotEmpty() }
-                    ?.let { MetadataColumn(it) },
+                    ?.let { MetadataColumn(it, MetadataColumn.ImplicitMetadataState.Unknown) },
                 synced = synced
             )
         }
@@ -126,7 +126,7 @@ data class ResourceEntity(
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
             address = ResourceAddress.init(resourceAddress),
-            metadataCollection = explicitMetadata,
+            explicitMetadata = explicitMetadata,
             details = details,
             type = ResourceEntityType.FUNGIBLE,
             synced = synced
@@ -139,7 +139,7 @@ data class ResourceEntity(
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
             address = ResourceAddress.init(resourceAddress),
-            metadataCollection = explicitMetadata,
+            explicitMetadata = explicitMetadata,
             details = details,
             type = ResourceEntityType.NON_FUNGIBLE,
             synced = synced
@@ -156,7 +156,7 @@ data class ResourceEntity(
             }
             return from(
                 address = ResourceAddress.init(address),
-                metadataCollection = metadata,
+                explicitMetadata = metadata,
                 details = details,
                 type = type,
                 synced = synced
@@ -165,12 +165,12 @@ data class ResourceEntity(
 
         private fun from(
             address: ResourceAddress,
-            metadataCollection: EntityMetadataCollection?,
+            explicitMetadata: EntityMetadataCollection?,
             details: StateEntityDetailsResponseItemDetails?,
             type: ResourceEntityType,
             synced: Instant
         ): ResourceEntity {
-            val metadata = metadataCollection?.toMetadata().orEmpty()
+            val metadata = explicitMetadata?.toMetadata().orEmpty()
             return ResourceEntity(
                 address = address,
                 type = type,
@@ -182,7 +182,7 @@ data class ResourceEntity(
                 metadata = metadata
                     .filterNot { it.key in setOf(ExplicitMetadataKey.VALIDATOR.key, ExplicitMetadataKey.POOL.key) }
                     .takeIf { it.isNotEmpty() }
-                    ?.let { MetadataColumn(it) },
+                    ?.let { MetadataColumn(it, MetadataColumn.ImplicitMetadataState.Unknown) },
                 synced = synced
             )
         }

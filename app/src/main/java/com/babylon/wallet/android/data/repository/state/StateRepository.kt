@@ -17,7 +17,6 @@ import com.babylon.wallet.android.data.repository.cache.database.StateDao.Compan
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
@@ -395,9 +394,7 @@ class StateRepositoryImpl @Inject constructor(
         runCatching {
             val stateVersion = getLatestCachedStateVersionInNetwork()
             val cachedValidators = if (stateVersion != null) {
-                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion).map {
-                    it.asValidatorDetail()
-                }
+                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
             } else {
                 emptyList()
             }
@@ -408,15 +405,17 @@ class StateRepositoryImpl @Inject constructor(
                     validatorsAddresses = unknownAddresses,
                     stateVersion = stateVersion
                 )
-                val details = response.validators.asValidators()
-                if (details.isNotEmpty()) {
-                    val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
-                    stateDao.insertValidators(details.map { it.asValidatorEntity(syncInfo) })
+
+                val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
+                val newValidatorEntities = response.validators.map { it.asValidatorEntity(syncInfo) }.also { entities ->
+                    stateDao.insertValidators(entities)
                 }
-                details + cachedValidators
+                newValidatorEntities + cachedValidators
             } else {
                 cachedValidators
             }
+        }.mapCatching {  entities ->
+            entities.map { it.asValidatorDetail() }
         }
     }
 

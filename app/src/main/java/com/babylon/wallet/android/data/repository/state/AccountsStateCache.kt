@@ -11,8 +11,7 @@ import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.accountCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.getCachedValidators
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -244,11 +243,16 @@ class AccountsStateCache @Inject constructor(
             val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
             val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
             val newValidators = runCatching {
-                api.fetchValidators(
+                val validatorItems = api.fetchValidators(
                     allValidatorAddresses - cachedValidators.keys,
                     stateVersion
-                ).validators.asValidators().onEach {
-                    cachedValidators[it.address] = it
+                ).validators
+
+                val syncInfo = SyncInfo(InstantGenerator(), stateVersion)
+                validatorItems.map {
+                    it.asValidatorEntity(syncInfo)
+                }.onEach { entity ->
+                    cachedValidators[entity.address] = entity.asValidatorDetail()
                 }
             }.onFailure { error ->
                 cacheErrors.value = error
@@ -256,7 +260,7 @@ class AccountsStateCache @Inject constructor(
 
             if (newValidators.isNotEmpty()) {
                 logger.d("\uD83D\uDCBD Inserting validators")
-                dao.insertValidators(newValidators.asValidatorEntities(SyncInfo(InstantGenerator(), stateVersion)))
+                dao.insertValidators(newValidators)
             }
 
             val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
