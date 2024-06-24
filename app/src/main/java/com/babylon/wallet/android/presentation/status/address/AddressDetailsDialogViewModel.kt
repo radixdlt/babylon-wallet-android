@@ -241,12 +241,14 @@ class AddressDetailsDialogViewModel @Inject constructor(
                 } as? State.Section.VerifyAddressOnLedger ?: return@launch
 
                 _state.update { state ->
-                    state.copy(sections = state.sections.mapWhen(
-                        predicate = { it is State.Section.VerifyAddressOnLedger },
-                        mutation = {
-                            ledgerSection.copy(isVerifying = true)
-                        }
-                    ))
+                    state.copy(
+                        sections = state.sections.mapWhen(
+                            predicate = { it is State.Section.VerifyAddressOnLedger },
+                            mutation = {
+                                ledgerSection.copy(isVerifying = true)
+                            }
+                        )
+                    )
                 }
                 val isVerified = verifyAddressOnLedgerUseCase(address = accountAddress).fold(
                     onSuccess = { true },
@@ -257,12 +259,14 @@ class AddressDetailsDialogViewModel @Inject constructor(
                 )
 
                 _state.update { state ->
-                    state.copy(sections = state.sections.mapWhen(
-                        predicate = { it is State.Section.VerifyAddressOnLedger },
-                        mutation = {
-                            ledgerSection.copy(isVerifying = false)
-                        }
-                    ))
+                    state.copy(
+                        sections = state.sections.mapWhen(
+                            predicate = { it is State.Section.VerifyAddressOnLedger },
+                            mutation = {
+                                ledgerSection.copy(isVerifying = false)
+                            }
+                        )
+                    )
                 }
                 sendEvent(Event.ShowLedgerVerificationResult(isVerified = isVerified))
             }
