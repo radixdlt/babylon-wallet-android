@@ -1,79 +1,80 @@
 [versions]
-androidxCore = "1.12.0"
-androidx-lifecycle-runtime-ktx = "2.7.0"
-androidx-lifecycle-viewmodel-ktx = "2.7.0"
-lifecycleViewModelCompose = "2.7.0"
-lifecycelRuntimeCompose = "2.7.0"
-compose = "1.6.2"
+androidxCore = "1.13.1"
+androidx-lifecycle-runtime-ktx = "2.8.2"
+androidx-lifecycle-viewmodel-ktx = "2.8.2"
+detektGradlePlugin = "1.23.6"
+lifecycleViewModelCompose = "2.8.2"
+lifecycelRuntimeCompose = "2.8.2"
+compose = "1.6.8"
 composeConstraintLayout = "1.1.0-alpha13"
-composeActivity = "1.8.2"
+composeActivity = "1.9.0"
 composeNavigation = "2.7.7"
-material = "1.11.0"
-composeMaterial3 = "1.2.0"
-material3WindowSizeClass = "1.1.2"
+material = "1.12.0"
+composeMaterial3 = "1.2.1"
+material3WindowSizeClass = "1.2.1"
+orgJacocoCore = "0.8.12"
 splash = "1.0.1"
 immutableCollections = "0.3.7"
-accompanist = "0.32.0"
-datastorePreferences = "1.1.0-alpha06"
-hilt = "2.51"
+accompanist = "0.34.0"
+datastorePreferences = "1.1.1"
+hilt = "2.51.1"
 hiltNavigation = "1.2.0"
 biometricKtx = "1.2.0-alpha05"
-coilCompose = "2.5.0"
-kotlinxSerialization = "1.6.2"
-crypto = "1.72"
+coilCompose = "2.6.0"
+kotlinxSerialization = "1.7.0"
 sargon = "1.0.15-b7ddec52"
-okhttpBom = "5.0.0-alpha.11"
-retrofit = "2.9.0"
+okhttpBom = "5.0.0-alpha.14"
+retrofit = "2.11.0"
 retrofitKoltinxConverter = "1.0.0"
 timber = "5.0.1"
 barcode = "17.2.0"
-cameraCore = "1.4.0-alpha02"
-camera2 = "1.4.0-alpha02"
-cameraLifecycle = "1.4.0-alpha02"
-cameraView = "1.4.0-alpha02"
+cameraCore = "1.4.0-beta02"
+camera2 = "1.4.0-beta02"
+cameraLifecycle = "1.4.0-beta02"
+cameraView = "1.4.0-beta02"
 rootCheck = "0.1.0"
 room = "2.6.1"
 junit = "4.13.2"
-mockk = "1.13.9"
+mockk = "1.13.11"
 coroutinesTest = "1.7.3"
-mockitoKotlin = "5.1.0"
+mockitoKotlin = "5.3.1"
 mockitoInline = "5.2.0"
 androidXJunit = "1.1.5"
-kotlinTestJunit = "1.9.22"
+kotlinTestJunit = "2.0.0"
 espresso = "3.5.1"
 espressoIntents = "3.5.1"
-composeUiTestJunit = "1.6.2"
-composeUiTooling = "1.6.2"
-ktor = "2.3.6"
-slf4j = "2.0.9"
-turbine = "1.0.0"
-zxing = "3.5.2"
-apacheCommonsValidator = "1.7"
+composeUiTestJunit = "1.6.8"
+composeUiTooling = "1.6.8"
+ktor = "2.3.11"
+slf4j = "2.0.13"
+turbine = "1.1.0"
+zxing = "3.5.3"
+apacheCommonsValidator = "1.9.0"
 jsonAssert = "1.5.1"
-firebaseCrashlytics = "18.5.1"
-appsFlyer = "6.13.0"
+firebaseCrashlytics = "19.0.2"
+appsFlyer = "6.14.2"
 installReferrer = "2.2"
-playServicesAuth = "21.1.1"
+playServicesAuth = "21.2.0"
 googleApiClient = "2.3.0"
 googleApiServicesDrive = "v3-rev20240123-2.0.0"
 workManagerRuntimeKtx = "2.9.0"
 androidXHiltWorker = "1.2.0"
-
-androidApplicationPlugin = "8.2.2"
-androidLibraryPlugin = "8.2.2"
-kotlinAndroidPlugin = "1.9.22"
-kotlinSerializationPlugin = "1.9.22"
-kotlinJvmPlugin = "1.9.22"
+androidApplicationPlugin = "8.5.0"
+androidLibraryPlugin = "8.5.0"
+kotlinSerializationPlugin = "2.0.0"
+kotlinJvmPlugin = "2.0.0"
 benManesVersionsPlugin = "0.51.0"
 versionCatalogUpdatePlugin = "0.8.4"
-googleServicesPlugin = "4.4.1"
-firebaseCrashlyticsPlugin = "2.9.9"
-hiltPlugin = "2.50"
-sonarqubePlugin = "4.4.1.3373"
-kspPlugin = "1.9.22-1.0.17"
+googleServicesPlugin = "4.4.2"
+firebaseCrashlyticsPlugin = "3.0.2"
+hiltPlugin = "2.51.1"
+sonarqubePlugin = "5.0.0.4638"
+kspPlugin = "2.0.0-1.0.22"
+kotlin = "2.0.0"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+detektGradlePlugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detektGradlePlugin" }
 lifecycleRuntimeKtx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidx-lifecycle-runtime-ktx" }
 lifecycleViewmodelKtx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle-viewmodel-ktx" }
 lifecycleViewModelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewModelCompose" }
@@ -89,11 +90,11 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 composeMaterial = { module = "androidx.compose.material:material", version.ref = "compose" }
 composeMaterial3 = { module = "androidx.compose.material3:material3", version.ref = "composeMaterial3" }
 material3WindowSizeClass = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3WindowSizeClass" }
+orgJacocoCore = { module = "org.jacoco:org.jacoco.core", version.ref = "orgJacocoCore" }
 splash = { module = "androidx.core:core-splashscreen", version.ref = "splash" }
 immutableCollections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "immutableCollections" }
 accompanistPagerIndicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanist" }
 accompanistDrawablePainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist" }
-accompanistNavigationAnimation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
 accompanistPermissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist" }
 accompanistSystemUiController = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanist" }
 accompanistPlaceholder = { module = "com.google.accompanist:accompanist-placeholder", version.ref = "accompanist" }
@@ -115,7 +116,6 @@ coilComposeGif = { module = "io.coil-kt:coil-gif", version.ref = "coilCompose" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 sargonAndroid = { module = "com.radixdlt.sargon:sargon-android", version.ref = "sargon" }
 sargonDesktop = { module = "com.radixdlt.sargon:sargon-desktop-bins", version.ref = "sargon" }
-crypto = { module = "org.bouncycastle:bcprov-jdk15to18", version.ref = "crypto" }
 okhttpBom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttpBom" }
 okhttp = { module = "com.squareup.okhttp3:okhttp" }
 okhttpInterceptor = { module = "com.squareup.okhttp3:logging-interceptor" }
@@ -155,13 +155,13 @@ playServicesAuth = { module = "com.google.android.gms:play-services-auth", versi
 googleApiClient = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
 googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
 workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManagerRuntimeKtx" }
-androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
-androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
+androidXHiltWorker = { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
+androidXHiltCompiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
 android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidPlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinJvmPlugin" }
 ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersionsPlugin" }
@@ -171,3 +171,4 @@ firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqubePlugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "kspPlugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

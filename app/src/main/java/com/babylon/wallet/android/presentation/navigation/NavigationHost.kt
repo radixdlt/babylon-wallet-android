@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthoriz
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
+import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -461,9 +462,12 @@ fun NavigationHost(
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
-            IncompatibleProfileContent(hiltViewModel(), onProfileDeleted = {
-                navController.popBackStack(MAIN_ROUTE, false)
-            })
+            IncompatibleProfileScreen(
+                viewModel = hiltViewModel(),
+                onProfileDeleted = {
+                    navController.popBackStack(MAIN_ROUTE, false)
+                }
+            )
         }
         composable(
             route = ROUTE_ROOT_DETECTION

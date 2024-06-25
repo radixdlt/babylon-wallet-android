@@ -376,14 +376,14 @@ data class OlympiaErrorState(
 sealed interface AppState {
     data object OnBoarding : AppState
     data object Wallet : AppState
-    data object IncompatibleProfile : AppState
+    data class IncompatibleProfile(val cause: Throwable) : AppState
     data object Loading : AppState
 
     companion object {
         fun from(
             profileState: ProfileState
         ) = when (profileState) {
-            is ProfileState.Incompatible -> IncompatibleProfile
+            is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.cause)
             is ProfileState.Restored -> if (profileState.hasNetworks()) {
                 Wallet
             } else {

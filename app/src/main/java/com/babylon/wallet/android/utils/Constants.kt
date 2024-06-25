@@ -1,5 +1,3 @@
-package com.babylon.wallet.android.utils
-
 object Constants {
     const val SNACKBAR_SHOW_DURATION_MS = 2000L
     const val VM_STOP_TIMEOUT_MS = 5000L
@@ -10,11 +8,6 @@ object Constants {
     const val MAX_ITEMS_PER_ENTITY_DETAILS_REQUEST = 20
     const val WALLET_INTERACTION_VERSION = 2L
 
-    object RadixMobileConnect {
-        const val CONNECT_URL_PARAM_PUBLIC_KEY = "publicKey"
-        const val CONNECT_URL_PARAM_SESSION_ID = "sessionId"
-        const val CONNECT_URL_PARAM_ORIGIN = "origin"
-        const val CONNECT_URL_PARAM_INTERACTION_ID = "interactionId"
-        const val CONNECT_URL_PARAM_BROWSER = "browser"
-    }
+    const val RADIX_SUPPORT_EMAIL_ADDRESS = "hello@radixdlt.com"
+    const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"
 }

@@ -12,12 +12,6 @@ import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import android.util.Base64
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.crypto.agreement.X25519Agreement
-import org.bouncycastle.crypto.generators.X25519KeyPairGenerator
-import org.bouncycastle.crypto.params.X25519KeyGenerationParameters
-import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
-import org.bouncycastle.crypto.params.X25519PublicKeyParameters
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_MNEMONIC
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_PROFILE
 import rdx.works.core.KeystoreManager.Companion.PROVIDER
@@ -199,28 +193,4 @@ fun String.decodeHex(): ByteArray {
     return chunked(2)
         .map { it.toInt(16).toByte() }
         .toByteArray()
-}
-
-fun generateX25519KeyPair(): Result<Pair<String, String>> {
-    return runCatching {
-        val generator = X25519KeyPairGenerator()
-        val params = X25519KeyGenerationParameters(SecureRandom())
-        generator.init(params)
-        val keypair1: AsymmetricCipherKeyPair = generator.generateKeyPair()
-        val priv1 = keypair1.private as X25519PrivateKeyParameters
-        val pub1 = keypair1.public as X25519PublicKeyParameters
-        Pair(priv1.encoded.toHexString(), pub1.encoded.toHexString())
-    }
-}
-
-fun generateX25519SharedSecret(privateKeyCompressed: ByteArray, publicKeyCompressed: ByteArray): Result<String> {
-    return runCatching {
-        val agreement = X25519Agreement().apply {
-            init(X25519PrivateKeyParameters(privateKeyCompressed))
-        }
-
-        val secret = ByteArray(agreement.agreementSize)
-        agreement.calculateAgreement(X25519PublicKeyParameters(publicKeyCompressed), secret, 0)
-        secret.toHexString()
-    }
 }

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
+import Constants.ACCOUNT_NAME_MAX_LENGTH
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
@@ -14,7 +15,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
@@ -41,7 +41,7 @@ import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseC
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val createAccountUseCase: CreateAccountUseCase,
@@ -64,7 +64,7 @@ class CreateAccountViewModel @Inject constructor(
     val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
 
     override fun initialState(): CreateAccountUiState = CreateAccountUiState(
-        firstTime = args.requestSource?.isFirstTime() == true
+        isFirstAccount = args.requestSource?.isFirstTime() == true
     )
 
     fun onAccountNameChange(accountName: String) {
@@ -73,56 +73,82 @@ class CreateAccountViewModel @Inject constructor(
         savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ACCOUNT_NAME_MAX_LENGTH
     }
 
-    fun onAccountCreateClick(isWithLedger: Boolean, biometricAuthProvider: suspend () -> Boolean) {
+    fun onAccountCreateClick(isWithLedger: Boolean) {
         viewModelScope.launch {
-            if (biometricAuthProvider().not()) {
+            if (state.value.isFirstAccount) { // if first time then we need authentication in order to create BDFS
+                sendEvent(CreateAccountEvent.RequestBiometricAuthForFirstAccount(isWithLedger = isWithLedger))
                 return@launch
             }
-            if (!getProfileUseCase.isInitialized()) {
-                mnemonicRepository.createNew().mapCatching { newMnemonic ->
-                    generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
-                    // Since we choose to create a new profile, this is the time
-                    // we discard the data copied from the cloud backup, since they represent
-                    // a previous instance.
-                    discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
-                }.onFailure { throwable ->
-                    handleAccountCreationError(throwable)
-                    return@launch
-                }
-            }
 
-            // at the moment you can create a account either with device factor source or ledger factor source
-            val selectedFactorSource = if (isWithLedger) { // get the selected ledger device
-                sendEvent(CreateAccountEvent.AddLedgerDevice)
-                appEventBus.events
-                    .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
-                    .first()
-                    .ledgerFactorSource
-            } else {
-                getProfileUseCase().mainBabylonFactorSource ?: return@launch
-            }
+            accessFactorSourceForAccountCreation(
+                isFirstAccount = false,
+                isWithLedger = isWithLedger
+            )
+        }
+    }
 
-            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
-                    forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
-                    factorSource = selectedFactorSource,
-                    isBiometricsProvided = true
-                )
-            ).onSuccess {
-                handleAccountCreate { nameOfAccount ->
-                    val factorSourceId = when (selectedFactorSource) {
-                        is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
-                        is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
+    fun handleNewProfileCreation(
+        isAuthenticated: Boolean,
+        isWithLedger: Boolean
+    ) {
+        viewModelScope.launch {
+            if (isAuthenticated) {
+                if (!getProfileUseCase.isInitialized()) {
+                    mnemonicRepository.createNew().mapCatching { newMnemonic ->
+                        generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
+                        // Since we choose to create a new profile, this is the time
+                        // we discard the data copied from the cloud backup, since they represent
+                        // a previous instance.
+                        discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
+                    }.onSuccess {
+                        accessFactorSourceForAccountCreation(
+                            isFirstAccount = true,
+                            isWithLedger = isWithLedger
+                        )
+                    }.onFailure { throwable ->
+                        handleAccountCreationError(throwable)
+                        return@launch
                     }
-                    createAccountUseCase(
-                        displayName = DisplayName(nameOfAccount),
-                        factorSourceId = factorSourceId,
-                        hdPublicKey = it.value
-                    )
                 }
-            }.onFailure { throwable ->
-                handleAccountCreationError(throwable)
             }
+        }
+    }
+
+    // when called the access factor source bottom sheet dialog is presented
+    private suspend fun accessFactorSourceForAccountCreation(
+        isFirstAccount: Boolean,
+        isWithLedger: Boolean
+    ) {
+        val selectedFactorSource = if (isWithLedger) { // then get the selected ledger device
+            sendEvent(CreateAccountEvent.AddLedgerDevice)
+            appEventBus.events
+                .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
+                .first()
+                .ledgerFactorSource
+        } else {
+            getProfileUseCase().mainBabylonFactorSource ?: return
+        }
+
+        accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
+            accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
+                factorSource = selectedFactorSource,
+                isBiometricsProvided = isFirstAccount
+            )
+        ).onSuccess {
+            handleAccountCreation { nameOfAccount ->
+                val factorSourceId = when (selectedFactorSource) {
+                    is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
+                    is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
+                }
+                createAccountUseCase(
+                    displayName = DisplayName(nameOfAccount),
+                    factorSourceId = factorSourceId,
+                    hdPublicKey = it.value
+                )
+            }
+        }.onFailure { throwable ->
+            handleAccountCreationError(throwable)
         }
     }
 
@@ -157,7 +183,7 @@ class CreateAccountViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    private suspend fun handleAccountCreate(
+    private suspend fun handleAccountCreation(
         accountProvider: suspend (String) -> Account
     ) {
         _state.update { it.copy(loading = true) }
@@ -199,9 +225,9 @@ class CreateAccountViewModel @Inject constructor(
 
     data class CreateAccountUiState(
         val loading: Boolean = false,
+        val isFirstAccount: Boolean = false,
         val accountId: String = "",
         val accountName: String = "",
-        val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
         val uiMessage: UiMessage? = null,
         val shouldShowNoMnemonicError: Boolean = false
@@ -223,6 +249,8 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
         val accountId: AccountAddress,
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
+
+    data class RequestBiometricAuthForFirstAccount(val isWithLedger: Boolean) : CreateAccountEvent
 
     data object AddLedgerDevice : CreateAccountEvent
     data object Dismiss : CreateAccountEvent

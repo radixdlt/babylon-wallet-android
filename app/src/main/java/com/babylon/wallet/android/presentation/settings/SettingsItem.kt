@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.settings
 
+import Constants.RADIX_SUPPORT_EMAIL_ADDRESS
+import Constants.RADIX_SUPPORT_EMAIL_SUBJECT
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
@@ -111,8 +113,8 @@ sealed interface SettingsItem {
         data object ImportFromLegacyWallet : Troubleshooting
         data class ContactSupport(
             val body: String,
-            val supportAddress: String = "hello@radixdlt.com",
-            val subject: String = "Customer Support Case"
+            val supportAddress: String = RADIX_SUPPORT_EMAIL_ADDRESS,
+            val subject: String = RADIX_SUPPORT_EMAIL_SUBJECT
         ) : Troubleshooting
 
         data object Discord : Troubleshooting

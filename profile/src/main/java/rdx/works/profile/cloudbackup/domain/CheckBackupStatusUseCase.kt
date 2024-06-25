@@ -13,21 +13,17 @@ import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
-import rdx.works.profile.cloudbackup.data.DriveClient
-import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.ProfileRepository
 import timber.log.Timber
 
-@Suppress("LongParameterList")
 @HiltWorker
 class CheckBackupStatusUseCase @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted private val params: WorkerParameters,
     private val preferencesManager: PreferencesManager,
     private val profileRepository: ProfileRepository,
-    private val driveClient: DriveClient,
     private val cloudBackupSyncExecutor: CloudBackupSyncExecutor,
-    private val cloudBackupErrorStream: CloudBackupErrorStream
+    private val checkCloudBackupFileAvailabilityUseCase: CheckCloudBackupFileAvailabilityUseCase
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -36,31 +32,18 @@ class CheckBackupStatusUseCase @AssistedInject constructor(
             it is ProfileState.NotInitialised
         }.first()
         val profile = (profileState as? ProfileState.Restored)?.profile ?: return Result.success()
-        if (!profile.canBackupToCloud) return Result.success()
 
-        val lastBackupEvent = preferencesManager.lastCloudBackupEvent.firstOrNull()
+        val lastCloudBackupEvent = preferencesManager.lastCloudBackupEvent.firstOrNull()
 
-        return if (lastBackupEvent == null || profile.header.lastModified > lastBackupEvent.profileModifiedTime) {
+        return if (
+            profile.canBackupToCloud &&
+            (lastCloudBackupEvent == null || profile.header.lastModified > lastCloudBackupEvent.profileModifiedTime)
+        ) {
             cloudBackupSyncExecutor.requestCloudBackup()
             Result.success()
         } else {
             Timber.tag("CloudBackup").d("\uD83D\uDEDC Check Backup Status")
-            driveClient.getCloudBackupEntity(fileId = lastBackupEvent.fileId, profile = profile).fold(
-                onSuccess = {
-                    Timber.tag("CloudBackup").d("\uD83D\uDEDC Check Backup Status: All good ✅")
-                    // File still exists, no further action required
-                    cloudBackupErrorStream.resetErrors()
-                    Result.success()
-                },
-                onFailure = { exception ->
-                    Timber.tag("CloudBackup").d(exception, "\uD83D\uDEDC Check Backup Status: Error ❌")
-                    if (exception is BackupServiceException) {
-                        cloudBackupErrorStream.onError(exception)
-                    }
-
-                    Result.success()
-                }
-            )
+            return checkCloudBackupFileAvailabilityUseCase(profile)
         }
     }
 }
