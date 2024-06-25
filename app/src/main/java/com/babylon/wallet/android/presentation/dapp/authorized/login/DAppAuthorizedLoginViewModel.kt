@@ -94,7 +94,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
                 if (it.interactionId == args.interactionId) {
                     sendEvent(Event.CloseLoginFlow)
                     incomingRequestRepository.requestDeferred(args.interactionId)

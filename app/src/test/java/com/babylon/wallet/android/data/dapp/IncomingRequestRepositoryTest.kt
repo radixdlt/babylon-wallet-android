@@ -114,7 +114,7 @@ class IncomingRequestRepositoryTest {
         advanceUntilIdle()
         assert(currentRequest?.interactionId == interactionId2)
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
-        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.DismissRequestHandling(interactionId1)) }
+        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.DeferRequestHandling(interactionId1)) }
     }
 
     @Test

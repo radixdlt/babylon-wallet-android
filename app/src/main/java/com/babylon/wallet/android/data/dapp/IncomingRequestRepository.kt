@@ -77,8 +77,8 @@ class IncomingRequestRepositoryImpl @Inject constructor(
      * - there is high priority screen in the queue, so the incoming request is added below it,
      * taking priority over requests currently in the queue
      * - there is no high priority screen: request is added at the top of queue and if there other request currently handled,
-     * we send a dismiss event for it so that UI can react and dismiss handling, without removing it from the queue.
-     * Dismissed request will be handled again when top priority one handling completes
+     * we send a defer event for it so that UI can react and defer handling, without removing it from the queue.
+     * Deferred request will be handled again when top priority one handling completes
      */
     override suspend fun addMobileConnectRequest(incomingRequest: IncomingRequest) {
         mutex.withLock {
@@ -87,8 +87,8 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             val handlingPaused = requestQueue.contains(QueueItem.HighPriorityScreen)
             when {
                 currentRequest != null -> {
-                    Timber.d("🗂 Dismissing request with id ${currentRequest.interactionId}")
-                    appEventBus.sendEvent(AppEvent.DismissRequestHandling(currentRequest.interactionId))
+                    Timber.d("🗂 Deferring request with id ${currentRequest.interactionId}")
+                    appEventBus.sendEvent(AppEvent.DeferRequestHandling(currentRequest.interactionId))
                 }
 
                 else -> {

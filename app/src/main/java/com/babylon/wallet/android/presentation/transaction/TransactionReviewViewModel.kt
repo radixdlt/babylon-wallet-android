@@ -119,7 +119,7 @@ class TransactionReviewViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
                 if (it.interactionId == args.interactionId) {
                     sendEvent(Event.Dismiss)
                     incomingRequestRepository.requestDeferred(args.interactionId)
