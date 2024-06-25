@@ -38,6 +38,11 @@ import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEcdsaSe
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEcdsaSecp256k1
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEddsaEd25519
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.MetadataType.Integer.Size
@@ -198,7 +203,10 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
 
     is MetadataNonFungibleGlobalIdValue -> Metadata.Primitive(
         key = key,
-        value = "${typed.resourceAddress}:${typed.nonFungibleId}",
+        value = NonFungibleGlobalId(
+            resourceAddress = ResourceAddress.init(typed.resourceAddress),
+            nonFungibleLocalId = NonFungibleLocalId.init(typed.nonFungibleId)
+        ).string,
         valueType = MetadataType.NonFungibleGlobalId
     )
 
