@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.account.composable.AssetMetadataR
 import com.babylon.wallet.android.presentation.account.composable.View
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -263,6 +264,13 @@ fun NonFungibleAssetDialogContent(
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.End
+                    )
+                }
+
+                asset?.resource?.let { resource ->
+                    NonStandardMetadataSection(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                        resource = resource
                     )
                 }
 

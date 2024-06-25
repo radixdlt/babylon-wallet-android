@@ -181,7 +181,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
 
     is MetadataInstantValue -> Metadata.Primitive(
         key = key,
-        value = typed.value,
+        value = typed.unixTimestampSeconds,
         valueType = MetadataType.Instant
     )
 

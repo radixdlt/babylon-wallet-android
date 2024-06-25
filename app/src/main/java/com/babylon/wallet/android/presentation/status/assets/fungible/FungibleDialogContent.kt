@@ -26,6 +26,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -148,6 +149,13 @@ fun FungibleDialogContent(
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
+                )
+            }
+
+            token?.resource?.let { resource ->
+                NonStandardMetadataSection(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                    resource = resource
                 )
             }
 

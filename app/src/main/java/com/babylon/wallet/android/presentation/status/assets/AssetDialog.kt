@@ -10,16 +10,19 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.account.composable.View
 import com.babylon.wallet.android.presentation.status.assets.fungible.FungibleDialogContent
 import com.babylon.wallet.android.presentation.status.assets.lsu.LSUDialogContent
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.NonFungibleAssetDialogContent
@@ -38,6 +41,7 @@ import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Tag
 
 @Composable
@@ -135,6 +139,27 @@ fun Asset.displayTitle() = when (this) {
             item.name
         } else {
             resource.name
+        }
+    }
+}
+
+@Composable
+fun NonStandardMetadataSection(
+    modifier: Modifier = Modifier,
+    resource: Resource
+) {
+    val metadata = remember(resource.metadata) {
+        resource.nonStandardMetadata
+    }
+
+    if (metadata.isNotEmpty()) {
+        Column(
+            modifier = modifier
+        ) {
+            metadata.forEach { metadata ->
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                metadata.View(modifier = Modifier.fillMaxWidth())
+            }
         }
     }
 }

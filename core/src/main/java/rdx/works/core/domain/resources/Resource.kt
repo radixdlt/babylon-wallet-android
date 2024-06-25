@@ -47,6 +47,12 @@ sealed class Resource {
             is NonFungibleResource -> currentSupply != null && behaviours != null
         }
 
+    val nonStandardMetadata: List<Metadata> by lazy {
+        metadata.filterNot { item ->
+            item.key in ExplicitMetadataKey.entries.map { it.key }.toSet()
+        }
+    }
+
     data class FungibleResource(
         override val address: ResourceAddress,
         val ownedAmount: Decimal192?,

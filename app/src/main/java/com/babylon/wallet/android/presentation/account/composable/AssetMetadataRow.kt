@@ -76,7 +76,7 @@ fun Metadata.View(modifier: Modifier) {
         Row(
             modifier = modifier,
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             KeyView()
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
@@ -167,21 +167,30 @@ fun Metadata.ValueView(
                 modifier = modifier,
                 address = remember(value) {
                     Address.init(value)
-                }
+                },
+                textStyle = RadixTheme.typography.body1HighImportance,
+                textColor = RadixTheme.colors.gray1,
+                iconColor = RadixTheme.colors.gray1
             )
 
             MetadataType.NonFungibleGlobalId -> ActionableAddressView(
                 modifier = modifier,
                 globalId = remember(value) {
                     NonFungibleGlobalId.init(value)
-                }
+                }.copy(),
+                textStyle = RadixTheme.typography.body1HighImportance,
+                textColor = RadixTheme.colors.gray1,
+                iconColor = RadixTheme.colors.gray1
             )
 
             MetadataType.NonFungibleLocalId -> ActionableAddressView(
                 modifier = modifier,
                 localId = remember(value) {
                     NonFungibleLocalId.init(value)
-                }
+                },
+                textStyle = RadixTheme.typography.body1HighImportance,
+                textColor = RadixTheme.colors.gray1,
+                iconColor = RadixTheme.colors.gray1
             )
 
             MetadataType.Decimal -> Text(
