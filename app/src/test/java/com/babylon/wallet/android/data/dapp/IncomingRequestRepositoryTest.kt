@@ -98,7 +98,7 @@ class IncomingRequestRepositoryTest {
     }
 
     @Test
-    fun `adding mobile connect request and dismissing current makes mobile request new current, while dismissed event stays in queue`() = runTest {
+    fun `adding mobile connect request and deferring current makes mobile request new current, while deferred event stays in queue`() = runTest {
         var currentRequest: IncomingMessage.IncomingRequest? = null
         val interactionId1 = UUID.randomUUID().toString()
         val interactionId2 = UUID.randomUUID().toString()
