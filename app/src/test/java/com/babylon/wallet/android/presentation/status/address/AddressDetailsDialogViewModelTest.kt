@@ -20,17 +20,25 @@ import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonEmptyMax64Bytes
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.NonFungibleLocalIdString
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleRandom
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -51,6 +59,7 @@ import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.GetProfileUseCase
+import kotlin.random.Random
 
 class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialogViewModel>() {
 
@@ -82,10 +91,15 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
         assertEquals(
             listOf(
                 AddressDetailsDialogViewModel.State.Section.AccountAddressQRCode(accountAddress = address),
-                AddressDetailsDialogViewModel.State.Section.FullAddress(
-                    rawAddress = address.formatted(AddressFormat.RAW),
-                    truncatedPart = address.formatted(AddressFormat.MIDDLE)
-                ),
+                with(address.formatted(AddressFormat.RAW)) {
+                    AddressDetailsDialogViewModel.State.Section.FullAddress(
+                        rawAddress = this,
+                        boldRanges = persistentListOf(
+                            0 until 4,
+                            length - 6 until length
+                        )
+                    )
+                },
                 AddressDetailsDialogViewModel.State.Section.VisitDashboard(
                     url = "https://dashboard.radixdlt.com/account/${address.formatted(AddressFormat.RAW)}"
                 )
@@ -382,6 +396,147 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
                 )
             }
         }
+
+    @Test
+    fun `test full address section for simple address`() {
+        val rawAddress = "account_tdx_2_12xn3lgz7xv4d0d4cx25nvfekyxx0fsawhmtht0dd550vcu5wwl0g70"
+        val accountAddress = AccountAddress.init(rawAddress)
+
+        val actionableAddress = ActionableAddress.Address(address = Address.Account(accountAddress), isVisitableInDashboard = true)
+
+        val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
+
+        assertEquals(
+            AddressDetailsDialogViewModel.State.Section.FullAddress(
+                rawAddress = rawAddress,
+                boldRanges = persistentListOf(
+                    0 until 4,
+                    rawAddress.length - 6 until rawAddress.length
+                )
+            ),
+            section
+        )
+    }
+
+    @Test
+    fun `test full address section for transaction id`() {
+        val rawAddress = "txid_tdx_2_1kduv3jxmn62r6xqknvsfn3ps5fpqj3ad5474e0z2hhgpwmlxj7fq8hp7gk"
+        val intentHash = IntentHash.init(rawAddress)
+
+        val actionableAddress = ActionableAddress.TransactionId(hash = intentHash, isVisitableInDashboard = true)
+
+        val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
+
+        assertEquals(
+            AddressDetailsDialogViewModel.State.Section.FullAddress(
+                rawAddress = rawAddress,
+                boldRanges = persistentListOf(
+                    0 until 4,
+                    rawAddress.length - 6 until rawAddress.length
+                )
+            ),
+            section
+        )
+    }
+
+    @Test
+    fun `test full address section for integer based global id`() {
+        val number = "1232042334232"
+        val rawAddress = "resource_tdx_2_1n2kfpqnlzntcgddq0sfzq9attnc7y7hqkdz6ykedhn76ghw662el6s:#$number#"
+        val globalId = NonFungibleGlobalId.init(rawAddress)
+
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+
+        val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
+
+        val resourceAddressRaw = globalId.resourceAddress.string
+        assertEquals(
+            AddressDetailsDialogViewModel.State.Section.FullAddress(
+                rawAddress = rawAddress,
+                boldRanges = persistentListOf(
+                    0 until 4,
+                    resourceAddressRaw.length - 6 until resourceAddressRaw.length,
+                    rawAddress.length - 1 - number.length until rawAddress.length - 1
+                )
+            ),
+            section
+        )
+    }
+
+    @Test
+    fun `test full address section for ruid based global id`() {
+        val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:" +
+                "{bce508b789ed38e4-9a8552cb3142fdc5-3491317d130e6483-46df034d5ffbd210}"
+        val globalId = NonFungibleGlobalId.init(rawAddress)
+
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+
+        val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
+
+        val resourceAddressRaw = globalId.resourceAddress.string
+
+        assertEquals(
+            AddressDetailsDialogViewModel.State.Section.FullAddress(
+                rawAddress = rawAddress,
+                boldRanges = persistentListOf(
+                    0 until 4,
+                    resourceAddressRaw.length - 6 until resourceAddressRaw.length,
+                    resourceAddressRaw.length + 2 until resourceAddressRaw.length + 2 + 4,
+                    rawAddress.length - 1 - 4 until rawAddress.length - 1
+                )
+            ),
+            section
+        )
+    }
+
+    @Test
+    fun `test full address section for bytes based global id`() {
+        val localId = NonFungibleLocalId.Bytes(value = NonEmptyMax64Bytes(Random.nextBytes(64).toBagOfBytes()))
+        val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:${localId.string}"
+        val globalId = NonFungibleGlobalId.init(rawAddress)
+
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+
+        val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
+
+        val resourceAddressRaw = globalId.resourceAddress.string
+
+        assertEquals(
+            AddressDetailsDialogViewModel.State.Section.FullAddress(
+                rawAddress = rawAddress,
+                boldRanges = persistentListOf(
+                    0 until 4,
+                    resourceAddressRaw.length - 6 until resourceAddressRaw.length,
+                    resourceAddressRaw.length + 2 until rawAddress.length - 1
+                )
+            ),
+            section
+        )
+    }
+
+    @Test
+    fun `test full address section for string based global id`() {
+        val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:<a_very_big_string_that_is_not_truncated>"
+        val globalId = NonFungibleGlobalId.init(rawAddress)
+        println(globalId.nonFungibleLocalId.formatted())
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+
+        val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
+
+        val resourceAddressRaw = globalId.resourceAddress.string
+
+        assertEquals(
+            AddressDetailsDialogViewModel.State.Section.FullAddress(
+                rawAddress = rawAddress,
+                boldRanges = persistentListOf(
+                    0 until 4,
+                    resourceAddressRaw.length - 6 until resourceAddressRaw.length,
+                    resourceAddressRaw.length + 2 until rawAddress.length - 1
+                )
+            ),
+            section
+        )
+    }
 
     private fun provideInput(address: Address) {
         val actionableAddress = ActionableAddress.Address(

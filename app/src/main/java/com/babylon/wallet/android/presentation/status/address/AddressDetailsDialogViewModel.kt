@@ -14,9 +14,11 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressFormat
+import com.radixdlt.sargon.extensions.formatted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
@@ -57,12 +59,7 @@ class AddressDetailsDialogViewModel @Inject constructor(
                 sections.add(State.Section.AccountAddressQRCode(accountAddress = actionableAddress.address.v1))
             }
 
-            sections.add(
-                State.Section.FullAddress(
-                    rawAddress = actionableAddress.rawAddress(),
-                    truncatedPart = actionableAddress.truncatedPart()
-                )
-            )
+            sections.add(State.Section.FullAddress.from(actionableAddress = actionableAddress))
 
             if (actionableAddress.isVisitableInDashboard) {
                 actionableAddress.dashboardUrl()?.let {
@@ -302,21 +299,67 @@ class AddressDetailsDialogViewModel @Inject constructor(
             data class FullAddress(
                 override val order: Short = 1,
                 val rawAddress: String,
-                val truncatedPart: String
+                val boldRanges: ImmutableList<OpenEndRange<Int>>
             ) : Section {
 
-                val boldRanges: ImmutableList<OpenEndRange<Int>> = run {
-                    val visibleCharsWhenTruncated = rawAddress.split(truncatedPart)
+                companion object {
+                    fun from(actionableAddress: ActionableAddress): FullAddress {
+                        val pairs = when (actionableAddress) {
+                            is ActionableAddress.Address ->
+                                listOf(
+                                    actionableAddress.address.formatted(
+                                        format = AddressFormat.RAW
+                                    ) to actionableAddress.address.formatted(
+                                        format = AddressFormat.DEFAULT
+                                    )
+                                )
 
-                    if (visibleCharsWhenTruncated.size != 2) return@run persistentListOf()
+                            is ActionableAddress.GlobalId -> listOf(
+                                actionableAddress.address.resourceAddress.formatted(
+                                    format = AddressFormat.RAW
+                                ) to actionableAddress.address.resourceAddress.formatted(
+                                    format = AddressFormat.DEFAULT
+                                ),
+                                actionableAddress.address.nonFungibleLocalId.formatted(
+                                    format = AddressFormat.RAW
+                                ) to actionableAddress.address.nonFungibleLocalId.formatted(
+                                    format = AddressFormat.DEFAULT
+                                )
+                            )
 
-                    val startRange = 0 until visibleCharsWhenTruncated[0].length
-                    val endRange = rawAddress.length - visibleCharsWhenTruncated[1].length until rawAddress.length
+                            is ActionableAddress.TransactionId -> listOf(
+                                actionableAddress.hash.formatted(
+                                    format = AddressFormat.RAW
+                                ) to actionableAddress.hash.formatted(
+                                    format = AddressFormat.DEFAULT
+                                )
+                            )
+                        }
 
-                    persistentListOf(
-                        startRange,
-                        endRange
-                    )
+                        val raw = actionableAddress.rawAddress()
+
+                        val boldRanges = mutableListOf<OpenEndRange<Int>>()
+                        pairs.forEach { pair ->
+                            val rawPart = pair.first
+                            val startIndex = raw.indexOf(rawPart)
+                            val boldChars = pair.second.split("...")
+
+                            val boldStart = boldChars[0]
+                            val firstPartStartIndex = rawPart.indexOf(boldStart) + startIndex
+                            boldRanges.add(firstPartStartIndex until firstPartStartIndex + boldStart.length)
+
+                            val boldEnd = boldChars.getOrNull(1)
+                            if (boldEnd != null) {
+                                val secondPartStartIndex = rawPart.lastIndexOf(boldEnd) + startIndex
+                                boldRanges.add(secondPartStartIndex until secondPartStartIndex + boldEnd.length)
+                            }
+                        }
+
+                        return FullAddress(
+                            rawAddress = raw,
+                            boldRanges = boldRanges.toPersistentList()
+                        )
+                    }
                 }
             }
 

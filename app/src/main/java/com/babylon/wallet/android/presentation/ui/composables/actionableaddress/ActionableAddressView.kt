@@ -241,8 +241,6 @@ sealed interface ActionableAddress {
 
     fun rawAddress(): String
 
-    fun truncatedPart(): String
-
     fun dashboardUrl(): String?
 
     @Composable
@@ -270,8 +268,6 @@ sealed interface ActionableAddress {
         override val action: Action = Action.Modal
 
         override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
-
-        override fun truncatedPart(): String = address.formatted(format = AddressFormat.MIDDLE)
 
         override fun dashboardUrl(): String? = when (address) {
             is com.radixdlt.sargon.Address.AccessController -> null
@@ -318,8 +314,6 @@ sealed interface ActionableAddress {
 
         override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
 
-        override fun truncatedPart(): String = address.formatted(format = AddressFormat.MIDDLE)
-
         override fun dashboardUrl(): String = "${address.resourceAddress.networkId.dashboardUrl()}/nft/${address.string.encodeUtf8()}"
 
         @Composable
@@ -361,8 +355,6 @@ sealed interface ActionableAddress {
         )
 
         override fun rawAddress(): String = hash.formatted(format = AddressFormat.RAW)
-
-        override fun truncatedPart(): String = hash.formatted(format = AddressFormat.MIDDLE)
 
         override fun dashboardUrl(): String = "${hash.networkId.dashboardUrl()}/transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
 

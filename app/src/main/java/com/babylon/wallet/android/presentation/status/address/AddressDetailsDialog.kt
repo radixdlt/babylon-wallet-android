@@ -61,12 +61,10 @@ import com.babylon.wallet.android.utils.openUrl
 import com.babylon.wallet.android.utils.shareText
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
@@ -459,10 +457,7 @@ fun AddressDetailsDialogContentAccountAddressPreview() {
                 title = "My Main Account",
                 sections = listOf(
                     Section.AccountAddressQRCode(accountAddress = address),
-                    Section.FullAddress(
-                        rawAddress = address.formatted(format = AddressFormat.RAW),
-                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
-                    ),
+                    Section.FullAddress.from(actionableAddress = actionableAddress),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl().orEmpty()),
                     Section.VerifyAddressOnLedger(accountAddress = address)
                 )
@@ -494,10 +489,7 @@ fun AddressDetailsDialogContentResourceAddressPreview() {
                 actionableAddress = actionableAddress,
                 title = "Radix (XRD)",
                 sections = listOf(
-                    Section.FullAddress(
-                        rawAddress = address.formatted(format = AddressFormat.RAW),
-                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
-                    ),
+                    Section.FullAddress.from(actionableAddress = actionableAddress),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl().orEmpty()),
                 )
             ),
@@ -528,10 +520,7 @@ fun AddressDetailsDialogContentGlobalIdPreview() {
                 actionableAddress = actionableAddress,
                 title = "NFT Collection",
                 sections = listOf(
-                    Section.FullAddress(
-                        rawAddress = address.formatted(format = AddressFormat.RAW),
-                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
-                    ),
+                    Section.FullAddress.from(actionableAddress = actionableAddress),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl()),
                 )
             ),
@@ -562,10 +551,7 @@ fun AddressDetailsDialogContentRandomComponentAddressPreview() {
                 actionableAddress = actionableAddress,
                 title = null,
                 sections = listOf(
-                    Section.FullAddress(
-                        rawAddress = address.formatted(format = AddressFormat.RAW),
-                        truncatedPart = address.formatted(format = AddressFormat.MIDDLE)
-                    ),
+                    Section.FullAddress.from(actionableAddress = actionableAddress),
                     Section.VisitDashboard(url = actionableAddress.dashboardUrl().orEmpty()),
                 )
             ),
