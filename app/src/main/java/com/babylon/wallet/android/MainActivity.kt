@@ -98,9 +98,9 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.data?.let { viewModel.handleDeepLink(it) }
+        intent.data?.let { viewModel.handleDeepLink(it) }
     }
 
     private fun setSplashExitAnimation(splashScreen: SplashScreen) {

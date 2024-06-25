@@ -15,7 +15,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase

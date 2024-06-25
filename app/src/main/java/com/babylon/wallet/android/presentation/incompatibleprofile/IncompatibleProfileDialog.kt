@@ -31,7 +31,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileViewModel.Event
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.openEmail
 
 const val ROUTE_INCOMPATIBLE_PROFILE = "incompatible_profile_route"

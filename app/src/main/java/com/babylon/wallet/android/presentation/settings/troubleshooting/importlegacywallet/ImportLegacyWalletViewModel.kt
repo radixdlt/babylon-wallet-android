@@ -2,6 +2,8 @@
 
 package com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet
 
+import Constants.ACCOUNT_NAME_MAX_LENGTH
+import Constants.DELAY_300_MS
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
@@ -22,8 +24,6 @@ import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
-import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
