@@ -43,6 +43,9 @@ data class MetadataColumn(
     val implicitState: ImplicitMetadataState
 ) {
 
+    val nextCursor: String?
+        get() = (implicitState as? ImplicitMetadataState.Incomplete)?.nextCursor
+
     @Serializable
     sealed interface ImplicitMetadataState {
         /**
@@ -72,7 +75,7 @@ data class MetadataColumn(
         @SerialName("incomplete")
         data class Incomplete(
             @SerialName("next_cursor")
-            val nextCursor: String?
+            val nextCursor: String
         ): ImplicitMetadataState
     }
 

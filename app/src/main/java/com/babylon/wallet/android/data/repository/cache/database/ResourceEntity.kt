@@ -50,6 +50,12 @@ data class ResourceEntity(
     val synced: Instant
 ) {
 
+    val isDetailsAvailable: Boolean
+        get() = when (type) {
+            ResourceEntityType.FUNGIBLE -> supply != null && divisibility != null && behaviours != null
+            ResourceEntityType.NON_FUNGIBLE -> supply != null && behaviours != null
+        }
+
     @Suppress("CyclomaticComplexMethod")
     fun toResource(amount: Decimal192?): Resource {
         val validatorAndPoolMetadata = listOf(
@@ -127,6 +133,7 @@ data class ResourceEntity(
         ): ResourceEntity = from(
             address = ResourceAddress.init(resourceAddress),
             explicitMetadata = explicitMetadata,
+            implicitMetadata = null,
             details = details,
             type = ResourceEntityType.FUNGIBLE,
             synced = synced
@@ -140,6 +147,7 @@ data class ResourceEntity(
         ): ResourceEntity = from(
             address = ResourceAddress.init(resourceAddress),
             explicitMetadata = explicitMetadata,
+            implicitMetadata = null,
             details = details,
             type = ResourceEntityType.NON_FUNGIBLE,
             synced = synced
@@ -156,7 +164,8 @@ data class ResourceEntity(
             }
             return from(
                 address = ResourceAddress.init(address),
-                explicitMetadata = metadata,
+                explicitMetadata = explicitMetadata,
+                implicitMetadata = metadata,
                 details = details,
                 type = type,
                 synced = synced
@@ -166,23 +175,39 @@ data class ResourceEntity(
         private fun from(
             address: ResourceAddress,
             explicitMetadata: EntityMetadataCollection?,
+            implicitMetadata: EntityMetadataCollection?,
             details: StateEntityDetailsResponseItemDetails?,
             type: ResourceEntityType,
             synced: Instant
         ): ResourceEntity {
-            val metadata = explicitMetadata?.toMetadata().orEmpty()
+            val metadataColumn = if (implicitMetadata != null) {
+                MetadataColumn.from(
+                    explicitMetadata = explicitMetadata,
+                    implicitMetadata = implicitMetadata
+                )
+            } else {
+                MetadataColumn(
+                    metadata = explicitMetadata?.toMetadata().orEmpty(),
+                    implicitState = MetadataColumn.ImplicitMetadataState.Unknown
+                )
+            }
+
             return ResourceEntity(
                 address = address,
                 type = type,
                 divisibility = details?.divisibility(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
                 supply = details?.totalSupply(),
-                validatorAddress = metadata.validatorAddress(),
-                poolAddress = metadata.poolAddress(),
-                metadata = metadata
-                    .filterNot { it.key in setOf(ExplicitMetadataKey.VALIDATOR.key, ExplicitMetadataKey.POOL.key) }
-                    .takeIf { it.isNotEmpty() }
-                    ?.let { MetadataColumn(it, MetadataColumn.ImplicitMetadataState.Unknown) },
+                validatorAddress = metadataColumn.metadata.validatorAddress(),
+                poolAddress = metadataColumn.metadata.poolAddress(),
+                metadata = metadataColumn.copy(
+                    metadata = metadataColumn.metadata.filterNot {
+                        it.key in setOf(
+                            ExplicitMetadataKey.VALIDATOR.key,
+                            ExplicitMetadataKey.POOL.key
+                        )
+                    }
+                ).takeIf { it.metadata.isNotEmpty() },
                 synced = synced
             )
         }

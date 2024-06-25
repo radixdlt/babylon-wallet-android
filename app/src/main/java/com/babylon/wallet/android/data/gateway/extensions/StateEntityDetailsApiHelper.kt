@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItem
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
@@ -15,6 +16,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequestOptIns
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityMetadataPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequestOptIns
@@ -385,4 +387,29 @@ suspend fun StateApi.paginateNonFungibles(
         ).toResult().getOrThrow()
         onPage(response)
     }
+}
+
+suspend fun StateApi.getAllMetadata(
+    resourceAddress: ResourceAddress,
+    stateVersion: Long,
+    initialCursor: String
+): List<EntityMetadataItem> {
+    val items = mutableListOf<EntityMetadataItem>()
+
+    var cursor: String? = initialCursor
+    while (cursor != null) {
+        val page = entityMetadataPage(
+            stateEntityMetadataPageRequest = StateEntityMetadataPageRequest(
+                address = resourceAddress.string,
+                cursor = initialCursor,
+                atLedgerState = LedgerStateSelector(
+                    stateVersion = stateVersion
+                )
+            )
+        ).toResult().getOrThrow()
+        cursor = page.nextCursor
+        items.addAll(page.items)
+    }
+
+    return items
 }
