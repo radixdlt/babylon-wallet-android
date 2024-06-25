@@ -484,7 +484,7 @@ fun FailureDialogContent(
         }
         if (isMobileConnect) {
             Text(
-                text = "Switch back to your browser to continue", // TODO crowdin
+                text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center

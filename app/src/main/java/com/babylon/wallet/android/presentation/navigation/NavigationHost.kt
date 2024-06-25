@@ -30,9 +30,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthoriz
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
-import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
-import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
+import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState

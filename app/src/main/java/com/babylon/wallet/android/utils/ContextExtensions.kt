@@ -80,7 +80,7 @@ fun Context.openEmail(recipientAddress: String? = null, subject: String? = null,
     } catch (activityNotFound: ActivityNotFoundException) {
         Toast.makeText(
             this,
-            "No email client installed", // TODO crowdin
+            getString(R.string.no_email_client_installed),
             Toast.LENGTH_SHORT
         ).show()
     }

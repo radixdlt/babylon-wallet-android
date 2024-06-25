@@ -110,7 +110,7 @@ class IncomingRequestRepositoryTest {
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
         assert(currentRequest?.interactionId == interactionId1)
         incomingRequestRepository.addMobileConnectRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
-        incomingRequestRepository.requestDismissed(interactionId1)
+        incomingRequestRepository.requestDeferred(interactionId1)
         advanceUntilIdle()
         assert(currentRequest?.interactionId == interactionId2)
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)

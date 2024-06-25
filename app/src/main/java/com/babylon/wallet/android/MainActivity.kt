@@ -103,7 +103,7 @@ class MainActivity : FragmentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.data?.let {
+        intent.data?.let {
             this.intent.replaceExtras(Bundle())
             viewModel.handleDeepLink(it)
         }

@@ -77,16 +77,15 @@ private fun DappInteractionDialogContent(
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
+        Text(
+            text = stringResource(id = R.string.dAppRequest_completion_subtitle, state.dAppName),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
         if (state.isMobileConnect) {
             Text(
-                text = "Switch back to your browser to continue", // TODO crowdin
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-        } else {
-            Text(
-                text = stringResource(id = R.string.dAppRequest_completion_subtitle, state.dAppName),
+                text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center

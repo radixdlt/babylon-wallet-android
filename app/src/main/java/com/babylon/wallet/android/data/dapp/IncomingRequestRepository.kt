@@ -32,7 +32,8 @@ interface IncomingRequestRepository {
     fun removeAll()
 
     fun getAmountOfRequests(): Int
-    suspend fun requestDismissed(requestId: String)
+
+    suspend fun requestDeferred(requestId: String)
 }
 
 class IncomingRequestRepositoryImpl @Inject constructor(
@@ -108,7 +109,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun requestDismissed(requestId: String) {
+    override suspend fun requestDeferred(requestId: String) {
         mutex.withLock {
             clearCurrent(requestId)
             handleNextRequest()

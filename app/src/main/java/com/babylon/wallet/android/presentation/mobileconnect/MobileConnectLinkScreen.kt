@@ -2,7 +2,11 @@ package com.babylon.wallet.android.presentation.mobileconnect
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +16,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -132,7 +139,8 @@ fun MobileConnectLinkContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .verticalScroll(state = rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
@@ -147,20 +155,20 @@ fun MobileConnectLinkContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = stringResource(id = R.string.mobileConnect_title),
+                text = stringResource(id = R.string.mobileConnect_linkTitle),
                 color = RadixTheme.colors.gray1,
                 style = RadixTheme.typography.title,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = buildAnnotatedString {
                     val valueToDisplay = stringResource(
-                        id = R.string.mobileConnect_subtitle,
+                        id = R.string.mobileConnect_linkSubtitle,
                         dAppDisplayName
                     )
 
@@ -174,23 +182,53 @@ fun MobileConnectLinkContent(
                     )
                 },
                 color = RadixTheme.colors.gray1,
-                style = RadixTheme.typography.body1HighImportance,
+                style = RadixTheme.typography.body1Link,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
-            Text(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
                     .background(color = RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
-                    .padding(RadixTheme.dimensions.paddingSmall),
-                text = stringResource(id = R.string.mobileConnect_body),
-                color = RadixTheme.colors.gray1,
-                style = RadixTheme.typography.body1Regular, // TODO Mobile Connect (UI)
-                textAlign = TextAlign.Start
-            )
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingDefault),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            ) {
+                NumberedListItem(number = 1, text = stringResource(id = R.string.mobileConnect_linkBody1))
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+                NumberedListItem(number = 2, text = stringResource(id = R.string.mobileConnect_linkBody2))
+            }
             Spacer(modifier = Modifier.weight(1f))
         }
+    }
+}
+
+@Composable
+private fun NumberedListItem(modifier: Modifier = Modifier, number: Int, text: String) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .border(1.dp, RadixTheme.colors.gray1, RadixTheme.shapes.circle)
+        ) {
+            Text(
+                modifier = Modifier.align(Alignment.Center),
+                text = number.toString(),
+                color = RadixTheme.colors.gray1,
+                style = RadixTheme.typography.body1Header.copy(fontSize = 20.sp),
+                textAlign = TextAlign.Start
+            )
+        }
+        Text(
+            text = text,
+            color = RadixTheme.colors.gray1,
+            style = RadixTheme.typography.body1Regular,
+            textAlign = TextAlign.Start
+        )
     }
 }
 

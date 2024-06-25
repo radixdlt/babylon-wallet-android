@@ -122,7 +122,7 @@ class TransactionReviewViewModel @Inject constructor(
             appEventBus.events.filterIsInstance<AppEvent.DismissRequestHandling>().collect {
                 if (it.interactionId == args.interactionId) {
                     sendEvent(Event.Dismiss)
-                    incomingRequestRepository.requestDismissed(args.interactionId)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
                 }
             }
         }

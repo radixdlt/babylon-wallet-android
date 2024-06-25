@@ -182,8 +182,8 @@ fun WalletApp(
             finish = {
                 mainViewModel.onMobileConnectWarningShown()
             },
-            titleText = "No profile found",
-            messageText = "You need to create a profile to respond to dApp requests",
+            titleText = stringResource(id = R.string.mobileConnect_noProfileDialog_title),
+            messageText = stringResource(id = R.string.mobileConnect_noProfileDialog_subtitle),
             confirmText = stringResource(id = R.string.common_ok),
             dismissText = null
         )
