@@ -23,7 +23,7 @@ data class TokensAndLsusPricesResponse(
         @SerialName(value = "resource_address")
         val resourceAddress: String,
         @SerialName(value = "usd_price")
-        val usdPrice: String,
+        val usdPrice: Double,
         @SerialName(value = "last_updated_at")
         val lastUpdatedAt: String
     )
@@ -35,7 +35,7 @@ data class TokensAndLsusPricesResponse(
         @SerialName(value = "xrd_redemption_value")
         val xrdRedemptionValue: Double,
         @SerialName(value = "usd_price")
-        val usdPrice: String
+        val usdPrice: Double
     )
 
     companion object {

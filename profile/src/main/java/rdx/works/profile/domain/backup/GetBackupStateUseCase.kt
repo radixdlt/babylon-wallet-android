@@ -30,9 +30,9 @@ class GetBackupStateUseCase @Inject constructor(
         if (profile.canBackupToCloud && email != null && backupError == null) {
             BackupState.CloudBackupEnabled(email = email)
         } else {
-            if (email != null &&
-                (backupError is BackupServiceException.ServiceException || backupError is BackupServiceException.Unknown)
-            ) {
+            val isServiceError = (backupError is BackupServiceException.ServiceException || backupError is BackupServiceException.Unknown)
+
+            if (isServiceError && profile.canBackupToCloud && email != null) {
                 BackupState.CloudBackupEnabled(
                     email = email,
                     hasAnyErrors = true,

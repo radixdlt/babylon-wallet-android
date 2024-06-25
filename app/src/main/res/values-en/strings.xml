@@ -554,6 +554,9 @@
   <string name="error_accountLabel_tooLong">Account label too long</string>
   <string name="error_accountLabel_missing">Account label required</string>
   <string name="error_transactionFailure_doesNotAllowThirdPartyDeposits">One of the receiving accounts does not allow Third-Party deposits</string>
+  <string name="error_emailSupportButtonTitle">Email Support</string>
+  <string name="error_emailSupportMessage">Please email support to automatically provide debugging info, and get assistance.
+Code: %s</string>
   <string name="importOlympiaAccounts_scanQR_title">Import Legacy Olympia Accounts</string>
   <string name="importOlympiaAccounts_scanQR_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="importOlympiaAccounts_scanQR_scannedLabel">Scanned: %d/%d</string>
@@ -856,6 +859,9 @@
   <string name="androidRecoverProfileBackup_choose_title">Choose a backup</string>
   <string name="iOSRecoverProfileBackup_choose_title">Choose a backup on iCloud</string>
   <string name="iOSRecoverProfileBackup_noBackupsAvailable">No wallet backups available on current iCloud account</string>
+  <string name="iOSRecoverProfileBackup_notLoggedInToICloud">Not logged in to iCloud</string>
+  <string name="iOSRecoverProfileBackup_networkUnavailable">Network unavailable</string>
+  <string name="iOSRecoverProfileBackup_couldNotLoadBackups">Could not load backups</string>
   <string name="androidRecoverProfileBackup_noBackupsAvailable">No wallet backups available</string>
   <string name="recoverProfileBackup_backupFrom">**Backup from:** %s</string>
   <string name="recoverProfileBackup_lastModified">**Last modified:** %s</string>

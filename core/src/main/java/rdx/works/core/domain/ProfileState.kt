@@ -20,10 +20,10 @@ sealed class ProfileState {
 
     /**
      * The [Profile]'s version saved in the internal storage is lower than the
-     * [ProfileSnapshotVersion.V100], so it is incompatible. Currently the user can only
-     * create a new profile.
+     * [ProfileSnapshotVersion.V100], so it is incompatible or an error during deserialization has occurred.
+     * Currently the user can only create a new profile.
      */
-    data object Incompatible : ProfileState()
+    data class Incompatible(val cause: Throwable) : ProfileState()
 
     /**
      * A compatible [ProfileSnapshot] exists and the user can derive the [Profile].

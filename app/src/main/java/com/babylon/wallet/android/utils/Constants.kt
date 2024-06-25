@@ -17,4 +17,7 @@ object Constants {
         const val CONNECT_URL_PARAM_INTERACTION_ID = "interactionId"
         const val CONNECT_URL_PARAM_BROWSER = "browser"
     }
+
+    const val RADIX_SUPPORT_EMAIL_ADDRESS = "hello@radixdlt.com"
+    const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"
 }

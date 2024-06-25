@@ -1,4 +1,5 @@
 plugins {
+    alias libs.plugins.compose.compiler
     alias libs.plugins.android.application
     alias libs.plugins.kotlin.android
     alias libs.plugins.hilt
@@ -76,8 +77,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 43
-        versionName "1.6.0"
+        versionCode 44
+        versionName "1.6.1"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
@@ -145,9 +146,6 @@ android {
     buildFeatures {
         compose true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion rootProject.ext.kotlinCompilerExtensionVersion
-    }
     packagingOptions {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -177,6 +175,10 @@ sonarqube {
         property 'sonar.kotlin.detekt.reportPaths', 'build/reports/detekt/debug.xml'
         property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml'
     }
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
 }
 
 dependencies {

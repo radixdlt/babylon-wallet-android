@@ -34,7 +34,7 @@ class FakeProfileRepository(
         Profile.fromJson(jsonString = content)
     }.fold(
         onSuccess = { ProfileState.Restored(it) },
-        onFailure = { ProfileState.Incompatible }
+        onFailure = { ProfileState.Incompatible(it) }
     )
 
     fun update(onUpdate: (Profile) -> Profile): Profile {
