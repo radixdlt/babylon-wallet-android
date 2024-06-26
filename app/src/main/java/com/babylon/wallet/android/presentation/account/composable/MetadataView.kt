@@ -25,7 +25,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
@@ -266,24 +265,31 @@ fun MetadataValueView(
                 maxLines = 2
             )
 
-            MetadataType.Url -> Row(
+            MetadataType.Url -> Text(
                 modifier = modifier
                     .fillMaxWidth()
                     .clickable { context.openUrl(metadata.value) },
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = metadata.value,
-                    style = RadixTheme.typography.body1StandaloneLink,
-                    color = RadixTheme.colors.blue1
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_external_link),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.gray3
-                )
-            }
+                text = buildAnnotatedString {
+                    append(metadata.value)
+                    append("  ")
+                    appendInlineContent(id = "link_icon")
+                },
+                style = RadixTheme.typography.body1StandaloneLink,
+                color = RadixTheme.colors.blue1,
+                inlineContent = mapOf("link_icon" to InlineTextContent(
+                    Placeholder(
+                        RadixTheme.typography.body1StandaloneLink.fontSize,
+                        RadixTheme.typography.body1StandaloneLink.fontSize,
+                        PlaceholderVerticalAlign.TextCenter
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_external_link),
+                        contentDescription = null,
+                        tint = color
+                    )
+                })
+            )
         }
     }
 }
@@ -291,6 +297,6 @@ fun MetadataValueView(
 private const val ASSET_METADATA_SHORT_STRING_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
-        valueType is MetadataType.Url ||
-            (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
-        )
+            valueType is MetadataType.Url ||
+                    (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
+            )
