@@ -162,7 +162,6 @@ fun DescriptionSection(
         HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
-
 }
 
 @Composable

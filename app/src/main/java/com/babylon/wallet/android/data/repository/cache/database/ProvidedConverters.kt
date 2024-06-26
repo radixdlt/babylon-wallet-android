@@ -57,7 +57,7 @@ data class MetadataColumn(
          */
         @Serializable
         @SerialName("unknown")
-        data object Unknown: ImplicitMetadataState
+        data object Unknown : ImplicitMetadataState
 
         /**
          * We have received an answer from a details request and we know that the [MetadataColumn.metadata]
@@ -65,7 +65,7 @@ data class MetadataColumn(
          */
         @Serializable
         @SerialName("complete")
-        data object Complete: ImplicitMetadataState
+        data object Complete : ImplicitMetadataState
 
         /**
          * We have received an answer from a details request and we know that the [MetadataColumn.metadata]
@@ -76,7 +76,7 @@ data class MetadataColumn(
         data class Incomplete(
             @SerialName("next_cursor")
             val nextCursor: String
-        ): ImplicitMetadataState
+        ) : ImplicitMetadataState
     }
 
     companion object {

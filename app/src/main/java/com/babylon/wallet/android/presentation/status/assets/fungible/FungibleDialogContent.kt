@@ -63,22 +63,9 @@ fun FungibleDialogContent(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (token?.resource != null) {
-            Thumbnail.Fungible(
-                modifier = Modifier.size(104.dp),
-                token = token.resource
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(104.dp)
-                    .radixPlaceholder(
-                        visible = true,
-                        shape = CircleShape
-                    )
-            )
-        }
+        FungibleIconSection(token = token)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
         if (amount != null) {
             TokenBalance(
                 modifier = Modifier
@@ -167,5 +154,27 @@ fun FungibleDialogContent(
                 isLocked = token?.resource?.isTagsLocked ?: false
             )
         }
+    }
+}
+
+@Composable
+private fun FungibleIconSection(
+    modifier: Modifier = Modifier,
+    token: Token?
+) {
+    if (token?.resource != null) {
+        Thumbnail.Fungible(
+            modifier = modifier.size(104.dp),
+            token = token.resource
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .size(104.dp)
+                .radixPlaceholder(
+                    visible = true,
+                    shape = CircleShape
+                )
+        )
     }
 }

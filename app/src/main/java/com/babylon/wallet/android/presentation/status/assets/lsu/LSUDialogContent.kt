@@ -73,22 +73,9 @@ fun LSUDialogContent(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (lsu != null) {
-            Thumbnail.LSU(
-                modifier = Modifier.size(104.dp),
-                liquidStakeUnit = lsu
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(104.dp)
-                    .radixPlaceholder(
-                        visible = true,
-                        shape = CircleShape
-                    )
-            )
-        }
+        LSUIconSection(lsu = lsu)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
         TokenBalance(
             modifier = Modifier
                 .fillMaxWidth(fraction = if (lsu == null) 0.5f else 1f)
@@ -234,6 +221,28 @@ fun LSUDialogContent(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             tags = lsu?.fungibleResource?.tags,
             isLocked = lsu?.resource?.isTagsLocked ?: false
+        )
+    }
+}
+
+@Composable
+private fun LSUIconSection(
+    modifier: Modifier = Modifier,
+    lsu: LiquidStakeUnit?
+) {
+    if (lsu != null) {
+        Thumbnail.LSU(
+            modifier = modifier.size(104.dp),
+            liquidStakeUnit = lsu
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .size(104.dp)
+                .radixPlaceholder(
+                    visible = true,
+                    shape = CircleShape
+                )
         )
     }
 }

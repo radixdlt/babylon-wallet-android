@@ -276,19 +276,21 @@ fun MetadataValueView(
                 },
                 style = RadixTheme.typography.body1StandaloneLink,
                 color = RadixTheme.colors.blue1,
-                inlineContent = mapOf("link_icon" to InlineTextContent(
-                    Placeholder(
-                        RadixTheme.typography.body1StandaloneLink.fontSize,
-                        RadixTheme.typography.body1StandaloneLink.fontSize,
-                        PlaceholderVerticalAlign.TextCenter
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_external_link),
-                        contentDescription = null,
-                        tint = color
-                    )
-                })
+                inlineContent = mapOf(
+                    "link_icon" to InlineTextContent(
+                        Placeholder(
+                            RadixTheme.typography.body1StandaloneLink.fontSize,
+                            RadixTheme.typography.body1StandaloneLink.fontSize,
+                            PlaceholderVerticalAlign.TextCenter
+                        )
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_external_link),
+                            contentDescription = null,
+                            tint = color
+                        )
+                    }
+                )
             )
         }
     }
@@ -297,6 +299,6 @@ fun MetadataValueView(
 private const val ASSET_METADATA_SHORT_STRING_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
-            valueType is MetadataType.Url ||
-                    (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
-            )
+        valueType is MetadataType.Url ||
+            (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
+        )

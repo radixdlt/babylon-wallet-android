@@ -438,7 +438,7 @@ class StateRepositoryImpl @Inject constructor(
             } else {
                 cachedValidators
             }
-        }.mapCatching {  entities ->
+        }.mapCatching { entities ->
             entities.map { it.asValidatorDetail() }
         }
     }

@@ -324,7 +324,6 @@ interface StateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDApps(dApps: List<DAppEntity>)
 
-
     @Query(
         """
         UPDATE ResourceEntity SET

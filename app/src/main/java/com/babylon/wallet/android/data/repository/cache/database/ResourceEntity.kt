@@ -158,6 +158,7 @@ data class ResourceEntity(
             )
         }
 
+        @Suppress("LongParameterList")
         private fun from(
             address: ResourceAddress,
             explicitMetadata: EntityMetadataCollection?,

@@ -2,10 +2,8 @@
 
 package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
-import android.content.ClipData
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
@@ -45,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
