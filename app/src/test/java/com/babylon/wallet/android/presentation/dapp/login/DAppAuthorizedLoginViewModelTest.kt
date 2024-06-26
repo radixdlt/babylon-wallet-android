@@ -192,7 +192,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             respondToIncomingRequestUseCase,
             dAppConnectionRepository,
             getProfileUseCase,
-            getCurrentGatewayUseCase,
             stateRepository,
             incomingRequestRepository,
             buildAuthorizedDappResponseUseCase

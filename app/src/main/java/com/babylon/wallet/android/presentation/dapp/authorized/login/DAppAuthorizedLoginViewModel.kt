@@ -63,7 +63,6 @@ import rdx.works.core.sargon.updateDAppAuthorizedPersonaSharedAccounts
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -74,7 +73,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase
@@ -109,16 +107,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 return@launch
             } else {
                 request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
             }
             val dAppDefinitionAddress = runCatching { AccountAddress.init(request.requestMetadata.dAppDefinitionAddress) }.getOrNull()
             if (!request.isValidRequest() || dAppDefinitionAddress == null) {
@@ -701,7 +689,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 mutex.withLock {
                     editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                 }
-                incomingRequestRepository.requestHandled(request.interactionId.toString())
+                incomingRequestRepository.requestHandled(request.interactionId)
                 sendEvent(Event.LoginFlowCompleted)
             } else {
                 buildAuthorizedDappResponseUseCase(

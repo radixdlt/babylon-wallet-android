@@ -12,6 +12,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.DApp
+import rdx.works.core.sargon.currentGateway
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -24,6 +25,14 @@ class VerifyDAppUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
+        val networkId = getProfileUseCase().currentGateway.network.id
+        if (networkId != request.metadata.networkId) {
+            respondToIncomingRequestUseCase.respondWithFailure(
+                request = request,
+                error = DappWalletInteractionErrorType.INVALID_REQUEST
+            )
+            return Result.failure(RadixWalletException.DappRequestException.WrongNetwork(networkId, request.metadata.networkId))
+        }
         val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrElse {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = request,
@@ -31,7 +40,6 @@ class VerifyDAppUseCase @Inject constructor(
             )
             return Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
-
         val developerMode = getProfileUseCase().appPreferences.security.isDeveloperModeEnabled
         return if (developerMode) {
             Result.success(true)

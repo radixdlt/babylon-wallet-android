@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.repository.BufferedMobileConnectRequestRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
@@ -71,7 +72,8 @@ class MainViewModel @Inject constructor(
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
-    private val processDeepLinkUseCase: ProcessDeepLinkUseCase
+    private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
+    private val bufferedMobileConnectRequestRepository: BufferedMobileConnectRequestRepository
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -149,9 +151,19 @@ class MainViewModel @Inject constructor(
             }.collect()
         }
         handleAllIncomingRequests()
-
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
+        }
+        processBufferedDeepLinkRequest()
+    }
+
+    private fun processBufferedDeepLinkRequest() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.ProcessBufferedDeepLinkRequest>().collect {
+                bufferedMobileConnectRequestRepository.getBufferedRequest()?.let { request ->
+                    verifyIncomingRequest(request)
+                }
+            }
         }
     }
 
@@ -249,13 +261,19 @@ class MainViewModel @Inject constructor(
     fun handleDeepLink(deepLink: Uri) {
         viewModelScope.launch {
             processDeepLinkUseCase(deepLink.toString()).onSuccess { result ->
-                if (result == DeepLinkProcessingResult.BUFFERED) {
-                    _state.update {
-                        it.copy(showMobileConnectWarning = true)
+                when (result) {
+                    is DeepLinkProcessingResult.Processed -> {
+                        verifyIncomingRequest(result.request)
+                    }
+
+                    DeepLinkProcessingResult.Buffered -> {
+                        _state.update {
+                            it.copy(showMobileConnectWarning = true)
+                        }
                     }
                 }
-            }.onFailure {
-                Timber.d(it)
+            }.onFailure { error ->
+                Timber.d(error)
             }
         }
     }
@@ -268,16 +286,22 @@ class MainViewModel @Inject constructor(
 
     private fun verifyIncomingRequest(request: IncomingRequest) {
         verifyingDappRequestJob = viewModelScope.launch {
-            if (request.isMobileConnectRequest) {
-                incomingRequestRepository.add(request)
-            } else {
-                verifyDappUseCase(request).onSuccess { verified ->
-                    if (verified) {
+            verifyDappUseCase(request).onSuccess { verified ->
+                if (verified) {
+                    if (request.isMobileConnectRequest) {
+                        incomingRequestRepository.addMobileConnectRequest(request)
+                    } else {
                         incomingRequestRepository.add(request)
                     }
-                }.onFailure {
-                    _state.update { state ->
-                        state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
+                }
+            }.onFailure { error ->
+                if (error is RadixWalletException.DappRequestException) {
+                    _state.update {
+                        it.copy(dappRequestFailure = error)
+                    }
+                } else {
+                    _state.update {
+                        it.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
                     }
                 }
             }

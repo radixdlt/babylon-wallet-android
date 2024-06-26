@@ -46,7 +46,6 @@ import rdx.works.core.sargon.fields
 import rdx.works.core.sargon.toPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -56,7 +55,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val appEventBus: AppEventBus,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase
@@ -86,16 +84,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 return@launch
             } else {
                 request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
             }
             val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrNull()
             if (!request.isValidRequest() || dAppDefinitionAddress == null) {
@@ -271,7 +259,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 if (!request.isInternal) {
                     appEventBus.sendEvent(
                         AppEvent.Status.DappInteraction(
-                            requestId = request.interactionId.toString(),
+                            requestId = request.interactionId,
                             dAppName = state.value.dapp?.name,
                             isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                         )
