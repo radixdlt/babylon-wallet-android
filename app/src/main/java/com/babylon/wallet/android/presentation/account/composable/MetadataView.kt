@@ -24,11 +24,14 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.copyToClipboard
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NonFungibleGlobalId
@@ -164,17 +167,32 @@ fun MetadataValueView(
             MetadataType.Bool,
             is MetadataType.Integer,
             MetadataType.Bytes,
-            MetadataType.Enum,
-            MetadataType.PublicKeyEcdsaSecp256k1,
-            MetadataType.PublicKeyEddsaEd25519,
-            MetadataType.PublicKeyHashEcdsaSecp256k1,
-            MetadataType.PublicKeyHashEddsaEd25519 -> Text(
+            MetadataType.Enum -> Text(
                 modifier = modifier,
                 text = metadata.value,
                 style = style,
                 color = color,
                 textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 maxLines = 2
+            )
+
+            MetadataType.PublicKeyEcdsaSecp256k1,
+            MetadataType.PublicKeyEddsaEd25519,
+            MetadataType.PublicKeyHashEcdsaSecp256k1,
+            MetadataType.PublicKeyHashEddsaEd25519 -> Text(
+                modifier = modifier.throttleClickable {
+                    context.copyToClipboard(
+                        label = metadata.key,
+                        value = metadata.value,
+                        successMessage = context.getString(R.string.addressAction_copiedToClipboard)
+                    )
+                },
+                text = metadata.value,
+                style = style,
+                color = color,
+                textAlign = TextAlign.End,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
             MetadataType.String -> ExpandableText(
@@ -186,7 +204,7 @@ fun MetadataValueView(
                 ),
                 toggleStyle = style.copy(
                     color = RadixTheme.colors.gray2
-                ),
+                )
             )
 
             MetadataType.Instant -> {
