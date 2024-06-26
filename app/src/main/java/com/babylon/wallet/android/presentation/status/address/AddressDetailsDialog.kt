@@ -346,7 +346,7 @@ private fun HandleEvents(
     onHideEnlargedAddress: () -> Unit
 ) {
     val context = LocalContext.current
-    LaunchedEffect(key1 = events) {
+    LaunchedEffect(key1 = Unit) {
         events.collect { event ->
             when (event) {
                 is AddressDetailsDialogViewModel.Event.CloseEnlarged -> onHideEnlargedAddress()
