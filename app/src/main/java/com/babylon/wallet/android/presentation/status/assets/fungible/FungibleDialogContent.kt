@@ -26,6 +26,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
@@ -110,15 +111,10 @@ fun FungibleDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
         if (!token?.resource?.description.isNullOrBlank()) {
-            Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                text = token?.resource?.description.orEmpty(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
+            DescriptionSection(
+                modifier = Modifier.fillMaxWidth(),
+                description = token?.resource?.description.orEmpty()
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
         AddressRow(
             modifier = Modifier

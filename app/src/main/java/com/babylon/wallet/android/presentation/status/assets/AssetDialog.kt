@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -141,6 +142,27 @@ fun Asset.displayTitle() = when (this) {
             resource.name
         }
     }
+}
+
+@Composable
+fun DescriptionSection(
+    modifier: Modifier = Modifier,
+    description: String
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Text(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
+            text = description,
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+    }
+
 }
 
 @Composable

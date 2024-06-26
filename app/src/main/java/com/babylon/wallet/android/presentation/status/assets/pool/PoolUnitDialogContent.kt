@@ -28,6 +28,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -152,19 +153,12 @@ fun PoolUnitDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
         if (!poolUnit?.stake?.description.isNullOrBlank()) {
-            Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = poolUnit?.stake?.description.orEmpty(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(
+            DescriptionSection(
                 modifier = Modifier.fillMaxWidth(),
-                color = RadixTheme.colors.gray4
+                description = poolUnit?.stake?.description.orEmpty()
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
+
         AddressRow(
             modifier = Modifier
                 .fillMaxWidth()

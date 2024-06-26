@@ -32,6 +32,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -202,20 +203,12 @@ fun NonFungibleAssetDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             if (!asset?.resource?.description.isNullOrBlank()) {
-                Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = asset?.resource?.description.orEmpty(),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                HorizontalDivider(
+                DescriptionSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
+                    description = asset?.resource?.description.orEmpty()
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             AddressRow(
                 modifier = Modifier
