@@ -56,7 +56,8 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
     is MetadataBoolValue -> Metadata.Primitive(
         key = key,
         value = typed.value.toString(),
-        valueType = MetadataType.Bool
+        valueType = MetadataType.Bool,
+        isLocked = isLocked
     )
 
     is MetadataBoolArrayValue -> Metadata.Collection(
@@ -65,15 +66,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it.toString(),
-                valueType = MetadataType.Bool
+                valueType = MetadataType.Bool,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataDecimalValue -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Decimal
+        valueType = MetadataType.Decimal,
+        isLocked = isLocked
     )
 
     is MetadataDecimalArrayValue -> Metadata.Collection(
@@ -84,13 +88,15 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
                 value = it,
                 valueType = MetadataType.Decimal
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataGlobalAddressValue -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Address
+        valueType = MetadataType.Address,
+        isLocked = isLocked
     )
 
     is MetadataGlobalAddressArrayValue -> Metadata.Collection(
@@ -99,15 +105,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Address
+                valueType = MetadataType.Address,
+                isLocked = isLocked
             )
         },
+        isLocked = isLocked
     )
 
     is MetadataI32Value -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Integer(signed = true, size = Size.INT)
+        valueType = MetadataType.Integer(signed = true, size = Size.INT),
+        isLocked = isLocked
     )
 
     is MetadataI32ArrayValue -> Metadata.Collection(
@@ -116,15 +125,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Integer(signed = true, size = Size.INT)
+                valueType = MetadataType.Integer(signed = true, size = Size.INT),
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataI64Value -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Integer(signed = true, size = Size.LONG)
+        valueType = MetadataType.Integer(signed = true, size = Size.LONG),
+        isLocked = isLocked
     )
 
     is MetadataI64ArrayValue -> Metadata.Collection(
@@ -133,27 +145,32 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Integer(signed = true, size = Size.LONG)
+                valueType = MetadataType.Integer(signed = true, size = Size.LONG),
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataU8Value -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Integer(signed = false, size = Size.INT)
+        valueType = MetadataType.Integer(signed = false, size = Size.INT),
+        isLocked = isLocked
     )
 
     is MetadataU8ArrayValue -> Metadata.Primitive(
         key = key,
         value = typed.valueHex,
-        valueType = MetadataType.Bytes
+        valueType = MetadataType.Bytes,
+        isLocked = isLocked
     )
 
     is MetadataU32Value -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Integer(signed = false, size = Size.INT)
+        valueType = MetadataType.Integer(signed = false, size = Size.INT),
+        isLocked = isLocked
     )
 
     is MetadataU32ArrayValue -> Metadata.Collection(
@@ -162,15 +179,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Integer(signed = false, size = Size.INT)
+                valueType = MetadataType.Integer(signed = false, size = Size.INT),
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataU64Value -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Integer(signed = false, size = Size.LONG)
+        valueType = MetadataType.Integer(signed = false, size = Size.LONG),
+        isLocked = isLocked
     )
 
     is MetadataU64ArrayValue -> Metadata.Collection(
@@ -179,15 +199,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Integer(signed = false, size = Size.LONG)
+                valueType = MetadataType.Integer(signed = false, size = Size.LONG),
+                isLocked = isLocked
             )
         },
+        isLocked = isLocked
     )
 
     is MetadataInstantValue -> Metadata.Primitive(
         key = key,
         value = typed.unixTimestampSeconds,
-        valueType = MetadataType.Instant
+        valueType = MetadataType.Instant,
+        isLocked = isLocked
     )
 
     is MetadataInstantArrayValue -> Metadata.Collection(
@@ -196,9 +219,11 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Instant
+                valueType = MetadataType.Instant,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataNonFungibleGlobalIdValue -> Metadata.Primitive(
@@ -207,7 +232,8 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             resourceAddress = ResourceAddress.init(typed.resourceAddress),
             nonFungibleLocalId = NonFungibleLocalId.init(typed.nonFungibleId)
         ).string,
-        valueType = MetadataType.NonFungibleGlobalId
+        valueType = MetadataType.NonFungibleGlobalId,
+        isLocked = isLocked
     )
 
     is MetadataNonFungibleGlobalIdArrayValue -> Metadata.Collection(
@@ -216,16 +242,19 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = "${it.resourceAddress}:${it.nonFungibleId}",
-                valueType = MetadataType.NonFungibleGlobalId
+                valueType = MetadataType.NonFungibleGlobalId,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataNonFungibleLocalIdValue -> Metadata.Primitive(
         key = key,
         lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
         value = typed.value,
-        valueType = MetadataType.NonFungibleLocalId
+        valueType = MetadataType.NonFungibleLocalId,
+        isLocked = isLocked
     )
 
     is MetadataNonFungibleLocalIdArrayValue -> Metadata.Collection(
@@ -234,15 +263,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.NonFungibleLocalId
+                valueType = MetadataType.NonFungibleLocalId,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataOriginValue -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Url
+        valueType = MetadataType.Url,
+        isLocked = isLocked
     )
 
     is MetadataOriginArrayValue -> Metadata.Collection(
@@ -251,15 +283,18 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Url
+                valueType = MetadataType.Url,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataStringValue -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.String
+        valueType = MetadataType.String,
+        isLocked = isLocked
     )
 
     is MetadataStringArrayValue -> Metadata.Collection(
@@ -268,9 +303,11 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.String
+                valueType = MetadataType.String,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataUrlValue -> Metadata.Primitive(
@@ -285,9 +322,11 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Url
+                valueType = MetadataType.Url,
+                isLocked = isLocked
             )
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataPublicKeyValue -> when (typed.value) {
@@ -295,14 +334,16 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             key = key,
             lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.keyHex,
-            valueType = MetadataType.PublicKeyEcdsaSecp256k1
+            valueType = MetadataType.PublicKeyEcdsaSecp256k1,
+            isLocked = isLocked
         )
 
         is PublicKeyEddsaEd25519 -> Metadata.Primitive(
             key = key,
             lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.keyHex,
-            valueType = MetadataType.PublicKeyEddsaEd25519
+            valueType = MetadataType.PublicKeyEddsaEd25519,
+            isLocked = isLocked
         )
 
         else -> error("Not supported MetadataPublicKeyValue type for $value")
@@ -316,18 +357,21 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
                 is PublicKeyEcdsaSecp256k1 -> Metadata.Primitive(
                     key = key,
                     value = value.keyHex,
-                    valueType = MetadataType.PublicKeyEcdsaSecp256k1
+                    valueType = MetadataType.PublicKeyEcdsaSecp256k1,
+                    isLocked = isLocked
                 )
 
                 is PublicKeyEddsaEd25519 -> Metadata.Primitive(
                     key = key,
                     value = value.keyHex,
-                    valueType = MetadataType.PublicKeyEddsaEd25519
+                    valueType = MetadataType.PublicKeyEddsaEd25519,
+                    isLocked = isLocked
                 )
 
                 else -> error("Not supported MetadataPublicKeyValue type for $value")
             }
-        }
+        },
+        isLocked = isLocked
     )
 
     is MetadataPublicKeyHashValue -> when (typed.value) {
@@ -335,14 +379,16 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             key = key,
             lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.hashHex,
-            valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
+            valueType = MetadataType.PublicKeyHashEcdsaSecp256k1,
+            isLocked = isLocked
         )
 
         is PublicKeyHashEddsaEd25519 -> Metadata.Primitive(
             key = key,
             lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.hashHex,
-            valueType = MetadataType.PublicKeyHashEddsaEd25519
+            valueType = MetadataType.PublicKeyHashEddsaEd25519,
+            isLocked = isLocked
         )
     }
 
@@ -355,17 +401,20 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
                     key = key,
                     lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
                     value = value.hashHex,
-                    valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
+                    valueType = MetadataType.PublicKeyHashEcdsaSecp256k1,
+                    isLocked = isLocked
                 )
 
                 is PublicKeyHashEddsaEd25519 -> Metadata.Primitive(
                     key = key,
                     lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
                     value = value.hashHex,
-                    valueType = MetadataType.PublicKeyHashEddsaEd25519
+                    valueType = MetadataType.PublicKeyHashEddsaEd25519,
+                    isLocked = isLocked
                 )
             }
-        }
+        },
+        isLocked = isLocked
     )
 
     else -> null

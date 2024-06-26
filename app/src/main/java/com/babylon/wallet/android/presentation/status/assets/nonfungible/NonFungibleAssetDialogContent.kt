@@ -29,8 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
-import com.babylon.wallet.android.presentation.account.composable.View
+import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
@@ -115,7 +114,7 @@ fun NonFungibleAssetDialogContent(
             }
 
             if (item != null) {
-                AssetMetadataRow(
+                MetadataView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
@@ -155,10 +154,11 @@ fun NonFungibleAssetDialogContent(
 
                 item?.nonStandardMetadata?.forEach { metadata ->
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    metadata.View(
+                    MetadataView(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                        metadata = metadata
                     )
                 }
 
@@ -226,7 +226,7 @@ fun NonFungibleAssetDialogContent(
             )
             if (!asset?.resource?.name.isNullOrBlank() && localId != null) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AssetMetadataRow(
+                MetadataView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
@@ -242,7 +242,7 @@ fun NonFungibleAssetDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             if (!isNewlyCreated) {
-                AssetMetadataRow(
+                MetadataView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),

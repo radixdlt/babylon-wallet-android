@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.View
+import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.fungible.FungibleDialogContent
 import com.babylon.wallet.android.presentation.status.assets.lsu.LSUDialogContent
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.NonFungibleAssetDialogContent
@@ -158,7 +157,7 @@ fun NonStandardMetadataSection(
         ) {
             metadata.forEach { metadata ->
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                metadata.View(modifier = Modifier.fillMaxWidth())
+                MetadataView(modifier = Modifier.fillMaxWidth(), metadata = metadata)
             }
         }
     }

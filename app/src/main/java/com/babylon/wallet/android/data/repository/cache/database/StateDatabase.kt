@@ -54,7 +54,7 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Replace BigDecimal with Decimal192")
         const val VERSION_8 = 8
 
-        // Added next cursor to metadata column
+        // Added next cursor to metadata column and locked flag
         const val VERSION_9 = 9
 
         private const val NAME = "STATE_DATABASE"
