@@ -26,6 +26,7 @@ import rdx.works.core.domain.resources.metadata.claimAmount
 import rdx.works.core.domain.resources.metadata.claimEpoch
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
+import rdx.works.core.domain.resources.metadata.isLocked
 import rdx.works.core.domain.resources.metadata.keyImageUrl
 import rdx.works.core.domain.resources.metadata.name
 import rdx.works.core.domain.resources.metadata.poolAddress
@@ -61,20 +62,37 @@ sealed class Resource {
         val divisibility: Divisibility? = null,
         override val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
+
         override val name: String by lazy {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
+        }
+
+        val isNameLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.NAME)
         }
 
         val symbol: String by lazy {
             metadata.symbol().orEmpty()
         }
 
+        val isSymbolLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.SYMBOL)
+        }
+
         val description: String by lazy {
             metadata.description().orEmpty().truncate(maxNumberOfCharacters = DESCRIPTION_MAX_CHARS)
         }
 
+        val isDescriptionLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.DESCRIPTION)
+        }
+
         override val iconUrl: Uri? by lazy {
             metadata.iconUrl()
+        }
+
+        val isIconUrlLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.ICON_URL)
         }
 
         override val validatorAddress: ValidatorAddress? by lazy {
@@ -99,6 +117,10 @@ sealed class Resource {
                     Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
                 }.orEmpty()
             }.take(TAGS_MAX).toImmutableList()
+        }
+
+        val isTagsLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.TAGS)
         }
 
         val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
@@ -167,18 +189,34 @@ sealed class Resource {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
         }
 
+        val isNameLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.NAME)
+        }
+
         val description: String by lazy {
             metadata.description().orEmpty().truncate(maxNumberOfCharacters = DESCRIPTION_MAX_CHARS)
+        }
+
+        val isDescriptionLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.DESCRIPTION)
         }
 
         override val iconUrl: Uri? by lazy {
             metadata.iconUrl()
         }
 
+        val isIconUrlLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.ICON_URL)
+        }
+
         val tags: ImmutableList<Tag> by lazy {
             metadata.tags().orEmpty().map {
                 Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
             }.take(TAGS_MAX).toImmutableList()
+        }
+
+        val isTagsLocked: Boolean by lazy {
+            metadata.isLocked(key = ExplicitMetadataKey.TAGS)
         }
 
         override val validatorAddress: ValidatorAddress? by lazy {

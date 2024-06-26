@@ -313,7 +313,8 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
     is MetadataUrlValue -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Url
+        valueType = MetadataType.Url,
+        isLocked = isLocked
     )
 
     is MetadataUrlArrayValue -> Metadata.Collection(

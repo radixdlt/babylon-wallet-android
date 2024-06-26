@@ -183,7 +183,8 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            key = stringResource(id = R.string.assetDetails_name)
+            key = stringResource(id = R.string.assetDetails_name),
+            isLocked = lsu?.resource?.isNameLocked ?: false
         ) {
             Text(
                 modifier = Modifier
@@ -235,7 +236,8 @@ fun LSUDialogContent(
 
         TagsSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            tags = lsu?.fungibleResource?.tags
+            tags = lsu?.fungibleResource?.tags,
+            isLocked = lsu?.resource?.isTagsLocked ?: false
         )
     }
 }

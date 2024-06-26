@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.account.composable.MetadataKeyView
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.fungible.FungibleDialogContent
 import com.babylon.wallet.android.presentation.status.assets.lsu.LSUDialogContent
@@ -213,16 +214,16 @@ fun BehavioursSection(
 @Composable
 fun TagsSection(
     modifier: Modifier = Modifier,
-    tags: ImmutableList<Tag>?
+    tags: ImmutableList<Tag>?,
+    isLocked: Boolean
 ) {
     if (!tags.isNullOrEmpty()) {
         Column(modifier = modifier) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            Text(
+            MetadataKeyView(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.assetDetails_tags),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
+                key = stringResource(id = R.string.assetDetails_tags),
+                isLocked = isLocked
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             FlowRow(

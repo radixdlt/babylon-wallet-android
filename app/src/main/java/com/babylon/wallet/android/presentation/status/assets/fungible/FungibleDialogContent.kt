@@ -168,6 +168,7 @@ fun FungibleDialogContent(
             TagsSection(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
                 tags = token?.resource?.tags,
+                isLocked = token?.resource?.isTagsLocked ?: false
             )
         }
     }

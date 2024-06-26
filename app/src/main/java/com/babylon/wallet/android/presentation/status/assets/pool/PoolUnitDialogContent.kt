@@ -210,6 +210,7 @@ fun PoolUnitDialogContent(
         TagsSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             tags = poolUnit?.resource?.tags,
+            isLocked = poolUnit?.resource?.isTagsLocked ?: false
         )
     }
 }

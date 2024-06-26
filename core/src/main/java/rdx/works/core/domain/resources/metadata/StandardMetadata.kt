@@ -25,6 +25,8 @@ private fun List<Metadata>.findCollection(key: ExplicitMetadataKey, type: Metada
         ?.takeIf { values -> values.all { it.valueType == type } }
 }
 
+fun List<Metadata>.isLocked(key: ExplicitMetadataKey) = find { it.key == key.key }?.isLocked ?: false
+
 fun List<Metadata>.description(): String? = findPrimitive(
     key = ExplicitMetadataKey.DESCRIPTION,
     type = MetadataType.String

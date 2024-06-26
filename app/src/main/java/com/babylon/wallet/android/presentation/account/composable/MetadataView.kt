@@ -128,11 +128,12 @@ fun MetadataKeyView(
         textAlign = TextAlign.Start,
         inlineContent = mapOf(
             "lock_icon" to InlineTextContent(
-                Placeholder(16.sp, 16.sp, PlaceholderVerticalAlign.TextCenter)
+                Placeholder(style.fontSize, style.fontSize, PlaceholderVerticalAlign.TextCenter)
             ) {
                 Icon(
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lock),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = color
                 )
             }
         )

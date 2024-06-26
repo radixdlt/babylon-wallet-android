@@ -230,7 +230,8 @@ fun NonFungibleAssetDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    key = stringResource(id = R.string.assetDetails_name)
+                    key = stringResource(id = R.string.assetDetails_name),
+                    isLocked = asset?.resource?.isNameLocked ?: false
                 ) {
                     Text(
                         text = asset?.resource?.name.orEmpty(),
@@ -281,7 +282,8 @@ fun NonFungibleAssetDialogContent(
 
                 TagsSection(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    tags = asset?.resource?.tags
+                    tags = asset?.resource?.tags,
+                    isLocked = asset?.resource?.isTagsLocked ?: false
                 )
             }
         }
