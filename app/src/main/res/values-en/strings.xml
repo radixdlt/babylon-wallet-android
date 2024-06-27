@@ -53,6 +53,8 @@
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
   <string name="assetDetails_staking_unstaking">Ready to claim in about %d minutes or less.</string>
+  <string name="assetDetails_staking_readyToClaim">Ready to Claim in</string>
+  <string name="assetDetails_staking_readyToClaimMinutes">%d minutes or less</string>
   <string name="assetDetails_tags">Tags</string>
   <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
