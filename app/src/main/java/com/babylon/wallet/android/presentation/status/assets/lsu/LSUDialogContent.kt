@@ -165,8 +165,7 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            key = stringResource(id = R.string.assetDetails_name),
-            isLocked = lsu?.resource?.isNameLocked ?: false
+            key = stringResource(id = R.string.assetDetails_name)
         ) {
             Text(
                 modifier = Modifier
@@ -204,13 +203,6 @@ fun LSUDialogContent(
             )
         }
 
-        lsu?.resource?.let { resource ->
-            NonStandardMetadataSection(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                resource = resource
-            )
-        }
-
         BehavioursSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             behaviours = lsu?.fungibleResource?.behaviours
@@ -218,9 +210,12 @@ fun LSUDialogContent(
 
         TagsSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            tags = lsu?.fungibleResource?.tags,
-            isLocked = lsu?.resource?.isTagsLocked ?: false
+            tags = lsu?.fungibleResource?.tags
         )
+
+        lsu?.resource?.let { resource ->
+            NonStandardMetadataSection(resource = resource)
+        }
     }
 }
 

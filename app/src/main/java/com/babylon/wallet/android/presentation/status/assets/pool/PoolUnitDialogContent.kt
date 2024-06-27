@@ -188,13 +188,6 @@ fun PoolUnitDialogContent(
             )
         }
 
-        poolUnit?.resource?.let { resource ->
-            NonStandardMetadataSection(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                resource = resource
-            )
-        }
-
         BehavioursSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             behaviours = poolUnit?.resource?.behaviours
@@ -202,8 +195,11 @@ fun PoolUnitDialogContent(
 
         TagsSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            tags = poolUnit?.resource?.tags,
-            isLocked = poolUnit?.resource?.isTagsLocked ?: false
+            tags = poolUnit?.resource?.tags
         )
+
+        poolUnit?.resource?.let { resource ->
+            NonStandardMetadataSection(resource = resource)
+        }
     }
 }

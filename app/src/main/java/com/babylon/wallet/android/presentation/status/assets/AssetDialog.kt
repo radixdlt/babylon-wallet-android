@@ -208,9 +208,17 @@ fun NonStandardMetadataSection(
         Column(
             modifier = modifier
         ) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+
             metadata.forEach { metadata ->
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                MetadataView(modifier = Modifier.fillMaxWidth(), metadata = metadata)
+                MetadataView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                    metadata = metadata
+                )
             }
         }
     }
@@ -266,8 +274,7 @@ fun BehavioursSection(
 @Composable
 fun TagsSection(
     modifier: Modifier = Modifier,
-    tags: ImmutableList<Tag>?,
-    isLocked: Boolean
+    tags: ImmutableList<Tag>?
 ) {
     if (!tags.isNullOrEmpty()) {
         Column(modifier = modifier) {
@@ -275,7 +282,7 @@ fun TagsSection(
             MetadataKeyView(
                 modifier = Modifier.fillMaxWidth(),
                 key = stringResource(id = R.string.assetDetails_tags),
-                isLocked = isLocked
+                isLocked = false
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             FlowRow(
@@ -297,7 +304,6 @@ fun TagsSection(
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         }
     }
 }

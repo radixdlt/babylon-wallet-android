@@ -224,8 +224,7 @@ fun NonFungibleAssetDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    key = stringResource(id = R.string.assetDetails_name),
-                    isLocked = asset?.resource?.isNameLocked ?: false
+                    key = stringResource(id = R.string.assetDetails_name)
                 ) {
                     Text(
                         text = asset?.resource?.name.orEmpty(),
@@ -262,13 +261,6 @@ fun NonFungibleAssetDialogContent(
                     )
                 }
 
-                asset?.resource?.let { resource ->
-                    NonStandardMetadataSection(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                        resource = resource
-                    )
-                }
-
                 BehavioursSection(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     behaviours = asset?.resource?.behaviours
@@ -276,9 +268,15 @@ fun NonFungibleAssetDialogContent(
 
                 TagsSection(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    tags = asset?.resource?.tags,
-                    isLocked = asset?.resource?.isTagsLocked ?: false
+                    tags = asset?.resource?.tags
                 )
+
+                asset?.resource?.let { resource ->
+                    NonStandardMetadataSection(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        resource = resource
+                    )
+                }
             }
         }
     }

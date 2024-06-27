@@ -135,13 +135,6 @@ fun FungibleDialogContent(
                 )
             }
 
-            token?.resource?.let { resource ->
-                NonStandardMetadataSection(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                    resource = resource
-                )
-            }
-
             BehavioursSection(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
                 isXRD = token?.resource?.isXrd ?: false,
@@ -150,9 +143,12 @@ fun FungibleDialogContent(
 
             TagsSection(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                tags = token?.resource?.tags,
-                isLocked = token?.resource?.isTagsLocked ?: false
+                tags = token?.resource?.tags
             )
+
+            token?.resource?.let { resource ->
+                NonStandardMetadataSection(resource = resource)
+            }
         }
     }
 }
