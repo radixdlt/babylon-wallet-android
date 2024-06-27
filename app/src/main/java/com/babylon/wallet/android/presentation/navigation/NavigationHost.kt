@@ -27,13 +27,16 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.s
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
+import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
+import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
+import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
@@ -71,6 +74,7 @@ import com.babylon.wallet.android.presentation.status.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
+import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
@@ -530,8 +534,25 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        mobileConnect(onBackClick = {
-            navController.popBackStack()
-        })
+        mobileConnect(
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onHandleRequestAuthorizedRequest = {
+                navController.dAppLoginAuthorized(it) {
+                    popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
+                }
+            },
+            onHandleUnauthorizedRequest = {
+                navController.dAppLoginUnauthorized(it) {
+                    popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
+                }
+            },
+            onHandleTransactionRequest = {
+                navController.transactionReview(it) {
+                    popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
+                }
+            }
+        )
     }
 }

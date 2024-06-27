@@ -35,6 +35,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -45,7 +46,6 @@ import rdx.works.core.sargon.fields
 import rdx.works.core.sargon.toPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,7 +55,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val appEventBus: AppEventBus,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase
@@ -69,22 +68,22 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     init {
         observeSigningState()
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getUnauthorizedRequest(args.requestId)
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.CloseLoginFlow)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
+                }
+            }
+        }
+        viewModelScope.launch {
+            val requestToHandle = incomingRequestRepository.getRequest(
+                args.interactionId
+            ) as? IncomingMessage.IncomingRequest.UnauthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
             } else {
                 request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
             }
             val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrNull()
             if (!request.isValidRequest() || dAppDefinitionAddress == null) {
@@ -187,7 +186,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
-        incomingRequestRepository.requestHandled(requestId = args.requestId)
+        incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
     fun onMessageShown() {
@@ -218,7 +217,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onRejectRequest() {
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(requestId = args.requestId)
+            incomingRequestRepository.requestHandled(requestId = args.interactionId)
             respondToIncomingRequestUseCase.respondWithFailure(request, DappWalletInteractionErrorType.REJECTED_BY_USER)
             sendEvent(Event.CloseLoginFlow)
         }
@@ -260,7 +259,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 if (!request.isInternal) {
                     appEventBus.sendEvent(
                         AppEvent.Status.DappInteraction(
-                            requestId = request.interactionId.toString(),
+                            requestId = request.interactionId,
                             dAppName = state.value.dapp?.name,
                             isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                         )

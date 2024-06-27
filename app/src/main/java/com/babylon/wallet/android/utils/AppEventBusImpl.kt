@@ -33,6 +33,8 @@ sealed interface AppEvent {
     data object NPSSurveySubmitted : AppEvent
 
     data object SecureFolderWarning : AppEvent
+    data class DeferRequestHandling(val interactionId: String) : AppEvent
+    data object ProcessBufferedDeepLinkRequest : AppEvent
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources

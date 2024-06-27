@@ -68,25 +68,25 @@ fun WalletApp(
         mainViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is MainEvent.IncomingRequestEvent -> {
+                    if (event.request.needVerification) {
+                        navController.mobileConnect(event.request.interactionId)
+                        return@collect
+                    }
                     when (val incomingRequest = event.request) {
                         is IncomingMessage.IncomingRequest.TransactionRequest -> {
                             navController.transactionReview(
-                                requestId = incomingRequest.interactionId.toString()
+                                requestId = incomingRequest.interactionId
                             )
                         }
 
                         is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLoginAuthorized(incomingRequest.interactionId.toString())
+                            navController.dAppLoginAuthorized(incomingRequest.interactionId)
                         }
 
                         is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
-                            navController.dAppLoginUnauthorized(incomingRequest.interactionId.toString())
+                            navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                         }
                     }
-                }
-
-                is MainEvent.MobileConnectLink -> {
-                    navController.mobileConnect(event.request)
                 }
             }
         }
@@ -177,13 +177,13 @@ fun WalletApp(
             dismissText = null
         )
     }
-    if (!state.isProfileInitialized) {
+    if (state.showMobileConnectWarning) {
         BasicPromptAlertDialog(
             finish = {
-                onCloseApp()
+                mainViewModel.onMobileConnectWarningShown()
             },
-            titleText = "No profile found",
-            messageText = "You need to create a profile to respond to dApp requests",
+            titleText = stringResource(id = R.string.mobileConnect_noProfileDialog_title),
+            messageText = stringResource(id = R.string.mobileConnect_noProfileDialog_subtitle),
             confirmText = stringResource(id = R.string.common_ok),
             dismissText = null
         )

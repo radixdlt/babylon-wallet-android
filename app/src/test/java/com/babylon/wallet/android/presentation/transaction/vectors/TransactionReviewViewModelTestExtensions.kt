@@ -18,7 +18,6 @@ import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadg
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModelTestExperimental
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
@@ -44,7 +43,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
-internal fun TransactionReviewViewModelTestExperimental.testViewModel(
+internal fun testViewModel(
     transactionRepository: TransactionRepository,
     incomingRequestRepository: IncomingRequestRepository,
     signTransactionUseCase: SignTransactionUseCase,
@@ -119,10 +118,11 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     ),
     getDAppsUseCase = GetDAppsUseCase(stateRepository),
     incomingRequestRepository = incomingRequestRepository,
-    savedStateHandle = savedStateHandle
+    savedStateHandle = savedStateHandle,
+    appEventBus = appEventBus
 )
 
-internal fun TransactionReviewViewModelTestExperimental.sampleManifest(
+internal fun sampleManifest(
     instructions: String,
     networkId: NetworkId = NetworkId.MAINNET,
     message: String? = null
@@ -132,7 +132,7 @@ internal fun TransactionReviewViewModelTestExperimental.sampleManifest(
     message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message)
 )
 
-internal fun TransactionReviewViewModelTestExperimental.requestMetadata(
+internal fun requestMetadata(
     manifestData: TransactionManifestData,
     dApp: DApp? = null
 ) = IncomingMessage.IncomingRequest.RequestMetadata(

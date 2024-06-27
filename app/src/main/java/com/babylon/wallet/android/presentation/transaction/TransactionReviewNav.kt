@@ -5,6 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -18,14 +19,14 @@ internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
 
 const val ROUTE_TRANSACTION_REVIEW = "transaction_review_route/{$ARG_TRANSACTION_REQUEST_ID}"
 
-internal class TransactionReviewArgs(val requestId: String) {
+internal class TransactionReviewArgs(val interactionId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         checkNotNull(savedStateHandle[ARG_TRANSACTION_REQUEST_ID]) as String
     )
 }
 
-fun NavController.transactionReview(requestId: String) {
-    navigate("transaction_review_route/$requestId")
+fun NavController.transactionReview(requestId: String, navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}) {
+    navigate("transaction_review_route/$requestId", navOptionsBuilder)
 }
 
 fun NavGraphBuilder.transactionReviewScreen(

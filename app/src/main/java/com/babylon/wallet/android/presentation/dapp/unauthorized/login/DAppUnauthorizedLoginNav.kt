@@ -6,6 +6,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -17,12 +18,12 @@ internal const val ARG_REQUEST_ID = "request_id"
 const val ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH = "dapp_login_unauthorized/{$ARG_REQUEST_ID}"
 const val ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN = "dapp_login_unauthorized_screen/{$ARG_REQUEST_ID}"
 
-internal class DAppUnauthorizedLoginArgs(val requestId: String) {
+internal class DAppUnauthorizedLoginArgs(val interactionId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_REQUEST_ID]) as String)
 }
 
-fun NavController.dAppLoginUnauthorized(requestId: String) {
-    navigate("dapp_login_unauthorized/$requestId")
+fun NavController.dAppLoginUnauthorized(requestId: String, navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}) {
+    navigate("dapp_login_unauthorized/$requestId", navOptionsBuilder)
 }
 
 @Suppress("LongParameterList")

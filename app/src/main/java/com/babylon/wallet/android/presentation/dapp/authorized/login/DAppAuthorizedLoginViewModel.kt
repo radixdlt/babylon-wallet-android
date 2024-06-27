@@ -45,6 +45,7 @@ import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -62,7 +63,6 @@ import rdx.works.core.sargon.updateDAppAuthorizedPersonaSharedAccounts
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -73,7 +73,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase
@@ -92,24 +91,22 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
     init {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.CloseLoginFlow)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
+                }
+            }
+        }
         observeSigningState()
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getAuthorizedRequest(args.interactionId)
+            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? AuthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
             } else {
                 request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
             }
             val dAppDefinitionAddress = runCatching { AccountAddress.init(request.requestMetadata.dAppDefinitionAddress) }.getOrNull()
             if (!request.isValidRequest() || dAppDefinitionAddress == null) {
@@ -587,7 +584,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onAbortDappLogin(walletWalletErrorType: DappWalletInteractionErrorType = DappWalletInteractionErrorType.REJECTED_BY_USER) {
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(request.interactionId.toString())
+            incomingRequestRepository.requestHandled(request.interactionId)
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
             }
@@ -692,7 +689,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 mutex.withLock {
                     editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                 }
-                incomingRequestRepository.requestHandled(request.interactionId.toString())
+                incomingRequestRepository.requestHandled(request.interactionId)
                 sendEvent(Event.LoginFlowCompleted)
             } else {
                 buildAuthorizedDappResponseUseCase(

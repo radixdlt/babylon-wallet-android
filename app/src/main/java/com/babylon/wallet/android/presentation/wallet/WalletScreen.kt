@@ -29,6 +29,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -103,6 +104,13 @@ fun WalletScreen(
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onRadixBannerDismiss = viewModel::onRadixBannerDismiss
     )
+
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
+    LaunchedEffect(lifecycleState) {
+        if (lifecycleState == Lifecycle.State.RESUMED) {
+            viewModel.processBufferedDeepLinkRequest()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.babylonFactorSourceDoesNotExistEvent.collect {

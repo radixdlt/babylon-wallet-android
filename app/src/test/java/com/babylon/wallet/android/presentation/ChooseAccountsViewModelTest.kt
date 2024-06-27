@@ -7,10 +7,10 @@ import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsViewModel
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,7 +41,7 @@ class ChooseAccountsViewModelTest {
     )
     private val getProfileUseCase = GetProfileUseCase(profileRepository)
 
-    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl(AppEventBusImpl())
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
 
