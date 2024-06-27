@@ -19,7 +19,7 @@ interface IncomingRequestRepository {
 
     suspend fun add(incomingRequest: IncomingRequest)
 
-    suspend fun addMobileConnectRequest(incomingRequest: IncomingRequest)
+    suspend fun addPriorityRequest(incomingRequest: IncomingRequest)
 
     suspend fun requestHandled(requestId: String)
 
@@ -80,7 +80,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
      * we send a defer event for it so that UI can react and defer handling, without removing it from the queue.
      * Deferred request will be handled again when top priority one handling completes
      */
-    override suspend fun addMobileConnectRequest(incomingRequest: IncomingRequest) {
+    override suspend fun addPriorityRequest(incomingRequest: IncomingRequest) {
         mutex.withLock {
             requestQueue.addFirst(QueueItem.RequestItem(incomingRequest))
             val currentRequest = _currentRequestToHandle.value

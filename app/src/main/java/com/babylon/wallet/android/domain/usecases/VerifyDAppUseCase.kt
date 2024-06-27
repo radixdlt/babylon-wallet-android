@@ -31,7 +31,12 @@ class VerifyDAppUseCase @Inject constructor(
                 request = request,
                 error = DappWalletInteractionErrorType.INVALID_REQUEST
             )
-            return Result.failure(RadixWalletException.DappRequestException.WrongNetwork(networkId, request.metadata.networkId))
+            return Result.failure(
+                RadixWalletException.DappRequestException.WrongNetwork(
+                    currentNetworkId = networkId,
+                    requestNetworkId = request.metadata.networkId
+                )
+            )
         }
         val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrElse {
             respondToIncomingRequestUseCase.respondWithFailure(

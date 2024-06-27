@@ -101,29 +101,27 @@ class TransactionSubmitDelegate @Inject constructor(
     suspend fun onDismiss(
         signTransactionUseCase: SignTransactionUseCase,
         exception: RadixWalletException.DappRequestException
-    ): Result<Unit> {
-        return runCatching {
-            if (approvalJob == null) {
-                val request = _state.value.requestNonNull
-                if (!request.isInternal) {
-                    respondToIncomingRequestUseCase.respondWithFailure(
-                        request = request,
-                        error = exception.ceError,
-                        message = exception.getDappMessage()
-                    )
-                }
-                oneOffEventHandler?.sendEvent(Event.Dismiss)
-                incomingRequestRepository.requestHandled(request.interactionId)
-            } else if (_state.value.interactionState != null) {
-                approvalJob?.cancel()
-                approvalJob = null
-                signTransactionUseCase.cancelSigning()
-                _state.update {
-                    it.copy(isSubmitting = false)
-                }
-            } else {
-                logger.d("Cannot dismiss transaction while is in progress")
+    ): Result<Unit> = runCatching {
+        if (approvalJob == null) {
+            val request = _state.value.requestNonNull
+            if (!request.isInternal) {
+                respondToIncomingRequestUseCase.respondWithFailure(
+                    request = request,
+                    error = exception.ceError,
+                    message = exception.getDappMessage()
+                )
             }
+            oneOffEventHandler?.sendEvent(Event.Dismiss)
+            incomingRequestRepository.requestHandled(request.interactionId)
+        } else if (_state.value.interactionState != null) {
+            approvalJob?.cancel()
+            approvalJob = null
+            signTransactionUseCase.cancelSigning()
+            _state.update {
+                it.copy(isSubmitting = false)
+            }
+        } else {
+            logger.d("Cannot dismiss transaction while is in progress")
         }
     }
 

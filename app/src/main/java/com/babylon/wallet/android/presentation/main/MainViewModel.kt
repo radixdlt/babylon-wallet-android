@@ -289,7 +289,7 @@ class MainViewModel @Inject constructor(
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
                     if (request.isMobileConnectRequest) {
-                        incomingRequestRepository.addMobileConnectRequest(request)
+                        incomingRequestRepository.addPriorityRequest(request)
                     } else {
                         incomingRequestRepository.add(request)
                     }
