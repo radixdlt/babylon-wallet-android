@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.account.composable
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,10 +27,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
+import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.copyToClipboard
-import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -265,32 +264,9 @@ fun MetadataValueView(
                 maxLines = 2
             )
 
-            MetadataType.Url -> Text(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .clickable { context.openUrl(metadata.value) },
-                text = buildAnnotatedString {
-                    append(metadata.value)
-                    append("  ")
-                    appendInlineContent(id = "link_icon")
-                },
-                style = RadixTheme.typography.body1StandaloneLink,
-                color = RadixTheme.colors.blue1,
-                inlineContent = mapOf(
-                    "link_icon" to InlineTextContent(
-                        Placeholder(
-                            RadixTheme.typography.body1StandaloneLink.fontSize,
-                            RadixTheme.typography.body1StandaloneLink.fontSize,
-                            PlaceholderVerticalAlign.TextCenter
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_external_link),
-                            contentDescription = null,
-                            tint = color
-                        )
-                    }
-                )
+            MetadataType.Url -> LinkText(
+                modifier = modifier.fillMaxWidth(),
+                url = metadata.value
             )
         }
     }
