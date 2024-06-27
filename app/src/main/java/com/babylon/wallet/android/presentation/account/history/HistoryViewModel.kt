@@ -283,6 +283,7 @@ class HistoryViewModel @Inject constructor(
                     Timber.d("History: Nothing to load at the top")
                     return
                 }
+                Timber.d("History: Loading more at the top, cursor ${_state.value.historyData?.prevCursorId}")
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Up) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
@@ -301,6 +302,7 @@ class HistoryViewModel @Inject constructor(
                     Timber.d("History: Nothing to load at the bottom")
                     return
                 }
+                Timber.d("History: Loading more at the bottom, cursor ${_state.value.historyData?.nextCursorId}")
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Down) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->

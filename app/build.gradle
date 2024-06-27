@@ -130,6 +130,7 @@ android {
             buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "true"
             buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
             buildConfigField "String", "NPS_SURVEY_URL", '"https://wallet-net-promoter-score.radixdlt.com/"'
+            buildConfigField "String", "RCR_URL", '"https://radix-connect-relay.radixdlt.com/"'
             buildConfigField "String", "REFINER_FORM_UUID", '"3432b6e0-dfad-11ee-a53c-95167f067d9c"'
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -278,6 +279,7 @@ dependencies {
 
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
+    androidTestImplementation libs.espressoIntents
     androidTestImplementation libs.composeUiTestJunit
 
     implementation libs.composeUiToolingPreview
@@ -312,16 +314,7 @@ tasks.withType(Test.class).configureEach {
  */
 task buildDefaultLanguage {
     copy {
-        from('src/main/res/values-en/strings.xml') {
-            filter {
-                line ->
-                    if (line.isEmpty()) {
-                        '\\n\\n'
-                    } else {
-                        line
-                    }
-            }
-        }
+        from('src/main/res/values-en/strings.xml')
         into 'src/main/res/values/'
     }
     // Move content from values/strings.xml to values-en/strings.xml

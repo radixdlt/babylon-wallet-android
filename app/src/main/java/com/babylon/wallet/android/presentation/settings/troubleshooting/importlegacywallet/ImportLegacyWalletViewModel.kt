@@ -2,12 +2,14 @@
 
 package com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet
 
+import Constants.ACCOUNT_NAME_MAX_LENGTH
+import Constants.DELAY_300_MS
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -22,8 +24,6 @@ import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
-import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
@@ -124,7 +124,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     private suspend fun processLedgerResponse(
         ledgerFactorSource: FactorSource.Ledger,
-        derivePublicKeyResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse
+        derivePublicKeyResponse: IncomingMessage.LedgerResponse.DerivePublicKeyResponse
     ) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()

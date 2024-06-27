@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
@@ -19,6 +19,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.string
@@ -28,7 +29,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
@@ -38,6 +38,7 @@ import rdx.works.core.sargon.getDataFieldKind
 import rdx.works.core.then
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -145,9 +146,9 @@ class DappDetailViewModel @Inject constructor(
                 fields = requiredKinds.map {
                     RequiredPersonaField(
                         kind = it,
-                        numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                        numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                             1,
-                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                            IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -204,27 +205,27 @@ class DappDetailViewModel @Inject constructor(
                     val sharedAccounts = checkNotNull(
                         authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(persona.address)?.sharedAccounts
                     )
-                    val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-                        remoteConnectorId = "",
-                        interactionId = UUIDGenerator.uuid().toString(),
-                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+                    val request = IncomingMessage.IncomingRequest.AuthorizedRequest(
+                        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
+                        interactionId = UUID.randomUUID().toString(),
+                        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkId,
                             "",
                             authorizedDapp.dappDefinitionAddress.string,
                             isInternal = true
                         ),
-                        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
-                            persona.address.string
+                        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
+                            persona.address
                         ),
-                        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+                        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
-                            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                                 quantity = sharedAccounts.request.quantity.toInt(),
                                 quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
                             ),
                             challenge = null
                         ),
-                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(
+                        resetRequestItem = DappToWalletInteractionResetRequestItem(
                             accounts = true,
                             personaData = false
                         )

@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.presentation.transaction.vectors
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -18,7 +18,6 @@ import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadg
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModelTestExperimental
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
@@ -32,7 +31,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Va
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.babylon.wallet.android.utils.AppEventBusImpl
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
@@ -44,14 +43,14 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
-internal fun TransactionReviewViewModelTestExperimental.testViewModel(
+internal fun testViewModel(
     transactionRepository: TransactionRepository,
     incomingRequestRepository: IncomingRequestRepository,
     signTransactionUseCase: SignTransactionUseCase,
     profileRepository: ProfileRepository,
     stateRepository: StateRepository,
-    dAppMessenger: DappMessenger,
-    appEventBus: AppEventBusImpl,
+    respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
+    appEventBus: AppEventBus,
     preferencesManager: PreferencesManager,
     exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle,
@@ -103,7 +102,7 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     guarantees = TransactionGuaranteesDelegate(),
     fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository)),
     submit = TransactionSubmitDelegate(
-        dAppMessenger = dAppMessenger,
+        respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
         incomingRequestRepository = incomingRequestRepository,
         submitTransactionUseCase = SubmitTransactionUseCase(transactionRepository = transactionRepository),
@@ -119,10 +118,11 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     ),
     getDAppsUseCase = GetDAppsUseCase(stateRepository),
     incomingRequestRepository = incomingRequestRepository,
-    savedStateHandle = savedStateHandle
+    savedStateHandle = savedStateHandle,
+    appEventBus = appEventBus
 )
 
-internal fun TransactionReviewViewModelTestExperimental.sampleManifest(
+internal fun sampleManifest(
     instructions: String,
     networkId: NetworkId = NetworkId.MAINNET,
     message: String? = null
@@ -132,10 +132,10 @@ internal fun TransactionReviewViewModelTestExperimental.sampleManifest(
     message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message)
 )
 
-internal fun TransactionReviewViewModelTestExperimental.requestMetadata(
+internal fun requestMetadata(
     manifestData: TransactionManifestData,
     dApp: DApp? = null
-) = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+) = IncomingMessage.IncomingRequest.RequestMetadata(
     networkId = manifestData.networkId,
     origin = dApp?.claimedWebsites?.firstOrNull().orEmpty(),
     dAppDefinitionAddress = dApp?.dAppAddress?.string.orEmpty(),

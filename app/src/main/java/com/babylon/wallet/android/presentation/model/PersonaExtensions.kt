@@ -2,17 +2,19 @@ package com.babylon.wallet.android.presentation.model
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.model.PersonaDataName
-import com.babylon.wallet.android.data.dapp.model.PersonaDataRequestResponseItem
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.PersonaDataEntryEmailAddress
+import com.radixdlt.sargon.PersonaDataEntryName
+import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
 import com.radixdlt.sargon.PersonaDataNameVariant
 import com.radixdlt.sargon.RequestedNumberQuantifier
+import com.radixdlt.sargon.WalletToDappInteractionPersonaDataRequestResponseItem
 import rdx.works.core.sargon.IdentifiedEntry
 import rdx.works.core.sargon.PersonaDataField
 
@@ -30,9 +32,9 @@ fun List<PersonaDataField.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun RequestedNumberQuantifier.toQuantifierUsedInRequest(): MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier = when (this) {
-    RequestedNumberQuantifier.EXACTLY -> MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
-    RequestedNumberQuantifier.AT_LEAST -> MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+fun RequestedNumberQuantifier.toQuantifierUsedInRequest(): IncomingMessage.IncomingRequest.NumberOfValues.Quantifier = when (this) {
+    RequestedNumberQuantifier.EXACTLY -> IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+    RequestedNumberQuantifier.AT_LEAST -> IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
 }
 
 @Suppress("UNUSED_EXPRESSION")
@@ -62,29 +64,26 @@ val PersonaDataField.Name.fullName: String
         return listOf(fullName, nickname).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
-fun PersonaData.toPersonaDataRequestResponseItem(): PersonaDataRequestResponseItem {
-    return PersonaDataRequestResponseItem(
+fun PersonaData.toWalletToDappInteractionPersonaDataRequestResponseItem(): WalletToDappInteractionPersonaDataRequestResponseItem {
+    return WalletToDappInteractionPersonaDataRequestResponseItem(
         name = name?.value?.let { name ->
-            PersonaDataName(
+            PersonaDataEntryName(
                 variant = when (name.variant) {
-                    PersonaDataNameVariant.EASTERN -> PersonaDataName.Variant.Eastern
-                    PersonaDataNameVariant.WESTERN -> PersonaDataName.Variant.Western
+                    PersonaDataNameVariant.EASTERN -> PersonaDataNameVariant.EASTERN
+                    PersonaDataNameVariant.WESTERN -> PersonaDataNameVariant.WESTERN
                 },
                 familyName = name.familyName,
                 givenNames = name.givenNames,
                 nickname = name.nickname
             )
         },
-        emailAddresses = emailAddresses.collection.map { it.value.email },
-        phoneNumbers = phoneNumbers.collection.map { it.value.number }
+        emailAddresses = emailAddresses.collection.map {
+            PersonaDataEntryEmailAddress(it.value.email)
+        },
+        phoneNumbers = phoneNumbers.collection.map {
+            PersonaDataEntryPhoneNumber(it.value.number)
+        }
     )
-}
-
-fun PersonaDataField.Name.Variant.toVariantDTO(): PersonaDataName.Variant {
-    return when (this) {
-        PersonaDataField.Name.Variant.Eastern -> PersonaDataName.Variant.Eastern
-        PersonaDataField.Name.Variant.Western -> PersonaDataName.Variant.Western
-    }
 }
 
 fun PersonaDataField.sortOrderInt(): Int {

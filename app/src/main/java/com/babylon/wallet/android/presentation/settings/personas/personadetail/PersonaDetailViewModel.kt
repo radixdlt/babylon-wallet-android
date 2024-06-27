@@ -15,6 +15,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -26,7 +27,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
@@ -34,6 +34,7 @@ import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -52,7 +53,7 @@ class PersonaDetailViewModel @Inject constructor(
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
     private var authSigningFactorInstance: HierarchicalDeterministicFactorInstance? = null
-    private lateinit var uploadAuthKeyRequestId: String
+    private lateinit var uploadAuthKeyRequestId: WalletInteractionId
 
     init {
         viewModelScope.launch {
@@ -83,7 +84,7 @@ class PersonaDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyRequestId }
+            appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyRequestId.toString() }
                 .collect { event ->
                     when (event) {
                         is AppEvent.Status.Transaction.Fail -> {
@@ -128,7 +129,7 @@ class PersonaDetailViewModel @Inject constructor(
                                 _state.update { state -> state.copy(loading = false) }
                                 return@launch
                             }
-                        uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                        uploadAuthKeyRequestId = UUID.randomUUID().toString()
                         incomingRequestRepository.add(
                             manifest.prepareInternalTransactionRequest(
                                 requestId = uploadAuthKeyRequestId

@@ -12,7 +12,8 @@ import java.nio.charset.StandardCharsets.UTF_8
 
 class EncryptionHelperTest {
 
-    private val encryptedMessageInHex = "6ea80ead36e3fc4f1ad75134776c26534e73086e93f6b3cd7fdbbe390ed428b5c2f0150fd3f16c928e968497060b39ec61660704"
+    private val encryptedMessageInHex =
+        "6ea80ead36e3fc4f1ad75134776c26534e73086e93f6b3cd7fdbbe390ed428b5c2f0150fd3f16c928e968497060b39ec61660704"
     private val expectedDecryptedMessage = "Hello Android from Swift"
 
     @Test
@@ -63,4 +64,5 @@ class EncryptionHelperTest {
         get(copy)
         return copy
     }
+
 }

@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.PublicKey
@@ -23,7 +23,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
-typealias SignatureProviderResult = Result<List<MessageFromDataChannel.LedgerResponse.SignatureOfSigner>>
+typealias SignatureProviderResult = Result<List<IncomingMessage.LedgerResponse.SignatureOfSigner>>
 typealias SignatureProviderCall = suspend (
     List<HierarchicalDeterministicPublicKey>,
     LedgerDeviceModel
@@ -123,14 +123,14 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         return signaturesProvider(hdPublicKey, deviceModel).map { signatures ->
             signatures.map { signatureOfSigner ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
-                    MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
+                    IncomingMessage.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.Ed25519(
                             signature = Signature.Ed25519.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
                             publicKey = PublicKey.Ed25519.init(signatureOfSigner.derivedPublicKey.publicKeyHex).v1
                         )
                     }
 
-                    MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
+                    IncomingMessage.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.Secp256k1(
                             signature = Signature.Secp256k1.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
                             publicKey = PublicKey.Secp256k1.init(signatureOfSigner.derivedPublicKey.publicKeyHex).v1

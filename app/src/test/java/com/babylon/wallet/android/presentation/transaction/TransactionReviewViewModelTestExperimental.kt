@@ -3,14 +3,14 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -78,8 +78,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         )
     }
     private val stateRepository = mockk<StateRepository>()
-    private val dAppMessenger = mockk<DappMessenger>()
-    private val appEventBus = mockk<AppEventBusImpl>()
+    private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
+    private val appEventBus = AppEventBusImpl()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val signTransactionUseCase = mockk<SignTransactionUseCase>().apply {
         every { signingState } returns flowOf()
@@ -95,7 +95,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         signTransactionUseCase = signTransactionUseCase,
         profileRepository = profileRepository,
         stateRepository = stateRepository,
-        dAppMessenger = dAppMessenger,
+        respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         appEventBus = appEventBus,
         preferencesManager = preferencesManager,
         exceptionMessageProvider = exceptionMessageProvider,
@@ -105,10 +105,9 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
 
     @Test
     fun `given transaction id, when this id does not exist in the queue, then dismiss the transaction`() = runTest {
-        every { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns null
-
-        vm.value.state.test {
-            assertTrue("The transaction should be dismissed, but didn't", awaitItem().isTransactionDismissed)
+        every { incomingRequestRepository.getRequest(transactionId) } returns null
+        vm.value.oneOffEvent.test {
+            assertTrue(awaitItem() is Event.Dismiss)
         }
     }
 
@@ -147,15 +146,15 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
 
     private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
-        val transactionRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-            remoteConnectorId = "",
-            requestId = transactionId,
+        val transactionRequest = IncomingMessage.IncomingRequest.TransactionRequest(
+            remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+            interactionId = transactionId,
             transactionManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
         ).also {
             println(it.transactionManifestData.instructions)
         }
-        coEvery { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns transactionRequest
+        coEvery { incomingRequestRepository.getRequest(transactionId) } returns transactionRequest
     }
 
     private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData =

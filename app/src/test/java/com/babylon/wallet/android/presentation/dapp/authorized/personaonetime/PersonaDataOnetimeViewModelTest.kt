@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaonetime
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -61,9 +61,9 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
             fields = listOf(
                 RequiredPersonaField(
                     PersonaDataField.Kind.Name,
-                    MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                    IncomingMessage.IncomingRequest.NumberOfValues(
                         1,
-                        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                     )
                 )
             )

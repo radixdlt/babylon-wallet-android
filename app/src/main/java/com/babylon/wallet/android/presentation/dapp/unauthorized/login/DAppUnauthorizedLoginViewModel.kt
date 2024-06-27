@@ -2,17 +2,17 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.login
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.init
@@ -34,6 +35,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -44,17 +46,15 @@ import rdx.works.core.sargon.fields
 import rdx.works.core.sargon.toPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 @Suppress("LongParameterList", "TooManyFunctions")
 class DAppUnauthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val appEventBus: AppEventBus,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase
@@ -63,27 +63,27 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
-    private lateinit var request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest
+    private lateinit var request: IncomingMessage.IncomingRequest.UnauthorizedRequest
 
     init {
         observeSigningState()
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getUnauthorizedRequest(args.requestId)
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.CloseLoginFlow)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
+                }
+            }
+        }
+        viewModelScope.launch {
+            val requestToHandle = incomingRequestRepository.getRequest(
+                args.interactionId
+            ) as? IncomingMessage.IncomingRequest.UnauthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
             } else {
                 request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
             }
             val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrNull()
             if (!request.isValidRequest() || dAppDefinitionAddress == null) {
@@ -131,7 +131,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -166,9 +166,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
 
                 else -> {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = args.requestId,
+                    respondToIncomingRequestUseCase.respondWithFailure(
+                        request = request,
                         error = exception.ceError,
                         message = exception.getDappMessage()
                     )
@@ -183,9 +182,11 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        val exception = (_state.value.failureDialogState as? FailureDialogState.Open)?.dappRequestException ?: return@launch
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
-        incomingRequestRepository.requestHandled(requestId = args.requestId)
+        incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
     fun onMessageShown() {
@@ -216,13 +217,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onRejectRequest() {
         viewModelScope.launch {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = request.remoteConnectorId,
-                requestId = args.requestId,
-                error = WalletErrorType.RejectedByUser
-            )
+            incomingRequestRepository.requestHandled(requestId = args.interactionId)
+            respondToIncomingRequestUseCase.respondWithFailure(request, DappWalletInteractionErrorType.REJECTED_BY_USER)
             sendEvent(Event.CloseLoginFlow)
-            incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
 
@@ -255,18 +252,19 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 },
                 onetimeSharedPersonaData = state.value.selectedPersonaData,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-            ).onSuccess {
-                dAppMessenger.sendWalletInteractionSuccessResponse(
-                    remoteConnectorId = request.remoteConnectorId,
-                    response = it
-                )
+            ).mapCatching {
+                respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
+            }.onSuccess { result ->
                 sendEvent(Event.LoginFlowCompleted)
-                appEventBus.sendEvent(
-                    AppEvent.Status.DappInteraction(
-                        requestId = request.id,
-                        dAppName = state.value.dapp?.name
+                if (!request.isInternal) {
+                    appEventBus.sendEvent(
+                        AppEvent.Status.DappInteraction(
+                            requestId = request.interactionId,
+                            dAppName = state.value.dapp?.name,
+                            isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
+                        )
                     )
-                )
+                }
             }.onFailure { exception ->
                 handleRequestError(exception)
             }

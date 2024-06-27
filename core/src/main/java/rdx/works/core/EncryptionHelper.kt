@@ -185,3 +185,12 @@ sealed class KeySpec(val alias: String) {
     class Mnemonic(alias: String = KEY_ALIAS_MNEMONIC) : KeySpec(alias)
     class Cache(alias: String) : KeySpec(alias)
 }
+
+@Suppress("MagicNumber")
+fun String.decodeHex(): ByteArray {
+    check(length % 2 == 0) { "Must have an even length" }
+
+    return chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
+}

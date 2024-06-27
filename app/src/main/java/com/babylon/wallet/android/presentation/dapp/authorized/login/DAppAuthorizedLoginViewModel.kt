@@ -2,20 +2,20 @@ package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AccountsRequestItem
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -34,6 +34,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
@@ -44,6 +45,7 @@ import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -61,7 +63,6 @@ import rdx.works.core.sargon.updateDAppAuthorizedPersonaSharedAccounts
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 @HiltViewModel
@@ -69,10 +70,9 @@ import javax.inject.Inject
 class DAppAuthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val appEventBus: AppEventBus,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase
@@ -91,24 +91,22 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
     init {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.CloseLoginFlow)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
+                }
+            }
+        }
         observeSigningState()
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getAuthorizedRequest(args.interactionId)
+            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? AuthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
             } else {
                 request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
             }
             val dAppDefinitionAddress = runCatching { AccountAddress.init(request.requestMetadata.dAppDefinitionAddress) }.getOrNull()
             if (!request.isValidRequest() || dAppDefinitionAddress == null) {
@@ -152,7 +150,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 if (dapp != null) {
                     setInitialDappLoginRouteForUsePersonaRequest(dapp, authRequest)
                 } else {
-                    onAbortDappLogin(WalletErrorType.InvalidPersona)
+                    onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
                 }
             }
 
@@ -175,7 +173,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     ) {
         val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.identityAddress)
         if (hasAuthorizedPersona.not()) {
-            onAbortDappLogin(WalletErrorType.InvalidPersona)
+            onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
             return
         }
         val resetAccounts = request.resetRequestItem?.accounts == true
@@ -276,12 +274,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
 
                 else -> {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = args.interactionId,
-                        error = exception.ceError,
-                        message = exception.getDappMessage()
-                    )
+                    respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
                     _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
                 }
             }
@@ -289,6 +282,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        val exception = (_state.value.failureDialog as? FailureDialogState.Open)?.dappRequestException ?: return@launch
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
         _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
@@ -419,7 +414,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleOngoingPersonaDataRequestItem(
         personaAddress: IdentityAddress,
-        requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem
+        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem
     ) {
         val dapp = requireNotNull(editedDapp)
         val dataAccessAlreadyGranted = personaDataAccessAlreadyGranted(requestItem, personaAddress)
@@ -467,7 +462,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun personaDataAccessAlreadyGranted(
-        requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem?,
+        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem?,
         personaAddress: IdentityAddress
     ): Boolean {
         if (requestItem == null) return false
@@ -480,7 +475,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
     }
 
-    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
+    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: IncomingMessage.IncomingRequest.PersonaRequestItem) {
         viewModelScope.launch {
             sendEvent(
                 Event.PersonaDataOnetime(
@@ -587,19 +582,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onAbortDappLogin(walletWalletErrorType: WalletErrorType = WalletErrorType.RejectedByUser) {
+    fun onAbortDappLogin(walletWalletErrorType: DappWalletInteractionErrorType = DappWalletInteractionErrorType.REJECTED_BY_USER) {
         viewModelScope.launch {
-            if (request.isInternalRequest()) {
-                incomingRequestRepository.requestHandled(request.id)
-            } else {
-                dAppMessenger.sendWalletInteractionResponseFailure(
-                    remoteConnectorId = request.remoteConnectorId,
-                    requestId = args.interactionId,
-                    error = walletWalletErrorType
-                )
+            incomingRequestRepository.requestHandled(request.interactionId)
+            if (!request.isInternal) {
+                respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
             }
             sendEvent(Event.CloseLoginFlow)
-            incomingRequestRepository.requestHandled(requestId = args.interactionId)
         }
     }
 
@@ -696,7 +685,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
-            if (request.isInternalRequest()) {
+            if (request.isInternal) {
                 mutex.withLock {
                     editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                 }
@@ -715,20 +704,19 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
                     onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-                ).onSuccess { response ->
-                    dAppMessenger.sendWalletInteractionSuccessResponse(
-                        remoteConnectorId = request.remoteConnectorId,
-                        response = response
-                    )
+                ).mapCatching { response ->
+                    respondToIncomingRequestUseCase.respondWithSuccess(request, response).getOrThrow()
+                }.onSuccess { result ->
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }
                     sendEvent(Event.LoginFlowCompleted)
-                    if (!request.isInternalRequest()) {
+                    if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
-                                requestId = request.interactionId,
-                                dAppName = state.value.dapp?.name
+                                requestId = request.interactionId.toString(),
+                                dAppName = state.value.dapp?.name,
+                                isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                             )
                         )
                     }
@@ -749,7 +737,6 @@ sealed interface Event : OneOffEvent {
     data class RequestCompletionBiometricPrompt(val isSignatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
-
     data class DisplayPermission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

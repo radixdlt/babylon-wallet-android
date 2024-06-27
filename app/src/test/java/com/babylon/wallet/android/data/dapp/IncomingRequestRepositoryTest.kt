@@ -1,7 +1,12 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.NetworkId
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,23 +19,24 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import rdx.works.core.UUIDGenerator
+import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
 class IncomingRequestRepositoryTest {
 
-    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
+    private val eventBus = spyk<AppEventBusImpl>()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl(eventBus)
     private val amountOfIncomingRequests = 100
-    private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
-        interactionId = UUIDGenerator.uuid().toString(),
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
-        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+    private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = UUID.randomUUID().toString(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
+        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
-            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
@@ -50,7 +56,7 @@ class IncomingRequestRepositoryTest {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
                             incomingRequestRepository.add(
                                 incomingRequest = sampleIncomingRequest.copy(
-                                    interactionId = UUIDGenerator.uuid().toString()
+                                    interactionId = UUID.randomUUID().toString()
                                 )
                             )
                         }
@@ -67,27 +73,78 @@ class IncomingRequestRepositoryTest {
 
     @Test
     fun `after being handled, next request is set as current`() = runTest {
-        var currentRequest: MessageFromDataChannel.IncomingRequest? = null
+        var currentRequest: IncomingMessage.IncomingRequest? = null
         incomingRequestRepository.currentRequestToHandle
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-        for (i in 1..5) { // and in each of them, add an incoming request
-            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = i.toString()))
+        val interactionIds = (1..5).map { UUID.randomUUID().toString() }
+        interactionIds.forEach { id -> // and in each of them, add an incoming request
+            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = id))
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)
-        assert(currentRequest?.id == "1")
-        incomingRequestRepository.requestHandled("1")
-        incomingRequestRepository.requestHandled("2")
+        assert(currentRequest?.interactionId.toString() == interactionIds[0])
+        incomingRequestRepository.requestHandled(interactionIds[0])
+        incomingRequestRepository.requestHandled(interactionIds[1])
         advanceUntilIdle()
-        assert(currentRequest?.id == "3")
+        assert(currentRequest?.interactionId.toString() == interactionIds[2])
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 3)
-        incomingRequestRepository.requestHandled("3")
-        incomingRequestRepository.requestHandled("4")
+        incomingRequestRepository.requestHandled(interactionIds[2])
+        incomingRequestRepository.requestHandled(interactionIds[3])
         advanceUntilIdle()
-        assert(currentRequest?.id == "5")
+        assert(currentRequest?.interactionId.toString() == interactionIds[4])
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
-        incomingRequestRepository.requestHandled("5")
+        incomingRequestRepository.requestHandled(interactionIds[4])
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 0)
+    }
+
+    @Test
+    fun `adding mobile connect request and deferring current makes mobile request new current, while deferred event stays in queue`() =
+        runTest {
+            var currentRequest: IncomingMessage.IncomingRequest? = null
+            val interactionId1 = UUID.randomUUID().toString()
+            val interactionId2 = UUID.randomUUID().toString()
+            incomingRequestRepository.currentRequestToHandle
+                .onEach { currentRequest = it }
+                .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+            advanceUntilIdle()
+            assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
+            assert(currentRequest?.interactionId == interactionId1)
+            incomingRequestRepository.addPriorityRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
+            incomingRequestRepository.requestDeferred(interactionId1)
+            advanceUntilIdle()
+            assert(currentRequest?.interactionId == interactionId2)
+            assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
+            coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.DeferRequestHandling(interactionId1)) }
+        }
+
+    @Test
+    fun `addFirst inserts item at 2nd position when there is high priority screen`() = runTest {
+        var currentRequest: IncomingMessage.IncomingRequest? = null
+        val interactionId1 = UUID.randomUUID().toString()
+        val interactionId2 = UUID.randomUUID().toString()
+        incomingRequestRepository.currentRequestToHandle
+            .onEach { currentRequest = it }
+            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        incomingRequestRepository.pauseIncomingRequests()
+        incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+        advanceUntilIdle()
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
+        assert(currentRequest?.interactionId == null)
+        incomingRequestRepository.addPriorityRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
+        advanceUntilIdle()
+        incomingRequestRepository.resumeIncomingRequests()
+        advanceUntilIdle()
+        assert(currentRequest?.interactionId == interactionId2)
+        assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
+    }
+
+    @Test
+    fun `reading buffered request clears it`() = runTest {
+        val request = mockk<IncomingMessage.IncomingRequest>()
+        incomingRequestRepository.setBufferedRequest(request)
+        assert(incomingRequestRepository.consumeBufferedRequest() != null)
+        assert(incomingRequestRepository.consumeBufferedRequest() == null)
     }
 }

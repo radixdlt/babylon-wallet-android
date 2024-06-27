@@ -20,13 +20,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -89,7 +89,7 @@ class DevSettingsViewModel @Inject constructor(
                             return@launch
                         }
                     Timber.d("Approving: \n$manifest")
-                    val interactionId = UUIDGenerator.uuid().toString()
+                    val interactionId = UUID.randomUUID().toString()
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
                             requestId = interactionId,
@@ -98,7 +98,7 @@ class DevSettingsViewModel @Inject constructor(
                         )
                     )
                     _state.update { it.copy(isLoading = false) }
-                    listenForRolaKeyUploadTransactionResult(interactionId)
+                    listenForRolaKeyUploadTransactionResult(interactionId.toString())
                 }.onFailure {
                     if (it is ProfileException.SecureStorageAccess) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)

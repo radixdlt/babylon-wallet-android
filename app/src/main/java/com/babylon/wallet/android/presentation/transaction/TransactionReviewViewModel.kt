@@ -10,11 +10,14 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -24,6 +27,8 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -45,6 +50,7 @@ import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -60,15 +66,16 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
+    private val appEventBus: AppEventBus,
     private val signTransactionUseCase: SignTransactionUseCase,
     private val analysis: TransactionAnalysisDelegate,
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
     private val submit: TransactionSubmitDelegate,
     private val getDAppsUseCase: GetDAppsUseCase,
-    incomingRequestRepository: IncomingRequestRepository,
+    private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<State>() {
+) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = TransactionReviewArgs(savedStateHandle)
 
@@ -83,13 +90,12 @@ class TransactionReviewViewModel @Inject constructor(
         guarantees(scope = viewModelScope, state = _state)
         fees(scope = viewModelScope, state = _state)
         submit(scope = viewModelScope, state = _state)
+        submit.oneOffEventHandler = this
 
-        val request = incomingRequestRepository.getTransactionWriteRequest(args.requestId)
+        val request = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.TransactionRequest
         if (request == null) {
             viewModelScope.launch {
-                _state.update { state ->
-                    state.copy(isTransactionDismissed = true)
-                }
+                sendEvent(Event.Dismiss)
             }
         } else {
             _state.update { it.copy(request = request) }
@@ -109,6 +115,14 @@ class TransactionReviewViewModel @Inject constructor(
                     getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false).onSuccess { dApp ->
                         _state.update { it.copy(proposingDApp = dApp) }
                     }
+                }
+            }
+        }
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.Dismiss)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
                 }
             }
         }
@@ -234,7 +248,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     data class State(
-        val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
+        val request: IncomingMessage.IncomingRequest.TransactionRequest? = null,
         val proposingDApp: DApp? = null,
         val endEpoch: ULong? = null,
         val isLoading: Boolean,
@@ -250,11 +264,10 @@ class TransactionReviewViewModel @Inject constructor(
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val interactionState: InteractionState? = null,
-        val isTransactionDismissed: Boolean = false
+        val interactionState: InteractionState? = null
     ) : UiState {
 
-        val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
+        val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
             get() = requireNotNull(request)
 
         fun noneRequiredState(): State = copy(
@@ -419,6 +432,10 @@ class TransactionReviewViewModel @Inject constructor(
             ) : Sheet
         }
     }
+}
+
+sealed interface Event : OneOffEvent {
+    data object Dismiss : Event
 }
 
 data class TransactionErrorMessage(

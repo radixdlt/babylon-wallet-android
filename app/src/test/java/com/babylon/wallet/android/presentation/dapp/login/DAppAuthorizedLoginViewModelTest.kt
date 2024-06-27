@@ -6,11 +6,11 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -18,7 +18,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERAC
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
-import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
@@ -69,6 +68,7 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import java.util.UUID
 
 class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
 
@@ -79,7 +79,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val buildAuthorizedDappResponseUseCase = mockk<BuildAuthorizedDappResponseUseCase>()
-    private val dAppMessenger = DappMessengerFake()
+    private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
     private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
@@ -103,108 +103,85 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     }
     private val samplePersona = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
 
-    private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+    private val requestWithNonExistingDappAddress = IncomingMessage.IncomingRequest.AuthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = UUID.randomUUID().toString(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
-        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
             true,
-            MessageFromDataChannel.IncomingRequest.NumberOfValues(
+            IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             ),
             null
         )
     )
 
-    private val usePersonaRequestOngoing = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+    private val usePersonaRequestOngoing = IncomingMessage.IncomingRequest.AuthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = UUID.randomUUID().toString(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
-        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
+        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+            true, IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             ),
             null
         )
     )
 
-    private val usePersonaRequestOngoingPlusOngoingData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+    private val usePersonaRequestOngoingPlusOngoingData = IncomingMessage.IncomingRequest.AuthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = UUID.randomUUID().toString(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
-        ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            true, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
+        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+            true, IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             ),
             null
         ),
-        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+        ongoingPersonaDataRequestItem = IncomingMessage.IncomingRequest.PersonaRequestItem(
             isRequestingName = true,
             isOngoing = true
         )
     )
 
-    private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+    private val usePersonaRequestOneTimeAccounts = IncomingMessage.IncomingRequest.AuthorizedRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = UUID.randomUUID().toString(),
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
-        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            false, MessageFromDataChannel.IncomingRequest.NumberOfValues(
+        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
+        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+            false, IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
             ),
             null
-        )
-    )
-
-    private val usePersonaRequestOneTimeAccountsAndData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET,
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
-        ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
-        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
-            false, MessageFromDataChannel.IncomingRequest.NumberOfValues(
-                1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
-            ),
-            null
-        ),
-        oneTimePersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
-            isRequestingName = true,
-            isOngoing = false
         )
     )
 
@@ -212,10 +189,9 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         return DAppAuthorizedLoginViewModel(
             savedStateHandle,
             appEventBus,
-            dAppMessenger,
+            respondToIncomingRequestUseCase,
             dAppConnectionRepository,
             getProfileUseCase,
-            getCurrentGatewayUseCase,
             stateRepository,
             incomingRequestRepository,
             buildAuthorizedDappResponseUseCase
@@ -225,12 +201,13 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     @Before
     override fun setUp() {
         super.setUp()
+        every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
         coEvery { getProfileUseCase() } returns sampleProfile
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
+        coEvery { incomingRequestRepository.getRequest(any()) } returns requestWithNonExistingDappAddress
     }
 
     @Test
@@ -265,7 +242,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     @Test
     fun `init sets correct state for use persona ongoing request`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoing
+        coEvery { incomingRequestRepository.getRequest(any()) } returns usePersonaRequestOngoing
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         val vm = vm.value
         advanceUntilIdle()
@@ -277,7 +254,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     @Test
     fun `init sets correct state for use persona accounts and data when accounts are already granted`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
+        coEvery { incomingRequestRepository.getRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(
             AccountAddress.sampleMainnet.random()
@@ -292,7 +269,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
     @Test
     fun `init sets correct state for use persona onetime request`() = runTest {
-        coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOneTimeAccounts
+        coEvery { incomingRequestRepository.getRequest(any()) } returns usePersonaRequestOneTimeAccounts
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         val vm = vm.value
         advanceUntilIdle()

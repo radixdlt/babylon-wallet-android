@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.utils
 
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +33,8 @@ sealed interface AppEvent {
     data object NPSSurveySubmitted : AppEvent
 
     data object SecureFolderWarning : AppEvent
+    data class DeferRequestHandling(val interactionId: String) : AppEvent
+    data object ProcessBufferedDeepLinkRequest : AppEvent
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources
@@ -44,10 +46,10 @@ sealed interface AppEvent {
 
     sealed class Status : AppEvent {
         abstract val requestId: String
-
         data class DappInteraction(
             override val requestId: String,
-            val dAppName: String?
+            val dAppName: String?,
+            val isMobileConnect: Boolean = false
         ) : Status()
 
         sealed class Transaction : Status() {
@@ -55,19 +57,22 @@ sealed interface AppEvent {
             abstract val transactionId: String
             abstract val isInternal: Boolean
             abstract val blockUntilComplete: Boolean
+            abstract val isMobileConnect: Boolean
 
             data class InProgress(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
-                override val blockUntilComplete: Boolean
+                override val blockUntilComplete: Boolean,
+                override val isMobileConnect: Boolean
             ) : Transaction()
 
             data class Success(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
-                override val blockUntilComplete: Boolean
+                override val blockUntilComplete: Boolean,
+                override val isMobileConnect: Boolean
             ) : Transaction()
 
             data class Fail(
@@ -76,7 +81,8 @@ sealed interface AppEvent {
                 override val isInternal: Boolean,
                 override val blockUntilComplete: Boolean,
                 val errorMessage: String?,
-                val walletErrorType: WalletErrorType?
+                val walletErrorType: DappWalletInteractionErrorType?,
+                override val isMobileConnect: Boolean
             ) : Transaction()
         }
     }

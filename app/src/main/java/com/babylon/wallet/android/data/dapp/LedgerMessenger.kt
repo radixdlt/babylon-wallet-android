@@ -4,9 +4,8 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
@@ -15,13 +14,14 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 interface LedgerMessenger {
 
     val isAnyLinkedConnectorConnected: Flow<Boolean>
 
-    suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>
+    suspend fun sendDeviceInfoRequest(interactionId: String): Result<IncomingMessage.LedgerResponse.GetDeviceInfoResponse>
 
     suspend fun signTransactionRequest(
         interactionId: String,
@@ -29,13 +29,13 @@ interface LedgerMessenger {
         compiledTransactionIntent: String,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean = true
-    ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse>
+    ): Result<IncomingMessage.LedgerResponse.SignTransactionResponse>
 
     suspend fun sendDerivePublicKeyRequest(
         interactionId: String,
         keyParameters: List<LedgerInteractionRequest.KeyParameters>,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice
-    ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse>
+    ): Result<IncomingMessage.LedgerResponse.DerivePublicKeyResponse>
 
     suspend fun signChallengeRequest(
         interactionId: String,
@@ -44,23 +44,24 @@ interface LedgerMessenger {
         challengeHex: String,
         origin: String,
         dAppDefinitionAddress: String
-    ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse>
+    ): Result<IncomingMessage.LedgerResponse.SignChallengeResponse>
 
     suspend fun deriveAndDisplayAddressRequest(
         interactionId: String,
         keyParameters: LedgerInteractionRequest.KeyParameters,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice
-    ): Result<MessageFromDataChannel.LedgerResponse.DeriveAndDisplayAddressResponse>
+    ): Result<IncomingMessage.LedgerResponse.DeriveAndDisplayAddressResponse>
 }
 
 class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
+    private val jsonSerializer: Json
 ) : LedgerMessenger {
 
     override val isAnyLinkedConnectorConnected: Flow<Boolean>
         get() = peerdroidClient.hasAtLeastOneConnection
 
-    override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
+    override suspend fun sendDeviceInfoRequest(interactionId: String): Result<IncomingMessage.LedgerResponse.GetDeviceInfoResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.GetDeviceInfo(interactionId)
         return makeLedgerRequest(request = ledgerRequest, onError = {
             RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId
@@ -71,7 +72,7 @@ class LedgerMessengerImpl @Inject constructor(
         interactionId: String,
         keyParameters: List<LedgerInteractionRequest.KeyParameters>,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice
-    ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse> {
+    ): Result<IncomingMessage.LedgerResponse.DerivePublicKeyResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.DerivePublicKeys(
             interactionId = interactionId,
             keysParameters = keyParameters,
@@ -88,7 +89,7 @@ class LedgerMessengerImpl @Inject constructor(
         compiledTransactionIntent: String,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean
-    ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
+    ): Result<IncomingMessage.LedgerResponse.SignTransactionResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignTransaction(
             interactionId = interactionId,
             signers = hdPublicKeys.map {
@@ -114,7 +115,7 @@ class LedgerMessengerImpl @Inject constructor(
         challengeHex: String,
         origin: String,
         dAppDefinitionAddress: String
-    ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
+    ): Result<IncomingMessage.LedgerResponse.SignChallengeResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignChallenge(
             interactionId = interactionId,
             signers = hdPublicKeys.map {
@@ -137,7 +138,7 @@ class LedgerMessengerImpl @Inject constructor(
         interactionId: String,
         keyParameters: LedgerInteractionRequest.KeyParameters,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice
-    ): Result<MessageFromDataChannel.LedgerResponse.DeriveAndDisplayAddressResponse> {
+    ): Result<IncomingMessage.LedgerResponse.DeriveAndDisplayAddressResponse> {
         val ledgerRequest = LedgerInteractionRequest.DeriveAndDisplayAddress(
             interactionId = interactionId,
             keyParameters = keyParameters,
@@ -148,13 +149,13 @@ class LedgerMessengerImpl @Inject constructor(
         })
     }
 
-    private suspend inline fun <reified R : MessageFromDataChannel.LedgerResponse> makeLedgerRequest(
+    private suspend inline fun <reified R : IncomingMessage.LedgerResponse> makeLedgerRequest(
         request: LedgerInteractionRequest,
         crossinline onError: (
-            MessageFromDataChannel.LedgerResponse.LedgerErrorResponse
+            IncomingMessage.LedgerResponse.LedgerErrorResponse
         ) -> RadixWalletException.LedgerCommunicationException
     ): Result<R> = flow<Result<R>> {
-        peerdroidClient.sendMessage(peerdroidRequestJson.encodeToString(request))
+        peerdroidClient.sendMessage(jsonSerializer.encodeToString(request))
             .onSuccess {
                 peerdroidClient.listenForLedgerResponses().filter { ledgerResponse ->
                     ledgerResponse.id == request.interactionId
@@ -163,7 +164,7 @@ class LedgerMessengerImpl @Inject constructor(
                 }.collect { response ->
                     when (response) {
                         is R -> emit(Result.success(response))
-                        is MessageFromDataChannel.LedgerResponse.LedgerErrorResponse -> {
+                        is IncomingMessage.LedgerResponse.LedgerErrorResponse -> {
                             emit(Result.failure(onError(response)))
                         }
                         else -> {}

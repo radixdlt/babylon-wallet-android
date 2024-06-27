@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import Constants.RADIX_START_PAGE_URL
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -58,7 +60,6 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
@@ -103,6 +104,13 @@ fun WalletScreen(
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
         onRadixBannerDismiss = viewModel::onRadixBannerDismiss
     )
+
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
+    LaunchedEffect(lifecycleState) {
+        if (lifecycleState == Lifecycle.State.RESUMED) {
+            viewModel.processBufferedDeepLinkRequest()
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.babylonFactorSourceDoesNotExistEvent.collect {

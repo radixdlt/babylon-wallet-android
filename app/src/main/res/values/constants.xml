@@ -5,5 +5,7 @@
     <string name="empty" translatable="false"/>
     <string name="settings_debugSettings" translatable="false">Debug Settings</string>
     <string name="settings_debugSettings_inspectProfile" translatable="false">Inspect Profile</string>
+    <string name="settings_debugSettings_mobileConnectDelay" translatable="false">Mobile Connect Delay Seconds</string>
     <string name="settings_debugSettings_inspectCloudBackups" translatable="false">Inspect Cloud Backups</string>
+    <string name="no_email_client_installed" translatable="false">No email client installed</string>
 </resources>

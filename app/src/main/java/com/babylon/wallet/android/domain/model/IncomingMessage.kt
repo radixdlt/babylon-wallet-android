@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
@@ -12,24 +13,47 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RequestedNumberQuantifier
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.WalletInteractionId
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.PersonaDataField
 
-sealed interface MessageFromDataChannel {
+sealed interface IncomingMessage {
+
+    sealed interface RemoteEntityID {
+
+        val value: String
+
+        data class RadixMobileConnectRemoteSession(val id: String, val originVerificationUrl: String? = null) : RemoteEntityID {
+            override val value: String
+                get() = id
+
+            val needOriginVerification: Boolean = originVerificationUrl != null
+        }
+
+        data class ConnectorId(val id: String) : RemoteEntityID {
+            override val value: String
+                get() = id
+        }
+    }
 
     sealed class IncomingRequest(
-        open val remoteConnectorId: String, // from which remote CE comes the message
-        val id: String, // the id of the request
+        open val remoteEntityId: RemoteEntityID, // from which remote source message came
+        open val interactionId: WalletInteractionId, // the id of the request
         val metadata: RequestMetadata
-    ) : MessageFromDataChannel {
+    ) : IncomingMessage {
 
-        val isInternal: Boolean
+        open val isInternal: Boolean
             get() {
                 return metadata.isInternal
             }
+
+        val isMobileConnectRequest: Boolean
+            get() = remoteEntityId is RemoteEntityID.RadixMobileConnectRemoteSession
+
+        val needVerification: Boolean
+            get() = (remoteEntityId as? RemoteEntityID.RadixMobileConnectRemoteSession)?.needOriginVerification == true
 
         val blockUntilComplete: Boolean
             get() {
@@ -37,16 +61,21 @@ sealed interface MessageFromDataChannel {
             }
 
         data class AuthorizedRequest(
-            override val remoteConnectorId: String, // from which remote CE comes the message
-            val interactionId: String,
+            override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+            override val interactionId: WalletInteractionId,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
-            val resetRequestItem: ResetRequestItem? = null
-        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
+            val resetRequestItem: DappToWalletInteractionResetRequestItem? = null
+        ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
+
+            override val isInternal: Boolean
+                get() {
+                    return requestMetadata.isInternal || remoteEntityId.value.isEmpty()
+                }
 
             fun needSignatures(): Boolean {
                 return authRequest is AuthRequest.LoginRequest.WithChallenge ||
@@ -57,10 +86,6 @@ sealed interface MessageFromDataChannel {
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
                     (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
-            }
-
-            fun isInternalRequest(): Boolean {
-                return remoteConnectorId.isEmpty()
             }
 
             private fun isUsePersonaAuth(): Boolean {
@@ -91,19 +116,17 @@ sealed interface MessageFromDataChannel {
                     data object WithoutChallenge : LoginRequest()
                 }
 
-                data class UsePersonaRequest(val personaAddress: String) : AuthRequest {
-                    val identityAddress: IdentityAddress = IdentityAddress.init(personaAddress)
-                }
+                data class UsePersonaRequest(val identityAddress: IdentityAddress) : AuthRequest
             }
         }
 
         data class UnauthorizedRequest(
-            override val remoteConnectorId: String, // from which remote CE comes the message
-            val interactionId: String,
+            override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+            override val interactionId: WalletInteractionId,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
+        ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
@@ -114,12 +137,12 @@ sealed interface MessageFromDataChannel {
         }
 
         data class TransactionRequest(
-            override val remoteConnectorId: String, // from which remote CE comes the message
-            val requestId: String,
+            override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+            override val interactionId: WalletInteractionId,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata,
             val transactionType: TransactionType = TransactionType.Generic
-        ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata)
+        ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata)
 
         data class RequestMetadata(
             val networkId: NetworkId,
@@ -164,11 +187,6 @@ sealed interface MessageFromDataChannel {
             }
         }
 
-        data class ResetRequestItem(
-            val accounts: Boolean,
-            val personaData: Boolean
-        )
-
         @Parcelize
         @Serializable
         data class NumberOfValues(
@@ -186,7 +204,7 @@ sealed interface MessageFromDataChannel {
         }
     }
 
-    sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
+    sealed class LedgerResponse(val id: String) : IncomingMessage {
 
         data class DerivedPublicKey(
             val curve: Curve,
@@ -254,34 +272,34 @@ sealed interface MessageFromDataChannel {
         ) : LedgerResponse(interactionId)
     }
 
-    data object ParsingError : MessageFromDataChannel
+    data object ParsingError : IncomingMessage
 
-    data class Error(val exception: RadixWalletException) : MessageFromDataChannel
+    data class Error(val exception: RadixWalletException) : IncomingMessage
 }
 
-fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
-    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> RequestedNumberQuantifier.EXACTLY
-    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> RequestedNumberQuantifier.AT_LEAST
+fun IncomingMessage.IncomingRequest.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
+    IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly -> RequestedNumberQuantifier.EXACTLY
+    IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> RequestedNumberQuantifier.AT_LEAST
 }
 
-fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
+fun IncomingMessage.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
     return when (this) {
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletModel.NANO_S
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletModel.NANO_X
+        IncomingMessage.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletModel.NANO_S
+        IncomingMessage.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
+        IncomingMessage.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletModel.NANO_X
     }
 }
 
-fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredPersonaFields {
+fun IncomingMessage.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredPersonaFields {
     return RequiredPersonaFields(
         mutableListOf<RequiredPersonaField>().also {
             if (isRequestingName) {
                 it.add(
                     RequiredPersonaField(
                         PersonaDataField.Kind.Name,
-                        MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                        IncomingMessage.IncomingRequest.NumberOfValues(
                             1,
-                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                            IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 )
@@ -304,4 +322,9 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             }
         }
     )
+}
+
+sealed interface IncomingRequestResponse {
+    data object SuccessRadixMobileConnect : IncomingRequestResponse
+    data object SuccessCE : IncomingRequestResponse
 }

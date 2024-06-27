@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailEvent
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailViewModel
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.SelectedSheetState
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.Gateway
@@ -50,7 +51,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>() {
 
-    private val incomingRequestRepository = IncomingRequestRepositoryImpl()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl(AppEventBusImpl())
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithResourcesUseCase>()

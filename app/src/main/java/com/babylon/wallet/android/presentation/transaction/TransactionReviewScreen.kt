@@ -35,7 +35,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -63,6 +63,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -71,6 +72,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionManifestData.TransactionMessage
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Resource
+import java.util.UUID
 
 @Composable
 fun TransactionReviewScreen(
@@ -83,7 +85,6 @@ fun TransactionReviewScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
@@ -137,10 +138,11 @@ fun TransactionReviewScreen(
             )
         }
     }
-
-    LaunchedEffect(state.isTransactionDismissed) {
-        if (state.isTransactionDismissed) {
-            onDismiss()
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Dismiss -> onDismiss()
+            }
         }
     }
 }
@@ -477,22 +479,23 @@ private fun SyncSheetState(
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 fun TransactionPreviewContentPreview() {
     RadixWalletTheme {
         TransactionPreviewContent(
             onBackClick = {},
             state = State(
-                request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    remoteConnectorId = "",
-                    requestId = "",
+                request = IncomingMessage.IncomingRequest.TransactionRequest(
+                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
+                    interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = NetworkId.MAINNET,
                         message = TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
+                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

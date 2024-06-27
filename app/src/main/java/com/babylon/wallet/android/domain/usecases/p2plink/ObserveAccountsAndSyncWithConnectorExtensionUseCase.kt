@@ -30,7 +30,7 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val peerdroidClient: PeerdroidClient,
     private val preferencesManager: PreferencesManager,
-    private val json: Json
+    private val jsonSerializer: Json
 ) {
 
     suspend operator fun invoke() {
@@ -80,7 +80,6 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
     private fun observeAccountsOnCurrentNetworkInteractionMessage(): Flow<String> {
         return getProfileUseCase.flow.map {
             val accounts = it.activeAccountsOnCurrentNetwork
-
             val accountListExchangeInteraction = ConnectorExtensionExchangeInteraction.AccountList(
                 accounts = accounts.map { account ->
                     Account(
@@ -90,7 +89,7 @@ class ObserveAccountsAndSyncWithConnectorExtensionUseCase @Inject constructor(
                     )
                 }
             )
-            json.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
+            jsonSerializer.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
         }
     }
 

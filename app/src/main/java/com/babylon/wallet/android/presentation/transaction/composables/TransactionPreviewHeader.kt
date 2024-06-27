@@ -33,14 +33,16 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.sargon.default
+import java.util.UUID
 
 @Composable
 fun TransactionPreviewHeader(
@@ -170,22 +172,23 @@ fun TransactionPreviewHeader(
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
             onBackClick = {},
             state = State(
-                request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    remoteConnectorId = "",
-                    requestId = "",
+                request = IncomingMessage.IncomingRequest.TransactionRequest(
+                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
+                    interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = Gateway.default.network.id,
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
+                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

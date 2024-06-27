@@ -21,7 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
@@ -67,18 +68,22 @@ fun WalletApp(
         mainViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is MainEvent.IncomingRequestEvent -> {
+                    if (event.request.needVerification) {
+                        navController.mobileConnect(event.request.interactionId)
+                        return@collect
+                    }
                     when (val incomingRequest = event.request) {
-                        is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
+                        is IncomingMessage.IncomingRequest.TransactionRequest -> {
                             navController.transactionReview(
-                                requestId = incomingRequest.requestId
+                                requestId = incomingRequest.interactionId
                             )
                         }
 
-                        is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
+                        is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
                             navController.dAppLoginAuthorized(incomingRequest.interactionId)
                         }
 
-                        is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
+                        is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
                             navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                         }
                     }
@@ -169,6 +174,17 @@ fun WalletApp(
             confirmText = stringResource(
                 id = R.string.common_ok
             ),
+            dismissText = null
+        )
+    }
+    if (state.showMobileConnectWarning) {
+        BasicPromptAlertDialog(
+            finish = {
+                mainViewModel.onMobileConnectWarningShown()
+            },
+            titleText = stringResource(id = R.string.mobileConnect_noProfileDialog_title),
+            messageText = stringResource(id = R.string.mobileConnect_noProfileDialog_subtitle),
+            confirmText = stringResource(id = R.string.common_ok),
             dismissText = null
         )
     }

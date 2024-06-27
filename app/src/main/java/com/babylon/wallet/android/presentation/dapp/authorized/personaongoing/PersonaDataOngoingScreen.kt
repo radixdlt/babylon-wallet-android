@@ -55,6 +55,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun PersonaDataOngoingScreen(
     viewModel: PersonaDataOngoingViewModel,

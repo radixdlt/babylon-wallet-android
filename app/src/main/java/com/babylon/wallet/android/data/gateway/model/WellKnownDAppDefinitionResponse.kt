@@ -6,11 +6,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class WellKnownDAppDefinitionResponse(
     @SerialName(value = "dApps")
-    val dApps: List<WellKnownDAppDefinitionAddress>
+    val dApps: List<WellKnownDAppDefinition>,
+    @SerialName(value = "callbackPath")
+    val callbackPath: String? = null
 ) {
 
     @Serializable
-    data class WellKnownDAppDefinitionAddress(
+    data class WellKnownDAppDefinition(
         @SerialName(value = "dAppDefinitionAddress")
         val dAppDefinitionAddress: String
     )

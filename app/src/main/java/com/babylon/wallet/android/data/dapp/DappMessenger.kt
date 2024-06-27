@@ -2,14 +2,8 @@
 
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
-import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
-import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems.SendTransactionResponseItem
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import com.radixdlt.sargon.WalletToDappInteractionResponse
+import com.radixdlt.sargon.extensions.toJson
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -23,20 +17,17 @@ interface DappMessenger {
 
     suspend fun sendWalletInteractionResponseFailure(
         remoteConnectorId: String,
-        requestId: String,
-        error: WalletErrorType,
-        message: String? = null
+        payload: String
     ): Result<Unit>
 
     suspend fun sendTransactionWriteResponseSuccess(
         remoteConnectorId: String,
-        requestId: String,
-        txId: String
+        payload: String
     ): Result<Unit>
 
     suspend fun sendWalletInteractionSuccessResponse(
         remoteConnectorId: String,
-        response: WalletInteractionResponse
+        response: WalletToDappInteractionResponse
     ): Result<Unit>
 }
 
@@ -46,39 +37,24 @@ class DappMessengerImpl @Inject constructor(
 
     override suspend fun sendTransactionWriteResponseSuccess(
         remoteConnectorId: String,
-        requestId: String,
-        txId: String
+        payload: String
     ): Result<Unit> {
-        val response: WalletInteractionResponse = WalletInteractionSuccessResponse(
-            interactionId = requestId,
-            items = WalletTransactionResponseItems(SendTransactionResponseItem(txId))
-        )
-        val message = Json.encodeToString(response)
-        return peerdroidClient.sendMessage(remoteConnectorId, message)
+        return peerdroidClient.sendMessage(remoteConnectorId, payload)
     }
 
     override suspend fun sendWalletInteractionResponseFailure(
         remoteConnectorId: String,
-        requestId: String,
-        error: WalletErrorType,
-        message: String?
+        payload: String
     ): Result<Unit> {
-        val messageJson = Json.encodeToString(
-            WalletInteractionFailureResponse(
-                interactionId = requestId,
-                error = error,
-                message = message
-            )
-        )
-        return peerdroidClient.sendMessage(remoteConnectorId, messageJson)
+        return peerdroidClient.sendMessage(remoteConnectorId, payload)
     }
 
     override suspend fun sendWalletInteractionSuccessResponse(
         remoteConnectorId: String,
-        response: WalletInteractionResponse
+        response: WalletToDappInteractionResponse
     ): Result<Unit> {
         val messageJson = try {
-            Json.encodeToString(response)
+            response.toJson()
         } catch (e: Exception) {
             Timber.d(e)
             ""

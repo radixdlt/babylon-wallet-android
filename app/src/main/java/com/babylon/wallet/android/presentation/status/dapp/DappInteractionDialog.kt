@@ -73,7 +73,7 @@ private fun DappInteractionDialogContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(id = R.string.transactionStatus_success_title),
+            text = stringResource(id = R.string.dAppRequest_completion_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
@@ -83,6 +83,14 @@ private fun DappInteractionDialogContent(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
+        if (state.isMobileConnect) {
+            Text(
+                text = stringResource(id = R.string.mobileConnect_interactionSuccess),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -90,6 +98,12 @@ private fun DappInteractionDialogContent(
 @Composable
 fun DappInteractionDialogPreview() {
     RadixWalletTheme {
-        DappInteractionDialogContent(state = DappInteractionDialogViewModel.State(requestId = "abc", dAppName = "dApp"))
+        DappInteractionDialogContent(
+            state = DappInteractionDialogViewModel.State(
+                requestId = "abc",
+                dAppName = "dApp",
+                isMobileConnect = true
+            )
+        )
     }
 }

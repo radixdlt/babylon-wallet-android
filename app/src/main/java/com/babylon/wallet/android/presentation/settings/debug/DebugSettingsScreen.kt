@@ -63,6 +63,7 @@ fun DebugSettingsScreen(
                                 )
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
                             }
+
                             else -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = debugSettingsItem.descriptionRes()),

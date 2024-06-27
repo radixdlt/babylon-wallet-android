@@ -5,12 +5,16 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.domain.model.Browser
+import okhttp3.HttpUrl
+import timber.log.Timber
 
 val backupSettingsScreenIntent: Intent
     get() = Intent().apply {
@@ -37,12 +41,20 @@ suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boole
     return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
 }
 
-fun Context.openUrl(url: String) = openUrl(url.toUri())
+fun Context.openUrl(url: HttpUrl, browser: Browser? = null) = openUrl(url.toString(), browser)
+fun Context.openUrl(url: String, browser: Browser? = null) = openUrl(url.toUri(), browser)
 
 @Suppress("SwallowedException")
-fun Context.openUrl(uri: Uri) {
+fun Context.openUrl(uri: Uri, browser: Browser? = null) {
     val intent = Intent(Intent.ACTION_VIEW).apply {
         data = uri
+    }
+    val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+    info.find { resolveInfo ->
+        Timber.d("Handling browser: ${resolveInfo.activityInfo.packageName}")
+        resolveInfo.activityInfo.packageName == browser?.packageName
+    }?.let { resolveInfo ->
+        intent.setComponent(ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name))
     }
     try {
         startActivity(intent)
@@ -68,7 +80,7 @@ fun Context.openEmail(recipientAddress: String? = null, subject: String? = null,
     } catch (activityNotFound: ActivityNotFoundException) {
         Toast.makeText(
             this,
-            "No email client installed", // TODO crowdin
+            getString(R.string.no_email_client_installed),
             Toast.LENGTH_SHORT
         ).show()
     }

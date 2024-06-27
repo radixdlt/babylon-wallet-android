@@ -2,13 +2,12 @@ package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -17,6 +16,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -31,7 +31,7 @@ import javax.inject.Inject
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val transactionStatusClient: TransactionStatusClient,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val appEventBus: AppEventBus,
     private val exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle
@@ -87,16 +87,16 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             requestId = status.requestId,
                             transactionId = status.transactionId,
                             isInternal = status.isInternal,
-                            blockUntilComplete = status.blockUntilComplete
+                            blockUntilComplete = status.blockUntilComplete,
+                            isMobileConnect = status.isMobileConnect
                         )
                     )
                 }.onFailure { error ->
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
-                            incomingRequestRepository.getTransactionWriteRequest(status.requestId)?.let { transactionRequest ->
-                                dAppMessenger.sendWalletInteractionResponseFailure(
-                                    remoteConnectorId = transactionRequest.remoteConnectorId,
-                                    requestId = status.requestId,
+                            incomingRequestRepository.getRequest(status.requestId)?.let { transactionRequest ->
+                                respondToIncomingRequestUseCase.respondWithFailure(
+                                    request = transactionRequest,
                                     error = exception.ceError,
                                     message = exception.getDappMessage()
                                 )
@@ -112,7 +112,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             isInternal = status.isInternal,
                             errorMessage = exceptionMessageProvider.throwableMessage(error),
                             blockUntilComplete = status.blockUntilComplete,
-                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError()
+                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError(),
+                            isMobileConnect = status.isMobileConnect
                         )
                     )
                 }
@@ -160,7 +161,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val failureError: String?
             get() = (status as? TransactionStatus.Failed)?.errorMessage
 
-        val walletErrorType: WalletErrorType?
+        val walletErrorType: DappWalletInteractionErrorType?
             get() = (status as? TransactionStatus.Failed)?.walletErrorType
 
         val transactionId: String
@@ -178,19 +179,22 @@ sealed interface TransactionStatus {
     val transactionId: String
     val isInternal: Boolean
     val blockUntilComplete: Boolean
+    val isMobileConnect: Boolean
 
     data class Completing(
         override val requestId: String,
         override val transactionId: String,
         override val isInternal: Boolean,
-        override val blockUntilComplete: Boolean
+        override val blockUntilComplete: Boolean,
+        override val isMobileConnect: Boolean
     ) : TransactionStatus
 
     data class Success(
         override val requestId: String,
         override val transactionId: String,
         override val isInternal: Boolean,
-        override val blockUntilComplete: Boolean
+        override val blockUntilComplete: Boolean,
+        override val isMobileConnect: Boolean
     ) : TransactionStatus
 
     data class Failed(
@@ -199,7 +203,8 @@ sealed interface TransactionStatus {
         override val isInternal: Boolean,
         override val blockUntilComplete: Boolean,
         val errorMessage: String?,
-        val walletErrorType: WalletErrorType?
+        val walletErrorType: DappWalletInteractionErrorType?,
+        override val isMobileConnect: Boolean
     ) : TransactionStatus
 
     companion object {
@@ -210,21 +215,24 @@ sealed interface TransactionStatus {
                 isInternal = event.isInternal,
                 errorMessage = event.errorMessage,
                 blockUntilComplete = event.blockUntilComplete,
-                walletErrorType = event.walletErrorType
+                walletErrorType = event.walletErrorType,
+                isMobileConnect = event.isMobileConnect
             )
 
             is AppEvent.Status.Transaction.InProgress -> Completing(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
-                blockUntilComplete = event.blockUntilComplete
+                blockUntilComplete = event.blockUntilComplete,
+                isMobileConnect = event.isMobileConnect
             )
 
             is AppEvent.Status.Transaction.Success -> Success(
                 requestId = event.requestId,
                 transactionId = event.transactionId,
                 isInternal = event.isInternal,
-                blockUntilComplete = event.blockUntilComplete
+                blockUntilComplete = event.blockUntilComplete,
+                isMobileConnect = event.isMobileConnect
             )
         }
     }

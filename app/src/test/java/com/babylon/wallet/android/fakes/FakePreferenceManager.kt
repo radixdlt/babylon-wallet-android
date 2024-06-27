@@ -15,9 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.changeGateway
-import rdx.works.core.sargon.factorSourceId
 import java.time.Instant
 
 class FakePreferenceManager : PreferencesManager {

@@ -1,16 +1,18 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
+import Constants
 import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.dapp.model.WalletInteraction
-import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
-import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
+import com.radixdlt.sargon.WalletToDappInteractionResponse
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -20,7 +22,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
@@ -47,11 +48,11 @@ interface PeerdroidClient {
         message: String
     ): Result<Unit>
 
-    fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest>
+    fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest>
 
-    fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
+    fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse>
 
-    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error>
+    fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error>
 
     suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
@@ -60,7 +61,8 @@ interface PeerdroidClient {
 
 class PeerdroidClientImpl @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val json: Json
 ) : PeerdroidClient {
 
     override val hasAtLeastOneConnection: Flow<Boolean>
@@ -94,7 +96,7 @@ class PeerdroidClientImpl @Inject constructor(
         return peerdroidConnector.sendDataChannelMessageToAllRemoteClients(message)
     }
 
-    private fun listenForIncomingMessages(): Flow<MessageFromDataChannel> {
+    private fun listenForIncomingMessages(): Flow<IncomingMessage> {
         return peerdroidConnector
             .dataChannelMessagesFromRemoteClients
             .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteConnectionId>()
@@ -110,15 +112,15 @@ class PeerdroidClientImpl @Inject constructor(
             .flowOn(ioDispatcher)
     }
 
-    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest> {
+    override fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error> {
+    override fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
+    override fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
@@ -134,32 +136,44 @@ class PeerdroidClientImpl @Inject constructor(
     private suspend fun parseIncomingMessage(
         remoteConnectorId: String,
         messageInJsonString: String
-    ): MessageFromDataChannel {
+    ): IncomingMessage {
         return try {
-            when (val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)) {
-                is WalletInteraction -> payload.toDomainModel(remoteConnectorId = remoteConnectorId)
-                else -> (payload as LedgerInteractionResponse).toDomainModel()
+            val dappInteraction = runCatching {
+                DappToWalletInteractionUnvalidated.fromJson(messageInJsonString)
+            }.getOrNull()
+            if (dappInteraction != null) {
+                val interactionVersion = dappInteraction.metadata.version.toLong()
+                if (interactionVersion != Constants.WALLET_INTERACTION_VERSION) {
+                    throw IncompatibleRequestVersionException(
+                        requestVersion = interactionVersion,
+                        requestId = dappInteraction.interactionId
+                    )
+                }
+                dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()
+            } else {
+                val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
+                interaction.toDomainModel()
             }
         } catch (serializationException: SerializationException) {
             // TODO a snackbar message error like iOS
             Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
-            MessageFromDataChannel.ParsingError
+            IncomingMessage.ParsingError
         } catch (incompatibleRequestVersionException: IncompatibleRequestVersionException) {
             val requestVersion = incompatibleRequestVersionException.requestVersion
-            val currentVersion = WalletInteraction.Metadata.VERSION
+            val currentVersion = Constants.WALLET_INTERACTION_VERSION
             Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
             sendIncompatibleVersionRequestToDapp(
                 requestId = incompatibleRequestVersionException.requestId,
                 remoteConnectorId = remoteConnectorId
             )
-            MessageFromDataChannel.ParsingError
+            IncomingMessage.ParsingError
         } catch (e: RadixWalletException.IncomingMessageException.MessageParse) {
-            MessageFromDataChannel.Error(e)
+            IncomingMessage.Error(e)
         } catch (e: RadixWalletException.IncomingMessageException.LedgerResponseParse) {
-            MessageFromDataChannel.Error(e)
+            IncomingMessage.Error(e)
         } catch (exception: Exception) {
             Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
-            MessageFromDataChannel.Error(RadixWalletException.IncomingMessageException.Unknown(exception))
+            IncomingMessage.Error(RadixWalletException.IncomingMessageException.Unknown(exception))
         }
     }
 
@@ -167,12 +181,14 @@ class PeerdroidClientImpl @Inject constructor(
         remoteConnectorId: String,
         requestId: String
     ) {
-        val messageJson = Json.encodeToString(
-            WalletInteractionFailureResponse(
-                interactionId = requestId,
-                error = WalletErrorType.IncompatibleVersion
-            )
-        )
+        val messageJson =
+            WalletToDappInteractionResponse.Failure(
+                WalletToDappInteractionFailureResponse(
+                    interactionId = requestId,
+                    error = DappWalletInteractionErrorType.INCOMPATIBLE_VERSION,
+                    message = null
+                )
+            ).toJson()
         sendMessage(remoteConnectorId, messageJson)
     }
 }

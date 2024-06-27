@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.LedgerResponse
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingMessage.LedgerResponse
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
@@ -12,9 +12,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 @Serializable
-sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
+@JsonClassDiscriminator("discriminator")
+sealed interface LedgerInteractionResponse
 
 @Serializable
 data class DerivedPublicKey(
@@ -160,7 +162,7 @@ fun List<DerivedPublicKey>.toDomainModel() = map { derivedPublicKey ->
 }
 
 @Suppress("SwallowedException")
-fun LedgerInteractionResponse.toDomainModel(): MessageFromDataChannel {
+fun LedgerInteractionResponse.toDomainModel(): IncomingMessage {
     try {
         return when (this) {
             is DerivePublicKeyResponse -> toDomainModel()

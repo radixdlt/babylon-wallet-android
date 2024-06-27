@@ -35,7 +35,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
@@ -43,6 +42,7 @@ import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
+import java.util.UUID
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -142,7 +142,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 TransactionManifestData.from(it)
             }.onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
-                val requestId = UUIDGenerator.uuid().toString()
+                val requestId = UUID.randomUUID().toString()
                 incomingRequestRepository.add(
                     manifest.prepareInternalTransactionRequest(
                         requestId = requestId,
@@ -150,7 +150,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         blockUntilCompleted = true
                     )
                 )
-                handleRequestStatus(requestId)
+                handleRequestStatus(requestId.toString())
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage(t))

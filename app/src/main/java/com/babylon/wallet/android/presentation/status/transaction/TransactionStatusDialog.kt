@@ -24,16 +24,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.extensions.init
 
@@ -80,17 +82,17 @@ fun TransactionStatusDialog(
                     exit = fadeOut()
                 ) {
                     val title = when (state.walletErrorType) {
-                        WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
+                        DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_FAILED_TRANSACTION_STATUS -> {
                             stringResource(id = R.string.transactionStatus_failed_title)
                         }
 
-                        WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
+                        DappWalletInteractionErrorType.SUBMITTED_TRANSACTION_HAS_REJECTED_TRANSACTION_STATUS -> {
                             stringResource(id = R.string.transactionStatus_rejected_title)
                         }
 
-                        WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                            stringResource(id = R.string.transactionStatus_error_title)
-                        }
+//                        DappWalletInteractionErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
+//                            stringResource(id = R.string.transactionStatus_error_title)
+//                        } // TODO verify if we want to add that error to sargon
 
                         else -> {
                             stringResource(id = R.string.common_somethingWentWrong)
@@ -99,7 +101,8 @@ fun TransactionStatusDialog(
                     FailureDialogContent(
                         title = title,
                         subtitle = state.failureError,
-                        transactionAddress = state.transactionId
+                        transactionAddress = state.transactionId,
+                        isMobileConnect = state.status.isMobileConnect
                     )
                 }
 
@@ -109,7 +112,10 @@ fun TransactionStatusDialog(
                     exit = fadeOut()
                 ) {
                     // Need to send the correct transaction id
-                    SuccessContent(transactionAddress = state.transactionId)
+                    SuccessContent(
+                        transactionAddress = state.transactionId,
+                        isMobileConnect = state.status.isMobileConnect
+                    )
                 }
 
                 if (state.isIgnoreTransactionModalShowing) {
@@ -136,7 +142,8 @@ fun TransactionStatusDialog(
 @Composable
 private fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionAddress: String
+    transactionAddress: String,
+    isMobileConnect: Boolean
 ) {
     Column(
         modifier
@@ -184,6 +191,14 @@ private fun SuccessContent(
                 )
             }
         }
+        if (isMobileConnect) {
+            Text(
+                text = "Switch back to your browser to continue",
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -215,17 +230,26 @@ private fun CompletingContent(
     }
 }
 
+internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean> {
+    override val values: Sequence<Boolean> = sequenceOf(true, false)
+}
+
 @Preview(showBackground = true)
 @Composable
-fun SuccessBottomDialogPreview() {
+private fun SuccessBottomDialogPreview(
+    @PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean
+) {
     RadixWalletTheme {
-        SuccessContent(transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s")
+        SuccessContent(
+            transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s",
+            isMobileConnect = isMobileConnect
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun CompletingBottomDialogPreview() {
+private fun CompletingBottomDialogPreview() {
     RadixWalletTheme {
         CompletingContent()
     }

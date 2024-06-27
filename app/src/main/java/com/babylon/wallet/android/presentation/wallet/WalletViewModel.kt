@@ -119,6 +119,12 @@ class WalletViewModel @Inject constructor(
         checkForOldBackupSystemToMigrate()
     }
 
+    fun processBufferedDeepLinkRequest() {
+        viewModelScope.launch {
+            appEventBus.sendEvent(AppEvent.ProcessBufferedDeepLinkRequest)
+        }
+    }
+
     override fun initialState() = WalletUiState()
 
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen

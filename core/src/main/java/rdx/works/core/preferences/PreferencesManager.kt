@@ -49,7 +49,6 @@ interface PreferencesManager {
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
     suspend fun removeLastCloudBackupEvent()
-
     suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant)
 
     suspend fun isUsingDeprecatedCloudBackup(): Boolean
@@ -351,5 +350,7 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")
+
+        val DEV_KEY_MOBILE_CONNECT_DELAY_S = intPreferencesKey("mobile_connect_delay_s")
     }
 }

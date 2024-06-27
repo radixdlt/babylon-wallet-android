@@ -1,13 +1,16 @@
 package com.babylon.wallet.android.presentation.main
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
+import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
+import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -52,10 +55,10 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    getProfileUseCase: GetProfileUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     p2PLinksRepository: P2PLinksRepository,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -67,7 +70,8 @@ class MainViewModel @Inject constructor(
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
-    private val cloudBackupErrorStream: CloudBackupErrorStream
+    private val cloudBackupErrorStream: CloudBackupErrorStream,
+    private val processDeepLinkUseCase: ProcessDeepLinkUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -145,9 +149,19 @@ class MainViewModel @Inject constructor(
             }.collect()
         }
         handleAllIncomingRequests()
-
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
+        }
+        processBufferedDeepLinkRequest()
+    }
+
+    private fun processBufferedDeepLinkRequest() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.ProcessBufferedDeepLinkRequest>().collect {
+                incomingRequestRepository.consumeBufferedRequest()?.let { request ->
+                    verifyIncomingRequest(request)
+                }
+            }
         }
     }
 
@@ -177,8 +191,8 @@ class MainViewModel @Inject constructor(
                             .listenForIncomingRequests()
                             .cancellable()
                             .collect { incomingRequest ->
-                                val remoteConnectorId = incomingRequest.remoteConnectorId
-                                val requestId = incomingRequest.id
+                                val remoteConnectorId = incomingRequest.remoteEntityId
+                                val requestId = incomingRequest.interactionId
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
                                         "remote connector $remoteConnectorId with id $requestId"
@@ -209,14 +223,14 @@ class MainViewModel @Inject constructor(
     private fun handleAllIncomingRequests() {
         viewModelScope.launch {
             incomingRequestRepository.currentRequestToHandle.collect { request ->
-                if (request.metadata.isInternal) {
+                if (request.metadata.isInternal || request.isMobileConnectRequest) {
                     sendEvent(MainEvent.IncomingRequestEvent(request))
                 } else {
                     delay(REQUEST_HANDLING_DELAY)
                     authorizeSpecifiedPersonaUseCase.invoke(request).onSuccess { dAppData ->
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
-                                requestId = dAppData.requestId,
+                                requestId = dAppData.interactionId,
                                 dAppName = dAppData.name
                             )
                         )
@@ -225,7 +239,7 @@ class MainViewModel @Inject constructor(
                             when (dappRequestFailure) {
                                 RadixWalletException.DappRequestException.InvalidPersona,
                                 RadixWalletException.DappRequestException.InvalidRequest -> {
-                                    incomingRequestRepository.requestHandled(request.id)
+                                    incomingRequestRepository.requestHandled(request.interactionId)
                                     _state.update { state ->
                                         state.copy(dappRequestFailure = dappRequestFailure)
                                     }
@@ -242,15 +256,51 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun handleDeepLink(deepLink: Uri) {
+        viewModelScope.launch {
+            processDeepLinkUseCase(deepLink.toString()).onSuccess { result ->
+                when (result) {
+                    is DeepLinkProcessingResult.Processed -> {
+                        verifyIncomingRequest(result.request)
+                    }
+
+                    DeepLinkProcessingResult.Buffered -> {
+                        _state.update {
+                            it.copy(showMobileConnectWarning = true)
+                        }
+                    }
+                }
+            }.onFailure { error ->
+                Timber.d(error)
+            }
+        }
+    }
+
+    fun onMobileConnectWarningShown() {
+        _state.update {
+            it.copy(showMobileConnectWarning = false)
+        }
+    }
+
     private fun verifyIncomingRequest(request: IncomingRequest) {
         verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
-                    incomingRequestRepository.add(request)
+                    if (request.isMobileConnectRequest) {
+                        incomingRequestRepository.addPriorityRequest(request)
+                    } else {
+                        incomingRequestRepository.add(request)
+                    }
                 }
-            }.onFailure {
-                _state.update { state ->
-                    state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
+            }.onFailure { error ->
+                if (error is RadixWalletException.DappRequestException) {
+                    _state.update {
+                        it.copy(dappRequestFailure = error)
+                    }
+                } else {
+                    _state.update {
+                        it.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
+                    }
                 }
             }
         }
@@ -332,7 +382,8 @@ data class MainUiState(
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState? = null,
-    val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null
+    val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
+    val showMobileConnectWarning: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(

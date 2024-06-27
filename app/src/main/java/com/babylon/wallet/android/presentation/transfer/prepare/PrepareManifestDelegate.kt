@@ -54,8 +54,8 @@ class PrepareManifestDelegate @Inject constructor(
                 }
             ).prepareInternalTransactionRequest()
         }.onSuccess { request ->
-            _state.update { it.copy(transferRequestId = request.requestId) }
-            Timber.d("Manifest for ${request.requestId} prepared:\n${request.transactionManifestData.instructions}")
+            _state.update { it.copy(transferRequestId = request.interactionId.toString()) }
+            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.transactionManifestData.instructions}")
             incomingRequestRepository.add(request)
         }.onFailure { error ->
             _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }

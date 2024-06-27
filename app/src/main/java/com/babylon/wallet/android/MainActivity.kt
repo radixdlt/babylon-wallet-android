@@ -1,6 +1,7 @@
 package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -58,9 +59,12 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
+        intent.data?.let {
+            intent.replaceExtras(Bundle())
+            viewModel.handleDeepLink(it)
+        }
         setContent {
             RadixWalletTheme {
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
@@ -94,6 +98,14 @@ class MainActivity : FragmentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.data?.let {
+            this.intent.replaceExtras(Bundle())
+            viewModel.handleDeepLink(it)
         }
     }
 

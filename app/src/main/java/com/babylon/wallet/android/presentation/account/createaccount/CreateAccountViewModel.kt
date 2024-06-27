@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
+import Constants.ACCOUNT_NAME_MAX_LENGTH
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
@@ -14,7 +15,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
