@@ -26,6 +26,7 @@ import rdx.works.core.domain.resources.metadata.claimAmount
 import rdx.works.core.domain.resources.metadata.claimEpoch
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
+import rdx.works.core.domain.resources.metadata.infoUrl
 import rdx.works.core.domain.resources.metadata.isLocked
 import rdx.works.core.domain.resources.metadata.keyImageUrl
 import rdx.works.core.domain.resources.metadata.name
@@ -93,6 +94,10 @@ sealed class Resource {
 
         val isIconUrlLocked: Boolean by lazy {
             metadata.isLocked(key = ExplicitMetadataKey.ICON_URL)
+        }
+
+        val infoUrl: Uri? by lazy {
+            metadata.infoUrl()
         }
 
         override val validatorAddress: ValidatorAddress? by lazy {
@@ -207,6 +212,10 @@ sealed class Resource {
 
         val isIconUrlLocked: Boolean by lazy {
             metadata.isLocked(key = ExplicitMetadataKey.ICON_URL)
+        }
+
+        val infoUrl: Uri? by lazy {
+            metadata.infoUrl()
         }
 
         val tags: ImmutableList<Tag> by lazy {

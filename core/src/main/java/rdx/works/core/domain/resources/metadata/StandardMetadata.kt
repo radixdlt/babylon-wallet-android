@@ -42,6 +42,11 @@ fun List<Metadata>.name(): String? = findPrimitive(
     type = MetadataType.String
 )?.value
 
+fun List<Metadata>.infoUrl(): Uri? = findPrimitive(
+    key = ExplicitMetadataKey.INFO_URL,
+    type = MetadataType.Url
+)?.value?.toUri()
+
 fun List<Metadata>.iconUrl(): Uri? = findPrimitive(
     key = ExplicitMetadataKey.ICON_URL,
     type = MetadataType.Url
