@@ -97,12 +97,12 @@ fun FungibleDialogContent(
         HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        if (!token?.resource?.description.isNullOrBlank()) {
-            DescriptionSection(
-                modifier = Modifier.fillMaxWidth(),
-                description = token?.resource?.description.orEmpty()
-            )
-        }
+        DescriptionSection(
+            modifier = Modifier.fillMaxWidth(),
+            description = token?.resource?.description,
+            infoUrl = token?.resource?.infoUrl
+        )
+
         AddressRow(
             modifier = Modifier
                 .fillMaxWidth()

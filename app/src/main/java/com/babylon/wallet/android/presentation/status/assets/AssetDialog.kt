@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.presentation.status.assets
 
+import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -10,14 +13,25 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
@@ -34,7 +48,9 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
 import com.babylon.wallet.android.presentation.ui.composables.assets.Tag
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetBehaviours
@@ -147,20 +163,72 @@ fun Asset.displayTitle() = when (this) {
 @Composable
 fun DescriptionSection(
     modifier: Modifier = Modifier,
-    description: String
+    description: String?,
+    infoUrl: Uri?
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier.fillMaxWidth()
     ) {
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            text = description,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        if (!description.isNullOrBlank()) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
+                    .padding(bottom = if (infoUrl != null) RadixTheme.dimensions.paddingSemiLarge else 0.dp),
+                text = description,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Start
+            )
+        }
+
+        if (infoUrl != null) {
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                text = stringResource(id = R.string.assetDetails_moreInfo),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray2
+            )
+
+            val context = LocalContext.current
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
+                    .padding(top = RadixTheme.dimensions.paddingXSmall)
+                    .clickable { context.openUrl(infoUrl) },
+                text = buildAnnotatedString {
+                    append(infoUrl.toString())
+                    append("  ")
+                    appendInlineContent(id = "link_icon")
+                },
+                style = RadixTheme.typography.body1StandaloneLink,
+                color = RadixTheme.colors.blue1,
+                inlineContent = mapOf(
+                    "link_icon" to InlineTextContent(
+                        Placeholder(
+                            RadixTheme.typography.body1StandaloneLink.fontSize,
+                            RadixTheme.typography.body1StandaloneLink.fontSize,
+                            PlaceholderVerticalAlign.TextCenter
+                        )
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_external_link),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.gray2
+                        )
+                    }
+                ),
+                textAlign = TextAlign.Start,
+            )
+        }
+
+        if (!description.isNullOrBlank() || infoUrl != null) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        }
     }
 }
 

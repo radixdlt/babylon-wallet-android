@@ -135,12 +135,11 @@ fun LSUDialogContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        if (!lsu?.fungibleResource?.description.isNullOrBlank()) {
-            DescriptionSection(
-                modifier = Modifier.fillMaxWidth(),
-                description = lsu?.fungibleResource?.description.orEmpty()
-            )
-        }
+        DescriptionSection(
+            modifier = Modifier.fillMaxWidth(),
+            description = lsu?.fungibleResource?.description,
+            infoUrl = lsu?.fungibleResource?.infoUrl
+        )
 
         AddressRow(
             modifier = Modifier

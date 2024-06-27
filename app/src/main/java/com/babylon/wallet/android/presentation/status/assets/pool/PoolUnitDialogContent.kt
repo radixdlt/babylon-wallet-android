@@ -152,12 +152,11 @@ fun PoolUnitDialogContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        if (!poolUnit?.stake?.description.isNullOrBlank()) {
-            DescriptionSection(
-                modifier = Modifier.fillMaxWidth(),
-                description = poolUnit?.stake?.description.orEmpty()
-            )
-        }
+        DescriptionSection(
+            modifier = Modifier.fillMaxWidth(),
+            description = poolUnit?.stake?.description,
+            infoUrl = poolUnit?.stake?.infoUrl
+        )
 
         AddressRow(
             modifier = Modifier
