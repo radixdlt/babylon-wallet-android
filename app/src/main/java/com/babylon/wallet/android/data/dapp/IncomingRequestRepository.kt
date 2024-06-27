@@ -34,8 +34,13 @@ interface IncomingRequestRepository {
     fun getAmountOfRequests(): Int
 
     suspend fun requestDeferred(requestId: String)
+
+    fun consumeBufferedRequest(): IncomingRequest?
+
+    fun setBufferedRequest(request: IncomingRequest)
 }
 
+@Suppress("TooManyFunctions")
 class IncomingRequestRepositoryImpl @Inject constructor(
     private val appEventBus: AppEventBus
 ) : IncomingRequestRepository {
@@ -55,6 +60,19 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     override val currentRequestToHandle = _currentRequestToHandle.asSharedFlow().filterNotNull()
 
     private val mutex = Mutex()
+
+    /**
+     * Request that can come in via deep link before wallet is setup.
+     */
+    private var bufferedRequest: IncomingRequest? = null
+
+    override fun setBufferedRequest(request: IncomingRequest) {
+        bufferedRequest = request
+    }
+
+    override fun consumeBufferedRequest(): IncomingRequest? {
+        return bufferedRequest?.also { bufferedRequest = null }
+    }
 
     override suspend fun add(incomingRequest: IncomingRequest) {
         mutex.withLock {

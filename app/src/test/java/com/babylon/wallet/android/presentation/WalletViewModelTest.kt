@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
-import com.babylon.wallet.android.data.repository.BufferedMobileConnectRequestRepository
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
@@ -61,7 +61,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
-    private val bufferedMobileConnectRequestRepository = mockk<BufferedMobileConnectRequestRepository>()
+    private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val p2PLinksRepository = mockk<P2PLinksRepository>()
 
     private val sampleProfile = Profile.sample()
@@ -90,7 +90,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     override fun setUp() {
         super.setUp()
-        coEvery { bufferedMobileConnectRequestRepository.getBufferedRequest() } returns null
+        coEvery { incomingRequestRepository.consumeBufferedRequest() } returns null
         coEvery { ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist() } returns true
         every { getAccountsForSecurityPromptUseCase() } returns flow { emit(emptyList()) }
         every { getBackupStateUseCase() } returns flowOf(

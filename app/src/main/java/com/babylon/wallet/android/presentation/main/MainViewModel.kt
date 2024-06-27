@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.repository.BufferedMobileConnectRequestRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
@@ -72,8 +71,7 @@ class MainViewModel @Inject constructor(
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
-    private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val bufferedMobileConnectRequestRepository: BufferedMobileConnectRequestRepository
+    private val processDeepLinkUseCase: ProcessDeepLinkUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -160,7 +158,7 @@ class MainViewModel @Inject constructor(
     private fun processBufferedDeepLinkRequest() {
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.ProcessBufferedDeepLinkRequest>().collect {
-                bufferedMobileConnectRequestRepository.getBufferedRequest()?.let { request ->
+                incomingRequestRepository.consumeBufferedRequest()?.let { request ->
                     verifyIncomingRequest(request)
                 }
             }

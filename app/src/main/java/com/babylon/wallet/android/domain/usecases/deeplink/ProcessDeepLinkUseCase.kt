@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.deeplink
 
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
-import com.babylon.wallet.android.data.repository.BufferedMobileConnectRequestRepository
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.radixdlt.sargon.RadixConnectMobile
 import rdx.works.profile.domain.GetProfileUseCase
@@ -11,7 +11,7 @@ import javax.inject.Inject
 class ProcessDeepLinkUseCase @Inject constructor(
     private val radixConnectMobile: RadixConnectMobile,
     private val getProfileUseCase: GetProfileUseCase,
-    private val bufferedMobileConnectRequestRepository: BufferedMobileConnectRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) {
 
     suspend operator fun invoke(deepLink: String): Result<DeepLinkProcessingResult> {
@@ -25,7 +25,7 @@ class ProcessDeepLinkUseCase @Inject constructor(
                 )
             ).getOrThrow()
             if (!profileInitialized) {
-                bufferedMobileConnectRequestRepository.setBufferedRequest(request)
+                incomingRequestRepository.setBufferedRequest(request)
                 return Result.success(DeepLinkProcessingResult.Buffered)
             }
             DeepLinkProcessingResult.Processed(request)

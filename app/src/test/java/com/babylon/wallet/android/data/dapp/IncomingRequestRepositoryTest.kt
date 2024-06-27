@@ -5,6 +5,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.NetworkId
 import io.mockk.coVerify
+import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -98,24 +99,25 @@ class IncomingRequestRepositoryTest {
     }
 
     @Test
-    fun `adding mobile connect request and deferring current makes mobile request new current, while deferred event stays in queue`() = runTest {
-        var currentRequest: IncomingMessage.IncomingRequest? = null
-        val interactionId1 = UUID.randomUUID().toString()
-        val interactionId2 = UUID.randomUUID().toString()
-        incomingRequestRepository.currentRequestToHandle
-            .onEach { currentRequest = it }
-            .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-        incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
-        advanceUntilIdle()
-        assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
-        assert(currentRequest?.interactionId == interactionId1)
-        incomingRequestRepository.addPriorityRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
-        incomingRequestRepository.requestDeferred(interactionId1)
-        advanceUntilIdle()
-        assert(currentRequest?.interactionId == interactionId2)
-        assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
-        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.DeferRequestHandling(interactionId1)) }
-    }
+    fun `adding mobile connect request and deferring current makes mobile request new current, while deferred event stays in queue`() =
+        runTest {
+            var currentRequest: IncomingMessage.IncomingRequest? = null
+            val interactionId1 = UUID.randomUUID().toString()
+            val interactionId2 = UUID.randomUUID().toString()
+            incomingRequestRepository.currentRequestToHandle
+                .onEach { currentRequest = it }
+                .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+            advanceUntilIdle()
+            assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
+            assert(currentRequest?.interactionId == interactionId1)
+            incomingRequestRepository.addPriorityRequest(sampleIncomingRequest.copy(interactionId = interactionId2))
+            incomingRequestRepository.requestDeferred(interactionId1)
+            advanceUntilIdle()
+            assert(currentRequest?.interactionId == interactionId2)
+            assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
+            coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.DeferRequestHandling(interactionId1)) }
+        }
 
     @Test
     fun `addFirst inserts item at 2nd position when there is high priority screen`() = runTest {
@@ -136,5 +138,13 @@ class IncomingRequestRepositoryTest {
         advanceUntilIdle()
         assert(currentRequest?.interactionId == interactionId2)
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 2)
+    }
+
+    @Test
+    fun `reading buffered request clears it`() = runTest {
+        val request = mockk<IncomingMessage.IncomingRequest>()
+        incomingRequestRepository.setBufferedRequest(request)
+        assert(incomingRequestRepository.consumeBufferedRequest() != null)
+        assert(incomingRequestRepository.consumeBufferedRequest() == null)
     }
 }
