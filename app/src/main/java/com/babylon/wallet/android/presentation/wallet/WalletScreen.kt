@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
@@ -130,7 +131,7 @@ fun WalletScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is WalletEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
+                is Event.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
             }
         }
     }
@@ -164,7 +165,7 @@ fun SyncPopUpScreensState(popUpScreen: WalletViewModel.PopUpScreen?, onDismiss: 
 @Composable
 private fun WalletContent(
     modifier: Modifier = Modifier,
-    state: WalletUiState,
+    state: WalletViewModel.State,
     onMenuClick: () -> Unit,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Account) -> Unit,
@@ -246,7 +247,7 @@ private fun WalletContent(
 @Composable
 private fun WalletAccountList(
     modifier: Modifier = Modifier,
-    state: WalletUiState,
+    state: WalletViewModel.State,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -394,7 +395,7 @@ private fun RadixBanner(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 private fun WalletContentPreview(
-    @PreviewParameter(WalletUiStateProvider::class) uiState: WalletUiState
+    @PreviewParameter(WalletUiStateProvider::class) uiState: WalletViewModel.State
 ) {
     RadixWalletPreviewTheme {
         WalletContent(
@@ -412,13 +413,13 @@ private fun WalletContentPreview(
 }
 
 @UsesSampleValues
-class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
+class WalletUiStateProvider : PreviewParameterProvider<WalletViewModel.State> {
 
-    override val values: Sequence<WalletUiState>
+    override val values: Sequence<WalletViewModel.State>
         get() = sequenceOf(
-            WalletUiState(
+            WalletViewModel.State(
                 accountUiItems = listOf(
-                    WalletUiState.AccountUiItem(
+                    WalletViewModel.State.AccountUiItem(
                         account = Account.sampleMainnet(),
                         address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                         assets = null,
@@ -432,7 +433,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         isLoadingAssets = false,
                         isLoadingBalance = false
                     ),
-                    WalletUiState.AccountUiItem(
+                    WalletViewModel.State.AccountUiItem(
                         account = Account.sampleMainnet.other().copy(
                             displayName = DisplayName("my account with a way too much long name")
                         ),
@@ -455,7 +456,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         isLoadingAssets = false,
                         isLoadingBalance = false
                     ),
-                    WalletUiState.AccountUiItem(
+                    WalletViewModel.State.AccountUiItem(
                         account = Account.sampleMainnet(),
                         address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                         assets = null,
@@ -473,10 +474,10 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                     currency = SupportedCurrency.USD
                 )
             ),
-            WalletUiState(
+            WalletViewModel.State(
                 isRadixBannerVisible = true
             ),
-            WalletUiState(
+            WalletViewModel.State(
                 isLoading = true
             )
         )
