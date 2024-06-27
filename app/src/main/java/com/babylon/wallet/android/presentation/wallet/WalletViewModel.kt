@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
@@ -47,7 +46,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -82,19 +80,16 @@ class WalletViewModel @Inject constructor(
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var accountsWithAssets: List<AccountWithAssets>? = null
     private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
     private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
 
     private val refreshFlow = MutableSharedFlow<Unit>()
-    private val accountsFlow = combine(
-        getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
-        refreshFlow.onStart { emit(Unit) }
-    ) { accounts, _ ->
-        accounts
-    }
+    private val accountsFlow = getProfileUseCase.flow.map {
+        it.activeAccountsOnCurrentNetwork
+    }.distinctUntilChanged()
 
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
@@ -123,7 +118,7 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    override fun initialState() = WalletUiState()
+    override fun initialState() = State()
 
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
 
@@ -302,7 +297,7 @@ class WalletViewModel @Inject constructor(
 
     fun onApplySecuritySettingsClick() {
         viewModelScope.launch {
-            sendEvent(WalletEvent.NavigateToSecurityCenter)
+            sendEvent(Event.NavigateToSecurityCenter)
         }
     }
 
@@ -316,13 +311,13 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun loadingAssets(isRefreshing: Boolean): WalletUiState = state.value.copy(
+    private fun loadingAssets(isRefreshing: Boolean): State = state.value.copy(
         accountUiItems = buildAccountUiItems(),
         isLoading = true,
         isRefreshing = isRefreshing
     )
 
-    private fun onAssetsError(error: Throwable?): WalletUiState = state.value.copy(
+    private fun onAssetsError(error: Throwable?): State = state.value.copy(
         uiMessage = UiMessage.ErrorMessage(error),
         accountUiItems = state.value.accountUiItems.map { account ->
             if (account.assets == null) {
@@ -337,13 +332,13 @@ class WalletViewModel @Inject constructor(
         isRefreshing = false
     )
 
-    private fun buildAccountUiItems(): List<WalletUiState.AccountUiItem> {
+    private fun buildAccountUiItems(): List<State.AccountUiItem> {
         return accountsWithAssets.orEmpty()
             .map { accountWithAssets ->
                 val isFiatBalanceVisible = accountWithAssets.assets == null ||
                     accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
-                WalletUiState.AccountUiItem(
+                State.AccountUiItem(
                     account = accountWithAssets.account,
                     assets = accountWithAssets.assets,
                     securityPrompts = securityPrompt(accountWithAssets.account)?.toList(),
@@ -417,13 +412,13 @@ class WalletViewModel @Inject constructor(
         it.entity.address.string == forAccount.address.string
     }?.prompts
 
-    private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
+    private fun getTag(forAccount: Account): State.AccountTag? {
         return when {
             !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
-            isDappDefinitionAccount(forAccount) -> WalletUiState.AccountTag.DAPP_DEFINITION
-            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEDGER_LEGACY
-            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEGACY_SOFTWARE
-            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEDGER_BABYLON
+            isDappDefinitionAccount(forAccount) -> State.AccountTag.DAPP_DEFINITION
+            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> State.AccountTag.LEDGER_LEGACY
+            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> State.AccountTag.LEGACY_SOFTWARE
+            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> State.AccountTag.LEDGER_BABYLON
             else -> null
         }
     }
@@ -447,35 +442,35 @@ class WalletViewModel @Inject constructor(
         CONNECT_CLOUD_BACKUP(2),
         NPS_SURVEY(3)
     }
-}
 
-internal sealed interface WalletEvent : OneOffEvent {
-    data object NavigateToSecurityCenter : WalletEvent
-}
+    data class State(
+        val isLoading: Boolean = true,
+        val isRefreshing: Boolean = false,
+        val accountUiItems: List<AccountUiItem> = emptyList(),
+        val isRadixBannerVisible: Boolean = false,
+        val isFiatBalancesEnabled: Boolean = true,
+        val uiMessage: UiMessage? = null,
+        val totalFiatValueOfWallet: FiatPrice? = null
+    ) : UiState {
 
-data class WalletUiState(
-    val isLoading: Boolean = true,
-    val isRefreshing: Boolean = false,
-    val accountUiItems: List<AccountUiItem> = emptyList(),
-    val isRadixBannerVisible: Boolean = false,
-    val isFiatBalancesEnabled: Boolean = true,
-    val uiMessage: UiMessage? = null,
-    val totalFiatValueOfWallet: FiatPrice? = null
-) : UiState {
+        enum class AccountTag {
+            LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
+        }
 
-    enum class AccountTag {
-        LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
+        @SuppressLint("VisibleForTests")
+        data class AccountUiItem(
+            val account: Account,
+            val  assets: Assets?,
+            val fiatTotalValue: FiatPrice?,
+            val tag: AccountTag?,
+            val securityPrompts: List<SecurityPromptType>?,
+            val isFiatBalanceVisible: Boolean,
+            val isLoadingAssets: Boolean,
+            val isLoadingBalance: Boolean
+        )
     }
 
-    @SuppressLint("VisibleForTests")
-    data class AccountUiItem(
-        val account: Account,
-        val assets: Assets?,
-        val fiatTotalValue: FiatPrice?,
-        val tag: AccountTag?,
-        val securityPrompts: List<SecurityPromptType>?,
-        val isFiatBalanceVisible: Boolean,
-        val isLoadingAssets: Boolean,
-        val isLoadingBalance: Boolean
-    )
+    internal sealed interface Event : OneOffEvent {
+        data object NavigateToSecurityCenter : Event
+    }
 }
