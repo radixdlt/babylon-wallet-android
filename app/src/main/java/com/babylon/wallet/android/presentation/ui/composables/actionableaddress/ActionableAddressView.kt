@@ -60,7 +60,9 @@ import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -441,7 +443,9 @@ sealed interface ActionableAddress {
             }
 
             LaunchedEffect(key1 = address) {
-                actionableAddress.value = Address(address, isVisitableInDashboard)
+                withContext(Dispatchers.Default) {
+                    actionableAddress.value = Address(address, isVisitableInDashboard)
+                }
             }
 
             return actionableAddress
@@ -457,7 +461,9 @@ sealed interface ActionableAddress {
             }
 
             LaunchedEffect(key1 = globalId) {
-                actionableAddress.value = GlobalId(globalId, isVisitableInDashboard)
+                withContext(Dispatchers.Default) {
+                    actionableAddress.value = GlobalId(globalId, isVisitableInDashboard)
+                }
             }
 
             return actionableAddress
@@ -473,7 +479,9 @@ sealed interface ActionableAddress {
             }
 
             LaunchedEffect(key1 = intentHash) {
-                actionableAddress.value = TransactionId(intentHash, isVisitableInDashboard)
+                withContext(Dispatchers.Default) {
+                    actionableAddress.value = TransactionId(intentHash, isVisitableInDashboard)
+                }
             }
 
             return actionableAddress
