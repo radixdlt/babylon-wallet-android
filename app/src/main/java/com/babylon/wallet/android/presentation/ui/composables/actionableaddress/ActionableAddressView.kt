@@ -2,10 +2,8 @@
 
 package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
-import android.content.ClipData
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
@@ -45,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -53,6 +50,7 @@ import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
+import com.babylon.wallet.android.utils.copyToClipboard
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
@@ -469,20 +467,11 @@ private sealed interface OnAction {
         ) : CallbackBasedAction {
 
             override fun onAction(context: Context) {
-                context.getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
-
-                    val clipData = ClipData.newPlainText(
-                        "Radix Address",
-                        actionableAddress.copyable
-                    )
-
-                    clipboardManager.setPrimaryClip(clipData)
-
-                    // From Android 13, the system handles the copy confirmation
-                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                        Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
-                    }
-                }
+                context.copyToClipboard(
+                    label = "Radix Address",
+                    value = actionableAddress.copyable.orEmpty(),
+                    successMessage = context.getString(R.string.addressAction_copiedToClipboard)
+                )
             }
         }
 

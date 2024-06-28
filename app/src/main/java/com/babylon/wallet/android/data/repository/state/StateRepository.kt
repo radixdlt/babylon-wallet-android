@@ -3,11 +3,13 @@ package com.babylon.wallet.android.data.repository.state
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.fetchPools
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
+import com.babylon.wallet.android.data.gateway.extensions.getAllMetadata
 import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.extensions.paginateNonFungibles
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
+import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
@@ -17,7 +19,6 @@ import com.babylon.wallet.android.data.repository.cache.database.StateDao.Compan
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
@@ -70,7 +71,8 @@ interface StateRepository {
     suspend fun getResources(
         addresses: Set<ResourceAddress>,
         underAccountAddress: AccountAddress?,
-        withDetails: Boolean
+        withDetails: Boolean,
+        withAllMetadata: Boolean
     ): Result<List<Resource>>
 
     suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>>
@@ -318,23 +320,18 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun getResources(
         addresses: Set<ResourceAddress>,
         underAccountAddress: AccountAddress?,
-        withDetails: Boolean
+        withDetails: Boolean,
+        withAllMetadata: Boolean
     ): Result<List<Resource>> = withContext(dispatcher) {
         runCatching {
-            val addressesWithResources = addresses.associateWith { address ->
-                val cachedEntity = stateDao.getResourceDetails(
+            val addressesWithResourceEntities = addresses.associateWith { address ->
+                stateDao.getResourceDetails(
                     resourceAddress = address,
                     minValidity = resourcesCacheValidity()
                 )
-
-                val amount = underAccountAddress?.let { accountAddress ->
-                    stateDao.getAccountResourceJoin(resourceAddress = address, accountAddress = accountAddress)?.amount
-                }
-
-                cachedEntity?.toResource(amount)
             }.toMutableMap()
 
-            val resourcesToFetch = addressesWithResources.mapNotNull { entry ->
+            val resourcesToFetch = addressesWithResourceEntities.mapNotNull { entry ->
                 val cachedResource = entry.value
                 if (cachedResource == null || !cachedResource.isDetailsAvailable && withDetails) entry.key else null
             }
@@ -344,22 +341,48 @@ class StateRepositoryImpl @Inject constructor(
                     metadataKeys = ExplicitMetadataKey.forAssets,
                     onPage = { page ->
                         page.items.forEach { item ->
-                            val amount = underAccountAddress?.let { accountAddress ->
-                                stateDao.getAccountResourceJoin(
-                                    resourceAddress = ResourceAddress.init(item.address),
-                                    accountAddress = accountAddress
-                                )?.amount
-                            }
                             val updatedEntity = stateDao.updateResourceDetails(item)
-                            val resource = updatedEntity.toResource(amount)
 
-                            addressesWithResources[resource.address] = resource
+                            addressesWithResourceEntities[updatedEntity.address] = updatedEntity
                         }
                     }
                 )
             }
 
-            addressesWithResources.values.filterNotNull()
+            addressesWithResourceEntities.values.filterNotNull().map { resourceEntity ->
+                val amount = underAccountAddress?.let { accountAddress ->
+                    stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address, accountAddress = accountAddress)?.amount
+                }
+
+                val nextMetadataCursor = resourceEntity.metadata?.nextCursor
+                if (withAllMetadata && nextMetadataCursor != null) {
+                    val remainingMetadata = runCatching {
+                        val stateVersion = requireNotNull(getLatestCachedStateVersionInNetwork())
+
+                        stateApi.getAllMetadata(
+                            resourceAddress = resourceEntity.address,
+                            stateVersion = stateVersion,
+                            initialCursor = nextMetadataCursor
+                        )
+                    }.getOrNull()?.mapNotNull { it.toMetadata() }?.takeIf { it.isNotEmpty() }?.toSet()
+
+                    if (remainingMetadata != null) {
+                        resourceEntity.copy(
+                            metadata = resourceEntity.metadata.metadata.toMutableSet().apply {
+                                this union remainingMetadata
+                            }.let {
+                                MetadataColumn(metadata = it.toList(), implicitState = MetadataColumn.ImplicitMetadataState.Complete)
+                            }.also {
+                                stateDao.updateMetadata(resourceAddress = resourceEntity.address, metadataColumn = it)
+                            }
+                        )
+                    } else {
+                        resourceEntity
+                    }
+                } else {
+                    resourceEntity
+                }.toResource(amount)
+            }
         }
     }
 
@@ -395,9 +418,7 @@ class StateRepositoryImpl @Inject constructor(
         runCatching {
             val stateVersion = getLatestCachedStateVersionInNetwork()
             val cachedValidators = if (stateVersion != null) {
-                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion).map {
-                    it.asValidatorDetail()
-                }
+                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
             } else {
                 emptyList()
             }
@@ -408,15 +429,17 @@ class StateRepositoryImpl @Inject constructor(
                     validatorsAddresses = unknownAddresses,
                     stateVersion = stateVersion
                 )
-                val details = response.validators.asValidators()
-                if (details.isNotEmpty()) {
-                    val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
-                    stateDao.insertValidators(details.map { it.asValidatorEntity(syncInfo) })
+
+                val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
+                val newValidatorEntities = response.validators.map { it.asValidatorEntity(syncInfo) }.also { entities ->
+                    stateDao.insertValidators(entities)
                 }
-                details + cachedValidators
+                newValidatorEntities + cachedValidators
             } else {
                 cachedValidators
             }
+        }.mapCatching { entities ->
+            entities.map { it.asValidatorDetail() }
         }
     }
 

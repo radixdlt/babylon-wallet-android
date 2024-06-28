@@ -21,12 +21,14 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         fungibleAddresses: Set<ResourceAddress>,
-        nonFungibleIds: Map<ResourceAddress, Set<NonFungibleLocalId>>
+        nonFungibleIds: Map<ResourceAddress, Set<NonFungibleLocalId>>,
+        withAllMetadata: Boolean = false
     ): Result<List<Asset>> = stateRepository
         .getResources(
             addresses = fungibleAddresses + nonFungibleIds.keys,
             underAccountAddress = null,
-            withDetails = true
+            withDetails = true,
+            withAllMetadata = withAllMetadata
         ).mapCatching { resources ->
             val nfts = nonFungibleIds.mapValues { entry ->
                 stateRepository.getNFTDetails(entry.key, entry.value.toSet()).getOrThrow()
