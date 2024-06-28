@@ -24,6 +24,11 @@ class AppsFlyerIntegrationManager @Inject constructor(
         AppsFlyerLib.getInstance().start(context)
     }
 
+    /**
+     * Subscribes for a deep link
+     * Tracks an event with the link details if it was deferred - i.e. clicked before the app was installed
+     * This has to be called before calling start on [AppsFlyerLib.getInstance]
+     */
     private fun subscribeForDeepLink() {
         AppsFlyerLib.getInstance().subscribeForDeepLink { result ->
             when (result.status) {
