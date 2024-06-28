@@ -194,6 +194,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         // In order to emit an incoming request, the topmost item should be
         // a. An incoming request
         // b. It should not be the same as the one being handled already
+        Timber.d("Next request id ${(nextRequest as? QueueItem.RequestItem)?.incomingRequest?.interactionId}")
         if (nextRequest is QueueItem.RequestItem && _currentRequestToHandle.value != nextRequest.incomingRequest) {
             _currentRequestToHandle.emit(nextRequest.incomingRequest)
         }
