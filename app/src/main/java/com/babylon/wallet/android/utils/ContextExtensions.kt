@@ -1,16 +1,13 @@
 package com.babylon.wallet.android.utils
 
 import android.content.ActivityNotFoundException
-import android.content.ClipData
 import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
-import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
@@ -46,28 +43,6 @@ suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boole
 
 fun Context.openUrl(url: HttpUrl, browser: Browser? = null) = openUrl(url.toString(), browser)
 fun Context.openUrl(url: String, browser: Browser? = null) = openUrl(url.toUri(), browser)
-
-fun Context.copyToClipboard(
-    label: String,
-    value: String,
-    // Used only for Android versions < Android 13
-    successMessage: String? = null
-) {
-    getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
-
-        val clipData = ClipData.newPlainText(
-            label,
-            value
-        )
-
-        clipboardManager.setPrimaryClip(clipData)
-
-        // From Android 13, the system handles the copy confirmation
-        if (successMessage != null && Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-            Toast.makeText(this, successMessage, Toast.LENGTH_SHORT).show()
-        }
-    }
-}
 
 @Suppress("SwallowedException")
 fun Context.openUrl(uri: Uri, browser: Browser? = null) {

@@ -25,7 +25,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.MetadataPublicKe
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataStringArrayValue
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataStringValue
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataTypedValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataU32ArrayValue
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataU32Value
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataU64ArrayValue
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataU64Value
@@ -63,7 +62,7 @@ object MetadataTypedValueSerializer : JsonContentPolymorphicSerializer<MetadataT
             MetadataValueType.StringArray -> MetadataStringArrayValue.serializer()
             MetadataValueType.BoolArray -> MetadataBoolArrayValue.serializer()
             MetadataValueType.U8Array -> MetadataU8ArrayValue.serializer()
-            MetadataValueType.U32Array -> MetadataU32ArrayValue.serializer()
+            MetadataValueType.U32Array -> MetadataU32Value.serializer()
             MetadataValueType.U64Array -> MetadataU64ArrayValue.serializer()
             MetadataValueType.I32Array -> MetadataI32ArrayValue.serializer()
             MetadataValueType.I64Array -> MetadataI64ArrayValue.serializer()

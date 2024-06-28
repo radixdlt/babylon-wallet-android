@@ -25,11 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.MetadataView
+import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
-import com.babylon.wallet.android.presentation.status.assets.DescriptionSection
-import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.PoolResourcesValues
@@ -152,12 +150,20 @@ fun PoolUnitDialogContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        DescriptionSection(
-            modifier = Modifier.fillMaxWidth(),
-            description = poolUnit?.stake?.description,
-            infoUrl = poolUnit?.stake?.infoUrl
-        )
-
+        if (!poolUnit?.stake?.description.isNullOrBlank()) {
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = poolUnit?.stake?.description.orEmpty(),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                color = RadixTheme.colors.gray4
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        }
         AddressRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -166,7 +172,7 @@ fun PoolUnitDialogContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        MetadataView(
+        AssetMetadataRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
@@ -174,6 +180,7 @@ fun PoolUnitDialogContent(
         ) {
             Text(
                 modifier = Modifier
+                    .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
                 text = when (val supply = poolUnit?.stake?.currentSupply) {
@@ -194,11 +201,7 @@ fun PoolUnitDialogContent(
 
         TagsSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            tags = poolUnit?.resource?.tags
+            tags = poolUnit?.resource?.tags,
         )
-
-        poolUnit?.resource?.let { resource ->
-            NonStandardMetadataSection(resource = resource)
-        }
     }
 }

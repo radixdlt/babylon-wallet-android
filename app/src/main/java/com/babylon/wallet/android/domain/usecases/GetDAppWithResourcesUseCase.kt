@@ -26,8 +26,7 @@ class GetDAppWithResourcesUseCase @Inject constructor(
         val resources = stateRepository.getResources(
             addresses = claimedResources.toSet(),
             underAccountAddress = null,
-            withDetails = false,
-            withAllMetadata = false
+            withDetails = false
         ).getOrNull().orEmpty()
 
         DAppWithResources(

@@ -37,12 +37,7 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         Result.success(claims)
 
-    override suspend fun getResources(
-        addresses: Set<ResourceAddress>,
-        underAccountAddress: AccountAddress?,
-        withDetails: Boolean,
-        withAllMetadata: Boolean
-    ): Result<List<Resource>> =
+    override suspend fun getResources(addresses: Set<ResourceAddress>, underAccountAddress: AccountAddress?, withDetails: Boolean): Result<List<Resource>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
@@ -50,10 +45,7 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getNFTDetails(
-        resourceAddress: ResourceAddress,
-        localIds: Set<NonFungibleLocalId>
-    ): Result<List<Resource.NonFungibleResource.Item>> =
+    override suspend fun getNFTDetails(resourceAddress: ResourceAddress, localIds: Set<NonFungibleLocalId>): Result<List<Resource.NonFungibleResource.Item>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> =

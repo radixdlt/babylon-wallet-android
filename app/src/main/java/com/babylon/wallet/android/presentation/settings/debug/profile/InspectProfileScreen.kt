@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.debug.profile
 
+import android.content.ClipData
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.WindowInsets
@@ -30,11 +31,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.utils.copyToClipboard
 
 @Composable
 fun InspectProfileScreen(
@@ -81,10 +82,13 @@ fun InspectProfileScreen(
                     containerColor = RadixTheme.colors.gray4,
                     contentColor = RadixTheme.colors.gray1,
                     onClick = {
-                        context.copyToClipboard(
-                            label = "Radix Profile",
-                            value = state.rawSnapshot.orEmpty()
-                        )
+                        context.getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
+                            val clipData = ClipData.newPlainText(
+                                "Radix Address",
+                                state.rawSnapshot
+                            )
+                            clipboardManager.setPrimaryClip(clipData)
+                        }
                     }
                 ) {
                     Icon(painter = painterResource(id = R.drawable.ic_copy), contentDescription = null)

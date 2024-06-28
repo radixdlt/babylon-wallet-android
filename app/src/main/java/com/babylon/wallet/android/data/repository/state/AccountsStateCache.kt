@@ -11,7 +11,8 @@ import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.accountCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.getCachedValidators
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -233,47 +234,57 @@ class AccountsStateCache @Inject constructor(
         result
     }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = transform { cached ->
-        val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
-            emit(emptyList())
-            return@transform
-        }
-
-        val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
-        val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
-        val newValidators = runCatching {
-            val validatorItems = api.fetchValidators(
-                allValidatorAddresses - cachedValidators.keys,
-                stateVersion
-            ).validators
-
-            val syncInfo = SyncInfo(InstantGenerator(), stateVersion)
-            validatorItems.map {
-                it.asValidatorEntity(syncInfo)
-            }.onEach { entity ->
-                cachedValidators[entity.address] = entity.asValidatorDetail()
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets(): Flow<List<AccountAddressWithAssets>> =
+        transform { cached ->
+            val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
+                emit(emptyList())
+                return@transform
             }
-        }.onFailure { cacheErrors.value = it }.getOrNull() ?: return@transform
 
-        if (newValidators.isNotEmpty()) {
-            logger.d("\uD83D\uDCBD Inserting validators")
-            dao.insertValidators(newValidators)
-        }
-
-        val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
-        val cachedPools = dao.getCachedPools(allPoolAddresses, stateVersion).toMutableMap()
-        val unknownPools = allPoolAddresses - cachedPools.keys
-        if (unknownPools.isNotEmpty()) {
-            logger.d("\uD83D\uDCBD Inserting pools")
-            val newPools = runCatching {
-                api.fetchPools(unknownPools.toSet(), stateVersion)
+            val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
+            val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
+            val newValidators = runCatching {
+                api.fetchValidators(
+                    allValidatorAddresses - cachedValidators.keys,
+                    stateVersion
+                ).validators.asValidators().onEach {
+                    cachedValidators[it.address] = it
+                }
             }.onFailure { error ->
                 cacheErrors.value = error
             }.getOrNull() ?: return@transform
 
-            if (newPools.poolItems.isNotEmpty()) {
-                val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
-                dao.updatePools(pools = join)
+            if (newValidators.isNotEmpty()) {
+                logger.d("\uD83D\uDCBD Inserting validators")
+                dao.insertValidators(newValidators.asValidatorEntities(SyncInfo(InstantGenerator(), stateVersion)))
+            }
+
+            val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
+            val cachedPools = dao.getCachedPools(allPoolAddresses, stateVersion).toMutableMap()
+            val unknownPools = allPoolAddresses - cachedPools.keys
+            if (unknownPools.isNotEmpty()) {
+                logger.d("\uD83D\uDCBD Inserting pools")
+
+                val newPools = runCatching {
+                    api.fetchPools(unknownPools.toSet(), stateVersion)
+                }.onFailure { error ->
+                    cacheErrors.value = error
+                }.getOrNull() ?: return@transform
+
+                if (newPools.poolItems.isNotEmpty()) {
+                    val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                    dao.updatePools(pools = join)
+                } else {
+                    emit(
+                        cached.mapNotNull {
+                            it.value.toAccountAddressWithAssets(
+                                accountAddress = it.key,
+                                pools = cachedPools,
+                                validators = cachedValidators
+                            )
+                        }
+                    )
+                }
             } else {
                 emit(
                     cached.mapNotNull {
@@ -285,18 +296,7 @@ class AccountsStateCache @Inject constructor(
                     }
                 )
             }
-        } else {
-            emit(
-                cached.mapNotNull {
-                    it.value.toAccountAddressWithAssets(
-                        accountAddress = it.key,
-                        pools = cachedPools,
-                        validators = cachedValidators
-                    )
-                }
-            )
         }
-    }
 
     private data class AccountCachedData(
         val stateVersion: Long?,

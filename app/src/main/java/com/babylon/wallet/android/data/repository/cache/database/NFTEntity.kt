@@ -37,7 +37,7 @@ data class NFTEntity(
                 metadata = toMetadata().takeIf {
                     it.isNotEmpty()
                 }?.let {
-                    MetadataColumn(metadata = it, implicitState = MetadataColumn.ImplicitMetadataState.Complete)
+                    MetadataColumn(it)
                 },
                 synced = synced
             )
@@ -49,7 +49,7 @@ data class NFTEntity(
             metadata = metadata.takeIf {
                 it.isNotEmpty()
             }?.let {
-                MetadataColumn(metadata = it, implicitState = MetadataColumn.ImplicitMetadataState.Complete)
+                MetadataColumn(it)
             },
             synced = synced
         )
