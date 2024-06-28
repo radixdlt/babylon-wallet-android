@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.babylon.wallet.android.data.gateway.extensions.PoolsResponse
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
@@ -59,14 +60,11 @@ data class PoolEntity(
 }
 
 fun StateEntityDetailsResponseItem.asPoolEntity(): PoolEntity? {
-    val metadataColumn = MetadataColumn.from(
-        explicitMetadata = explicitMetadata,
-        implicitMetadata = metadata
-    )
-    val poolUnitResourceAddress = metadataColumn.metadata.poolUnit() ?: return null
+    val metadata = this.metadata.toMetadata()
+    val poolUnitResourceAddress = metadata.poolUnit() ?: return null
     return PoolEntity(
         address = PoolAddress.init(address),
-        metadata = metadataColumn,
+        metadata = MetadataColumn(metadata),
         resourceAddress = poolUnitResourceAddress
     )
 }

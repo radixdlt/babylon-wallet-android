@@ -14,8 +14,7 @@ class GetTransactionBadgesUseCase @Inject constructor(
     ): Result<List<Badge>> = stateRepository.getResources(
         addresses = addresses,
         underAccountAddress = null,
-        withDetails = false,
-        withAllMetadata = false
+        withDetails = false
     ).mapCatching { resources ->
         resources.map {
             Badge(

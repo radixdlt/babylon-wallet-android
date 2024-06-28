@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.status.assets
 
-import android.net.Uri
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,27 +10,21 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.MetadataKeyView
-import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.fungible.FungibleDialogContent
 import com.babylon.wallet.android.presentation.status.assets.lsu.LSUDialogContent
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.NonFungibleAssetDialogContent
 import com.babylon.wallet.android.presentation.status.assets.pool.PoolUnitDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
-import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
 import com.babylon.wallet.android.presentation.ui.composables.assets.Tag
@@ -45,7 +38,6 @@ import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Tag
 
 @Composable
@@ -148,83 +140,6 @@ fun Asset.displayTitle() = when (this) {
 }
 
 @Composable
-fun DescriptionSection(
-    modifier: Modifier = Modifier,
-    description: String?,
-    infoUrl: Uri?
-) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        if (!description.isNullOrBlank()) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                    .padding(bottom = if (infoUrl != null) RadixTheme.dimensions.paddingSemiLarge else 0.dp),
-                text = description,
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Start
-            )
-        }
-
-        if (infoUrl != null) {
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                text = stringResource(id = R.string.assetDetails_moreInfo),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray2
-            )
-
-            LinkText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                    .padding(top = RadixTheme.dimensions.paddingXSmall),
-                url = infoUrl
-            )
-        }
-
-        if (!description.isNullOrBlank() || infoUrl != null) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        }
-    }
-}
-
-@Composable
-fun NonStandardMetadataSection(
-    modifier: Modifier = Modifier,
-    resource: Resource
-) {
-    val metadata = remember(resource.metadata) {
-        resource.nonStandardMetadata
-    }
-
-    if (metadata.isNotEmpty()) {
-        Column(
-            modifier = modifier
-        ) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-
-            metadata.forEach { metadata ->
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                MetadataView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                    metadata = metadata
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun BehavioursSection(
     modifier: Modifier = Modifier,
     behaviours: AssetBehaviours?,
@@ -279,10 +194,11 @@ fun TagsSection(
     if (!tags.isNullOrEmpty()) {
         Column(modifier = modifier) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            MetadataKeyView(
+            Text(
                 modifier = Modifier.fillMaxWidth(),
-                key = stringResource(id = R.string.assetDetails_tags),
-                isLocked = false
+                text = stringResource(id = R.string.assetDetails_tags),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             FlowRow(
@@ -304,6 +220,7 @@ fun TagsSection(
                     }
                 }
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         }
     }
 }

@@ -148,8 +148,7 @@ class SearchFeePayersUseCaseTest {
             override suspend fun getResources(
                 addresses: Set<ResourceAddress>,
                 underAccountAddress: AccountAddress?,
-                withDetails: Boolean,
-                withAllMetadata: Boolean
+                withDetails: Boolean
             ): Result<List<Resource>> {
                 TODO("Not yet implemented")
             }

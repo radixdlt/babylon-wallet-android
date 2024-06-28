@@ -4,6 +4,7 @@ package com.babylon.wallet.android.presentation.settings.approveddapps.dappdetai
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -40,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,7 +64,6 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -72,6 +75,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCa
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AppearanceId
@@ -483,6 +487,7 @@ fun DAppWebsiteAddressRow(
     modifier: Modifier = Modifier,
     website: String?,
 ) {
+    val context = LocalContext.current
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
@@ -494,14 +499,31 @@ fun DAppWebsiteAddressRow(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )
-
-        LinkText(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .radixPlaceholder(visible = website == null),
-            clickable = website != null,
-            url = website.orEmpty()
-        )
+                .clickable(enabled = website != null) {
+                    if (website != null) {
+                        context.openUrl(website)
+                    }
+                },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .radixPlaceholder(visible = website == null),
+                text = website.orEmpty(),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.blue1
+            )
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
+                tint = RadixTheme.colors.gray3,
+                contentDescription = null
+            )
+        }
     }
 }
 

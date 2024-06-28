@@ -52,8 +52,7 @@ class AssetDialogViewModel @Inject constructor(
                     is AssetDialogArgs.NFT -> mapOf(
                         args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty()
                     )
-                },
-                withAllMetadata = true
+                }
             ).mapCatching { assets ->
                 when (val asset = assets.first()) {
                     // In case we receive a fungible asset, let's copy the custom amount
