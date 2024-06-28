@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.deeplink
 
 import android.content.Context
-import android.util.Log
 import com.appsflyer.AppsFlyerLib
 import com.appsflyer.deeplink.DeepLinkResult
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,7 +27,6 @@ class ProcessAppsFlyerDeepLinkUseCase @Inject constructor(
                         val clickEventMap = deepLink.clickEvent.keys().asSequence().map {
                             it to deepLink.clickEvent.get(it)
                         }.toMap()
-                        Log.e("TAGTAG", "Click event map: $clickEventMap")
                         AppsFlyerLib.getInstance().logEvent(context, message, clickEventMap)
                     }
                 }
