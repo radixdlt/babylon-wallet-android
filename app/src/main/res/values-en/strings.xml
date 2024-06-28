@@ -1212,7 +1212,7 @@ Code: %s</string>
   <string name="mobileConnect_noProfileDialog_title">dApp Request</string>
   <string name="mobileConnect_noProfileDialog_subtitle">You can proceed with this request after you create or restore your Radix Wallet.</string>
   <string name="mobileConnect_linkTitle">Have you come from a genuine website?</string>
-  <string name="mobileConnect_linkSubtitle">Before you connect to %s, you might want to check:</string>
+  <string name="mobileConnect_linkSubtitle">Before you connect to **%s**, you might want to check:</string>
   <string name="mobileConnect_linkBody1">Does the website address match what you’re expecting?</string>
   <string name="mobileConnect_linkBody2">If you came from a social media ad, is the website legitimate?</string>
   <string name="mobileConnect_interactionSuccess">Switch back to your browser to continue</string>
