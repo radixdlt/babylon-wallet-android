@@ -241,7 +241,10 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
         values = typed.propertyValues.map {
             Metadata.Primitive(
                 key = key,
-                value = "${it.resourceAddress}:${it.nonFungibleId}",
+                value = NonFungibleGlobalId(
+                    resourceAddress = ResourceAddress.init(it.resourceAddress),
+                    nonFungibleLocalId = NonFungibleLocalId.init(it.nonFungibleId)
+                ).string,
                 valueType = MetadataType.NonFungibleGlobalId,
                 isLocked = isLocked
             )
