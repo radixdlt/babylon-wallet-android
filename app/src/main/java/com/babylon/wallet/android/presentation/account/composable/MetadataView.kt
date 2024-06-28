@@ -1,11 +1,10 @@
 package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.Icon
@@ -24,6 +23,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
@@ -50,7 +52,7 @@ fun MetadataView(
     key: String,
     isLocked: Boolean = false,
     isRenderedInNewLine: Boolean = false,
-    valueView: @Composable () -> Unit
+    valueContent: @Composable () -> Unit
 ) {
     if (isRenderedInNewLine) {
         Column(
@@ -58,17 +60,39 @@ fun MetadataView(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             MetadataKeyView(key = key, isLocked = isLocked)
-            valueView()
+            valueContent()
         }
     } else {
-        Row(
-            modifier = modifier,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            MetadataKeyView(key = key, isLocked = isLocked)
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-            valueView()
+        ConstraintLayout(modifier = modifier) {
+            val (keyView, valueView) = createRefs()
+
+            MetadataKeyView(
+                modifier = Modifier.constrainAs(keyView) {
+                    start.linkTo(parent.start)
+                    top.linkTo(parent.top)
+                    end.linkTo(valueView.start, margin = 12.dp)
+                    width = if (key.length > SHORT_KEY_THRESHOLD) {
+                        Dimension.fillToConstraints
+                    } else {
+                        Dimension.preferredWrapContent
+                    }
+                    height = Dimension.wrapContent
+                },
+                key = key,
+                isLocked = isLocked
+            )
+            Box(
+                modifier = Modifier.constrainAs(valueView) {
+                    start.linkTo(keyView.end)
+                    end.linkTo(parent.end)
+                    top.linkTo(parent.top)
+                    width = Dimension.fillToConstraints
+                    height = Dimension.wrapContent
+                },
+                contentAlignment = Alignment.TopEnd
+            ) {
+                valueContent()
+            }
         }
     }
 }
@@ -85,6 +109,9 @@ fun MetadataView(
         isRenderedInNewLine = metadata.isRenderedInNewLine,
     ) {
         MetadataValueView(
+            modifier = Modifier.wrapContentSize(
+                align = if (metadata.isRenderedInNewLine) Alignment.TopStart else Alignment.TopEnd
+            ),
             metadata = metadata,
             isRenderedInNewLine = metadata.isRenderedInNewLine
         )
@@ -272,9 +299,10 @@ fun MetadataValueView(
     }
 }
 
-private const val ASSET_METADATA_SHORT_STRING_THRESHOLD = 40
+private const val SHORT_KEY_THRESHOLD = 30
+private const val SHORT_VALUE_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
         valueType is MetadataType.Url ||
-            (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
+            (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD)
         )

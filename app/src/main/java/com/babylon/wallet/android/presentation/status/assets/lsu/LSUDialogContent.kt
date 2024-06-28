@@ -169,7 +169,6 @@ fun LSUDialogContent(
         ) {
             Text(
                 modifier = Modifier
-                    .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = lsu == null),
                 text = lsu?.name().orEmpty(),
@@ -187,7 +186,6 @@ fun LSUDialogContent(
         ) {
             Text(
                 modifier = Modifier
-                    .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(
                         visible = lsu?.fungibleResource?.currentSupply == null

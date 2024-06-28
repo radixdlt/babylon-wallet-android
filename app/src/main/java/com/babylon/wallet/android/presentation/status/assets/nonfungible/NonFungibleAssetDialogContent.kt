@@ -122,7 +122,6 @@ fun NonFungibleAssetDialogContent(
                     key = stringResource(id = R.string.assetDetails_NFTDetails_id)
                 ) {
                     ActionableAddressView(
-                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
                         globalId = item.globalId,
                         visitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
@@ -243,7 +242,6 @@ fun NonFungibleAssetDialogContent(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(start = RadixTheme.dimensions.paddingDefault)
                             .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                             .radixPlaceholder(visible = asset?.resource?.currentSupply == null),
                         text = when {

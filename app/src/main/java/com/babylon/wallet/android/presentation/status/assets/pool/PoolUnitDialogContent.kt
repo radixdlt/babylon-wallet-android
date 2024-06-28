@@ -174,7 +174,6 @@ fun PoolUnitDialogContent(
         ) {
             Text(
                 modifier = Modifier
-                    .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
                 text = when (val supply = poolUnit?.stake?.currentSupply) {
