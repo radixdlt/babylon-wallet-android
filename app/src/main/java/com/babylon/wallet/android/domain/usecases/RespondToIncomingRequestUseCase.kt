@@ -19,6 +19,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
 class RespondToIncomingRequestUseCase @Inject constructor(
@@ -53,6 +54,8 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                         radixConnectMobile.sendDappInteractionResponse(
                             RadixConnectMobileWalletResponse(SessionId.fromString(request.remoteEntityId.value), payload)
                         )
+                    }.onFailure {
+                        Timber.d(it, "Failed to send failure response to Radix Mobile Connect")
                     }.mapCatching {
                         IncomingRequestResponse.SuccessRadixMobileConnect
                     }

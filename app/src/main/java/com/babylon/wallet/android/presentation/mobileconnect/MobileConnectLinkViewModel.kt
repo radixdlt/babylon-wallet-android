@@ -15,9 +15,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -34,6 +38,7 @@ class MobileConnectLinkViewModel @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
+    private val appEventBus: AppEventBus,
     @ApplicationScope private val appScope: CoroutineScope
 ) : StateViewModel<MobileConnectLinkViewModel.State>(), OneOffEventHandler<MobileConnectLinkViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -46,6 +51,7 @@ class MobileConnectLinkViewModel @Inject constructor(
     }
 
     init {
+        observeDeferEvent()
         viewModelScope.launch {
             val requestToHandle = incomingRequestRepository.getRequest(args.interactionId)
             if (requestToHandle == null) {
@@ -76,6 +82,17 @@ class MobileConnectLinkViewModel @Inject constructor(
             }.onFailure { error ->
                 _state.update {
                     it.copy(uiMessage = if (!developerMode) UiMessage.ErrorMessage(error) else null, isLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun observeDeferEvent() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.Close)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
                 }
             }
         }
