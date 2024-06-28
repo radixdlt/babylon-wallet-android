@@ -309,7 +309,7 @@ private fun ClaimNFTInfo(
                     vertical = RadixTheme.dimensions.paddingDefault,
                     horizontal = RadixTheme.dimensions.paddingMedium
                 ),
-            text = stringResource(id = R.string.account_poolUnits_details_currentRedeemableValue),
+            text = stringResource(id = R.string.assetDetails_staking_currentRedeemableValue),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -338,13 +338,13 @@ private fun ClaimNFTInfo(
                     verticalAlignment = Alignment.Top
                 ) {
                     Text(
-                        text = stringResource(id = R.string.assetDetails_staking_readyToClaim),
+                        text = stringResource(id = R.string.assetDetails_staking_readyToClaimIn),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray2
                     )
 
                     Text(
-                        text = stringResource(id = R.string.assetDetails_staking_readyToClaimMinutes, claimState.approximateClaimMinutes),
+                        text = stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, claimState.approximateClaimMinutes),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -357,7 +357,7 @@ private fun ClaimNFTInfo(
                             .padding(top = RadixTheme.dimensions.paddingDefault)
                             .padding(horizontal = RadixTheme.dimensions.paddingMedium)
                             .fillMaxWidth(),
-                        text = stringResource(id = R.string.account_staking_readyToBeClaimed),
+                        text = stringResource(id = R.string.assetDetails_staking_readyToClaim),
                         onClick = onClaimClick
                     )
                 }
