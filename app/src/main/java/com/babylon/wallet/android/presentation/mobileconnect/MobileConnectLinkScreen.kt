@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.mobileconnect
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,10 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +46,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
@@ -166,21 +166,10 @@ fun MobileConnectLinkContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = buildAnnotatedString {
-                    val valueToDisplay = stringResource(
-                        id = R.string.mobileConnect_linkSubtitle,
-                        dAppDisplayName
-                    )
-
-                    append(valueToDisplay)
-
-                    val startOfSpan = valueToDisplay.indexOf(dAppDisplayName)
-                    addStyle(
-                        style = RadixTheme.typography.body2Header.copy(fontSize = 16.sp).toSpanStyle(),
-                        start = startOfSpan,
-                        end = startOfSpan + dAppDisplayName.length,
-                    )
-                },
+                text = stringResource(
+                    id = R.string.mobileConnect_linkSubtitle,
+                    dAppDisplayName
+                ).formattedSpans(RadixTheme.typography.body2Header.copy(fontSize = 16.sp).toSpanStyle()),
                 color = RadixTheme.colors.gray1,
                 style = RadixTheme.typography.body1Link,
                 textAlign = TextAlign.Center
@@ -211,22 +200,19 @@ private fun NumberedListItem(modifier: Modifier = Modifier, number: Int, text: S
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         val color = RadixTheme.colors.gray1
-        Text(
-            modifier = Modifier.drawWithCache {
-                onDrawWithContent {
-                    drawCircle(
-                        color = color,
-                        style = Stroke(1.dp.toPx()),
-                        radius = 14.dp.toPx(),
-                    )
-                    drawContent()
-                }
-            },
-            text = number.toString(),
-            color = RadixTheme.colors.gray1,
-            style = RadixTheme.typography.body1Header.copy(fontSize = 20.sp),
-            textAlign = TextAlign.Start
-        )
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .border(1.dp, color, RadixTheme.shapes.circle)
+        ) {
+            Text(
+                modifier = Modifier.align(Alignment.Center),
+                text = number.toString(),
+                color = RadixTheme.colors.gray1,
+                style = RadixTheme.typography.body1Header.copy(fontSize = 20.sp),
+                textAlign = TextAlign.Start
+            )
+        }
         Text(
             text = text,
             color = RadixTheme.colors.gray1,
