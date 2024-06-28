@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -427,63 +428,70 @@ fun FailureDialogContent(
     transactionAddress: String,
     isMobileConnect: Boolean
 ) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground)
-            .padding(RadixTheme.dimensions.paddingLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-    ) {
-        Icon(
-            modifier = Modifier.size(104.dp),
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-            ),
-            contentDescription = null,
-            tint = RadixTheme.colors.orange1
-        )
-        Text(
-            text = title,
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-        )
-
-        subtitle?.let {
-            Text(
-                text = it,
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
+    Column {
+        Column(
+            modifier
+                .fillMaxWidth()
+                .background(color = RadixTheme.colors.defaultBackground)
+                .padding(RadixTheme.dimensions.paddingLarge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Icon(
+                modifier = Modifier.size(104.dp),
+                painter = painterResource(
+                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                ),
+                contentDescription = null,
+                tint = RadixTheme.colors.orange1
             )
-        }
+            Text(
+                text = title,
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
+            )
 
-        val transactionId = remember(transactionAddress) {
-            runCatching { IntentHash.init(transactionAddress) }.getOrNull()
-        }
-        if (transactionId != null) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
+            subtitle?.let {
                 Text(
-                    text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
+                    text = it,
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                ActionableAddressView(
-                    transactionId = transactionId,
-                    textStyle = RadixTheme.typography.body1Header,
-                    textColor = RadixTheme.colors.blue1,
-                    iconColor = RadixTheme.colors.gray2
-                )
+            }
+
+            val transactionId = remember(transactionAddress) {
+                runCatching { IntentHash.init(transactionAddress) }.getOrNull()
+            }
+            if (transactionId != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.transactionStatus_transactionID_text),
+                        style = RadixTheme.typography.body1Header,
+                        color = RadixTheme.colors.gray1
+                    )
+                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                    ActionableAddressView(
+                        transactionId = transactionId,
+                        textStyle = RadixTheme.typography.body1Header,
+                        textColor = RadixTheme.colors.blue1,
+                        iconColor = RadixTheme.colors.gray2
+                    )
+                }
             }
         }
         if (isMobileConnect) {
+            HorizontalDivider(color = RadixTheme.colors.gray4)
             Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = RadixTheme.colors.gray5)
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,

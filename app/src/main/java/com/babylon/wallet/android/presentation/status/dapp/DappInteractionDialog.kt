@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,33 +59,40 @@ private fun DappInteractionDialogContent(
     modifier: Modifier = Modifier,
     state: DappInteractionDialogViewModel.State
 ) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground)
-            .padding(RadixTheme.dimensions.paddingLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-    ) {
-        Image(
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
-            ),
-            contentDescription = null
-        )
-        Text(
-            text = stringResource(id = R.string.dAppRequest_completion_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
-        )
-        Text(
-            text = stringResource(id = R.string.dAppRequest_completion_subtitle, state.dAppName),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        if (state.isMobileConnect) {
+    Column {
+        Column(
+            modifier
+                .fillMaxWidth()
+                .background(color = RadixTheme.colors.defaultBackground)
+                .padding(RadixTheme.dimensions.paddingLarge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Image(
+                painter = painterResource(
+                    id = com.babylon.wallet.android.designsystem.R.drawable.check_circle_outline
+                ),
+                contentDescription = null
+            )
             Text(
+                text = stringResource(id = R.string.dAppRequest_completion_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1
+            )
+            Text(
+                text = stringResource(id = R.string.dAppRequest_completion_subtitle, state.dAppName),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+        }
+        if (state.isMobileConnect) {
+            HorizontalDivider(color = RadixTheme.colors.gray4)
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = RadixTheme.colors.gray5)
+                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
                 text = stringResource(id = R.string.mobileConnect_interactionSuccess),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
