@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.appsflyer.AppsFlyerLib
-import com.appsflyer.deeplink.DeepLinkResult
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -12,6 +10,7 @@ import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
+import com.babylon.wallet.android.domain.usecases.deeplink.ProcessAppsFlyerDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -73,7 +72,8 @@ class MainViewModel @Inject constructor(
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
-    private val processDeepLinkUseCase: ProcessDeepLinkUseCase
+    private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
+    private val processAppsFlyerDeepLinkUseCase: ProcessAppsFlyerDeepLinkUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -155,7 +155,7 @@ class MainViewModel @Inject constructor(
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
         processBufferedDeepLinkRequest()
-        subscribeForDeepLink()
+        processAppsFlyerDeepLinkUseCase()
     }
 
     private fun processBufferedDeepLinkRequest() {
@@ -365,17 +365,6 @@ class MainViewModel @Inject constructor(
                         )
                     )
                 }
-            }
-        }
-    }
-
-    private fun subscribeForDeepLink() {
-        AppsFlyerLib.getInstance().subscribeForDeepLink { result ->
-            if (result.status == DeepLinkResult.Status.FOUND) {
-                val deepLink = result.deepLink
-                Timber.d("Did resolve deep link. Is deferred: ${deepLink.isDeferred}. Click event: ${deepLink.clickEvent}")
-            } else {
-                Timber.d("Failed to resolve deep link")
             }
         }
     }
