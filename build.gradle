@@ -27,14 +27,6 @@ plugins {
     alias libs.plugins.ksp apply false
 }
 
-versionCatalogUpdate {
-    sortByKey = false
-    versionCatalogs {
-        libraries {
-            catalogFile = file("./gradle/libraries.versions.toml")
-        }
-    }
-}
 allprojects {
     apply from: "$rootDir/config/detekt.gradle"
     tasks.withType(Detekt).configureEach {
