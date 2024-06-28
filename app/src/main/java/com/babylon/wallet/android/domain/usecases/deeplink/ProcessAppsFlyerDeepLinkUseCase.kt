@@ -16,7 +16,7 @@ class ProcessAppsFlyerDeepLinkUseCase @Inject constructor(
             when (result.status) {
                 DeepLinkResult.Status.FOUND -> {
                     val deepLink = result.deepLink
-                    Timber.d("did resolve deep link. Is deferred: ${deepLink.isDeferred}. Click events: ${deepLink.clickEvent}")
+                    Timber.d("did resolve deep link. Is deferred: ${deepLink.isDeferred}. Click event: ${deepLink.clickEvent}")
 
                     if (deepLink.isDeferred == true) {
                         val message = if (deepLink.deepLinkValue != null) {
@@ -24,16 +24,22 @@ class ProcessAppsFlyerDeepLinkUseCase @Inject constructor(
                         } else {
                             "Resolved deferred DL without value"
                         }
-                        val clickEventMap = deepLink.clickEvent.keys().asSequence().map {
-                            it to deepLink.clickEvent.get(it)
-                        }.toMap()
+                        val clickEventMap = runCatching {
+                            deepLink.clickEvent.keys()
+                                .asSequence()
+                                .map { it to deepLink.clickEvent.get(it) }
+                                .toMap()
+                        }.getOrNull() ?: emptyMap()
+
                         AppsFlyerLib.getInstance().logEvent(context, message, clickEventMap)
                     }
                 }
                 DeepLinkResult.Status.ERROR -> {
                     Timber.d("Failed to resolve deep link. Error: ${result.error}")
                 }
-                DeepLinkResult.Status.NOT_FOUND -> {}
+                DeepLinkResult.Status.NOT_FOUND -> {
+                    Timber.d("AF deep link not found")
+                }
             }
         }
     }

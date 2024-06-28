@@ -73,7 +73,7 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val processAppsFlyerDeepLinkUseCase: ProcessAppsFlyerDeepLinkUseCase
+    processAppsFlyerDeepLinkUseCase: ProcessAppsFlyerDeepLinkUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
