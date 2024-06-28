@@ -10,7 +10,6 @@ import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
-import com.babylon.wallet.android.domain.usecases.deeplink.ProcessAppsFlyerDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
 import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -72,8 +71,7 @@ class MainViewModel @Inject constructor(
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
-    private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    processAppsFlyerDeepLinkUseCase: ProcessAppsFlyerDeepLinkUseCase
+    private val processDeepLinkUseCase: ProcessDeepLinkUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -155,7 +153,6 @@ class MainViewModel @Inject constructor(
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
         processBufferedDeepLinkRequest()
-        processAppsFlyerDeepLinkUseCase()
     }
 
     private fun processBufferedDeepLinkRequest() {
