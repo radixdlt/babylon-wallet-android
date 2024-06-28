@@ -9,6 +9,9 @@ import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
+import okhttp3.internal.http.HTTP_FORBIDDEN
+import okhttp3.internal.http.HTTP_NOT_FOUND
+import okhttp3.internal.http.HTTP_UNAUTHORIZED
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.mapError
@@ -22,9 +25,6 @@ import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.toCloudBackupProperties
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
-import java.net.HttpURLConnection.HTTP_FORBIDDEN
-import java.net.HttpURLConnection.HTTP_NOT_FOUND
-import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import javax.inject.Inject
 
 interface DriveClient {
