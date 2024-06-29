@@ -17,7 +17,7 @@ class AppsFlyerIntegrationManager @Inject constructor(
     fun init() {
         AppsFlyerLib.getInstance()
             .init(BuildConfig.APPS_FLYER_DEV_KEY, null, context)
-            .apply { setDebugLog(BuildConfig.DEBUG_MODE) }
+            .setDebugLog(BuildConfig.DEBUG_MODE)
 
         subscribeForDeepLink()
 
@@ -47,7 +47,7 @@ class AppsFlyerIntegrationManager @Inject constructor(
                                 .asSequence()
                                 .map { it to deepLink.clickEvent.get(it) }
                                 .toMap()
-                        }.getOrNull() ?: emptyMap()
+                        }.getOrNull().orEmpty()
 
                         AppsFlyerLib.getInstance().logEvent(context, message, clickEventMap)
                     }
