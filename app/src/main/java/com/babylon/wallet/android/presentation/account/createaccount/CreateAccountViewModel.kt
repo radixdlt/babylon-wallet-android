@@ -22,6 +22,8 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -62,6 +64,8 @@ class CreateAccountViewModel @Inject constructor(
     val accountName = savedStateHandle.getStateFlow(ACCOUNT_NAME, "")
     val buttonEnabled = savedStateHandle.getStateFlow(CREATE_ACCOUNT_BUTTON_ENABLED, false)
     val isAccountNameLengthMoreThanTheMax = savedStateHandle.getStateFlow(IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX, false)
+
+    private var accessFactorSourcesJob: Job? = null
 
     override fun initialState(): CreateAccountUiState = CreateAccountUiState(
         isFirstAccount = args.requestSource?.isFirstTime() == true
@@ -115,40 +119,43 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     // when called the access factor source bottom sheet dialog is presented
-    private suspend fun accessFactorSourceForAccountCreation(
+    private fun accessFactorSourceForAccountCreation(
         isFirstAccount: Boolean,
         isWithLedger: Boolean
     ) {
-        val selectedFactorSource = if (isWithLedger) { // then get the selected ledger device
-            sendEvent(CreateAccountEvent.AddLedgerDevice)
-            appEventBus.events
-                .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
-                .first()
-                .ledgerFactorSource
-        } else {
-            getProfileUseCase().mainBabylonFactorSource ?: return
-        }
-
-        accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-            accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
-                forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
-                factorSource = selectedFactorSource,
-                isBiometricsProvided = isFirstAccount
-            )
-        ).onSuccess {
-            handleAccountCreation { nameOfAccount ->
-                val factorSourceId = when (selectedFactorSource) {
-                    is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
-                    is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
-                }
-                createAccountUseCase(
-                    displayName = DisplayName(nameOfAccount),
-                    factorSourceId = factorSourceId,
-                    hdPublicKey = it.value
-                )
+        accessFactorSourcesJob?.cancel()
+        accessFactorSourcesJob = viewModelScope.launch {
+            val selectedFactorSource = if (isWithLedger) { // then get the selected ledger device
+                sendEvent(CreateAccountEvent.AddLedgerDevice)
+                appEventBus.events
+                    .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
+                    .first()
+                    .ledgerFactorSource
+            } else {
+                getProfileUseCase().mainBabylonFactorSource ?: return@launch
             }
-        }.onFailure { throwable ->
-            handleAccountCreationError(throwable)
+
+            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
+                    factorSource = selectedFactorSource,
+                    isBiometricsProvided = isFirstAccount
+                )
+            ).onSuccess {
+                handleAccountCreation { nameOfAccount ->
+                    val factorSourceId = when (selectedFactorSource) {
+                        is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
+                        is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
+                    }
+                    createAccountUseCase(
+                        displayName = DisplayName(nameOfAccount),
+                        factorSourceId = factorSourceId,
+                        hdPublicKey = it.value
+                    )
+                }
+            }.onFailure { throwable ->
+                handleAccountCreationError(throwable)
+            }
         }
     }
 
@@ -160,6 +167,9 @@ class CreateAccountViewModel @Inject constructor(
                 if (throwable is ProfileException.NoMnemonic) {
                     state.copy(shouldShowNoMnemonicError = true)
                 } else {
+                    if (throwable is CancellationException) { // user cancelled, don't print it
+                        return
+                    }
                     state.copy(
                         uiMessage = UiMessage.ErrorMessage(throwable)
                     )
