@@ -21,6 +21,7 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -114,6 +115,16 @@ class DerivePublicKeyViewModel @Inject constructor(
         }
     }
 
+    fun onUserDismiss() {
+        viewModelScope.launch {
+            derivePublicKeyJob?.cancel()
+            accessFactorSourcesUiProxy.setOutput(
+                output = AccessFactorSourcesOutput.Failure(CancellationException("User cancelled"))
+            )
+            sendEvent(Event.UserDismissed)
+        }
+    }
+
     private suspend fun derivePublicKey(): Result<Unit> {
         return when (val factorSource = input.factorSource) {
             is FactorSource.Device -> {
@@ -192,5 +203,6 @@ class DerivePublicKeyViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data object RequestBiometricPrompt : Event
         data object AccessingFactorSourceCompleted : Event
+        data object UserDismissed : Event
     }
 }

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +46,10 @@ fun DerivePublicKeyDialog(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
+    BackHandler {
+        viewModel.onUserDismiss()
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -58,6 +63,7 @@ fun DerivePublicKeyDialog(
                     }
                 }
                 DerivePublicKeyViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
+                DerivePublicKeyViewModel.Event.UserDismissed -> onDismiss()
             }
         }
     }
@@ -66,7 +72,7 @@ fun DerivePublicKeyDialog(
         modifier = modifier,
         showContentForFactorSource = state.showContentForFactorSource,
         shouldShowRetryButton = state.shouldShowRetryButton,
-        onDismiss = onDismiss,
+        onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
 }
@@ -81,9 +87,7 @@ private fun DerivePublicKeyBottomSheetContent(
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = {
-            onDismiss()
-        }
+        onDismiss = onDismiss
     ) {
         Column(
             modifier = Modifier
