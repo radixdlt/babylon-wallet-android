@@ -1216,4 +1216,14 @@ Code: %s</string>
   <string name="mobileConnect_linkBody1">Does the website address match what you’re expecting?</string>
   <string name="mobileConnect_linkBody2">If you came from a social media ad, is the website legitimate?</string>
   <string name="mobileConnect_interactionSuccess">Switch back to your browser to continue</string>
+  <string name="homePageCarousel_rejoinRadquest_title">Rejoin Radquest</string>
+  <string name="homePageCarousel_rejoinRadquest_text">Continue your Radix journey in your browser. Tap to dismiss.</string>
+  <string name="homePageCarousel_discoverRadix_title">Discover Radix. Get XRD</string>
+  <string name="homePageCarousel_discoverRadix_text">Start RadQuest, learn about Radix, earn XRD and collectibles.</string>
+  <string name="homePageCarousel_continueOnDapp_title">Continue on dApp in browser</string>
+  <string name="homePageCarousel_continueOnDapp_text">You can now connect with your Radix Wallet. Tap to dismiss.</string>
+  <string name="homePageCarousel_useDappsOnDesktop_title">Use dApps on Desktop</string>
+  <string name="homePageCarousel_useDappsOnDesktop_text">Connect to dApps on the big screen with Radix Connector.</string>
+  <string name="homePageCarousel_threesixtyDegrees_title">360 Degrees of Security</string>
+  <string name="homePageCarousel_threesixtyDegrees_text">Secure your Accounts and Personas with Security shields</string>
 </resources>
