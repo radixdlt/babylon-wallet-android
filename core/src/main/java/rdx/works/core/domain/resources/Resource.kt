@@ -267,6 +267,7 @@ sealed class Resource {
                         -1
                     }
                 }
+
                 is NonFungibleLocalId.Ruid -> {
                     val otherRuid = other.localId as? NonFungibleLocalId.Ruid
 
@@ -276,6 +277,7 @@ sealed class Resource {
                         -1
                     }
                 }
+
                 is NonFungibleLocalId.Bytes -> {
                     val otherBytes = other.localId as? NonFungibleLocalId.Bytes
 
@@ -285,6 +287,7 @@ sealed class Resource {
                         -1
                     }
                 }
+
                 is NonFungibleLocalId.Integer -> {
                     val otherInteger = (other.localId as? NonFungibleLocalId.Integer)
 

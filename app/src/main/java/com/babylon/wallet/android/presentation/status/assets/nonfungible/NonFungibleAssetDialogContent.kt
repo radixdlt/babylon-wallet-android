@@ -126,7 +126,8 @@ fun NonFungibleAssetDialogContent(
                         globalId = item.globalId,
                         isVisitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
-                        textColor = RadixTheme.colors.gray1
+                        textColor = RadixTheme.colors.gray1,
+                        iconColor = RadixTheme.colors.gray2
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.copyToClipboard
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.extensions.formatted
@@ -287,19 +288,21 @@ fun MetadataValueView(
                 globalId = remember(metadata.value) {
                     NonFungibleGlobalId.init(metadata.value)
                 }.copy(),
+                showOnlyLocalId = false,
                 textStyle = style,
                 textColor = color,
                 iconColor = iconColor
             )
 
-            MetadataType.NonFungibleLocalId -> ActionableAddressView(
+            MetadataType.NonFungibleLocalId -> Text(
                 modifier = modifier,
-                localId = remember(metadata.value) {
-                    NonFungibleLocalId.init(metadata.value)
+                text = remember(metadata.value) {
+                    NonFungibleLocalId.init(metadata.value).formatted(AddressFormat.DEFAULT)
                 },
-                textStyle = style,
-                textColor = color,
-                iconColor = iconColor
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
+                maxLines = 2
             )
 
             MetadataType.Decimal -> Text(
@@ -325,5 +328,6 @@ private const val SHORT_VALUE_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
             valueType is MetadataType.Url ||
-                    (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD)
+                    (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD) ||
+                    (valueType is MetadataType.NonFungibleGlobalId)
             )
