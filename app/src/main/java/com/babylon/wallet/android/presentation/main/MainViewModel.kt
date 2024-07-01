@@ -286,11 +286,11 @@ class MainViewModel @Inject constructor(
         verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
-                    if (request.isMobileConnectRequest) {
-                        incomingRequestRepository.addPriorityRequest(request)
-                    } else {
+//                    if (request.isMobileConnectRequest) {
+//                        incomingRequestRepository.addPriorityRequest(request)
+//                    } else {
                         incomingRequestRepository.add(request)
-                    }
+//                    }
                 }
             }.onFailure { error ->
                 if (error is RadixWalletException.DappRequestException) {
