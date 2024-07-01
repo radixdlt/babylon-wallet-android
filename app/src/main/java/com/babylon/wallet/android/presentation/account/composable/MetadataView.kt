@@ -3,7 +3,10 @@ package com.babylon.wallet.android.presentation.account.composable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -15,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -175,7 +179,8 @@ fun MetadataValueView(
     metadata: Metadata,
     isRenderedInNewLine: Boolean,
     style: TextStyle = RadixTheme.typography.body1HighImportance,
-    color: Color = RadixTheme.colors.gray1
+    color: Color = RadixTheme.colors.gray1,
+    iconColor: Color = RadixTheme.colors.gray2
 ) {
     val context = LocalContext.current
     when (metadata) {
@@ -204,21 +209,39 @@ fun MetadataValueView(
             MetadataType.PublicKeyEcdsaSecp256k1,
             MetadataType.PublicKeyEddsaEd25519,
             MetadataType.PublicKeyHashEcdsaSecp256k1,
-            MetadataType.PublicKeyHashEddsaEd25519 -> Text(
-                modifier = modifier.throttleClickable {
+            MetadataType.PublicKeyHashEddsaEd25519 -> Row(
+                modifier = Modifier.throttleClickable {
                     context.copyToClipboard(
                         label = metadata.key,
                         value = metadata.value,
                         successMessage = context.getString(R.string.addressAction_copiedToClipboard)
                     )
                 },
-                text = metadata.value,
-                style = style,
-                color = color,
-                textAlign = TextAlign.End,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = modifier.weight(1f),
+                    text = metadata.value,
+                    style = style,
+                    color = color,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                val iconSize = with(LocalDensity.current) {
+                    style.fontSize.toPx().toDp()
+                }
+                Icon(
+                    modifier = Modifier
+                        .padding(start = RadixTheme.dimensions.paddingXSmall)
+                        .size(iconSize),
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
+                    contentDescription = null,
+                    tint = iconColor
+                )
+            }
 
             MetadataType.String -> ExpandableText(
                 modifier = modifier,
@@ -227,9 +250,7 @@ fun MetadataValueView(
                     color = color,
                     textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 ),
-                toggleStyle = style.copy(
-                    color = RadixTheme.colors.gray2
-                )
+                toggleStyle = style.copy(color = iconColor)
             )
 
             MetadataType.Instant -> {
@@ -258,7 +279,7 @@ fun MetadataValueView(
                 },
                 textStyle = style,
                 textColor = color,
-                iconColor = color
+                iconColor = iconColor
             )
 
             MetadataType.NonFungibleGlobalId -> ActionableAddressView(
@@ -268,7 +289,7 @@ fun MetadataValueView(
                 }.copy(),
                 textStyle = style,
                 textColor = color,
-                iconColor = color
+                iconColor = iconColor
             )
 
             MetadataType.NonFungibleLocalId -> ActionableAddressView(
@@ -278,7 +299,7 @@ fun MetadataValueView(
                 },
                 textStyle = style,
                 textColor = color,
-                iconColor = color
+                iconColor = iconColor
             )
 
             MetadataType.Decimal -> Text(
@@ -303,6 +324,6 @@ private const val SHORT_KEY_THRESHOLD = 30
 private const val SHORT_VALUE_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
-        valueType is MetadataType.Url ||
-            (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD)
-        )
+            valueType is MetadataType.Url ||
+                    (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD)
+            )
