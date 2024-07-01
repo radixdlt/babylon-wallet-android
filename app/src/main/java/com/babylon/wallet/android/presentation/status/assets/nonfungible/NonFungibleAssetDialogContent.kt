@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.account.composable.MetadataValueView
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -129,6 +130,23 @@ fun NonFungibleAssetDialogContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                if (!item.name.isNullOrBlank()) {
+                    MetadataView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                        key = stringResource(id = R.string.assetDetails_NFTDetails_name)
+                    ) {
+                        Text(
+                            text = item.name.orEmpty(),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
             }
 
             if (asset is StakeClaim && item?.claimEpoch != null && item.claimAmountXrd != null) {
