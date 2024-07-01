@@ -406,20 +406,11 @@ sealed interface ActionableAddress {
                 fun performAction(context: Context) {
                     when (this) {
                         is Copy -> {
-                            context.getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
-
-                                val clipData = ClipData.newPlainText(
-                                    "Radix Address",
-                                    value
-                                )
-
-                                clipboardManager.setPrimaryClip(clipData)
-
-                                // From Android 13, the system handles the copy confirmation
-                                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                                    Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                            context.copyToClipboard(
+                                label = "Radix Address",
+                                value = value,
+                                successMessage = context.getString(R.string.addressAction_copiedToClipboard)
+                            )
                         }
 
                         is Dashboard -> context.openUrl(url)

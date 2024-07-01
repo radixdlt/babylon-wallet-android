@@ -305,7 +305,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         override suspend fun getResources(
             addresses: Set<ResourceAddress>,
             underAccountAddress: AccountAddress?,
-            withDetails: Boolean
+            withDetails: Boolean,
+            withAllMetadata: Boolean
         ): Result<List<Resource>> {
             TODO("Not yet implemented")
         }
