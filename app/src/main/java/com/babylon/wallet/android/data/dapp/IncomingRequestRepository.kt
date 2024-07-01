@@ -149,12 +149,6 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             }
 
             // Put high priority item below any internal request and mobile connect requests
-//            val topQueueItem = requestQueue.peekFirst()
-//            if (topQueueItem is QueueItem.RequestItem && topQueueItem.incomingRequest.isInternal) {
-//                requestQueue.add(1, QueueItem.HighPriorityScreen)
-//            } else {
-//                requestQueue.addFirst(QueueItem.HighPriorityScreen)
-//            }
             val index = requestQueue.indexOfFirst {
                 val item = it as? QueueItem.RequestItem
                 item != null && !item.incomingRequest.isInternal
