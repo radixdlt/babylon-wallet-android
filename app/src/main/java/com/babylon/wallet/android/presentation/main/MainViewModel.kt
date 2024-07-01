@@ -289,7 +289,7 @@ class MainViewModel @Inject constructor(
 //                    if (request.isMobileConnectRequest) {
 //                        incomingRequestRepository.addPriorityRequest(request)
 //                    } else {
-                        incomingRequestRepository.add(request)
+                    incomingRequestRepository.add(request)
 //                    }
                 }
             }.onFailure { error ->
