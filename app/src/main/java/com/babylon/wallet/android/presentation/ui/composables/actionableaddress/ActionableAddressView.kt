@@ -311,7 +311,7 @@ sealed interface ActionableAddress {
     ) : ActionableAddress {
 
         @Transient
-        override val displayable: String =  if (isOnlyLocalIdVisible) {
+        override val displayable: String = if (isOnlyLocalIdVisible) {
             address.nonFungibleLocalId.formatted(AddressFormat.DEFAULT)
         } else {
             address.formatted(AddressFormat.DEFAULT)

@@ -327,7 +327,7 @@ private const val SHORT_KEY_THRESHOLD = 30
 private const val SHORT_VALUE_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
-            valueType is MetadataType.Url ||
-                    (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD) ||
-                    (valueType is MetadataType.NonFungibleGlobalId)
-            )
+        valueType is MetadataType.Url ||
+            (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD) ||
+            (valueType is MetadataType.NonFungibleGlobalId)
+        )

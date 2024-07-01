@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.MetadataValueView
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
