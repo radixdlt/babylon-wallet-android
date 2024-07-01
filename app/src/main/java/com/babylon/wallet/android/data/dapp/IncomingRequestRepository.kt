@@ -151,7 +151,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             // Put high priority item below any internal request and mobile connect requests
             val index = requestQueue.indexOfFirst {
                 val item = it as? QueueItem.RequestItem
-                item != null && !item.incomingRequest.isInternal && !item.incomingRequest.isMobileConnectRequest
+                item != null && !item.incomingRequest.isInternal
             }
             if (index != -1) {
                 requestQueue.add(index, QueueItem.HighPriorityScreen)
@@ -179,6 +179,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         if (queueItem == null) {
             Timber.w("Request with id $requestId is null")
         }
+        Timber.d("\uD83D\uDDC2 get request $requestId")
         return (queueItem as? QueueItem.RequestItem)?.incomingRequest
     }
 
@@ -194,7 +195,6 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         // In order to emit an incoming request, the topmost item should be
         // a. An incoming request
         // b. It should not be the same as the one being handled already
-        Timber.d("Next request id ${(nextRequest as? QueueItem.RequestItem)?.incomingRequest?.interactionId}")
         if (nextRequest is QueueItem.RequestItem && _currentRequestToHandle.value != nextRequest.incomingRequest) {
             _currentRequestToHandle.emit(nextRequest.incomingRequest)
         }

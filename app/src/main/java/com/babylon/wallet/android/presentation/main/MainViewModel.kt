@@ -286,11 +286,12 @@ class MainViewModel @Inject constructor(
         verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
-                    if (request.isMobileConnectRequest) {
-                        incomingRequestRepository.addPriorityRequest(request)
-                    } else {
-                        incomingRequestRepository.add(request)
-                    }
+                    // TODO temporarily disabled for the 1.7.0 release. This will be included in the next release.
+//                    if (request.isMobileConnectRequest) {
+//                        incomingRequestRepository.addPriorityRequest(request)
+//                    } else {
+                    incomingRequestRepository.add(request)
+//                    }
                 }
             }.onFailure { error ->
                 if (error is RadixWalletException.DappRequestException) {
