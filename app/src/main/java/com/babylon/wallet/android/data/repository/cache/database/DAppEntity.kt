@@ -3,7 +3,6 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
@@ -27,7 +26,10 @@ data class DAppEntity(
     companion object {
         fun from(item: StateEntityDetailsResponseItem, syncedAt: Instant) = DAppEntity(
             definitionAddress = AccountAddress.init(item.address),
-            metadata = item.explicitMetadata?.toMetadata()?.let { MetadataColumn(it) },
+            metadata = MetadataColumn.from(
+                explicitMetadata = item.explicitMetadata,
+                implicitMetadata = item.metadata
+            ),
             synced = syncedAt
         )
     }

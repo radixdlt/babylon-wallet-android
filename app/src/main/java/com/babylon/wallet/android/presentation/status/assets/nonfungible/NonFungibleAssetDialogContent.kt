@@ -27,12 +27,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
-import com.babylon.wallet.android.presentation.account.composable.View
+import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.DescriptionSection
+import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -114,21 +115,38 @@ fun NonFungibleAssetDialogContent(
             }
 
             if (item != null) {
-                AssetMetadataRow(
+                MetadataView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     key = stringResource(id = R.string.assetDetails_NFTDetails_id)
                 ) {
                     ActionableAddressView(
-                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
                         globalId = item.globalId,
                         isVisitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
-                        textColor = RadixTheme.colors.gray1
+                        textColor = RadixTheme.colors.gray1,
+                        iconColor = RadixTheme.colors.gray2
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                if (!item.name.isNullOrBlank()) {
+                    MetadataView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                        key = stringResource(id = R.string.assetDetails_NFTDetails_name)
+                    ) {
+                        Text(
+                            text = item.name.orEmpty(),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
             }
 
             if (asset is StakeClaim && item?.claimEpoch != null && item.claimAmountXrd != null) {
@@ -154,10 +172,11 @@ fun NonFungibleAssetDialogContent(
 
                 item?.nonStandardMetadata?.forEach { metadata ->
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    metadata.View(
+                    MetadataView(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                        metadata = metadata
                     )
                 }
 
@@ -200,22 +219,14 @@ fun NonFungibleAssetDialogContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-            if (!asset?.resource?.description.isNullOrBlank()) {
-                Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = asset?.resource?.description.orEmpty(),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
+            DescriptionSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                description = asset?.resource?.description,
+                infoUrl = asset?.resource?.infoUrl
+            )
+
             AddressRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -225,7 +236,7 @@ fun NonFungibleAssetDialogContent(
             )
             if (!asset?.resource?.name.isNullOrBlank() && localId != null) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                AssetMetadataRow(
+                MetadataView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
@@ -241,7 +252,7 @@ fun NonFungibleAssetDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             if (!isNewlyCreated) {
-                AssetMetadataRow(
+                MetadataView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
@@ -249,7 +260,6 @@ fun NonFungibleAssetDialogContent(
                 ) {
                     Text(
                         modifier = Modifier
-                            .padding(start = RadixTheme.dimensions.paddingDefault)
                             .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                             .radixPlaceholder(visible = asset?.resource?.currentSupply == null),
                         text = when {
@@ -275,6 +285,13 @@ fun NonFungibleAssetDialogContent(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     tags = asset?.resource?.tags
                 )
+
+                asset?.resource?.let { resource ->
+                    NonStandardMetadataSection(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        resource = resource
+                    )
+                }
             }
         }
     }
@@ -293,57 +310,77 @@ private fun ClaimNFTInfo(
     val showClaimButton = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
     Column(
         modifier = modifier
-            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
             .fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.padding(bottom = if (showClaimButton) 0.dp else RadixTheme.dimensions.paddingSmall),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = when (claimState) {
-                    is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> stringResource(
-                        id = if (accountContextMissing) {
-                            R.string.transactionReview_toBeClaimed
-                        } else {
-                            R.string.account_staking_readyToBeClaimed
-                        }
-                    )
-                    is AssetDialogViewModel.State.ClaimState.Unstaking ->
-                        stringResource(id = R.string.account_staking_unstaking)
-                    null -> ""
-                }.uppercase(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2
-            )
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            color = RadixTheme.colors.gray4
+        )
 
-            if (showClaimButton) {
-                RadixTextButton(
-                    text = stringResource(id = R.string.account_staking_claim),
-                    onClick = onClaimClick,
-                    textStyle = RadixTheme.typography.body2Link
-                )
-            }
-        }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    vertical = RadixTheme.dimensions.paddingDefault,
+                    horizontal = RadixTheme.dimensions.paddingMedium
+                ),
+            text = stringResource(id = R.string.assetDetails_staking_currentRedeemableValue),
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
 
         val fiatPrice = remember(price, item) {
             price?.xrdPrice(item)
         }
         WorthXRD(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
             amount = claimState?.amount,
             fiatPrice = fiatPrice,
-            isLoadingBalance = isLoadingBalance
+            isLoadingBalance = isLoadingBalance,
+            iconSize = 44.dp,
+            symbolStyle = RadixTheme.typography.body2HighImportance
         )
 
-        if (claimState is AssetDialogViewModel.State.ClaimState.Unstaking) {
-            Text(
-                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-                text = stringResource(id = R.string.assetDetails_staking_unstaking, claimState.approximateClaimMinutes),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2
-            )
+        when (claimState) {
+            is AssetDialogViewModel.State.ClaimState.Unstaking -> {
+                Row(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingDefault)
+                        .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.assetDetails_staking_readyToClaimIn),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2
+                    )
+
+                    Text(
+                        text = stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, claimState.approximateClaimMinutes),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray1
+                    )
+                }
+            }
+            is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> {
+                if (showClaimButton) {
+                    RadixPrimaryButton(
+                        modifier = Modifier
+                            .padding(top = RadixTheme.dimensions.paddingDefault)
+                            .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                            .fillMaxWidth(),
+                        text = stringResource(id = R.string.assetDetails_staking_readyToClaim),
+                        onClick = onClaimClick
+                    )
+                }
+            }
+            null -> {}
         }
     }
 }

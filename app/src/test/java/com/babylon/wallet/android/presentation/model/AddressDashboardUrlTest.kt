@@ -30,7 +30,7 @@ internal class AddressDashboardUrlTest(
         val actionableAddress = runCatching {
             ActionableAddress.Address(Address.init(address), true)
         }.getOrNull() ?: runCatching {
-            ActionableAddress.GlobalId(NonFungibleGlobalId.init(address), true)
+            ActionableAddress.GlobalId(NonFungibleGlobalId.init(address), true, true)
         }.getOrNull() ?: runCatching {
             ActionableAddress.TransactionId(IntentHash.init(address), true)
         }.getOrNull()

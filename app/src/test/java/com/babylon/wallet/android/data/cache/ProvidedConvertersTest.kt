@@ -3,12 +3,12 @@ package com.babylon.wallet.android.data.cache
 import com.babylon.wallet.android.data.repository.cache.database.BehavioursColumn
 import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabaseConverters
-import rdx.works.core.domain.assets.AssetBehaviour
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 
 class ProvidedConvertersTest {
 
@@ -100,7 +100,8 @@ class ProvidedConvertersTest {
                         ) to Metadata.Primitive("value", "Value", MetadataType.String)
                     )
                 )
-            )
+            ),
+            implicitState = MetadataColumn.ImplicitMetadataState.Unknown
         )
         val converter = StateDatabaseConverters()
 

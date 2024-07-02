@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -714,6 +715,8 @@ fun WorthXRD(
     amount: Decimal192?,
     fiatPrice: FiatPrice?,
     isLoadingBalance: Boolean,
+    iconSize: Dp = 24.dp,
+    symbolStyle: TextStyle = RadixTheme.typography.body2HighImportance,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
     Row(
@@ -733,15 +736,17 @@ fun WorthXRD(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
             contentDescription = null,
             modifier = Modifier
-                .size(24.dp)
+                .size(iconSize)
                 .clip(RadixTheme.shapes.circle),
             tint = Color.Unspecified
         )
 
         Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
+            modifier = Modifier.padding(
+                horizontal = RadixTheme.dimensions.paddingSmall
+            ),
             text = XrdResource.SYMBOL,
-            style = RadixTheme.typography.body2HighImportance,
+            style = symbolStyle,
             color = RadixTheme.colors.gray1,
             maxLines = 1
         )

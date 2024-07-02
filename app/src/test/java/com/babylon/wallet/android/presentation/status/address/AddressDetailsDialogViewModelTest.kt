@@ -445,7 +445,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
         val rawAddress = "resource_tdx_2_1n2kfpqnlzntcgddq0sfzq9attnc7y7hqkdz6ykedhn76ghw662el6s:#$number#"
         val globalId = NonFungibleGlobalId.init(rawAddress)
 
-        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true, isOnlyLocalIdVisible = true)
 
         val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
 
@@ -469,7 +469,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
                 "{bce508b789ed38e4-9a8552cb3142fdc5-3491317d130e6483-46df034d5ffbd210}"
         val globalId = NonFungibleGlobalId.init(rawAddress)
 
-        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true, isOnlyLocalIdVisible = true)
 
         val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
 
@@ -495,7 +495,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
         val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:${localId.string}"
         val globalId = NonFungibleGlobalId.init(rawAddress)
 
-        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true, isOnlyLocalIdVisible = true)
 
         val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
 
@@ -519,7 +519,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
         val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:<a_very_big_string_that_is_not_truncated>"
         val globalId = NonFungibleGlobalId.init(rawAddress)
         println(globalId.nonFungibleLocalId.formatted())
-        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true)
+        val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true, isOnlyLocalIdVisible = true)
 
         val section = AddressDetailsDialogViewModel.State.Section.FullAddress.from(actionableAddress)
 
