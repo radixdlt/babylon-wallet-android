@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -77,6 +78,17 @@ data class EntityWithSecurityPrompt(
     val entity: ProfileEntity,
     val prompts: Set<SecurityPromptType>
 )
+
+fun List<EntityWithSecurityPrompt>.accountPrompts() = mapNotNull {
+    val accountAddress = it.entity.address as? AddressOfAccountOrPersona.Account ?: return@mapNotNull null
+    accountAddress.v1 to it.prompts
+}.associate { it }
+
+fun List<EntityWithSecurityPrompt>.personaPrompts() = mapNotNull {
+    val identityAddress = it.entity.address as? AddressOfAccountOrPersona.Identity ?: return@mapNotNull null
+    identityAddress.v1 to it.prompts
+}.associate { it }
+
 
 enum class SecurityPromptType {
     WRITE_DOWN_SEED_PHRASE,
