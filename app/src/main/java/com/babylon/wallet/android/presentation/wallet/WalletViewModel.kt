@@ -184,40 +184,35 @@ class WalletViewModel @Inject constructor(
             refreshFlow.onStart {
                 loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
             }
-        ) { accounts, refreshEvent ->
-            _state.update { it.loadingAssets(accounts = accounts, isRefreshing = refreshEvent.showRefreshIndicator) }
+        ) { accounts, refreshType ->
+            _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
-            accounts to refreshEvent.overrideCache
-        }.flatMapLatest { input ->
+            accounts
+        }.flatMapLatest { accounts ->
             getWalletAssetsUseCase(
-                accounts = input.first,
-                isRefreshing = input.second
-            ).distinctUntilChanged().map { it to input.second }
-        }.catch { error ->
-            _state.update { it.assetsError(error) }
-            Timber.w(error)
-        }.onEach { input ->
-            val accountsWithAssets = input.first
-            val overrideCache = input.second
-
+                accounts = accounts,
+                isRefreshing = _state.value.refreshType.overrideCache
+            ).catch { error ->
+                _state.update { it.assetsError(error) }
+                Timber.w(error)
+            }.distinctUntilChanged()
+        }.onEach { accountsWithAssets ->
             _state.update { it.assetsReceived(accountsWithAssets) }
 
             // Only when all assets have concluded (either success or error) then we
             // can request for prices.
             if (accountsWithAssets.none { it.assets == null }) {
-                Timber.tag("WALLET").d("Getting prices, $overrideCache")
-
                 val pricesPerAccount = mutableMapOf<AccountAddress, List<AssetPrice>?>()
                 for (accountWithAssets in accountsWithAssets) {
                     val pricesError = getFiatValueUseCase.forAccount(
                         accountWithAssets = accountWithAssets,
-                        isRefreshing = overrideCache
+                        isRefreshing = _state.value.refreshType.overrideCache
                     ).onSuccess { prices ->
                         pricesPerAccount[accountWithAssets.account.address] = prices
                     }.exceptionOrNull()
 
                     if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                        _state.update { it.disableFiatPrices().copy(isRefreshing = false) }
+                        _state.update { it.disableFiatPrices() }
                         break
                     }
                 }
@@ -305,6 +300,12 @@ class WalletViewModel @Inject constructor(
         val overrideCache: Boolean
         val showRefreshIndicator: Boolean
 
+        data object None: RefreshType {
+            override val overrideCache: Boolean = false
+            override val showRefreshIndicator: Boolean = false
+
+        }
+
         data class Manual(
             override val overrideCache: Boolean,
             override val showRefreshIndicator: Boolean
@@ -317,13 +318,15 @@ class WalletViewModel @Inject constructor(
     }
 
     data class State(
-        val isRefreshing: Boolean = false,
+        val refreshType: RefreshType = RefreshType.None,
         private val accountsWithAssets: List<AccountWithAssets>? = null,
         private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val isRadixBannerVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
     ) : UiState {
+
+        val isRefreshing: Boolean = refreshType.showRefreshIndicator
 
         val accountUiItems: List<AccountUiItem> = accountsWithAssets.orEmpty().map { accountWithAssets ->
             val isFiatBalanceVisible = prices !is PricesState.Disabled &&
@@ -354,19 +357,19 @@ class WalletViewModel @Inject constructor(
 
         val totalBalance: FiatPrice? = (prices as? PricesState.Enabled)?.totalBalance
 
-        val isLoadingTotalBalance =
-            prices is PricesState.None || (prices is PricesState.Enabled && prices.pricesPerAccount.any { it.value == null })
+        val isLoadingTotalBalance = prices is PricesState.None ||
+                (prices is PricesState.Enabled && accountsWithAssets.orEmpty().any { prices.isLoadingBalance(it) })
 
         fun loadingAssets(
             accounts: List<Account>,
-            isRefreshing: Boolean
+            refreshType: RefreshType
         ): State = copy(
             accountsWithAssets = accounts.map { account ->
                 val oldAssets = accountsWithAssets?.find { it.account.address == account.address }
 
                 oldAssets?.copy(account = account) ?: AccountWithAssets(account = account)
             },
-            isRefreshing = isRefreshing
+            refreshType = refreshType
         )
 
         fun assetsReceived(
@@ -378,6 +381,7 @@ class WalletViewModel @Inject constructor(
         fun assetsError(
             error: Throwable
         ): State = copy(
+            refreshType = RefreshType.None,
             uiMessage = UiMessage.ErrorMessage(error),
             accountsWithAssets = accountsWithAssets?.map { accountWithAssets ->
                 if (accountWithAssets.assets == null) {
@@ -386,12 +390,11 @@ class WalletViewModel @Inject constructor(
                 } else {
                     accountWithAssets
                 }
-            },
-            isRefreshing = false
+            }
         )
 
         fun onPricesReceived(prices: Map<AccountAddress, List<AssetPrice>?>): State = copy(
-            isRefreshing = false,
+            refreshType = RefreshType.None,
             prices = PricesState.Enabled(
                 pricesPerAccount = prices
             )
