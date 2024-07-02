@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,9 +48,7 @@ class AccountSettingsViewModel @Inject constructor(
 
     private val args = AccountSettingsArgs(savedStateHandle)
 
-    override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState(
-        accountAddress = args.address,
-    )
+    override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState()
 
     init {
         loadAccount()
@@ -146,12 +143,6 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
-    fun setBottomSheetContentToAddressQRCode() {
-        _state.update {
-            it.copy(bottomSheetContent = AccountPreferenceUiState.BottomSheetContent.AddressQRCode)
-        }
-    }
-
     fun resetBottomSheetContent() {
         _state.update {
             it.copy(bottomSheetContent = AccountPreferenceUiState.BottomSheetContent.None)
@@ -183,7 +174,8 @@ class AccountSettingsViewModel @Inject constructor(
 
     fun onHideAccount() {
         viewModelScope.launch {
-            changeEntityVisibilityUseCase.hideAccount(state.value.accountAddress)
+            val account = state.value.account ?: return@launch
+            changeEntityVisibilityUseCase.hideAccount(account.address)
             sendEvent(Event.AccountHidden)
         }
     }
@@ -196,7 +188,6 @@ sealed interface Event : OneOffEvent {
 data class AccountPreferenceUiState(
     val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
     val account: Account? = null,
-    val accountAddress: AccountAddress,
     val accountName: String = "",
     val accountNameChanged: String = "",
     val isNewNameValid: Boolean = false,
@@ -211,7 +202,7 @@ data class AccountPreferenceUiState(
         get() = bottomSheetContent != BottomSheetContent.None
 
     enum class BottomSheetContent {
-        None, RenameAccount, AddressQRCode
+        None, RenameAccount
     }
 
     companion object {

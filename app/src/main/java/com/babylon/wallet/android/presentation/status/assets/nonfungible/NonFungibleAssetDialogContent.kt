@@ -123,7 +123,7 @@ fun NonFungibleAssetDialogContent(
                     ActionableAddressView(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
                         globalId = item.globalId,
-                        visitableInDashboard = !isNewlyCreated,
+                        isVisitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
                         textColor = RadixTheme.colors.gray1
                     )

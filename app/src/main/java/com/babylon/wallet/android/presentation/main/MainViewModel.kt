@@ -113,6 +113,10 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.Status>()
 
+    val addressDetailsEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.AddressDetails>()
+
     val accessFactorSourcesEvents = appEventBus
         .events
         .filterIsInstance<AppEvent.AccessFactorSources>()

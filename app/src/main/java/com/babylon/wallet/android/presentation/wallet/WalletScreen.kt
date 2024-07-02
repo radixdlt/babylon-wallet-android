@@ -56,14 +56,12 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -420,7 +418,6 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                 accountUiItems = listOf(
                     WalletUiState.AccountUiItem(
                         account = Account.sampleMainnet(),
-                        address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                         assets = null,
                         fiatTotalValue = FiatPrice(
                             price = Decimal192.sample.invoke(),
@@ -436,7 +433,6 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         account = Account.sampleMainnet.other().copy(
                             displayName = DisplayName("my account with a way too much long name")
                         ),
-                        address = ActionableAddress.Address(Address.Account(Account.sampleMainnet.other().address)),
                         assets = Assets(
                             tokens = listOf(
                                 Token(Resource.FungibleResource.sampleMainnet.invoke())
@@ -457,7 +453,6 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                     ),
                     WalletUiState.AccountUiItem(
                         account = Account.sampleMainnet(),
-                        address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                         assets = null,
                         fiatTotalValue = null,
                         tag = null,

@@ -46,20 +46,18 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.getDepositRuleCopiesAndIcon
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -127,24 +125,20 @@ fun AccountSettingsScreen(
         onMessageShown = viewModel::onMessageShown,
         error = state.error,
         accountName = state.accountName,
+        account = state.account,
         onShowRenameAccountClick = {
             scope.launch {
                 viewModel.setBottomSheetContentToRenameAccount()
                 bottomSheetState.show()
             }
         },
-        onShowAddressQRCodeClick = {
-            scope.launch {
-                viewModel.setBottomSheetContentToAddressQRCode()
-                bottomSheetState.show()
-            }
-        },
         modifier = Modifier.navigationBarsPadding(),
         settingsSections = state.settingsSections,
-        onSettingClick = {
-            onSettingItemClick(it, state.accountAddress)
+        onSettingClick = { item ->
+            state.account?.address?.let { accountAddress ->
+                onSettingItemClick(item, accountAddress)
+            }
         },
-        accountAddress = state.accountAddress,
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
         faucetState = state.faucetState,
         isXrdLoading = state.isFreeXRDLoading,
@@ -184,22 +178,10 @@ fun AccountSettingsScreen(
                         )
                     }
 
-                    AccountPreferenceUiState.BottomSheetContent.AddressQRCode -> {
-                        AddressQRCodeSheet(
-                            accountAddress = state.accountAddress,
-                            dismissAddressQRCodeSheet = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                    viewModel.resetBottomSheetContent()
-                                }
-                            }
-                        )
-                    }
-
                     AccountPreferenceUiState.BottomSheetContent.None -> {}
                 }
             },
-            showDragHandle = state.bottomSheetContent == AccountPreferenceUiState.BottomSheetContent.AddressQRCode,
+            showDragHandle = false,
             onDismissRequest = {
                 scope.launch {
                     bottomSheetState.hide()
@@ -215,13 +197,12 @@ private fun AccountSettingsContent(
     onBackClick: () -> Unit,
     onMessageShown: () -> Unit,
     error: UiMessage?,
+    account: Account?,
     accountName: String,
     onShowRenameAccountClick: () -> Unit,
-    onShowAddressQRCodeClick: () -> Unit,
     modifier: Modifier = Modifier,
     settingsSections: ImmutableList<AccountSettingsSection>,
     onSettingClick: (AccountSettingItem) -> Unit,
-    accountAddress: AccountAddress,
     onGetFreeXrdClick: () -> Unit,
     faucetState: FaucetState,
     isXrdLoading: Boolean,
@@ -257,24 +238,15 @@ private fun AccountSettingsContent(
                 .background(RadixTheme.colors.gray5)
         ) {
             item {
-                ActionableAddressView(
-                    address = Address.Account(accountAddress),
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
-                    textStyle = RadixTheme.typography.body2Regular,
-                    textColor = RadixTheme.colors.gray2,
-                    truncateAddress = false
-                )
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(R.string.addressAction_showAccountQR),
-                    onClick = onShowAddressQRCodeClick
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                account?.let {
+                    SimpleAccountCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            .padding(top = RadixTheme.dimensions.paddingDefault),
+                        account = account
+                    )
+                }
             }
             settingsSections.forEach { section ->
                 item {
@@ -304,9 +276,11 @@ private fun AccountSettingsContent(
                                 AccountSettingItem.AccountLabel -> {
                                     accountName
                                 }
+
                                 is AccountSettingItem.ThirdPartyDeposits -> {
                                     getDepositRuleCopiesAndIcon(depositRule = settingsItem.defaultDepositRule).first
                                 }
+
                                 else -> {
                                     stringResource(id = settingsItem.subtitleRes())
                                 }
@@ -453,28 +427,6 @@ private fun RenameAccountSheet(
     }
 }
 
-@Composable
-private fun AddressQRCodeSheet(
-    accountAddress: AccountAddress,
-    dismissAddressQRCodeSheet: () -> Unit
-) {
-    Column(modifier = Modifier.navigationBarsPadding()) {
-        BottomDialogHeader(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = RadixTheme.colors.defaultBackground,
-                    shape = RadixTheme.shapes.roundedRectTopDefault
-                ),
-            onDismissRequest = {
-                dismissAddressQRCodeSheet()
-            }
-        )
-
-        AccountQRCodeView(accountAddress = accountAddress)
-    }
-}
-
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
@@ -484,9 +436,9 @@ fun AccountSettingsPreview() {
             onBackClick = {},
             onMessageShown = {},
             error = null,
-            accountName = "my cool account",
+            account = Account.sampleMainnet(),
+            accountName = Account.sampleMainnet().displayName.value,
             onShowRenameAccountClick = {},
-            onShowAddressQRCodeClick = {},
             settingsSections = persistentListOf(
                 AccountSettingsSection.AccountSection(
                     listOf(
@@ -496,7 +448,6 @@ fun AccountSettingsPreview() {
                 )
             ),
             onSettingClick = {},
-            accountAddress = AccountAddress.sampleMainnet.random(),
             onGetFreeXrdClick = {},
             faucetState = FaucetState.Available(isEnabled = true),
             isXrdLoading = false,

@@ -9,6 +9,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.metadata.name
 import kotlin.random.Random
 
 data class Pool(
@@ -17,6 +18,9 @@ data class Pool(
     val resources: List<Resource.FungibleResource>,
     val associatedDApp: DApp? = null
 ) {
+
+    val name: String
+        get() = metadata.name().orEmpty()
 
     companion object {
         @UsesSampleValues

@@ -29,21 +29,19 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
-import rdx.works.core.sargon.isLedgerAccount
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
@@ -145,14 +143,10 @@ fun AccountCardView(
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
             },
-            address = accountWithAssets.address,
-            truncateAddress = true,
-            visitableInDashboard = true,
+            address = accountWithAssets.account.address.asGeneral(),
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = addressTextColor,
-            iconColor = addressTextColor,
-            addressNetworkId = accountWithAssets.account.networkId,
-            isLedgerAccountAddress = accountWithAssets.account.isLedgerAccount
+            iconColor = addressTextColor
         )
 
         accountWithAssets.tag?.let {
@@ -269,7 +263,6 @@ fun AccountCardPreview() {
             AccountCardView(
                 accountWithAssets = WalletUiState.AccountUiItem(
                     account = Account.sampleMainnet(),
-                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
@@ -301,7 +294,6 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     account = Account.sampleMainnet().copy(
                         displayName = DisplayName("a very long name for my account")
                     ),
-                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
@@ -333,7 +325,6 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     account = Account.sampleMainnet().copy(
                         displayName = DisplayName("a very long name for my account again much more longer oh god ")
                     ),
-                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
@@ -370,7 +361,6 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         account = Account.sampleMainnet().copy(
                             displayName = DisplayName("a very long name for my account again much more longer oh god ")
                         ),
-                        address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                         assets = Assets(
                             tokens = emptyList(),
                             nonFungibles = listOf(),
@@ -401,7 +391,6 @@ fun AccountCardLoadingPreview() {
             AccountCardView(
                 accountWithAssets = WalletUiState.AccountUiItem(
                     account = Account.sampleMainnet(),
-                    address = ActionableAddress.Address(Address.Account(Account.sampleMainnet().address)),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),

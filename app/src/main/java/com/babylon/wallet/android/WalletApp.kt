@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
+import com.babylon.wallet.android.presentation.status.address.addressDetails
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
@@ -122,6 +123,10 @@ fun WalletApp(
     HandleStatusEvents(
         navController = navController,
         statusEvents = mainViewModel.statusEvents
+    )
+    HandleAddressDetailsEvents(
+        navController = navController,
+        addressDetailsEvents = mainViewModel.addressDetailsEvents
     )
     ObserveHighPriorityScreens(
         navController = navController,
@@ -236,6 +241,18 @@ private fun HandleStatusEvents(
                     navController.dappInteractionDialog(event)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun HandleAddressDetailsEvents(
+    navController: NavController,
+    addressDetailsEvents: Flow<AppEvent.AddressDetails>
+) {
+    LaunchedEffect(Unit) {
+        addressDetailsEvents.collect { event ->
+            navController.addressDetails(actionableAddress = event.address)
         }
     }
 }

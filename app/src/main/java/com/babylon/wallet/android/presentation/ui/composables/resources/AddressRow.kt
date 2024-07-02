@@ -32,7 +32,7 @@ fun AddressRow(
 
         ActionableAddressView(
             address = address,
-            visitableInDashboard = !isNewlyCreatedEntity,
+            isVisitableInDashboard = !isNewlyCreatedEntity,
             textStyle = RadixTheme.typography.body1HighImportance,
             textColor = RadixTheme.colors.gray1,
             iconColor = RadixTheme.colors.gray2
