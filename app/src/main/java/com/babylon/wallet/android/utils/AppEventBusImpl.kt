@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.utils
 
-import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

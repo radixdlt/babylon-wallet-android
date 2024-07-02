@@ -431,6 +431,7 @@ sealed interface ActionableAddress {
         data object Modal : Action
     }
 
+    @Suppress("InjectDispatcher")
     companion object {
 
         @Composable
