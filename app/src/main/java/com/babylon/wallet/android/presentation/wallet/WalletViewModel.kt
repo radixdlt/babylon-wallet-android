@@ -30,6 +30,7 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -62,6 +64,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 
 private const val DELAY_BETWEEN_POP_UP_SCREENS_MS = 1000L
 
@@ -82,6 +85,7 @@ class WalletViewModel @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private var automaticRefreshJob: Job? = null
     private val refreshFlow = MutableSharedFlow<RefreshType>()
     private val accountsFlow = getProfileUseCase.flow.map {
         it.activeAccountsOnCurrentNetwork
@@ -261,7 +265,12 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun loadAssets(refreshType: RefreshType) {
+        automaticRefreshJob?.cancel()
         viewModelScope.launch { refreshFlow.emit(refreshType) }
+        automaticRefreshJob = viewModelScope.launch {
+            delay(REFRESH_INTERVAL)
+            loadAssets(refreshType = RefreshType.Automatic)
+        }
     }
 
     fun onRefresh() {
@@ -300,10 +309,9 @@ class WalletViewModel @Inject constructor(
         val overrideCache: Boolean
         val showRefreshIndicator: Boolean
 
-        data object None: RefreshType {
+        data object None : RefreshType {
             override val overrideCache: Boolean = false
             override val showRefreshIndicator: Boolean = false
-
         }
 
         data class Manual(
@@ -330,7 +338,7 @@ class WalletViewModel @Inject constructor(
 
         val accountUiItems: List<AccountUiItem> = accountsWithAssets.orEmpty().map { accountWithAssets ->
             val isFiatBalanceVisible = prices !is PricesState.Disabled &&
-                    (accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance)
+                (accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance)
 
             val account = accountWithAssets.account
 
@@ -358,7 +366,7 @@ class WalletViewModel @Inject constructor(
         val totalBalance: FiatPrice? = (prices as? PricesState.Enabled)?.totalBalance
 
         val isLoadingTotalBalance = prices is PricesState.None ||
-                (prices is PricesState.Enabled && accountsWithAssets.orEmpty().any { prices.isLoadingBalance(it) })
+            (prices is PricesState.Enabled && accountsWithAssets.orEmpty().any { prices.isLoadingBalance(it) })
 
         fun loadingAssets(
             accounts: List<Account>,
@@ -444,14 +452,13 @@ class WalletViewModel @Inject constructor(
 
                     FiatPrice(price = total, currency = currency)
                 }
-
             }
 
             // Price service not available, nothing is shown
             data object Disabled : PricesState
 
             fun isLoadingBalance(forAccount: AccountWithAssets): Boolean = this is None ||
-                    (this is Enabled && !pricesPerAccount.containsKey(forAccount.account.address))
+                (this is Enabled && !pricesPerAccount.containsKey(forAccount.account.address))
 
             /**
              * if the account has zero assets then return Zero price
@@ -483,5 +490,9 @@ class WalletViewModel @Inject constructor(
 
     internal sealed interface Event : OneOffEvent {
         data object NavigateToSecurityCenter : Event
+    }
+
+    companion object {
+        private val REFRESH_INTERVAL = 5.minutes
     }
 }

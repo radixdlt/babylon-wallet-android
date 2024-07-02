@@ -223,12 +223,12 @@ class TestnetFiatPriceRepository @Inject constructor(
             }
         } else {
             val lastUpdatedAt = cachedPrice.updatedAt
-            if (isRefreshing || lastUpdatedAt.isBefore(OffsetDateTime.now().minusMinutes(5))) {
+            if (isRefreshing || lastUpdatedAt.isBefore(OffsetDateTime.now().minusMinutes(MEMORY_CACHE_VALIDITY_MINUTES))) {
                 val price = cachedPrice.price.price.toDouble()
                 FiatPrice(
                     price = Random.nextDouble(
-                        from = (price - 0.01).coerceAtLeast(0.01),
-                        until = price + 0.01
+                        from = (price - PRICE_FLUCTUATION).coerceAtLeast(PRICE_MINIMUM),
+                        until = price + PRICE_FLUCTUATION
                     ).toDecimal192(),
                     currency = SupportedCurrency.USD
                 ).also {
@@ -247,4 +247,10 @@ class TestnetFiatPriceRepository @Inject constructor(
         val price: FiatPrice,
         val updatedAt: Timestamp
     )
+
+    companion object {
+        private const val MEMORY_CACHE_VALIDITY_MINUTES = 5L
+        private const val PRICE_FLUCTUATION = 0.01
+        private const val PRICE_MINIMUM = 0.01
+    }
 }
