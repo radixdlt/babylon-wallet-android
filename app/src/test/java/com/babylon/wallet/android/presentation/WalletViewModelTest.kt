@@ -9,7 +9,6 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
-import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
@@ -138,7 +137,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
         viewModel.state.test {
             assertEquals(
-                WalletUiState(),
+                WalletViewModel.State(),
                 expectMostRecentItem()
             )
         }

@@ -89,7 +89,6 @@ fun List<EntityWithSecurityPrompt>.personaPrompts() = mapNotNull {
     identityAddress.v1 to it.prompts
 }.associate { it }
 
-
 enum class SecurityPromptType {
     WRITE_DOWN_SEED_PHRASE,
     RECOVERY_REQUIRED,
