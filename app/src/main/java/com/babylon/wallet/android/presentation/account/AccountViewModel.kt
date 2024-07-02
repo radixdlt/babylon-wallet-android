@@ -443,7 +443,7 @@ class AccountViewModel @Inject constructor(
 
         fun onAssetsError(error: Throwable): State = copy(
             refreshType = RefreshType.None,
-            uiMessage = UiMessage.ErrorMessage(error = error)
+            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error = error)
         )
 
         fun onAssetsReceived(assets: Assets?): State = copy(
