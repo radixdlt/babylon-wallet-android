@@ -16,7 +16,6 @@ import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
-import com.babylon.wallet.android.presentation.account.AccountViewModel.State.RefreshType.*
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -25,7 +24,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
-import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
@@ -53,6 +52,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -108,54 +108,34 @@ class AccountViewModel @Inject constructor(
             accountFlow,
             refreshFlow.onStart {
                 loadAccountDetails(
-                    refreshType = Manual(
-                        overrideCache = false,
-                        showRefreshIndicator = false,
-                        firstRequest = true
-                    )
+                    refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = true)
                 )
             }
         ) { account, refreshEvent ->
             _state.update { it.onAccount(account, refreshEvent) }
             account
         }.flatMapLatest { account ->
-            Timber.tag("WALLET").d("ACCOUNT Override: ${_state.value.refreshType.overrideCache}")
             getWalletAssetsUseCase(
                 accounts = listOf(account),
                 isRefreshing = _state.value.refreshType.overrideCache
             ).catch { error ->
-                _state.update {
-                    it.copy(
-                        refreshType = None,
-                        uiMessage = UiMessage.ErrorMessage(error = error)
-                    )
-                }
+                _state.update { it.onAssetsError(error = error) }
             }.mapNotNull { it.firstOrNull() }
         }.onEach { accountWithAssets ->
             val refreshState = state.value.refreshType
 
-            // Update assets of the account each time they are updated
-            _state.update { state ->
-                state.copy(
-                    accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets),
-                    refreshType = None
-                )
-            }
+            _state.update { it.onAssetsReceived(assets = accountWithAssets.assets) }
 
             getFiatValueUseCase.forAccount(
                 accountWithAssets = accountWithAssets,
                 isRefreshing = refreshState.overrideCache
             ).onSuccess { assetsPrices ->
-                _state.update { state ->
-                    state.copy(
-                        pricesState = State.PricesState.Enabled(assetsPrices.associateBy { it.asset })
-                    )
-                }
-            }.onFailure {
-                if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                    disableFiatPrices()
+                _state.update { it.onPricesReceived(prices = assetsPrices) }
+            }.onFailure { error ->
+                if (error is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                    _state.update { it.onPricesDisabled() }
                 } else {
-                    Timber.e("Failed to fetch prices for account: ${it.message}")
+                    Timber.e("Failed to fetch prices for account: ${error.message}")
                     // now try to fetch prices per asset of the account
                     getAssetsPricesForAccount(
                         accountWithAssets = accountWithAssets,
@@ -165,8 +145,12 @@ class AccountViewModel @Inject constructor(
             }
 
             if (refreshState.isFirstRefreshRequest()) {
+                /**
+                 * Only in the first time we ask to fetch data again
+                 * So user does not have to wait [REFRESH_INTERVAL] to get fresh data
+                 */
                 loadAccountDetails(
-                    refreshType = Manual(overrideCache = true, showRefreshIndicator = false, firstRequest = false)
+                    refreshType = State.RefreshType.Manual(overrideCache = true, showRefreshIndicator = false, firstRequest = false)
                 )
             }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
@@ -175,11 +159,11 @@ class AccountViewModel @Inject constructor(
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.RefreshAssetsNeeded || event is AppEvent.RestoredMnemonic
+                event is RefreshAssetsNeeded || event is RestoredMnemonic
             }.collect { event ->
                 when (event) {
-                    AppEvent.RefreshAssetsNeeded -> loadAccountDetails(
-                        refreshType = Manual(
+                    RefreshAssetsNeeded -> loadAccountDetails(
+                        refreshType = State.RefreshType.Manual(
                             overrideCache = true,
                             showRefreshIndicator = true,
                             firstRequest = false
@@ -187,7 +171,7 @@ class AccountViewModel @Inject constructor(
                     )
 
                     RestoredMnemonic -> loadAccountDetails(
-                        refreshType = Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = false)
+                        refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = false)
                     )
 
                     else -> {}
@@ -228,7 +212,7 @@ class AccountViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadAccountDetails(refreshType = Manual(overrideCache = true, showRefreshIndicator = true, firstRequest = false))
+        loadAccountDetails(refreshType = State.RefreshType.Manual(overrideCache = true, showRefreshIndicator = true, firstRequest = false))
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -362,12 +346,6 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    private fun disableFiatPrices() {
-        _state.update { accountUiState ->
-            accountUiState.copy(pricesState = State.PricesState.Disabled)
-        }
-    }
-
     internal sealed interface Event : OneOffEvent {
         data object NavigateToSecurityCenter : Event
         data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Account) : Event
@@ -381,7 +359,7 @@ class AccountViewModel @Inject constructor(
     data class State(
         val accountWithAssets: AccountWithAssets? = null,
         private val pricesState: PricesState = PricesState.None,
-        val refreshType: RefreshType = None,
+        val refreshType: RefreshType = RefreshType.None,
         val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
         val pendingStakeUnits: Boolean = false,
         val securityPrompts: List<SecurityPromptType>? = null,
@@ -463,6 +441,24 @@ class AccountViewModel @Inject constructor(
             refreshType = refreshType
         )
 
+        fun onAssetsError(error: Throwable): State = copy(
+            refreshType = RefreshType.None,
+            uiMessage = UiMessage.ErrorMessage(error = error)
+        )
+
+        fun onAssetsReceived(assets: Assets?): State = copy(
+            accountWithAssets = accountWithAssets?.copy(assets = assets),
+            refreshType = State.RefreshType.None
+        )
+
+        fun onPricesReceived(prices: List<AssetPrice>): State = copy(
+            pricesState = PricesState.Enabled(prices.associateBy { it.asset })
+        )
+
+        fun onPricesDisabled(): State = copy(
+            pricesState = PricesState.Disabled
+        )
+
         fun onNFTsLoading(forResource: Resource.NonFungibleResource): State {
             return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
         }
@@ -475,7 +471,7 @@ class AccountViewModel @Inject constructor(
                         nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
                             predicate = {
                                 it.collection.address == forResource.address &&
-                                        it.collection.items.size < forResource.items.size
+                                    it.collection.items.size < forResource.items.size
                             },
                             mutation = { NonFungibleCollection(forResource) }
                         )
