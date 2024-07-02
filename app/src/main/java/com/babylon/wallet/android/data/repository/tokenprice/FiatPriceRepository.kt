@@ -15,16 +15,20 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.toDouble
 import rdx.works.peerdroid.di.IoDispatcher
 import timber.log.Timber
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Qualifier
 import kotlin.random.Random
@@ -156,6 +160,8 @@ class TestnetFiatPriceRepository @Inject constructor(
         "resource_rdx1tkk83magp3gjyxrpskfsqwkg4g949rmcjee4tu2xmw93ltw2cz94sq"
     ).map { ResourceAddress.init(it) }
 
+    private val testnetPricesCache: MutableMap<ResourceAddress, TestnetPrice> = mutableMapOf()
+
     override suspend fun updateFiatPrices(currency: SupportedCurrency): Result<Unit> {
         if (!BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
             return Result.failure(FiatPriceRepository.PricesNotSupportedInNetwork())
@@ -191,8 +197,7 @@ class TestnetFiatPriceRepository @Inject constructor(
                     if (priceRequestAddress.address in XrdResource.addressesPerNetwork().values) {
                         priceRequestAddress.address to xrdPrice
                     } else {
-                        val randomPrice = prices.entries.elementAt(Random.nextInt(prices.entries.size)).value
-                        priceRequestAddress.address to randomPrice
+                        priceRequestAddress.address to getTestnetPrice(address = priceRequestAddress.address, isRefreshing = isRefreshing)
                     }
                 }.mapNotNull { addressAndFiatPrice ->
                     addressAndFiatPrice.value?.let { fiatPrice -> addressAndFiatPrice.key to fiatPrice }
@@ -202,4 +207,44 @@ class TestnetFiatPriceRepository @Inject constructor(
             }
         }
     }
+
+    private fun getTestnetPrice(address: ResourceAddress, isRefreshing: Boolean): FiatPrice {
+        val cachedPrice = testnetPricesCache[address]
+
+        return if (cachedPrice == null) {
+            FiatPrice(
+                price = Random.nextDouble(from = 0.01, until = 1.0).toDecimal192(),
+                currency = SupportedCurrency.USD
+            ).also {
+                testnetPricesCache[address] = TestnetPrice(
+                    price = it,
+                    updatedAt = Timestamp.now()
+                )
+            }
+        } else {
+            val lastUpdatedAt = cachedPrice.updatedAt
+            if (isRefreshing || lastUpdatedAt.isBefore(OffsetDateTime.now().minusMinutes(5))) {
+                val price = cachedPrice.price.price.toDouble()
+                FiatPrice(
+                    price = Random.nextDouble(
+                        from = (price - 0.01).coerceAtLeast(0.01),
+                        until = price + 0.01
+                    ).toDecimal192(),
+                    currency = SupportedCurrency.USD
+                ).also {
+                    testnetPricesCache[address] = TestnetPrice(
+                        price = it,
+                        updatedAt = Timestamp.now()
+                    )
+                }
+            } else {
+                cachedPrice.price
+            }
+        }
+    }
+
+    private data class TestnetPrice(
+        val price: FiatPrice,
+        val updatedAt: Timestamp
+    )
 }
