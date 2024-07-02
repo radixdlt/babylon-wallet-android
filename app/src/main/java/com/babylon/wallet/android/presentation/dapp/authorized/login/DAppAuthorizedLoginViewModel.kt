@@ -584,11 +584,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onAbortDappLogin(walletWalletErrorType: DappWalletInteractionErrorType = DappWalletInteractionErrorType.REJECTED_BY_USER) {
         viewModelScope.launch {
+            sendEvent(Event.CloseLoginFlow)
             incomingRequestRepository.requestHandled(request.interactionId)
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
             }
-            sendEvent(Event.CloseLoginFlow)
         }
     }
 
