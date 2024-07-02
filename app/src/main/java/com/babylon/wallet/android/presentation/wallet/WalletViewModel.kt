@@ -205,7 +205,7 @@ class WalletViewModel @Inject constructor(
             // Only when all assets have concluded (either success or error) then we
             // can request for prices.
             if (accountsWithAssets.none { it.assets == null }) {
-                Timber.tag("WALLET").d("Getting prices")
+                Timber.tag("WALLET").d("Getting prices, $overrideCache")
 
                 val pricesPerAccount = mutableMapOf<AccountAddress, List<AssetPrice>?>()
                 for (accountWithAssets in accountsWithAssets) {
