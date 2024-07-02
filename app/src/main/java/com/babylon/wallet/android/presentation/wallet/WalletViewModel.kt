@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -26,7 +27,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
@@ -234,8 +234,8 @@ class WalletViewModel @Inject constructor(
     private fun observePrompts() {
         viewModelScope.launch {
             getEntitiesWithSecurityPromptUseCase()
-                .onEach { entitiesWithSecurityPrompt ->
-                    _state.update { it.copy(entitiesWithSecurityPrompt = entitiesWithSecurityPrompt) }
+                .onEach { entitiesWithSecurityPrompts ->
+                    _state.update { it.copy(accountsWithSecurityPrompts = entitiesWithSecurityPrompts.accountPrompts()) }
                 }
                 .flowOn(defaultDispatcher)
                 .collect()
@@ -323,7 +323,7 @@ class WalletViewModel @Inject constructor(
     data class State(
         val isRefreshing: Boolean = false,
         private val accountsWithAssets: List<AccountWithAssets>? = null,
-        private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
+        private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val isRadixBannerVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
@@ -339,10 +339,7 @@ class WalletViewModel @Inject constructor(
                 account = account,
                 address = ActionableAddress.Address(account.address.asGeneral()),
                 assets = accountWithAssets.assets,
-                securityPrompts = entitiesWithSecurityPrompt.find {
-                    // TODO improve this
-                    it.entity.address.string == accountWithAssets.account.address.string
-                }?.prompts?.toList(),
+                securityPrompts = accountsWithSecurityPrompts[account.address]?.toList(),
                 tag = when {
                     !accountWithAssets.isDappDefinitionAccountType && !account.isOlympia && !account.isLedgerAccount -> null
                     accountWithAssets.isDappDefinitionAccountType -> AccountTag.DAPP_DEFINITION
@@ -434,7 +431,7 @@ class WalletViewModel @Inject constructor(
             ) : PricesState {
 
                 val totalBalance: FiatPrice? = run {
-                    val prices = (this as? PricesState.Enabled)?.pricesPerAccount ?: return@run null
+                    val prices = (this as? Enabled)?.pricesPerAccount ?: return@run null
 
                     val isAnyAccountTotalFailed = prices.values.any { assetsPrices -> assetsPrices == null }
                     if (isAnyAccountTotalFailed) return@run null
