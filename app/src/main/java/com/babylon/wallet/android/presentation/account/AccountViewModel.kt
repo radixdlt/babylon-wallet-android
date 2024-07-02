@@ -16,6 +16,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
+import com.babylon.wallet.android.presentation.account.AccountViewModel.State.RefreshType.*
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -24,7 +25,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
-import com.babylon.wallet.android.presentation.wallet.WalletViewModel.RefreshType
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
@@ -107,7 +107,13 @@ class AccountViewModel @Inject constructor(
         combine(
             accountFlow,
             refreshFlow.onStart {
-                loadAccountDetails(refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+                loadAccountDetails(
+                    refreshType = Manual(
+                        overrideCache = false,
+                        showRefreshIndicator = false,
+                        firstRequest = true
+                    )
+                )
             }
         ) { account, refreshEvent ->
             _state.update { it.onAccount(account, refreshEvent) }
@@ -120,7 +126,7 @@ class AccountViewModel @Inject constructor(
             ).catch { error ->
                 _state.update {
                     it.copy(
-                        refreshType = State.RefreshType.None,
+                        refreshType = None,
                         uiMessage = UiMessage.ErrorMessage(error = error)
                     )
                 }
@@ -132,7 +138,7 @@ class AccountViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(
                     accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets),
-                    refreshType = State.RefreshType.None
+                    refreshType = None
                 )
             }
 
@@ -157,6 +163,12 @@ class AccountViewModel @Inject constructor(
                     )
                 }
             }
+
+            if (refreshState.isFirstRefreshRequest()) {
+                loadAccountDetails(
+                    refreshType = Manual(overrideCache = true, showRefreshIndicator = false, firstRequest = false)
+                )
+            }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
     }
 
@@ -167,14 +179,15 @@ class AccountViewModel @Inject constructor(
             }.collect { event ->
                 when (event) {
                     AppEvent.RefreshAssetsNeeded -> loadAccountDetails(
-                        refreshType = State.RefreshType.Manual(
+                        refreshType = Manual(
                             overrideCache = true,
-                            showRefreshIndicator = true
+                            showRefreshIndicator = true,
+                            firstRequest = false
                         )
                     )
 
                     RestoredMnemonic -> loadAccountDetails(
-                        refreshType = State.RefreshType.Manual(overrideCache = false, showRefreshIndicator = false)
+                        refreshType = Manual(overrideCache = false, showRefreshIndicator = false, firstRequest = false)
                     )
 
                     else -> {}
@@ -215,7 +228,7 @@ class AccountViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadAccountDetails(refreshType = State.RefreshType.Manual(overrideCache = true, showRefreshIndicator = true))
+        loadAccountDetails(refreshType = Manual(overrideCache = true, showRefreshIndicator = true, firstRequest = false))
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -368,7 +381,7 @@ class AccountViewModel @Inject constructor(
     data class State(
         val accountWithAssets: AccountWithAssets? = null,
         private val pricesState: PricesState = PricesState.None,
-        val refreshType: RefreshType = RefreshType.None,
+        val refreshType: RefreshType = None,
         val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
         val pendingStakeUnits: Boolean = false,
         val securityPrompts: List<SecurityPromptType>? = null,
@@ -383,6 +396,8 @@ class AccountViewModel @Inject constructor(
             val overrideCache: Boolean
             val showRefreshIndicator: Boolean
 
+            fun isFirstRefreshRequest(): Boolean = if (this is Manual) this.firstRequest else false
+
             data object None : RefreshType {
                 override val overrideCache: Boolean = false
                 override val showRefreshIndicator: Boolean = false
@@ -390,7 +405,8 @@ class AccountViewModel @Inject constructor(
 
             data class Manual(
                 override val overrideCache: Boolean,
-                override val showRefreshIndicator: Boolean
+                override val showRefreshIndicator: Boolean,
+                val firstRequest: Boolean
             ) : RefreshType
 
             data object Automatic : RefreshType {
@@ -459,7 +475,7 @@ class AccountViewModel @Inject constructor(
                         nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
                             predicate = {
                                 it.collection.address == forResource.address &&
-                                    it.collection.items.size < forResource.items.size
+                                        it.collection.items.size < forResource.items.size
                             },
                             mutation = { NonFungibleCollection(forResource) }
                         )
