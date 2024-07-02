@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.presentation.account.AccountViewModel.State.RefreshType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -42,7 +43,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -390,7 +390,7 @@ class WalletViewModel @Inject constructor(
             error: Throwable
         ): State = copy(
             refreshType = RefreshType.None,
-            uiMessage = UiMessage.ErrorMessage(error),
+            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error),
             accountsWithAssets = accountsWithAssets?.map { accountWithAssets ->
                 if (accountWithAssets.assets == null) {
                     // If assets don't exist leave them empty
