@@ -82,6 +82,7 @@ import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.toEncodedString
 import kotlin.math.absoluteValue
 
+@Suppress("TooManyFunctions")
 object Thumbnail {
 
     @Composable
@@ -263,12 +264,27 @@ object Thumbnail {
         dapp: DApp?,
         shape: Shape = RadixTheme.shapes.roundedRectDefault
     ) {
+        DApp(
+            modifier = modifier,
+            dAppIconUrl = dapp?.iconUrl,
+            dAppName = dapp?.name.orEmpty(),
+            shape = shape
+        )
+    }
+
+    @Composable
+    fun DApp(
+        modifier: Modifier = Modifier,
+        dAppIconUrl: Uri?,
+        dAppName: String,
+        shape: Shape = RadixTheme.shapes.roundedRectDefault
+    ) {
         Custom(
             modifier = modifier,
-            imageType = dapp?.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
+            imageType = dAppIconUrl?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
             emptyDrawable = R.drawable.ic_dapp,
             shape = shape,
-            contentDescription = dapp?.name.orEmpty()
+            contentDescription = dAppName
         )
     }
 
