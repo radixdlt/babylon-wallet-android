@@ -35,9 +35,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
-import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
-import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.Account
@@ -66,8 +64,8 @@ fun TransactionAccountWithGuaranteesCard(
                 .fillMaxWidth()
                 .background(
                     brush = when (accountWithGuarantee) {
-                        is Other -> SolidColor(RadixTheme.colors.gray2)
-                        is Owned -> accountWithGuarantee.account.appearanceId.gradient()
+                        is AccountWithPredictedGuarantee.Other -> SolidColor(RadixTheme.colors.gray2)
+                        is AccountWithPredictedGuarantee.Owned -> accountWithGuarantee.account.appearanceId.gradient()
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
@@ -76,11 +74,11 @@ fun TransactionAccountWithGuaranteesCard(
         ) {
             Text(
                 text = when (accountWithGuarantee) {
-                    is Other -> stringResource(
+                    is AccountWithPredictedGuarantee.Other -> stringResource(
                         id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName
                     )
 
-                    is Owned -> accountWithGuarantee.account.displayName.value
+                    is AccountWithPredictedGuarantee.Owned -> accountWithGuarantee.account.displayName.value
                 },
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
@@ -246,7 +244,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
     RadixWalletTheme {
         val state: MutableState<AccountWithPredictedGuarantee> = remember {
             mutableStateOf(
-                Owned(
+                AccountWithPredictedGuarantee.Owned(
                     account = Account.sampleMainnet(),
                     transferable = TransferableAsset.Fungible.Token(
                         amount = 10.toDecimal192(),

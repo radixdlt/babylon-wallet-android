@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DetailedManifestClass

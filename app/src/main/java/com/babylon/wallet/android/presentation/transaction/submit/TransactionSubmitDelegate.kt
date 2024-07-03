@@ -17,8 +17,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.Event
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
@@ -198,7 +198,7 @@ class TransactionSubmitDelegate @Inject constructor(
                         reportFailure(radixWalletException)
                         appEventBus.sendEvent(
                             AppEvent.Status.Transaction.Fail(
-                                requestId = transactionRequest.interactionId.toString(),
+                                requestId = transactionRequest.interactionId,
                                 transactionId = "",
                                 isInternal = transactionRequest.isInternal,
                                 errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),

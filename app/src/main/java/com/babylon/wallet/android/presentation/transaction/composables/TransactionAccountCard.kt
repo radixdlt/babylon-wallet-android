@@ -25,9 +25,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
-import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -119,15 +117,15 @@ fun TransactionAccountCardHeader(
 ) {
     AccountCardHeader(
         displayName = when (account) {
-            is Other -> stringResource(id = R.string.transactionReview_externalAccountName)
-            is Owned -> account.account.displayName.value
+            is AccountWithTransferableResources.Other -> stringResource(id = R.string.transactionReview_externalAccountName)
+            is AccountWithTransferableResources.Owned -> account.account.displayName.value
         },
         modifier = modifier
             .fillMaxWidth()
             .background(
                 brush = when (account) {
-                    is Other -> SolidColor(RadixTheme.colors.gray2)
-                    is Owned -> account.account.appearanceId.gradient()
+                    is AccountWithTransferableResources.Other -> SolidColor(RadixTheme.colors.gray2)
+                    is AccountWithTransferableResources.Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape
             )
@@ -183,7 +181,7 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
 fun TransactionAccountCardPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
-            account = Owned(
+            account = AccountWithTransferableResources.Owned(
                 account = Account.sampleMainnet(),
                 resources = listOf(
                     Transferable.Withdrawing(

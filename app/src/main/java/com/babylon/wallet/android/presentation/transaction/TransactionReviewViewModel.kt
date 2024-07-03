@@ -1,17 +1,12 @@
 package com.babylon.wallet.android.presentation.transaction
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
@@ -19,13 +14,16 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -33,20 +31,11 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
-import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
-import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
-import com.radixdlt.sargon.extensions.div
-import com.radixdlt.sargon.extensions.formattedTextField
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
-import com.radixdlt.sargon.extensions.parseFromTextField
-import com.radixdlt.sargon.extensions.plus
-import com.radixdlt.sargon.extensions.rounded
-import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -55,12 +44,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Badge
-import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
-import rdx.works.core.domain.roundedWith
-import rdx.works.core.mapWhen
-import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -438,36 +423,6 @@ sealed interface Event : OneOffEvent {
     data object Dismiss : Event
 }
 
-data class TransactionErrorMessage(
-    private val error: Throwable?
-) {
-
-    private val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
-
-    /**
-     * True when this error will end up abandoning the transaction. Displayed as a dialog.
-     */
-    val isTerminalError: Boolean
-        get() = isNoMnemonicErrorVisible ||
-            error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
-            error is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities ||
-            error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction ||
-            error is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
-
-    val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
-
-    @Composable
-    fun getTitle(): String {
-        return if (isNoMnemonicErrorVisible) {
-            stringResource(id = R.string.transactionReview_noMnemonicError_title)
-        } else if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction) {
-            stringResource(id = R.string.ledgerHardwareDevices_couldNotSign_title)
-        } else {
-            stringResource(id = R.string.common_errorAlertTitle)
-        }
-    }
-}
-
 sealed interface PreviewType {
     data object None : PreviewType
 
@@ -530,193 +485,3 @@ sealed interface PreviewType {
         ) : Transfer
     }
 }
-
-data class AccountWithDepositSettingsChanges(
-    val account: Account,
-    val defaultDepositRule: DepositRule? = null,
-    val assetChanges: List<AssetPreferenceChange> = emptyList(),
-    val depositorChanges: List<DepositorPreferenceChange> = emptyList()
-) {
-    data class AssetPreferenceChange(
-        val change: ChangeType,
-        val resource: Resource? = null
-    ) {
-        enum class ChangeType {
-            Allow, Disallow, Clear
-        }
-    }
-
-    data class DepositorPreferenceChange(
-        val change: ChangeType,
-        val resource: Resource? = null
-    ) {
-        enum class ChangeType {
-            Add, Remove
-        }
-    }
-
-    val onlyDepositRuleChanged: Boolean
-        get() = assetChanges.isEmpty() && depositorChanges.isEmpty()
-}
-
-@Suppress("MagicNumber")
-sealed interface AccountWithPredictedGuarantee {
-    val address: AccountAddress
-    val transferable: TransferableAsset.Fungible
-    val instructionIndex: Long
-    val guaranteeAmountString: String
-
-    val guaranteeOffsetDecimal: Decimal192
-        get() = Decimal192.Companion.parseFromTextField(guaranteeAmountString).decimal.orZero() / 100.toDecimal192()
-
-    val guaranteedAmount: Decimal192
-        get() = (transferable.amount * guaranteeOffsetDecimal).roundedWith(divisibility)
-
-    private val divisibility: Divisibility?
-        get() = when (val asset = transferable) {
-            is TransferableAsset.Fungible.Token -> {
-                asset.resource.divisibility
-            }
-
-            is TransferableAsset.Fungible.LSUAsset -> {
-                asset.resource.divisibility
-            }
-
-            is TransferableAsset.Fungible.PoolUnitAsset -> {
-                asset.resource.divisibility
-            }
-        }
-
-    fun increase(): AccountWithPredictedGuarantee {
-        val newOffset = ((guaranteeOffsetDecimal + changeOffset) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
-        return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.formattedTextField())
-            is Owned -> copy(guaranteeAmountString = newOffset.formattedTextField())
-        }
-    }
-
-    fun decrease(): AccountWithPredictedGuarantee {
-        val newOffset = ((guaranteeOffsetDecimal - changeOffset).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
-        return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.formattedTextField())
-            is Owned -> copy(guaranteeAmountString = newOffset.formattedTextField())
-        }
-    }
-
-    fun change(amount: String): AccountWithPredictedGuarantee {
-        val value = amount.toFloatOrNull() ?: 0f
-        return if (value >= 0f) {
-            when (this) {
-                is Other -> copy(guaranteeAmountString = amount)
-                is Owned -> copy(guaranteeAmountString = amount)
-            }
-        } else {
-            this
-        }
-    }
-
-    fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
-        transferable.resourceAddress == with.transferable.resourceAddress
-
-    data class Owned(
-        val account: Account,
-        override val transferable: TransferableAsset.Fungible,
-        override val instructionIndex: Long,
-        override val guaranteeAmountString: String
-    ) : AccountWithPredictedGuarantee {
-        override val address: AccountAddress
-            get() = account.address
-    }
-
-    data class Other(
-        override val address: AccountAddress,
-        override val transferable: TransferableAsset.Fungible,
-        override val instructionIndex: Long,
-        override val guaranteeAmountString: String
-    ) : AccountWithPredictedGuarantee
-
-    companion object {
-        private val changeOffset = 0.01.toDecimal192()
-    }
-}
-
-sealed interface AccountWithTransferableResources {
-
-    val address: AccountAddress
-    val resources: List<Transferable>
-
-    data class Owned(
-        val account: Account,
-        override val resources: List<Transferable>
-    ) : AccountWithTransferableResources {
-        override val address: AccountAddress
-            get() = account.address
-    }
-
-    data class Other(
-        override val address: AccountAddress,
-        override val resources: List<Transferable>
-    ) : AccountWithTransferableResources
-
-    fun updateFromGuarantees(
-        accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
-    ): AccountWithTransferableResources {
-        val resourcesWithGuaranteesForAccount = accountsWithPredictedGuarantees.filter {
-            it.address == address
-        }
-
-        val resources = resources.mapWhen(
-            predicate = { depositing ->
-                resourcesWithGuaranteesForAccount.any {
-                    it.address == address && it.transferable.resourceAddress == depositing.transferable.resourceAddress
-                }
-            },
-            mutation = { depositing ->
-                val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
-                    it.transferable.resourceAddress == depositing.transferable.resourceAddress
-                }
-
-                if (accountWithGuarantee != null) {
-                    depositing.updateGuarantee(accountWithGuarantee.guaranteeOffsetDecimal)
-                } else {
-                    depositing
-                }
-            }
-        )
-        return when (this) {
-            is Other -> copy(resources = resources)
-            is Owned -> copy(resources = resources)
-        }
-    }
-
-    companion object {
-        class Sorter(
-            private val ownedAccountsOrder: List<Account>
-        ) : Comparator<AccountWithTransferableResources> {
-            override fun compare(thisAccount: AccountWithTransferableResources?, otherAccount: AccountWithTransferableResources?): Int {
-                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
-                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
-
-                return if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
-                    1 // The other account is owned, so it takes higher priority
-                } else if (indexOfOtherAccount == -1 && indexOfThisAccount >= 0) {
-                    -1 // This account is owned, so it takes higher priority
-                } else if (indexOfThisAccount == -1 && indexOfOtherAccount == -1) {
-                    0 // Both accounts are not owned, both considered equal, so they will be sorted according to the receiving order
-                } else {
-                    indexOfThisAccount - indexOfOtherAccount
-                }
-            }
-        }
-    }
-}
-
-fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
-    accountWithTransferableResources.resources.any { it.guaranteeAssertion is GuaranteeAssertion.ForAmount }
-}
-
-fun List<AccountWithTransferableResources>.guaranteesCount(): Int = map { accountWithTransferableResources ->
-    accountWithTransferableResources.resources.filter { transferable ->
-        transferable.guaranteeAssertion is GuaranteeAssertion.ForAmount
-    }
-}.flatten().count()
