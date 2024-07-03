@@ -8,6 +8,13 @@ class GetResourcesUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(addresses: Set<ResourceAddress>, withDetails: Boolean = false) =
-        stateRepository.getResources(addresses = addresses, underAccountAddress = null, withDetails = withDetails)
+    suspend operator fun invoke(
+        addresses: Set<ResourceAddress>,
+        withDetails: Boolean = false
+    ) = stateRepository.getResources(
+        addresses = addresses,
+        underAccountAddress = null,
+        withDetails = withDetails,
+        withAllMetadata = false
+    )
 }

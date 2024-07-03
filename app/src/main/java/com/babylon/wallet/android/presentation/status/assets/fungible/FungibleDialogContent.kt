@@ -23,9 +23,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
+import com.babylon.wallet.android.presentation.status.assets.DescriptionSection
+import com.babylon.wallet.android.presentation.status.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -61,22 +63,9 @@ fun FungibleDialogContent(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (token?.resource != null) {
-            Thumbnail.Fungible(
-                modifier = Modifier.size(104.dp),
-                token = token.resource
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(104.dp)
-                    .radixPlaceholder(
-                        visible = true,
-                        shape = CircleShape
-                    )
-            )
-        }
+        FungibleIconSection(token = token)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
         if (amount != null) {
             TokenBalance(
                 modifier = Modifier
@@ -108,17 +97,12 @@ fun FungibleDialogContent(
         HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        if (!token?.resource?.description.isNullOrBlank()) {
-            Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                text = token?.resource?.description.orEmpty(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        }
+        DescriptionSection(
+            modifier = Modifier.fillMaxWidth(),
+            description = token?.resource?.description,
+            infoUrl = token?.resource?.infoUrl
+        )
+
         AddressRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -129,7 +113,7 @@ fun FungibleDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         if (!isNewlyCreated) {
-            AssetMetadataRow(
+            MetadataView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingSmall),
@@ -159,8 +143,34 @@ fun FungibleDialogContent(
 
             TagsSection(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                tags = token?.resource?.tags,
+                tags = token?.resource?.tags
             )
+
+            token?.resource?.let { resource ->
+                NonStandardMetadataSection(resource = resource)
+            }
         }
+    }
+}
+
+@Composable
+private fun FungibleIconSection(
+    modifier: Modifier = Modifier,
+    token: Token?
+) {
+    if (token?.resource != null) {
+        Thumbnail.Fungible(
+            modifier = modifier.size(104.dp),
+            token = token.resource
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .size(104.dp)
+                .radixPlaceholder(
+                    visible = true,
+                    shape = CircleShape
+                )
+        )
     }
 }

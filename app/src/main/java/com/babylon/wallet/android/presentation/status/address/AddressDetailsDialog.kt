@@ -513,7 +513,8 @@ fun AddressDetailsDialogContentGlobalIdPreview() {
         }
         val actionableAddress = ActionableAddress.GlobalId(
             address = address,
-            isVisitableInDashboard = true
+            isVisitableInDashboard = true,
+            isOnlyLocalIdVisible = false
         )
         AddressDetailsDialogContent(
             state = AddressDetailsDialogViewModel.State(

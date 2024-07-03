@@ -26,6 +26,7 @@ import rdx.works.core.domain.resources.metadata.claimAmount
 import rdx.works.core.domain.resources.metadata.claimEpoch
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
+import rdx.works.core.domain.resources.metadata.infoUrl
 import rdx.works.core.domain.resources.metadata.keyImageUrl
 import rdx.works.core.domain.resources.metadata.name
 import rdx.works.core.domain.resources.metadata.poolAddress
@@ -47,6 +48,12 @@ sealed class Resource {
             is NonFungibleResource -> currentSupply != null && behaviours != null
         }
 
+    val nonStandardMetadata: List<Metadata> by lazy {
+        metadata.filterNot { item ->
+            item.key in ExplicitMetadataKey.entries.map { it.key }.toSet()
+        }
+    }
+
     data class FungibleResource(
         override val address: ResourceAddress,
         val ownedAmount: Decimal192?,
@@ -55,6 +62,7 @@ sealed class Resource {
         val divisibility: Divisibility? = null,
         override val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
+
         override val name: String by lazy {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
         }
@@ -69,6 +77,10 @@ sealed class Resource {
 
         override val iconUrl: Uri? by lazy {
             metadata.iconUrl()
+        }
+
+        val infoUrl: Uri? by lazy {
+            metadata.infoUrl()
         }
 
         override val validatorAddress: ValidatorAddress? by lazy {
@@ -169,6 +181,10 @@ sealed class Resource {
             metadata.iconUrl()
         }
 
+        val infoUrl: Uri? by lazy {
+            metadata.infoUrl()
+        }
+
         val tags: ImmutableList<Tag> by lazy {
             metadata.tags().orEmpty().map {
                 Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
@@ -251,6 +267,7 @@ sealed class Resource {
                         -1
                     }
                 }
+
                 is NonFungibleLocalId.Ruid -> {
                     val otherRuid = other.localId as? NonFungibleLocalId.Ruid
 
@@ -260,6 +277,7 @@ sealed class Resource {
                         -1
                     }
                 }
+
                 is NonFungibleLocalId.Bytes -> {
                     val otherBytes = other.localId as? NonFungibleLocalId.Bytes
 
@@ -269,6 +287,7 @@ sealed class Resource {
                         -1
                     }
                 }
+
                 is NonFungibleLocalId.Integer -> {
                     val otherInteger = (other.localId as? NonFungibleLocalId.Integer)
 

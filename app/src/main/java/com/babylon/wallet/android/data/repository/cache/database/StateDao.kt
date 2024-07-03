@@ -324,6 +324,15 @@ interface StateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDApps(dApps: List<DAppEntity>)
 
+    @Query(
+        """
+        UPDATE ResourceEntity SET
+        metadata = :metadataColumn
+        WHERE address = :resourceAddress
+    """
+    )
+    fun updateMetadata(resourceAddress: ResourceAddress, metadataColumn: MetadataColumn)
+
     companion object {
         val deleteDuration = 1.toDuration(DurationUnit.SECONDS)
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)

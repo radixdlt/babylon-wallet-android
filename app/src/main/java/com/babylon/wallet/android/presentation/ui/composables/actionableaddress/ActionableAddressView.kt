@@ -2,10 +2,7 @@
 
 package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
-import android.content.ClipData
 import android.content.Context
-import android.os.Build
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -40,13 +37,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.copyToClipboard
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
@@ -99,13 +95,15 @@ fun ActionableAddressView(
     modifier: Modifier = Modifier,
     globalId: NonFungibleGlobalId,
     isVisitableInDashboard: Boolean = true,
+    showOnlyLocalId: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
     val actionableAddress by ActionableAddress.remember(
         globalId = globalId,
-        isVisitableInDashboard = isVisitableInDashboard
+        isVisitableInDashboard = isVisitableInDashboard,
+        showOnlyLocalId = showOnlyLocalId
     )
 
     ActionableAddressView(
@@ -170,13 +168,14 @@ private fun ActionableAddressView(
                     appendInlineContent(id = INLINE_ICON_ID)
                 },
                 color = textColor,
-                maxLines = 1,
+                maxLines = address.maxLines,
                 style = textStyle,
                 overflow = TextOverflow.Clip,
                 inlineContent = mapOf(
-                    INLINE_ICON_ID to InlineTextContent(Placeholder(14.sp, 14.sp, PlaceholderVerticalAlign.Center)) {
+                    INLINE_ICON_ID to InlineTextContent(
+                        Placeholder(textStyle.fontSize, textStyle.fontSize, PlaceholderVerticalAlign.Center)
+                    ) {
                         Icon(
-                            modifier = Modifier.size(14.dp),
                             painter = address.icon(),
                             contentDescription = address.contentDescription(),
                             tint = iconColor,
@@ -240,6 +239,7 @@ sealed interface ActionableAddress {
     val icon: AccompaniedIcon
     val action: Action
     val isVisitableInDashboard: Boolean
+    val maxLines: Int
 
     fun rawAddress(): String
 
@@ -268,6 +268,9 @@ sealed interface ActionableAddress {
 
         @Transient
         override val action: Action = Action.Modal
+
+        @Transient
+        override val maxLines: Int = 1
 
         override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
 
@@ -302,17 +305,26 @@ sealed interface ActionableAddress {
         @Serializable(with = NonFungibleGlobalIdSerializer::class)
         val address: NonFungibleGlobalId,
         @SerialName("is_visitable_in_dashboard")
-        override val isVisitableInDashboard: Boolean
+        override val isVisitableInDashboard: Boolean,
+        @SerialName("is_only_local_id_visible")
+        val isOnlyLocalIdVisible: Boolean,
     ) : ActionableAddress {
 
         @Transient
-        override val displayable: String = address.nonFungibleLocalId.formatted(AddressFormat.DEFAULT)
+        override val displayable: String = if (isOnlyLocalIdVisible) {
+            address.nonFungibleLocalId.formatted(AddressFormat.DEFAULT)
+        } else {
+            address.formatted(AddressFormat.DEFAULT)
+        }
 
         @Transient
         override val icon: AccompaniedIcon = AccompaniedIcon.CopyIcon
 
         @Transient
         override val action: Action = Action.Modal
+
+        @Transient
+        override val maxLines: Int = if (isOnlyLocalIdVisible) 1 else Int.MAX_VALUE
 
         override fun rawAddress(): String = address.formatted(format = AddressFormat.RAW)
 
@@ -355,6 +367,9 @@ sealed interface ActionableAddress {
                 }
             }
         )
+
+        @Transient
+        override val maxLines: Int = 1
 
         override fun rawAddress(): String = hash.formatted(format = AddressFormat.RAW)
 
@@ -406,20 +421,11 @@ sealed interface ActionableAddress {
                 fun performAction(context: Context) {
                     when (this) {
                         is Copy -> {
-                            context.getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
-
-                                val clipData = ClipData.newPlainText(
-                                    "Radix Address",
-                                    value
-                                )
-
-                                clipboardManager.setPrimaryClip(clipData)
-
-                                // From Android 13, the system handles the copy confirmation
-                                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                                    Toast.makeText(context, R.string.addressAction_copiedToClipboard, Toast.LENGTH_SHORT).show()
-                                }
-                            }
+                            context.copyToClipboard(
+                                label = "Radix Address",
+                                value = value,
+                                successMessage = context.getString(R.string.addressAction_copiedToClipboard)
+                            )
                         }
 
                         is Dashboard -> context.openUrl(url)
@@ -455,7 +461,8 @@ sealed interface ActionableAddress {
         @Composable
         fun remember(
             globalId: NonFungibleGlobalId,
-            isVisitableInDashboard: Boolean = true
+            isVisitableInDashboard: Boolean = true,
+            showOnlyLocalId: Boolean = true
         ): State<ActionableAddress?> {
             val actionableAddress = remember {
                 mutableStateOf<GlobalId?>(null)
@@ -463,7 +470,7 @@ sealed interface ActionableAddress {
 
             LaunchedEffect(key1 = globalId) {
                 withContext(Dispatchers.Default) {
-                    actionableAddress.value = GlobalId(globalId, isVisitableInDashboard)
+                    actionableAddress.value = GlobalId(globalId, isVisitableInDashboard, showOnlyLocalId)
                 }
             }
 
