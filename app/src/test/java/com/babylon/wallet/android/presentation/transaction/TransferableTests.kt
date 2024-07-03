@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction
 
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
