@@ -13,7 +13,11 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +48,8 @@ import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toDecimal192OrNull
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import java.time.Instant
@@ -173,7 +179,7 @@ fun MetadataKeyView(
     )
 }
 
-@Suppress("CyclomaticComplexMethod")
+@Suppress("CyclomaticComplexMethod", "InjectDispatcher")
 @Composable
 fun MetadataValueView(
     modifier: Modifier = Modifier,
@@ -255,14 +261,24 @@ fun MetadataValueView(
             )
 
             MetadataType.Instant -> {
-                val displayable = remember(metadata.value) {
-                    val epochSeconds = metadata.value.toLongOrNull() ?: return@remember metadata.value
-                    val dateTime = Instant.ofEpochSecond(epochSeconds)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime()
-
-                    dateTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+                var displayable by remember {
+                    mutableStateOf("")
                 }
+
+                LaunchedEffect(metadata.value) {
+                    withContext(Dispatchers.Default) {
+                        val formatted = metadata.value.toLongOrNull()?.let { epochSeconds ->
+                            val dateTime = Instant.ofEpochSecond(epochSeconds)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()
+
+                            dateTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+                        } ?: metadata.value
+
+                        displayable = formatted
+                    }
+                }
+
                 Text(
                     modifier = modifier,
                     text = displayable,
@@ -294,26 +310,48 @@ fun MetadataValueView(
                 iconColor = iconColor
             )
 
-            MetadataType.NonFungibleLocalId -> Text(
-                modifier = modifier,
-                text = remember(metadata.value) {
-                    NonFungibleLocalId.init(metadata.value).formatted(AddressFormat.DEFAULT)
-                },
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
-                textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
-                maxLines = 2
-            )
+            MetadataType.NonFungibleLocalId -> {
+                var displayable by remember {
+                    mutableStateOf("")
+                }
 
-            MetadataType.Decimal -> Text(
-                modifier = modifier,
-                // If value is unable to transform to big decimal we just display raw value
-                text = metadata.value.toDecimal192OrNull()?.formatted() ?: metadata.value,
-                style = style,
-                color = color,
-                textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
-                maxLines = 2
-            )
+                LaunchedEffect(metadata.value) {
+                    withContext(Dispatchers.Default) {
+                        displayable = NonFungibleLocalId.init(metadata.value).formatted(AddressFormat.DEFAULT)
+                    }
+                }
+
+                Text(
+                    modifier = modifier,
+                    text = displayable,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
+                    maxLines = 2
+                )
+            }
+
+            MetadataType.Decimal -> {
+                var displayable by remember {
+                    mutableStateOf("")
+                }
+
+                LaunchedEffect(metadata.value) {
+                    withContext(Dispatchers.Default) {
+                        // If value is unable to transform to Decimal192 we just display raw value
+                        displayable = metadata.value.toDecimal192OrNull()?.formatted() ?: metadata.value
+                    }
+                }
+
+                Text(
+                    modifier = modifier,
+                    text = displayable,
+                    style = style,
+                    color = color,
+                    textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
+                    maxLines = 2
+                )
+            }
 
             MetadataType.Url -> LinkText(
                 modifier = modifier.fillMaxWidth(),
