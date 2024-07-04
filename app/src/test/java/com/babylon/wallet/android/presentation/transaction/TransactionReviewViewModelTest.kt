@@ -69,7 +69,6 @@ import io.mockk.mockkStatic
 import io.mockk.slot
 import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
@@ -226,8 +225,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId.toString()
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarizationResult)
-        coEvery { signTransactionUseCase.signingState } returns emptyFlow()
+        coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
         coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
@@ -260,7 +258,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
-            signTransactionUseCase = signTransactionUseCase,
             analysis = TransactionAnalysisDelegate(
                 previewTypeAnalyzer = previewTypeAnalyzer,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
@@ -273,6 +270,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getProfileUseCase = getProfileUseCase,
             ),
             submit = TransactionSubmitDelegate(
+                signTransactionUseCase = signTransactionUseCase,
                 respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
                 getCurrentGatewayUseCase = getCurrentGatewayUseCase,
                 incomingRequestRepository = incomingRequestRepository,
@@ -293,7 +291,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     fun `transaction approval success`() = runTest {
         val vm = vm.value
         advanceUntilIdle()
-        vm.approveTransaction { true }
+        vm.onApproveTransaction()
         advanceUntilIdle()
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithSuccess(
@@ -308,7 +306,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
         val vm = vm.value
         advanceUntilIdle()
-        vm.approveTransaction { true }
+        vm.onApproveTransaction()
         advanceUntilIdle()
         val errorSlot = slot<DappWalletInteractionErrorType>()
         coVerify(exactly = 1) {
@@ -326,12 +324,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.failure(
+        coEvery { signTransactionUseCase(any()) } returns Result.failure(
             RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value
         advanceUntilIdle()
-        vm.approveTransaction { true }
+        vm.onApproveTransaction()
         advanceUntilIdle()
         val state = vm.state.first()
         val errorSlot = slot<DappWalletInteractionErrorType>()
