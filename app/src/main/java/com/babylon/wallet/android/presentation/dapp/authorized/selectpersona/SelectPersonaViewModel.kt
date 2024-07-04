@@ -102,11 +102,18 @@ class SelectPersonaViewModel @Inject constructor(
                 personaUiModel
             }
         }.sortedByDescending { it.lastUsedOnTimestamp }
-        val currentlySelectedPersona = state.value.personaListToDisplay.firstOrNull { it.selected }
+        var currentlySelectedPersona = state.value.personaListToDisplay.firstOrNull { it.selected }
             ?: updatedPersonas.firstOrNull { it.lastUsedOn != null }
+
+        // When we have a single persona and there are no pre-selected ones, pre-select it.
+        if (currentlySelectedPersona == null && updatedPersonas.size == 1) {
+            currentlySelectedPersona = updatedPersonas[0]
+        }
+
         currentlySelectedPersona?.persona?.let {
             sendEvent(DAppSelectPersonaEvent.PersonaSelected(it))
         }
+
         return updatedPersonas.map { p ->
             p.copy(selected = p.persona.address == currentlySelectedPersona?.persona?.address)
         }
