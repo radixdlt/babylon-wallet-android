@@ -94,7 +94,6 @@ class MainViewModel @Inject constructor(
                 else -> p2PLinksRepository.observeP2PLinks().drop(1)
             }
         }
-        .distinctUntilChanged()
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
             p2pLinks.asList().forEach { p2PLink ->
