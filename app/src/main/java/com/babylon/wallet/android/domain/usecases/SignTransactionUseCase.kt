@@ -4,8 +4,9 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionConfig.EPOCH_WINDOW
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Nonce
@@ -25,21 +26,10 @@ class SignTransactionUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val notariseTransactionUseCase: NotariseTransactionUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
-    private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
 ) {
 
-    // Hopefully this will be removed when this process becomes interactive
-    val signingState = collectSignersSignaturesUseCase.interactionState
-
-    // Hopefully this will be removed when this process becomes interactive
-    fun cancelSigning() {
-        collectSignersSignaturesUseCase.cancel()
-    }
-
-    suspend fun sign(
-        request: Request,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<NotarizationResult> {
+    suspend operator fun invoke(request: Request): Result<NotarizationResult> {
         val manifestWithLockFee = request.manifestWithLockFee
 
         val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
@@ -69,9 +59,8 @@ class SignTransactionUseCase @Inject constructor(
                 ),
                 signatureGatherer = WalletSignatureGatherer(
                     notaryAndSigners = notarySignersAndEpoch.first,
-                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider,
-                    collectSignersSignaturesUseCase = collectSignersSignaturesUseCase
-                ),
+                    accessFactorSourcesProxy = accessFactorSourcesProxy
+                )
             )
         }
     }
@@ -103,17 +92,19 @@ class SignTransactionUseCase @Inject constructor(
      */
     class WalletSignatureGatherer(
         private val notaryAndSigners: NotaryAndSigners,
-        private val deviceBiometricAuthenticationProvider: suspend () -> Boolean,
-        private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
+        private val accessFactorSourcesProxy: AccessFactorSourcesProxy
     ) : NotariseTransactionUseCase.SignatureGatherer {
         override suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>> = runCatching {
             SignRequest.SignTransactionRequest(intent = intent)
         }.then { signRequest ->
-            collectSignersSignaturesUseCase(
-                signers = notaryAndSigners.signers,
-                signRequest = signRequest,
-                deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-            )
+            accessFactorSourcesProxy.getSignatures(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signers = notaryAndSigners.signers,
+                    signRequest = signRequest
+                )
+            ).mapCatching { result ->
+                result.signaturesWithPublicKey
+            }
         }
 
         override suspend fun notarise(signedIntentHash: SignedIntentHash): Result<NotarySignature> = runCatching {
