@@ -49,6 +49,20 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
+    override suspend fun getSignatures(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
+    ): Result<AccessFactorSourcesOutput.Signatures> {
+        input = accessFactorSourcesInput
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.GetSignatures)
+        val result = _output.first()
+
+        return if (result is AccessFactorSourcesOutput.Failure) {
+            Result.failure(result.error)
+        } else {
+            Result.success(result as AccessFactorSourcesOutput.Signatures)
+        }
+    }
+
     override fun getInput(): AccessFactorSourcesInput {
         return input
     }

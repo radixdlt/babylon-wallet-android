@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 
 // interface for clients that need access to factor sources
 interface AccessFactorSourcesProxy {
@@ -17,6 +20,10 @@ interface AccessFactorSourcesProxy {
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
+
+    suspend fun getSignatures(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
+    ): Result<AccessFactorSourcesOutput.Signatures>
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -75,6 +82,11 @@ sealed interface AccessFactorSourcesInput {
         ) : ToReDeriveAccounts
     }
 
+    data class ToGetSignatures(
+        val signers: List<ProfileEntity>,
+        val signRequest: SignRequest
+    ) : AccessFactorSourcesInput
+
     data object Init : AccessFactorSourcesInput
 }
 
@@ -87,6 +99,10 @@ sealed interface AccessFactorSourcesOutput {
     data class DerivedAccountsWithNextDerivationPath(
         val derivedAccounts: List<Account>,
         val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
+    ) : AccessFactorSourcesOutput
+
+    data class Signatures(
+        val signaturesWithPublicKey: List<SignatureWithPublicKey>
     ) : AccessFactorSourcesOutput
 
     data class Failure(
