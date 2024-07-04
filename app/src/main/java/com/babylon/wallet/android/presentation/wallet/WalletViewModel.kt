@@ -19,16 +19,21 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -81,7 +86,8 @@ class WalletViewModel @Inject constructor(
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    private val homeCards: HomeCardsDelegate
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
     private var accountsWithAssets: List<AccountWithAssets>? = null
@@ -115,6 +121,7 @@ class WalletViewModel @Inject constructor(
         observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
+        homeCards(scope = viewModelScope, state = _state)
     }
 
     fun processBufferedDeepLinkRequest() {
@@ -310,6 +317,20 @@ class WalletViewModel @Inject constructor(
         preferencesManager.setRadixBannerVisibility(isVisible = false)
     }
 
+    fun onCardClick(card: HomeCard) {
+        viewModelScope.launch {
+            when (card) {
+                HomeCard.Connector -> sendEvent(WalletEvent.NavigateToLinkConnector)
+                HomeCard.StartRadQuest -> sendEvent(WalletEvent.OpenUrl(RAD_QUEST_URL))
+                else -> {}
+            }
+        }
+    }
+
+    fun onCardClose(card: HomeCard) {
+        homeCards.onCardClose(card)
+    }
+
     private fun shouldEnableFiatPrices(isEnabled: Boolean) {
         _state.update { walletUiState ->
             walletUiState.copy(isFiatBalancesEnabled = isEnabled)
@@ -450,7 +471,12 @@ class WalletViewModel @Inject constructor(
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
+
     data object NavigateToSecurityCenter : WalletEvent
+
+    data object NavigateToLinkConnector : WalletEvent
+
+    data class OpenUrl(val url: String) : WalletEvent
 }
 
 data class WalletUiState(
@@ -460,7 +486,8 @@ data class WalletUiState(
     val isRadixBannerVisible: Boolean = false,
     val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
-    val totalFiatValueOfWallet: FiatPrice? = null
+    val totalFiatValueOfWallet: FiatPrice? = null,
+    val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList()
 ) : UiState {
 
     enum class AccountTag {

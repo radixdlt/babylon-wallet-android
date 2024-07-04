@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Preferences
+import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.SargonBuildInformation
 import com.radixdlt.sargon.extensions.Sargon
 import dagger.hilt.android.lifecycle.HiltViewModel

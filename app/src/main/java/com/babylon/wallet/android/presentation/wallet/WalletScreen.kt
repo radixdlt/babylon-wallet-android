@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import Constants.RADIX_START_PAGE_URL
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,25 +53,30 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.HomeCardsCarousel
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
+import rdx.works.core.sargon.toUrl
 
 @Composable
 fun WalletScreen(
@@ -85,6 +89,7 @@ fun WalletScreen(
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
     onNavigateToConnectCloudBackup: () -> Unit,
+    onNavigateToLinkConnector: () -> Unit,
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -100,7 +105,9 @@ fun WalletScreen(
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
-        onRadixBannerDismiss = viewModel::onRadixBannerDismiss
+        onRadixBannerDismiss = viewModel::onRadixBannerDismiss,
+        onCardClick = viewModel::onCardClick,
+        onCardCloseClick = viewModel::onCardClose
     )
 
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
@@ -129,6 +136,8 @@ fun WalletScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is WalletEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
+                WalletEvent.NavigateToLinkConnector -> onNavigateToLinkConnector()
+                is WalletEvent.OpenUrl -> context.openUrl(it.url)
             }
         }
     }
@@ -170,7 +179,9 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettingsClick: () -> Unit
+    onApplySecuritySettingsClick: () -> Unit,
+    onCardClick: (HomeCard) -> Unit,
+    onCardCloseClick: (HomeCard) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -227,7 +238,9 @@ private fun WalletContent(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
-                onRadixBannerDismiss = onRadixBannerDismiss
+                onRadixBannerDismiss = onRadixBannerDismiss,
+                onCardClick = onCardClick,
+                onCardCloseClick = onCardCloseClick
             )
 
             PullRefreshIndicator(
@@ -250,20 +263,23 @@ private fun WalletAccountList(
     onAccountCreationClick: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onCardClick: (HomeCard) -> Unit,
+    onCardCloseClick: (HomeCard) -> Unit
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        item {
-            Text(
-                text = stringResource(id = R.string.homePage_subtitle),
-                modifier = Modifier.padding(
-                    vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingXXLarge
-                ),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            if (state.isFiatBalancesEnabled) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+        if (state.cards.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                HomeCardsCarousel(
+                    cards = state.cards,
+                    onClick = onCardClick,
+                    onCloseClick = onCardCloseClick
+                )
+            }
+        }
+        if (state.isFiatBalancesEnabled) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(R.string.homePage_totalValue).uppercase(),
                     style = RadixTheme.typography.body2Header,
@@ -404,7 +420,9 @@ private fun WalletContentPreview(
             onRefresh = { },
             onMessageShown = {},
             onApplySecuritySettingsClick = {},
-            onRadixBannerDismiss = {}
+            onRadixBannerDismiss = {},
+            onCardClick = {},
+            onCardCloseClick = {}
         )
     }
 }
@@ -466,7 +484,12 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                 totalFiatValueOfWallet = FiatPrice(
                     price = Decimal192.sample.invoke(),
                     currency = SupportedCurrency.USD
-                )
+                ),
+                cards = listOf(
+                    HomeCard.StartRadQuest,
+                    HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                    HomeCard.Connector
+                ).toPersistentList()
             ),
             WalletUiState(
                 isRadixBannerVisible = true

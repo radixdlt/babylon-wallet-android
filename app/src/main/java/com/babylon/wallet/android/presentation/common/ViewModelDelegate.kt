@@ -9,7 +9,7 @@ open class ViewModelDelegate<T : UiState> {
     lateinit var viewModelScope: CoroutineScope
     lateinit var _state: MutableStateFlow<T>
 
-    operator fun invoke(
+    open operator fun invoke(
         scope: CoroutineScope,
         state: MutableStateFlow<T>
     ) {

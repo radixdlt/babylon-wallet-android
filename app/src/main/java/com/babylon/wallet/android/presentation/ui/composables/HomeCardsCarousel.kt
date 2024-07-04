@@ -56,7 +56,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.Url
+import com.radixdlt.sargon.HomeCard
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.toUrl
@@ -221,7 +221,7 @@ private fun HomeCard.title() = buildAnnotatedString {
     val title = when (this@title) {
         HomeCard.Connector -> stringResource(id = R.string.homePageCarousel_useDappsOnDesktop_title)
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
-        is HomeCard.DApp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
+        is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
     }
     append(title)
@@ -236,7 +236,7 @@ private fun HomeCard.title() = buildAnnotatedString {
 private fun HomeCard.description() = when (this) {
     HomeCard.Connector -> stringResource(id = R.string.homePageCarousel_useDappsOnDesktop_text)
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
-    is HomeCard.DApp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
+    is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
 }
 
@@ -246,7 +246,7 @@ private fun HomeCard.EndIcon(
 ) = when (this) {
     HomeCard.Connector -> {}
     HomeCard.ContinueRadQuest -> {}
-    is HomeCard.DApp -> {
+    is HomeCard.Dapp -> {
         val uri = remember(iconUrl) {
             iconUrl?.let { Uri.parse(it.toString()) }
         }
@@ -267,7 +267,7 @@ private fun HomeCard.EndGraphic(
 ) = when (this) {
     HomeCard.Connector -> painterResource(id = R.drawable.ic_homecarousel_connect)
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
-    is HomeCard.DApp -> null
+    is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
 }.let { painter ->
     if (painter != null) {
@@ -361,14 +361,6 @@ private fun HorizontalPagerIndicator(
     }
 }
 
-// To be replaced with sargon
-sealed interface HomeCard {
-    data object StartRadQuest : HomeCard
-    data object ContinueRadQuest : HomeCard
-    data class DApp(val iconUrl: Url?) : HomeCard
-    data object Connector : HomeCard
-}
-
 private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest
 
 @Preview
@@ -379,7 +371,7 @@ fun HomeCardsCarouselContinueRadQuestPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -400,7 +392,7 @@ fun HomeCardsCarouselStartRadQuestPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -422,7 +414,7 @@ fun HomeCardsCarouselDAppPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -444,7 +436,7 @@ fun HomeCardsCarouselConnectorPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
