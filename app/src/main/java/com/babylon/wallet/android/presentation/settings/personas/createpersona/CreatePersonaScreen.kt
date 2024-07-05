@@ -44,7 +44,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -142,7 +142,7 @@ fun CreatePersonaContent(
         },
         bottomBar = {
             val context = LocalContext.current
-            BottomPrimaryButton(
+            RadixBottomBar(
                 onClick = onPersonaCreateClick,
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
                 enabled = state.continueButtonEnabled,

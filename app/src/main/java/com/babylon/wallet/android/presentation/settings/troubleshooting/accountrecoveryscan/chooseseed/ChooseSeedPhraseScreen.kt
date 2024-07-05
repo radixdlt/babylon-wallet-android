@@ -40,7 +40,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
@@ -108,7 +108,7 @@ private fun ChooseSeedPhraseContent(
         },
         containerColor = RadixTheme.colors.defaultBackground,
         bottomBar = {
-            BottomPrimaryButton(
+            RadixBottomBar(
                 onClick = onUseFactorSource,
                 text = stringResource(id = R.string.common_continue),
                 enabled = state.selectedFactorSource != null,

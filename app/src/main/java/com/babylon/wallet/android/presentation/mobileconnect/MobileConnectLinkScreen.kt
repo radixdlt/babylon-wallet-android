@@ -38,7 +38,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -125,7 +125,7 @@ fun MobileConnectLinkContent(
         },
         bottomBar = {
             if (!state.isLoading) {
-                BottomPrimaryButton(
+                RadixBottomBar(
                     text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                     onClick = onVerify,
                     isLoading = state.isVerifying,

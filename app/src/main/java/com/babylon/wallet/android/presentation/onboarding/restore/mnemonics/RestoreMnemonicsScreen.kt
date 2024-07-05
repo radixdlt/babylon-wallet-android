@@ -48,7 +48,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -174,7 +174,7 @@ private fun RestoreMnemonicsContent(
                 val isSeedPhraseValid = remember(state.seedPhraseState) {
                     state.seedPhraseState.isValidSeedPhrase()
                 }
-                BottomPrimaryButton(
+                RadixBottomBar(
                     text = stringResource(
                         when (state.screenType) {
                             RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton

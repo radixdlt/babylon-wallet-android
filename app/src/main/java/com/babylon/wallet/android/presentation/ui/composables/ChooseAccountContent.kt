@@ -59,7 +59,7 @@ fun ChooseAccountContent(
             )
         },
         bottomBar = {
-            BottomPrimaryButton(
+            RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = isContinueButtonEnabled,
                 text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)

@@ -46,7 +46,7 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.AccountRecoveryScanViewModel.Companion.ACCOUNTS_PER_SCAN
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -159,7 +159,7 @@ private fun AccountRecoveryScanContent(
         containerColor = RadixTheme.colors.defaultBackground,
         bottomBar = {
             if (state.contentState == AccountRecoveryScanViewModel.State.ContentState.ScanComplete) {
-                BottomPrimaryButton(
+                RadixBottomBar(
                     onClick = {
                         if (pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal) {
                             if (state.inactiveAccounts.isNotEmpty()) {

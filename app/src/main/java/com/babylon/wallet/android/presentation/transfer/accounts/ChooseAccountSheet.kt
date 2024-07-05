@@ -46,7 +46,6 @@ import androidx.compose.ui.text.input.PlatformImeOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
@@ -55,7 +54,7 @@ import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -109,7 +108,7 @@ fun ChooseAccountSheet(
         },
         bottomBar = {
             if (state.mode == ChooseAccounts.Mode.Chooser) {
-                BottomPrimaryButton(
+                RadixBottomBar(
                     onClick = onChooseAccountSubmitted,
                     text = stringResource(id = R.string.common_choose),
                     enabled = state.isChooseButtonEnabled,
