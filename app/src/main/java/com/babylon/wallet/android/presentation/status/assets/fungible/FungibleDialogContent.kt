@@ -110,6 +110,21 @@ fun FungibleDialogContent(
             address = Address.Resource(resourceAddress),
             isNewlyCreatedEntity = isNewlyCreated
         )
+        if (!token?.resource?.name.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            MetadataView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                key = stringResource(id = R.string.assetDetails_name)
+            ) {
+                Text(
+                    text = token?.resource?.name.orEmpty(),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         if (!isNewlyCreated) {
