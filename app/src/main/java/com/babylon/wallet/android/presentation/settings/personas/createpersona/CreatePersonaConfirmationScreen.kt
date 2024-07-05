@@ -104,8 +104,6 @@ fun CreatePersonaConfirmationContent(
             )
         }
     }
-
-
 }
 
 @Preview(showBackground = true)

@@ -46,7 +46,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.SetNavigationBarColor
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -111,8 +110,6 @@ fun AccountScreen(
     if (!devBannerState.isVisible) {
         SetStatusBarColor(useDarkIcons = false)
     }
-
-    SetNavigationBarColor(RadixTheme.colors.gray5, true)
 
     AccountScreenContent(
         modifier = modifier,

@@ -46,8 +46,8 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.AccountRecoveryScanViewModel.Companion.ACCOUNTS_PER_SCAN
-import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard

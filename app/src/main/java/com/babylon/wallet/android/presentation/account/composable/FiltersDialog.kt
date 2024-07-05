@@ -45,8 +45,8 @@ import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.presentation.account.history.State
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.Resource
