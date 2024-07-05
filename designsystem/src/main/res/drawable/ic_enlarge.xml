@@ -9,7 +9,6 @@
     <path
         android:pathData="M3,11.353L1.5,11.353v5.357h5.357v-1.5L3,15.21v-3.857zM1.5,7.067L3,7.067L3,3.21h3.857v-1.5L1.5,1.71v5.357zM15,15.21h-3.857v1.5L16.5,16.71v-5.357L15,11.353v3.857zM11.143,1.71v1.5L15,3.21v3.857h1.5L16.5,1.71h-5.357z"
         android:strokeAlpha="0.6"
-        android:fillColor="#003057"
-        android:fillAlpha="0.6"/>
+        android:fillColor="#003057" />
   </group>
 </vector>

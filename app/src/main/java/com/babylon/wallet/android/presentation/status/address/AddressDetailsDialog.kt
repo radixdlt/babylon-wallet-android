@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -262,36 +263,54 @@ private fun FullAddress(
                 onClick = onCopy
             ) {
                 Icon(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .alpha(0.6f),
                     painter = painterResource(id = R.drawable.ic_copy),
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                Text(text = stringResource(id = R.string.addressDetails_copy))
+                Text(
+                    text = stringResource(id = R.string.addressDetails_copy),
+                    style = RadixTheme.typography.body1Header
+                )
             }
 
             TextButton(
                 onClick = onEnlarge
             ) {
                 Icon(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .alpha(0.6f),
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_enlarge),
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                Text(text = stringResource(id = R.string.addressDetails_enlarge))
+                Text(
+                    text = stringResource(id = R.string.addressDetails_enlarge),
+                    style = RadixTheme.typography.body1Header
+                )
             }
 
             TextButton(
                 onClick = onShare
             ) {
                 Icon(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .alpha(0.6f),
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_share),
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                Text(text = stringResource(id = R.string.addressDetails_share))
+                Text(
+                    text = stringResource(id = R.string.addressDetails_share),
+                    style = RadixTheme.typography.body1Header
+                )
             }
         }
     }
