@@ -13,7 +13,6 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
-import com.babylon.wallet.android.presentation.account.AccountViewModel.State.RefreshType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -105,7 +104,7 @@ class WalletViewModel @Inject constructor(
             }
         }
         observePrompts()
-        observeWallet()
+        observeWalletAssets()
         observeGlobalAppEvents()
         observeNpsSurveyState()
         observeShowRelinkConnectors()
@@ -182,7 +181,7 @@ class WalletViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeWallet() {
+    private fun observeWalletAssets() {
         combine(
             accountsFlow,
             refreshFlow.onStart {
