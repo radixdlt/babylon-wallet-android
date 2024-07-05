@@ -29,6 +29,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.toText
@@ -42,7 +43,7 @@ import com.radixdlt.sargon.Address
 @Composable
 fun AccountTopBar(
     modifier: Modifier = Modifier,
-    state: AccountUiState,
+    state: State,
     lazyListState: LazyListState,
     onBackClick: () -> Unit,
     onAccountPreferenceClick: (AccountAddress) -> Unit,

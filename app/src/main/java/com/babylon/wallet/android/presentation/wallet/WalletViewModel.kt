@@ -8,9 +8,9 @@ import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -26,11 +26,11 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +45,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
@@ -64,6 +63,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.minutes
 
 private const val DELAY_BETWEEN_POP_UP_SCREENS_MS = 1000L
 
@@ -82,19 +82,13 @@ class WalletViewModel @Inject constructor(
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private var accountsWithAssets: List<AccountWithAssets>? = null
-    private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
-    private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
-
-    private val refreshFlow = MutableSharedFlow<Unit>()
-    private val accountsFlow = combine(
-        getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
-        refreshFlow.onStart { emit(Unit) }
-    ) { accounts, _ ->
-        accounts
-    }
+    private var automaticRefreshJob: Job? = null
+    private val refreshFlow = MutableSharedFlow<RefreshType>()
+    private val accountsFlow = getProfileUseCase.flow.map {
+        it.activeAccountsOnCurrentNetwork
+    }.distinctUntilChanged()
 
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
@@ -110,7 +104,7 @@ class WalletViewModel @Inject constructor(
             }
         }
         observePrompts()
-        observeAccounts()
+        observeWalletAssets()
         observeGlobalAppEvents()
         observeNpsSurveyState()
         observeShowRelinkConnectors()
@@ -123,7 +117,7 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    override fun initialState() = WalletUiState()
+    override fun initialState() = State()
 
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
 
@@ -187,56 +181,46 @@ class WalletViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun observeAccounts() {
-        accountsFlow.flatMapLatest { accounts ->
-            _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
-
-            this.accountsWithAssets = accounts.map { account ->
-                val current = accountsWithAssets?.find { account == it.account }
-                AccountWithAssets(
-                    account = account,
-                    details = current?.details,
-                    assets = current?.assets
-                )
+    private fun observeWalletAssets() {
+        combine(
+            accountsFlow,
+            refreshFlow.onStart {
+                loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
             }
+        ) { accounts, refreshType ->
+            _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
-            getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
-                _state.update { onAssetsError(error) }
+            accounts
+        }.flatMapLatest { accounts ->
+            getWalletAssetsUseCase(
+                accounts = accounts,
+                isRefreshing = _state.value.refreshType.overrideCache
+            ).catch { error ->
+                _state.update { it.assetsError(error) }
                 Timber.w(error)
-            }
-        }.mapLatest { accountsWithAssets ->
-            this.accountsWithAssets = accountsWithAssets
+            }.distinctUntilChanged()
+        }.onEach { accountsWithAssets ->
+            _state.update { it.assetsReceived(accountsWithAssets) }
 
-            // keep the val here because it's set to false below
-            val isRefreshing = state.value.isRefreshing
-            _state.update {
-                state.value.copy(
-                    isRefreshing = false,
-                    accountUiItems = buildAccountUiItems()
-                )
-            }
+            // Only when all assets have concluded (either success or error) then we
+            // can request for prices.
+            if (accountsWithAssets.none { it.assets == null }) {
+                val pricesPerAccount = mutableMapOf<AccountAddress, List<AssetPrice>?>()
+                for (accountWithAssets in accountsWithAssets) {
+                    val pricesError = getFiatValueUseCase.forAccount(
+                        accountWithAssets = accountWithAssets,
+                        isRefreshing = _state.value.refreshType.overrideCache
+                    ).onSuccess { prices ->
+                        pricesPerAccount[accountWithAssets.account.address] = prices
+                    }.exceptionOrNull()
 
-            accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
-                accountWithAssets.account.address to getFiatValueUseCase.forAccount(
-                    accountWithAssets = accountWithAssets,
-                    isRefreshing = isRefreshing
-                ).onSuccess {
-                    shouldEnableFiatPrices(isEnabled = true)
-                }.onFailure {
-                    if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                        shouldEnableFiatPrices(isEnabled = false)
+                    if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                        _state.update { it.disableFiatPrices() }
+                        break
                     }
-                }.getOrNull()
-            }
+                }
 
-            val isLoadingAssets = accountsWithAssets.all { it.assets == null }
-
-            _state.update {
-                state.value.copy(
-                    isLoading = isLoadingAssets,
-                    accountUiItems = buildAccountUiItems(),
-                    totalFiatValueOfWallet = buildTotalFiatValue().takeIf { !isLoadingAssets }
-                )
+                _state.update { it.onPricesReceived(prices = pricesPerAccount) }
             }
         }.flowOn(defaultDispatcher).launchIn(viewModelScope)
     }
@@ -244,13 +228,8 @@ class WalletViewModel @Inject constructor(
     private fun observePrompts() {
         viewModelScope.launch {
             getEntitiesWithSecurityPromptUseCase()
-                .onEach { entitiesWithSecurityPrompt ->
-                    this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
-                    _state.update {
-                        it.copy(
-                            accountUiItems = buildAccountUiItems()
-                        )
-                    }
+                .onEach { entitiesWithSecurityPrompts ->
+                    _state.update { it.copy(accountsWithSecurityPrompts = entitiesWithSecurityPrompts.accountPrompts()) }
                 }
                 .flowOn(defaultDispatcher)
                 .collect()
@@ -266,11 +245,14 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             appEventBus.events.collect { event ->
                 when (event) {
-                    AppEvent.RefreshAssetsNeeded,
-                    RestoredMnemonic -> {
-                        loadAssets(withRefresh = event !is RestoredMnemonic)
-                    }
+                    AppEvent.RefreshAssetsNeeded -> loadAssets(
+                        refreshType = RefreshType.Manual(
+                            overrideCache = true,
+                            showRefreshIndicator = true
+                        )
+                    )
 
+                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
                     }
@@ -281,13 +263,17 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun loadAssets(withRefresh: Boolean) {
-        _state.update { it.copy(isRefreshing = withRefresh) }
-        viewModelScope.launch { refreshFlow.emit(Unit) }
+    private fun loadAssets(refreshType: RefreshType) {
+        automaticRefreshJob?.cancel()
+        viewModelScope.launch { refreshFlow.emit(refreshType) }
+        automaticRefreshJob = viewModelScope.launch {
+            delay(REFRESH_INTERVAL)
+            loadAssets(refreshType = RefreshType.Automatic)
+        }
     }
 
     fun onRefresh() {
-        loadAssets(withRefresh = true)
+        loadAssets(refreshType = RefreshType.Manual(overrideCache = true, showRefreshIndicator = true))
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -302,142 +288,12 @@ class WalletViewModel @Inject constructor(
 
     fun onApplySecuritySettingsClick() {
         viewModelScope.launch {
-            sendEvent(WalletEvent.NavigateToSecurityCenter)
+            sendEvent(Event.NavigateToSecurityCenter)
         }
     }
 
     fun onRadixBannerDismiss() = viewModelScope.launch {
         preferencesManager.setRadixBannerVisibility(isVisible = false)
-    }
-
-    private fun shouldEnableFiatPrices(isEnabled: Boolean) {
-        _state.update { walletUiState ->
-            walletUiState.copy(isFiatBalancesEnabled = isEnabled)
-        }
-    }
-
-    private fun loadingAssets(isRefreshing: Boolean): WalletUiState = state.value.copy(
-        accountUiItems = buildAccountUiItems(),
-        isLoading = true,
-        isRefreshing = isRefreshing
-    )
-
-    private fun onAssetsError(error: Throwable?): WalletUiState = state.value.copy(
-        uiMessage = UiMessage.ErrorMessage(error),
-        accountUiItems = state.value.accountUiItems.map { account ->
-            if (account.assets == null) {
-                // If assets don't exist leave them empty
-                account.copy(assets = Assets())
-            } else {
-                // Else continue with what the user used to see before the refresh
-                account
-            }
-        },
-        isLoading = false,
-        isRefreshing = false
-    )
-
-    private fun buildAccountUiItems(): List<WalletUiState.AccountUiItem> {
-        return accountsWithAssets.orEmpty()
-            .map { accountWithAssets ->
-                val isFiatBalanceVisible = accountWithAssets.assets == null ||
-                    accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
-
-                WalletUiState.AccountUiItem(
-                    account = accountWithAssets.account,
-                    assets = accountWithAssets.assets,
-                    securityPrompts = securityPrompt(accountWithAssets.account)?.toList(),
-                    tag = getTag(accountWithAssets.account),
-                    isFiatBalanceVisible = state.value.isFiatBalancesEnabled && isFiatBalanceVisible,
-                    fiatTotalValue = totalFiatValueForAccount(accountWithAssets.account.address),
-                    isLoadingAssets = accountWithAssets.assets == null,
-                    isLoadingBalance = accountWithAssets.assets == null ||
-                        isBalanceLoadingForAccount(accountWithAssets.account.address)
-                )
-            }
-    }
-
-    private fun isBalanceLoadingForAccount(accountAddress: AccountAddress): Boolean {
-        return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
-    }
-
-    /**
-     * if at least one account failed to fetch prices then return null
-     */
-    private fun buildTotalFiatValue(): FiatPrice? {
-        val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
-            assetsPrices == null
-        } ?: false
-        if (isAnyAccountTotalFailed) return null
-
-        var total = 0.toDecimal192()
-        var currency = SupportedCurrency.USD
-        accountsAddressesWithAssetsPrices?.values?.forEach {
-            it?.let { assetsPrices ->
-                assetsPrices.forEach { assetPrice ->
-                    total += assetPrice.price?.price.orZero()
-                    currency = assetPrice.price?.currency ?: SupportedCurrency.USD
-                }
-            }
-        } ?: return null
-
-        return FiatPrice(price = total, currency = currency)
-    }
-
-    /**
-     * if the account has zero assets then return Zero price
-     * if the account has assets but without prices then return Zero price
-     * if the account has assets but failed to fetch prices then return Null
-     */
-    private fun totalFiatValueForAccount(accountAddress: AccountAddress): FiatPrice? {
-        val accountWithAssets = accountsWithAssets?.find {
-            it.account.address == accountAddress
-        }
-        if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
-            return FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
-        }
-
-        val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
-        val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
-
-        return if (hasAtLeastOnePrice) {
-            var total = 0.toDecimal192()
-            var currency = SupportedCurrency.USD
-            assetsPrices.forEach { assetPrice ->
-                total += assetPrice.price?.price.orZero()
-                currency = assetPrice.price?.currency ?: SupportedCurrency.USD
-            }
-            FiatPrice(price = total, currency = currency)
-        } else {
-            null
-        }
-    }
-
-    private fun securityPrompt(forAccount: Account) = entitiesWithSecurityPrompt.find {
-        it.entity.address.string == forAccount.address.string
-    }?.prompts
-
-    private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
-        return when {
-            !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
-            isDappDefinitionAccount(forAccount) -> WalletUiState.AccountTag.DAPP_DEFINITION
-            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEDGER_LEGACY
-            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEGACY_SOFTWARE
-            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEDGER_BABYLON
-            else -> null
-        }
-    }
-
-    private fun isLegacyAccount(forAccount: Account): Boolean = forAccount.isOlympia
-
-    private fun isLedgerAccount(forAccount: Account): Boolean {
-        return forAccount.isLedgerAccount
-    }
-
-    private fun isDappDefinitionAccount(forAccount: Account): Boolean {
-        return accountsWithAssets?.find { accountWithAssets ->
-            accountWithAssets.account.address == forAccount.address
-        }?.isDappDefinitionAccountType ?: false
     }
 
     @Suppress("MagicNumber")
@@ -447,35 +303,195 @@ class WalletViewModel @Inject constructor(
         CONNECT_CLOUD_BACKUP(2),
         NPS_SURVEY(3)
     }
-}
 
-internal sealed interface WalletEvent : OneOffEvent {
-    data object NavigateToSecurityCenter : WalletEvent
-}
+    sealed interface RefreshType {
+        val overrideCache: Boolean
+        val showRefreshIndicator: Boolean
 
-data class WalletUiState(
-    val isLoading: Boolean = true,
-    val isRefreshing: Boolean = false,
-    val accountUiItems: List<AccountUiItem> = emptyList(),
-    val isRadixBannerVisible: Boolean = false,
-    val isFiatBalancesEnabled: Boolean = true,
-    val uiMessage: UiMessage? = null,
-    val totalFiatValueOfWallet: FiatPrice? = null
-) : UiState {
+        data object None : RefreshType {
+            override val overrideCache: Boolean = false
+            override val showRefreshIndicator: Boolean = false
+        }
 
-    enum class AccountTag {
-        LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
+        data class Manual(
+            override val overrideCache: Boolean,
+            override val showRefreshIndicator: Boolean
+        ) : RefreshType
+
+        data object Automatic : RefreshType {
+            override val overrideCache: Boolean = true
+            override val showRefreshIndicator: Boolean = false
+        }
     }
 
-    @SuppressLint("VisibleForTests")
-    data class AccountUiItem(
-        val account: Account,
-        val assets: Assets?,
-        val fiatTotalValue: FiatPrice?,
-        val tag: AccountTag?,
-        val securityPrompts: List<SecurityPromptType>?,
-        val isFiatBalanceVisible: Boolean,
-        val isLoadingAssets: Boolean,
-        val isLoadingBalance: Boolean
-    )
+    data class State(
+        val refreshType: RefreshType = RefreshType.None,
+        private val accountsWithAssets: List<AccountWithAssets>? = null,
+        private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
+        val prices: PricesState = PricesState.None,
+        val isRadixBannerVisible: Boolean = false,
+        val uiMessage: UiMessage? = null,
+    ) : UiState {
+
+        val isRefreshing: Boolean = refreshType.showRefreshIndicator
+
+        val accountUiItems: List<AccountUiItem> = accountsWithAssets.orEmpty().map { accountWithAssets ->
+            val isFiatBalanceVisible = prices !is PricesState.Disabled &&
+                (accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance)
+
+            val account = accountWithAssets.account
+
+            AccountUiItem(
+                account = account,
+                assets = accountWithAssets.assets,
+                securityPrompts = accountsWithSecurityPrompts[account.address]?.toList(),
+                tag = when {
+                    !accountWithAssets.isDappDefinitionAccountType && !account.isOlympia && !account.isLedgerAccount -> null
+                    accountWithAssets.isDappDefinitionAccountType -> AccountTag.DAPP_DEFINITION
+                    account.isOlympia && account.isLedgerAccount -> AccountTag.LEDGER_LEGACY
+                    account.isOlympia && !account.isLedgerAccount -> AccountTag.LEGACY_SOFTWARE
+                    !account.isOlympia && account.isLedgerAccount -> AccountTag.LEDGER_BABYLON
+                    else -> null
+                },
+                isFiatBalanceVisible = isFiatBalanceVisible,
+                fiatTotalValue = prices.totalBalance(forAccount = accountWithAssets),
+                isLoadingAssets = accountWithAssets.assets == null,
+                isLoadingBalance = prices.isLoadingBalance(forAccount = accountWithAssets)
+            )
+        }
+
+        val isFiatPricesDisabled: Boolean = prices is PricesState.Disabled
+
+        val totalBalance: FiatPrice? = (prices as? PricesState.Enabled)?.totalBalance
+
+        val isLoadingTotalBalance = prices is PricesState.None ||
+            (prices is PricesState.Enabled && accountsWithAssets.orEmpty().any { prices.isLoadingBalance(it) })
+
+        fun loadingAssets(
+            accounts: List<Account>,
+            refreshType: RefreshType
+        ): State = copy(
+            accountsWithAssets = accounts.map { account ->
+                val oldAssets = accountsWithAssets?.find { it.account.address == account.address }
+
+                oldAssets?.copy(account = account) ?: AccountWithAssets(account = account)
+            },
+            refreshType = refreshType
+        )
+
+        fun assetsReceived(
+            accountsWithAssets: List<AccountWithAssets>
+        ): State = copy(
+            accountsWithAssets = accountsWithAssets
+        )
+
+        fun assetsError(
+            error: Throwable
+        ): State = copy(
+            refreshType = RefreshType.None,
+            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error),
+            accountsWithAssets = accountsWithAssets?.map { accountWithAssets ->
+                if (accountWithAssets.assets == null) {
+                    // If assets don't exist leave them empty
+                    accountWithAssets.copy(assets = Assets())
+                } else {
+                    accountWithAssets
+                }
+            }
+        )
+
+        fun onPricesReceived(prices: Map<AccountAddress, List<AssetPrice>?>): State = copy(
+            refreshType = RefreshType.None,
+            prices = PricesState.Enabled(
+                pricesPerAccount = prices
+            )
+        )
+
+        fun disableFiatPrices() = copy(prices = PricesState.Disabled)
+
+        enum class AccountTag {
+            LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
+        }
+
+        @SuppressLint("VisibleForTests")
+        data class AccountUiItem(
+            val account: Account,
+            val assets: Assets?,
+            val fiatTotalValue: FiatPrice?,
+            val tag: AccountTag?,
+            val securityPrompts: List<SecurityPromptType>?,
+            val isFiatBalanceVisible: Boolean,
+            val isLoadingAssets: Boolean,
+            val isLoadingBalance: Boolean
+        )
+
+        sealed interface PricesState {
+            // Shimmering state
+            data object None : PricesState
+
+            // Price service available
+            data class Enabled(
+                val pricesPerAccount: Map<AccountAddress, List<AssetPrice>?>
+            ) : PricesState {
+
+                val totalBalance: FiatPrice? = run {
+                    val prices = (this as? Enabled)?.pricesPerAccount ?: return@run null
+
+                    val isAnyAccountTotalFailed = prices.values.any { assetsPrices -> assetsPrices == null }
+                    if (isAnyAccountTotalFailed) return@run null
+
+                    var total = 0.toDecimal192()
+                    var currency = SupportedCurrency.USD
+                    prices.values.mapNotNull { it }.forEach { assetPrices ->
+                        assetPrices.forEach { assetPrice ->
+                            total += assetPrice.price?.price.orZero()
+                            currency = assetPrice.price?.currency ?: SupportedCurrency.USD
+                        }
+                    }
+
+                    FiatPrice(price = total, currency = currency)
+                }
+            }
+
+            // Price service not available, nothing is shown
+            data object Disabled : PricesState
+
+            fun isLoadingBalance(forAccount: AccountWithAssets): Boolean = this is None ||
+                (this is Enabled && !pricesPerAccount.containsKey(forAccount.account.address))
+
+            /**
+             * if the account has zero assets then return Zero price
+             * if the account has assets but without prices then return Zero price
+             * if the account has assets but failed to fetch prices then return Null
+             */
+            fun totalBalance(forAccount: AccountWithAssets): FiatPrice? {
+                if (forAccount.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
+                    return FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
+                }
+
+                val assetsPrices = (this as? Enabled)?.pricesPerAccount?.get(forAccount.account.address) ?: return null
+                val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
+
+                return if (hasAtLeastOnePrice) {
+                    var total = 0.toDecimal192()
+                    var currency = SupportedCurrency.USD
+                    assetsPrices.forEach { assetPrice ->
+                        total += assetPrice.price?.price.orZero()
+                        currency = assetPrice.price?.currency ?: SupportedCurrency.USD
+                    }
+                    FiatPrice(price = total, currency = currency)
+                } else {
+                    null
+                }
+            }
+        }
+    }
+
+    internal sealed interface Event : OneOffEvent {
+        data object NavigateToSecurityCenter : Event
+    }
+
+    companion object {
+        private val REFRESH_INTERVAL = 5.minutes
+    }
 }

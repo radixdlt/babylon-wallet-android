@@ -52,21 +52,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -128,7 +129,7 @@ fun WalletScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is WalletEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
+                is Event.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
             }
         }
     }
@@ -162,7 +163,7 @@ fun SyncPopUpScreensState(popUpScreen: WalletViewModel.PopUpScreen?, onDismiss: 
 @Composable
 private fun WalletContent(
     modifier: Modifier = Modifier,
-    state: WalletUiState,
+    state: WalletViewModel.State,
     onMenuClick: () -> Unit,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Account) -> Unit,
@@ -244,7 +245,7 @@ private fun WalletContent(
 @Composable
 private fun WalletAccountList(
     modifier: Modifier = Modifier,
-    state: WalletUiState,
+    state: WalletViewModel.State,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -262,7 +263,7 @@ private fun WalletAccountList(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-            if (state.isFiatBalancesEnabled) {
+            if (!state.isFiatPricesDisabled) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                 Text(
                     text = stringResource(R.string.homePage_totalValue).uppercase(),
@@ -271,8 +272,8 @@ private fun WalletAccountList(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
                 TotalFiatBalanceView(
-                    fiatPrice = state.totalFiatValueOfWallet,
-                    isLoading = state.isLoading,
+                    fiatPrice = state.totalBalance,
+                    isLoading = state.isLoadingTotalBalance,
                     currency = SupportedCurrency.USD,
                     formattedContentStyle = RadixTheme.typography.header,
                     onVisibilityToggle = onShowHideBalanceToggle,
@@ -283,6 +284,7 @@ private fun WalletAccountList(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             }
         }
+
         itemsIndexed(state.accountUiItems) { _, accountWithAssets ->
             AccountCardView(
                 modifier = Modifier
@@ -295,6 +297,7 @@ private fun WalletAccountList(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
+
         item {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RadixSecondaryButton(
@@ -392,7 +395,7 @@ private fun RadixBanner(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 private fun WalletContentPreview(
-    @PreviewParameter(WalletUiStateProvider::class) uiState: WalletUiState
+    @PreviewParameter(WalletUiStateProvider::class) uiState: WalletViewModel.State
 ) {
     RadixWalletPreviewTheme {
         WalletContent(
@@ -410,69 +413,40 @@ private fun WalletContentPreview(
 }
 
 @UsesSampleValues
-class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
+class WalletUiStateProvider : PreviewParameterProvider<WalletViewModel.State> {
 
-    override val values: Sequence<WalletUiState>
+    override val values: Sequence<WalletViewModel.State>
         get() = sequenceOf(
-            WalletUiState(
-                accountUiItems = listOf(
-                    WalletUiState.AccountUiItem(
+            WalletViewModel.State(
+                accountsWithAssets = listOf(
+                    AccountWithAssets(
                         account = Account.sampleMainnet(),
-                        assets = null,
-                        fiatTotalValue = FiatPrice(
-                            price = Decimal192.sample.invoke(),
-                            currency = SupportedCurrency.USD
-                        ),
-                        tag = null,
-                        securityPrompts = null,
-                        isFiatBalanceVisible = true,
-                        isLoadingAssets = false,
-                        isLoadingBalance = false
+                        assets = null
                     ),
-                    WalletUiState.AccountUiItem(
-                        account = Account.sampleMainnet.other().copy(
-                            displayName = DisplayName("my account with a way too much long name")
-                        ),
+                    AccountWithAssets(
+                        account = Account.sampleMainnet.other(),
                         assets = Assets(
                             tokens = listOf(
-                                Token(Resource.FungibleResource.sampleMainnet.invoke())
+                                Token(Resource.FungibleResource.sampleMainnet())
                             )
-                        ),
-                        fiatTotalValue = FiatPrice(
-                            price = Decimal192.sample.invoke(),
-                            currency = SupportedCurrency.USD
-                        ),
-                        tag = null,
-                        securityPrompts = listOf(
-                            SecurityPromptType.RECOVERY_REQUIRED,
-                            SecurityPromptType.CONFIGURATION_BACKUP_NOT_UPDATED
-                        ),
-                        isFiatBalanceVisible = true,
-                        isLoadingAssets = false,
-                        isLoadingBalance = false
-                    ),
-                    WalletUiState.AccountUiItem(
-                        account = Account.sampleMainnet(),
-                        assets = null,
-                        fiatTotalValue = null,
-                        tag = null,
-                        securityPrompts = null,
-                        isFiatBalanceVisible = false,
-                        isLoadingAssets = true,
-                        isLoadingBalance = true
-                    ),
+                        )
+                    )
                 ),
-                isLoading = true,
-                totalFiatValueOfWallet = FiatPrice(
-                    price = Decimal192.sample.invoke(),
-                    currency = SupportedCurrency.USD
+                prices = WalletViewModel.State.PricesState.Enabled(
+                    pricesPerAccount = mapOf(
+                        Account.sampleMainnet().address to emptyList<AssetPrice>(),
+                        Account.sampleMainnet.other().address to listOf<AssetPrice>(
+                            AssetPrice.TokenPrice(
+                                asset = Token(Resource.FungibleResource.sampleMainnet()),
+                                price = FiatPrice(Decimal192.sample(), currency = SupportedCurrency.USD)
+                            )
+                        )
+                    )
                 )
             ),
-            WalletUiState(
+            WalletViewModel.State(
                 isRadixBannerVisible = true
             ),
-            WalletUiState(
-                isLoading = true
-            )
+            WalletViewModel.State()
         )
 }
