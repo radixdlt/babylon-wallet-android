@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,9 +13,11 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -36,8 +37,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
@@ -45,6 +46,7 @@ import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.presentation.account.history.State
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.radixdlt.sargon.extensions.formatted
@@ -70,23 +72,16 @@ fun FiltersDialog(
                 containerColor = RadixTheme.colors.defaultBackground,
                 actions = {
                     RadixTextButton(text = stringResource(id = R.string.transactionHistory_filters_clearAll), onClick = onClearAllFilters)
-                }
+                },
+                // Drag handle is above, no need for insets here
+                windowInsets = WindowInsets(0.dp)
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier.background(color = RadixTheme.colors.defaultBackground)
-            ) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-
-                RadixPrimaryButton(
-                    text = stringResource(id = R.string.transactionHistory_filters_showResultsButton),
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth()
-                )
-            }
+            BottomPrimaryButton(
+                onClick = onDismiss,
+                text = stringResource(id = R.string.transactionHistory_filters_showResultsButton),
+            )
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->

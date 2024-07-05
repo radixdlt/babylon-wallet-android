@@ -17,10 +17,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -73,11 +71,13 @@ import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
@@ -173,10 +173,7 @@ fun SpecificAssetsDepositsScreen(
                 sheetState.show()
             }
         },
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.gray5),
+        modifier = modifier,
         allowedAssets = state.allowedAssets,
         deniedAssets = state.deniedAssets,
         onDeleteAsset = sharedViewModel::showDeletePrompt
@@ -199,7 +196,6 @@ fun SpecificAssetsDepositsScreen(
                     sharedViewModel.onAddAssetException()
                 },
                 modifier = Modifier
-                    .navigationBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
                     .clip(RadixTheme.shapes.roundedRectTopDefault),
@@ -362,27 +358,17 @@ private fun SpecificAssetsDepositsContent(
                 title = stringResource(R.string.accountSettings_specificAssetsDeposits),
                 onBackClick = onBackClick,
                 containerColor = RadixTheme.colors.defaultBackground,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
-            ) {
-                RadixPrimaryButton(
-                    text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
-                    onClick = {
-                        onShowAddAssetSheet(selectedTab)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    enabled = allowedAssets != null && deniedAssets != null
-                )
-            }
+            BottomPrimaryButton(
+                onClick = {
+                    onShowAddAssetSheet(selectedTab)
+                },
+                text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
+                enabled = allowedAssets != null && deniedAssets != null
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(

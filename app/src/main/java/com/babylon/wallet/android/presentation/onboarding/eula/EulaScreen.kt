@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,7 +33,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import kotlinx.coroutines.launch
 
 @Composable
@@ -80,7 +81,7 @@ private fun EulaContent(
                     title = stringResource(id = R.string.empty),
                     onBackClick = onBackClick,
                     backIconType = BackIconType.Close,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
 
                 Text(
@@ -107,18 +108,11 @@ private fun EulaContent(
             }
         },
         bottomBar = {
-            Column(modifier = Modifier.navigationBarsPadding()) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-
-                RadixPrimaryButton(
-                    text = stringResource(id = R.string.onboarding_eula_accept),
-                    onClick = onAcceptClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    enabled = eulaText != null
-                )
-            }
+            BottomPrimaryButton(
+                text = stringResource(id = R.string.onboarding_eula_accept),
+                onClick = onAcceptClick,
+                enabled = eulaText != null
+            )
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->

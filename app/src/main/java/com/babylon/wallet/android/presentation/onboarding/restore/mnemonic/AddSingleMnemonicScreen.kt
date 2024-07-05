@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +49,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
@@ -131,12 +132,12 @@ private fun AddSingleMnemonicsContent(
     }
 
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = "",
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
@@ -156,23 +157,14 @@ private fun AddSingleMnemonicsContent(
                     }
                 )
             } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    val isEnabled = remember(state.seedPhraseState) {
-                        state.seedPhraseState.isValidSeedPhrase()
-                    }
-                    RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(R.string.common_continue),
-                        enabled = isEnabled,
-                        onClick = onSubmitClick
-                    )
+                val isEnabled = remember(state.seedPhraseState) {
+                    state.seedPhraseState.isValidSeedPhrase()
                 }
+                BottomPrimaryButton(
+                    text = stringResource(R.string.common_continue),
+                    enabled = isEnabled,
+                    onClick = onSubmitClick
+                )
             }
         },
         snackbarHost = {

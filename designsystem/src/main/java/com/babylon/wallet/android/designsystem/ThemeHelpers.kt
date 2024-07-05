@@ -6,8 +6,14 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun SetStatusBarColor(color: Color = Color.Transparent, useDarkIcons: Boolean) {
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color, useDarkIcons)
+    //val systemUiController = rememberSystemUiController()
+    //systemUiController.setStatusBarColor(color, useDarkIcons)
+}
+
+@Composable
+fun SetNavigationBarColor(color: Color = Color.Transparent, useDarkIcons: Boolean) {
+    //val systemUiController = rememberSystemUiController()
+    //systemUiController.setNavigationBarColor(color, useDarkIcons)
 }
 
 fun Color.darken(percent: Float): Color {

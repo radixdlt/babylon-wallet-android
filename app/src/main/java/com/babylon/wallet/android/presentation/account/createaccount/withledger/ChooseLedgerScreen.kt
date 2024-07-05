@@ -3,10 +3,7 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -20,7 +17,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
@@ -33,11 +29,13 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScr
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -198,20 +196,13 @@ private fun ChooseLedgerDeviceContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 backIconType = BackIconType.Close,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            RadixPrimaryButton(
-                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
+            BottomPrimaryButton(
                 onClick = onUseLedgerContinueClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingSemiLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    )
-                    .navigationBarsPadding(),
+                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
                 enabled = ledgerDevices.any { it.selected },
                 isLoading = isAddingNewLinkConnectorInProgress
             )

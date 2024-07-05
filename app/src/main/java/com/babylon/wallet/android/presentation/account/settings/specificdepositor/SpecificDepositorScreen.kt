@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -55,11 +54,13 @@ import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
@@ -143,10 +144,7 @@ fun SpecificDepositorScreen(
                 sheetState.show()
             }
         },
-        modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .background(RadixTheme.colors.gray5),
+        modifier = modifier,
         allowedDepositors = state.allowedDepositorsUiModels,
         onDeleteDepositor = sharedViewModel::showDeletePrompt
     )
@@ -167,7 +165,6 @@ fun SpecificDepositorScreen(
                     sharedViewModel.onAddDepositor()
                 },
                 modifier = Modifier
-                    .navigationBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
                     .clip(RadixTheme.shapes.roundedRectTopDefault),
@@ -189,11 +186,7 @@ fun AddDepositorSheet(
     onDismiss: () -> Unit,
 ) {
     Column(
-        modifier = modifier
-            .verticalScroll(
-                rememberScrollState()
-            )
-            .imePadding(),
+        modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
     ) {
         BottomDialogHeader(
@@ -273,24 +266,15 @@ private fun SpecificDepositorContent(
                 title = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
                 onBackClick = onBackClick,
                 containerColor = RadixTheme.colors.defaultBackground,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
-            ) {
-                RadixPrimaryButton(
-                    text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
-                    onClick = onShowAddAssetSheet,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    enabled = allowedDepositors != null
-                )
-            }
+            BottomPrimaryButton(
+                onClick = onShowAddAssetSheet,
+                text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
+                enabled = allowedDepositors != null
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -298,6 +282,7 @@ private fun SpecificDepositorContent(
                 hostState = snackBarHostState
             )
         },
+        contentColor = RadixTheme.colors.gray5
     ) { paddingValues ->
         Column(
             Modifier

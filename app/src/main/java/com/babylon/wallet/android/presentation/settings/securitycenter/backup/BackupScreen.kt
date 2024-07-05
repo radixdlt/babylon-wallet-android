@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -81,6 +80,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import kotlinx.coroutines.launch
@@ -192,11 +192,12 @@ private fun BackupScreenContent(
     )
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.configurationBackup_title),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         snackbarHost = {
@@ -205,17 +206,15 @@ private fun BackupScreenContent(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
-        contentWindowInsets = WindowInsets.navigationBars,
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .padding(padding)
                 .padding(RadixTheme.dimensions.paddingDefault)
-                .verticalScroll(rememberScrollState())
         ) {
             Text(
-                modifier = Modifier,
                 text = stringResource(id = R.string.configurationBackup_heading),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body1Header
@@ -292,7 +291,6 @@ private fun BackupScreenContent(
 
     if (state.isEncryptSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier.fillMaxSize(),
             sheetState = modalBottomSheetState,
             sheetContent = {
                 if (state.encryptSheet is BackupViewModel.State.EncryptSheet.Open) {
@@ -672,11 +670,13 @@ private fun EncryptSheet(
     onBackClick: () -> Unit
 ) {
     Scaffold(
-        modifier = modifier
-            .navigationBarsPadding()
-            .imePadding(),
+        modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(title = stringResource(id = R.string.empty), onBackClick = onBackClick)
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBarsAndBanner
+            )
         },
         bottomBar = {
             RadixPrimaryButton(

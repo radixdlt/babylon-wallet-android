@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,6 +55,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
@@ -156,6 +158,7 @@ private fun PersonaEditContent(
 
     state.persona?.let { selectedPersona ->
         Scaffold(
+            modifier = modifier,
             topBar = {
                 Column {
                     RadixCenteredTopAppBar(
@@ -168,7 +171,7 @@ private fun PersonaEditContent(
                             }
                         },
                         backIconType = BackIconType.Close,
-                        windowInsets = WindowInsets.statusBars
+                        windowInsets = WindowInsets.statusBarsAndBanner
                     )
                     HorizontalDivider(color = RadixTheme.colors.gray5)
                 }
@@ -178,11 +181,7 @@ private fun PersonaEditContent(
                     onClick = onSave,
                     enabled = state.saveButtonEnabled,
                     text = stringResource(id = R.string.common_save),
-                    modifier = Modifier
-                        .imePadding()
-                        .navigationBarsPadding()
-                        .fillMaxWidth(),
-                    buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault),
+                    insets = WindowInsets.navigationBars.union(WindowInsets.ime)
                 )
             },
             containerColor = RadixTheme.colors.defaultBackground
@@ -219,7 +218,6 @@ private fun PersonaEditContent(
 
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
@@ -236,9 +234,6 @@ private fun PersonaEditContent(
                         onAddFields()
                     },
                     onSelectionChanged = onSelectionChanged,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding(),
                     anyFieldSelected = state.addFieldButtonEnabled
                 )
             },

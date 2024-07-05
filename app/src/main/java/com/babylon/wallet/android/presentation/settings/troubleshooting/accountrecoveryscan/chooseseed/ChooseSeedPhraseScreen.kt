@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
@@ -37,15 +35,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
@@ -95,26 +94,27 @@ private fun ChooseSeedPhraseContent(
     BackHandler {
         backCallback()
     }
-    Scaffold(modifier = modifier.navigationBarsPadding(), topBar = {
-        RadixCenteredTopAppBar(
-            windowInsets = WindowInsets.statusBars,
-            title = stringResource(id = R.string.empty),
-            onBackClick = {
-                backCallback()
-            },
-            backIconType = BackIconType.Close
-        )
-    }, containerColor = RadixTheme.colors.defaultBackground, bottomBar = {
-        RadixPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault)
-                .navigationBarsPadding(),
-            enabled = state.selectedFactorSource != null,
-            text = stringResource(id = R.string.common_continue),
-            onClick = onUseFactorSource
-        )
-    }) { padding ->
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                windowInsets = WindowInsets.statusBarsAndBanner,
+                title = stringResource(id = R.string.empty),
+                onBackClick = {
+                    backCallback()
+                },
+                backIconType = BackIconType.Close
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground,
+        bottomBar = {
+            BottomPrimaryButton(
+                onClick = onUseFactorSource,
+                text = stringResource(id = R.string.common_continue),
+                enabled = state.selectedFactorSource != null,
+            )
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -178,6 +178,7 @@ private fun ChooseSeedPhraseContent(
                         text = when (recoveryType) {
                             MnemonicType.BabylonMain,
                             MnemonicType.Babylon -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_addButtonBabylon)
+
                             MnemonicType.Olympia -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_addButtonOlympia)
                         },
                         onClick = {

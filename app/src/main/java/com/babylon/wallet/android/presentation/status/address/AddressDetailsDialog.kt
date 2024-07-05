@@ -129,7 +129,7 @@ private fun AddressDetailsDialogContent(
     BackHandler(onBack = onDismiss)
 
     BottomSheetDialogWrapper(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         onDismiss = onDismiss,
         showDragHandle = true,
         content = {

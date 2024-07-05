@@ -16,9 +16,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
@@ -62,10 +60,12 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.formattedSpans
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 import com.radixdlt.sargon.Timestamp
@@ -168,25 +168,18 @@ private fun RestoreFromBackupContent(
     Scaffold(
         topBar = {
             RadixCenteredTopAppBar(
-                windowInsets = WindowInsets.statusBars,
+                windowInsets = WindowInsets.statusBarsAndBanner,
                 title = "",
                 onBackClick = onBackClick
             )
         },
         bottomBar = {
-            Column(Modifier.navigationBarsPadding()) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.common_continue),
-                    onClick = onContinueClick,
-                    isLoading = state.isDownloadingSelectedCloudBackup,
-                    enabled = state.isContinueEnabled
-                )
-            }
+            BottomPrimaryButton(
+                onClick = onContinueClick,
+                text = stringResource(id = R.string.common_continue),
+                isLoading = state.isDownloadingSelectedCloudBackup,
+                enabled = state.isContinueEnabled
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -281,7 +274,6 @@ private fun RestoreFromBackupContent(
 
     if (state.isPasswordSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             sheetState = modalBottomSheetState,
             enableImePadding = true,
             wrapContent = true,
@@ -501,11 +493,11 @@ private fun PasswordSheet(
     onPasswordSubmitted: () -> Unit
 ) {
     Column(
-        modifier = modifier.navigationBarsPadding()
+        modifier = modifier
     ) {
         RadixCenteredTopAppBar(
             title = "",
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
         )
 
         RadixTextField(

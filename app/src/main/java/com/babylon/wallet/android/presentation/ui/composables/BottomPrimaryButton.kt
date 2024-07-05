@@ -2,14 +2,21 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
@@ -17,14 +24,26 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 fun BottomPrimaryButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    throttleClicks: Boolean = true,
     enabled: Boolean = true,
     isLoading: Boolean = false,
     text: String,
-    buttonPadding: PaddingValues = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
+    color: Color = RadixTheme.colors.defaultBackground,
+    buttonPadding: PaddingValues = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+    insets: WindowInsets = WindowInsets.navigationBars,
+    additionalContent: @Composable ColumnScope.() -> Unit = {}
 ) {
-    Column(modifier = modifier.background(RadixTheme.colors.defaultBackground)) {
+    Column(
+        modifier = modifier
+            .background(color)
+            .padding(insets.asPaddingValues()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         HorizontalDivider(color = RadixTheme.colors.gray5)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        additionalContent()
+
         RadixPrimaryButton(
             text = text,
             onClick = onClick,
@@ -32,7 +51,8 @@ fun BottomPrimaryButton(
                 .fillMaxWidth()
                 .padding(buttonPadding),
             enabled = enabled,
-            isLoading = isLoading
+            isLoading = isLoading,
+            throttleClicks = throttleClicks
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }

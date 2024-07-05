@@ -360,7 +360,6 @@ private fun TransactionPreviewContent(
             enableImePadding = true,
             sheetContent = {
                 BottomSheetContent(
-                    modifier = Modifier.navigationBarsPadding(),
                     sheetState = state.sheetState,
                     transactionFees = state.transactionFees,
                     insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,

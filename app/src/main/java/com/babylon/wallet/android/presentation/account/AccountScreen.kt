@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package com.babylon.wallet.android.presentation.account
 
 import androidx.compose.animation.fadeIn
@@ -8,14 +10,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -37,10 +46,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.SetNavigationBarColor
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
@@ -48,7 +59,6 @@ import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.DefaultPullToRefreshContainer
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -60,6 +70,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewD
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -100,6 +111,8 @@ fun AccountScreen(
     if (!devBannerState.isVisible) {
         SetStatusBarColor(useDarkIcons = false)
     }
+
+    SetNavigationBarColor(RadixTheme.colors.gray5, true)
 
     AccountScreenContent(
         modifier = modifier,
@@ -158,13 +171,18 @@ private fun AccountScreenContent(
     )
 
     val lazyListState = rememberLazyListState()
-    DefaultPullToRefreshContainer(
-        isRefreshing = state.isRefreshing,
+
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = state.isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier.background(gradient)
+        refreshingOffset = 116.dp
+    )
+
+    Box(
+        modifier = modifier.pullRefresh(pullToRefreshState)
     ) {
         Scaffold(
-            modifier = Modifier,
+            modifier = Modifier.background(gradient),
             topBar = {
                 RadixCenteredTopAppBar(
                     title = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
@@ -190,7 +208,8 @@ private fun AccountScreenContent(
                                 contentDescription = "account settings"
                             )
                         }
-                    }
+                    },
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
             },
             containerColor = Color.Transparent,
@@ -200,7 +219,8 @@ private fun AccountScreenContent(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     hostState = snackBarHostState
                 )
-            }
+            },
+            contentWindowInsets = WindowInsets.statusBarsAndBanner
         ) { innerPadding ->
             AssetsContent(
                 modifier = Modifier.padding(innerPadding),
@@ -230,6 +250,14 @@ private fun AccountScreenContent(
                 onCollectionClick = onCollectionClick,
             )
         }
+
+        PullRefreshIndicator(
+            modifier = Modifier.align(Alignment.TopCenter),
+            refreshing = state.isRefreshing,
+            state = pullToRefreshState,
+            contentColor = RadixTheme.colors.gray1,
+            backgroundColor = RadixTheme.colors.defaultBackground,
+        )
     }
 }
 
@@ -272,7 +300,9 @@ fun AssetsContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
-            contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingSemiLarge)
+            contentPadding = WindowInsets.navigationBars.asPaddingValues().plus(
+                other = PaddingValues(bottom = RadixTheme.dimensions.paddingSemiLarge)
+            )
         ) {
             item {
                 Box {
@@ -347,7 +377,9 @@ fun AssetsContent(
                             Column {
                                 state.securityPrompts?.forEach { securityPromptType ->
                                     ApplySecuritySettingsLabel(
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = RadixTheme.dimensions.paddingMedium),
                                         onClick = {
                                             onApplySecuritySettingsClick()
                                         },
