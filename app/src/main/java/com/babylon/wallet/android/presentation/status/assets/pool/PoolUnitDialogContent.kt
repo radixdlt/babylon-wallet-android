@@ -164,6 +164,21 @@ fun PoolUnitDialogContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
             address = Address.Resource(resourceAddress)
         )
+        if (!poolUnit?.resource?.name.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            MetadataView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                key = stringResource(id = R.string.assetDetails_name)
+            ) {
+                Text(
+                    text = poolUnit?.resource?.name.orEmpty(),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         MetadataView(
