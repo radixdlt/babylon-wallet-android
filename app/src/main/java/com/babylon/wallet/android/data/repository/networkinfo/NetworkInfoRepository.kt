@@ -3,7 +3,7 @@ package com.babylon.wallet.android.data.repository.networkinfo
 import com.babylon.wallet.android.data.gateway.apis.StatusApi
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.JsonConverterFactory
-import com.babylon.wallet.android.di.SimpleHttpClient
+import com.babylon.wallet.android.di.GatewayHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.radixdlt.sargon.NetworkId
@@ -17,7 +17,7 @@ interface NetworkInfoRepository {
 }
 
 class NetworkInfoRepositoryImpl @Inject constructor(
-    @SimpleHttpClient private val okHttpClient: OkHttpClient,
+    @GatewayHttpClient private val okHttpClient: OkHttpClient,
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
 ) : NetworkInfoRepository {
 

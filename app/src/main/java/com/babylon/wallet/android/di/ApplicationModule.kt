@@ -90,7 +90,7 @@ object ApplicationModule {
     @Singleton
     fun provideRadixConnectMobile(
         @ApplicationContext context: Context,
-        @SimpleHttpClient httpClient: OkHttpClient
+        @GatewayHttpClient httpClient: OkHttpClient
     ): RadixConnectMobile = RadixConnectMobile.init(
         context = context,
         okHttpClient = httpClient
