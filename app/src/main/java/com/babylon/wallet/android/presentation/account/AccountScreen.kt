@@ -43,6 +43,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
+import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
@@ -87,9 +89,9 @@ fun AccountScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is AccountEvent.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
-                is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
-                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
+                is Event.NavigateToSecurityCenter -> onNavigateToSecurityCenter()
+                is Event.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
+                is Event.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
             }
         }
     }
@@ -127,7 +129,7 @@ fun AccountScreen(
 @Composable
 private fun AccountScreenContent(
     modifier: Modifier = Modifier,
-    state: AccountUiState,
+    state: State,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountPreferenceClick: (address: AccountAddress) -> Unit,
     onBackClick: () -> Unit,
@@ -235,7 +237,7 @@ private fun AccountScreenContent(
 fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
-    state: AccountUiState,
+    state: State,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onTabClick: (AssetsTab) -> Unit,
     onCollectionClick: (String) -> Unit,
@@ -259,10 +261,10 @@ fun AssetsContent(
             state.accountWithAssets?.account?.address
         }
 
-        val assetsViewData = remember(state.accountWithAssets?.assets, state.assetsWithAssetsPrices, state.epoch) {
+        val assetsViewData = remember(state.accountWithAssets?.assets, state.assetsWithPrices, state.epoch) {
             AssetsViewData.from(
                 assets = state.accountWithAssets?.assets,
-                prices = state.assetsWithAssetsPrices,
+                prices = state.assetsWithPrices,
                 epoch = state.epoch
             )
         }
@@ -291,7 +293,7 @@ fun AssetsContent(
                             )
                         }
 
-                        if (state.isFiatBalancesEnabled) {
+                        if (!state.isPricesDisabled) {
                             TotalFiatBalanceView(
                                 modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                                 fiatPrice = state.totalFiatValue,
@@ -370,17 +372,13 @@ fun AssetsContent(
             }
 
             assetsView(
-                assetsViewData = if (state.isFiatBalancesEnabled) {
+                assetsViewData = if (!state.isPricesDisabled) {
                     assetsViewData
                 } else {
                     assetsViewData?.copy(prices = null)
                 },
                 state = state.assetsViewState,
-                isLoadingBalance = if (state.isFiatBalancesEnabled) {
-                    state.isAccountBalanceLoading
-                } else {
-                    false
-                },
+                isLoadingBalance = state.isAccountBalanceLoading,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
@@ -450,11 +448,11 @@ private fun HistoryButton(
 fun AccountContentPreview() {
     RadixWalletPreviewTheme {
         AccountScreenContent(
-            state = AccountUiState(
+            state = State(
+                pricesState = State.PricesState.Enabled(emptyMap()),
                 accountWithAssets = AccountWithAssets(
                     account = Account.sampleMainnet()
                 ),
-                assetsWithAssetsPrices = emptyMap(),
                 securityPrompts = listOf(
                     SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
                     SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM
@@ -486,12 +484,11 @@ fun AccountContentPreview() {
 fun AccountContentWithFiatBalancesDisabledPreview() {
     RadixWalletPreviewTheme {
         AccountScreenContent(
-            state = AccountUiState(
-                isFiatBalancesEnabled = false,
+            state = State(
+                pricesState = State.PricesState.Disabled,
                 accountWithAssets = AccountWithAssets(
                     account = Account.sampleMainnet()
-                ),
-                assetsWithAssetsPrices = emptyMap()
+                )
             ),
             onShowHideBalanceToggle = {},
             onAccountPreferenceClick = { _ -> },

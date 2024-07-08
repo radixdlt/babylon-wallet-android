@@ -234,7 +234,7 @@ fun NonFungibleAssetDialogContent(
                 address = Address.Resource(resourceAddress),
                 isNewlyCreatedEntity = isNewlyCreated
             )
-            if (!asset?.resource?.name.isNullOrBlank() && localId != null) {
+            if (!asset?.resource?.name.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 MetadataView(
                     modifier = Modifier
