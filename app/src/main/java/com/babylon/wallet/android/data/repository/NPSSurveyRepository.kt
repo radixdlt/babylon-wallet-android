@@ -13,8 +13,8 @@ import javax.inject.Inject
 interface NPSSurveyRepository {
 
     suspend fun submitSurveyResponse(
-        npsQuestion: String,
-        reason: String,
+        npsScore: Int? = null,
+        reason: String? = null
     ): Result<SurveyResponse>
 }
 
@@ -25,8 +25,8 @@ class NPSSurveyRepositoryImpl @Inject constructor(
 ) : NPSSurveyRepository {
 
     override suspend fun submitSurveyResponse(
-        npsQuestion: String,
-        reason: String,
+        npsScore: Int?,
+        reason: String?
     ): Result<SurveyResponse> {
         return with(ioDispatcher) {
             val uuid = preferencesManager.surveyUuid.first()
@@ -34,7 +34,7 @@ class NPSSurveyRepositoryImpl @Inject constructor(
                 SurveyRequest(
                     id = uuid,
                     formUuid = BuildConfig.REFINER_FORM_UUID,
-                    nps = npsQuestion,
+                    nps = npsScore,
                     whatDoYouValue = reason
                 )
             ).toResult()
