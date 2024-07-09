@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import javax.inject.Singleton
 
 @Module
@@ -109,9 +110,15 @@ object ApplicationModule {
     fun provideHomeCardsManager(
         dataStore: DataStore<Preferences>,
         observer: HomeCardsObserverWrapper,
-        @SimpleHttpClient httpClient: OkHttpClient
+        httpLoggingInterceptor: HttpLoggingInterceptor
     ): HomeCardsManager = HomeCardsManager.init(
-        okHttpClient = httpClient,
+        /**
+         * CI workflow fails when referencing @SimpleHttpClient [OkHttpClient]
+         * as a dependency directly instead of building it here
+         */
+        okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(httpLoggingInterceptor)
+            .build(),
         /**
          * For now we'll only use MainNet as it's enough to fulfill all the scenarios
          * regarding Home Cards initialized from dApps and RadQuest deep link
