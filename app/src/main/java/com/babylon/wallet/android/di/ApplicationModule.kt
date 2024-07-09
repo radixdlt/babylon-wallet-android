@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.radixdlt.sargon.HomeCardsManager
+import com.radixdlt.sargon.HomeCardsObserver
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.extensions.init
@@ -118,6 +119,6 @@ object ApplicationModule {
          */
         networkId = NetworkId.MAINNET,
         dataStore = dataStore,
-        observer = observer
+        observer = observer as HomeCardsObserver
     )
 }
