@@ -108,11 +108,10 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun provideHomeCardsManager(
-        @SimpleHttpClient httpClient: OkHttpClient,
         dataStore: DataStore<Preferences>,
         observer: HomeCardsObserverWrapper
     ): HomeCardsManager = HomeCardsManager.init(
-        okHttpClient = httpClient,
+        okHttpClient = OkHttpClient.Builder().build(),
         /**
          * For now we'll only use MainNet as it's enough to fulfill all the scenarios
          * regarding Home Cards initialized from dApps and RadQuest deep link
