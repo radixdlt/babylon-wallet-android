@@ -17,46 +17,22 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.default
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Converter
-import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class ShortTimeoutStateApi
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkApiModule {
-
-    @Provides
-    @Singleton
-    @CurrentGatewayHttpClient
-    fun provideCurrentGatewayHttpClient(
-        baseUrlInterceptor: NetworkModule.BaseUrlInterceptor,
-        httpLoggingInterceptor: HttpLoggingInterceptor
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(baseUrlInterceptor)
-            .addInterceptor(httpLoggingInterceptor)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    @ShortTimeoutGatewayHttpClient
-    fun provideShortTimeoutGatewayHttpClient(
-        baseUrlInterceptor: NetworkModule.BaseUrlInterceptor,
-        httpLoggingInterceptor: HttpLoggingInterceptor
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .callTimeout(SHORT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .addInterceptor(baseUrlInterceptor)
-            .addInterceptor(httpLoggingInterceptor)
-            .build()
-    }
 
     @Provides
     @Singleton
@@ -72,7 +48,7 @@ object NetworkApiModule {
 
     @Provides
     fun provideStateApi(
-        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @DynamicGatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
@@ -84,7 +60,7 @@ object NetworkApiModule {
     @Provides
     @ShortTimeoutStateApi
     fun provideStateApiWithShortTimeout(
-        @ShortTimeoutGatewayHttpClient okHttpClient: OkHttpClient,
+        @ShortTimeoutDynamicGatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
@@ -95,7 +71,7 @@ object NetworkApiModule {
 
     @Provides
     fun provideTransactionApi(
-        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @DynamicGatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): TransactionApi = buildApi(
@@ -106,7 +82,7 @@ object NetworkApiModule {
 
     @Provides
     fun provideStreamApi(
-        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @DynamicGatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StreamApi = buildApi(
@@ -117,7 +93,7 @@ object NetworkApiModule {
 
     @Provides
     fun provideTokenPriceApi(
-        @SimpleHttpClient okHttpClient: OkHttpClient,
+        @GatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Converter.Factory
     ): TokenPriceApi = buildApi(
         baseUrl = TokenPriceApi.BASE_URL,
@@ -127,7 +103,7 @@ object NetworkApiModule {
 
     @Provides
     fun provideNPSSurveyApi(
-        @SimpleHttpClient okHttpClient: OkHttpClient,
+        @GatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Converter.Factory
     ): NPSSurveyApi = buildApi(
         baseUrl = BuildConfig.NPS_SURVEY_URL,
@@ -135,5 +111,3 @@ object NetworkApiModule {
         jsonConverterFactory = jsonConverterFactory
     )
 }
-
-private const val SHORT_TIMEOUT_SECONDS = 5L
