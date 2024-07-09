@@ -94,9 +94,11 @@ fun PersonasContent(
             horizontalAlignment = Alignment.Start
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingMedium
+                ),
                 text = stringResource(id = R.string.personas_subtitle),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2

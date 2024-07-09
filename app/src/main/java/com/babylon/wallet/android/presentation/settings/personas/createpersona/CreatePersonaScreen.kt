@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,7 +42,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
@@ -55,10 +53,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.activityBiometricAuthenticate
-import com.babylon.wallet.android.utils.findFragmentActivity
-import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -70,38 +64,29 @@ fun CreatePersonaScreen(
     viewModel: CreatePersonaViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onContinueClick: (
-        personaId: IdentityAddress
-    ) -> Unit = {},
+    onContinueClick: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    if (state.loading) {
-        FullscreenCircularProgressContent()
-    } else {
-        CreatePersonaContent(
-            state = state,
-            onPersonaNameChange = viewModel::onDisplayNameChanged,
-            onPersonaCreateClick = viewModel::onPersonaCreateClick,
-            onBackClick = onBackClick,
-            modifier = modifier,
-            onSelectionChanged = viewModel::onSelectionChanged,
-            onAddFields = viewModel::onAddFields,
-            onDeleteField = viewModel::onDeleteField,
-            onValueChanged = viewModel::onFieldValueChanged,
-            onFieldFocusChanged = viewModel::onFieldFocusChanged,
-            onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
-            onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
-            onMessageShown = viewModel::onMessageShown
-        )
-    }
+    CreatePersonaContent(
+        state = state,
+        onPersonaNameChange = viewModel::onDisplayNameChanged,
+        onPersonaCreateClick = viewModel::onPersonaCreateClick,
+        onBackClick = onBackClick,
+        modifier = modifier,
+        onSelectionChanged = viewModel::onSelectionChanged,
+        onAddFields = viewModel::onAddFields,
+        onDeleteField = viewModel::onDeleteField,
+        onValueChanged = viewModel::onFieldValueChanged,
+        onFieldFocusChanged = viewModel::onFieldFocusChanged,
+        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
+        onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
+        onMessageShown = viewModel::onMessageShown
+    )
 
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is CreatePersonaEvent.Complete -> onContinueClick(
-                    event.personaId
-                )
-            }
+    LaunchedEffect(state.shouldNavigateToCompletion) {
+        if (state.shouldNavigateToCompletion) {
+            viewModel.onNavigationEventHandled()
+            onContinueClick()
         }
     }
     if (state.isNoMnemonicErrorVisible) {
@@ -156,20 +141,10 @@ fun CreatePersonaContent(
         },
         bottomBar = {
             Column {
-                val context = LocalContext.current
-
                 HorizontalDivider(color = RadixTheme.colors.gray5)
                 RadixPrimaryButton(
                     text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
-                    onClick = {
-                        context.findFragmentActivity()?.let { activity ->
-                            activity.activityBiometricAuthenticate { result ->
-                                if (result == BiometricAuthenticationResult.Succeeded) {
-                                    onPersonaCreateClick()
-                                }
-                            }
-                        }
-                    },
+                    onClick = onPersonaCreateClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(dimensions.paddingDefault)

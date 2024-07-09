@@ -7,6 +7,7 @@ import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.asGeneral
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addPersona
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.init
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
+    private val preferencesManager: PreferencesManager,
     private val profileRepository: ProfileRepository,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -54,6 +56,7 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
                     onNetwork = networkId
                 )
                 profileRepository.saveProfile(updatedProfile)
+                preferencesManager.markFirstPersonaCreated()
                 newPersona
             }
         }

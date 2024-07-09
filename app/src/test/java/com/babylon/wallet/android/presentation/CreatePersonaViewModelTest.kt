@@ -53,7 +53,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Test
     fun `when view model init, verify persona info are empty`() = runTest {
         // when
-        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, FakeAppEventBus())
+        val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, FakeAppEventBus())
         advanceUntilIdle()
 
         // then
@@ -65,7 +65,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Test
     fun `given persona data provided, when create button hit, verify complete event sent and persona info shown`() = runTest {
             val event = mutableListOf<CreatePersonaEvent>()
-            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, FakeAppEventBus())
+            val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, FakeAppEventBus())
 
             viewModel.onDisplayNameChanged(persona.displayName.value)
 
@@ -85,10 +85,10 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
                 .onEach { event.add(it) }
                 .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
 
-            Assert.assertEquals(event.first(), CreatePersonaEvent.Complete(personaId = persona.address))
+            Assert.assertEquals(event.first(), CreatePersonaEvent.Complete(personaAddress = persona.address))
         }
 
     override fun initVM(): CreatePersonaViewModel {
-        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager, FakeAppEventBus())
+        return CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, FakeAppEventBus())
     }
 }

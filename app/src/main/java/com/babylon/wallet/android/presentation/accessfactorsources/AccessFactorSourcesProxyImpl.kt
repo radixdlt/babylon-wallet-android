@@ -49,6 +49,20 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
+    override suspend fun createPersona(
+        accessFactorSourcesInput: AccessFactorSourcesInput.CreatePersona
+    ): Result<AccessFactorSourcesOutput.CreatedPersona> {
+        input = accessFactorSourcesInput
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.CreatePersona)
+        val result = _output.first()
+
+        return if (result is AccessFactorSourcesOutput.Failure) {
+            Result.failure(result.error)
+        } else {
+            Result.success(result as AccessFactorSourcesOutput.CreatedPersona)
+        }
+    }
+
     override fun getInput(): AccessFactorSourcesInput {
         return input
     }

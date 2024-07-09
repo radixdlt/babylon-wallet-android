@@ -46,6 +46,8 @@ sealed interface AppEvent {
         data object DerivePublicKey : AccessFactorSources
 
         data object DeriveAccounts : AccessFactorSources
+
+        data object CreatePersona : AccessFactorSources
     }
 
     sealed class Status : AppEvent {
