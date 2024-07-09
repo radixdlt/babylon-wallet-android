@@ -17,14 +17,12 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.default
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Converter
-import java.util.concurrent.TimeUnit
 import javax.inject.Qualifier
 import javax.inject.Singleton
 

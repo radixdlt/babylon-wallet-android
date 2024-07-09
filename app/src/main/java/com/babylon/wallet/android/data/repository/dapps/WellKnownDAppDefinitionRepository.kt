@@ -3,8 +3,8 @@ package com.babylon.wallet.android.data.repository.dapps
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.model.WellKnownDAppDefinitionResponse
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.GatewayHttpClient
+import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.DappDefinition

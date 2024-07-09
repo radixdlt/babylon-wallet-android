@@ -163,7 +163,7 @@ object NetworkModule {
         }
     }
 
-    class HeaderInterceptor @Inject constructor(): Interceptor {
+    class HeaderInterceptor @Inject constructor() : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request().newBuilder()
                 .addHeader(HEADER_RDX_CLIENT_NAME, HEADER_VALUE_RDX_CLIENT_NAME)
@@ -172,7 +172,6 @@ object NetworkModule {
 
             return chain.proceed(request)
         }
-
     }
 
     private const val SHORT_TIMEOUT_SECONDS = 5L

@@ -2,8 +2,8 @@ package com.babylon.wallet.android.data.repository.networkinfo
 
 import com.babylon.wallet.android.data.gateway.apis.StatusApi
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.GatewayHttpClient
+import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.radixdlt.sargon.NetworkId
