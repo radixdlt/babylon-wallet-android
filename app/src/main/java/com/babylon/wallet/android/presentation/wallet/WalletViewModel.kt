@@ -306,11 +306,16 @@ class WalletViewModel @Inject constructor(
     fun onCardClick(card: HomeCard) {
         viewModelScope.launch {
             when (card) {
-                HomeCard.Connector -> sendEvent(Event.NavigateToLinkConnector)
-                HomeCard.StartRadQuest -> sendEvent(Event.OpenUrl(RAD_QUEST_URL))
+                HomeCard.Connector -> {
+                    sendEvent(Event.NavigateToLinkConnector)
+                    homeCards.dismissCard(card)
+                }
+                HomeCard.StartRadQuest -> {
+                    sendEvent(Event.OpenUrl(RAD_QUEST_URL))
+                    homeCards.dismissCard(card)
+                }
                 else -> {}
             }
-            homeCards.dismissCard(card)
         }
     }
 

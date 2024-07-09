@@ -12,7 +12,7 @@ interface HomeCardsObserverWrapper : HomeCardsObserver {
     fun observeHomeCards(): Flow<List<HomeCard>>
 }
 
-class HomeCardsObserverImpl @Inject constructor() : HomeCardsObserverWrapper {
+class HomeCardsObserverWrapperImpl @Inject constructor() : HomeCardsObserverWrapper {
 
     private val homeCardsFlow = MutableSharedFlow<List<HomeCard>>(
         replay = 1,

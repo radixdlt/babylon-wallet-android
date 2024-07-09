@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
-import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverImpl
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.NetworkId
@@ -102,7 +102,7 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideHomeCardsObserverWrapper(): HomeCardsObserverWrapper = HomeCardsObserverImpl()
+    fun provideHomeCardsObserverWrapper(): HomeCardsObserverWrapper = HomeCardsObserverWrapperImpl()
 
     @Provides
     @Singleton
