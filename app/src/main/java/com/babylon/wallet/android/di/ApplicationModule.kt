@@ -119,6 +119,6 @@ object ApplicationModule {
          */
         networkId = NetworkId.MAINNET,
         dataStore = dataStore,
-        observer = observer as HomeCardsObserver
+        observer = observer
     )
 }
