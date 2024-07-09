@@ -97,7 +97,7 @@ fun NetworkFeeContent(
                     .fillMaxWidth()
                     .padding(top = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance),
-                contentColor = RadixTheme.colors.red1,
+                contentColor = RadixTheme.colors.orange1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
         }
