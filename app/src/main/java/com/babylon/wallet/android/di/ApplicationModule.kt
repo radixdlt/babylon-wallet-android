@@ -11,8 +11,8 @@ import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
-import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HomeCardsObserver
 import com.radixdlt.sargon.NetworkId
@@ -109,9 +109,10 @@ object ApplicationModule {
     @Singleton
     fun provideHomeCardsManager(
         dataStore: DataStore<Preferences>,
-        observer: HomeCardsObserverWrapper
+        observer: HomeCardsObserverWrapper,
+        @SimpleHttpClient httpClient: OkHttpClient
     ): HomeCardsManager = HomeCardsManager.init(
-        okHttpClient = OkHttpClient.Builder().build(),
+        okHttpClient = httpClient,
         /**
          * For now we'll only use MainNet as it's enough to fulfill all the scenarios
          * regarding Home Cards initialized from dApps and RadQuest deep link
