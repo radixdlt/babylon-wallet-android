@@ -13,8 +13,6 @@ import kotlinx.collections.immutable.persistentSetOf
 sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
-        data object LinkToConnector : TopLevelSettings
-
         data class SecurityCenter(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
         data class Personas(
             val isCloudBackupNotWorking: SecurityProblem.CloudBackupNotWorking? = null, // security problem: 5,6,7
@@ -32,7 +30,6 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                LinkToConnector -> R.string.empty
                 ApprovedDapps -> R.string.walletSettings_dapps_title
                 is Personas -> R.string.walletSettings_personas_title
                 is Preferences -> R.string.walletSettings_preferences_title
@@ -46,7 +43,6 @@ sealed interface SettingsItem {
         @StringRes
         fun subtitleRes(): Int {
             return when (this) {
-                LinkToConnector -> R.string.empty
                 ApprovedDapps -> R.string.walletSettings_dapps_subtitle
                 is Personas -> R.string.walletSettings_personas_subtitle
                 is Preferences -> R.string.walletSettings_preferences_subtitle

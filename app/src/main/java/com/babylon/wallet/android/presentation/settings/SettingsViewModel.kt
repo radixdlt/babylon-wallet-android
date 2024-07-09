@@ -3,12 +3,10 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
-import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
-import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Preferences
 import com.babylon.wallet.android.utils.Constants
@@ -20,8 +18,8 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.core.mapWhen
 import timber.log.Timber
@@ -30,7 +28,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
-    p2PLinksRepository: P2PLinksRepository,
     @DefaultDispatcher defaultDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -47,15 +44,8 @@ class SettingsViewModel @Inject constructor(
         if (EXPERIMENTAL_FEATURES_ENABLED) SettingsUiItem.Settings(DebugSettings) else null
     ).mapNotNull { it }
 
-    val state: StateFlow<SettingsUiState> = combine(
-        p2PLinksRepository.observeP2PLinks(),
-        getSecurityProblemsUseCase(),
-    ) { p2pLinks, securityProblems ->
+    val state: StateFlow<SettingsUiState> = getSecurityProblemsUseCase().map { securityProblems ->
         var mutated = defaultSettings
-        val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
-        if (p2pLinks.asList().isEmpty() && LinkToConnector !in settingsItems) {
-            mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
-        }
         if (securityProblems.isNotEmpty()) {
             mutated = mutated.mapWhen(
                 predicate = { it is SettingsUiItem.Settings && it.item is SettingsItem.TopLevelSettings.SecurityCenter },
