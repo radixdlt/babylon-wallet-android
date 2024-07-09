@@ -1,27 +1,28 @@
 package com.babylon.wallet.android.data.repository.homecards
 
 import com.radixdlt.sargon.HomeCard
-import com.radixdlt.sargon.HomeCardsObserver
-import kotlinx.coroutines.channels.BufferOverflow
+import com.radixdlt.sargon.HomeCardsManager
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import timber.log.Timber
 import javax.inject.Inject
 
 interface HomeCardsRepository {
 
     fun observeHomeCards(): Flow<List<HomeCard>>
+
+    suspend fun cardDismissed(card: HomeCard)
 }
 
-class HomeCardsRepositoryImpl @Inject constructor() : HomeCardsRepository, HomeCardsObserver {
+class HomeCardsRepositoryImpl @Inject constructor(
+    private val homeCardsManager: HomeCardsManager,
+    private val homeCardsObserver: HomeCardsObserverWrapper
+) : HomeCardsRepository {
 
-    private val homeCardsFlow = MutableSharedFlow<List<HomeCard>>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
+    override fun observeHomeCards(): Flow<List<HomeCard>> = homeCardsObserver.observeHomeCards()
 
-    override fun observeHomeCards(): Flow<List<HomeCard>> = homeCardsFlow
-
-    override fun handleCardsUpdate(cards: List<HomeCard>) {
-        homeCardsFlow.tryEmit(cards)
+    override suspend fun cardDismissed(card: HomeCard) {
+        runCatching { homeCardsManager.cardDismissed(card) }
+            .onFailure { Timber.d("Failed to dismiss home card. Error: $it") }
+            .onSuccess { Timber.d("$card dismissed") }
     }
 }

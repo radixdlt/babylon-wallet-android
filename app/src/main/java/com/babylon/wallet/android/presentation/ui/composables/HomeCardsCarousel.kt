@@ -93,16 +93,18 @@ fun HomeCardsCarousel(
             )
         }
 
-        HorizontalPagerIndicator(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(top = RadixTheme.dimensions.paddingSmall),
-            pagerState = pagerState,
-            activeIndicatorWidth = 6.dp,
-            inactiveIndicatorWidth = 4.dp,
-            activeColor = RadixTheme.colors.gray2,
-            inactiveColor = RadixTheme.colors.gray4
-        )
+        if (pagerState.pageCount > 1) {
+            HorizontalPagerIndicator(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = RadixTheme.dimensions.paddingSmall),
+                pagerState = pagerState,
+                activeIndicatorWidth = 6.dp,
+                inactiveIndicatorWidth = 4.dp,
+                activeColor = RadixTheme.colors.gray2,
+                inactiveColor = RadixTheme.colors.gray4
+            )
+        }
     }
 }
 
