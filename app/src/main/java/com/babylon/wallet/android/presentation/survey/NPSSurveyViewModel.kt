@@ -77,7 +77,7 @@ class NPSSurveyViewModel @Inject constructor(
 
     fun onBackPress() {
         appScope.launch {
-            nPSSurveyRepository.submitSurveyResponse("", "")
+            nPSSurveyRepository.submitSurveyResponse()
             appEventBus.sendEvent(AppEvent.NPSSurveySubmitted)
         }
         viewModelScope.launch {
@@ -94,8 +94,8 @@ class NPSSurveyViewModel @Inject constructor(
         val isSubmitButtonEnabled: Boolean
             get() = scores.any { it.selected }
 
-        val scoreSelected: String
-            get() = scores.find { it.selected }?.data?.score.toString()
+        val scoreSelected: Int?
+            get() = scores.find { it.selected }?.data?.score
     }
 }
 
