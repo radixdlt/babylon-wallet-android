@@ -224,10 +224,10 @@ class GetSignaturesViewModel @Inject constructor(
             }
     }
 
-    private fun FactorSourceKind.signingOrder(): Int {
+    private fun FactorSourceKind.signingOrder(): Int { // based on difficulty - most "challenging" factor comes first
         return when (this) {
-            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 1
-            FactorSourceKind.DEVICE -> 0 // DEVICE should always go first since we authorize KeyStore encryption key for 30s
+            FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> 0
+            FactorSourceKind.DEVICE -> 1
             else -> Int.MAX_VALUE // it doesn't matter because we add only the ledger or device factor sources
         }
     }
