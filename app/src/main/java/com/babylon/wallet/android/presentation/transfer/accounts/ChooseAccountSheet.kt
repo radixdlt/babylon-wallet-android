@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transfer.accounts
 import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PlatformImeOptions
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -324,22 +326,23 @@ fun ScanQRContent(
     onAddressDecoded: (String) -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
+            .fillMaxSize()
+            .padding(RadixTheme.dimensions.paddingXXLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
         Text(
-            modifier = Modifier
-                .padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.assetTransfer_qrScanInstructions),
+            text = stringResource(id = R.string.scanQR_account_instructions),
             style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
         )
 
         CameraPreview(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .clip(RadixTheme.shapes.roundedRectMedium),
             disableBackHandler = false
         ) {
