@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -117,6 +118,7 @@ fun BottomSheetDialogWrapper(
     showDefaultTopBar: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
+    centerContent: Boolean = false,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -188,7 +190,7 @@ fun BottomSheetDialogWrapper(
                     .animateContentSize()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
                     .clip(RadixTheme.shapes.roundedRectTopMedium),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 if (showDragHandle) {
                     DefaultModalSheetDragHandle()
@@ -206,7 +208,13 @@ fun BottomSheetDialogWrapper(
                         title = title
                     )
                 }
-                content()
+                if (centerContent) {
+                    Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                        content()
+                    }
+                } else {
+                    content()
+                }
             }
         }
     }

@@ -88,7 +88,8 @@ private fun DerivePublicKeyBottomSheetContent(
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = onDismiss,
-        heightFraction = 0.6f
+        heightFraction = 0.6f,
+        centerContent = true
     ) {
         Column(
             modifier = Modifier
@@ -97,7 +98,6 @@ private fun DerivePublicKeyBottomSheetContent(
                 .background(RadixTheme.colors.defaultBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(40.dp))
             Icon(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(
@@ -136,7 +136,6 @@ private fun DerivePublicKeyBottomSheetContent(
                 text = stringResource(R.string.common_retry),
                 onClick = onRetryClick
             )
-            Spacer(Modifier.height(120.dp))
         }
     }
 }

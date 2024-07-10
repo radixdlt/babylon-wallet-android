@@ -50,6 +50,7 @@ import rdx.works.core.sargon.orDefault
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -148,7 +149,9 @@ class DeriveAccountsViewModel @Inject constructor(
             .onSuccess {
                 sendEvent(Event.DerivingAccountsCompleted)
             }
-            .onFailure { }
+            .onFailure {
+                Timber.d(it)
+            }
     }
 
     private suspend fun recoverAccountsForGivenMnemonic() {

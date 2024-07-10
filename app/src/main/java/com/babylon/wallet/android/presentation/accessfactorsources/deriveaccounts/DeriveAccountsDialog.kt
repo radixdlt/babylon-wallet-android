@@ -88,7 +88,8 @@ private fun DeriveAccountsBottomSheetContent(
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = onDismiss,
-        heightFraction = 0.6f
+        heightFraction = 0.6f,
+        centerContent = true
     ) {
         Column(
             modifier = Modifier
@@ -97,7 +98,6 @@ private fun DeriveAccountsBottomSheetContent(
                 .background(RadixTheme.colors.defaultBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(40.dp))
             Icon(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(
@@ -118,7 +118,7 @@ private fun DeriveAccountsBottomSheetContent(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixTextButton(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.common_retry),
@@ -132,9 +132,9 @@ private fun DeriveAccountsBottomSheetContent(
                         text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixTextButton(
                         modifier = Modifier.fillMaxWidth(),
                         text = stringResource(R.string.common_retry),
@@ -142,7 +142,6 @@ private fun DeriveAccountsBottomSheetContent(
                     )
                 }
             }
-            Spacer(Modifier.height(120.dp))
         }
     }
 }
