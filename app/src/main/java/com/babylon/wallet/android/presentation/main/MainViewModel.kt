@@ -21,7 +21,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.RadixConnectPassword
@@ -72,7 +71,6 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val homeCardsManager: HomeCardsManager
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -157,7 +155,6 @@ class MainViewModel @Inject constructor(
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
         processBufferedDeepLinkRequest()
-        initHomeCardsManager()
     }
 
     private fun processBufferedDeepLinkRequest() {
@@ -369,14 +366,6 @@ class MainViewModel @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    private fun initHomeCardsManager() {
-        viewModelScope.launch {
-            runCatching { homeCardsManager.bootstrap() }
-                .onFailure { Timber.d("HomeCardsManager init error: ${it.message}") }
-                .onSuccess { Timber.d("Successfully initialized HomeCardsManager") }
         }
     }
 
