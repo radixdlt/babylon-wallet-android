@@ -10,7 +10,12 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 
-// interface for clients that need access to factor sources
+// interface for clients (viewmodels or usecases) that need access to factor sources
+//
+// for example CreateAccountViewModel needs a public key to create an account therefore it must call:
+//
+// val publicKey = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(...)
+// createAccountUseCase(displayName = ""a name", publicKey = publicKey)
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
@@ -42,6 +47,10 @@ interface AccessFactorSourcesProxy {
 
 // interface which acts as a mediator between the clients who need access to factor sources
 // and the viewmodels of the bottom sheet dialogs
+//
+// for example when we call this:
+// val publicKey = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(...)
+// the AccessFactorSourcesProxyImpl is the mediator between the CreateAccountViewModel and the DerivePublicKeyViewModel
 interface AccessFactorSourcesUiProxy {
 
     fun getInput(): AccessFactorSourcesInput
@@ -51,6 +60,11 @@ interface AccessFactorSourcesUiProxy {
 
 // ----- Models for input/output ----- //
 
+// We must clearly define what is the minimum input and the minimum output.
+//
+// For example, when wallet needs to create an account,
+// we need to access factor sources in order to derive a public key,
+// therefore the public key is the output and not the whole account!
 sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKey(
