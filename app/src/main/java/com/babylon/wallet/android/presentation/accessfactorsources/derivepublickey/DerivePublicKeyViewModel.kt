@@ -77,30 +77,15 @@ class DerivePublicKeyViewModel @Inject constructor(
                             sendEvent(Event.AccessingFactorSourceCompleted)
                         }
 
-                        else -> {
-                            _state.update { uiState ->
-                                uiState.copy(shouldShowRetryButton = true)
-                            }
-                        }
+                        else -> {}
                     }
                 }
-        }
-    }
-
-    fun onBiometricAuthenticationDismiss() {
-        // biometric prompt dismissed, but bottom dialog remains visible
-        // therefore we show the retry button
-        _state.update { uiState ->
-            uiState.copy(shouldShowRetryButton = true)
         }
     }
 
     fun onRetryClick() {
         derivePublicKeyJob?.cancel()
         derivePublicKeyJob = viewModelScope.launch {
-            _state.update { uiState ->
-                uiState.copy(shouldShowRetryButton = false)
-            }
             when (state.value.showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> {
                     sendEvent(Event.RequestBiometricPrompt)
@@ -190,8 +175,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     data class DerivePublicKeyUiState(
-        val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
-        val shouldShowRetryButton: Boolean = false
+        val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device
     ) : UiState {
 
         sealed interface ShowContentForFactorSource {

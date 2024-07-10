@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts
 
+import Constants
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
@@ -103,10 +104,6 @@ class DeriveAccountsViewModel @Inject constructor(
                                     if (e is ProfileException) {
                                         accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
                                         sendEvent(Event.DerivingAccountsCompleted)
-                                    } else {
-                                        _state.update { uiState ->
-                                            uiState.copy(shouldShowRetryButton = true)
-                                        }
                                     }
                                 }
                         }
@@ -124,14 +121,6 @@ class DeriveAccountsViewModel @Inject constructor(
         }
     }
 
-    fun onBiometricAuthenticationDismiss() {
-        // biometric prompt dismissed, but bottom dialog remains visible
-        // therefore we show the retry button
-        _state.update { uiState ->
-            uiState.copy(shouldShowRetryButton = true)
-        }
-    }
-
     fun onUserDismiss() {
         viewModelScope.launch {
             sendEvent(Event.UserDismissed) // one to dismiss the dialog
@@ -142,9 +131,6 @@ class DeriveAccountsViewModel @Inject constructor(
     fun onRetryClick() {
         reDerivePublicKeyJob?.cancel()
         reDerivePublicKeyJob = viewModelScope.launch {
-            _state.update { uiState ->
-                uiState.copy(shouldShowRetryButton = false)
-            }
             when (state.value.showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> sendEvent(Event.RequestBiometricPrompt)
                 is ShowContentForFactorSource.Ledger -> initRecoveryFromLedgerFactorSource()
@@ -162,11 +148,7 @@ class DeriveAccountsViewModel @Inject constructor(
             .onSuccess {
                 sendEvent(Event.DerivingAccountsCompleted)
             }
-            .onFailure { e ->
-                _state.update { uiState ->
-                    uiState.copy(shouldShowRetryButton = true)
-                }
-            }
+            .onFailure { }
     }
 
     private suspend fun recoverAccountsForGivenMnemonic() {
@@ -330,8 +312,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     data class DeriveAccountsUiState(
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
-        val isFromOnboarding: Boolean = false,
-        val shouldShowRetryButton: Boolean = false
+        val isFromOnboarding: Boolean = false
     ) : UiState {
 
         sealed interface ShowContentForFactorSource {

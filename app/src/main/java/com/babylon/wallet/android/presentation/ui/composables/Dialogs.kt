@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -115,6 +116,7 @@ fun BottomSheetDialogWrapper(
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
     title: String? = null,
+    heightFraction: Float = 1f,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -144,13 +146,13 @@ fun BottomSheetDialogWrapper(
             }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
-            val maxHeight = with(LocalDensity.current) {
+            val contentMaxHeight = with(LocalDensity.current) {
                 maxHeight.toPx()
             }
             draggableState.updateAnchors(
                 DraggableAnchors {
                     DragState.Expanded at 0f
-                    DragState.Collapsed at maxHeight
+                    DragState.Collapsed at contentMaxHeight
                 }
             )
             LaunchedEffect(draggableState) {
@@ -165,6 +167,7 @@ fun BottomSheetDialogWrapper(
             Column(
                 modifier = Modifier
                     .clickable(interactionSource = interactionSource, indication = null) { /* Disable content click */ }
+                    .applyIf(heightFraction != 1f, Modifier.height(maxHeight * heightFraction))
                     .applyIf(
                         dragToDismissEnabled,
                         Modifier
@@ -178,7 +181,7 @@ fun BottomSheetDialogWrapper(
                                     y = draggableState
                                         .requireOffset()
                                         .roundToInt()
-                                        .coerceIn(0, maxHeight.roundToInt())
+                                        .coerceIn(0, contentMaxHeight.roundToInt())
                                 )
                             }
                     )

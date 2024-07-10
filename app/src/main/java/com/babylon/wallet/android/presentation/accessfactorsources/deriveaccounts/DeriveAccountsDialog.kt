@@ -57,8 +57,9 @@ fun DeriveAccountsDialog(
                     context.biometricAuthenticate { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
                             BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
-                            BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
-                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
+                            else -> {
+                                /* do nothing */
+                            }
                         }
                     }
                 }
@@ -72,7 +73,6 @@ fun DeriveAccountsDialog(
     DeriveAccountsBottomSheetContent(
         modifier = modifier,
         showContentForFactorSource = state.showContentForFactorSource,
-        shouldShowRetryButton = state.shouldShowRetryButton,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -82,13 +82,13 @@ fun DeriveAccountsDialog(
 private fun DeriveAccountsBottomSheetContent(
     modifier: Modifier = Modifier,
     showContentForFactorSource: ShowContentForFactorSource,
-    shouldShowRetryButton: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        heightFraction = 0.6f
     ) {
         Column(
             modifier = Modifier
@@ -118,17 +118,14 @@ private fun DeriveAccountsBottomSheetContent(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
-                    if (shouldShowRetryButton) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                        RadixTextButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.common_retry),
-                            onClick = onRetryClick
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(76.dp))
-                    }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    RadixTextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.common_retry),
+                        onClick = onRetryClick
+                    )
                 }
+
                 is ShowContentForFactorSource.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
@@ -156,7 +153,6 @@ fun DeriveAccountsDeviceDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Device,
-            shouldShowRetryButton = false,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -170,7 +166,6 @@ fun DeriveAccountsLedgerDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Ledger(FactorSource.Ledger.sample()),
-            shouldShowRetryButton = true,
             onDismiss = {},
             onRetryClick = {}
         )
