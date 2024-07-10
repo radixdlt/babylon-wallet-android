@@ -11,11 +11,14 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.init
+import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addNetworkIfDoesNotExist
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.babylon
@@ -40,6 +43,10 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
     }
     private val profileRepository = FakeProfileRepository()
 
+    private val preferencesManager = mockk<PreferencesManager>().apply {
+        coEvery { markFirstPersonaCreated() } just Runs
+    }
+
     private val createPersonaWithDeviceFactorSourceUseCase = CreatePersonaWithDeviceFactorSourceUseCase(
         mnemonicRepository = mnemonicRepository,
         profileRepository = profileRepository,
@@ -49,7 +56,8 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
             preferencesManager = mockk(),
             deviceInfoRepository = mockk()
         ),
-        defaultDispatcher = testDispatcher
+        defaultDispatcher = testDispatcher,
+        preferencesManager = preferencesManager
     )
 
     @Test
@@ -70,6 +78,9 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
             )
         ).getOrNull()
 
-        assertEquals(newPersona, profileRepository.inMemoryProfileOrNull?.networks?.asIdentifiable()?.getBy(NetworkId.MAINNET)?.personas?.first())
+        assertEquals(
+            newPersona,
+            profileRepository.inMemoryProfileOrNull?.networks?.asIdentifiable()?.getBy(NetworkId.MAINNET)?.personas?.first()
+        )
     }
 }
