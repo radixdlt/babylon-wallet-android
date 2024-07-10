@@ -45,12 +45,12 @@ interface AccessFactorSourcesProxy {
     fun getTempMnemonicWithPassphrase(): MnemonicWithPassphrase?
 }
 
-// interface which acts as a mediator between the clients who need access to factor sources
+// interface which acts as a proxy between the clients who need access to factor sources
 // and the viewmodels of the bottom sheet dialogs
 //
 // for example when we call this:
 // val publicKey = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(...)
-// the AccessFactorSourcesProxyImpl is the mediator between the CreateAccountViewModel and the DerivePublicKeyViewModel
+// the AccessFactorSourcesProxyImpl is the proxy between the CreateAccountViewModel and the DerivePublicKeyViewModel
 interface AccessFactorSourcesUiProxy {
 
     fun getInput(): AccessFactorSourcesInput
