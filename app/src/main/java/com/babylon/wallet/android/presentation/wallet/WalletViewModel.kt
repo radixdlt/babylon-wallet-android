@@ -58,7 +58,6 @@ import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
@@ -82,7 +81,6 @@ class WalletViewModel @Inject constructor(
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
@@ -241,11 +239,6 @@ class WalletViewModel @Inject constructor(
                 .flowOn(defaultDispatcher)
                 .collect()
         }
-        viewModelScope.launch {
-            preferencesManager.isRadixBannerVisible.collect { isVisible ->
-                _state.update { it.copy(isRadixBannerVisible = isVisible) }
-            }
-        }
     }
 
     private fun observeGlobalAppEvents() {
@@ -297,10 +290,6 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             sendEvent(Event.NavigateToSecurityCenter)
         }
-    }
-
-    fun onRadixBannerDismiss() = viewModelScope.launch {
-        preferencesManager.setRadixBannerVisibility(isVisible = false)
     }
 
     fun onCardClick(card: HomeCard) {
@@ -356,7 +345,6 @@ class WalletViewModel @Inject constructor(
         private val accountsWithAssets: List<AccountWithAssets>? = null,
         private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
         val prices: PricesState = PricesState.None,
-        val isRadixBannerVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
         val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList()
     ) : UiState {

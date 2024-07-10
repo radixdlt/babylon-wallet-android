@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -55,7 +54,6 @@ class CreateAccountViewModel @Inject constructor(
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val deleteNotInitializedProfileDataUseCase: DeleteNotInitializedProfileDataUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val preferencesManager: PreferencesManager,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val appEventBus: AppEventBus,
@@ -229,7 +227,6 @@ class CreateAccountViewModel @Inject constructor(
         if (args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled ||
             args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
         ) {
-            preferencesManager.setRadixBannerVisibility(isVisible = true)
             initHomeCards()
 
             val isCloudBackupEnabled = args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
