@@ -107,7 +107,7 @@ object ApplicationModule {
     @Provides
     @Singleton
     fun provideHomeCardsManager(
-        httpClient: OkHttpClient,
+        @GatewayHttpClient httpClient: OkHttpClient,
         dataStore: DataStore<Preferences>,
         observer: HomeCardsObserverWrapper,
     ): HomeCardsManager = HomeCardsManager.init(
