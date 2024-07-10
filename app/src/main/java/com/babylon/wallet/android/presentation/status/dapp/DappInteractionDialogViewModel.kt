@@ -27,9 +27,14 @@ class DappInteractionDialogViewModel @Inject constructor(
         )
     }
 
-    fun onDismiss() {
+    fun onShow() {
         viewModelScope.launch {
             incomingRequestRepository.requestHandled(state.value.requestId)
+        }
+    }
+
+    fun onDismiss() {
+        viewModelScope.launch {
             sendEvent(Event.DismissDialog)
         }
     }

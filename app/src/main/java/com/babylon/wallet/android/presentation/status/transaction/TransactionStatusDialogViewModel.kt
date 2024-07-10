@@ -118,6 +118,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     )
                 }
                 transactionStatusClient.statusHandled(status.transactionId)
+                incomingRequestRepository.requestHandled(state.value.status.requestId)
             }
         }
     }
@@ -135,7 +136,6 @@ class TransactionStatusDialogViewModel @Inject constructor(
         _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
         viewModelScope.launch {
             sendEvent(Event.DismissDialog)
-            incomingRequestRepository.requestHandled(state.value.status.requestId)
         }
     }
 
