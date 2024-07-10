@@ -136,7 +136,7 @@ class CreateAccountViewModel @Inject constructor(
             }
 
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToCreateAccount(
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
                     isBiometricsProvided = isFirstAccount

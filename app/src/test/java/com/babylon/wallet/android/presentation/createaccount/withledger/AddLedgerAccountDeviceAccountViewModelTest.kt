@@ -40,7 +40,7 @@ import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel>() {
+class AddLedgerAccountDeviceAccountViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel>() {
 
     private val firstDeviceId = FactorSourceId.Hash(
         FactorSourceIdFromHash(

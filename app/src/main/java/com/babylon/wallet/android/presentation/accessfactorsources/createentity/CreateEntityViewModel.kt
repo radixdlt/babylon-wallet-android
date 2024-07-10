@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
+package com.babylon.wallet.android.presentation.accessfactorsources.createentity
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
@@ -8,7 +8,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ShowContentForFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.createentity.CreateEntityViewModel.CreateEntityUiState.CreatedEntityType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -28,62 +28,87 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
-class DerivePublicKeyViewModel @Inject constructor(
+class CreateEntityViewModel @Inject constructor(
+    private val createPersonaWithDeviceFactorSourceUseCase: CreatePersonaWithDeviceFactorSourceUseCase,
     private val publicKeyProvider: PublicKeyProvider,
     private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
     private val ledgerMessenger: LedgerMessenger
-) : StateViewModel<DerivePublicKeyViewModel.DerivePublicKeyUiState>(),
-    OneOffEventHandler<DerivePublicKeyViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<CreateEntityViewModel.CreateEntityUiState>(),
+    OneOffEventHandler<CreateEntityViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): DerivePublicKeyUiState = DerivePublicKeyUiState()
+    override fun initialState(): CreateEntityUiState = CreateEntityUiState()
 
-    private lateinit var input: AccessFactorSourcesInput.ToDerivePublicKey
-    private var derivePublicKeyJob: Job? = null
+    private lateinit var input: AccessFactorSourcesInput
+    private var createEntityJob: Job? = null
 
     init {
-        derivePublicKeyJob = viewModelScope.launch {
-            input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
-            when (input.factorSource) {
-                is FactorSource.Ledger -> {
-                    derivePublicKey().onSuccess {
-                        sendEvent(Event.AccessingFactorSourceCompleted)
+        createEntityJob = viewModelScope.launch {
+            input = accessFactorSourcesUiProxy.getInput()
+            when (val typedInput = input) {
+                is AccessFactorSourcesInput.ToCreatePersona -> sendEvent(Event.RequestBiometricPrompt)
+                is AccessFactorSourcesInput.ToCreateAccount -> {
+                    when (typedInput.factorSource) {
+                        is FactorSource.Ledger -> {
+                            derivePublicKey(typedInput).onSuccess {
+                                sendEvent(Event.AccessingFactorSourceCompleted)
+                            }
+                        }
+
+                        is FactorSource.Device -> if (typedInput.isBiometricsProvided) {
+                            biometricAuthenticationCompleted()
+                        } else {
+                            sendEvent(Event.RequestBiometricPrompt)
+                        }
                     }
                 }
 
-                is FactorSource.Device -> if (input.isBiometricsProvided) {
-                    biometricAuthenticationCompleted()
-                } else {
-                    sendEvent(Event.RequestBiometricPrompt)
-                }
+                else -> {}
             }
         }
     }
 
     fun biometricAuthenticationCompleted() {
         viewModelScope.launch {
-            input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
-            derivePublicKey()
-                .onSuccess {
-                    sendEvent(Event.AccessingFactorSourceCompleted)
-                }
-                .onFailure { e ->
-                    when (e) {
-                        is ProfileException -> {
-                            accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
-                            sendEvent(Event.AccessingFactorSourceCompleted)
-                        }
-
-                        else -> {
-                            _state.update { uiState ->
-                                uiState.copy(shouldShowRetryButton = true)
-                            }
-                        }
+            when (val typedInput = input) {
+                is AccessFactorSourcesInput.ToCreatePersona -> {
+                    createPersonaWithDeviceFactorSourceUseCase(typedInput.displayName, typedInput.personaData).onSuccess { persona ->
+                        accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.CreatedPersona(persona))
+                        sendEvent(Event.AccessingFactorSourceCompleted)
+                    }.onFailure { e ->
+                        handleFailure(e)
                     }
                 }
+
+                is AccessFactorSourcesInput.ToCreateAccount -> {
+                    derivePublicKey(typedInput).onSuccess {
+                        sendEvent(Event.AccessingFactorSourceCompleted)
+                    }.onFailure { e ->
+                        handleFailure(e)
+                    }
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    private suspend fun CreateEntityViewModel.handleFailure(e: Throwable) {
+        when (e) {
+            is ProfileException -> {
+                accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                sendEvent(Event.AccessingFactorSourceCompleted)
+            }
+
+            else -> {
+                _state.update { uiState ->
+                    uiState.copy(shouldShowRetryButton = true)
+                }
+            }
         }
     }
 
@@ -96,18 +121,19 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     fun onRetryClick() {
-        derivePublicKeyJob?.cancel()
-        derivePublicKeyJob = viewModelScope.launch {
+        createEntityJob?.cancel()
+        createEntityJob = viewModelScope.launch {
             _state.update { uiState ->
                 uiState.copy(shouldShowRetryButton = false)
             }
-            when (state.value.showContentForFactorSource) {
-                ShowContentForFactorSource.Device -> {
+            when (state.value.createdEntityType) {
+                CreatedEntityType.Persona,
+                CreatedEntityType.DeviceAccount -> {
                     sendEvent(Event.RequestBiometricPrompt)
                 }
 
-                is ShowContentForFactorSource.Ledger -> {
-                    derivePublicKey().onSuccess {
+                is CreatedEntityType.LedgerAccount -> {
+                    derivePublicKey(input as AccessFactorSourcesInput.ToCreateAccount).onSuccess {
                         sendEvent(Event.AccessingFactorSourceCompleted)
                     }
                 }
@@ -117,7 +143,7 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     fun onUserDismiss() {
         viewModelScope.launch {
-            derivePublicKeyJob?.cancel()
+            createEntityJob?.cancel()
             accessFactorSourcesUiProxy.setOutput(
                 output = AccessFactorSourcesOutput.Failure(CancellationException("User cancelled"))
             )
@@ -125,7 +151,7 @@ class DerivePublicKeyViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey(): Result<Unit> {
+    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToCreateAccount): Result<Unit> {
         return when (val factorSource = input.factorSource) {
             is FactorSource.Device -> {
                 derivePublicKeyFromDeviceFactorSource(
@@ -137,7 +163,7 @@ class DerivePublicKeyViewModel @Inject constructor(
             is FactorSource.Ledger -> {
                 _state.update { uiState ->
                     uiState.copy(
-                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = factorSource)
+                        createdEntityType = CreatedEntityType.LedgerAccount(selectedLedgerDevice = factorSource)
                     )
                 }
                 derivePublicKeyFromLedgerFactorSource(
@@ -189,14 +215,15 @@ class DerivePublicKeyViewModel @Inject constructor(
         return Result.failure(IOException("failed to derive public keys"))
     }
 
-    data class DerivePublicKeyUiState(
-        val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
+    data class CreateEntityUiState(
+        val createdEntityType: CreatedEntityType = CreatedEntityType.DeviceAccount,
         val shouldShowRetryButton: Boolean = false
     ) : UiState {
 
-        sealed interface ShowContentForFactorSource {
-            data object Device : ShowContentForFactorSource
-            data class Ledger(val selectedLedgerDevice: FactorSource.Ledger) : ShowContentForFactorSource
+        sealed interface CreatedEntityType {
+            data object DeviceAccount : CreatedEntityType
+            data object Persona : CreatedEntityType
+            data class LedgerAccount(val selectedLedgerDevice: FactorSource.Ledger) : CreatedEntityType
         }
     }
 

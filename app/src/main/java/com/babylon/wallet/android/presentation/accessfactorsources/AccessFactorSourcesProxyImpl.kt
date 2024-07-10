@@ -20,10 +20,10 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     private var tempMnemonicWithPassphrase: MnemonicWithPassphrase? = null
 
     override suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreateAccount
     ): Result<AccessFactorSourcesOutput.HDPublicKey> {
         input = accessFactorSourcesInput
-        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKey)
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.CreateAccount)
         val result = _output.first()
 
         return if (result is AccessFactorSourcesOutput.Failure) {
@@ -50,7 +50,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     }
 
     override suspend fun createPersona(
-        accessFactorSourcesInput: AccessFactorSourcesInput.CreatePersona
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreatePersona
     ): Result<AccessFactorSourcesOutput.CreatedPersona> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.CreatePersona)

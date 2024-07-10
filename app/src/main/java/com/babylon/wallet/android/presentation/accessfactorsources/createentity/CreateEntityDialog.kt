@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
+package com.babylon.wallet.android.presentation.accessfactorsources.createentity
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -22,13 +22,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState
+import com.babylon.wallet.android.presentation.accessfactorsources.createentity.CreateEntityViewModel.CreateEntityUiState
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -38,9 +40,9 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.sargon.sample
 
 @Composable
-fun DerivePublicKeyDialog(
+fun CreateEntityDialog(
     modifier: Modifier = Modifier,
-    viewModel: DerivePublicKeyViewModel,
+    viewModel: CreateEntityViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -53,24 +55,27 @@ fun DerivePublicKeyDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DerivePublicKeyViewModel.Event.RequestBiometricPrompt -> {
+                is CreateEntityViewModel.Event.RequestBiometricPrompt -> {
                     context.biometricAuthenticate { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
                             BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
                             BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
-                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
+                            BiometricAuthenticationResult.Failed -> {
+                                /* do nothing */
+                            }
                         }
                     }
                 }
-                DerivePublicKeyViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
-                DerivePublicKeyViewModel.Event.UserDismissed -> onDismiss()
+
+                CreateEntityViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
+                CreateEntityViewModel.Event.UserDismissed -> onDismiss()
             }
         }
     }
 
-    DerivePublicKeyBottomSheetContent(
+    CreateEntityBottomSheetContent(
         modifier = modifier,
-        showContentForFactorSource = state.showContentForFactorSource,
+        createdEntityType = state.createdEntityType,
         shouldShowRetryButton = state.shouldShowRetryButton,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
@@ -78,9 +83,9 @@ fun DerivePublicKeyDialog(
 }
 
 @Composable
-private fun DerivePublicKeyBottomSheetContent(
+private fun CreateEntityBottomSheetContent(
     modifier: Modifier = Modifier,
-    showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
+    createdEntityType: CreateEntityUiState.CreatedEntityType,
     shouldShowRetryButton: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
@@ -106,13 +111,24 @@ private fun DerivePublicKeyBottomSheetContent(
                 tint = RadixTheme.colors.gray3
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            val title = when (createdEntityType) {
+                CreateEntityUiState.CreatedEntityType.DeviceAccount,
+                is CreateEntityUiState.CreatedEntityType.LedgerAccount -> {
+                    stringResource(id = R.string.factorSourceActions_createAccount_title)
+                }
+
+                CreateEntityUiState.CreatedEntityType.Persona -> {
+                    stringResource(id = R.string.factorSourceActions_createPersona_title)
+                }
+            }
             Text(
                 style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.factorSourceActions_createAccount_title)
+                text = title
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            when (showContentForFactorSource) {
-                DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
+            when (createdEntityType) {
+                CreateEntityUiState.CreatedEntityType.Persona,
+                CreateEntityUiState.CreatedEntityType.DeviceAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
@@ -129,14 +145,14 @@ private fun DerivePublicKeyBottomSheetContent(
                     }
                 }
 
-                is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
+                is CreateEntityUiState.CreatedEntityType.LedgerAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
+                    RoundLedgerItem(ledgerName = createdEntityType.selectedLedgerDevice.value.hint.name)
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                     RadixTextButton(
                         modifier = Modifier.fillMaxWidth(),
@@ -150,12 +166,15 @@ private fun DerivePublicKeyBottomSheetContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun DerivePublicKeyDialogDevicePreview() {
+private fun CreateEntityPreview(
+    @PreviewParameter(CreateEntityPreviewParameterProvider::class) param: CreateEntityUiState.CreatedEntityType
+) {
     RadixWalletTheme {
-        DerivePublicKeyBottomSheetContent(
-            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Device,
+        CreateEntityBottomSheetContent(
+            createdEntityType = param,
             shouldShowRetryButton = false,
             onDismiss = {},
             onRetryClick = {}
@@ -164,17 +183,12 @@ fun DerivePublicKeyDialogDevicePreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = false)
-@Composable
-fun DerivePublicKeyDialogLedgerPreview() {
-    RadixWalletTheme {
-        DerivePublicKeyBottomSheetContent(
-            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
-                selectedLedgerDevice = FactorSource.Ledger.sample()
-            ),
-            shouldShowRetryButton = false,
-            onDismiss = {},
-            onRetryClick = {}
+class CreateEntityPreviewParameterProvider : PreviewParameterProvider<CreateEntityUiState.CreatedEntityType> {
+
+    override val values: Sequence<CreateEntityUiState.CreatedEntityType>
+        get() = sequenceOf(
+            CreateEntityUiState.CreatedEntityType.DeviceAccount,
+            CreateEntityUiState.CreatedEntityType.LedgerAccount(selectedLedgerDevice = FactorSource.Ledger.sample()),
+            CreateEntityUiState.CreatedEntityType.Persona
         )
-    }
 }

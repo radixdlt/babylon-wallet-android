@@ -43,7 +43,7 @@ sealed interface AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources
 
-        data object DerivePublicKey : AccessFactorSources
+        data object CreateAccount : AccessFactorSources
 
         data object DeriveAccounts : AccessFactorSources
 

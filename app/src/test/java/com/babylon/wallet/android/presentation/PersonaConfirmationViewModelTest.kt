@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.presentation.settings.personas.createpersona.ARG_PERSONA_ID
+import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.ARG_PERSONA_ID
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaConfirmationEvent
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaConfirmationViewModel
 import com.radixdlt.sargon.Gateway
@@ -29,7 +29,7 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
-class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaConfirmationViewModel>() {
+class PersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaConfirmationViewModel>() {
 
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
     private val getProfileUseCase = Mockito.mock(GetProfileUseCase::class.java)

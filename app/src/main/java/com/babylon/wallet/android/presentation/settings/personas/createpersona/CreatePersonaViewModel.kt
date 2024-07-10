@@ -56,7 +56,7 @@ class CreatePersonaViewModel @Inject constructor(
         accessFactorSourcesJob = viewModelScope.launch {
             val displayName = DisplayName(_state.value.personaDisplayName.value)
             val personaData = _state.value.currentFields.toPersonaData()
-            accessFactorSourcesProxy.createPersona(AccessFactorSourcesInput.CreatePersona(displayName, personaData)).onSuccess {
+            accessFactorSourcesProxy.createPersona(AccessFactorSourcesInput.ToCreatePersona(displayName, personaData)).onSuccess {
                 _state.update { state -> state.copy(shouldNavigateToCompletion = true) }
             }.onFailure { error ->
                 when (error) {

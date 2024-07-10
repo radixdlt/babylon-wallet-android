@@ -13,7 +13,7 @@ import com.radixdlt.sargon.PersonaData
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreateAccount
     ): Result<AccessFactorSourcesOutput.HDPublicKey>
 
     suspend fun reDeriveAccounts(
@@ -21,7 +21,7 @@ interface AccessFactorSourcesProxy {
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 
     suspend fun createPersona(
-        accessFactorSourcesInput: AccessFactorSourcesInput.CreatePersona
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreatePersona
     ): Result<AccessFactorSourcesOutput.CreatedPersona>
 
     /**
@@ -52,7 +52,7 @@ interface AccessFactorSourcesUiProxy {
 
 sealed interface AccessFactorSourcesInput {
 
-    data class ToDerivePublicKey(
+    data class ToCreateAccount(
         val forNetworkId: NetworkId,
         val factorSource: FactorSource,
         // Need this information only when a new profile is created, meaning that biometrics have been provided
@@ -80,7 +80,7 @@ sealed interface AccessFactorSourcesInput {
         ) : ToReDeriveAccounts
     }
 
-    data class CreatePersona(val displayName: DisplayName, val personaData: PersonaData) : AccessFactorSourcesInput
+    data class ToCreatePersona(val displayName: DisplayName, val personaData: PersonaData) : AccessFactorSourcesInput
 
     data object Init : AccessFactorSourcesInput
 }
