@@ -33,10 +33,6 @@ fun DappInteractionDialog(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.onShow()
-    }
-
-    LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 DappInteractionDialogViewModel.Event.DismissDialog -> onBackPress()
