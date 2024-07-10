@@ -40,7 +40,6 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -59,7 +58,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val checkMigrationToNewBackupSystemUseCase = mockk<CheckMigrationToNewBackupSystemUseCase>()
     private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
-    private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
@@ -83,7 +81,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         changeBalanceVisibilityUseCase,
         appEventBus,
         ensureBabylonFactorSourceExistUseCase,
-        preferencesManager,
         npsSurveyStateObserver,
         p2PLinksRepository,
         checkMigrationToNewBackupSystemUseCase,
@@ -108,7 +105,6 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         )
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
-        every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
         every { npsSurveyStateObserver.npsSurveyState } returns flowOf(NPSSurveyState.InActive)
         coEvery { p2PLinksRepository.showRelinkConnectors() } returns flowOf(false)
         every { homeCardsRepository.observeHomeCards() } returns flowOf(emptyList())
