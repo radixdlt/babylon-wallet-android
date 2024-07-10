@@ -297,14 +297,14 @@ class WalletViewModel @Inject constructor(
             when (card) {
                 HomeCard.Connector -> {
                     sendEvent(Event.NavigateToLinkConnector)
-                    homeCards.dismissCard(card)
                 }
                 HomeCard.StartRadQuest -> {
                     sendEvent(Event.OpenUrl(RAD_QUEST_URL))
-                    homeCards.dismissCard(card)
                 }
                 else -> {}
             }
+            // Currently all the cards should be dismissed on tap
+            homeCards.dismissCard(card)
         }
     }
 

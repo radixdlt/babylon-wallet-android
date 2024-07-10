@@ -3,9 +3,9 @@ package com.babylon.wallet.android
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.utils.AppsFlyerIntegrationManager
-import com.radixdlt.sargon.HomeCardsManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -33,7 +33,7 @@ class RadixApplication : Application(), Configuration.Provider {
     lateinit var scope: CoroutineScope
 
     @Inject
-    lateinit var homeCardsManager: HomeCardsManager
+    lateinit var homeCardsRepository: HomeCardsRepository
 
     override val workManagerConfiguration: Configuration =
         Configuration.Builder()
@@ -47,14 +47,10 @@ class RadixApplication : Application(), Configuration.Provider {
         }
 
         appsFlyerIntegrationManager.init()
-        bootstrapHomeCardsManager()
+        bootstrapHomeCards()
     }
 
-    private fun bootstrapHomeCardsManager() {
-        scope.launch {
-            runCatching { homeCardsManager.bootstrap() }
-                .onFailure { Timber.d("HomeCardsManager init error: ${it.message}") }
-                .onSuccess { Timber.d("Successfully initialized HomeCardsManager") }
-        }
+    private fun bootstrapHomeCards() {
+        scope.launch { homeCardsRepository.bootstrap() }
     }
 }

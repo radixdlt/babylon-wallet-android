@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
@@ -19,7 +20,6 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,7 +40,6 @@ import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -57,7 +56,7 @@ class CreateAccountViewModel @Inject constructor(
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val appEventBus: AppEventBus,
-    private val homeCardsManager: HomeCardsManager
+    private val homeCardsRepository: HomeCardsRepository
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -227,17 +226,10 @@ class CreateAccountViewModel @Inject constructor(
         if (args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled ||
             args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
         ) {
-            initHomeCards()
-
+            homeCardsRepository.walletCreated()
             val isCloudBackupEnabled = args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
             changeBackupSettingUseCase(isChecked = isCloudBackupEnabled)
         }
-    }
-
-    private suspend fun initHomeCards() {
-        runCatching { homeCardsManager.walletCreated() }
-            .onFailure { Timber.d("Failed to notify HomeCardsManager about wallet creation. Error: $it") }
-            .onSuccess { Timber.d("Notified HomeCardsManager about wallet creation") }
     }
 
     data class CreateAccountUiState(
