@@ -97,6 +97,14 @@ object NetworkModule {
     @Singleton
     @SimpleHttpClient
     fun provideSimpleHttpClient(
+        httpClient: OkHttpClient
+    ): OkHttpClient {
+        return httpClient
+    }
+
+    @Provides
+    @Singleton
+    fun provideHttpClient(
         httpLoggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
