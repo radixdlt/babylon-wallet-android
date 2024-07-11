@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.data.dapp
 
-import Constants
 import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.RadixConnectPassword

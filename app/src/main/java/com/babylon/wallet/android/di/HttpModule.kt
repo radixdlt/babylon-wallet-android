@@ -20,6 +20,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Converter.Factory
 import retrofit2.Retrofit
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -35,26 +36,21 @@ annotation class JsonConverterFactory
  */
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
-annotation class CurrentGatewayHttpClient
+annotation class DynamicGatewayHttpClient
 
+/**
+ * Same as [DynamicGatewayHttpClient] but with shorter timeout
+ */
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
-annotation class ShortTimeoutGatewayHttpClient
-
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class StandardStateApi
-
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class ShortTimeoutStateApi
+annotation class ShortTimeoutDynamicGatewayHttpClient
 
 /**
  * A simple [OkHttpClient] **without** dynamic change of the base url.
  */
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
-annotation class SimpleHttpClient
+annotation class GatewayHttpClient
 
 private const val HEADER_RDX_CLIENT_NAME = "RDX-Client-Name"
 private const val HEADER_RDX_CLIENT_VERSION = "RDX-Client-Version"
@@ -95,11 +91,44 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    @SimpleHttpClient
-    fun provideSimpleHttpClient(
+    @GatewayHttpClient
+    fun provideGatewayHttpClient(
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+        headerInterceptor: HeaderInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(headerInterceptor)
+            .addInterceptor(httpLoggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @DynamicGatewayHttpClient
+    fun provideDynamicGatewayHttpClient(
+        baseUrlInterceptor: BaseUrlInterceptor,
+        headerInterceptor: HeaderInterceptor,
         httpLoggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(baseUrlInterceptor)
+            .addInterceptor(headerInterceptor)
+            .addInterceptor(httpLoggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @ShortTimeoutDynamicGatewayHttpClient
+    fun provideShortTimeoutDynamicGatewayHttpClient(
+        baseUrlInterceptor: BaseUrlInterceptor,
+        headerInterceptor: HeaderInterceptor,
+        httpLoggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .callTimeout(SHORT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .addInterceptor(baseUrlInterceptor)
+            .addInterceptor(headerInterceptor)
             .addInterceptor(httpLoggingInterceptor)
             .build()
     }
@@ -129,10 +158,21 @@ object NetworkModule {
 
             val request = chain.request().newBuilder()
                 .url(updatedUrl)
-                .addHeader(HEADER_RDX_CLIENT_NAME, HEADER_VALUE_RDX_CLIENT_NAME)
-                .addHeader(HEADER_RDX_CLIENT_VERSION, "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
                 .build()
             return chain.proceed(request)
         }
     }
+
+    class HeaderInterceptor @Inject constructor() : Interceptor {
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val request = chain.request().newBuilder()
+                .addHeader(HEADER_RDX_CLIENT_NAME, HEADER_VALUE_RDX_CLIENT_NAME)
+                .addHeader(HEADER_RDX_CLIENT_VERSION, "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+                .build()
+
+            return chain.proceed(request)
+        }
+    }
+
+    private const val SHORT_TIMEOUT_SECONDS = 5L
 }

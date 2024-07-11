@@ -37,8 +37,6 @@ class FakePreferenceManager : PreferencesManager {
         get() = TODO("Not yet implemented")
     override val isCrashReportingEnabled: Flow<Boolean>
         get() = TODO("Not yet implemented")
-    override val isRadixBannerVisible: Flow<Boolean>
-        get() = TODO("Not yet implemented")
     override val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
         get() = TODO("Not yet implemented")
     override val lastNPSSurveyInstant: Flow<Instant?>
@@ -96,10 +94,6 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override suspend fun enableCrashReporting(enabled: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun setRadixBannerVisibility(isVisible: Boolean) {
         TODO("Not yet implemented")
     }
 

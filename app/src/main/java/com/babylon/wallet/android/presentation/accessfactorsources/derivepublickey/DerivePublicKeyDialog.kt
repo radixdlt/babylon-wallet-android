@@ -59,8 +59,7 @@ fun DerivePublicKeyDialog(
                     context.biometricAuthenticate { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
                             BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
-                            BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
-                            BiometricAuthenticationResult.Failed -> {
+                            else -> {
                                 /* do nothing */
                             }
                         }
@@ -75,8 +74,7 @@ fun DerivePublicKeyDialog(
 
     DerivePublicKeyBottomSheetContent(
         modifier = modifier,
-        contentType = state.contentType,
-        shouldShowRetryButton = state.shouldShowRetryButton,
+        showContentForFactorSource = state.showContentForFactorSource,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -85,14 +83,15 @@ fun DerivePublicKeyDialog(
 @Composable
 private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
-    contentType: DerivePublicKeyUiState.ContentType,
-    shouldShowRetryButton: Boolean,
+    showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        heightFraction = 0.7f,
+        centerContent = true
     ) {
         Column(
             modifier = Modifier
@@ -101,7 +100,6 @@ private fun DerivePublicKeyBottomSheetContent(
                 .background(RadixTheme.colors.defaultBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(40.dp))
             Icon(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(
@@ -133,16 +131,6 @@ private fun DerivePublicKeyBottomSheetContent(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
-                    if (shouldShowRetryButton) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                        RadixTextButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.common_retry),
-                            onClick = onRetryClick
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(76.dp))
-                    }
                 }
 
                 is DerivePublicKeyUiState.ContentType.ForLedgerAccount -> {
@@ -152,16 +140,15 @@ private fun DerivePublicKeyBottomSheetContent(
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.name)
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                    RadixTextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.common_retry),
-                        onClick = onRetryClick
-                    )
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
                 }
             }
-            Spacer(Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            RadixTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.common_retry),
+                onClick = onRetryClick
+            )
         }
     }
 }

@@ -97,27 +97,13 @@ class DerivePublicKeyViewModel @Inject constructor(
             }
 
             else -> {
-                _state.update { uiState ->
-                    uiState.copy(shouldShowRetryButton = true)
-                }
             }
-        }
-    }
-
-    fun onBiometricAuthenticationDismiss() {
-        // biometric prompt dismissed, but bottom dialog remains visible
-        // therefore we show the retry button
-        _state.update { uiState ->
-            uiState.copy(shouldShowRetryButton = true)
         }
     }
 
     fun onRetryClick() {
         createEntityJob?.cancel()
         createEntityJob = viewModelScope.launch {
-            _state.update { uiState ->
-                uiState.copy(shouldShowRetryButton = false)
-            }
             when (state.value.contentType) {
                 ContentType.ForPersona,
                 ContentType.ForDeviceAccount -> {
@@ -206,8 +192,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     data class DerivePublicKeyUiState(
-        val contentType: ContentType = ContentType.ForDeviceAccount,
-        val shouldShowRetryButton: Boolean = false
+        val contentType: ContentType = ContentType.ForDeviceAccount
     ) : UiState {
 
         sealed interface ContentType {

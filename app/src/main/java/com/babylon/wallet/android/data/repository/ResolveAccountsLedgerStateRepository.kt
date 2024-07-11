@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.di.ShortTimeoutStateApi
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
+import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
