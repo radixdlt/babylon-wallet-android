@@ -22,6 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -72,7 +74,7 @@ fun DerivePublicKeyDialog(
 
     DerivePublicKeyBottomSheetContent(
         modifier = modifier,
-        showContentForFactorSource = state.showContentForFactorSource,
+        contentType = state.contentType,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -81,7 +83,7 @@ fun DerivePublicKeyDialog(
 @Composable
 private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
-    showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
+    contentType: DerivePublicKeyUiState.ContentType,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -107,30 +109,41 @@ private fun DerivePublicKeyBottomSheetContent(
                 tint = RadixTheme.colors.gray3
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            val title = when (contentType) {
+                DerivePublicKeyUiState.ContentType.ForDeviceAccount,
+                is DerivePublicKeyUiState.ContentType.ForLedgerAccount -> {
+                    stringResource(id = R.string.factorSourceActions_createAccount_title)
+                }
+
+                DerivePublicKeyUiState.ContentType.ForPersona -> {
+                    stringResource(id = R.string.factorSourceActions_createPersona_title)
+                }
+            }
             Text(
                 style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.factorSourceActions_createAccount_title)
+                text = title
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            when (showContentForFactorSource) {
-                DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
+            when (contentType) {
+                DerivePublicKeyUiState.ContentType.ForPersona,
+                DerivePublicKeyUiState.ContentType.ForDeviceAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
                 }
 
-                is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
+                is DerivePublicKeyUiState.ContentType.ForLedgerAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.name)
                 }
             }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.common_retry),
@@ -140,12 +153,15 @@ private fun DerivePublicKeyBottomSheetContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun DerivePublicKeyDialogDevicePreview() {
+private fun DerivePublicKeyPreview(
+    @PreviewParameter(DerivePublicKeyPreviewParameterProvider::class) param: DerivePublicKeyUiState.ContentType
+) {
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
-            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Device,
+            contentType = param,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -153,16 +169,12 @@ fun DerivePublicKeyDialogDevicePreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = false)
-@Composable
-fun DerivePublicKeyDialogLedgerPreview() {
-    RadixWalletTheme {
-        DerivePublicKeyBottomSheetContent(
-            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
-                selectedLedgerDevice = FactorSource.Ledger.sample()
-            ),
-            onDismiss = {},
-            onRetryClick = {}
+class DerivePublicKeyPreviewParameterProvider : PreviewParameterProvider<DerivePublicKeyUiState.ContentType> {
+
+    override val values: Sequence<DerivePublicKeyUiState.ContentType>
+        get() = sequenceOf(
+            DerivePublicKeyUiState.ContentType.ForDeviceAccount,
+            DerivePublicKeyUiState.ContentType.ForLedgerAccount(selectedLedgerDevice = FactorSource.Ledger.sample()),
+            DerivePublicKeyUiState.ContentType.ForPersona
         )
-    }
 }

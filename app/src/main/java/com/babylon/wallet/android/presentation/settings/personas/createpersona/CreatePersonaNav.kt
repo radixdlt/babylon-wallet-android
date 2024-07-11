@@ -69,7 +69,7 @@ fun NavGraphBuilder.personaInfoScreen(
 
 fun NavGraphBuilder.createPersonaScreen(
     onBackClick: () -> Unit,
-    onContinueClick: (personaId: IdentityAddress) -> Unit
+    onContinueClick: () -> Unit
 ) {
     markAsHighPriority(ROUTE_CREATE_PERSONA)
     composable(

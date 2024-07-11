@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -260,7 +260,7 @@ fun NavigationHost(
                 navController.history(accountAddress)
             }
         )
-        derivePublicKey(
+        derivePublicKeyDialog(
             onDismiss = {
                 navController.popBackStack()
             }
@@ -313,8 +313,8 @@ fun NavigationHost(
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() }
-        ) { personaId ->
-            navController.createPersonaConfirmationScreen(personaId = personaId)
+        ) {
+            navController.createPersonaConfirmationScreen()
         }
         personaInfoScreen(
             onBackClick = { navController.navigateUp() },

@@ -3,6 +3,7 @@ package rdx.works.profile.data.repository
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
@@ -14,6 +15,7 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.sargon.nextAccountIndex
+import rdx.works.core.sargon.nextPersonaIndex
 import javax.inject.Inject
 
 class PublicKeyProvider @Inject constructor(
@@ -26,14 +28,23 @@ class PublicKeyProvider @Inject constructor(
      */
     suspend fun getNextDerivationPathForFactorSource(
         forNetworkId: NetworkId,
-        factorSource: FactorSource
+        factorSource: FactorSource,
+        entityKind: EntityKind = EntityKind.ACCOUNT
     ): DerivationPath {
         val profile = profileRepository.profile.first()
-        val accountIndex = profile.nextAccountIndex(
-            forNetworkId = forNetworkId,
-            factorSourceId = factorSource.id,
-            derivationPathScheme = DerivationPathScheme.CAP26
-        )
+        val accountIndex = when (entityKind) {
+            EntityKind.ACCOUNT -> profile.nextAccountIndex(
+                forNetworkId = forNetworkId,
+                factorSourceId = factorSource.id,
+                derivationPathScheme = DerivationPathScheme.CAP26
+            )
+
+            EntityKind.PERSONA -> profile.nextPersonaIndex(
+                forNetworkId = forNetworkId,
+                derivationPathScheme = DerivationPathScheme.CAP26,
+                factorSourceID = factorSource.id
+            )
+        }
         return DerivationPath.Cap26.account(
             networkId = forNetworkId,
             keyKind = Cap26KeyKind.TRANSACTION_SIGNING,

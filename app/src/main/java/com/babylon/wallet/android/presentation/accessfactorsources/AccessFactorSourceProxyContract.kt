@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -50,7 +51,8 @@ sealed interface AccessFactorSourcesInput {
         val factorSource: FactorSource,
         // Need this information only when a new profile is created, meaning that biometrics have been provided
         // No need to ask the user for authentication again.
-        val isBiometricsProvided: Boolean
+        val isBiometricsProvided: Boolean,
+        val entityKind: EntityKind
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {

@@ -24,7 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -217,8 +217,8 @@ private fun HandleAccessFactorSourcesEvents(
     LaunchedEffect(Unit) {
         accessFactorSourcesEvents.collect { event ->
             when (event) {
-                is AppEvent.AccessFactorSources.DerivePublicKey -> navController.derivePublicKey()
-                is AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
+                AppEvent.AccessFactorSources.DerivePublicKey -> navController.derivePublicKeyDialog()
+                AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
                 is AppEvent.AccessFactorSources.SelectedLedgerDevice -> {}
             }
         }
