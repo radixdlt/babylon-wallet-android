@@ -176,7 +176,7 @@ private fun ScanQrCode(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                 .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
+            text = stringResource(id = R.string.linkedConnectors_newConnection_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
