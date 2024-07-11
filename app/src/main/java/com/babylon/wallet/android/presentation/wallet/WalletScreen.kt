@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.wallet
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -222,7 +223,9 @@ private fun WalletContent(
         val pullRefreshState = rememberPullRefreshState(state.isRefreshing, onRefresh = onRefresh)
         Box(modifier = Modifier.padding(padding)) {
             WalletAccountList(
-                modifier = Modifier.pullRefresh(pullRefreshState),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState),
                 state = state,
                 onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onAccountClick = onAccountClick,

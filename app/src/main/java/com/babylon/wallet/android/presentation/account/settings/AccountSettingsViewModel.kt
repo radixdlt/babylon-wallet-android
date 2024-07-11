@@ -86,7 +86,6 @@ class AccountSettingsViewModel @Inject constructor(
                 val thirdPartyDefaultDepositRule = account.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->
                     state.copy(
-                        accountName = account.displayName.value,
                         accountNameChanged = account.displayName.value,
                         account = account,
                         settingsSections = state.settingsSections.mapWhen(
@@ -130,16 +129,13 @@ class AccountSettingsViewModel @Inject constructor(
                     accountToRename = it,
                     newDisplayName = DisplayName(newAccountName)
                 )
-                _state.update { accountPreferenceUiState ->
-                    accountPreferenceUiState.copy(accountName = newAccountName)
-                }
             } ?: Timber.d("Couldn't find account to rename the display name!")
         }
     }
 
-    fun setBottomSheetContentToRenameAccount() {
+    fun setBottomSheetContent(content: AccountPreferenceUiState.BottomSheetContent) {
         _state.update {
-            it.copy(bottomSheetContent = AccountPreferenceUiState.BottomSheetContent.RenameAccount)
+            it.copy(bottomSheetContent = content)
         }
     }
 
@@ -188,7 +184,6 @@ sealed interface Event : OneOffEvent {
 data class AccountPreferenceUiState(
     val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
     val account: Account? = null,
-    val accountName: String = "",
     val accountNameChanged: String = "",
     val isNewNameValid: Boolean = false,
     val isNewNameLengthMoreThanTheMaximum: Boolean = false,
@@ -202,7 +197,7 @@ data class AccountPreferenceUiState(
         get() = bottomSheetContent != BottomSheetContent.None
 
     enum class BottomSheetContent {
-        None, RenameAccount
+        None, RenameAccount, HideAccount
     }
 
     companion object {

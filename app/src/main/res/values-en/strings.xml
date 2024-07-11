@@ -101,7 +101,8 @@
   <string name="assetDetails_behaviors_nftDataChangeableByAnyone">Anyone can change data that is set on these NFTs.</string>
   <string name="accountSettings_title">Account Settings</string>
   <string name="accountSettings_personalizeHeading">Personalize this Account</string>
-  <string name="accountSettings_accountLabel">Account Label</string>
+  <string name="accountSettings_accountLabel">Account Name</string>
+  <string name="accountSettings_accountLabelSubtitle">Name your account</string>
   <string name="accountSettings_accountColor">Account Color</string>
   <string name="accountSettings_accountColorSubtitle">Select from a list of unique colors</string>
   <string name="accountSettings_showAssets">Show Assets with Tags</string>
@@ -110,6 +111,7 @@
   <string name="accountSettings_showAssetsSubtitle">Select which tags to show for assets in this Account</string>
   <string name="accountSettings_setBehaviorHeading">Set how you want this Account to work</string>
   <string name="accountSettings_thirdPartyDeposits">Third-party Deposits</string>
+  <string name="accountSettings_thirdPartyDepositsSubtitle">Choose who can deposit into your Account</string>
   <string name="accountSettings_hideAccount">Hide Account</string>
   <string name="accountSettings_accountHidden">Account Hidden</string>
   <string name="accountSettings_getXrdTestTokens">Get XRD Test Tokens</string>
