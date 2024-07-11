@@ -19,6 +19,17 @@ class DappInteractionDialogViewModel @Inject constructor(
 ) : StateViewModel<DappInteractionDialogViewModel.State>(),
     OneOffEventHandler<DappInteractionDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private var isRequestHandled = false
+
+    init {
+        viewModelScope.launch {
+            if (incomingRequestRepository.getAmountOfRequests() == 1) {
+                incomingRequestRepository.requestHandled(state.value.requestId)
+                isRequestHandled = true
+            }
+        }
+    }
+
     override fun initialState(): State = with(DappInteractionSuccessDialogArgs(savedStateHandle)) {
         State(
             requestId = requestId,
@@ -29,7 +40,9 @@ class DappInteractionDialogViewModel @Inject constructor(
 
     fun onDismiss() {
         viewModelScope.launch {
-            incomingRequestRepository.requestHandled(state.value.requestId)
+            if (!isRequestHandled) {
+                incomingRequestRepository.requestHandled(state.value.requestId)
+            }
             sendEvent(Event.DismissDialog)
         }
     }
