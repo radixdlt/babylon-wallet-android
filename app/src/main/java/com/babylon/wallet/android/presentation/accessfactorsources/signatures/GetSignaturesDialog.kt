@@ -90,9 +90,9 @@ private fun GetSignaturesBottomSheetContent(
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = {
-            onDismiss()
-        }
+        heightFraction = 0.7f,
+        centerContent = true,
+        onDismiss = onDismiss
     ) {
         Column(
             modifier = Modifier
@@ -101,7 +101,6 @@ private fun GetSignaturesBottomSheetContent(
                 .background(RadixTheme.colors.defaultBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(40.dp))
             Icon(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(
@@ -122,12 +121,6 @@ private fun GetSignaturesBottomSheetContent(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                    RadixTextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.common_retry),
-                        onClick = onRetryClick
-                    )
                 }
 
                 is GetSignaturesViewModel.State.ShowContentForFactorSource.Ledger -> {
@@ -138,19 +131,18 @@ private fun GetSignaturesBottomSheetContent(
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RoundLedgerItem(ledgerName = showContentForFactorSource.ledgerFactorSource.value.hint.name)
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                    RadixTextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.common_retry),
-                        onClick = onRetryClick
-                    )
                 }
 
                 GetSignaturesViewModel.State.ShowContentForFactorSource.None -> { /* nothing */ }
             }
-            Spacer(Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            RadixTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.common_retry),
+                onClick = onRetryClick
+            )
         }
     }
 }
