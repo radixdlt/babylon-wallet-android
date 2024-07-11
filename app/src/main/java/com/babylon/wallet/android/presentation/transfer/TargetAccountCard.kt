@@ -50,6 +50,7 @@ fun TargetAccountCard(
     onAddAssetsClick: () -> Unit,
     onRemoveAssetClicked: (SpendingAsset) -> Unit,
     onAmountTyped: (SpendingAsset, String) -> Unit,
+    onAssetClick: (SpendingAsset) -> Unit,
     onMaxAmountClicked: (SpendingAsset) -> Unit,
     onDeleteClick: () -> Unit,
     isDeletable: Boolean = false,
@@ -189,6 +190,9 @@ fun TargetAccountCard(
                         },
                         onMaxClicked = {
                             onMaxAmountClicked(spendingAsset)
+                        },
+                        onItemClick = {
+                            onAssetClick(spendingAsset)
                         }
                     )
 
@@ -257,6 +261,7 @@ fun TargetAccountCardPreview() {
                 onAddAssetsClick = {},
                 onRemoveAssetClicked = {},
                 onAmountTyped = { _, _ -> },
+                onAssetClick = {},
                 onMaxAmountClicked = {},
                 onDeleteClick = {},
                 targetAccount = TargetAccount.Skeleton()
@@ -267,6 +272,7 @@ fun TargetAccountCardPreview() {
                 onAddAssetsClick = {},
                 onRemoveAssetClicked = {},
                 onAmountTyped = { _, _ -> },
+                onAssetClick = {},
                 onMaxAmountClicked = {},
                 onDeleteClick = {},
                 targetAccount = TargetAccount.Owned(

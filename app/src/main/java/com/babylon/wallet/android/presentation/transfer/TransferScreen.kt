@@ -65,8 +65,17 @@ fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
     onBackClick: () -> Unit,
+    onAssetClicked: (SpendingAsset, Account) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is TransferViewModel.Event.OnAssetClicked -> onAssetClicked(event.asset, event.fromAccount)
+            }
+        }
+    }
 
     TransferContent(
         modifier = modifier,
@@ -93,6 +102,7 @@ fun TransferScreen(
         onMaxAmountApplied = viewModel::onMaxAmountApplied,
         onLessThanFeeApplied = viewModel::onLessThanFeeApplied,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
+        onAssetClicked = viewModel::onAssetClicked,
         onUiMessageShown = viewModel::onUiMessageShown,
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
         onNextNFTsPageRequest = viewModel::onNextNFTsPageRequest,
@@ -128,6 +138,7 @@ fun TransferContent(
     onMaxAmountApplied: (Boolean) -> Unit,
     onLessThanFeeApplied: (Boolean) -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
+    onAssetClicked: (SpendingAsset) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
     onUiMessageShown: () -> Unit,
@@ -307,6 +318,9 @@ fun TransferContent(
                     onDeleteClick = {
                         deleteAccountClick(targetAccount)
                     },
+                    onAssetClick = { asset ->
+                        onAssetClicked(asset)
+                    },
                     isDeletable = !(targetAccount is TargetAccount.Skeleton && index == 0),
                     targetAccount = targetAccount
                 )
@@ -461,6 +475,7 @@ fun TransferContentPreview() {
             onMaxAmountApplied = {},
             onLessThanFeeApplied = {},
             onAssetSelectionChanged = { _, _ -> },
+            onAssetClicked = {},
             onUiMessageShown = {},
             onChooseAssetsSubmitted = {},
             onNextNFTsPageRequest = {},

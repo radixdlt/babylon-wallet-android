@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -29,6 +30,7 @@ fun NavController.transfer(accountId: AccountAddress) {
 
 fun NavGraphBuilder.transferScreen(
     onBackClick: () -> Unit,
+    onAssetClicked: (SpendingAsset, Account) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSFER)
     composable(
@@ -39,7 +41,8 @@ fun NavGraphBuilder.transferScreen(
     ) {
         TransferScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onAssetClicked = onAssetClicked
         )
     }
 }

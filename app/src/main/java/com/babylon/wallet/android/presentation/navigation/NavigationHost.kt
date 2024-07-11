@@ -77,6 +77,7 @@ import com.babylon.wallet.android.presentation.status.transaction.transactionSta
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
+import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.walletclaimed.claimedByAnotherDevice
@@ -397,6 +398,20 @@ fun NavigationHost(
         transferScreen(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onAssetClicked = { spendingAsset, fromAccount ->
+                when (spendingAsset) {
+                    is SpendingAsset.Fungible -> navController.fungibleAssetDialog(
+                        resourceAddress = spendingAsset.resourceAddress,
+                        amounts = spendingAsset.resource.ownedAmount?.let { mapOf(spendingAsset.resourceAddress to it) }.orEmpty(),
+                        underAccountAddress = fromAccount.address
+                    )
+                    is SpendingAsset.NFT -> navController.nftAssetDialog(
+                        resourceAddress = spendingAsset.resourceAddress,
+                        localId = spendingAsset.item.localId,
+                        underAccountAddress = fromAccount.address
+                    )
+                }
             }
         )
         accountSettings(
