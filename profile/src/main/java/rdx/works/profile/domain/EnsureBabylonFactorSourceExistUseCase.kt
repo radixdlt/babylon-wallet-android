@@ -39,8 +39,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         return mnemonicRepository.createNew().fold(onSuccess = { mnemonic ->
             val deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonic,
-                model = deviceInfo.model,
-                name = deviceInfo.name,
+                deviceInfo = deviceInfo,
                 createdAt = TimestampGenerator(),
                 isMain = true
             )
@@ -60,8 +59,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         val deviceFactorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonic,
-            model = deviceInfo.model,
-            name = deviceInfo.name,
+            deviceInfo = deviceInfo,
             createdAt = TimestampGenerator(),
             isMain = false
         )

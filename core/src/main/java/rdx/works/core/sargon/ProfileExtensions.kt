@@ -516,6 +516,18 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     is FactorSource.Ledger -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+                    is FactorSource.ArculusCard -> factorSource.value.copy(
+                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
+                    ).asGeneral()
+                    is FactorSource.OffDeviceMnemonic -> factorSource.value.copy(
+                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
+                    ).asGeneral()
+                    is FactorSource.SecurityQuestions -> factorSource.value.copy(
+                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
+                    ).asGeneral()
+                    is FactorSource.TrustedContact -> factorSource.value.copy(
+                        common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
+                    ).asGeneral()
                 }
             }
         ).asList()

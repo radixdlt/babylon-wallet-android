@@ -40,10 +40,16 @@ data class DeviceInfo(
             "$name $commercialName"
         }
 
+    val systemVersion: String
+        get() = "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+
     fun toSargonDeviceInfo(): com.radixdlt.sargon.DeviceInfo = com.radixdlt.sargon.DeviceInfo(
         id = id,
         date = date,
-        description = displayName
+        description = displayName,
+        systemVersion = systemVersion,
+        hostAppVersion = null, // TODO DeviceInfo
+        hostVendor = manufacturer
     )
 
     companion object {

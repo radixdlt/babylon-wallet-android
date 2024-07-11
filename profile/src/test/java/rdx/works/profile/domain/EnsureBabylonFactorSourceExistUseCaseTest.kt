@@ -48,15 +48,20 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
     )
     // Sargon does not allow init without main, so the only possible test case here is to create a new profile,
     // remove main factor source, serialize, deserialize and provide it to repository
-    private val deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = mnemonic, isMain = true)
+    private val deviceFactorSource = FactorSource.Device.babylon(
+        mnemonicWithPassphrase = mnemonic,
+        deviceInfo = deviceInfo,
+        isMain = true
+    )
     private val profileWithoutMain = Profile.init(
         deviceFactorSource = deviceFactorSource,
-        creatingDeviceName = deviceInfo.displayName
+        deviceInfo = deviceInfo.toSargonDeviceInfo(),
     ).let {
         it.copy(
             factorSources = it.factorSources.asIdentifiable().append(
                 element = FactorSource.Device.olympia(
                     mnemonicWithPassphrase = MnemonicWithPassphrase.sample.other(),
+                    deviceInfo = deviceInfo
                 )
             ).removeBy(deviceFactorSource.id).asList()
         )

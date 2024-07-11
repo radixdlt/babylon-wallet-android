@@ -62,8 +62,10 @@ class GenerateProfileUseCaseTest {
                 phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
                         "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             )
+            val deviceInfo = DeviceInfo.sample()
             val babylonFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
+                deviceInfo = deviceInfo,
                 isMain = true
             )
 

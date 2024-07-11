@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts
 
+import Constants
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
@@ -31,6 +32,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -86,6 +88,9 @@ class DeriveAccountsViewModel @Inject constructor(
                 when (input.factorSource) {
                     is FactorSource.Device -> sendEvent(Event.RequestBiometricPrompt) // request biometric auth
                     is FactorSource.Ledger -> initRecoveryFromLedgerFactorSource()
+                    else -> {
+                        Timber.w("FactorSourceKind ${input.factorSource.kind} not supported.")
+                    }
                 }
             }
         }
@@ -261,24 +266,33 @@ class DeriveAccountsViewModel @Inject constructor(
                     }
                 }
             }
+
+            else -> Result.failure(IllegalStateException("FactorSourceKind ${factorSource.kind} not supported."))
         }
     }
 
     private fun deriveAccounts(
         hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         forNetworkId: NetworkId
-    ): List<Account> = hdPublicKeys.map { hdPublicKey ->
+    ): List<Account> = hdPublicKeys.mapNotNull { hdPublicKey ->
         val factorSourceId = when (val factorSource = input.factorSource) {
             is FactorSource.Device -> factorSource.value.id.asGeneral()
             is FactorSource.Ledger -> factorSource.value.id.asGeneral()
+            else -> {
+                Timber.w("FactorSourceKind ${factorSource.kind} not supported.")
+                null
+            }
         }
-        Account.initBabylon(
-            networkId = forNetworkId,
-            displayName = DisplayName(Constants.DEFAULT_ACCOUNT_NAME),
-            hdPublicKey = hdPublicKey,
-            factorSourceId = factorSourceId,
-            onLedgerSettings = OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.accountRecoveryScanned())
-        )
+
+        factorSourceId?.let {
+            Account.initBabylon(
+                networkId = forNetworkId,
+                displayName = DisplayName(Constants.DEFAULT_ACCOUNT_NAME),
+                hdPublicKey = hdPublicKey,
+                factorSourceId = it,
+                onLedgerSettings = OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.accountRecoveryScanned())
+            )
+        }
     }
 
     private fun computeIndicesToScan(

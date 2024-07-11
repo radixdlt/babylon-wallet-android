@@ -52,8 +52,10 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             phrase = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote"
         )
 
+        val deviceInfo = DeviceInfo.sample()
         val factorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = babylonMnemonic,
+            deviceInfo = deviceInfo,
             isMain = true
         )
         val derivationPath = DerivationPath.Cap26.account(
@@ -63,7 +65,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         )
         val profile = Profile.init(
             deviceFactorSource = factorSource,
-            creatingDeviceName = DeviceInfo.sample().displayName
+            deviceInfo = deviceInfo.toSargonDeviceInfo()
         ).addAccounts(
             accounts = listOf(
                 Account.initBabylon(

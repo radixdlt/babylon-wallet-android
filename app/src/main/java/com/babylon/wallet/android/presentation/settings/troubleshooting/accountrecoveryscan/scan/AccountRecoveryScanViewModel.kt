@@ -80,8 +80,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     val deviceInfo = deviceInfoRepository.getDeviceInfo()
                     val mainBabylonDeviceFactorSource = FactorSource.Device.babylon(
                         mnemonicWithPassphrase = mnemonic,
-                        model = deviceInfo.model,
-                        name = deviceInfo.name,
+                        deviceInfo = deviceInfo,
                         createdAt = TimestampGenerator(),
                         isMain = true
                     )

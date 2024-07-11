@@ -10,9 +10,11 @@ import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
+import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
 import rdx.works.profile.FakeProfileRepository
+import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import kotlin.test.Test
 
@@ -21,9 +23,16 @@ internal class AddOlympiaFactorSourceUseCaseTest {
     private val profileRepository = FakeProfileRepository()
     private val getProfileUseCase = GetProfileUseCase(profileRepository)
     private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val deviceInfoRepository = mockk<DeviceInfoRepository>()
     private val preferencesManager = mockk<PreferencesManager>()
 
-    private val usecase = AddOlympiaFactorSourceUseCase(getProfileUseCase, profileRepository, mnemonicRepository, preferencesManager)
+    private val usecase = AddOlympiaFactorSourceUseCase(
+        getProfileUseCase = getProfileUseCase,
+        profileRepository = profileRepository,
+        mnemonicRepository = mnemonicRepository,
+        preferencesManager = preferencesManager,
+        deviceInfoRepository = deviceInfoRepository
+    )
 
     @Test
     fun `new factor source is added to a profile, if it does not already exist`() = runTest {
@@ -34,17 +43,21 @@ internal class AddOlympiaFactorSourceUseCaseTest {
             phrase = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote"
         )
 
-
+        val deviceInfo = DeviceInfo.sample()
         val profile = Profile.init(
-            deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = babylonMnemonic, isMain = true),
-            creatingDeviceName = "Unit Test"
+            deviceFactorSource = FactorSource.Device.babylon(
+                mnemonicWithPassphrase = babylonMnemonic,
+                deviceInfo = deviceInfo,
+                isMain = true
+            ),
+            deviceInfo = deviceInfo.toSargonDeviceInfo()
         )
         profileRepository.saveProfile(profile)
 
         coEvery { mnemonicRepository.mnemonicExist(any()) } returns false
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } returns Result.success(Unit)
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
-
+        coEvery { deviceInfoRepository.getDeviceInfo() } returns deviceInfo
 
         usecase(olympiaMnemonic)
         assertEquals(2, profileRepository.inMemoryProfileOrNull?.factorSources?.size)

@@ -45,8 +45,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
                 .mapCatching { mnemonic ->
                     val deviceFactorSource = FactorSource.Device.babylon(
                         mnemonicWithPassphrase = mnemonic,
-                        model = newDevice.model,
-                        name = newDevice.name,
+                        deviceInfo = newDevice,
                         createdAt = TimestampGenerator(),
                         isMain = true
                     )

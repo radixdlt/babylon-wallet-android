@@ -45,14 +45,13 @@ class TransferBetweenOwnedAccountsTest {
     private val deviceInfo = DeviceInfo.sample()
     private val babylonFactorSource = FactorSource.Device.babylon(
         mnemonicWithPassphrase = mnemonicWithPassphrase,
-        model = deviceInfo.model,
-        name = deviceInfo.name,
+        deviceInfo = deviceInfo,
         isMain = true
     )
 
     var profile = Profile.init(
         deviceFactorSource = babylonFactorSource,
-        creatingDeviceName = deviceInfo.displayName
+        deviceInfo = deviceInfo.toSargonDeviceInfo()
     )
 
     private val defaultNetwork = NetworkId.MAINNET

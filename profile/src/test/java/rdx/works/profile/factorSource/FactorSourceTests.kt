@@ -9,6 +9,7 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.sargon.olympia
 import rdx.works.core.sargon.supportsOlympia
 import kotlin.test.Test
@@ -69,8 +70,7 @@ class FactorSourceTests {
 
         val factorSource = FactorSource.Device.olympia(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            model = "computer",
-            name = "unit test"
+            deviceInfo = DeviceInfo.sample(),
         )
 
         assertTrue(factorSource.supportsOlympia)

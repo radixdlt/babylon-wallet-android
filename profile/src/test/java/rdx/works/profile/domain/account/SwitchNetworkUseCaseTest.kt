@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
+import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.sargon.addGateway
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.currentGateway
@@ -28,12 +29,18 @@ internal class SwitchNetworkUseCaseTest {
     val mnemonicWithPassphrase = MnemonicWithPassphrase.init(
         phrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
     )
-    private val profileRepository = FakeProfileRepository(
-        Profile.init(
-            deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase, isMain = true),
-            creatingDeviceName = "Unit Test"
+    private val profileRepository = with(DeviceInfo.sample()) {
+        FakeProfileRepository(
+            Profile.init(
+                deviceFactorSource = FactorSource.Device.babylon(
+                    mnemonicWithPassphrase = mnemonicWithPassphrase,
+                    deviceInfo = this,
+                    isMain = true
+                ),
+                deviceInfo = toSargonDeviceInfo()
+            )
         )
-    )
+    }
 
     private val useCase = SwitchNetworkUseCase(profileRepository, testDispatcher)
 

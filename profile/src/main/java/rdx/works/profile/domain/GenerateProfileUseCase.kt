@@ -57,8 +57,7 @@ class GenerateProfileUseCase @Inject constructor(
 
         val bdfs = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            model = device.model,
-            name = device.name,
+            deviceInfo = device,
             createdAt = date,
             isMain = true
         )
