@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan
 
-import Constants
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi

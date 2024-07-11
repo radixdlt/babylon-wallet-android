@@ -141,7 +141,6 @@ fun CreatePersonaContent(
             )
         },
         bottomBar = {
-            val context = LocalContext.current
             RadixBottomBar(
                 onClick = onPersonaCreateClick,
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
