@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.createentity
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
@@ -8,12 +8,13 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
-import com.babylon.wallet.android.presentation.accessfactorsources.createentity.CreateEntityViewModel.CreateEntityUiState.CreatedEntityType
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ContentType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
@@ -28,76 +29,67 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
-class CreateEntityViewModel @Inject constructor(
-    private val createPersonaWithDeviceFactorSourceUseCase: CreatePersonaWithDeviceFactorSourceUseCase,
+class DerivePublicKeyViewModel @Inject constructor(
     private val publicKeyProvider: PublicKeyProvider,
     private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
     private val ledgerMessenger: LedgerMessenger
-) : StateViewModel<CreateEntityViewModel.CreateEntityUiState>(),
-    OneOffEventHandler<CreateEntityViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<DerivePublicKeyViewModel.DerivePublicKeyUiState>(),
+    OneOffEventHandler<DerivePublicKeyViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): CreateEntityUiState = CreateEntityUiState()
+    override fun initialState(): DerivePublicKeyUiState = DerivePublicKeyUiState()
 
-    private lateinit var input: AccessFactorSourcesInput
+    private lateinit var input: AccessFactorSourcesInput.ToDerivePublicKey
     private var createEntityJob: Job? = null
 
     init {
         createEntityJob = viewModelScope.launch {
-            input = accessFactorSourcesUiProxy.getInput()
-            when (val typedInput = input) {
-                is AccessFactorSourcesInput.ToCreatePersona -> sendEvent(Event.RequestBiometricPrompt)
-                is AccessFactorSourcesInput.ToCreateAccount -> {
-                    when (typedInput.factorSource) {
-                        is FactorSource.Ledger -> {
-                            derivePublicKey(typedInput).onSuccess {
-                                sendEvent(Event.AccessingFactorSourceCompleted)
-                            }
-                        }
-
-                        is FactorSource.Device -> if (typedInput.isBiometricsProvided) {
-                            biometricAuthenticationCompleted()
-                        } else {
-                            sendEvent(Event.RequestBiometricPrompt)
-                        }
+            input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
+            when (val factorSource = input.factorSource) {
+                is FactorSource.Ledger -> {
+                    _state.update { uiState ->
+                        uiState.copy(
+                            contentType = ContentType.ForLedgerAccount(selectedLedgerDevice = factorSource)
+                        )
+                    }
+                    derivePublicKey().onSuccess {
+                        sendEvent(Event.AccessingFactorSourceCompleted)
                     }
                 }
 
-                else -> {}
+                is FactorSource.Device -> {
+                    _state.update { uiState ->
+                        uiState.copy(
+                            contentType = when (input.entityKind) {
+                                EntityKind.ACCOUNT -> ContentType.ForDeviceAccount
+                                EntityKind.PERSONA -> ContentType.ForPersona
+                            }
+                        )
+                    }
+                    if (input.isBiometricsProvided) {
+                        biometricAuthenticationCompleted()
+                    } else {
+                        sendEvent(Event.RequestBiometricPrompt)
+                    }
+                }
             }
         }
     }
 
     fun biometricAuthenticationCompleted() {
         viewModelScope.launch {
-            when (val typedInput = input) {
-                is AccessFactorSourcesInput.ToCreatePersona -> {
-                    createPersonaWithDeviceFactorSourceUseCase(typedInput.displayName, typedInput.personaData).onSuccess { persona ->
-                        accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.CreatedPersona(persona))
-                        sendEvent(Event.AccessingFactorSourceCompleted)
-                    }.onFailure { e ->
-                        handleFailure(e)
-                    }
-                }
-
-                is AccessFactorSourcesInput.ToCreateAccount -> {
-                    derivePublicKey(typedInput).onSuccess {
-                        sendEvent(Event.AccessingFactorSourceCompleted)
-                    }.onFailure { e ->
-                        handleFailure(e)
-                    }
-                }
-
-                else -> {}
+            derivePublicKey().onSuccess {
+                sendEvent(Event.AccessingFactorSourceCompleted)
+            }.onFailure { e ->
+                handleFailure(e)
             }
         }
     }
 
-    private suspend fun CreateEntityViewModel.handleFailure(e: Throwable) {
+    private suspend fun DerivePublicKeyViewModel.handleFailure(e: Throwable) {
         when (e) {
             is ProfileException -> {
                 accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
@@ -126,14 +118,14 @@ class CreateEntityViewModel @Inject constructor(
             _state.update { uiState ->
                 uiState.copy(shouldShowRetryButton = false)
             }
-            when (state.value.createdEntityType) {
-                CreatedEntityType.Persona,
-                CreatedEntityType.DeviceAccount -> {
+            when (state.value.contentType) {
+                ContentType.ForPersona,
+                ContentType.ForDeviceAccount -> {
                     sendEvent(Event.RequestBiometricPrompt)
                 }
 
-                is CreatedEntityType.LedgerAccount -> {
-                    derivePublicKey(input as AccessFactorSourcesInput.ToCreateAccount).onSuccess {
+                is ContentType.ForLedgerAccount -> {
+                    derivePublicKey().onSuccess {
                         sendEvent(Event.AccessingFactorSourceCompleted)
                     }
                 }
@@ -151,21 +143,17 @@ class CreateEntityViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToCreateAccount): Result<Unit> {
+    private suspend fun derivePublicKey(): Result<Unit> {
         return when (val factorSource = input.factorSource) {
             is FactorSource.Device -> {
                 derivePublicKeyFromDeviceFactorSource(
                     forNetworkId = input.forNetworkId,
-                    deviceFactorSource = factorSource
+                    deviceFactorSource = factorSource,
+                    entityKind = input.entityKind
                 )
             }
 
             is FactorSource.Ledger -> {
-                _state.update { uiState ->
-                    uiState.copy(
-                        createdEntityType = CreatedEntityType.LedgerAccount(selectedLedgerDevice = factorSource)
-                    )
-                }
                 derivePublicKeyFromLedgerFactorSource(
                     forNetworkId = input.forNetworkId,
                     ledgerFactorSource = factorSource
@@ -176,11 +164,13 @@ class CreateEntityViewModel @Inject constructor(
 
     private suspend fun derivePublicKeyFromDeviceFactorSource(
         forNetworkId: NetworkId,
-        deviceFactorSource: FactorSource.Device
+        deviceFactorSource: FactorSource.Device,
+        entityKind: EntityKind
     ): Result<Unit> {
         val derivationPath = publicKeyProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
-            factorSource = deviceFactorSource
+            factorSource = deviceFactorSource,
+            entityKind = entityKind
         )
         return publicKeyProvider.deriveHDPublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
@@ -215,15 +205,15 @@ class CreateEntityViewModel @Inject constructor(
         return Result.failure(IOException("failed to derive public keys"))
     }
 
-    data class CreateEntityUiState(
-        val createdEntityType: CreatedEntityType = CreatedEntityType.DeviceAccount,
+    data class DerivePublicKeyUiState(
+        val contentType: ContentType = ContentType.ForDeviceAccount,
         val shouldShowRetryButton: Boolean = false
     ) : UiState {
 
-        sealed interface CreatedEntityType {
-            data object DeviceAccount : CreatedEntityType
-            data object Persona : CreatedEntityType
-            data class LedgerAccount(val selectedLedgerDevice: FactorSource.Ledger) : CreatedEntityType
+        sealed interface ContentType {
+            data object ForDeviceAccount : ContentType
+            data object ForPersona : ContentType
+            data class ForLedgerAccount(val selectedLedgerDevice: FactorSource.Ledger) : ContentType
         }
     }
 

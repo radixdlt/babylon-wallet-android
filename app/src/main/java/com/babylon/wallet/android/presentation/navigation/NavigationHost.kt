@@ -11,8 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.presentation.accessfactorsources.createentity.createEntityDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.createEntityDialog
 import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource

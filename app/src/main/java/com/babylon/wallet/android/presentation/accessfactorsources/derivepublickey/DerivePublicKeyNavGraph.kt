@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources.createentity
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -8,18 +8,18 @@ import androidx.navigation.compose.dialog
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 fun NavController.createEntityDialog() {
-    navigate("create_entity_bottom_sheet")
+    navigate("derive_public_key_bottom_sheet")
 }
 
 fun NavGraphBuilder.createEntityDialog(
     onDismiss: () -> Unit
 ) {
-    markAsHighPriority("create_entity_bottom_sheet")
+    markAsHighPriority("derive_public_key_bottom_sheet")
     dialog(
-        route = "create_entity_bottom_sheet",
+        route = "derive_public_key_bottom_sheet",
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        CreateEntityDialog(
+        DerivePublicKeyDialog(
             viewModel = hiltViewModel(),
             onDismiss = onDismiss
         )

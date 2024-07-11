@@ -18,6 +18,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
@@ -136,10 +137,11 @@ class CreateAccountViewModel @Inject constructor(
             }
 
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToCreateAccount(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
-                    isBiometricsProvided = isFirstAccount
+                    isBiometricsProvided = isFirstAccount,
+                    entityKind = EntityKind.ACCOUNT
                 )
             ).onSuccess {
                 handleAccountCreation { nameOfAccount ->

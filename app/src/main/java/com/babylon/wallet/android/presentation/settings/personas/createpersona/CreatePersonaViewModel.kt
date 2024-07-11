@@ -14,17 +14,25 @@ import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.EntityKind
+import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.domain.persona.CreatePersonaUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
+    private val createPersonaUseCase: CreatePersonaUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
@@ -56,7 +64,22 @@ class CreatePersonaViewModel @Inject constructor(
         accessFactorSourcesJob = viewModelScope.launch {
             val displayName = DisplayName(_state.value.personaDisplayName.value)
             val personaData = _state.value.currentFields.toPersonaData()
-            accessFactorSourcesProxy.createPersona(AccessFactorSourcesInput.ToCreatePersona(displayName, personaData)).onSuccess {
+            val factorSource = getProfileUseCase().mainBabylonFactorSource ?: return@launch
+            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    forNetworkId = getProfileUseCase().currentGateway.network.id,
+                    factorSource = factorSource,
+                    isBiometricsProvided = false,
+                    entityKind = EntityKind.PERSONA
+                )
+            ).mapCatching { hdPublicKey ->
+                createPersonaUseCase(
+                    displayName = displayName,
+                    personaData = personaData,
+                    factorSourceId = factorSource.value.id.asGeneral(),
+                    hdPublicKey = hdPublicKey.value
+                )
+            }.onSuccess {
                 _state.update { state -> state.copy(shouldNavigateToCompletion = true) }
             }.onFailure { error ->
                 when (error) {

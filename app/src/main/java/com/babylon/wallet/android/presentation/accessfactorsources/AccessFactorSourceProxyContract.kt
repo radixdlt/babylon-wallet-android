@@ -1,28 +1,22 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.PersonaData
 
 // interface for clients that need access to factor sources
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreateAccount
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.HDPublicKey>
 
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
-
-    suspend fun createPersona(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreatePersona
-    ): Result<AccessFactorSourcesOutput.CreatedPersona>
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -52,12 +46,13 @@ interface AccessFactorSourcesUiProxy {
 
 sealed interface AccessFactorSourcesInput {
 
-    data class ToCreateAccount(
+    data class ToDerivePublicKey(
         val forNetworkId: NetworkId,
         val factorSource: FactorSource,
         // Need this information only when a new profile is created, meaning that biometrics have been provided
         // No need to ask the user for authentication again.
-        val isBiometricsProvided: Boolean
+        val isBiometricsProvided: Boolean,
+        val entityKind: EntityKind
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
@@ -80,8 +75,6 @@ sealed interface AccessFactorSourcesInput {
         ) : ToReDeriveAccounts
     }
 
-    data class ToCreatePersona(val displayName: DisplayName, val personaData: PersonaData) : AccessFactorSourcesInput
-
     data object Init : AccessFactorSourcesInput
 }
 
@@ -95,8 +88,6 @@ sealed interface AccessFactorSourcesOutput {
         val derivedAccounts: List<Account>,
         val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
-
-    data class CreatedPersona(val persona: Persona) : AccessFactorSourcesOutput
 
     data class Failure(
         val error: Throwable
