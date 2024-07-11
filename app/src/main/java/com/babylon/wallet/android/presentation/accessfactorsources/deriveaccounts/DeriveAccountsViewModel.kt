@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DisplayName

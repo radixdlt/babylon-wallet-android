@@ -1,8 +1,8 @@
 package com.babylon.wallet.android
 
-import Constants
 import androidx.compose.ui.graphics.Color
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.utils.Constants
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList

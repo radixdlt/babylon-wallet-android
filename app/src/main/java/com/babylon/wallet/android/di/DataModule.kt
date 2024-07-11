@@ -12,6 +12,8 @@ import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepositoryImpl
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -105,6 +107,12 @@ interface DataModule {
     fun bindP2PLinksRepository(
         repository: P2PLinksRepositoryImpl
     ): P2PLinksRepository
+
+    @Binds
+    @Singleton
+    fun bindHomeCardsRepository(
+        repository: HomeCardsRepositoryImpl
+    ): HomeCardsRepository
 
     @Binds
     @Singleton

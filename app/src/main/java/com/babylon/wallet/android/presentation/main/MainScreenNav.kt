@@ -18,7 +18,8 @@ fun NavGraphBuilder.main(
     onNavigateToIncompatibleProfile: () -> Unit,
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
-    onNavigateToConnectCloudBackup: () -> Unit
+    onNavigateToConnectCloudBackup: () -> Unit,
+    onNavigateToLinkConnector: () -> Unit,
 ) {
     composable(route = MAIN_ROUTE) {
         MainScreen(
@@ -31,7 +32,8 @@ fun NavGraphBuilder.main(
             onNavigateToSecurityCenter = onNavigateToSecurityCenter,
             showNPSSurvey = showNPSSurvey,
             onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
-            onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup
+            onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
+            onNavigateToLinkConnector = onNavigateToLinkConnector
         )
     }
 }
