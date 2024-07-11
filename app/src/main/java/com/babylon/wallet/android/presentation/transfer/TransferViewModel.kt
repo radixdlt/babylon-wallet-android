@@ -244,7 +244,7 @@ class TransferViewModel @Inject constructor(
         val account = _state.value.fromAccount ?: return
 
         viewModelScope.launch {
-            sendEvent(Event.OnAssetClicked(asset, account))
+            sendEvent(Event.ShowAssetDetails(asset, account))
         }
     }
 
@@ -499,7 +499,7 @@ class TransferViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data class OnAssetClicked(val asset: SpendingAsset, val fromAccount: Account) : Event
+        data class ShowAssetDetails(val asset: SpendingAsset, val fromAccount: Account) : Event
     }
 }
 

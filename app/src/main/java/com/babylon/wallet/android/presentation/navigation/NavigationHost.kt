@@ -399,7 +399,7 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onAssetClicked = { spendingAsset, fromAccount ->
+            onShowAssetDetails = { spendingAsset, fromAccount ->
                 when (spendingAsset) {
                     is SpendingAsset.Fungible -> navController.fungibleAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,

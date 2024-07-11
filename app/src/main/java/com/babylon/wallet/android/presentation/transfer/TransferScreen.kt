@@ -65,14 +65,14 @@ fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
     onBackClick: () -> Unit,
-    onAssetClicked: (SpendingAsset, Account) -> Unit
+    onShowAssetDetails: (SpendingAsset, Account) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is TransferViewModel.Event.OnAssetClicked -> onAssetClicked(event.asset, event.fromAccount)
+                is TransferViewModel.Event.ShowAssetDetails -> onShowAssetDetails(event.asset, event.fromAccount)
             }
         }
     }

@@ -30,7 +30,7 @@ fun NavController.transfer(accountId: AccountAddress) {
 
 fun NavGraphBuilder.transferScreen(
     onBackClick: () -> Unit,
-    onAssetClicked: (SpendingAsset, Account) -> Unit
+    onShowAssetDetails: (SpendingAsset, Account) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSFER)
     composable(
@@ -42,7 +42,7 @@ fun NavGraphBuilder.transferScreen(
         TransferScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onAssetClicked = onAssetClicked
+            onShowAssetDetails = onShowAssetDetails
         )
     }
 }
