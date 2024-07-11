@@ -57,11 +57,13 @@ fun DerivePublicKeyDialog(
                     context.biometricAuthenticate { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
                             BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
-                            BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
-                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
+                            else -> {
+                                /* do nothing */
+                            }
                         }
                     }
                 }
+
                 DerivePublicKeyViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
                 DerivePublicKeyViewModel.Event.UserDismissed -> onDismiss()
             }
@@ -71,7 +73,6 @@ fun DerivePublicKeyDialog(
     DerivePublicKeyBottomSheetContent(
         modifier = modifier,
         showContentForFactorSource = state.showContentForFactorSource,
-        shouldShowRetryButton = state.shouldShowRetryButton,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -81,13 +82,14 @@ fun DerivePublicKeyDialog(
 private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
     showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
-    shouldShowRetryButton: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        heightFraction = 0.7f,
+        centerContent = true
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +98,6 @@ private fun DerivePublicKeyBottomSheetContent(
                 .background(RadixTheme.colors.defaultBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(40.dp))
             Icon(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(
@@ -117,16 +118,6 @@ private fun DerivePublicKeyBottomSheetContent(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
-                    if (shouldShowRetryButton) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                        RadixTextButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.common_retry),
-                            onClick = onRetryClick
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(76.dp))
-                    }
                 }
 
                 is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
@@ -137,15 +128,14 @@ private fun DerivePublicKeyBottomSheetContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                     RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                    RadixTextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.common_retry),
-                        onClick = onRetryClick
-                    )
                 }
             }
-            Spacer(Modifier.height(120.dp))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            RadixTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.common_retry),
+                onClick = onRetryClick
+            )
         }
     }
 }
@@ -156,7 +146,6 @@ fun DerivePublicKeyDialogDevicePreview() {
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
             showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Device,
-            shouldShowRetryButton = false,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -172,7 +161,6 @@ fun DerivePublicKeyDialogLedgerPreview() {
             showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
                 selectedLedgerDevice = FactorSource.Ledger.sample()
             ),
-            shouldShowRetryButton = false,
             onDismiss = {},
             onRetryClick = {}
         )

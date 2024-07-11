@@ -50,6 +50,7 @@ import rdx.works.core.sargon.orDefault
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -104,10 +105,6 @@ class DeriveAccountsViewModel @Inject constructor(
                                     if (e is ProfileException) {
                                         accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
                                         sendEvent(Event.DerivingAccountsCompleted)
-                                    } else {
-                                        _state.update { uiState ->
-                                            uiState.copy(shouldShowRetryButton = true)
-                                        }
                                     }
                                 }
                         }
@@ -125,14 +122,6 @@ class DeriveAccountsViewModel @Inject constructor(
         }
     }
 
-    fun onBiometricAuthenticationDismiss() {
-        // biometric prompt dismissed, but bottom dialog remains visible
-        // therefore we show the retry button
-        _state.update { uiState ->
-            uiState.copy(shouldShowRetryButton = true)
-        }
-    }
-
     fun onUserDismiss() {
         viewModelScope.launch {
             sendEvent(Event.UserDismissed) // one to dismiss the dialog
@@ -143,9 +132,6 @@ class DeriveAccountsViewModel @Inject constructor(
     fun onRetryClick() {
         reDerivePublicKeyJob?.cancel()
         reDerivePublicKeyJob = viewModelScope.launch {
-            _state.update { uiState ->
-                uiState.copy(shouldShowRetryButton = false)
-            }
             when (state.value.showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> sendEvent(Event.RequestBiometricPrompt)
                 is ShowContentForFactorSource.Ledger -> initRecoveryFromLedgerFactorSource()
@@ -163,10 +149,8 @@ class DeriveAccountsViewModel @Inject constructor(
             .onSuccess {
                 sendEvent(Event.DerivingAccountsCompleted)
             }
-            .onFailure { e ->
-                _state.update { uiState ->
-                    uiState.copy(shouldShowRetryButton = true)
-                }
+            .onFailure {
+                Timber.d(it)
             }
     }
 
@@ -331,8 +315,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     data class DeriveAccountsUiState(
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
-        val isFromOnboarding: Boolean = false,
-        val shouldShowRetryButton: Boolean = false
+        val isFromOnboarding: Boolean = false
     ) : UiState {
 
         sealed interface ShowContentForFactorSource {
