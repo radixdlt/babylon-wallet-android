@@ -29,7 +29,7 @@ import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
-class PersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaConfirmationViewModel>() {
+class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaConfirmationViewModel>() {
 
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
     private val getProfileUseCase = Mockito.mock(GetProfileUseCase::class.java)

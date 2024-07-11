@@ -34,7 +34,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class PersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() {
+class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() {
 
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val accessFactorSourceProxy = mockk<AccessFactorSourcesProxy>()
