@@ -27,6 +27,7 @@ import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.persona.CreatePersonaUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -87,14 +88,16 @@ class CreatePersonaViewModel @Inject constructor(
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     }
 
-                    else -> {
+                    is ProfileException.NoMnemonic -> {
                         _state.update {
-                            val noMnemonic = error is ProfileException.NoMnemonic
                             it.copy(
-                                isNoMnemonicErrorVisible = noMnemonic,
-                                uiMessage = if (!noMnemonic) UiMessage.ErrorMessage(error) else null
+                                isNoMnemonicErrorVisible = true
                             )
                         }
+                    }
+
+                    else -> {
+                        Timber.d(error)
                     }
                 }
             }

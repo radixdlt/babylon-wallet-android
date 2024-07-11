@@ -7,11 +7,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
-fun NavController.createEntityDialog() {
+fun NavController.derivePublicKeyDialog() {
     navigate("derive_public_key_bottom_sheet")
 }
 
-fun NavGraphBuilder.createEntityDialog(
+fun NavGraphBuilder.derivePublicKeyDialog(
     onDismiss: () -> Unit
 ) {
     markAsHighPriority("derive_public_key_bottom_sheet")

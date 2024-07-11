@@ -74,7 +74,7 @@ fun DerivePublicKeyDialog(
 
     DerivePublicKeyBottomSheetContent(
         modifier = modifier,
-        showContentForFactorSource = state.showContentForFactorSource,
+        contentType = state.contentType,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -83,7 +83,7 @@ fun DerivePublicKeyDialog(
 @Composable
 private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
-    showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
+    contentType: DerivePublicKeyUiState.ContentType,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -139,11 +139,11 @@ private fun DerivePublicKeyBottomSheetContent(
                         text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.name)
                 }
             }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.common_retry),
@@ -162,7 +162,6 @@ private fun DerivePublicKeyPreview(
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
             contentType = param,
-            shouldShowRetryButton = false,
             onDismiss = {},
             onRetryClick = {}
         )

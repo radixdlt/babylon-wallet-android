@@ -43,10 +43,10 @@ class DerivePublicKeyViewModel @Inject constructor(
     override fun initialState(): DerivePublicKeyUiState = DerivePublicKeyUiState()
 
     private lateinit var input: AccessFactorSourcesInput.ToDerivePublicKey
-    private var createEntityJob: Job? = null
+    private var derivePublicKeyJob: Job? = null
 
     init {
-        createEntityJob = viewModelScope.launch {
+        derivePublicKeyJob = viewModelScope.launch {
             input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             when (val factorSource = input.factorSource) {
                 is FactorSource.Ledger -> {
@@ -102,8 +102,8 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     fun onRetryClick() {
-        createEntityJob?.cancel()
-        createEntityJob = viewModelScope.launch {
+        derivePublicKeyJob?.cancel()
+        derivePublicKeyJob = viewModelScope.launch {
             when (state.value.contentType) {
                 ContentType.ForPersona,
                 ContentType.ForDeviceAccount -> {
@@ -121,7 +121,7 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     fun onUserDismiss() {
         viewModelScope.launch {
-            createEntityJob?.cancel()
+            derivePublicKeyJob?.cancel()
             accessFactorSourcesUiProxy.setOutput(
                 output = AccessFactorSourcesOutput.Failure(CancellationException("User cancelled"))
             )
