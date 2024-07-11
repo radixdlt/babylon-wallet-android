@@ -139,12 +139,6 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
-    fun resetBottomSheetContent() {
-        _state.update {
-            it.copy(bottomSheetContent = AccountPreferenceUiState.BottomSheetContent.None)
-        }
-    }
-
     fun onGetFreeXrdClick() {
         if (state.value.faucetState !is FaucetState.Available) return
 

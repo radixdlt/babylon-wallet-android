@@ -90,11 +90,18 @@ fun AccountSettingsScreen(
             }
         }
     }
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        scope.launch {
-            bottomSheetState.hide()
-            viewModel.resetBottomSheetContent()
+
+    val hideSheetAction: () -> Unit = remember {
+        {
+            scope.launch {
+                bottomSheetState.hide()
+                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.None)
+            }
         }
+    }
+
+    BackHandler(enabled = bottomSheetState.isVisible) {
+        hideSheetAction()
     }
 
     AccountSettingsContent(
@@ -142,41 +149,23 @@ fun AccountSettingsScreen(
                             isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
                             onRenameAccountNameClick = {
                                 viewModel.onRenameAccountNameConfirm()
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                    viewModel.resetBottomSheetContent()
-                                }
+                                hideSheetAction()
                             },
-                            onClose = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                    viewModel.resetBottomSheetContent()
-                                }
-                            }
+                            onClose = hideSheetAction
                         )
                     }
 
                     AccountPreferenceUiState.BottomSheetContent.HideAccount -> {
                         HideAccountSheet(
                             onHideAccountClick = viewModel::onHideAccount,
-                            onClose = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                    viewModel.resetBottomSheetContent()
-                                }
-                            }
+                            onClose = hideSheetAction
                         )
                     }
                     AccountPreferenceUiState.BottomSheetContent.None -> {}
                 }
             },
             showDragHandle = false,
-            onDismissRequest = {
-                scope.launch {
-                    bottomSheetState.hide()
-                    viewModel.resetBottomSheetContent()
-                }
-            }
+            onDismissRequest = hideSheetAction
         )
     }
 }
