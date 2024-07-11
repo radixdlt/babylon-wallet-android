@@ -44,6 +44,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
     private var pollJob: Job? = null
+    private var isRequestHandled = false
 
     init {
         viewModelScope.launch {
@@ -118,6 +119,10 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     )
                 }
                 transactionStatusClient.statusHandled(status.transactionId)
+                if (incomingRequestRepository.getAmountOfRequests() == 1) {
+                    incomingRequestRepository.requestHandled(state.value.status.requestId)
+                    isRequestHandled = true
+                }
             }
         }
     }
@@ -134,8 +139,10 @@ class TransactionStatusDialogViewModel @Inject constructor(
     fun onDismissConfirmed() {
         _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
         viewModelScope.launch {
+            if (!isRequestHandled) {
+                incomingRequestRepository.requestHandled(state.value.status.requestId)
+            }
             sendEvent(Event.DismissDialog)
-            incomingRequestRepository.requestHandled(state.value.status.requestId)
         }
     }
 

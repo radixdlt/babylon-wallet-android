@@ -76,10 +76,6 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
             },
             onSettingClick = { item ->
                 when (item) {
-                    SettingsItem.TopLevelSettings.LinkToConnector -> {
-                        navController.linkedConnectorsScreen(shouldShowAddLinkConnectorScreen = true)
-                    }
-
                     SettingsItem.TopLevelSettings.ApprovedDapps -> {
                         navController.approvedDAppsScreen()
                     }

@@ -70,7 +70,7 @@ class MainViewModel @Inject constructor(
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
-    private val processDeepLinkUseCase: ProcessDeepLinkUseCase
+    private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null

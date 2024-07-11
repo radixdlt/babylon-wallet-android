@@ -4,12 +4,14 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
+import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -38,7 +40,6 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -57,11 +58,11 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val checkMigrationToNewBackupSystemUseCase = mockk<CheckMigrationToNewBackupSystemUseCase>()
     private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
-    private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
     private val testDispatcher = StandardTestDispatcher()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val p2PLinksRepository = mockk<P2PLinksRepository>()
+    private val homeCardsRepository = mockk<HomeCardsRepository>()
 
     private val sampleProfile = Profile.sample()
     private val sampleXrdResource = Resource.FungibleResource(
@@ -80,11 +81,13 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         changeBalanceVisibilityUseCase,
         appEventBus,
         ensureBabylonFactorSourceExistUseCase,
-        preferencesManager,
         npsSurveyStateObserver,
         p2PLinksRepository,
         checkMigrationToNewBackupSystemUseCase,
         testDispatcher,
+        HomeCardsDelegate(
+            homeCardsRepository
+        )
     )
 
     override fun setUp() {
@@ -102,9 +105,9 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         )
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
-        every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
         every { npsSurveyStateObserver.npsSurveyState } returns flowOf(NPSSurveyState.InActive)
         coEvery { p2PLinksRepository.showRelinkConnectors() } returns flowOf(false)
+        every { homeCardsRepository.observeHomeCards() } returns flowOf(emptyList())
     }
 
     @Test

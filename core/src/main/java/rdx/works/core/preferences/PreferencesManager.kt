@@ -38,7 +38,6 @@ interface PreferencesManager {
     val isImportFromOlympiaSettingDismissed: Flow<Boolean>
     val isDeviceRootedDialogShown: Flow<Boolean>
     val isCrashReportingEnabled: Flow<Boolean>
-    val isRadixBannerVisible: Flow<Boolean>
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
@@ -64,8 +63,6 @@ interface PreferencesManager {
     suspend fun markFactorSourceBackedUp(id: FactorSourceId.Hash)
 
     suspend fun enableCrashReporting(enabled: Boolean)
-
-    suspend fun setRadixBannerVisibility(isVisible: Boolean)
 
     fun getLastUsedEpochFlow(address: AccountAddress): Flow<Epoch?>
 
@@ -224,17 +221,6 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override val isRadixBannerVisible: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[KEY_RADIX_BANNER_VISIBLE] ?: false
-        }
-
-    override suspend fun setRadixBannerVisibility(isVisible: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[KEY_RADIX_BANNER_VISIBLE] = isVisible
-        }
-    }
-
     override fun getLastUsedEpochFlow(address: AccountAddress): Flow<Epoch?> {
         return dataStore.data
             .map { preferences ->
@@ -335,7 +321,6 @@ class PreferencesManagerImpl @Inject constructor(
     companion object {
         val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
         val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
-        val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         val KEY_LAST_CLOUD_BACKUP_EVENT = stringPreferencesKey("last_cloud_backup_event")
         val KEY_DEPRECATED_BACKUP_SYSTEM_INDICATOR = stringPreferencesKey("last_backup_instant")

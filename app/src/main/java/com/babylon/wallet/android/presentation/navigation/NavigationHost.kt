@@ -221,6 +221,9 @@ fun NavigationHost(
             },
             onNavigateToConnectCloudBackup = {
                 navController.connectCloudBackupScreen(connectMode = ConnectMode.ExistingWallet)
+            },
+            onNavigateToLinkConnector = {
+                navController.linkedConnectorsScreen(shouldShowAddLinkConnectorScreen = true)
             }
         )
         account(

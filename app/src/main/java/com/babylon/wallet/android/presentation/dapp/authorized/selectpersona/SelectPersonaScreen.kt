@@ -41,6 +41,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event.CreatePersona
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
@@ -53,9 +54,11 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import kotlinx.collections.immutable.ImmutableList
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.domain.DApp
@@ -103,14 +106,21 @@ fun SelectPersonaScreen(
             }
         }
     )
+
+    LaunchedEffect(state.selectedPersona?.address) {
+        state.selectedPersona?.let {
+            sharedViewModel.onSelectPersona(it)
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is DAppSelectPersonaEvent.PersonaSelected -> sharedViewModel.onSelectPersona(event.persona)
-                is DAppSelectPersonaEvent.CreatePersona -> createNewPersona(event.firstPersonaCreated)
+                is CreatePersona -> createNewPersona(event.firstPersonaCreated)
             }
         }
     }
+
     BackHandler {
         if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.SelectPersona) {
             sharedViewModel.onAbortDappLogin()
@@ -119,19 +129,13 @@ fun SelectPersonaScreen(
         }
     }
     SelectPersonaContent(
+        modifier = modifier,
         onCancelClick = sharedViewModel::onAbortDappLogin,
         onContinueClick = sharedViewModel::personaSelectionConfirmed,
-        onSelectPersona = {
-            sharedViewModel.onSelectPersona(it)
-            viewModel.onSelectPersona(it.address)
-        },
-        dapp = sharedState.dapp,
-        firstTimeLogin = state.firstTimeLogin,
-        continueButtonEnabled = state.continueButtonEnabled,
-        personas = state.personaListToDisplay,
+        onSelectPersona = { viewModel.onSelectPersona(it.address) },
         createNewPersona = viewModel::onCreatePersona,
-        isLoading = state.isLoading,
-        modifier = modifier
+        dapp = sharedState.dapp,
+        state = state
     )
     sharedState.interactionState?.let {
         FactorSourceInteractionBottomDialog(
@@ -170,16 +174,13 @@ private fun HandleOneOffEvents(
 
 @Composable
 private fun SelectPersonaContent(
+    modifier: Modifier = Modifier,
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
     onSelectPersona: (Persona) -> Unit,
-    dapp: DApp?,
-    firstTimeLogin: Boolean,
-    continueButtonEnabled: Boolean,
-    personas: ImmutableList<PersonaUiModel>,
     createNewPersona: () -> Unit,
-    modifier: Modifier = Modifier,
-    isLoading: Boolean,
+    dapp: DApp?,
+    state: SelectPersonaViewModel.State,
 ) {
     Scaffold(
         modifier = modifier,
@@ -194,7 +195,7 @@ private fun SelectPersonaContent(
         bottomBar = {
             BottomPrimaryButton(
                 onClick = onContinueClick,
-                enabled = continueButtonEnabled,
+                enabled = state.isContinueButtonEnabled,
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding(),
@@ -204,7 +205,7 @@ private fun SelectPersonaContent(
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
         AnimatedVisibility(
-            visible = isLoading,
+            visible = state.isLoading,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -215,7 +216,7 @@ private fun SelectPersonaContent(
         }
 
         AnimatedVisibility(
-            visible = !isLoading,
+            visible = !state.isLoading,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -236,7 +237,7 @@ private fun SelectPersonaContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
                         text = stringResource(
-                            id = if (firstTimeLogin) {
+                            id = if (state.isFirstTimeLogin) {
                                 R.string.dAppRequest_login_titleNewDapp
                             } else {
                                 R.string.dAppRequest_login_titleKnownDapp
@@ -253,10 +254,10 @@ private fun SelectPersonaContent(
                                 id = R.string.dAppRequest_metadata_unknownName
                             )
                         },
-                        firstTimeLogin = firstTimeLogin,
+                        firstTimeLogin = state.isFirstTimeLogin,
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
                     )
-                    if (personas.isNotEmpty()) {
+                    if (state.personas.isNotEmpty()) {
                         Text(
                             modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
                             text = stringResource(R.string.dAppRequest_login_choosePersona),
@@ -266,7 +267,7 @@ private fun SelectPersonaContent(
                         )
                     }
                 }
-                itemsIndexed(items = personas) { _, personaItem ->
+                itemsIndexed(items = state.personas) { _, personaItem ->
                     PersonaSelectableCard(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -326,13 +327,13 @@ fun SelectPersonaPreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dapp = DApp.sampleMainnet(),
-            firstTimeLogin = false,
-            continueButtonEnabled = false,
-            personas = persistentListOf(),
             createNewPersona = {},
-            modifier = Modifier.fillMaxSize(),
-            isLoading = false
+            dapp = DApp.sampleMainnet(),
+            state = SelectPersonaViewModel.State(
+                isLoading = false,
+                authorizedDApp = AuthorizedDapp.sampleMainnet(),
+                personas = persistentListOf()
+            )
         )
     }
 }
@@ -346,13 +347,13 @@ fun SelectPersonaFirstTimePreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dapp = DApp.sampleMainnet(),
-            firstTimeLogin = true,
-            continueButtonEnabled = false,
-            personas = persistentListOf(),
             createNewPersona = {},
-            modifier = Modifier.fillMaxSize(),
-            isLoading = false
+            dapp = DApp.sampleMainnet(),
+            state = SelectPersonaViewModel.State(
+                isLoading = false,
+                authorizedDApp = null,
+                personas = persistentListOf()
+            )
         )
     }
 }

@@ -89,10 +89,10 @@ fun SimpleAccountCard(
                 vertical = RadixTheme.dimensions.paddingDefault
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         Text(
-            modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
+            modifier = Modifier.weight(1f),
             text = account.displayName.value,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,

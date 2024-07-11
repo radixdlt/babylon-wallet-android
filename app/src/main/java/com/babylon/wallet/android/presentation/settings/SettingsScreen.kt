@@ -2,9 +2,6 @@
 
 package com.babylon.wallet.android.presentation.settings
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -36,7 +31,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
@@ -100,51 +94,33 @@ private fun SettingsContent(
                         }
 
                         is SettingsUiItem.Settings -> {
-                            when (settingsItem.item) {
-                                SettingsItem.TopLevelSettings.LinkToConnector -> {
-                                    item {
-                                        ConnectorSettingBox(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(RadixTheme.colors.gray5)
-                                                .padding(RadixTheme.dimensions.paddingDefault),
-                                            onSettingClick = onSettingClick,
-                                            settingsItem = settingsItem.item
-                                        )
-                                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-                                    }
-                                }
-
-                                else -> {
-                                    item {
-                                        DefaultSettingsItem(
-                                            onClick = {
-                                                onSettingClick(settingsItem.item)
-                                            },
-                                            subtitle = stringResource(id = settingsItem.item.subtitleRes()),
-                                            leadingIcon = settingsItem.item.getIcon(),
-                                            title = stringResource(id = settingsItem.item.descriptionRes()),
-                                            warnings = when (val item = settingsItem.item) {
-                                                is SettingsItem.TopLevelSettings.SecurityCenter -> {
-                                                    if (item.securityProblems.isNotEmpty()) {
-                                                        item.securityProblems.map { it.toProblemHeading() }.toPersistentList()
-                                                    } else {
-                                                        null
-                                                    }
-                                                }
-
-                                                is SettingsItem.TopLevelSettings.Personas -> {
-                                                    personaWarnings(item)
-                                                }
-
-                                                else -> null
+                            item {
+                                DefaultSettingsItem(
+                                    onClick = {
+                                        onSettingClick(settingsItem.item)
+                                    },
+                                    subtitle = stringResource(id = settingsItem.item.subtitleRes()),
+                                    leadingIcon = settingsItem.item.getIcon(),
+                                    title = stringResource(id = settingsItem.item.descriptionRes()),
+                                    warnings = when (val item = settingsItem.item) {
+                                        is SettingsItem.TopLevelSettings.SecurityCenter -> {
+                                            if (item.securityProblems.isNotEmpty()) {
+                                                item.securityProblems.map { it.toProblemHeading() }.toPersistentList()
+                                            } else {
+                                                null
                                             }
-                                        )
+                                        }
+
+                                        is SettingsItem.TopLevelSettings.Personas -> {
+                                            personaWarnings(item)
+                                        }
+
+                                        else -> null
                                     }
-                                    item {
-                                        HorizontalDivider(color = RadixTheme.colors.gray5)
-                                    }
-                                }
+                                )
+                            }
+                            item {
+                                HorizontalDivider(color = RadixTheme.colors.gray5)
                             }
                         }
                     }
@@ -171,55 +147,6 @@ private fun SettingsContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ConnectorSettingBox(
-    onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
-    settingsItem: SettingsItem.TopLevelSettings,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        Image(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_connector),
-            contentDescription = null
-        )
-        Text(
-            text = stringResource(R.string.settings_linkToConnectorHeader_title),
-            style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = stringResource(R.string.settings_linkToConnectorHeader_subtitle),
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray2,
-            textAlign = TextAlign.Center
-        )
-        RadixSecondaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.settings_linkToConnectorHeader_linkToConnector),
-            onClick = {
-                onSettingClick(settingsItem)
-            },
-            containerColor = RadixTheme.colors.gray3,
-            contentColor = RadixTheme.colors.gray1,
-            leadingContent = {
-                Icon(
-                    painter = painterResource(
-                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-                    ),
-                    contentDescription = null
-                )
-            }
-        )
     }
 }
 
@@ -307,7 +234,6 @@ fun SettingsWithoutActiveConnectionPreview() {
         SettingsContent(
             state = SettingsUiState(
                 settings = listOf(
-                    SettingsItem.TopLevelSettings.LinkToConnector,
                     SettingsItem.TopLevelSettings.SecurityCenter(),
                     SettingsItem.TopLevelSettings.Personas(
                         isBackupNeeded = false,
