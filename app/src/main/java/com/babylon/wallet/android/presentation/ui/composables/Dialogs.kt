@@ -209,7 +209,12 @@ fun BottomSheetDialogWrapper(
                     )
                 }
                 if (centerContent) {
-                    Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         content()
                     }
                 } else {

@@ -88,7 +88,7 @@ private fun DerivePublicKeyBottomSheetContent(
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = onDismiss,
-        heightFraction = 0.6f,
+        heightFraction = 0.7f,
         centerContent = true
     ) {
         Column(
