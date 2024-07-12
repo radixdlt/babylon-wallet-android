@@ -272,7 +272,9 @@ private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modif
             modifier = Modifier.weight(0.7f),
             color = RadixTheme.colors.gray1
         )
-        trailingSection()
+        Row(modifier = Modifier.weight(0.3f), horizontalArrangement = Arrangement.Center) {
+            trailingSection()
+        }
     }
 }
 
