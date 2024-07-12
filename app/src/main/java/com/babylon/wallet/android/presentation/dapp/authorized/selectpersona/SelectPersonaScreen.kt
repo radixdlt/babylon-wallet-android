@@ -57,7 +57,6 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
@@ -224,14 +223,13 @@ private fun SelectPersonaContent(
             exit = fadeOut()
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
+                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Thumbnail.DApp(
-                        modifier = Modifier.size(104.dp),
+                        modifier = Modifier.size(64.dp),
                         dapp = dapp
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -247,7 +245,7 @@ private fun SelectPersonaContent(
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     LoginRequestHeader(
                         dappName = dapp?.name.orEmpty().ifEmpty {
                             stringResource(
@@ -255,11 +253,11 @@ private fun SelectPersonaContent(
                             )
                         },
                         firstTimeLogin = state.isFirstTimeLogin,
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     )
                     if (state.personas.isNotEmpty()) {
                         Text(
-                            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
                             text = stringResource(R.string.dAppRequest_login_choosePersona),
                             textAlign = TextAlign.Center,
                             style = RadixTheme.typography.body1Header,
@@ -282,14 +280,14 @@ private fun SelectPersonaContent(
                         persona = personaItem,
                         onSelectPersona = onSelectPersona
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
                 item {
                     RadixSecondaryButton(
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona
                     )
-                    Spacer(modifier = Modifier.height(100.dp))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
             }
         }
@@ -332,7 +330,7 @@ fun SelectPersonaPreview() {
             state = SelectPersonaViewModel.State(
                 isLoading = false,
                 authorizedDApp = AuthorizedDapp.sampleMainnet(),
-                personas = persistentListOf()
+                personas = persistentListOf(Persona.sampleMainnet().toUiModel())
             )
         )
     }
