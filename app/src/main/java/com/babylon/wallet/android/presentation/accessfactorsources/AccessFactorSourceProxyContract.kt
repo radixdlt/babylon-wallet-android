@@ -45,13 +45,13 @@ interface AccessFactorSourcesProxy {
     fun getTempMnemonicWithPassphrase(): MnemonicWithPassphrase?
 }
 
-// interface which acts as a proxy between the clients who need access to factor sources
-// and the viewmodels of the bottom sheet dialogs
+// interface that is passed as parameter in the viewmodels of the bottom sheet dialogs
+// when a access-factor-source-bottom-sheet dialog pops up its viewmodel
+// 1. takes the input from the accessFactorSourcesIOHandler.getInput()
+// 2. returns the output to the caller (e.g. CreateAccountViewModel) by calling accessFactorSourcesIOHandler.setOutput(...)
 //
-// for example when we call this:
-// val publicKey = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(...)
-// the AccessFactorSourcesProxyImpl is the proxy between the CreateAccountViewModel and the DerivePublicKeyViewModel
-interface AccessFactorSourcesUiProxy {
+// This interface is also implemented in the AccessFactorSourcesProxyImpl
+interface AccessFactorSourcesIOHandler {
 
     fun getInput(): AccessFactorSourcesInput
 

@@ -11,7 +11,7 @@ import javax.inject.Inject
 @ActivityRetainedScoped
 class AccessFactorSourcesProxyImpl @Inject constructor(
     private val appEventBus: AppEventBus
-) : AccessFactorSourcesProxy, AccessFactorSourcesUiProxy {
+) : AccessFactorSourcesProxy, AccessFactorSourcesIOHandler {
 
     private var input: AccessFactorSourcesInput = AccessFactorSourcesInput.Init
     private val _output = MutableSharedFlow<AccessFactorSourcesOutput>()
