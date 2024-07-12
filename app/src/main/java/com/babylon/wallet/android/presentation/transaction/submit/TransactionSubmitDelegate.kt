@@ -154,7 +154,7 @@ class TransactionSubmitDelegate @Inject constructor(
             }
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
-                    requestId = transactionRequest.interactionId.toString(),
+                    requestId = transactionRequest.interactionId,
                     transactionId = notarization.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete,
@@ -163,7 +163,7 @@ class TransactionSubmitDelegate @Inject constructor(
             )
             transactionStatusClient.pollTransactionStatus(
                 txID = notarization.intentHash.bech32EncodedTxId,
-                requestId = transactionRequest.interactionId.toString(),
+                requestId = transactionRequest.interactionId,
                 transactionType = transactionRequest.transactionType,
                 endEpoch = notarization.endEpoch
             )
