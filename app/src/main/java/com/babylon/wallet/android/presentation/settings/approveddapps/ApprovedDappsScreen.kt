@@ -73,7 +73,7 @@ private fun ApprovedDAppsContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.authorizedDapps_title),
+                title = stringResource(R.string.walletSettings_dapps_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
