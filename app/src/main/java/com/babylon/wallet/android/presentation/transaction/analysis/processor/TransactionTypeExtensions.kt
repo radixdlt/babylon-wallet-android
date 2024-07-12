@@ -12,6 +12,7 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FungibleResourceIndicator
 import com.radixdlt.sargon.NewlyCreatedResource
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceIndicator
 import com.radixdlt.sargon.ResourceAddress
@@ -34,33 +35,31 @@ import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 
-fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<ResourceAddress> {
-    val withdrawIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
-    val depositIndicators = deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
-    return (withdrawIndicators + depositIndicators)
-        .filterNot {
-            excludeNewlyCreated && it.isNewlyCreated(this)
-        }.map {
-            it.resourceAddress
-        }.toSet()
-}
-
-fun ExecutionSummary.involvedNonFungibleIds(
+fun ExecutionSummary.involvedAddresses(
     excludeNewlyCreated: Boolean = true
-): Map<ResourceAddress, Set<NonFungibleLocalId>> {
-    val withdrawIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
-    val depositIndicators = deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
-    return (withdrawIndicators + depositIndicators).filterNot {
+): Set<ResourceOrNonFungible> {
+    val fungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>() +
+            deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
+
+    val nonFungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
+            deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
+
+    return fungibleResourceAddresses.asSequence().filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
-    }.fold(mutableMapOf(), operation = { acc, indicator ->
-        acc.apply {
-            if (containsKey(indicator.address)) {
-                this[indicator.address] = this[indicator.address].orEmpty() + indicator.nonFungibleLocalIds
-            } else {
-                this[indicator.address] = indicator.nonFungibleLocalIds.toSet()
-            }
+    }.map {
+        ResourceOrNonFungible.Resource(it.resourceAddress)
+    }.toSet() + nonFungibleResourceAddresses.asSequence().filterNot {
+        excludeNewlyCreated && it.isNewlyCreated(this)
+    }.map { nonFungible ->
+        nonFungible.nonFungibleLocalIds.map { localId ->
+            ResourceOrNonFungible.NonFungible(
+                NonFungibleGlobalId(
+                    resourceAddress = nonFungible.resourceAddress,
+                    nonFungibleLocalId = localId
+                )
+            )
         }
-    })
+    }.flatten().toSet()
 }
 
 val ResourceIndicator.amount: Decimal192

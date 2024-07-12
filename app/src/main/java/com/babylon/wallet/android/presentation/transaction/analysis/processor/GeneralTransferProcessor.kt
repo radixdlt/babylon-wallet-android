@@ -23,10 +23,7 @@ class GeneralTransferProcessor @Inject constructor(
         val badges = getTransactionBadgesUseCase(addresses = summary.presentedProofs.toSet()).getOrThrow()
         val dApps = summary.resolveDApps()
         val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
-        val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses(),
-            nonFungibleIds = summary.involvedNonFungibleIds()
-        ).getOrThrow()
+        val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
 
         return PreviewType.Transfer.GeneralTransfer(
             from = summary.toWithdrawingAccountsWithTransferableAssets(

@@ -30,14 +30,14 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
         nonFungibleIds: Map<ResourceAddress, Set<NonFungibleLocalId>>,
         withAllMetadata: Boolean = false
     ): Result<List<Asset>> = invoke(
-        addresses = fungibleAddresses.map { ResourceOrNonFungible.Resource(it) } + nonFungibleIds.map { entry ->
+        addresses = fungibleAddresses.map { ResourceOrNonFungible.Resource(it) }.toSet() + nonFungibleIds.map { entry ->
             val resourceAddress = entry.key
             entry.value.map { localId ->
                 ResourceOrNonFungible.NonFungible(
                     NonFungibleGlobalId(resourceAddress, localId)
                 )
             }
-        }.flatten(),
+        }.flatten().toSet(),
         withAllMetadata = withAllMetadata
     )
 
@@ -48,7 +48,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
      * @param withAllMetadata if true all metadata pages of each resource will be fetched
      */
     suspend operator fun invoke(
-        addresses: List<ResourceOrNonFungible>,
+        addresses: Set<ResourceOrNonFungible>,
         withAllMetadata: Boolean = false
     ): Result<List<Asset>> = stateRepository
         .getResources(

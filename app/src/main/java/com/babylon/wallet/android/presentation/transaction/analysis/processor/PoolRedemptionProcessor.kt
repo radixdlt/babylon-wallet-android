@@ -20,10 +20,7 @@ class PoolRedemptionProcessor @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
 ) : PreviewTypeProcessor<DetailedManifestClass.PoolRedemption> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolRedemption): PreviewType {
-        val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses(),
-            nonFungibleIds = summary.involvedNonFungibleIds()
-        ).getOrThrow()
+        val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
         val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val to = summary.toDepositingAccountsWithTransferableAssets(

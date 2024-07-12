@@ -24,10 +24,7 @@ class PoolContributionProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.PoolContribution> {
 
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolContribution): PreviewType {
-        val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses(),
-            nonFungibleIds = summary.involvedNonFungibleIds()
-        ).getOrThrow()
+        val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
         val defaultDepositGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val from = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
