@@ -18,9 +18,9 @@ import com.radixdlt.sargon.NonFungibleResourceIndicator
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.ResourceOrNonFungible
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.amount
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -65,10 +65,7 @@ fun ExecutionSummary.involvedAddresses(
         }
     }.flatten().toSet()
 
-
-    val badges = presentedProofs.map { ResourceOrNonFungible.Resource(it) }.toSet()
-
-    return fungibles + nonFungibleGlobalIds + badges
+    return fungibles + nonFungibleGlobalIds + proofAddresses
 }
 
 val ResourceIndicator.amount: Decimal192
@@ -382,9 +379,40 @@ fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     )
 }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
 
-fun ExecutionSummary.resolveBadges(assets: List<Asset>): List<Badge> = assets.filter {
-    it.resource.address in presentedProofs
-}.map { asset -> Badge(resource = asset.resource) }
+val ExecutionSummary.proofAddresses: List<ResourceOrNonFungible>
+    get() = presentedProofs.map { specifier ->
+        when (specifier) {
+            is ResourceSpecifier.Fungible -> listOf(ResourceOrNonFungible.Resource(specifier.resourceAddress))
+            is ResourceSpecifier.NonFungible -> specifier.ids.map { localId ->
+                ResourceOrNonFungible.NonFungible(
+                    NonFungibleGlobalId(
+                        resourceAddress = specifier.resourceAddress,
+                        nonFungibleLocalId = localId
+                    )
+                )
+            }
+        }
+    }.flatten()
+
+fun ExecutionSummary.resolveBadges(assets: List<Asset>): List<Badge> {
+    val proofAddresses = presentedProofs.map { it.address }
+
+    return assets.filter { asset ->
+        asset.resource.address in proofAddresses
+    }.mapNotNull { asset ->
+        val specifier = presentedProofs.find { it.address == asset.resource.address } ?: return@mapNotNull null
+
+        val badgeResource = when (specifier) {
+            is ResourceSpecifier.Fungible -> {
+                // In this case we need to attach the amount of the specifier to the resource since it is not resolved by GW
+                (asset.resource as? Resource.FungibleResource)?.copy(ownedAmount = specifier.amount) ?: return@mapNotNull null
+            }
+            is ResourceSpecifier.NonFungible -> asset.resource
+        }
+
+        Badge(resource = badgeResource)
+    }
+}
 
 private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
     val metadata = mutableListOf<Metadata>()

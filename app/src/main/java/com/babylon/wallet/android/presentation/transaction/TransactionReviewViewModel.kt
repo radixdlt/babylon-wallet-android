@@ -424,14 +424,24 @@ sealed interface Event : OneOffEvent {
 }
 
 sealed interface PreviewType {
-    data object None : PreviewType
 
-    data object UnacceptableManifest : PreviewType
+    val badges: List<Badge>
 
-    data object NonConforming : PreviewType
+    data object None : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
+
+    data object UnacceptableManifest : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
+
+    data object NonConforming : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
 
     data class AccountsDepositSettings(
-        val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
+        val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList(),
+        override val badges: List<Badge>
     ) : PreviewType {
         val hasSettingSection: Boolean
             get() = accountsWithDepositSettingsChanges.any { it.defaultDepositRule != null }
@@ -443,7 +453,6 @@ sealed interface PreviewType {
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
-        val badges: List<Badge>
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->

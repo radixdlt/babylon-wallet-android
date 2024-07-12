@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
@@ -59,10 +60,12 @@ fun PresentingProofsContent(
 
             badges.forEach { badge ->
                 Row(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ).fillMaxWidth().throttleClickable { onClick(badge) },
+                    modifier = Modifier
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingSmall
+                        )
+                        .throttleClickable { onClick(badge) },
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -71,7 +74,7 @@ fun PresentingProofsContent(
                         badge = badge
                     )
 
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         badge.name?.let { name ->
                             Text(
                                 text = name,
@@ -91,6 +94,17 @@ fun PresentingProofsContent(
                                 color = RadixTheme.colors.gray2
                             )
                         }
+                    }
+
+                    (badge.resource as? Resource.FungibleResource)?.ownedAmount?.let { amount ->
+                        Text(
+                            text = amount.formatted(),
+                            style = RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.End
+                        )
                     }
                 }
             }

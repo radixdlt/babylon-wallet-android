@@ -335,29 +335,29 @@ private fun TransactionPreviewContent(
 
                     Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
                         ReceiptEdge(color = RadixTheme.colors.gray5)
-                        if (state.previewType is PreviewType.Transfer) {
-                            PresentingProofsContent(
-                                badges = state.previewType.badges.toPersistentList(),
-                                onClick = { badge ->
-                                    when (val resource = badge.resource) {
-                                        is Resource.FungibleResource -> onTransferableFungibleClick(
-                                            TransferableAsset.Fungible.Token(
-                                                amount = resource.ownedAmount.orZero(),
-                                                resource = resource,
-                                                isNewlyCreated = false
-                                            )
+
+                        PresentingProofsContent(
+                            badges = state.previewType.badges.toPersistentList(),
+                            onClick = { badge ->
+                                when (val resource = badge.resource) {
+                                    is Resource.FungibleResource -> onTransferableFungibleClick(
+                                        TransferableAsset.Fungible.Token(
+                                            amount = resource.ownedAmount.orZero(),
+                                            resource = resource,
+                                            isNewlyCreated = false
                                         )
-                                        is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
-                                            TransferableAsset.NonFungible.NFTAssets(
-                                                resource = resource,
-                                                isNewlyCreated = false
-                                            ),
-                                            resource.items.firstOrNull()
-                                        )
-                                    }
+                                    )
+
+                                    is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
+                                        TransferableAsset.NonFungible.NFTAssets(
+                                            resource = resource,
+                                            isNewlyCreated = false
+                                        ),
+                                        resource.items.firstOrNull()
+                                    )
                                 }
-                            )
-                        }
+                            }
+                        )
 
                         NetworkFeeContent(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
