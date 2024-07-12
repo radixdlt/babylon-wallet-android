@@ -28,9 +28,9 @@ class AccountDepositSettingsProcessor @Inject constructor(
         ).getOrThrow()
         val badges = summary.resolveBadges(assets)
         val involvedAccountAddresses = classification.depositModeUpdates.keys +
-                classification.resourcePreferencesUpdates.keys +
-                classification.authorizedDepositorsAdded.keys +
-                classification.authorizedDepositorsRemoved.keys
+            classification.resourcePreferencesUpdates.keys +
+            classification.authorizedDepositorsAdded.keys +
+            classification.authorizedDepositorsRemoved.keys
         val involvedAccounts = getProfileUseCase().activeAccountsOnCurrentNetwork.filter {
             it.address in involvedAccountAddresses
         }

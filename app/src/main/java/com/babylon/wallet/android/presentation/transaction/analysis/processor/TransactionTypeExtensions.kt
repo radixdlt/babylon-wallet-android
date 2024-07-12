@@ -41,10 +41,10 @@ fun ExecutionSummary.involvedAddresses(
     excludeNewlyCreated: Boolean = true
 ): Set<ResourceOrNonFungible> {
     val fungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>() +
-            deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
+        deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
 
     val nonFungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
-            deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
+        deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
 
     val fungibles = fungibleResourceAddresses.asSequence().filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
