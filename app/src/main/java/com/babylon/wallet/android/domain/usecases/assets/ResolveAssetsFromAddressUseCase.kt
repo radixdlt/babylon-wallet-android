@@ -1,9 +1,12 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.resourceAddress
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -19,19 +22,48 @@ import javax.inject.Inject
 class ResolveAssetsFromAddressUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
+
+    // TODO replace all usages of this method
+    @Deprecated("Use invoke(addresses: List<ResourceOrNonFungible>, withAllMetadata: Boolean) instead")
     suspend operator fun invoke(
         fungibleAddresses: Set<ResourceAddress>,
         nonFungibleIds: Map<ResourceAddress, Set<NonFungibleLocalId>>,
         withAllMetadata: Boolean = false
+    ): Result<List<Asset>> = invoke(
+        addresses = fungibleAddresses.map { ResourceOrNonFungible.Resource(it) } + nonFungibleIds.map { entry ->
+            val resourceAddress = entry.key
+            entry.value.map { localId ->
+                ResourceOrNonFungible.NonFungible(
+                    NonFungibleGlobalId(resourceAddress, localId)
+                )
+            }
+        }.flatten(),
+        withAllMetadata = withAllMetadata
+    )
+
+    /**
+     * Resolves each address to an [Asset]
+     *
+     * @param addresses the list of fungible [ResourceAddress]s and [NonFungibleGlobalId]s to resolve
+     * @param withAllMetadata if true all metadata pages of each resource will be fetched
+     */
+    suspend operator fun invoke(
+        addresses: List<ResourceOrNonFungible>,
+        withAllMetadata: Boolean = false
     ): Result<List<Asset>> = stateRepository
         .getResources(
-            addresses = fungibleAddresses + nonFungibleIds.keys,
+            addresses = addresses.map { it.resourceAddress }.toSet(),
             underAccountAddress = null,
             withDetails = true,
             withAllMetadata = withAllMetadata
         ).mapCatching { resources ->
-            val nfts = nonFungibleIds.mapValues { entry ->
-                stateRepository.getNFTDetails(entry.key, entry.value.toSet()).getOrThrow()
+            val nfts = addresses.filterIsInstance<ResourceOrNonFungible.NonFungible>().groupBy {
+                it.resourceAddress
+            }.mapValues { entry ->
+                stateRepository.getNFTDetails(
+                    resourceAddress = entry.key,
+                    localIds = entry.value.map { it.value.nonFungibleLocalId }.toSet()
+                ).getOrThrow()
             }
 
             val fungibles = resources.filterIsInstance<Resource.FungibleResource>()
