@@ -33,9 +33,8 @@ fun NetworkFeeContent(
     onCustomizeClick: () -> Unit
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier.padding(top = RadixTheme.dimensions.paddingDefault)
     ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Row {
             Text(
                 text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),

@@ -386,7 +386,7 @@ fun NavigationHost(
             onTransferableNonFungibleClick = { asset, item ->
                 navController.nftAssetDialog(
                     resourceAddress = asset.resource.address,
-                    localId = item.localId,
+                    localId = item?.localId,
                     isNewlyCreated = asset.isNewlyCreated
                 )
             },

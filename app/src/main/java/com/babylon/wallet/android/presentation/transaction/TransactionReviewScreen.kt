@@ -65,6 +65,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.orZero
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -81,7 +82,7 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -107,7 +108,7 @@ fun TransactionReviewScreen(
         onDAppClick = onDAppClick,
         onUnknownAddressesClick = viewModel::onUnknownAddressesClick,
         onTransferableFungibleClick = onTransferableFungibleClick,
-        onNonTransferableFungibleClick = onTransferableNonFungibleClick,
+        onTransferableNonFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
         onPayerSelected = viewModel::onPayerSelected,
@@ -168,7 +169,7 @@ private fun TransactionPreviewContent(
     onDAppClick: (DApp) -> Unit,
     onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Account) -> Unit,
@@ -297,7 +298,7 @@ private fun TransactionPreviewContent(
                                         onUnknownAddressesClick(componentAddresses.map { Address.Component(it) }.toPersistentList())
                                     },
                                     onTransferableFungibleClick = onTransferableFungibleClick,
-                                    onNonTransferableFungibleClick = onNonTransferableFungibleClick
+                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick
                                 )
                             }
 
@@ -311,7 +312,7 @@ private fun TransactionPreviewContent(
                                 StakeTypeContent(
                                     state = state,
                                     onTransferableFungibleClick = onTransferableFungibleClick,
-                                    onNonTransferableFungibleClick = onNonTransferableFungibleClick,
+                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick,
                                     onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
@@ -334,8 +335,28 @@ private fun TransactionPreviewContent(
 
                     Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
                         ReceiptEdge(color = RadixTheme.colors.gray5)
-                        if (state.previewType is PreviewType.Transfer.GeneralTransfer) {
-                            PresentingProofsContent(badges = state.previewType.badges.toPersistentList())
+                        if (state.previewType is PreviewType.Transfer) {
+                            PresentingProofsContent(
+                                badges = state.previewType.badges.toPersistentList(),
+                                onClick = { badge ->
+                                    when (val resource = badge.resource) {
+                                        is Resource.FungibleResource -> onTransferableFungibleClick(
+                                            TransferableAsset.Fungible.Token(
+                                                amount = resource.ownedAmount.orZero(),
+                                                resource = resource,
+                                                isNewlyCreated = false
+                                            )
+                                        )
+                                        is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
+                                            TransferableAsset.NonFungible.NFTAssets(
+                                                resource = resource,
+                                                isNewlyCreated = false
+                                            ),
+                                            resource.items.firstOrNull()
+                                        )
+                                    }
+                                }
+                            )
                         }
 
                         NetworkFeeContent(
@@ -512,7 +533,7 @@ fun TransactionPreviewContentPreview() {
             onDAppClick = {},
             onUnknownAddressesClick = {},
             onTransferableFungibleClick = {},
-            onNonTransferableFungibleClick = { _, _ -> },
+            onTransferableNonFungibleClick = { _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},

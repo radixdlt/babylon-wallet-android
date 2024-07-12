@@ -33,6 +33,7 @@ class ValidatorClaimProcessor @Inject constructor(
         val assets = resolveAssetsFromAddressUseCase(
             addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
+        val badges = summary.resolveBadges(assets)
         val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map {
             it.validator
@@ -55,6 +56,7 @@ class ValidatorClaimProcessor @Inject constructor(
             validators = involvedValidators.toList(),
             from = fromAccounts,
             to = toAccounts,
+            badges = badges,
             actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake
         )
     }

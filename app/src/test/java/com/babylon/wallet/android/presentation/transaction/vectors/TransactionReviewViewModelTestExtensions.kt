@@ -14,7 +14,6 @@ import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -61,7 +60,6 @@ internal fun testViewModel(
         previewTypeAnalyzer = PreviewTypeAnalyzer(
             generalTransferProcessor = GeneralTransferProcessor(
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository),
-                getTransactionBadgesUseCase = GetTransactionBadgesUseCase(stateRepository),
                 getProfileUseCase = GetProfileUseCase(profileRepository),
                 resolveComponentAddressesUseCase = ResolveComponentAddressesUseCase(stateRepository)
             ),

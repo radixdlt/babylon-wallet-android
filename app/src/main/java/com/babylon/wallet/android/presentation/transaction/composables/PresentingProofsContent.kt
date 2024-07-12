@@ -4,12 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,18 +20,27 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.extensions.formatted
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Resource
 
 @Composable
 fun PresentingProofsContent(
     badges: ImmutableList<Badge>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (Badge) -> Unit
 ) {
     if (badges.isNotEmpty()) {
-        Column(modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)) {
+        Column(
+            modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)
+        ) {
             Row(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),
@@ -46,27 +57,45 @@ fun PresentingProofsContent(
 //                )
             }
 
-            Column {
-                badges.forEach { badge ->
-                    Row(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Thumbnail.Badge(
-                            modifier = Modifier.size(24.dp),
-                            badge = badge
-                        )
-                        Text(
-                            text = badge.name.orEmpty(),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1
-                        )
-                    }
+            badges.forEach { badge ->
+                Row(
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ).fillMaxWidth().throttleClickable { onClick(badge) },
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Thumbnail.Badge(
+                        modifier = Modifier.size(34.dp),
+                        badge = badge
+                    )
 
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Column {
+                        badge.name?.let { name ->
+                            Text(
+                                text = name,
+                                style = RadixTheme.typography.body1HighImportance,
+                                color = RadixTheme.colors.gray1
+                            )
+                        }
+
+                        (badge.resource as? Resource.NonFungibleResource)?.items?.firstOrNull()?.let { nft ->
+                            val subtitle = remember(nft) {
+                                nft.name ?: nft.localId.formatted()
+                            }
+
+                            Text(
+                                text = subtitle,
+                                style = RadixTheme.typography.body2Regular,
+                                color = RadixTheme.colors.gray2
+                            )
+                        }
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),

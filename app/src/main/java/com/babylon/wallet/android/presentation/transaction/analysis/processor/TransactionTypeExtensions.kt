@@ -20,6 +20,7 @@ import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.amount
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -29,6 +30,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
@@ -44,11 +46,13 @@ fun ExecutionSummary.involvedAddresses(
     val nonFungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
             deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
 
-    return fungibleResourceAddresses.asSequence().filterNot {
+    val fungibles = fungibleResourceAddresses.asSequence().filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
     }.map {
         ResourceOrNonFungible.Resource(it.resourceAddress)
-    }.toSet() + nonFungibleResourceAddresses.asSequence().filterNot {
+    }.toSet()
+
+    val nonFungibleGlobalIds = nonFungibleResourceAddresses.asSequence().filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
     }.map { nonFungible ->
         nonFungible.nonFungibleLocalIds.map { localId ->
@@ -60,6 +64,11 @@ fun ExecutionSummary.involvedAddresses(
             )
         }
     }.flatten().toSet()
+
+
+    val badges = presentedProofs.map { ResourceOrNonFungible.Resource(it) }.toSet()
+
+    return fungibles + nonFungibleGlobalIds + badges
 }
 
 val ResourceIndicator.amount: Decimal192
@@ -372,6 +381,10 @@ fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
         allOwnedAccounts
     )
 }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
+
+fun ExecutionSummary.resolveBadges(assets: List<Asset>): List<Badge> = assets.filter {
+    it.resource.address in presentedProofs
+}.map { asset -> Badge(resource = asset.resource) }
 
 private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
     val metadata = mutableListOf<Metadata>()

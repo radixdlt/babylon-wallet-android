@@ -443,6 +443,7 @@ sealed interface PreviewType {
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
+        val badges: List<Badge>
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
@@ -452,8 +453,9 @@ sealed interface PreviewType {
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
+            override val badges: List<Badge>,
             val validators: List<Validator>,
-            val actionType: ActionType
+            val actionType: ActionType,
         ) : Transfer {
             enum class ActionType {
                 Stake, Unstake, ClaimStake
@@ -463,6 +465,7 @@ sealed interface PreviewType {
         data class Pool(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
+            override val badges: List<Badge>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
@@ -480,7 +483,7 @@ sealed interface PreviewType {
         data class GeneralTransfer(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val badges: List<Badge> = emptyList(),
+            override val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList()
         ) : Transfer
     }

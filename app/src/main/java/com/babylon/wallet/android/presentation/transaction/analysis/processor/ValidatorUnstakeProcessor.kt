@@ -36,6 +36,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val assets = resolveAssetsFromAddressUseCase(
             addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
+        val badges = summary.resolveBadges(assets)
         val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
         val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
@@ -48,6 +49,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         return PreviewType.Transfer.Staking(
             from = fromAccounts,
             to = toAccounts,
+            badges = badges,
             validators = involvedValidators,
             actionType = PreviewType.Transfer.Staking.ActionType.Unstake
         )

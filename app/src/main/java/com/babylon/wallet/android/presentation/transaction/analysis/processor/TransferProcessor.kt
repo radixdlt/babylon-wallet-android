@@ -19,6 +19,7 @@ class TransferProcessor @Inject constructor(
         val allOwnedAccounts = getProfileUseCase().activeAccountsOnCurrentNetwork.filter {
             it.address in involvedAccountAddresses
         }
+        val badges = summary.resolveBadges(assets = assets)
 
         return PreviewType.Transfer.GeneralTransfer(
             from = summary.toWithdrawingAccountsWithTransferableAssets(
@@ -29,7 +30,8 @@ class TransferProcessor @Inject constructor(
                 involvedAssets = assets,
                 allOwnedAccounts = allOwnedAccounts,
                 defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
-            )
+            ),
+            badges = badges
         )
     }
 }

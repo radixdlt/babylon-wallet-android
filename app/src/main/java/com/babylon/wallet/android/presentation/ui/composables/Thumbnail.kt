@@ -249,13 +249,16 @@ object Thumbnail {
         modifier: Modifier = Modifier,
         badge: Badge
     ) {
-        Custom(
-            modifier = modifier,
-            imageType = badge.icon?.let { ImageType.External(it, ThumbnailRequestSize.SMALL) },
-            emptyDrawable = R.drawable.ic_badge,
-            shape = RadixTheme.shapes.roundedRectXSmall,
-            contentDescription = badge.name.orEmpty()
-        )
+        when (val resource = badge.resource) {
+            is Resource.FungibleResource -> Fungible(
+                modifier = modifier,
+                token = resource
+            )
+            is Resource.NonFungibleResource -> NonFungible(
+                modifier = modifier,
+                collection = resource
+            )
+        }
     }
 
     @Composable

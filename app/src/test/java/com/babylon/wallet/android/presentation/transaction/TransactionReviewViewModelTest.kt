@@ -22,7 +22,6 @@ import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
@@ -53,7 +52,6 @@ import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
@@ -85,7 +83,6 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.changeDefaultDepositGuarantee
@@ -109,7 +106,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
     private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
@@ -125,7 +121,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val previewTypeAnalyzer = PreviewTypeAnalyzer(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
-            getTransactionBadgesUseCase = getTransactionBadgesUseCase,
             getProfileUseCase = getProfileUseCase,
             resolveComponentAddressesUseCase = resolveComponentAddressesUseCase
         ),
@@ -231,11 +226,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId.toString()
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(
-            listOf(
-                Badge(address = ResourceAddress.sampleMainnet())
-            )
-        )
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarizationResult)
         coEvery { signTransactionUseCase.signingState } returns emptyFlow()
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
@@ -266,7 +256,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
-        coEvery { resolveAssetsFromAddressUseCase(any(), any()) } returns Result.success(listOf())
     }
 
     override fun initVM(): TransactionReviewViewModel {
