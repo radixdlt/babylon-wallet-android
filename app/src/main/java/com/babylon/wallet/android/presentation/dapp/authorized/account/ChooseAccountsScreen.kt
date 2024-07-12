@@ -140,7 +140,7 @@ private fun HandleOneOffEvents(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun ChooseAccountContentPreview() {
+fun ChooseAccountsScreenPreview() {
     RadixWalletPreviewTheme {
         ChooseAccountContent(
             onBackClick = {},

@@ -2,13 +2,13 @@ package com.babylon.wallet.android.presentation.dapp.authorized.permission
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -29,13 +29,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.formattedSpans
@@ -107,58 +107,69 @@ private fun LoginPermissionContent(
                 windowInsets = WindowInsets.statusBars
             )
         },
+        bottomBar = {
+            BottomPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .navigationBarsPadding(),
+                text = stringResource(id = R.string.dAppRequest_accountPermission_continue),
+                onClick = onContinueClick
+            )
+        },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
-                .padding(RadixTheme.dimensions.paddingDefault)
                 .fillMaxSize()
+                .padding(
+                    top = padding.calculateTopPadding(),
+                    bottom = RadixTheme.dimensions.paddingXXLarge
+                )
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Thumbnail.DApp(
-                modifier = Modifier
-                    .size(64.dp),
+                modifier = Modifier.size(64.dp),
                 dapp = dapp,
                 shape = RadixTheme.shapes.roundedRectSmall
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.dAppRequest_accountPermission_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             PermissionRequestHeader(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 dappName = dapp?.name.orEmpty()
                     .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
             )
-            Spacer(modifier = Modifier.weight(0.5f))
+            Spacer(modifier = Modifier.weight(1f))
             RequestedPermissionsList(
                 modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
                     .fillMaxWidth()
                     .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
-                    .padding(RadixTheme.dimensions.paddingLarge),
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingLarge
+                    ),
                 isExactAccountsCount = isExactAccountsCount,
                 numberOfAccounts = numberOfAccounts
             )
-            Spacer(modifier = Modifier.weight(0.5f))
+            Spacer(modifier = Modifier.weight(2f))
             Text(
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(R.string.dAppRequest_accountPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.weight(0.5f))
-            RadixPrimaryButton(
-                text = stringResource(id = R.string.dAppRequest_accountPermission_continue),
-                onClick = onContinueClick,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Spacer(modifier = Modifier.weight(6f))
         }
     }
 }
@@ -170,8 +181,7 @@ private fun RequestedPermissionsList(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        modifier = modifier
     ) {
         val text = StringBuilder(stringResource(id = R.string.dot_separator)).apply {
             append(" ")
@@ -217,7 +227,7 @@ private fun PermissionRequestHeader(
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         LoginPermissionContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
@@ -234,7 +244,7 @@ fun LoginPermissionContentPreview() {
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentFirstTimePreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         LoginPermissionContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
@@ -243,18 +253,6 @@ fun LoginPermissionContentFirstTimePreview() {
             isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RequestedPermissionsListPreview() {
-    RadixWalletTheme {
-        RequestedPermissionsList(
-            numberOfAccounts = 2,
-            isExactAccountsCount = true,
-            modifier = Modifier.fillMaxSize()
         )
     }
 }
