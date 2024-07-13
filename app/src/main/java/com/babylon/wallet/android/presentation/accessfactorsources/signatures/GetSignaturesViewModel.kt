@@ -1,14 +1,15 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignWithLedgerFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -36,7 +37,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GetSignaturesViewModel @Inject constructor(
-    private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
+    private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
     private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
     private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
     private val getProfileUseCase: GetProfileUseCase,
@@ -57,11 +58,29 @@ class GetSignaturesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToGetSignatures
+            val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToGetSignatures
             val signersPerFactorSource = getSigningEntitiesByFactorSource(input.signers)
 
+            // Currently if one of the signatures fails it means ending a whole signing process,
+            // but with MFA, this may not be the case, we may be able to proceed to try to get other signatures.
             signersPerFactorSource.forEach { (factorSource, signers) ->
                 when (factorSource) {
+                    is FactorSource.Ledger -> {
+                        _state.update { state ->
+                            state.copy(
+                                showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = factorSource)
+                            )
+                        }
+                        isSigningWithLedgerInProgress.emit(true)
+                        collectSignaturesForLedgerFactorSource(
+                            ledgerFactorSource = factorSource,
+                            signers = signers,
+                            signRequest = input.signRequest
+                        )
+                        // wait until the signing with ledger is complete
+                        isSigningWithLedgerInProgress.takeWhile { isInProgress -> isInProgress }.collect()
+                    }
+
                     is FactorSource.Device -> {
                         _state.update { state ->
                             state.copy(
@@ -79,39 +98,22 @@ class GetSignaturesViewModel @Inject constructor(
                         // wait until the signing with device is complete
                         isSigningWithDeviceInProgress.takeWhile { isInProgress -> isInProgress }.collect()
                     }
-
-                    is FactorSource.Ledger -> {
-                        _state.update { state ->
-                            state.copy(
-                                showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = factorSource)
-                            )
-                        }
-                        isSigningWithLedgerInProgress.emit(true)
-                        collectSignaturesForLedgerFactorSource(
-                            ledgerFactorSource = factorSource,
-                            signers = signers,
-                            signRequest = input.signRequest
-                        )
-                        // wait until the signing with ledger is complete
-                        isSigningWithLedgerInProgress.takeWhile { isInProgress -> isInProgress }.collect()
-                    }
                 }
             }
 
-            accessFactorSourcesUiProxy.setOutput(output = AccessFactorSourcesOutput.Signatures(signaturesWithPublicKeys))
+            accessFactorSourcesIOHandler.setOutput(output = AccessFactorSourcesOutput.Signatures(signaturesWithPublicKeys))
             sendEvent(event = Event.AccessingFactorSourceCompleted)
         }
     }
 
     fun onRetryClick() {
         viewModelScope.launch {
-            val input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToGetSignatures
+            val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToGetSignatures
             val signersPerFactorSource = getSigningEntitiesByFactorSource(input.signers)
 
             when (val content = state.value.showContentForFactorSource) {
                 is State.ShowContentForFactorSource.Device -> {
-                    val signersWithDeviceFactorSource =
-                        signersPerFactorSource[content.deviceFactorSource] ?: return@launch
+                    val signersWithDeviceFactorSource = signersPerFactorSource[content.deviceFactorSource] ?: return@launch
                     sendEvent(
                         event = Event.RequestBiometricToAccessDeviceFactorSource(
                             deviceFactorSource = content.deviceFactorSource,
@@ -122,8 +124,7 @@ class GetSignaturesViewModel @Inject constructor(
                 }
 
                 is State.ShowContentForFactorSource.Ledger -> {
-                    val signersWithLedgerFactorSource =
-                        signersPerFactorSource[content.ledgerFactorSource] ?: return@launch
+                    val signersWithLedgerFactorSource = signersPerFactorSource[content.ledgerFactorSource] ?: return@launch
                     collectSignaturesForLedgerFactorSource(
                         ledgerFactorSource = content.ledgerFactorSource,
                         signers = signersWithLedgerFactorSource,
@@ -137,9 +138,10 @@ class GetSignaturesViewModel @Inject constructor(
         }
     }
 
+    // user clicked on X icon or navigated back thus the bottom sheet is dismissed
     fun onUserDismiss() {
         viewModelScope.launch {
-            accessFactorSourcesUiProxy.setOutput(
+            accessFactorSourcesIOHandler.setOutput(
                 output = AccessFactorSourcesOutput.Failure(RadixWalletException.DappRequestException.RejectedByUser)
             )
             sendEvent(Event.UserDismissed)
@@ -160,7 +162,7 @@ class GetSignaturesViewModel @Inject constructor(
             ).onSuccess { signatures ->
                 signaturesWithPublicKeys.addAll(signatures)
             }.onFailure {
-                accessFactorSourcesUiProxy.setOutput(
+                accessFactorSourcesIOHandler.setOutput(
                     AccessFactorSourcesOutput.Failure(error = it)
                 )
             }.also {
@@ -169,7 +171,7 @@ class GetSignaturesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun collectSignaturesForLedgerFactorSource(
+    private fun collectSignaturesForLedgerFactorSource(
         ledgerFactorSource: FactorSource.Ledger,
         signers: List<ProfileEntity>,
         signRequest: SignRequest
@@ -182,10 +184,16 @@ class GetSignaturesViewModel @Inject constructor(
                 signRequest = signRequest
             ).onSuccess { signatures ->
                 signaturesWithPublicKeys.addAll(signatures)
-            }.onFailure {
-                accessFactorSourcesUiProxy.setOutput(
-                    AccessFactorSourcesOutput.Failure(error = it)
+            }.onFailure { error ->
+                if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
+                    error.reason == LedgerErrorCode.Generic // Generic can mean anything, e.g. user closed the browser tab
+                ) {
+                    return@launch // should be return@launch to keep the bottom sheet open
+                }
+                accessFactorSourcesIOHandler.setOutput(
+                    AccessFactorSourcesOutput.Failure(error = error)
                 )
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
             }.also {
                 isSigningWithLedgerInProgress.emit(false)
             }
