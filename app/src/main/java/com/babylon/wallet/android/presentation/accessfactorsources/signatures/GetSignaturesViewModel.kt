@@ -25,9 +25,6 @@ import com.radixdlt.sargon.extensions.kind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,11 +42,7 @@ class GetSignaturesViewModel @Inject constructor(
 ) : StateViewModel<GetSignaturesViewModel.State>(),
     OneOffEventHandler<GetSignaturesViewModel.Event> by OneOffEventHandlerImpl() {
 
-    // list to keep signatures from all factor sources. This will be returned as output once all signers are done.
-    private val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
-
-    private val isSigningWithDeviceInProgress = MutableStateFlow(false)
-    private val isSigningWithLedgerInProgress = MutableStateFlow(false)
+    private val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToGetSignatures
 
     private var collectSignaturesWithDeviceJob: Job? = null
     private var collectSignaturesWithLedgerJob: Job? = null
@@ -58,76 +51,83 @@ class GetSignaturesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToGetSignatures
-            val signersPerFactorSource = getSigningEntitiesByFactorSource(input.signers)
+            val signersPerFactorSource = getSigningEntitiesByFactorSource(signers = input.signers)
 
-            // Currently if one of the signatures fails it means ending a whole signing process,
-            // but with MFA, this may not be the case, we may be able to proceed to try to get other signatures.
-            signersPerFactorSource.forEach { (factorSource, signers) ->
-                when (factorSource) {
-                    is FactorSource.Ledger -> {
-                        _state.update { state ->
-                            state.copy(
-                                showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = factorSource)
-                            )
-                        }
-                        isSigningWithLedgerInProgress.emit(true)
-                        collectSignaturesForLedgerFactorSource(
-                            ledgerFactorSource = factorSource,
-                            signers = signers,
-                            signRequest = input.signRequest
-                        )
-                        // wait until the signing with ledger is complete
-                        isSigningWithLedgerInProgress.takeWhile { isInProgress -> isInProgress }.collect()
-                    }
+            _state.update {
+                it.copy(signersPerFactorSource = signersPerFactorSource.toList())
+            }
+            proceedToNextSigners()
+        }
+    }
 
-                    is FactorSource.Device -> {
-                        _state.update { state ->
-                            state.copy(
-                                showContentForFactorSource = State.ShowContentForFactorSource.Device(deviceFactorSource = factorSource)
-                            )
-                        }
-                        isSigningWithDeviceInProgress.emit(true)
-                        sendEvent(
-                            event = Event.RequestBiometricToAccessDeviceFactorSource(
-                                deviceFactorSource = factorSource,
-                                signers = signers,
-                                signRequest = input.signRequest
-                            )
-                        )
-                        // wait until the signing with device is complete
-                        isSigningWithDeviceInProgress.takeWhile { isInProgress -> isInProgress }.collect()
-                    }
+    // Currently if one of the signatures fails it means ending a whole signing process,
+    // but with MFA, this may not be the case, we may be able to proceed to try to get other signatures.
+    private suspend fun proceedToNextSigners() {
+        _state.update { it.proceedToNextSigners() }
+
+        val nextSigners = state.value.nextSigners
+
+        when (val factorSource = nextSigners?.first) {
+            is FactorSource.Ledger -> {
+                _state.update { state ->
+                    state.copy(
+                        showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = factorSource)
+                    )
                 }
+                collectSignaturesForLedgerFactorSource(
+                    ledgerFactorSource = factorSource,
+                    signers = nextSigners.second,
+                    signRequest = input.signRequest
+                )
             }
 
-            accessFactorSourcesIOHandler.setOutput(output = AccessFactorSourcesOutput.Signatures(signaturesWithPublicKeys))
-            sendEvent(event = Event.AccessingFactorSourceCompleted)
+            is FactorSource.Device -> {
+                _state.update { state ->
+                    state.copy(
+                        showContentForFactorSource = State.ShowContentForFactorSource.Device(deviceFactorSource = factorSource)
+                    )
+                }
+                sendEvent(
+                    event = Event.RequestBiometricToAccessDeviceFactorSource(
+                        deviceFactorSource = factorSource,
+                        signers = nextSigners.second,
+                        signRequest = input.signRequest
+                    )
+                )
+            }
+
+            null -> {
+                accessFactorSourcesIOHandler.setOutput(
+                    output = AccessFactorSourcesOutput.Signatures(
+                        state.value.signaturesWithPublicKeys
+                    )
+                )
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
+            }
         }
     }
 
     fun onRetryClick() {
         viewModelScope.launch {
-            val input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToGetSignatures
             val signersPerFactorSource = getSigningEntitiesByFactorSource(input.signers)
 
             when (val content = state.value.showContentForFactorSource) {
                 is State.ShowContentForFactorSource.Device -> {
-                    val signersWithDeviceFactorSource = signersPerFactorSource[content.deviceFactorSource] ?: return@launch
+                    val signersWithDeviceFactor = signersPerFactorSource[content.deviceFactorSource] ?: return@launch
                     sendEvent(
                         event = Event.RequestBiometricToAccessDeviceFactorSource(
                             deviceFactorSource = content.deviceFactorSource,
-                            signers = signersWithDeviceFactorSource,
+                            signers = signersWithDeviceFactor,
                             signRequest = input.signRequest
                         )
                     )
                 }
 
                 is State.ShowContentForFactorSource.Ledger -> {
-                    val signersWithLedgerFactorSource = signersPerFactorSource[content.ledgerFactorSource] ?: return@launch
+                    val signersWithLedgerFactor = signersPerFactorSource[content.ledgerFactorSource] ?: return@launch
                     collectSignaturesForLedgerFactorSource(
                         ledgerFactorSource = content.ledgerFactorSource,
-                        signers = signersWithLedgerFactorSource,
+                        signers = signersWithLedgerFactor,
                         signRequest = input.signRequest
 
                     )
@@ -160,13 +160,14 @@ class GetSignaturesViewModel @Inject constructor(
                 signers = signers,
                 signRequest = signRequest
             ).onSuccess { signatures ->
-                signaturesWithPublicKeys.addAll(signatures)
+                _state.update { it.addSignatures(signatures) }
+                proceedToNextSigners()
             }.onFailure {
+                // return the output (error) and end the signing process
                 accessFactorSourcesIOHandler.setOutput(
                     AccessFactorSourcesOutput.Failure(error = it)
                 )
-            }.also {
-                isSigningWithDeviceInProgress.emit(false)
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
             }
         }
     }
@@ -183,19 +184,21 @@ class GetSignaturesViewModel @Inject constructor(
                 signers = signers,
                 signRequest = signRequest
             ).onSuccess { signatures ->
-                signaturesWithPublicKeys.addAll(signatures)
+                _state.update { it.addSignatures(signatures) }
+                proceedToNextSigners()
             }.onFailure { error ->
                 if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
                     error.reason == LedgerErrorCode.Generic // Generic can mean anything, e.g. user closed the browser tab
                 ) {
                     return@launch // should be return@launch to keep the bottom sheet open
                 }
+
+                // otherwise return the output (error)
                 accessFactorSourcesIOHandler.setOutput(
                     AccessFactorSourcesOutput.Failure(error = error)
                 )
+                // and end the signing process
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
-            }.also {
-                isSigningWithLedgerInProgress.emit(false)
             }
         }
     }
@@ -241,8 +244,21 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     data class State(
-        val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None
+        private val signersPerFactorSource: List<Pair<FactorSource, List<ProfileEntity>>> = emptyList(),
+        private val selectedSignersIndex: Int = -1,
+        // list to keep signatures from all factor sources. This will be returned as output once all signers are done.
+        val signaturesWithPublicKeys: List<SignatureWithPublicKey> = emptyList(),
+        val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None,
     ) : UiState {
+
+        val nextSigners: Pair<FactorSource, List<ProfileEntity>>?
+            get() = signersPerFactorSource.getOrNull(selectedSignersIndex)
+
+        fun proceedToNextSigners() = copy(selectedSignersIndex = selectedSignersIndex + 1)
+
+        fun addSignatures(signatures: List<SignatureWithPublicKey>) = copy(
+            signaturesWithPublicKeys = signaturesWithPublicKeys.toMutableList().apply { addAll(signatures) }
+        )
 
         sealed interface ShowContentForFactorSource {
 
