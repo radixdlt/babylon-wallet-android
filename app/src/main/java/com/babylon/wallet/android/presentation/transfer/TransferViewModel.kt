@@ -2,6 +2,9 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -59,7 +62,7 @@ class TransferViewModel @Inject constructor(
     private val assetsChooserDelegate: AssetsChooserDelegate,
     private val prepareManifestDelegate: PrepareManifestDelegate,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<TransferViewModel.State>() {
+) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
     internal val args = TransferArgs(savedStateHandle)
 
@@ -236,6 +239,14 @@ class TransferViewModel @Inject constructor(
         asset = asset,
         isChecked = isSelected
     )
+
+    fun onAssetClicked(asset: SpendingAsset) {
+        val account = _state.value.fromAccount ?: return
+
+        viewModelScope.launch {
+            sendEvent(Event.ShowAssetDetails(asset, account))
+        }
+    }
 
     fun onUiMessageShown() {
         if (_state.value.sheet is State.Sheet.ChooseAssets) {
@@ -485,6 +496,10 @@ class TransferViewModel @Inject constructor(
             val maxAccountAmountLessThanFee: Boolean
                 get() = maxAccountAmount < 1.toDecimal192()
         }
+    }
+
+    sealed interface Event : OneOffEvent {
+        data class ShowAssetDetails(val asset: SpendingAsset, val fromAccount: Account) : Event
     }
 }
 
