@@ -12,13 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 
 @Composable
@@ -60,11 +59,7 @@ fun TransferableTokenItemContent(
         }
         Text(
             modifier = Modifier.weight(1f),
-            text = when (val resource = transferable.transferable) {
-                is TransferableAsset.Fungible.Token -> resource.resource.displayTitle
-                is TransferableAsset.NonFungible.NFTAssets -> resource.resource.name
-                else -> ""
-            }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+            text = transferable.transferable.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,

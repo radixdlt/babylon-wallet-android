@@ -13,11 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
+import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.Resource
@@ -26,7 +28,7 @@ import rdx.works.core.domain.resources.Resource
 fun TransferableNftItemContent(
     modifier: Modifier = Modifier,
     shape: Shape,
-    resource: Resource.NonFungibleResource,
+    asset: TransferableAsset.NonFungible.NFTAssets,
     nftItem: Resource.NonFungibleResource.Item
 ) {
     Row(
@@ -45,25 +47,25 @@ fun TransferableNftItemContent(
     ) {
         Thumbnail.NonFungible(
             modifier = Modifier.size(44.dp),
-            collection = resource
+            collection = asset.resource
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                text = nftItem.localId.formatted(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = (nftItem.name ?: resource.name).ifEmpty {
-                    stringResource(id = R.string.transactionReview_unknown)
-                },
+                text = asset.displayTitle(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+
+            Text(
+                text = nftItem.displaySubtitle(),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
         }
     }
 }

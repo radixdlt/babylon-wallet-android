@@ -32,9 +32,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.BalanceChange
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
@@ -234,7 +235,7 @@ private fun BalanceChangeItem(balanceChange: BalanceChange) {
 
                 is Token -> {
                     TokenContent(
-                        resource = asset.resource,
+                        token = asset,
                         withdraw = balanceChange,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -249,10 +250,10 @@ private fun BalanceChangeItem(balanceChange: BalanceChange) {
         is BalanceChange.NonFungibleBalanceChange -> {
             when (val asset = balanceChange.asset) {
                 is NonFungibleCollection -> {
-                    balanceChange.items.forEachIndexed { index, item ->
-                        val addDivider = index != balanceChange.items.size - 1
+                    balanceChange.asset.resource.items.forEachIndexed { index, item ->
+                        val addDivider = index != balanceChange.asset.resource.items.size - 1
                         NftItemBalanceChange(
-                            nftResource = asset.resource,
+                            collection = asset,
                             item = item
                         )
                         if (addDivider) {
@@ -299,7 +300,7 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = asset.validator.name,
+                        text = asset.displaySubtitle(),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1,
@@ -335,25 +336,20 @@ private fun PoolUnitBalanceChange(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = asset.name(),
+                    text = asset.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
 
-                val associatedDAppName = remember(asset) {
-                    asset.pool?.associatedDApp?.name
-                }
-                if (!associatedDAppName.isNullOrEmpty()) {
-                    Text(
-                        text = associatedDAppName,
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Text(
+                    text = asset.displaySubtitle(),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             Text(
                 text = balanceChange.formattedBalanceChange,
@@ -392,18 +388,14 @@ private fun LiquidStakeUnitBalanceChange(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = asset.fungibleResource.displayTitle.ifEmpty {
-                            stringResource(
-                                id = R.string.account_poolUnits_unknownPoolUnitName
-                            )
-                        },
+                        text = asset.displayTitle(),
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray1,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = asset.validator.name,
+                        text = asset.displaySubtitle(),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1,
@@ -425,8 +417,8 @@ private fun LiquidStakeUnitBalanceChange(
 
 @Composable
 private fun NftItemBalanceChange(
-    nftResource: Resource.NonFungibleResource,
-    item: BalanceChange.NonFungibleBalanceChange.Item,
+    collection: NonFungibleCollection,
+    item: Resource.NonFungibleResource.Item,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -439,18 +431,18 @@ private fun NftItemBalanceChange(
     ) {
         Thumbnail.NonFungible(
             modifier = Modifier.size(24.dp),
-            collection = nftResource
+            collection = collection.resource
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                text = item.resourceName,
+                text = collection.displayTitle(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = item.name,
+                text = item.displaySubtitle(),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -462,7 +454,7 @@ private fun NftItemBalanceChange(
 
 @Composable
 private fun TokenContent(
-    resource: Resource.FungibleResource,
+    token: Token,
     withdraw: BalanceChange.FungibleBalanceChange,
     modifier: Modifier = Modifier
 ) {
@@ -471,9 +463,9 @@ private fun TokenContent(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Thumbnail.Fungible(token = resource, modifier = Modifier.size(24.dp))
+        Thumbnail.Fungible(token = token.resource, modifier = Modifier.size(24.dp))
         Text(
-            text = resource.displayTitle,
+            text = token.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1,

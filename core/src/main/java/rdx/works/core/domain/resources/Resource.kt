@@ -113,15 +113,6 @@ sealed class Resource {
             assetBehaviours
         }
 
-        val displayTitle: String
-            get() = if (symbol.isNotBlank()) {
-                symbol
-            } else if (name.isNotBlank()) {
-                name
-            } else {
-                ""
-            }
-
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
             // XRD should always be first

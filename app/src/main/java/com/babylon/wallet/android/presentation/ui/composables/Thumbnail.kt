@@ -116,7 +116,7 @@ object Thumbnail {
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token,
             shape = CircleShape,
-            contentDescription = token.displayTitle
+            contentDescription = token.name
         )
     }
 
@@ -302,7 +302,7 @@ object Thumbnail {
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
-            contentDescription = liquidStakeUnit?.fungibleResource?.displayTitle.orEmpty()
+            contentDescription = liquidStakeUnit?.fungibleResource?.name.orEmpty()
         )
     }
 
@@ -317,7 +317,7 @@ object Thumbnail {
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = CircleShape,
-            contentDescription = poolUnit.stake.displayTitle
+            contentDescription = poolUnit.stake.name.orEmpty()
         )
     }
 

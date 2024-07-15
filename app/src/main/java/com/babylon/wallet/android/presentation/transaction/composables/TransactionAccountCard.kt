@@ -74,7 +74,7 @@ fun TransactionAccountCard(
                             modifier = Modifier.throttleClickable {
                                 onTransferableNonFungibleClick(asset, item)
                             },
-                            resource = asset.resource,
+                            asset = asset,
                             shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
                             nftItem = item
                         )

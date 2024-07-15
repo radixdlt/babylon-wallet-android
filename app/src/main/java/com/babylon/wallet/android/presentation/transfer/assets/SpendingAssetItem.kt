@@ -49,6 +49,8 @@ import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -95,7 +97,7 @@ fun SpendingAssetItem(
     ) {
         when (asset) {
             is SpendingAsset.Fungible -> FungibleSpendingAsset(
-                resource = asset.resource,
+                asset = asset,
                 amount = asset.amountString,
                 isExceedingBalance = asset.exceedingBalance,
                 onAmountChanged = onAmountTyped,
@@ -109,8 +111,7 @@ fun SpendingAssetItem(
             )
 
             is SpendingAsset.NFT -> NonFungibleSpendingAsset(
-                resource = asset.resource,
-                nft = asset.item,
+                asset = asset,
                 isExceedingBalance = asset.exceedingBalance,
                 onItemClick = onItemClick
             )
@@ -121,7 +122,7 @@ fun SpendingAssetItem(
 @Composable
 private fun ColumnScope.FungibleSpendingAsset(
     modifier: Modifier = Modifier,
-    resource: Resource.FungibleResource,
+    asset: SpendingAsset.Fungible,
     amount: String,
     isExceedingBalance: Boolean,
     onAmountChanged: (String) -> Unit,
@@ -142,7 +143,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 .throttleClickable {
                     onItemClick()
                 },
-            token = resource
+            token = asset.resource
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         Text(
@@ -151,9 +152,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 .throttleClickable {
                     onItemClick()
                 },
-            text = resource.displayTitle.ifEmpty {
-                stringResource(id = R.string.transactionReview_unknown)
-            },
+            text = asset.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 2
@@ -250,7 +249,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 textDecoration = TextDecoration.Underline
             )
 
-            resource.ownedAmount?.let { amount ->
+            asset.resource.ownedAmount?.let { amount ->
                 Text(
                     text = "- Balance: ${amount.formatted()}",
                     style = RadixTheme.typography.body2HighImportance.copy(
@@ -268,8 +267,7 @@ private fun ColumnScope.FungibleSpendingAsset(
 @Composable
 private fun NonFungibleSpendingAsset(
     modifier: Modifier = Modifier,
-    resource: Resource.NonFungibleResource,
-    nft: Resource.NonFungibleResource.Item,
+    asset: SpendingAsset.NFT,
     isExceedingBalance: Boolean,
     onItemClick: () -> Unit
 ) {
@@ -285,20 +283,18 @@ private fun NonFungibleSpendingAsset(
     ) {
         Thumbnail.NonFungible(
             modifier = Modifier.size(55.dp),
-            collection = resource
+            collection = asset.resource
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
-            nft.name?.let {
-                Text(
-                    text = it,
-                    color = RadixTheme.colors.gray1,
-                    style = RadixTheme.typography.body1HighImportance
-                )
-            }
+            Text(
+                text = asset.displayTitle(),
+                color = RadixTheme.colors.gray1,
+                style = RadixTheme.typography.body1HighImportance
+            )
 
             Text(
-                text = nft.localId.formatted(),
+                text = asset.displaySubtitle(),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
