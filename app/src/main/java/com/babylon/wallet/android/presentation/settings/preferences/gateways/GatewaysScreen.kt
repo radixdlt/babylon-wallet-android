@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.preferences.gateways
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,11 +36,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -56,7 +61,6 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -88,18 +92,17 @@ fun GatewaysScreen(
 @Composable
 private fun GatewaysContent(
     modifier: Modifier = Modifier,
-    state: SettingsUiState,
+    state: GatewaysViewModel.State,
     onBackClick: () -> Unit,
     onAddGatewayClick: () -> Unit,
     onNewUrlChanged: (String) -> Unit,
-    onDeleteGateway: (GatewayWrapper) -> Unit,
+    onDeleteGateway: (GatewaysViewModel.State.GatewayUiItem) -> Unit,
     onGatewayClick: (Gateway) -> Unit,
-    oneOffEvent: Flow<SettingsEditGatewayEvent>,
+    oneOffEvent: Flow<GatewaysViewModel.Event>,
     onCreateProfile: (Url, NetworkId) -> Unit,
     addGatewaySheetVisible: (Boolean) -> Unit
 ) {
-    val bottomSheetState =
-        rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     BackHandler(enabled = bottomSheetState.isVisible) {
         addGatewaySheetVisible(false)
@@ -110,7 +113,7 @@ private fun GatewaysContent(
     LaunchedEffect(Unit) {
         oneOffEvent.collect {
             when (it) {
-                is SettingsEditGatewayEvent.CreateProfileOnNetwork -> {
+                is GatewaysViewModel.Event.CreateProfileOnNetwork -> {
                     onCreateProfile(it.newUrl, it.networkId)
                 }
 
@@ -142,7 +145,9 @@ private fun GatewaysContent(
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = RadixTheme.colors.gray5),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
@@ -153,33 +158,50 @@ private fun GatewaysContent(
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+//                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 //                    InfoLink( // TODO enable it when we have a link
 //                        stringResource(R.string.gateways_whatIsAGateway),
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
 //                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    HorizontalDivider(
-                        color = RadixTheme.colors.gray5,
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                 }
-                items(state.gatewayList) { gateway ->
-                    GatewayCard(
-                        gateway = gateway,
-                        onDeleteGateway = onDeleteGateway,
-                        modifier = Modifier
-                            .throttleClickable {
-                                onGatewayClick(gateway.gateway)
-                            }
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault)
-                    )
+                itemsIndexed(state.gatewayList) { index, gateway ->
+                    Column(
+                        modifier = Modifier.background(color = RadixTheme.colors.white)
+                    ) {
+                        GatewayCard(
+                            gateway = gateway,
+                            onDeleteGateway = onDeleteGateway,
+                            modifier = Modifier
+                                .throttleClickable {
+                                    onGatewayClick(gateway.gateway)
+                                }
+                                .fillMaxWidth()
+                                .background(color = RadixTheme.colors.white)
+                                .padding(
+                                    start = RadixTheme.dimensions.paddingDefault,
+                                    end = RadixTheme.dimensions.paddingSmall,
+                                    top = RadixTheme.dimensions.paddingDefault,
+                                    bottom = RadixTheme.dimensions.paddingDefault
+                                )
+                        )
+
+                        if (remember(state.gatewayList.size) { index < state.gatewayList.size - 1 }) {
+                            HorizontalDivider(
+                                color = RadixTheme.colors.gray4,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                            )
+                        }
+                    }
+                }
+                item {
                     HorizontalDivider(
-                        color = RadixTheme.colors.gray5,
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        color = RadixTheme.colors.gray4,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
                 item {
@@ -225,7 +247,9 @@ private fun GatewaysContent(
                 },
                 newUrlValid = state.newUrlValid,
                 addingGateway = state.addingGateway,
-                modifier = Modifier.navigationBarsPadding().imePadding(),
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .imePadding(),
                 gatewayAddFailure = state.gatewayAddFailure
             )
         }
@@ -239,10 +263,16 @@ private fun AddGatewaySheet(
     onNewUrlChanged: (String) -> Unit,
     onClose: () -> Unit,
     newUrlValid: Boolean,
-    gatewayAddFailure: GatewayAddFailure?,
+    gatewayAddFailure: GatewaysViewModel.State.GatewayAddFailure?,
     addingGateway: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val inputFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        inputFocusRequester.requestFocus()
+    }
+
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
@@ -268,7 +298,7 @@ private fun AddGatewaySheet(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.gateways_addNewGateway_subtitle),
@@ -276,25 +306,29 @@ private fun AddGatewaySheet(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                .focusRequester(inputFocusRequester),
             onValueChanged = onNewUrlChanged,
             value = newUrl,
             hint = stringResource(id = R.string.gateways_addNewGateway_textFieldPlaceholder),
             singleLine = true,
             error = when (gatewayAddFailure) {
-                GatewayAddFailure.AlreadyExist -> stringResource(id = R.string.gateways_addNewGateway_errorDuplicateURL)
-                GatewayAddFailure.ErrorWhileAdding -> stringResource(
+                GatewaysViewModel.State.GatewayAddFailure.AlreadyExist -> stringResource(
+                    id = R.string.gateways_addNewGateway_errorDuplicateURL
+                )
+                GatewaysViewModel.State.GatewayAddFailure.ErrorWhileAdding -> stringResource(
                     id = R.string.gateways_addNewGateway_establishingConnectionErrorMessage
                 )
 
                 else -> null
-            }
+            },
+            hintColor = RadixTheme.colors.gray2
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
         RadixPrimaryButton(
             text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             onClick = {
@@ -312,11 +346,11 @@ private fun AddGatewaySheet(
 
 @Composable
 private fun GatewayCard(
-    gateway: GatewayWrapper,
-    onDeleteGateway: (GatewayWrapper) -> Unit,
+    gateway: GatewaysViewModel.State.GatewayUiItem,
+    onDeleteGateway: (GatewaysViewModel.State.GatewayUiItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var gatewayToDelete by remember { mutableStateOf<GatewayWrapper?>(null) }
+    var gatewayToDelete by remember { mutableStateOf<GatewaysViewModel.State.GatewayUiItem?>(null) }
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -333,14 +367,14 @@ private fun GatewayCard(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = gateway.gateway.displayName(),
+                text = gateway.name(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = gateway.gateway.network.displayDescription,
+                text = gateway.description(),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,
@@ -389,30 +423,27 @@ private fun GatewayCard(
 }
 
 @Composable
-private fun Gateway.displayName(): String = string
+private fun GatewaysViewModel.State.GatewayUiItem.name(): String = when (gateway.network.id) {
+    NetworkId.MAINNET -> "Radix Mainnet Gateway"
+    NetworkId.STOKENET -> "Radix Stokenet Gateway"
+    else -> url
+}
+
+@Composable
+private fun GatewaysViewModel.State.GatewayUiItem.description(): String = when (gateway.network.id) {
+    NetworkId.MAINNET -> "Radix Public Network"
+    NetworkId.STOKENET -> "Radix Test Network"
+    else -> gateway.network.displayDescription
+}
 
 @Preview(showBackground = true)
 @Composable
-fun GatewaysScreenPreview() {
+private fun GatewaysScreenPreview(
+    @PreviewParameter(GatewaysPreviewProvider::class) state: GatewaysViewModel.State
+) {
     RadixWalletTheme {
         GatewaysContent(
-            state = SettingsUiState(
-                currentGateway = Gateway.forNetwork(NetworkId.MAINNET),
-                gatewayList = persistentListOf(
-                    GatewayWrapper(
-                        gateway = Gateway.forNetwork(NetworkId.STOKENET),
-                        selected = false
-                    ),
-                    GatewayWrapper(
-                        gateway = Gateway.forNetwork(NetworkId.MAINNET),
-                        selected = true
-                    )
-                ),
-                newUrl = "",
-                newUrlValid = false,
-                addingGateway = true,
-                gatewayAddFailure = null
-            ),
+            state = state,
             onBackClick = {},
             onAddGatewayClick = {},
             onNewUrlChanged = {},
@@ -423,4 +454,68 @@ fun GatewaysScreenPreview() {
             addGatewaySheetVisible = {}
         )
     }
+}
+
+class GatewaysPreviewProvider : PreviewParameterProvider<GatewaysViewModel.State> {
+
+    override val values: Sequence<GatewaysViewModel.State>
+        get() = sequenceOf(
+            GatewaysViewModel.State(
+                currentGateway = Gateway.forNetwork(NetworkId.MAINNET),
+                gatewayList = persistentListOf(
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.STOKENET),
+                        selected = false
+                    ),
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.MAINNET),
+                        selected = true
+                    ),
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.HAMMUNET),
+                        selected = false
+                    )
+                ),
+                newUrl = "",
+                newUrlValid = false,
+                addingGateway = true,
+                gatewayAddFailure = null
+            ),
+            GatewaysViewModel.State(
+                currentGateway = Gateway.forNetwork(NetworkId.MAINNET),
+                gatewayList = persistentListOf(
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.STOKENET),
+                        selected = false
+                    ),
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.MAINNET),
+                        selected = true
+                    )
+                ),
+                newUrl = "",
+                newUrlValid = false,
+                addingGateway = true,
+                gatewayAddFailure = null,
+                isAddGatewaySheetVisible = true
+            ),
+            GatewaysViewModel.State(
+                currentGateway = Gateway.forNetwork(NetworkId.MAINNET),
+                gatewayList = persistentListOf(
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.STOKENET),
+                        selected = false
+                    ),
+                    GatewaysViewModel.State.GatewayUiItem(
+                        gateway = Gateway.forNetwork(NetworkId.MAINNET),
+                        selected = true
+                    )
+                ),
+                newUrl = "",
+                newUrlValid = false,
+                addingGateway = true,
+                gatewayAddFailure = GatewaysViewModel.State.GatewayAddFailure.ErrorWhileAdding,
+                isAddGatewaySheetVisible = true
+            )
+        )
 }
