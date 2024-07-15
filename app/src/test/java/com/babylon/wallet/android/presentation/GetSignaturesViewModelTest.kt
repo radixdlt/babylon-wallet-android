@@ -79,7 +79,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
             assertNotNull(factorSourceKindOfSecondSigner)
             assertTrue(factorSourceKindOfSecondSigner == FactorSourceKind.DEVICE)
         }
-        }
+    }
 
     @Test
     fun `given device factor source, when signing, then show bottom sheet content for device factors`() = runTest {
