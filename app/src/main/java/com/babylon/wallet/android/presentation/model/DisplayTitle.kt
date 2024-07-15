@@ -11,6 +11,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 
 ////// ASSET LEVEL
@@ -44,6 +45,13 @@ fun TransferableAsset.displayTitle(
     is TransferableAsset.NonFungible.NFTAssets -> resource.displayTitleAsNFTCollection(fallback)
     is TransferableAsset.NonFungible.StakeClaimAssets -> resource.displayTitleAsStakeClaimNFTCollection()
 }
+
+@Composable
+fun Badge.displayTitle(): String = when (resource) {
+    is Resource.FungibleResource -> resource.name.takeIf { it.isNotBlank() } ?: stringResource(id = R.string.dash)
+    is Resource.NonFungibleResource -> resource.name.takeIf { it.isNotBlank() } ?: stringResource(id = R.string.dash)
+}
+
 
 ////// RESOURCE LEVEL
 
