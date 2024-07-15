@@ -10,7 +10,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 
-// interface for clients (viewmodels or usecases) that need access to factor sources
+// interface for the callers (viewmodels or usecases) that need access to factor sources
 //
 // for example CreateAccountViewModel needs a public key to create an account therefore it must call:
 //
@@ -46,7 +46,7 @@ interface AccessFactorSourcesProxy {
 }
 
 // interface that is passed as parameter in the viewmodels of the bottom sheet dialogs
-// when a access-factor-source-bottom-sheet dialog pops up its viewmodel
+// when a access-factor-source-bottom-sheet dialog pops up, then its viewmodel
 // 1. takes the input from the accessFactorSourcesIOHandler.getInput()
 // 2. returns the output to the caller (e.g. CreateAccountViewModel) by calling accessFactorSourcesIOHandler.setOutput(...)
 //
@@ -68,12 +68,12 @@ interface AccessFactorSourcesIOHandler {
 sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKey(
+        val entityKind: EntityKind,
         val forNetworkId: NetworkId,
         val factorSource: FactorSource,
         // Need this information only when a new profile is created, meaning that biometrics have been provided
         // No need to ask the user for authentication again.
-        val isBiometricsProvided: Boolean,
-        val entityKind: EntityKind
+        val isBiometricsProvided: Boolean
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
