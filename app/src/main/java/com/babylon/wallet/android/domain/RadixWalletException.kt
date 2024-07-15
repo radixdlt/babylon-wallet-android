@@ -85,7 +85,6 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object ConvertManifest : PrepareTransactionException()
         data class BuildTransactionHeader(override val cause: Throwable) : PrepareTransactionException(cause)
         data object FailedToFindAccountWithEnoughFundsToLockFee : PrepareTransactionException()
-        data object FailedToFindSigningEntities : PrepareTransactionException()
         data object CompileTransactionIntent : PrepareTransactionException()
         data class SignCompiledTransactionIntent(override val cause: Throwable? = null) :
             PrepareTransactionException(cause)
@@ -99,7 +98,6 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
                 is BuildTransactionHeader -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
-                is FailedToFindSigningEntities -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
                 is ConvertManifest -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
                 is PrepareNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
                 is SubmitNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION
@@ -372,9 +370,6 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
         when (this) {
             is RadixWalletException.PrepareTransactionException.BuildTransactionHeader -> R.string.error_transactionFailure_header
             is RadixWalletException.PrepareTransactionException.ConvertManifest -> R.string.error_transactionFailure_manifest
-            is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities ->
-                R.string.error_transactionFailure_missingSigners
-
             is RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
             is RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
             is RadixWalletException.PrepareTransactionException.FailedToFindAccountWithEnoughFundsToLockFee ->
