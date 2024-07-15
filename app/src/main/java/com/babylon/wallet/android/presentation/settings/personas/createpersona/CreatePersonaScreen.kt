@@ -14,8 +14,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -288,7 +289,8 @@ private fun CreatePersonaContentList(
             )
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
         }
-        items(currentFields, key = { it.id }) { field ->
+        itemsIndexed(currentFields, key = { _, field -> field.id }) { index, field ->
+            val isLast = currentFields.lastIndex == index
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -312,10 +314,13 @@ private fun CreatePersonaContentList(
                     null
                 },
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            if (isLast.not()) {
+                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            }
         }
         item {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            HorizontalDivider(color = RadixTheme.colors.gray4)
             Spacer(modifier = Modifier.height(dimensions.paddingDefault))
             Text(
                 text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
@@ -324,6 +329,7 @@ private fun CreatePersonaContentList(
             )
             Spacer(Modifier.height(30.dp))
             RadixSecondaryButton(
+                modifier = Modifier.widthIn(min = 200.dp),
                 text = stringResource(id = R.string.editPersona_addAField),
                 onClick = onAddFieldClick,
                 enabled = addButtonEnabled

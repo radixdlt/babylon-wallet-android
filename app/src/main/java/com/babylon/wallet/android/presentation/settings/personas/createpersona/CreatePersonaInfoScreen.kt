@@ -66,10 +66,7 @@ private fun CreatePersonaInfoContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    )
+                    .padding(RadixTheme.dimensions.paddingDefault)
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -114,7 +111,7 @@ private fun CreatePersonaInfoContent(
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_subtitle2),
                 style = RadixTheme.typography.body1Regular,
