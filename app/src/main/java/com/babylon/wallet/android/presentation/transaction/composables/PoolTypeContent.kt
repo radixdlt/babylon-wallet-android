@@ -104,6 +104,7 @@ fun PoolTypePreview() {
                         )
                     )
                 ),
+                badges = emptyList(),
                 actionType = PreviewType.Transfer.Pool.ActionType.Contribution
             ),
             onPromptForGuarantees = {},

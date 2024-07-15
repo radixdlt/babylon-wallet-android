@@ -314,8 +314,8 @@ fun AccountDepositSettingsTypeContentPreview() {
                             )
                         )
                     )
-                )
-
+                ),
+                badges = emptyList()
             )
         )
     }
@@ -335,7 +335,8 @@ fun AccountDepositSettingsTypeContentPreviewJustRule() {
                         assetChanges = emptyList(),
                         depositorChanges = emptyList()
                     )
-                )
+                ),
+                badges = emptyList()
             )
         )
     }
@@ -366,8 +367,8 @@ fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
                             )
                         )
                     )
-                )
-
+                ),
+                badges = emptyList()
             )
         )
     }
@@ -394,8 +395,8 @@ fun AccountDepositSettingsTypeContentPreviewJustDepositorChanges() {
                             )
                         )
                     )
-                )
-
+                ),
+                badges = emptyList()
             )
         )
     }
