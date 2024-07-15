@@ -69,6 +69,8 @@ import com.babylon.wallet.android.presentation.account.composable.UnknownDeposit
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -548,14 +550,19 @@ private fun AssetItem(
         Column(
             modifier = Modifier.weight(1f)
         ) {
+            val name = when (asset.resource) {
+                is Resource.FungibleResource -> asset.resource.displayTitleAsToken()
+                is Resource.NonFungibleResource -> asset.resource.displayTitleAsNFTCollection()
+                null -> null
+            }
+
             Text(
-                text = asset.resource?.name.orEmpty().ifEmpty {
-                    stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
-                },
+                text = name.orEmpty(),
                 maxLines = 1,
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
+
             Text(
                 text = asset.assetException?.address?.formatted().orEmpty(),
                 textAlign = TextAlign.Start,

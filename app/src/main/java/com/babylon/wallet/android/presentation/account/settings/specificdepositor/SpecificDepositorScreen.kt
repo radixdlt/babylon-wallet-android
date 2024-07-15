@@ -51,6 +51,8 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.D
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -392,16 +394,19 @@ private fun DepositorItem(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            depositor.resource?.name?.let {
-                Text(
-                    text = it.ifEmpty {
-                        stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
-                    },
-                    maxLines = 1,
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1
-                )
+            val title = when (depositor.resource) {
+                is Resource.FungibleResource -> depositor.resource.displayTitleAsToken()
+                is Resource.NonFungibleResource -> depositor.resource.displayTitleAsNFTCollection()
+                null -> null
             }
+
+            Text(
+                text = title.orEmpty(),
+                maxLines = 1,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1
+            )
+
             Text(
                 text = remember(depositor.depositorAddress) {
                     depositor.depositorAddress?.formatted().orEmpty()
