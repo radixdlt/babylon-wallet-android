@@ -317,7 +317,7 @@ object Thumbnail {
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = CircleShape,
-            contentDescription = poolUnit.stake.name.orEmpty()
+            contentDescription = poolUnit.stake.name
         )
     }
 

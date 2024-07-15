@@ -16,8 +16,10 @@ import rdx.works.core.domain.resources.Resource
 
 @Composable
 fun TransferableAsset.Fungible.LSUAsset.displaySubtitle(): String = lsu.displaySubtitle()
+
 @Composable
 fun TransferableAsset.Fungible.PoolUnitAsset.displaySubtitle(): String = unit.displaySubtitle()
+
 @Composable
 fun TransferableAsset.NonFungible.StakeClaimAssets.displaySubtitle(): String = claim.displaySubtitle()
 

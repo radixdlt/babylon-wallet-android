@@ -14,7 +14,7 @@ import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 
-////// ASSET LEVEL
+// //// ASSET LEVEL
 
 @Composable
 fun Asset.displayTitle(
@@ -52,10 +52,9 @@ fun Badge.displayTitle(): String = when (resource) {
     is Resource.NonFungibleResource -> resource.name.takeIf { it.isNotBlank() } ?: stringResource(id = R.string.dash)
 }
 
+// //// RESOURCE LEVEL
 
-////// RESOURCE LEVEL
-
-/// Fungibles
+// / Fungibles
 @Composable
 fun Resource.FungibleResource.displayTitleAsToken(
     fallback: @Composable () -> String = { stringResource(id = R.string.dash) }
@@ -75,7 +74,7 @@ fun Resource.FungibleResource.displayTitleAsPoolUnit(
     fallback: @Composable () -> String = { stringResource(id = R.string.dash) }
 ) = displayTitleAsToken(fallback = fallback)
 
-/// Non Fungibles
+// / Non Fungibles
 
 @Composable
 fun Resource.NonFungibleResource.displayTitleAsNFTCollection(
