@@ -21,7 +21,7 @@ interface HomeCardsRepository {
 
     suspend fun cardDismissed(card: HomeCard)
 
-    suspend fun clearCache()
+    suspend fun walletReset()
 }
 
 class HomeCardsRepositoryImpl @Inject constructor(
@@ -66,7 +66,11 @@ class HomeCardsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun clearCache() {
-        homeCardsObserver.clearCache()
+    override suspend fun walletReset() {
+        withContext(defaultDispatcher) {
+            runCatching { homeCardsManager.walletReset() }
+                .onFailure { Timber.w("Failed to notify HomeCardsManager about wallet reset. Error: $it") }
+                .onSuccess { Timber.d("Notified HomeCardsManager about wallet reset") }
+        }
     }
 }
