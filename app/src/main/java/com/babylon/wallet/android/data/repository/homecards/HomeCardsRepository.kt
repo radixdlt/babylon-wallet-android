@@ -20,6 +20,8 @@ interface HomeCardsRepository {
     suspend fun walletCreated()
 
     suspend fun cardDismissed(card: HomeCard)
+
+    suspend fun clearCache()
 }
 
 class HomeCardsRepositoryImpl @Inject constructor(
@@ -62,5 +64,9 @@ class HomeCardsRepositoryImpl @Inject constructor(
                 .onFailure { Timber.w("Failed to dismiss home card. Error: $it") }
                 .onSuccess { Timber.d("$card dismissed") }
         }
+    }
+
+    override suspend fun clearCache() {
+        homeCardsObserver.clearCache()
     }
 }
