@@ -209,7 +209,6 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun dismissTerminalErrorDialog() {
         _state.update { it.copy(error = null) }
-        onBackClick()
     }
 
     fun onAcknowledgeRawTransactionWarning() {
