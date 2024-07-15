@@ -179,7 +179,7 @@ fun PoolResourcesValues(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = resourceWithAmount.key.displayTitleAsPoolUnit(), // TODO naming
+                    text = resourceWithAmount.key.displayTitleAsPoolUnit(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
