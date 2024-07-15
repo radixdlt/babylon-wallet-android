@@ -274,18 +274,18 @@ private fun NonFungibleSpendingAsset(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 69.dp)
-            .padding(RadixTheme.dimensions.paddingSmall)
+            .padding(RadixTheme.dimensions.paddingDefault)
             .throttleClickable {
                 onItemClick()
             },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
         Thumbnail.NonFungible(
-            modifier = Modifier.size(55.dp),
+            modifier = Modifier.size(24.dp),
             collection = asset.resource
         )
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+
         Column {
             Text(
                 text = asset.displayTitle(),
