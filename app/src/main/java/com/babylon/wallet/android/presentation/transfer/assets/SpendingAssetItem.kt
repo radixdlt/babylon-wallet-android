@@ -289,12 +289,6 @@ private fun NonFungibleSpendingAsset(
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
-            Text(
-                text = nft.localId.formatted(),
-                color = RadixTheme.colors.gray2,
-                style = RadixTheme.typography.body2Regular
-            )
-
             nft.name?.let {
                 Text(
                     text = it,
@@ -302,6 +296,12 @@ private fun NonFungibleSpendingAsset(
                     style = RadixTheme.typography.body1HighImportance
                 )
             }
+
+            Text(
+                text = nft.localId.formatted(),
+                color = RadixTheme.colors.gray2,
+                style = RadixTheme.typography.body2Regular
+            )
 
             AnimatedVisibility(
                 visible = isExceedingBalance,
