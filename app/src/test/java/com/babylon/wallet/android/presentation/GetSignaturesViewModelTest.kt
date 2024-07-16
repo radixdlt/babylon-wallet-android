@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -75,7 +76,8 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
             val state = expectMostRecentItem()
             // here we get the second signer because the first one (ledger) has already signed! (because of the mock above)
             // Therefore the second signer must be FactorSourceKind.DEVICE
-            val factorSourceKindOfSecondSigner = state.nextSigners?.first?.kind
+            val nextRequest = state.nextRequest as? State.FactorSourceRequest.DeviceRequest
+            val factorSourceKindOfSecondSigner = nextRequest?.deviceFactorSources?.keys?.first()?.kind
             assertNotNull(factorSourceKindOfSecondSigner)
             assertTrue(factorSourceKindOfSecondSigner == FactorSourceKind.DEVICE)
         }
@@ -91,11 +93,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         viewModel.state.test {
             val state = expectMostRecentItem()
             val showContentForFactorSource = state.showContentForFactorSource
-            assertTrue(
-                showContentForFactorSource == GetSignaturesViewModel.State.ShowContentForFactorSource.Device(
-                    deviceFactorSource = sampleProfile.deviceFactorSources[0]
-                )
-            )
+            assertTrue(showContentForFactorSource == State.ShowContentForFactorSource.Device)
         }
     }
 
@@ -110,13 +108,14 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         viewModel.state.test {
             val state = expectMostRecentItem()
 
-            val factorSourceKindOfSecondSigner = state.nextSigners?.first?.kind
+            val nextRequest = state.nextRequest as? State.FactorSourceRequest.LedgerRequest
+            val factorSourceKindOfSecondSigner = nextRequest?.factorSource?.kind
             assertNotNull(factorSourceKindOfSecondSigner)
             assertTrue(factorSourceKindOfSecondSigner == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET)
 
             val showContentForFactorSource = state.showContentForFactorSource
             assertTrue(
-                showContentForFactorSource == GetSignaturesViewModel.State.ShowContentForFactorSource.Ledger(
+                showContentForFactorSource == State.ShowContentForFactorSource.Ledger(
                     ledgerFactorSource = sampleProfile.factorSources[2] as FactorSource.Ledger
                 )
             )
@@ -140,11 +139,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.collectSignaturesForDeviceFactorSource(
-            deviceFactorSource = sampleProfile.factorSources[0] as FactorSource.Device,
-            signers = signers,
-            signRequest = signRequest
-        )
+        viewModel.collectSignaturesForDeviceFactorSource()
         advanceUntilIdle()
         viewModel.state.test {
             val state = expectMostRecentItem()
@@ -168,11 +163,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         val viewModel = vm.value
         advanceUntilIdle()
 
-        viewModel.collectSignaturesForDeviceFactorSource(
-            deviceFactorSource = sampleProfile.factorSources[0] as FactorSource.Device,
-            signers = signers,
-            signRequest = signRequest
-        )
+        viewModel.collectSignaturesForDeviceFactorSource()
         advanceUntilIdle()
         viewModel.state.test {
             val state = expectMostRecentItem()

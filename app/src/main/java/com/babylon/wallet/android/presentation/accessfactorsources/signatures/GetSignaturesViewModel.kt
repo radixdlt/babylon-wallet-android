@@ -10,6 +10,8 @@ import com.babylon.wallet.android.domain.usecases.transaction.SignWithLedgerFact
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State.FactorSourceRequest.DeviceRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State.FactorSourceRequest.LedgerRequest
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -53,9 +55,30 @@ class GetSignaturesViewModel @Inject constructor(
         viewModelScope.launch {
             val signersPerFactorSource = getSigningEntitiesByFactorSource(signers = input.signers)
 
-            _state.update {
-                it.copy(signersPerFactorSource = signersPerFactorSource.toList())
+            val requests = mutableListOf<State.FactorSourceRequest>()
+            signersPerFactorSource.forEach { (factorSource, entities) ->
+                when (factorSource) {
+                    is FactorSource.Device -> {
+                        val deviceRequest = (requests
+                            .find { request ->
+                                request is DeviceRequest
+                            } as? DeviceRequest) ?: DeviceRequest(mutableMapOf()).also {
+                            requests.add(it)
+                        }
+
+                        deviceRequest.deviceFactorSources[factorSource] = entities
+                    }
+
+                    is FactorSource.Ledger -> {
+                        requests.add(LedgerRequest(
+                            factorSource = factorSource,
+                            entities = entities
+                        ))
+                    }
+                }
             }
+
+            _state.update { state -> state.copy(signersRequests = requests) }
             proceedToNextSigners()
         }
     }
@@ -65,41 +88,31 @@ class GetSignaturesViewModel @Inject constructor(
     private suspend fun proceedToNextSigners() {
         _state.update { it.proceedToNextSigners() }
 
-        val nextSigners = state.value.nextSigners
-
-        when (val factorSource = nextSigners?.first) {
-            is FactorSource.Ledger -> {
+        when (val request = state.value.nextRequest) {
+            is LedgerRequest -> {
                 _state.update { state ->
                     state.copy(
-                        showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = factorSource)
+                        showContentForFactorSource = State.ShowContentForFactorSource.Ledger(ledgerFactorSource = request.factorSource)
                     )
                 }
                 collectSignaturesForLedgerFactorSource(
-                    ledgerFactorSource = factorSource,
-                    signers = nextSigners.second,
+                    ledgerFactorSource = request.factorSource,
+                    signers = request.entities,
                     signRequest = input.signRequest
                 )
             }
 
-            is FactorSource.Device -> {
+            is DeviceRequest -> {
                 _state.update { state ->
-                    state.copy(
-                        showContentForFactorSource = State.ShowContentForFactorSource.Device(deviceFactorSource = factorSource)
-                    )
+                    state.copy(showContentForFactorSource = State.ShowContentForFactorSource.Device)
                 }
-                sendEvent(
-                    event = Event.RequestBiometricToAccessDeviceFactorSource(
-                        deviceFactorSource = factorSource,
-                        signers = nextSigners.second,
-                        signRequest = input.signRequest
-                    )
-                )
+                sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)
             }
 
             null -> {
                 accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.Signatures(
-                        state.value.signaturesWithPublicKeys
+                        signaturesWithPublicKey = state.value.signaturesWithPublicKeys
                     )
                 )
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
@@ -113,14 +126,7 @@ class GetSignaturesViewModel @Inject constructor(
 
             when (val content = state.value.showContentForFactorSource) {
                 is State.ShowContentForFactorSource.Device -> {
-                    val signersWithDeviceFactor = signersPerFactorSource[content.deviceFactorSource] ?: return@launch
-                    sendEvent(
-                        event = Event.RequestBiometricToAccessDeviceFactorSource(
-                            deviceFactorSource = content.deviceFactorSource,
-                            signers = signersWithDeviceFactor,
-                            signRequest = input.signRequest
-                        )
-                    )
+                    sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)
                 }
 
                 is State.ShowContentForFactorSource.Ledger -> {
@@ -148,27 +154,26 @@ class GetSignaturesViewModel @Inject constructor(
         }
     }
 
-    fun collectSignaturesForDeviceFactorSource(
-        deviceFactorSource: FactorSource.Device,
-        signers: List<ProfileEntity>,
-        signRequest: SignRequest
-    ) {
+    fun collectSignaturesForDeviceFactorSource() {
         collectSignaturesWithDeviceJob?.cancel()
         collectSignaturesWithDeviceJob = viewModelScope.launch {
-            signWithDeviceFactorSourceUseCase(
-                deviceFactorSource = deviceFactorSource,
-                signers = signers,
-                signRequest = signRequest
-            ).onSuccess { signatures ->
-                _state.update { it.addSignatures(signatures) }
-                proceedToNextSigners()
-            }.onFailure {
-                // return the output (error) and end the signing process
-                accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.Failure(error = it)
-                )
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
+            val request = state.value.nextRequest as? DeviceRequest ?: return@launch
+            val signatures = request.deviceFactorSources.flatMap { (deviceFactorSource, entities) ->
+                signWithDeviceFactorSourceUseCase(
+                    deviceFactorSource = deviceFactorSource,
+                    signers = entities,
+                    signRequest = input.signRequest
+                ).onFailure {
+                    // return the output (error) and end the signing process
+                    accessFactorSourcesIOHandler.setOutput(
+                        AccessFactorSourcesOutput.Failure(error = it)
+                    )
+                    sendEvent(event = Event.AccessingFactorSourceCompleted)
+                }.getOrNull() ?: return@launch
             }
+
+            _state.update { state -> state.addSignatures(signatures) }
+            proceedToNextSigners()
         }
     }
 
@@ -184,7 +189,7 @@ class GetSignaturesViewModel @Inject constructor(
                 signers = signers,
                 signRequest = signRequest
             ).onSuccess { signatures ->
-                _state.update { it.addSignatures(signatures) }
+                _state.update { state -> state.addSignatures(signatures) }
                 proceedToNextSigners()
             }.onFailure { error ->
                 if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
@@ -195,7 +200,7 @@ class GetSignaturesViewModel @Inject constructor(
 
                 // otherwise return the output (error)
                 accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.Failure(error = error)
+                    output = AccessFactorSourcesOutput.Failure(error = error)
                 )
                 // and end the signing process
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
@@ -244,15 +249,27 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     data class State(
-        private val signersPerFactorSource: List<Pair<FactorSource, List<ProfileEntity>>> = emptyList(),
+        private val signersRequests: List<FactorSourceRequest> = emptyList(),
         private val selectedSignersIndex: Int = -1,
         // list to keep signatures from all factor sources. This will be returned as output once all signers are done.
         val signaturesWithPublicKeys: List<SignatureWithPublicKey> = emptyList(),
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None,
     ) : UiState {
 
-        val nextSigners: Pair<FactorSource, List<ProfileEntity>>?
-            get() = signersPerFactorSource.getOrNull(selectedSignersIndex)
+        sealed class FactorSourceRequest {
+
+            data class LedgerRequest(
+                val factorSource: FactorSource.Ledger,
+                val entities: List<ProfileEntity>
+            ) : FactorSourceRequest()
+
+            data class DeviceRequest(
+                val deviceFactorSources: MutableMap<FactorSource.Device, List<ProfileEntity>>
+            ) : FactorSourceRequest()
+        }
+
+        val nextRequest: FactorSourceRequest?
+            get() = signersRequests.getOrNull(selectedSignersIndex)
 
         fun proceedToNextSigners() = copy(selectedSignersIndex = selectedSignersIndex + 1)
 
@@ -264,7 +281,7 @@ class GetSignaturesViewModel @Inject constructor(
 
             data object None : ShowContentForFactorSource
 
-            data class Device(val deviceFactorSource: FactorSource.Device) : ShowContentForFactorSource
+            data object Device : ShowContentForFactorSource
 
             data class Ledger(val ledgerFactorSource: FactorSource.Ledger) : ShowContentForFactorSource
         }
@@ -272,11 +289,7 @@ class GetSignaturesViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
 
-        data class RequestBiometricToAccessDeviceFactorSource(
-            val deviceFactorSource: FactorSource.Device,
-            val signers: List<ProfileEntity>,
-            val signRequest: SignRequest
-        ) : Event
+        data object RequestBiometricToAccessDeviceFactorSources : Event
 
         data object AccessingFactorSourceCompleted : Event
 

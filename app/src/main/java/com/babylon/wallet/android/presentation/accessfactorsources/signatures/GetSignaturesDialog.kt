@@ -29,6 +29,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -53,14 +54,10 @@ fun GetSignaturesDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is GetSignaturesViewModel.Event.RequestBiometricToAccessDeviceFactorSource -> {
+                is GetSignaturesViewModel.Event.RequestBiometricToAccessDeviceFactorSources -> {
                     context.biometricAuthenticate { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
-                            BiometricAuthenticationResult.Succeeded -> viewModel.collectSignaturesForDeviceFactorSource(
-                                deviceFactorSource = event.deviceFactorSource,
-                                signers = event.signers,
-                                signRequest = event.signRequest
-                            )
+                            BiometricAuthenticationResult.Succeeded -> viewModel.collectSignaturesForDeviceFactorSource()
                             BiometricAuthenticationResult.Error -> { /* do nothing */ }
                             BiometricAuthenticationResult.Failed -> { /* do nothing */ }
                         }
@@ -84,7 +81,7 @@ fun GetSignaturesDialog(
 @Composable
 private fun GetSignaturesBottomSheetContent(
     modifier: Modifier = Modifier,
-    showContentForFactorSource: GetSignaturesViewModel.State.ShowContentForFactorSource,
+    showContentForFactorSource: State.ShowContentForFactorSource,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -116,14 +113,14 @@ private fun GetSignaturesBottomSheetContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
-                is GetSignaturesViewModel.State.ShowContentForFactorSource.Device -> {
+                is State.ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
                 }
 
-                is GetSignaturesViewModel.State.ShowContentForFactorSource.Ledger -> {
+                is State.ShowContentForFactorSource.Ledger -> {
                     Text(
                         text = stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
@@ -135,7 +132,7 @@ private fun GetSignaturesBottomSheetContent(
                     RoundLedgerItem(ledgerName = showContentForFactorSource.ledgerFactorSource.value.hint.name)
                 }
 
-                GetSignaturesViewModel.State.ShowContentForFactorSource.None -> { /* nothing */ }
+                State.ShowContentForFactorSource.None -> { /* nothing */ }
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             RadixTextButton(
@@ -153,9 +150,7 @@ private fun GetSignaturesBottomSheetContent(
 fun DerivePublicKeyDialogDevicePreview() {
     RadixWalletTheme {
         GetSignaturesBottomSheetContent(
-            showContentForFactorSource = GetSignaturesViewModel.State.ShowContentForFactorSource.Device(
-                deviceFactorSource = FactorSource.Device.sample()
-            ),
+            showContentForFactorSource = State.ShowContentForFactorSource.Device,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -168,7 +163,7 @@ fun DerivePublicKeyDialogDevicePreview() {
 fun DerivePublicKeyDialogLedgerPreview() {
     RadixWalletTheme {
         GetSignaturesBottomSheetContent(
-            showContentForFactorSource = GetSignaturesViewModel.State.ShowContentForFactorSource.Ledger(
+            showContentForFactorSource = State.ShowContentForFactorSource.Ledger(
                 ledgerFactorSource = FactorSource.Ledger.sample()
             ),
             onDismiss = {},
