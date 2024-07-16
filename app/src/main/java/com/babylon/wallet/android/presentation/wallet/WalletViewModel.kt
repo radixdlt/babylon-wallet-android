@@ -51,7 +51,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -124,6 +123,10 @@ class WalletViewModel @Inject constructor(
 
     override fun initialState() = State()
 
+    fun onStart() {
+        loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+    }
+
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
 
     fun onPopUpScreenDismissed() {
@@ -189,9 +192,7 @@ class WalletViewModel @Inject constructor(
     private fun observeWalletAssets() {
         combine(
             accountsFlow,
-            refreshFlow.onStart {
-                loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
-            }
+            refreshFlow
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 

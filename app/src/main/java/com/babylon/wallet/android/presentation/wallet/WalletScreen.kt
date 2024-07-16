@@ -103,8 +103,10 @@ fun WalletScreen(
 
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
     LaunchedEffect(lifecycleState) {
-        if (lifecycleState == Lifecycle.State.RESUMED) {
-            viewModel.processBufferedDeepLinkRequest()
+        when (lifecycleState) {
+            Lifecycle.State.STARTED -> viewModel.onStart()
+            Lifecycle.State.RESUMED -> viewModel.processBufferedDeepLinkRequest()
+            else -> {}
         }
     }
 
