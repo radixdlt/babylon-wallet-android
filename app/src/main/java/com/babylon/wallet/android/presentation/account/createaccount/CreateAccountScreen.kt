@@ -166,7 +166,7 @@ fun CreateAccountContent(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
                 .padding(top = RadixTheme.dimensions.paddingDefault)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -183,6 +183,7 @@ fun CreateAccountContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
