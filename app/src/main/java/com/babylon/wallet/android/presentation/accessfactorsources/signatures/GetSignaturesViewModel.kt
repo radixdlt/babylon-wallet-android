@@ -59,10 +59,12 @@ class GetSignaturesViewModel @Inject constructor(
             signersPerFactorSource.forEach { (factorSource, entities) ->
                 when (factorSource) {
                     is FactorSource.Device -> {
-                        val deviceRequest = (requests
-                            .find { request ->
-                                request is DeviceRequest
-                            } as? DeviceRequest) ?: DeviceRequest(mutableMapOf()).also {
+                        val deviceRequest = (
+                            requests
+                                .find { request ->
+                                    request is DeviceRequest
+                                } as? DeviceRequest
+                            ) ?: DeviceRequest(mutableMapOf()).also {
                             requests.add(it)
                         }
 
@@ -70,10 +72,12 @@ class GetSignaturesViewModel @Inject constructor(
                     }
 
                     is FactorSource.Ledger -> {
-                        requests.add(LedgerRequest(
-                            factorSource = factorSource,
-                            entities = entities
-                        ))
+                        requests.add(
+                            LedgerRequest(
+                                factorSource = factorSource,
+                                entities = entities
+                            )
+                        )
                     }
                 }
             }
