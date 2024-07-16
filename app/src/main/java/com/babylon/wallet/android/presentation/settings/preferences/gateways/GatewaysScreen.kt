@@ -424,15 +424,15 @@ private fun GatewayCard(
 
 @Composable
 private fun GatewaysViewModel.State.GatewayUiItem.name(): String = when (gateway.network.id) {
-    NetworkId.MAINNET -> "Radix Mainnet Gateway"
-    NetworkId.STOKENET -> "Radix Stokenet Gateway"
+    NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_title)
+    NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_title)
     else -> url
 }
 
 @Composable
 private fun GatewaysViewModel.State.GatewayUiItem.description(): String = when (gateway.network.id) {
-    NetworkId.MAINNET -> "Radix Public Network"
-    NetworkId.STOKENET -> "Radix Test Network"
+    NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_title)
+    NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_description)
     else -> gateway.network.displayDescription
 }
 
