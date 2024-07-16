@@ -165,9 +165,6 @@ private fun PersonaDataOngoingPermissionContent(
             RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = continueButtonEnabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
                 text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
             )
         },
