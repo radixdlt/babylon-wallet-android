@@ -10,12 +10,14 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 
-// interface for the callers (viewmodels or usecases) that need access to factor sources
-//
-// for example CreateAccountViewModel needs a public key to create an account therefore it must call:
-//
-// val publicKey = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(...)
-// createAccountUseCase(displayName = ""a name", publicKey = publicKey)
+/**
+ * Interface for the callers (ViewModels or UseCases) that need access to factor sources.
+ *
+ * for example CreateAccountViewModel needs a public key to create an account therefore it must call:
+ * val publicKey = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(...)
+ * createAccountUseCase(displayName = ""a name", publicKey = publicKey)
+ *
+ */
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
@@ -45,12 +47,16 @@ interface AccessFactorSourcesProxy {
     fun getTempMnemonicWithPassphrase(): MnemonicWithPassphrase?
 }
 
-// interface that is passed as parameter in the viewmodels of the bottom sheet dialogs
-// when a access-factor-source-bottom-sheet dialog pops up, then its viewmodel
-// 1. takes the input from the accessFactorSourcesIOHandler.getInput()
-// 2. returns the output to the caller (e.g. CreateAccountViewModel) by calling accessFactorSourcesIOHandler.setOutput(...)
-//
-// This interface is also implemented in the AccessFactorSourcesProxyImpl
+/**
+ * Interface that is passed as parameter in the ViewModels of the bottom sheet dialogs.
+ *
+ * when a access-factor-source-bottom-sheet dialog pops up, then its viewmodel:
+ * 1. takes the input from the accessFactorSourcesIOHandler.getInput()
+ * 2. returns the output to the caller (e.g. CreateAccountViewModel) by calling accessFactorSourcesIOHandler.setOutput(...)
+ *
+ * This interface is also implemented in the AccessFactorSourcesProxyImpl.
+ *
+ */
 interface AccessFactorSourcesIOHandler {
 
     fun getInput(): AccessFactorSourcesInput
@@ -60,11 +66,14 @@ interface AccessFactorSourcesIOHandler {
 
 // ----- Models for input/output ----- //
 
-// We must clearly define what is the minimum input and the minimum output.
-//
-// For example, when wallet needs to create an account,
-// we need to access factor sources in order to derive a public key,
-// therefore the public key is the output and not the whole account!
+/**
+ * Define in a clear manner with proper naming the minimum input and output.
+ *
+ * For example, when wallet needs to create an account,
+ * we need to access factor sources in order to derive a public key,
+ * therefore the public key is the (minimum) output and not the whole account!
+ *
+ */
 sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKey(
@@ -104,6 +113,14 @@ sealed interface AccessFactorSourcesInput {
     data object Init : AccessFactorSourcesInput
 }
 
+/**
+ * Define in a clear manner with proper naming the minimum input and output.
+ *
+ * For example, when wallet needs to create an account,
+ * we need to access factor sources in order to derive a public key,
+ * therefore the public key is the (minimum) output and not the whole account!
+ *
+ */
 sealed interface AccessFactorSourcesOutput {
 
     data class HDPublicKey(
