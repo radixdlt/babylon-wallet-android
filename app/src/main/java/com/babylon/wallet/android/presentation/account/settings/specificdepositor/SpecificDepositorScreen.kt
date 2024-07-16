@@ -51,6 +51,7 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.D
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -65,6 +66,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleRandom
 import kotlinx.collections.immutable.ImmutableList
@@ -407,16 +409,35 @@ private fun DepositorItem(
                 color = RadixTheme.colors.gray1
             )
 
+            val subtitle = when (depositor.resource) {
+                is Resource.FungibleResource -> remember(depositor.resource) {
+                    depositor.resource.address.formatted()
+                }
+                is Resource.NonFungibleResource -> {
+                    val globalId = depositor.depositorAddress as? ResourceOrNonFungible.NonFungible
+
+                    if (globalId != null) {
+                        remember(depositor) {
+                            depositor.resource.items.find { it.localId == globalId.value.nonFungibleLocalId }
+                        }?.displaySubtitle()
+                    } else {
+                        remember(depositor.resource) {
+                            depositor.resource.address.formatted()
+                        }
+                    }
+                }
+                null -> null
+            }
+
             Text(
-                text = remember(depositor.depositorAddress) {
-                    depositor.depositorAddress?.formatted().orEmpty()
-                },
+                text = subtitle.orEmpty(),
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
         }
+
         IconButton(onClick = {
             onDeleteDepositor(depositor)
         }) {
