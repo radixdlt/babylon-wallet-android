@@ -409,24 +409,8 @@ private fun DepositorItem(
                 color = RadixTheme.colors.gray1
             )
 
-            val subtitle = when (depositor.resource) {
-                is Resource.FungibleResource -> remember(depositor.resource) {
-                    depositor.resource.address.formatted()
-                }
-                is Resource.NonFungibleResource -> {
-                    val globalId = depositor.depositorAddress as? ResourceOrNonFungible.NonFungible
-
-                    if (globalId != null) {
-                        remember(depositor) {
-                            depositor.resource.items.find { it.localId == globalId.value.nonFungibleLocalId }
-                        }?.displaySubtitle()
-                    } else {
-                        remember(depositor.resource) {
-                            depositor.resource.address.formatted()
-                        }
-                    }
-                }
-                null -> null
+            val subtitle = remember(depositor.depositorAddress) {
+                depositor.depositorAddress?.formatted()
             }
 
             Text(
