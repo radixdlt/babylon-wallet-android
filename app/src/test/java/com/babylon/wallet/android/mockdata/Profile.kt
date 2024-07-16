@@ -7,6 +7,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -16,7 +17,7 @@ import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.sample
 
-
+@UsesSampleValues
 fun Profile.Companion.sampleWithLedgerAccount(): Profile = with(FactorSource.Ledger.sample()) {
     Profile.sample().let {
         it
