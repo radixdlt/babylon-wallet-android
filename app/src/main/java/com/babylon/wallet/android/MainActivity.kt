@@ -139,6 +139,11 @@ class MainActivity : FragmentActivity() {
         viewModel.onAppToForeground()
     }
 
+    override fun onPause() {
+        super.onPause()
+        viewModel.onAppToBackground()
+    }
+
     companion object {
         private const val splashExitAnimDurationMs = 300L
     }
