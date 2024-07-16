@@ -22,10 +22,10 @@ class DeleteWalletUseCase @Inject constructor(
         googleSignInManager.signOut()
         peerdroidClient.terminate()
         stateRepository.clearCachedState()
+        homeCardsRepository.walletReset()
         profileRepository.clearAllWalletData()
         keystoreManager.removeKeys().onFailure {
             Timber.d(it, "Failed to delete encryption keys")
         }
-        homeCardsRepository.clearCache()
     }
 }

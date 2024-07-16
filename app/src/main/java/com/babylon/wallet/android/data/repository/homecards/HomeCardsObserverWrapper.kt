@@ -10,8 +10,6 @@ import javax.inject.Inject
 interface HomeCardsObserverWrapper : HomeCardsObserver {
 
     fun observeHomeCards(): Flow<List<HomeCard>>
-
-    suspend fun clearCache()
 }
 
 class HomeCardsObserverWrapperImpl @Inject constructor() : HomeCardsObserverWrapper {
@@ -25,9 +23,5 @@ class HomeCardsObserverWrapperImpl @Inject constructor() : HomeCardsObserverWrap
 
     override fun handleCardsUpdate(cards: List<HomeCard>) {
         homeCardsFlow.tryEmit(cards)
-    }
-
-    override suspend fun clearCache() {
-        homeCardsFlow.emit(emptyList())
     }
 }
