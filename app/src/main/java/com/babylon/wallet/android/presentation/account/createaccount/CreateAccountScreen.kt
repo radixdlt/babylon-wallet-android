@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -38,6 +37,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -139,25 +139,18 @@ fun CreateAccountContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = BackIconType.Close,
+                backIconType = BackIconType.Back,
                 windowInsets = WindowInsets.statusBars
             )
         },
         bottomBar = {
-            RadixPrimaryButton(
+            BottomPrimaryButton(
+                modifier = Modifier.navigationBarsPadding(),
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 onClick = {
                     onAccountCreateClick(isWithLedger)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    )
-                    .navigationBarsPadding(),
-                enabled = buttonEnabled,
-                throttleClicks = true
+                enabled = buttonEnabled
             )
         },
         containerColor = RadixTheme.colors.defaultBackground,

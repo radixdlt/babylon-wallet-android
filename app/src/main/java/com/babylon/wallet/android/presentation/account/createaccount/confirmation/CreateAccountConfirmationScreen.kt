@@ -70,20 +70,27 @@ fun CreateAccountConfirmationContent(
             .navigationBarsPadding()
             .fillMaxSize()
             .padding(
-                horizontal = RadixTheme.dimensions.paddingLarge,
+                horizontal = RadixTheme.dimensions.paddingDefault,
                 vertical = RadixTheme.dimensions.paddingDefault
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.weight(0.2f))
-        AccountCardWithStack(Modifier.fillMaxWidth(0.8f), appearanceId, accountName, accountId)
-        Spacer(modifier = Modifier.weight(0.2f))
+        Spacer(modifier = Modifier.weight(2f))
+        AccountCardWithStack(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+            appearanceId = appearanceId,
+            accountName = accountName,
+            accountAddress = accountId
+        )
+        Spacer(modifier = Modifier.weight(1f))
         Text(
             text = stringResource(id = R.string.createEntity_completion_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
         val text = if (requestSource.isFirstTime()) {
             stringResource(id = R.string.createAccount_completion_subtitleFirst)
         } else {
@@ -91,10 +98,10 @@ fun CreateAccountConfirmationContent(
         }
         Text(
             text = text,
-            style = RadixTheme.typography.body2Regular,
+            style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
         Text(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
@@ -102,23 +109,22 @@ fun CreateAccountConfirmationContent(
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray1
         )
-        Spacer(Modifier.weight(0.6f))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
         RadixPrimaryButton(
             text = when (requestSource) {
-                CreateAccountRequestSource.AccountsList -> stringResource(
+                CreateAccountRequestSource.AccountsList,
+                CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
+                CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled -> stringResource(
                     id = R.string.createEntity_completion_goToDestination,
                     stringResource(id = R.string.createEntity_completion_destinationHome)
                 )
                 CreateAccountRequestSource.ChooseAccount -> stringResource(R.string.createEntity_completion_destinationChooseAccounts)
                 CreateAccountRequestSource.Gateways -> stringResource(R.string.createEntity_completion_destinationGateways)
-                CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
-                CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled -> stringResource(
-                    R.string.createEntity_completion_destinationHome
-                )
             },
             onClick = accountConfirmed,
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.weight(2f))
     }
     BackHandler(enabled = true) { }
 }
