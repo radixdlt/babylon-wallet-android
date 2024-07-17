@@ -396,25 +396,25 @@ private fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
     return when { // TODO crowdin
         days > 0 -> {
             if (days == 1L) {
-                "$days day or less"
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInDay)
             } else {
-                "$days days or less"
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInDays, days)
             }
         }
 
         hours > 0 -> {
             if (hours == 1L) {
-                "$hours hour or less"
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInHour)
             } else {
-                "$hours hours or less"
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInHours, hours)
             }
         }
 
         else -> {
             if (approximateClaimMinutes == 1L) {
-                "$approximateClaimMinutes minute or less"
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinute)
             } else {
-                "$approximateClaimMinutes minutes or less"
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, approximateClaimMinutes)
             }
         }
     }
