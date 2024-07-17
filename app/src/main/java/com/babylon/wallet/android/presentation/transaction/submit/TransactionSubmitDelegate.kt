@@ -40,6 +40,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 class TransactionSubmitDelegate @Inject constructor(
+    private val signTransactionUseCase: SignTransactionUseCase,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -56,11 +57,7 @@ class TransactionSubmitDelegate @Inject constructor(
 
     var oneOffEventHandler: OneOffEventHandler<Event>? = null
 
-    @Suppress("SwallowedException")
-    fun onSubmit(
-        signTransactionUseCase: SignTransactionUseCase,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ) {
+    fun onSubmit() {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
 
@@ -71,12 +68,11 @@ class TransactionSubmitDelegate @Inject constructor(
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
-                val failure =
-                    RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId, manifestNetworkId)
-                onDismiss(
-                    signTransactionUseCase = signTransactionUseCase,
-                    exception = failure
+                val failure = RadixWalletException.DappRequestException.WrongNetwork(
+                    currentNetworkId = currentNetworkId,
+                    requestNetworkId = manifestNetworkId
                 )
+                onDismiss(exception = failure)
                 return@launch
             }
 
@@ -85,23 +81,20 @@ class TransactionSubmitDelegate @Inject constructor(
                     val request = currentState.requestNonNull
                     request.copy(transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType))
                 } catch (exception: Exception) {
+                    logger.e(exception)
                     return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
                 }
 
                 signAndSubmit(
                     transactionRequest = requestWithGuarantees,
                     signTransactionUseCase = signTransactionUseCase,
-                    feePayerAddress = currentState.feePayers.selectedAccountAddress,
-                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+                    feePayerAddress = currentState.feePayers.selectedAccountAddress
                 )
             }
         }
     }
 
-    suspend fun onDismiss(
-        signTransactionUseCase: SignTransactionUseCase,
-        exception: RadixWalletException.DappRequestException
-    ): Result<Unit> = runCatching {
+    suspend fun onDismiss(exception: RadixWalletException.DappRequestException): Result<Unit> = runCatching {
         if (approvalJob == null) {
             val request = _state.value.requestNonNull
             if (!request.isInternal) {
@@ -113,36 +106,26 @@ class TransactionSubmitDelegate @Inject constructor(
             }
             oneOffEventHandler?.sendEvent(Event.Dismiss)
             incomingRequestRepository.requestHandled(request.interactionId)
-        } else if (_state.value.interactionState != null) {
-            approvalJob?.cancel()
-            approvalJob = null
-            signTransactionUseCase.cancelSigning()
-            _state.update {
-                it.copy(isSubmitting = false)
-            }
         } else {
             logger.d("Cannot dismiss transaction while is in progress")
         }
     }
 
-    @Suppress("LongMethod")
     private suspend fun signAndSubmit(
         transactionRequest: IncomingMessage.IncomingRequest.TransactionRequest,
         signTransactionUseCase: SignTransactionUseCase,
-        feePayerAddress: AccountAddress?,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
+        feePayerAddress: AccountAddress?
     ) {
         _state.update { it.copy(isSubmitting = true) }
 
-        signTransactionUseCase.sign(
+        signTransactionUseCase(
             request = SignTransactionUseCase.Request(
                 manifest = transactionRequest.transactionManifestData,
                 lockFee = _state.value.transactionFees.transactionFeeToLock,
                 tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
                 ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
                 feePayerAddress = feePayerAddress
-            ),
-            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+            )
         ).then { notarizationResult ->
             submitTransactionUseCase(notarizationResult = notarizationResult)
         }.onSuccess { notarization ->
@@ -176,39 +159,51 @@ class TransactionSubmitDelegate @Inject constructor(
             }
         }.onFailure { throwable ->
             throwable.asRadixWalletException()?.let { radixWalletException ->
-                if (radixWalletException.cause is ProfileException.SecureStorageAccess) {
-                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                }
-                when (radixWalletException) {
-                    is RadixWalletException.SignatureCancelled,
-                    is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
-                    is RadixWalletException.LedgerCommunicationException -> {
-                        logNonFatalException(radixWalletException)
-                        _state.update {
-                            it.copy(
-                                isSubmitting = false,
-                                error = TransactionErrorMessage(radixWalletException)
-                            )
-                        }
-                        approvalJob = null
-                        return
-                    }
+                handleSubmitFailure(transactionRequest, radixWalletException)
+            }
+        }
+    }
 
-                    else -> {
-                        reportFailure(radixWalletException)
-                        appEventBus.sendEvent(
-                            AppEvent.Status.Transaction.Fail(
-                                requestId = transactionRequest.interactionId,
-                                transactionId = "",
-                                isInternal = transactionRequest.isInternal,
-                                errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
-                                blockUntilComplete = transactionRequest.blockUntilComplete,
-                                walletErrorType = radixWalletException.toConnectorExtensionError(),
-                                isMobileConnect = transactionRequest.isMobileConnectRequest
-                            )
-                        )
-                    }
+    private suspend fun handleSubmitFailure(
+        transactionRequest: IncomingMessage.IncomingRequest.TransactionRequest,
+        radixWalletException: RadixWalletException
+    ) {
+        if (radixWalletException.cause is ProfileException.SecureStorageAccess) {
+            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+        }
+        when (radixWalletException) {
+            is RadixWalletException.DappRequestException.RejectedByUser -> {
+                _state.update { it.copy(isSubmitting = false) }
+                approvalJob = null
+                return
+            }
+            is RadixWalletException.SignatureCancelled,
+            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
+            is RadixWalletException.LedgerCommunicationException -> {
+                logNonFatalException(radixWalletException)
+                _state.update {
+                    it.copy(
+                        isSubmitting = false,
+                        error = TransactionErrorMessage(radixWalletException)
+                    )
                 }
+                approvalJob = null
+                return
+            }
+
+            else -> {
+                reportFailure(radixWalletException)
+                appEventBus.sendEvent(
+                    AppEvent.Status.Transaction.Fail(
+                        requestId = transactionRequest.interactionId,
+                        transactionId = "",
+                        isInternal = transactionRequest.isInternal,
+                        errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
+                        blockUntilComplete = transactionRequest.blockUntilComplete,
+                        walletErrorType = radixWalletException.toConnectorExtensionError(),
+                        isMobileConnect = transactionRequest.isMobileConnectRequest
+                    )
+                )
             }
         }
     }

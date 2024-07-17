@@ -31,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -54,8 +53,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
@@ -297,8 +294,6 @@ private fun AccountSettingsContent(
             }
             item {
                 if (faucetState is FaucetState.Available) {
-                    val context = LocalContext.current
-
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
                     RadixSecondaryButton(
@@ -310,13 +305,7 @@ private fun AccountSettingsContent(
                                 top = RadixTheme.dimensions.paddingDefault
                             ),
                         text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                        onClick = {
-                            context.biometricAuthenticate { result ->
-                                if (result == BiometricAuthenticationResult.Succeeded) {
-                                    onGetFreeXrdClick()
-                                }
-                            }
-                        },
+                        onClick = onGetFreeXrdClick,
                         isLoading = isXrdLoading,
                         enabled = !isXrdLoading && faucetState.isEnabled
                     )

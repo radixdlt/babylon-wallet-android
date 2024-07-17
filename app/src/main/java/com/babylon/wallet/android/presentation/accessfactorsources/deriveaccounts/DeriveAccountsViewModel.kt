@@ -5,9 +5,9 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToReDeriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.DeriveAccountsViewModel.DeriveAccountsUiState.ShowContentForFactorSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -58,7 +58,7 @@ import javax.inject.Inject
 class DeriveAccountsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val publicKeyProvider: PublicKeyProvider,
-    private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
+    private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
     private val ledgerMessenger: LedgerMessenger,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : StateViewModel<DeriveAccountsViewModel.DeriveAccountsUiState>(),
@@ -75,7 +75,7 @@ class DeriveAccountsViewModel @Inject constructor(
         reDerivePublicKeyJob = viewModelScope.launch {
             profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.flow.firstOrNull() else null
 
-            input = accessFactorSourcesUiProxy.getInput() as ToReDeriveAccounts
+            input = accessFactorSourcesIOHandler.getInput() as ToReDeriveAccounts
             nextDerivationPathOffset = input.nextDerivationPathOffset
             // if it is with given mnemonic it means it is an account recovery scan from onboarding,
             // thus profile is not initialized yet
@@ -93,7 +93,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     fun biometricAuthenticationCompleted() {
         viewModelScope.launch {
-            when (val input = accessFactorSourcesUiProxy.getInput()) {
+            when (val input = accessFactorSourcesIOHandler.getInput()) {
                 is ToReDeriveAccounts -> {
                     when (input) {
                         is ToReDeriveAccounts.WithGivenFactorSource -> {
@@ -103,7 +103,7 @@ class DeriveAccountsViewModel @Inject constructor(
                                 }
                                 .onFailure { e ->
                                     if (e is ProfileException) {
-                                        accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                                        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(e))
                                         sendEvent(Event.DerivingAccountsCompleted)
                                     }
                                 }
@@ -174,7 +174,7 @@ class DeriveAccountsViewModel @Inject constructor(
                 forNetworkId = networkId
             )
 
-            accessFactorSourcesUiProxy.setOutput(
+            accessFactorSourcesIOHandler.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
                     nextDerivationPathOffset = indicesToScan.last() + 1u
@@ -200,7 +200,7 @@ class DeriveAccountsViewModel @Inject constructor(
                     hdPublicKeys = derivationPathsWithPublicKeys,
                     forNetworkId = networkId
                 )
-                accessFactorSourcesUiProxy.setOutput(
+                accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
                         nextDerivationPathOffset = indicesToScan.last() + 1u

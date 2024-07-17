@@ -173,6 +173,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     }
 
     sealed class LedgerCommunicationException : RadixWalletException(), ConnectorExtensionThrowable {
+        data object FailedToConnect : LedgerCommunicationException()
         data object FailedToGetDeviceId : LedgerCommunicationException()
         data object FailedToDerivePublicKeys : LedgerCommunicationException()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
@@ -186,6 +187,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is FailedToSignTransaction -> DappWalletInteractionErrorType.INVALID_REQUEST
                 is FailedToDeriveAndDisplayAddress -> DappWalletInteractionErrorType.INVALID_REQUEST
                 FailedToSignAuthChallenge -> DappWalletInteractionErrorType.INVALID_REQUEST
+                FailedToConnect -> DappWalletInteractionErrorType.INVALID_REQUEST
             }
     }
 
@@ -233,6 +235,8 @@ fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(cont
             RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge -> {
                 R.string.ledgerHardwareDevices_verification_requestFailed
             }
+
+            RadixWalletException.LedgerCommunicationException.FailedToConnect -> R.string.common_somethingWentWrong
         }
     )
 }

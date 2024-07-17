@@ -9,25 +9,19 @@ import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetValidatorsUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
+import com.babylon.wallet.android.mockdata.sampleWithLedgerAccount
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
-import com.radixdlt.sargon.AppearanceId
-import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonEmptyMax64Bytes
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
-import com.radixdlt.sargon.NonFungibleLocalIdString
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -52,12 +46,8 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
-import rdx.works.core.sargon.addAccounts
-import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGatewayToNetworkId
-import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.isLedgerAccount
-import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.GetProfileUseCase
 import kotlin.random.Random
 
@@ -544,23 +534,6 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
             isVisitableInDashboard = true
         )
         every { savedStateHandle.get<String>(ARG_ACTIONABLE_ADDRESS) } returns Json.encodeToString<ActionableAddress>(actionableAddress)
-    }
-
-    private fun Profile.Companion.sampleWithLedgerAccount(): Profile = with(FactorSource.Ledger.sample()) {
-        Profile.sample().let {
-            it
-                .changeGatewayToNetworkId(NetworkId.MAINNET)
-                .copy(factorSources = it.factorSources.asIdentifiable().append(this).asList())
-        }.let {
-            val newAccount = Account.initBabylon(
-                networkId = NetworkId.MAINNET,
-                displayName = DisplayName("Ledger"),
-                hdPublicKey = HierarchicalDeterministicPublicKey.sample(),
-                factorSourceId = value.id.asGeneral(),
-                customAppearanceId = AppearanceId(0u)
-            )
-            it.addAccounts(listOf(newAccount), NetworkId.MAINNET)
-        }
     }
 
 }
