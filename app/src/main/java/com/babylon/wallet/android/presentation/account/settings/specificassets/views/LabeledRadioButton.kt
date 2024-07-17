@@ -1,9 +1,8 @@
 package com.babylon.wallet.android.presentation.account.settings.specificassets.views
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
@@ -13,23 +12,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun LabeledRadioButton(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     label: String,
     selected: Boolean,
     onSelected: () -> Unit
 ) {
-    Row(
+    Box(
         modifier = modifier.clickable {
             onSelected()
         },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
+        contentAlignment = Alignment.CenterStart
     ) {
         RadioButton(
             selected = selected,
@@ -41,7 +40,7 @@ fun LabeledRadioButton(
             onClick = onSelected,
         )
         Text(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.padding(start = 40.dp),
             text = label,
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
