@@ -393,28 +393,28 @@ fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
     val hours = TimeUnit.MINUTES.toHours(approximateClaimMinutes)
     val days = TimeUnit.MINUTES.toDays(approximateClaimMinutes)
 
-    return when {
+    return when { // TODO crowdin
         days > 0 -> {
             if (days == 1L) {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInDay, days)
+                "$days day or less"
             } else {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInDays, days)
+                "$days days or less"
             }
         }
 
         hours > 0 -> {
             if (hours == 1L) {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInHour, hours)
+                "$hours hour or less"
             } else {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInHours, hours)
+                "$hours hours or less"
             }
         }
 
         else -> {
             if (approximateClaimMinutes == 1L) {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinute, approximateClaimMinutes)
+                "$approximateClaimMinutes minute or less"
             } else {
-                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, approximateClaimMinutes)
+                "$approximateClaimMinutes minute or less"
             }
         }
     }
