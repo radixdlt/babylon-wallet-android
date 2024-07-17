@@ -51,7 +51,6 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.D
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
