@@ -122,11 +122,11 @@ private fun LoginPermissionContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(
                     top = padding.calculateTopPadding(),
-                    bottom = RadixTheme.dimensions.paddingXXLarge
-                )
-                .verticalScroll(rememberScrollState()),
+                    bottom = padding.calculateBottomPadding() + RadixTheme.dimensions.paddingXXLarge
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Thumbnail.DApp(
@@ -149,6 +149,7 @@ private fun LoginPermissionContent(
                     .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
             )
             Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RequestedPermissionsList(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
@@ -162,6 +163,7 @@ private fun LoginPermissionContent(
                 numberOfAccounts = numberOfAccounts
             )
             Spacer(modifier = Modifier.weight(2f))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
@@ -227,6 +229,23 @@ private fun PermissionRequestHeader(
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentPreview() {
+    RadixWalletPreviewTheme {
+        LoginPermissionContent(
+            onContinueClick = {},
+            dapp = DApp.sampleMainnet(),
+            onBackClick = {},
+            numberOfAccounts = 2,
+            isExactAccountsCount = false,
+            modifier = Modifier.fillMaxSize(),
+            isFirstScreenInFlow = false
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true, device = "id:Nexus S")
+@Composable
+fun LoginPermissionContentSmallDevicePreview() {
     RadixWalletPreviewTheme {
         LoginPermissionContent(
             onContinueClick = {},
