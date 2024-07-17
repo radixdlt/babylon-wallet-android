@@ -97,13 +97,17 @@ class SignTransactionUseCase @Inject constructor(
         override suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>> = runCatching {
             SignRequest.SignTransactionRequest(intent = intent)
         }.then { signRequest ->
-            accessFactorSourcesProxy.getSignatures(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signers = notaryAndSigners.signers,
-                    signRequest = signRequest
-                )
-            ).mapCatching { result ->
-                result.signaturesWithPublicKey
+            if (notaryAndSigners.notaryIsSignatory) {
+                Result.success(emptyList())
+            } else {
+                accessFactorSourcesProxy.getSignatures(
+                    accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                        signers = notaryAndSigners.signers,
+                        signRequest = signRequest
+                    )
+                ).mapCatching { result ->
+                    result.signaturesWithPublicKey
+                }
             }
         }
 
