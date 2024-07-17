@@ -49,6 +49,7 @@ import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
+import java.util.concurrent.TimeUnit
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -362,12 +363,13 @@ private fun ClaimNFTInfo(
                     )
 
                     Text(
-                        text = stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, claimState.approximateClaimMinutes),
+                        text = approximateClaimTimeText(approximateClaimMinutes = claimState.approximateClaimMinutes),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
                 }
             }
+
             is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> {
                 if (showClaimButton) {
                     RadixPrimaryButton(
@@ -380,7 +382,40 @@ private fun ClaimNFTInfo(
                     )
                 }
             }
+
             null -> {}
+        }
+    }
+}
+
+@Composable
+fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
+    val hours = TimeUnit.MINUTES.toHours(approximateClaimMinutes)
+    val days = TimeUnit.MINUTES.toDays(approximateClaimMinutes)
+
+    return when {
+        days > 0 -> {
+            if (days == 1L) {
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInDay, days)
+            } else {
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInDays, days)
+            }
+        }
+
+        hours > 0 -> {
+            if (hours == 1L) {
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInHour, hours)
+            } else {
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInHours, hours)
+            }
+        }
+
+        else -> {
+            if (approximateClaimMinutes == 1L) {
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinute, approximateClaimMinutes)
+            } else {
+                stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, approximateClaimMinutes)
+            }
         }
     }
 }
