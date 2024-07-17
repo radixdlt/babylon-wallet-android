@@ -138,10 +138,10 @@ class CreateAccountViewModel @Inject constructor(
 
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    entityKind = EntityKind.ACCOUNT,
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
-                    isBiometricsProvided = isFirstAccount,
-                    entityKind = EntityKind.ACCOUNT
+                    isBiometricsProvided = isFirstAccount
                 )
             ).onSuccess {
                 handleAccountCreation { nameOfAccount ->

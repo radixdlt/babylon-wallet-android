@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.wallet
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,7 +25,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -101,13 +102,12 @@ fun WalletScreen(
         onCardCloseClick = viewModel::onCardClose
     )
 
-    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
-    LaunchedEffect(lifecycleState) {
-        when (lifecycleState) {
-            Lifecycle.State.STARTED -> viewModel.onStart()
-            Lifecycle.State.RESUMED -> viewModel.processBufferedDeepLinkRequest()
-            else -> {}
-        }
+    LifecycleEventEffect(event = Lifecycle.Event.ON_START) {
+        viewModel.onStart()
+    }
+
+    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
+        viewModel.processBufferedDeepLinkRequest()
     }
 
     LaunchedEffect(Unit) {
@@ -224,7 +224,9 @@ private fun WalletContent(
         val pullRefreshState = rememberPullRefreshState(state.isRefreshing, onRefresh = onRefresh)
         Box(modifier = Modifier.padding(padding)) {
             WalletAccountList(
-                modifier = Modifier.pullRefresh(pullRefreshState),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState),
                 state = state,
                 onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onAccountClick = onAccountClick,
