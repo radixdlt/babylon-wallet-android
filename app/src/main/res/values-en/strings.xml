@@ -52,11 +52,15 @@
   <string name="assetDetails_moreInfo">For more info</string>
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
-  <string name="assetDetails_staking_unstaking">Ready to claim in about %d minutes or less.</string>
   <string name="assetDetails_staking_currentRedeemableValue">Current Redeemable Value</string>
   <string name="assetDetails_staking_readyToClaim">Ready to Claim</string>
   <string name="assetDetails_staking_readyToClaimIn">Ready to Claim in</string>
+  <string name="assetDetails_staking_readyToClaimInDays">%d days or less</string>
+  <string name="assetDetails_staking_readyToClaimInDay">1 day or less</string>
+  <string name="assetDetails_staking_readyToClaimInHours">%d hours or less</string>
+  <string name="assetDetails_staking_readyToClaimInHour">1 hour or less</string>
   <string name="assetDetails_staking_readyToClaimInMinutes">%d minutes or less</string>
+  <string name="assetDetails_staking_readyToClaimInMinute">1 minute or less</string>
   <string name="assetDetails_tags">Tags</string>
   <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
