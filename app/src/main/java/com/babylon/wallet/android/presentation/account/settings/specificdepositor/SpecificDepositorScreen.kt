@@ -196,22 +196,24 @@ fun AddDepositorSheet(
 
     Column(
         modifier = modifier
-            .verticalScroll(
-                rememberScrollState()
-            )
+            .verticalScroll(rememberScrollState())
             .imePadding(),
         verticalArrangement = Arrangement.Center,
     ) {
         BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                .padding(bottom = RadixTheme.dimensions.paddingSmall),
             onDismissRequest = onDismiss
         )
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingDefault,
+                    bottom = RadixTheme.dimensions.paddingDefault
+                )
         ) {
             Text(
                 modifier = Modifier
@@ -236,7 +238,7 @@ fun AddDepositorSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .focusRequester(inputFocusRequester),
                 onValueChanged = onResourceAddressChanged,
                 value = depositor.addressToDisplay,
