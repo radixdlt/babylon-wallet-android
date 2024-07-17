@@ -415,7 +415,7 @@ fun NavigationHost(
                     is SpendingAsset.NFT -> navController.nftAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
                         localId = spendingAsset.item.localId,
-                        underAccountAddress = fromAccount.address
+                        underAccountAddress = null // Marking as null hides claim button when the nft is a claim
                     )
                 }
             }
