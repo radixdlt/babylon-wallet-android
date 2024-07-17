@@ -389,7 +389,7 @@ private fun ClaimNFTInfo(
 }
 
 @Composable
-fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
+private fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
     val hours = TimeUnit.MINUTES.toHours(approximateClaimMinutes)
     val days = TimeUnit.MINUTES.toDays(approximateClaimMinutes)
 
@@ -414,7 +414,7 @@ fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
             if (approximateClaimMinutes == 1L) {
                 "$approximateClaimMinutes minute or less"
             } else {
-                "$approximateClaimMinutes minute or less"
+                "$approximateClaimMinutes minutes or less"
             }
         }
     }
