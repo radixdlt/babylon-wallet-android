@@ -267,7 +267,7 @@ private fun AccountSettingsContent(
                                     onSettingClick(settingsItem)
                                 }
                             },
-                            leadingIcon = settingsItem.getIcon(),
+                            leadingIconRes = settingsItem.getIcon(),
                             title = stringResource(id = settingsItem.titleRes()),
                             subtitle = when (settingsItem) {
                                 AccountSettingItem.AccountLabel -> {

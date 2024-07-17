@@ -67,7 +67,7 @@ fun DebugSettingsScreen(
                             else -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = debugSettingsItem.descriptionRes()),
-                                    leadingIcon = debugSettingsItem.getIcon(),
+                                    leadingIconRes = debugSettingsItem.getIcon(),
                                     onClick = {
                                         onItemClick(debugSettingsItem)
                                     }

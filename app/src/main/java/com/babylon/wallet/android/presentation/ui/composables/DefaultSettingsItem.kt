@@ -132,8 +132,8 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
-    warnings: ImmutableList<String>? = null,
-    @DrawableRes leadingIcon: Int? = null,
+    warningView: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = {
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
@@ -164,16 +164,35 @@ fun DefaultSettingsItem(
                 )
             }
         },
-        leadingIcon = leadingIcon?.let {
-            {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(id = it),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.gray1
-                )
-            }
-        },
+        leadingIcon = leadingIcon,
+        warningView = warningView,
+        trailingIcon = trailingIcon
+    )
+}
+
+@Composable
+fun DefaultSettingsItem(
+    modifier: Modifier = Modifier,
+    title: String,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    info: String? = null,
+    warnings: ImmutableList<String>? = null,
+    @DrawableRes leadingIconRes: Int? = null,
+    trailingIcon: @Composable (() -> Unit)? = {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = RadixTheme.colors.gray1
+        )
+    }
+) {
+    DefaultSettingsItem(
+        modifier = modifier,
+        title = title,
+        onClick = onClick,
+        subtitle = subtitle,
+        info = info,
         warningView = if (warnings.isNullOrEmpty()) {
             null
         } else {
@@ -190,6 +209,16 @@ fun DefaultSettingsItem(
                 }
             }
         },
+        leadingIcon = leadingIconRes?.let {
+            {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(id = it),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray1
+                )
+            }
+        },
         trailingIcon = trailingIcon
     )
 }
@@ -204,7 +233,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
             subtitle = "Subtitle",
             info = "Info",
             warnings = persistentListOf("Warning"),
-            leadingIcon = R.drawable.ic_gateways
+            leadingIconRes = R.drawable.ic_gateways
         )
     }
 }

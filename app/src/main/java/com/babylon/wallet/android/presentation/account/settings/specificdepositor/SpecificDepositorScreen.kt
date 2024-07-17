@@ -28,12 +28,15 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -53,6 +56,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -185,6 +189,11 @@ fun AddDepositorSheet(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
 ) {
+    val inputFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        inputFocusRequester.requestFocus()
+    }
+
     Column(
         modifier = modifier
             .verticalScroll(
@@ -215,7 +224,9 @@ fun AddDepositorSheet(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorSubtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
@@ -225,10 +236,12 @@ fun AddDepositorSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .focusRequester(inputFocusRequester),
                 onValueChanged = onResourceAddressChanged,
                 value = depositor.addressToDisplay,
                 hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
+                hintColor = RadixTheme.colors.gray2,
                 singleLine = true,
                 error = null
             )
@@ -274,20 +287,11 @@ private fun SpecificDepositorContent(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground)
-            ) {
-                RadixPrimaryButton(
-                    text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
-                    onClick = onShowAddAssetSheet,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    enabled = allowedDepositors != null
-                )
-            }
+            BottomPrimaryButton(
+                text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
+                onClick = onShowAddAssetSheet,
+                enabled = allowedDepositors != null
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -313,7 +317,10 @@ private fun SpecificDepositorContent(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingLarge,
+                                vertical = RadixTheme.dimensions.paddingDefault
+                            ),
                         text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyAllowAll),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1HighImportance,
@@ -326,13 +333,18 @@ private fun SpecificDepositorContent(
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                                .padding(
+                                    horizontal = RadixTheme.dimensions.paddingLarge,
+                                    vertical = RadixTheme.dimensions.paddingDefault
+                                ),
                             text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_allowInfo),
                             style = RadixTheme.typography.body1HighImportance,
                             color = RadixTheme.colors.gray2
                         )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                        DepositorList(depositors = allowedDepositors.toPersistentList(), onDeleteDepositor = onDeleteDepositor)
+                        DepositorList(
+                            depositors = allowedDepositors.toPersistentList(),
+                            onDeleteDepositor = onDeleteDepositor
+                        )
                     }
                 }
             }
@@ -357,14 +369,12 @@ private fun DepositorList(
                 depositor = depositor,
                 onDeleteDepositor = onDeleteDepositor
             )
-            if (lastItem != depositor) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray5
-                )
-            }
+            HorizontalDivider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = if (lastItem != depositor) RadixTheme.dimensions.paddingDefault else 0.dp),
+                color = RadixTheme.colors.gray4
+            )
         }
     }
 }
