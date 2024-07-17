@@ -89,7 +89,7 @@ fun ExpandableText(
     }
 
     ClickableText(
-        modifier = modifier.animateContentSize(),
+        modifier = modifier,
         text = resultText,
         onClick = { offset ->
             onClick(offset)
