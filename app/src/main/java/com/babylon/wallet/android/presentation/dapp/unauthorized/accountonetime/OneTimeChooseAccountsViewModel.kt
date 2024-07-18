@@ -24,14 +24,15 @@ import javax.inject.Inject
 class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase
-) : StateViewModel<OneTimeChooseAccountUiState>(), OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<OneTimeChooseAccountUiState>(),
+    OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = OneTimeChooseAccountsArgs(savedStateHandle)
 
     override fun initialState(): OneTimeChooseAccountUiState = OneTimeChooseAccountUiState(
         numberOfAccounts = args.numberOfAccounts,
         isExactAccountsCount = args.isExactAccountsCount,
-        isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
+        isSingleChoice = isSingleChoice()
     )
 
     init {
@@ -44,14 +45,15 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                     val currentAccountItemState = _state.value.availableAccountItems.find { accountItemUiModel ->
                         accountItemUiModel.address == account.address
                     }
-                    account.toUiModel(currentAccountItemState?.isSelected ?: false)
+                    account.toUiModel(currentAccountItemState?.isSelected ?: isSingleChoice())
                 }
 
                 _state.update {
                     it.copy(
                         availableAccountItems = accountItems.toPersistentList(),
                         showProgress = false,
-                        isContinueButtonEnabled = !it.isExactAccountsCount && it.numberOfAccounts == 0
+                        isContinueButtonEnabled = (!it.isExactAccountsCount && it.numberOfAccounts == 0) ||
+                            isSelectionCompleted(accountItems)
                     )
                 }
             }
@@ -85,23 +87,27 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                 )
             }
         }
-        val isContinueButtonEnabled = if (_state.value.isExactAccountsCount) {
-            _state
-                .value
-                .availableAccountItems
+        _state.update {
+            it.copy(isContinueButtonEnabled = isSelectionCompleted(state.value.availableAccountItems))
+        }
+    }
+
+    private fun isSingleChoice(): Boolean {
+        return args.numberOfAccounts == 1 && args.isExactAccountsCount
+    }
+
+    private fun isSelectionCompleted(availableAccountItems: List<AccountItemUiModel>): Boolean {
+        return if (args.isExactAccountsCount) {
+            availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
                 } == args.numberOfAccounts
         } else {
-            _state
-                .value
-                .availableAccountItems
+            availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
                 } >= args.numberOfAccounts
         }
-
-        _state.update { it.copy(isContinueButtonEnabled = isContinueButtonEnabled) }
     }
 }
 
