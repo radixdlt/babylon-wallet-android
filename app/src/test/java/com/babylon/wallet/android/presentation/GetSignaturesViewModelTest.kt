@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.domain.model.SignRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
@@ -37,7 +37,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import rdx.works.core.sargon.allAccountsOnCurrentNetwork
-import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.profile.domain.GetProfileUseCase
 
 private val sampleProfile = Profile.sampleWithLedgerAccount()

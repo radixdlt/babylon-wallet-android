@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.domain.model.SignRequest
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource

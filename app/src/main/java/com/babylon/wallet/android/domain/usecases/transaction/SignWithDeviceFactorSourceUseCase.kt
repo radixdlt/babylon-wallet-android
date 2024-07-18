@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
+import com.babylon.wallet.android.domain.model.SignRequest
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SignatureWithPublicKey
