@@ -14,7 +14,7 @@ fun Modifier.radixPlaceholder(
     shape: Shape? = null,
     color: Color? = null
 ) = composed {
-    placeholder(
+    this.placeholder(
         visible = visible,
         color = color ?: RadixTheme.colors.gray4,
         shape = shape ?: RadixTheme.shapes.roundedRectDefault,
