@@ -45,15 +45,14 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                     val currentAccountItemState = _state.value.availableAccountItems.find { accountItemUiModel ->
                         accountItemUiModel.address == account.address
                     }
-                    account.toUiModel(currentAccountItemState?.isSelected ?: isSingleChoice())
+                    val defaultSelected = isSingleChoice() && accounts.size == 1
+                    account.toUiModel(currentAccountItemState?.isSelected ?: defaultSelected)
                 }
 
                 _state.update {
                     it.copy(
                         availableAccountItems = accountItems.toPersistentList(),
-                        showProgress = false,
-                        isContinueButtonEnabled = (!it.isExactAccountsCount && it.numberOfAccounts == 0) ||
-                            isSelectionCompleted(accountItems)
+                        showProgress = false
                     )
                 }
             }
@@ -87,27 +86,10 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                 )
             }
         }
-        _state.update {
-            it.copy(isContinueButtonEnabled = isSelectionCompleted(state.value.availableAccountItems))
-        }
     }
 
     private fun isSingleChoice(): Boolean {
         return args.numberOfAccounts == 1 && args.isExactAccountsCount
-    }
-
-    private fun isSelectionCompleted(availableAccountItems: List<AccountItemUiModel>): Boolean {
-        return if (args.isExactAccountsCount) {
-            availableAccountItems
-                .count { accountItem ->
-                    accountItem.isSelected
-                } == args.numberOfAccounts
-        } else {
-            availableAccountItems
-                .count { accountItem ->
-                    accountItem.isSelected
-                } >= args.numberOfAccounts
-        }
     }
 }
 
@@ -118,12 +100,25 @@ sealed interface OneTimeChooseAccountsEvent : OneOffEvent {
 
 data class OneTimeChooseAccountUiState(
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
-    val isContinueButtonEnabled: Boolean = false,
     val showProgress: Boolean = true,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
     val isSingleChoice: Boolean = false,
 ) : UiState {
+
+    val isContinueButtonEnabled: Boolean
+        get() = if (isExactAccountsCount) {
+            availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } == numberOfAccounts
+        } else {
+            availableAccountItems.isEmpty() || availableAccountItems
+                .count { accountItem ->
+                    accountItem.isSelected
+                } >= numberOfAccounts
+        }
+
     fun selectedAccounts(): List<AccountItemUiModel> {
         return availableAccountItems
             .filter { accountItem ->
