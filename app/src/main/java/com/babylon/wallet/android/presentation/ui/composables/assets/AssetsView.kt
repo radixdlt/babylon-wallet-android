@@ -95,9 +95,11 @@ private fun LazyListScope.loadingAssets() {
 
 data class AssetsViewState(
     val selectedTab: AssetsTab,
-    val collapsedCollections: Map<String, Boolean>
+    val collapsedCollections: Map<String, Boolean>,
+    val fetchingNFTsPerCollection: Set<ResourceAddress>,
 ) {
     fun isCollapsed(collectionId: String) = collapsedCollections.getOrDefault(collectionId, true)
+
     fun onCollectionToggle(collectionId: String): AssetsViewState {
         val isCollapsed = isCollapsed(collectionId)
         val collapsedCollections = collapsedCollections.toMutableMap().apply {
@@ -106,11 +108,21 @@ data class AssetsViewState(
 
         return copy(collapsedCollections = collapsedCollections)
     }
+
+    fun nextPagePending(collectionId: ResourceAddress): AssetsViewState = copy(
+        fetchingNFTsPerCollection = fetchingNFTsPerCollection.toMutableSet().apply { add(collectionId) }
+    )
+
+    fun nextPageReceived(collectionId: ResourceAddress): AssetsViewState = copy(
+        fetchingNFTsPerCollection = fetchingNFTsPerCollection.toMutableSet().apply { remove(collectionId) }
+    )
+
     companion object {
         fun init(selectedTab: AssetsTab = AssetsTab.Tokens): AssetsViewState {
             return AssetsViewState(
                 selectedTab = selectedTab,
-                collapsedCollections = emptyMap()
+                collapsedCollections = emptyMap(),
+                fetchingNFTsPerCollection = emptySet()
             )
         }
     }
