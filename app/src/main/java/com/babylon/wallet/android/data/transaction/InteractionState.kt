@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.FactorSource
 
 @Deprecated("It will be removed once refactoring of access factor sources is complete.")
@@ -48,10 +47,10 @@ sealed class InteractionState(val factorSource: FactorSource) {
         Transaction;
 
         companion object {
-            fun from(request: SignRequest) = when (request) {
-                is SignRequest.SignAuthChallengeRequest -> AuthChallenge
-                is SignRequest.SignTransactionRequest -> Transaction
-            }
+//            fun from(request: SignRequest) = when (request) {
+//                is SignRequest.SignAuthChallengeRequest -> AuthChallenge
+//                is SignRequest.SignTransactionRequest -> Transaction
+//            }
         }
     }
 }
