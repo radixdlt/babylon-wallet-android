@@ -148,8 +148,7 @@ private fun LoginPermissionContent(
                 dappName = dapp?.name.orEmpty()
                     .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
             )
-            Spacer(modifier = Modifier.weight(1f))
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
             RequestedPermissionsList(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
@@ -162,16 +161,15 @@ private fun LoginPermissionContent(
                 isExactAccountsCount = isExactAccountsCount,
                 numberOfAccounts = numberOfAccounts
             )
-            Spacer(modifier = Modifier.weight(2f))
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             Text(
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
                 text = stringResource(R.string.dAppRequest_accountPermission_updateInSettingsExplanation),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.weight(6f))
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
