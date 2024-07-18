@@ -71,6 +71,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.qr.QRCodeGenerator
 
+// TODO rename status package to dialogs
 @Composable
 fun AddressDetailsDialog(
     viewModel: AddressDetailsDialogViewModel = hiltViewModel(),
