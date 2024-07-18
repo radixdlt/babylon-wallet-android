@@ -414,6 +414,17 @@ class WalletViewModel @Inject constructor(
                 } else {
                     accountWithAssets
                 }
+            },
+            prices = if (prices is PricesState.None) {
+                // In case that prices were never received, show an error
+                // in the prices state
+                PricesState.Enabled(
+                    pricesPerAccount = accountsWithAssets?.associate {
+                        it.account.address to null
+                    }.orEmpty()
+                )
+            } else {
+                prices
             }
         )
 
