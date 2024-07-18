@@ -393,7 +393,7 @@ private fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
     val hours = TimeUnit.MINUTES.toHours(approximateClaimMinutes)
     val days = TimeUnit.MINUTES.toDays(approximateClaimMinutes)
 
-    return when { // TODO crowdin
+    return when {
         days > 0 -> {
             if (days == 1L) {
                 stringResource(id = R.string.assetDetails_staking_readyToClaimInDay)
