@@ -67,7 +67,7 @@ fun LazyListScope.nftsTab(
             key = { index -> "${nonFungible.collection.address}$index" },
             contentType = { "nft" }
         ) { index ->
-            NFTItem(index, nonFungible.collection, action)
+            NFTItem(index, nonFungible.collection, state, action)
         }
     }
 }
@@ -76,6 +76,7 @@ fun LazyListScope.nftsTab(
 private fun NFTItem(
     index: Int,
     collection: Resource.NonFungibleResource,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     AssetCard(
@@ -94,9 +95,8 @@ private fun NFTItem(
                 action = action
             )
         } else {
-            LaunchedEffect(index, collection.items.size) {
-                // First shimmering item
-                if (index == collection.items.size) {
+            LaunchedEffect(collection.address, state.fetchingNFTsPerCollection) {
+                if (collection.address !in state.fetchingNFTsPerCollection) {
                     action.onNextNFtsPageRequest(collection)
                 }
             }
