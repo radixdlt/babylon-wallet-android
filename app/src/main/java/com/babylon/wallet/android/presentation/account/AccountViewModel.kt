@@ -403,7 +403,9 @@ class AccountViewModel @Inject constructor(
             data class Enabled(
                 val prices: Map<Asset, AssetPrice?>
             ) : PricesState {
-                override val totalPrice: FiatPrice = run {
+                override val totalPrice: FiatPrice? = run {
+                    if (prices.isEmpty()) return@run null
+
                     var total = 0.toDecimal192()
                     var currency = SupportedCurrency.USD
                     prices.values.mapNotNull { it }
@@ -443,7 +445,12 @@ class AccountViewModel @Inject constructor(
 
         fun onAssetsError(error: Throwable): State = copy(
             refreshType = RefreshType.None,
-            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error = error)
+            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error = error),
+            pricesState = if (pricesState is PricesState.None) {
+                PricesState.Enabled(emptyMap())
+            } else {
+                pricesState
+            }
         )
 
         fun onAssetsReceived(assets: Assets?): State = copy(
