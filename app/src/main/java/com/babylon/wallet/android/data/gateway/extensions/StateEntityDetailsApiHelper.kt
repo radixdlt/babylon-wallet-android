@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
@@ -96,6 +98,59 @@ suspend fun StateApi.fetchAccountGatewayDetails(
         items.addAll(page)
     }
     items
+}
+
+/**
+ * Fetches how much of the [resourceAddress] the [accounts] own.
+ *
+ * We first need to chunk the account addresses since the entity details request can only load
+ * up to [ENTITY_DETAILS_PAGE_LIMIT]. Then for each account we need to find details about the input [resourceAddress].
+ * Resources are paginated too. If the [resourceAddress] is not found in the first page and more pages exist, the method
+ * paginates until the resource is found. If the resource is found then attaches the amount to the account address and skips any more
+ * pages and resources for this account, continuing the loop for the next account. This method aims to make the minimum
+ * requests in order to be able to answer the input.
+ */
+suspend fun StateApi.fetchFungibleAmountPerAccount(
+    accounts: Set<AccountAddress>,
+    resourceAddress: ResourceAddress,
+    onStateVersion: Long?,
+): Result<Map<AccountAddress, Decimal192>> = runCatching {
+    val resourceAddressString = resourceAddress.string
+    val resourceAmountPerAccountAddress = mutableMapOf<AccountAddress, Decimal192>()
+
+    paginateDetails(
+        addresses = accounts.map { it.string }.toSet(),
+        stateVersion = onStateVersion
+    ) { chunkedAccounts ->
+        chunkedAccounts.items.forEach { accountItem ->
+            val resourceFound = accountItem.fungibleResources?.items?.find { it.resourceAddress == resourceAddressString }
+
+            if (resourceFound != null) {
+                resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] = resourceFound.amountDecimal
+                return@forEach
+            } else {
+                var nextCursor = accountItem.fungibleResources?.nextCursor
+                while (nextCursor != null) {
+                    val pageResponse = entityFungiblesPage(
+                        StateEntityFungiblesPageRequest(
+                            address = accountItem.address,
+                            cursor = nextCursor,
+                            aggregationLevel = ResourceAggregationLevel.Vault,
+                            atLedgerState = LedgerStateSelector(stateVersion = chunkedAccounts.ledgerState.stateVersion)
+                        )
+                    ).toResult().getOrNull()
+                    nextCursor = pageResponse?.nextCursor
+
+                    pageResponse?.items?.find { it.resourceAddress == resourceAddressString }?.let { resource ->
+                        resourceAmountPerAccountAddress[AccountAddress.init(accountItem.address)] = resource.amountDecimal
+                        return@forEach
+                    }
+                }
+            }
+        }
+    }
+
+    resourceAmountPerAccountAddress
 }
 
 @Suppress("LongMethod")
