@@ -177,7 +177,7 @@ class GatewaysViewModel @Inject constructor(
             val selected: Boolean
         ) {
 
-            val canBeDeleted: Boolean = !gateway.isWellKnown
+            val isWellKnown: Boolean = gateway.isWellKnown
             val url = gateway.string
         }
     }

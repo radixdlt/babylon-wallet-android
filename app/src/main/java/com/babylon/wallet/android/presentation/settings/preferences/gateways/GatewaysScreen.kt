@@ -381,7 +381,7 @@ private fun GatewayCard(
                 overflow = TextOverflow.Ellipsis
             )
         }
-        if (gateway.canBeDeleted) {
+        if (!gateway.isWellKnown) {
             IconButton(onClick = {
                 gatewayToDelete = gateway
             }) {
@@ -423,15 +423,19 @@ private fun GatewayCard(
 }
 
 @Composable
-private fun GatewaysViewModel.State.GatewayUiItem.name(): String = when (gateway.network.id) {
-    NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_title)
-    NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_title)
-    else -> url
+private fun GatewaysViewModel.State.GatewayUiItem.name(): String = if (isWellKnown) {
+    when (gateway.network.id) {
+        NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_title)
+        NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_title)
+        else -> url
+    }
+} else {
+    url
 }
 
 @Composable
 private fun GatewaysViewModel.State.GatewayUiItem.description(): String = when (gateway.network.id) {
-    NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_title)
+    NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_description)
     NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_description)
     else -> gateway.network.displayDescription
 }
