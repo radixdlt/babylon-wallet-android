@@ -156,7 +156,7 @@ class AccountsStateCache @Inject constructor(
 
             // For accounts that we know the vault address were the XRD is stored, we can query directly
             val vaultsPerAccount = accountsWithMaybeXRDVaults.filter { it.value != null }.map {
-                it.value!! to it.key
+                requireNotNull(it.value) to it.key
             }.toMap()
             api.fetchVaultDetails(vaultsPerAccount.keys).forEach { entry ->
                 val xrdAmount = entry.value

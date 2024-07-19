@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
@@ -112,7 +114,7 @@ suspend fun StateApi.fetchFungibleAmountPerAccount(
     accounts: Set<AccountAddress>,
     resourceAddress: ResourceAddress,
     onStateVersion: Long?,
-) = runCatching {
+): Result<Map<AccountAddress, Decimal192>> = runCatching {
     val resourceAddressString = resourceAddress.string
     val resourceAmountPerAccountAddress = mutableMapOf<AccountAddress, Decimal192>()
 
