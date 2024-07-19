@@ -291,6 +291,10 @@ private fun WalletAccountList(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             }
+        } else {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            }
         }
 
         itemsIndexed(state.accountUiItems) { _, accountWithAssets ->
