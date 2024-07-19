@@ -222,7 +222,7 @@ class WalletViewModel @Inject constructor(
 
                     if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
                         _state.update { it.disableFiatPrices() }
-                        break
+                        return@onEach
                     }
                 }
 
