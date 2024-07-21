@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
-import com.babylon.wallet.android.domain.RadixWalletException.*
+import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
+import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException
+import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.IntentSignature
 import com.radixdlt.sargon.IntentSignatures
