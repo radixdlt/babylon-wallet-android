@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
+import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
+import com.babylon.wallet.android.domain.RadixWalletException.*
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.IntentSignature
 import com.radixdlt.sargon.IntentSignatures
@@ -48,8 +48,13 @@ class NotariseTransactionUseCase @Inject constructor() {
         }
 
         val signatures = signatureGatherer.gatherSignatures(intent = intent).getOrElse { error ->
-            if (error is RadixWalletException.DappRequestException.RejectedByUser) {
-                return Result.failure(error)
+            if (error is DappRequestException.RejectedByUser ||
+                (
+                    error is LedgerCommunicationException.FailedToSignTransaction &&
+                        error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction
+                    )
+            ) {
+                return Result.failure(DappRequestException.RejectedByUser)
             } else {
                 return Result.failure(PrepareTransactionException.SignCompiledTransactionIntent(error))
             }
