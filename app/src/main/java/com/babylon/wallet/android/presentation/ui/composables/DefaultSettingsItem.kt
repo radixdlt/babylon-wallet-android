@@ -111,11 +111,11 @@ fun DefaultSettingsItem(
             }
         }
         warningView?.let { warning ->
-            val paddingLarge = RadixTheme.dimensions.paddingLarge
+            val padding = RadixTheme.dimensions.paddingMedium
             Box(
                 modifier = Modifier.constrainAs(warningRef) {
                     centerHorizontallyTo(contentRef, bias = 0f)
-                    top.linkTo(contentRef.bottom, paddingLarge)
+                    top.linkTo(contentRef.bottom, padding)
                     width = Dimension.fillToConstraints
                 }
             ) {
@@ -201,6 +201,7 @@ fun DefaultSettingsItem(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
+                    Spacer(modifier = Modifier)
                     warnings.forEach { warning ->
                         SecurityPromptLabel(
                             text = warning
