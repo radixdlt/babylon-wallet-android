@@ -10,7 +10,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -25,14 +24,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
 import com.radixdlt.sargon.IntentHash
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 
 @Composable
 internal fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionId: String,
+    transactionId: IntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -69,11 +69,8 @@ internal fun FailureDialogContent(
                 )
             }
 
-            val txId = remember(transactionId) {
-                runCatching { IntentHash.init(transactionId) }.getOrNull()
-            }
-            if (txId != null) {
-                TransactionId(transactionId = txId)
+            transactionId?.let {
+                TransactionId(transactionId = it)
             }
         }
         if (isMobileConnect) {
@@ -97,6 +94,7 @@ internal class FailureContentParameterProvider : PreviewParameterProvider<Boolea
 }
 
 @Composable
+@UsesSampleValues
 @Preview
 private fun SomethingWentWrongDialogPreview(@PreviewParameter(FailureContentParameterProvider::class) isMobileConnect: Boolean) {
     RadixWalletTheme {
@@ -104,7 +102,7 @@ private fun SomethingWentWrongDialogPreview(@PreviewParameter(FailureContentPara
             isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
-            transactionId = "rdx1239j329fj292r32e23"
+            transactionId = IntentHash.sample()
         )
     }
 }

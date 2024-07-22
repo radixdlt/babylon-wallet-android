@@ -17,6 +17,8 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -173,8 +175,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val walletErrorType: DappWalletInteractionErrorType?
             get() = (status as? TransactionStatus.Failed)?.walletErrorType
 
-        val transactionId: String
-            get() = status.transactionId
+        val transactionId: IntentHash?
+            get() = runCatching { IntentHash.init(status.transactionId) }.getOrNull()
     }
 
     sealed interface Event : OneOffEvent {

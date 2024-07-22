@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -23,12 +22,13 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
 import com.radixdlt.sargon.IntentHash
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 
 @Composable
 internal fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionId: String,
+    transactionId: IntentHash?,
     isMobileConnect: Boolean,
     isInternal: Boolean,
     dAppName: String?
@@ -72,11 +72,8 @@ internal fun SuccessContent(
                 textAlign = TextAlign.Center
             )
 
-            val txId = remember(transactionId) {
-                runCatching { IntentHash.init(transactionId) }.getOrNull()
-            }
-            if (txId != null) {
-                TransactionId(txId)
+            transactionId?.let {
+                TransactionId(transactionId)
             }
         }
         if (isMobileConnect) {
@@ -100,13 +97,14 @@ internal class SuccessContentParameterProvider : PreviewParameterProvider<Boolea
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 private fun SuccessBottomDialogPreview(
     @PreviewParameter(SuccessContentParameterProvider::class) isMobileConnect: Boolean
 ) {
     RadixWalletTheme {
         SuccessContent(
-            transactionId = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s",
+            transactionId = IntentHash.sample(),
             isMobileConnect = isMobileConnect,
             isInternal = false,
             dAppName = null
