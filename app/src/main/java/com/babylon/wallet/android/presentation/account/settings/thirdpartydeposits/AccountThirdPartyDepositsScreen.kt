@@ -213,46 +213,47 @@ private fun AccountThirdPartyDepositsContent(
                     .height(RadixTheme.dimensions.paddingXLarge)
                     .background(RadixTheme.colors.gray4)
             )
-            DepositOptionItem(
-                onClick = onAssetSpecificRulesClick,
-                title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecific),
-                subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecificSubtitle),
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray1
-                    )
-                }
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.white)
+            ) {
+                DepositOptionItem(
+                    onClick = onAssetSpecificRulesClick,
+                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecific),
+                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecificSubtitle),
+                    trailingContent = {
+                        Icon(
+                            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.gray1
+                        )
+                    }
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
+                )
+                DepositOptionItem(
+                    onClick = onSpecificDepositorsClick,
+                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
+                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsSubtitle),
+                    trailingContent = {
+                        Icon(
+                            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.gray1
+                        )
+                    }
+                )
+            }
             HorizontalDivider(
                 color = RadixTheme.colors.gray4
             )
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(RadixTheme.dimensions.paddingXLarge)
-                    .background(RadixTheme.colors.gray4)
-            )
-            DepositOptionItem(
-                onClick = onSpecificDepositorsClick,
-                title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
-                subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsSubtitle),
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray1
-                    )
-                }
-            )
-            HorizontalDivider(
-                color = RadixTheme.colors.gray4
-            )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(RadixTheme.dimensions.paddingLarge)
+                    .height(RadixTheme.dimensions.paddingXXXXLarge)
                     .background(RadixTheme.colors.gray4)
             )
         }
