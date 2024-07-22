@@ -435,7 +435,10 @@ class WalletViewModel @Inject constructor(
             )
         )
 
-        fun disableFiatPrices() = copy(prices = PricesState.Disabled)
+        fun disableFiatPrices() = copy(
+            prices = PricesState.Disabled,
+            refreshType = RefreshType.None,
+        )
 
         enum class AccountTag {
             LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
