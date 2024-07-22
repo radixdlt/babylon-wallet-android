@@ -116,7 +116,8 @@ fun TransactionStatusDialog(
                     SuccessContent(
                         transactionAddress = state.transactionId,
                         isMobileConnect = state.status.isMobileConnect,
-                        dAppName = state.status.dAppName
+                        dAppName = state.status.dAppName,
+                        isInternal = state.status.isInternal
                     )
                 }
 
@@ -146,6 +147,7 @@ private fun SuccessContent(
     modifier: Modifier = Modifier,
     transactionAddress: String,
     isMobileConnect: Boolean,
+    isInternal: Boolean,
     dAppName: String?
 ) {
     Column {
@@ -170,10 +172,15 @@ private fun SuccessContent(
                 textAlign = TextAlign.Center
             )
 
-            val subtitle = if (dAppName != null) {
-                stringResource(id = R.string.dAppRequest_completion_subtitle, dAppName)
-            } else {
+            val subtitle = if (isInternal) {
                 stringResource(R.string.transactionStatus_success_text)
+            } else {
+                stringResource(
+                    id = R.string.dAppRequest_completion_subtitle,
+                    dAppName.orEmpty().ifEmpty {
+                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                    }
+                )
             }
             Text(
                 text = subtitle,
@@ -259,6 +266,7 @@ private fun SuccessBottomDialogPreview(
         SuccessContent(
             transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s",
             isMobileConnect = isMobileConnect,
+            isInternal = false,
             dAppName = null
         )
     }
