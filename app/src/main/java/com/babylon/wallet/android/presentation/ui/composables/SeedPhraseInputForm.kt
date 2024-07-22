@@ -53,7 +53,7 @@ fun SeedPhraseInputForm(
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    showAdvancedMode: Boolean = true
+    showAdvancedMode: Boolean = false
 ) {
     val focusManager = LocalFocusManager.current
     Column(

@@ -32,7 +32,7 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -209,7 +209,7 @@ private fun SingleWord(label: String, word: String, modifier: Modifier = Modifie
 @Preview(showBackground = true)
 @Composable
 fun RevealSeedPhrasePreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         RevealSeedPhraseContent(
             onBackClick = {},
             mnemonicWords = persistentListOf(

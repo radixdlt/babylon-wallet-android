@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -28,17 +27,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -56,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
-import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
@@ -86,17 +80,14 @@ fun AddSingleMnemonicScreen(
             }
         },
         onWordTyped = viewModel::onWordChanged,
-        onWordSelected = viewModel::onWordSelected,
         onPassphraseChanged = viewModel::onPassphraseChanged,
         onMessageShown = viewModel::onMessageShown,
         onSeedPhraseLengthChanged = viewModel::onSeedPhraseLengthChanged
     )
 
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                AddSingleMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 AddSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
                 AddSingleMnemonicViewModel.Event.MainSeedPhraseCompleted -> onStartRecovery()
             }
@@ -111,7 +102,6 @@ private fun AddSingleMnemonicsContent(
     onBackClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
-    onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit,
     onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit
@@ -140,39 +130,22 @@ private fun AddSingleMnemonicsContent(
             )
         },
         bottomBar = {
-            if (isSuggestionsVisible(state = state)) {
-                SeedPhraseSuggestions(
-                    wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                val isEnabled = remember(state.seedPhraseState) {
+                    state.seedPhraseState.isValidSeedPhrase()
+                }
+                RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .imePadding()
-                        .height(56.dp)
-                        .padding(RadixTheme.dimensions.paddingSmall),
-                    onCandidateClick = { candidate ->
-                        focusedWordIndex?.let {
-                            onWordSelected(it, candidate)
-                            focusedWordIndex = null
-                        }
-                    }
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(R.string.common_continue),
+                    enabled = isEnabled,
+                    onClick = onSubmitClick
                 )
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    val isEnabled = remember(state.seedPhraseState) {
-                        state.seedPhraseState.isValidSeedPhrase()
-                    }
-                    RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(R.string.common_continue),
-                        enabled = isEnabled,
-                        onClick = onSubmitClick
-                    )
-                }
             }
         },
         snackbarHost = {
@@ -327,16 +300,6 @@ private fun SeedPhraseView(
     }
 }
 
-@Composable
-private fun isSuggestionsVisible(state: AddSingleMnemonicViewModel.State): Boolean {
-    val density = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val keyboardVisible by remember {
-        derivedStateOf { imeInsets.getBottom(density) > 0 }
-    }
-    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && keyboardVisible
-}
-
 @Preview
 @Composable
 fun AddMnemonicsSeedPhraseContent() {
@@ -346,7 +309,6 @@ fun AddMnemonicsSeedPhraseContent() {
             onBackClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
-            onWordSelected = { _, _ -> },
             onPassphraseChanged = {},
             onMessageShown = {},
             onSeedPhraseLengthChanged = {}

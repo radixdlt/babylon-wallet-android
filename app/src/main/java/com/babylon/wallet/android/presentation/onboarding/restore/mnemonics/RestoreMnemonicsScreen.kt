@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -29,34 +28,30 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
-import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
@@ -66,6 +61,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.sargon.sample
 
 @Composable
@@ -100,16 +96,13 @@ fun RestoreMnemonicsScreen(
         },
         onWordTyped = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        onMessageShown = viewModel::onMessageShown,
-        onWordSelected = viewModel::onWordSelected
+        onMessageShown = viewModel::onMessageShown
     )
 
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
                 is RestoreMnemonicsViewModel.Event.FinishRestoration -> onDismiss(it.isMovingToMain)
-                is RestoreMnemonicsViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 is RestoreMnemonicsViewModel.Event.CloseApp -> onCloseApp()
             }
         }
@@ -126,7 +119,6 @@ private fun RestoreMnemonicsContent(
     onSkipMainSeedPhraseClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
-    onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -154,79 +146,60 @@ private fun RestoreMnemonicsContent(
             )
         },
         bottomBar = {
-            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities &&
-                isSuggestionsVisible(state = state)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
             ) {
-                SeedPhraseSuggestions(
-                    wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
+                if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
+                    if (!state.isMainBabylonSeedPhrase) {
+                        RadixTextButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingMedium,
+                                    start = RadixTheme.dimensions.paddingLarge,
+                                    end = RadixTheme.dimensions.paddingLarge,
+                                ),
+                            text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                            onClick = onSkipSeedPhraseClick
+                        )
+                    }
+
+                    if (state.isMainBabylonSeedPhrase) {
+                        RadixTextButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingMedium,
+                                    start = RadixTheme.dimensions.paddingLarge,
+                                    end = RadixTheme.dimensions.paddingLarge,
+                                ),
+                            text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
+                            onClick = onSkipMainSeedPhraseClick
+                        )
+                    }
+                }
+
+                val isSeedPhraseValid = remember(state.seedPhraseState) {
+                    state.seedPhraseState.isValidSeedPhrase()
+                }
+                RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .imePadding()
-                        .height(56.dp)
-                        .padding(RadixTheme.dimensions.paddingSmall),
-                    onCandidateClick = { candidate ->
-                        focusedWordIndex?.let {
-                            onWordSelected(it, candidate)
-                            focusedWordIndex = null
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(
+                        when (state.screenType) {
+                            RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
+                            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
+                            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
+                                R.string.recoverSeedPhrase_skipMainSeedPhraseButton
                         }
-                    }
+                    ),
+                    enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase || isSeedPhraseValid,
+                    isLoading = state.isRestoring,
+                    onClick = onSubmitClick
                 )
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
-                        if (!state.isMainBabylonSeedPhrase) {
-                            RadixTextButton(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingMedium,
-                                        start = RadixTheme.dimensions.paddingLarge,
-                                        end = RadixTheme.dimensions.paddingLarge,
-                                    ),
-                                text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-                                onClick = onSkipSeedPhraseClick
-                            )
-                        }
-
-                        if (state.isMainBabylonSeedPhrase) {
-                            RadixTextButton(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingMedium,
-                                        start = RadixTheme.dimensions.paddingLarge,
-                                        end = RadixTheme.dimensions.paddingLarge,
-                                    ),
-                                text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
-                                onClick = onSkipMainSeedPhraseClick
-                            )
-                        }
-                    }
-
-                    val isSeedPhraseValid = remember(state.seedPhraseState) {
-                        state.seedPhraseState.isValidSeedPhrase()
-                    }
-                    RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(
-                            when (state.screenType) {
-                                RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
-                                RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
-                                RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
-                                    R.string.recoverSeedPhrase_skipMainSeedPhraseButton
-                            }
-                        ),
-                        enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase || isSeedPhraseValid,
-                        isLoading = state.isRestoring,
-                        onClick = onSubmitClick
-                    )
-                }
             }
         },
         snackbarHost = {
@@ -415,10 +388,12 @@ private fun SeedPhraseView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             text = stringResource(R.string.enterSeedPhrase_warning),
+            textStyle = RadixTheme.typography.body1Header,
             contentColor = RadixTheme.colors.orange1,
-            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+            spacing = RadixTheme.dimensions.paddingDefault
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
 
         SeedPhraseInputForm(
             modifier = Modifier
@@ -443,16 +418,6 @@ private fun SeedPhraseView(
     }
 }
 
-@Composable
-private fun isSuggestionsVisible(state: RestoreMnemonicsViewModel.State): Boolean {
-    val density = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val keyboardVisible by remember {
-        derivedStateOf { imeInsets.getBottom(density) > 0 }
-    }
-    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && keyboardVisible
-}
-
 @UsesSampleValues
 @Preview
 @Composable
@@ -474,8 +439,7 @@ fun RestoreMnemonicsIntroContent() {
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
-            onMessageShown = {},
-            onWordSelected = { _, _ -> }
+            onMessageShown = {}
         )
     }
 }
@@ -493,7 +457,15 @@ fun RestoreMnemonicsSeedPhraseContent() {
                         factorSource = FactorSource.Device.sample()
                     )
                 ),
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase,
+                seedPhraseState = SeedPhraseInputDelegate.State(
+                    seedPhraseWords = (0 until 24).map {
+                        SeedPhraseWord(
+                            index = it,
+                            lastWord = it == 23
+                        )
+                    }.toPersistentList()
+                )
             ),
             onBackClick = {},
             onSkipSeedPhraseClick = {},
@@ -501,8 +473,7 @@ fun RestoreMnemonicsSeedPhraseContent() {
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
-            onMessageShown = {},
-            onWordSelected = { _, _ -> }
+            onMessageShown = {}
         )
     }
 }
@@ -528,8 +499,7 @@ fun RestoreMnemonicsNoMainSeedPhraseContent() {
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
-            onMessageShown = {},
-            onWordSelected = { _, _ -> }
+            onMessageShown = {}
         )
     }
 }
