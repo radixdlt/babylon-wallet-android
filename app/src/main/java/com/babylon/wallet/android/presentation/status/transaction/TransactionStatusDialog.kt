@@ -115,7 +115,8 @@ fun TransactionStatusDialog(
                     // Need to send the correct transaction id
                     SuccessContent(
                         transactionAddress = state.transactionId,
-                        isMobileConnect = state.status.isMobileConnect
+                        isMobileConnect = state.status.isMobileConnect,
+                        dAppName = state.status.dAppName
                     )
                 }
 
@@ -144,7 +145,8 @@ fun TransactionStatusDialog(
 private fun SuccessContent(
     modifier: Modifier = Modifier,
     transactionAddress: String,
-    isMobileConnect: Boolean
+    isMobileConnect: Boolean,
+    dAppName: String?
 ) {
     Column {
         Column(
@@ -168,8 +170,13 @@ private fun SuccessContent(
                 textAlign = TextAlign.Center
             )
 
+            val subtitle = if (dAppName != null) {
+                stringResource(id = R.string.dAppRequest_completion_subtitle, dAppName)
+            } else {
+                stringResource(R.string.transactionStatus_success_text)
+            }
             Text(
-                text = stringResource(R.string.transactionStatus_success_text),
+                text = subtitle,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -182,14 +189,15 @@ private fun SuccessContent(
                 ) {
                     Text(
                         text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                        style = RadixTheme.typography.body1Regular,
+                        style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.gray1
                     )
                     Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
                     ActionableAddressView(
                         transactionId = IntentHash.init(transactionAddress),
-                        textStyle = RadixTheme.typography.body1Regular,
-                        textColor = RadixTheme.colors.gray1
+                        textStyle = RadixTheme.typography.body1HighImportance,
+                        textColor = RadixTheme.colors.blue1,
+                        iconColor = RadixTheme.colors.gray2
                     )
                 }
             }
@@ -250,7 +258,8 @@ private fun SuccessBottomDialogPreview(
     RadixWalletTheme {
         SuccessContent(
             transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s",
-            isMobileConnect = isMobileConnect
+            isMobileConnect = isMobileConnect,
+            dAppName = null
         )
     }
 }
