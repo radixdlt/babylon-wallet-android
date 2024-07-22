@@ -48,12 +48,12 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -273,71 +273,73 @@ private fun AddGatewaySheet(
         inputFocusRequester.requestFocus()
     }
 
-    Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        IconButton(
-            modifier = Modifier.padding(
-                start = RadixTheme.dimensions.paddingXSmall,
-                top = RadixTheme.dimensions.paddingMedium
-            ),
-            onClick = onClose
+    Box {
+        Column(
+            modifier = modifier
+                .padding(bottom = 88.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Center,
         ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = null
+            IconButton(
+                modifier = Modifier.padding(
+                    start = RadixTheme.dimensions.paddingXSmall,
+                    top = RadixTheme.dimensions.paddingMedium
+                ),
+                onClick = onClose
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = null
+                )
+            }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.gateways_addNewGateway_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
             )
-        }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.gateways_addNewGateway_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.gateways_addNewGateway_subtitle),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-        RadixTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                .focusRequester(inputFocusRequester),
-            onValueChanged = onNewUrlChanged,
-            value = newUrl,
-            hint = stringResource(id = R.string.gateways_addNewGateway_textFieldPlaceholder),
-            singleLine = true,
-            error = when (gatewayAddFailure) {
-                GatewaysViewModel.State.GatewayAddFailure.AlreadyExist -> stringResource(
-                    id = R.string.gateways_addNewGateway_errorDuplicateURL
-                )
-                GatewaysViewModel.State.GatewayAddFailure.ErrorWhileAdding -> stringResource(
-                    id = R.string.gateways_addNewGateway_establishingConnectionErrorMessage
-                )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.gateways_addNewGateway_subtitle),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            RadixTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                    .focusRequester(inputFocusRequester),
+                onValueChanged = onNewUrlChanged,
+                value = newUrl,
+                hint = stringResource(id = R.string.gateways_addNewGateway_textFieldPlaceholder),
+                singleLine = true,
+                error = when (gatewayAddFailure) {
+                    GatewaysViewModel.State.GatewayAddFailure.AlreadyExist -> stringResource(
+                        id = R.string.gateways_addNewGateway_errorDuplicateURL
+                    )
+                    GatewaysViewModel.State.GatewayAddFailure.ErrorWhileAdding -> stringResource(
+                        id = R.string.gateways_addNewGateway_establishingConnectionErrorMessage
+                    )
 
-                else -> null
-            },
-            hintColor = RadixTheme.colors.gray2
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
-        RadixPrimaryButton(
-            text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
-            onClick = {
-                onAddGatewayClick()
-            },
+                    else -> null
+                },
+                hintColor = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        }
+
+        BottomPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
-                .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
+                .align(Alignment.BottomCenter),
+            text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
+            onClick = onAddGatewayClick,
             enabled = newUrlValid,
             isLoading = addingGateway
         )
