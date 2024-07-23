@@ -12,6 +12,7 @@ import com.radixdlt.sargon.AccountAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,7 +40,8 @@ class DAppDetailsDialogViewModel @Inject constructor(
                 _state.update { it.copy(isWebsiteValidating = true) }
                 getValidatedDAppWebsiteUseCase(dAppWithResources.dApp).onSuccess { website ->
                     _state.update { it.copy(validatedWebsite = website, isWebsiteValidating = false) }
-                }.onFailure {
+                }.onFailure { error ->
+                    Timber.w(error)
                     _state.update { it.copy(isWebsiteValidating = false) }
                 }
             }
