@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.account.createaccount.confirmation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,10 +23,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.radixdlt.sargon.AppearanceId
 
 @Composable
@@ -63,68 +65,79 @@ fun CreateAccountConfirmationContent(
     appearanceId: AppearanceId,
     requestSource: CreateAccountRequestSource,
 ) {
-    Column(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .fillMaxSize()
-            .padding(
-                horizontal = RadixTheme.dimensions.paddingDefault,
-                vertical = RadixTheme.dimensions.paddingDefault
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.weight(2f))
-        AccountCardWithStack(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            appearanceId = appearanceId,
-            accountName = accountName,
-            accountAddress = accountId
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = stringResource(id = R.string.createEntity_completion_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-        val text = if (requestSource.isFirstTime()) {
-            stringResource(id = R.string.createAccount_completion_subtitleFirst)
-        } else {
-            stringResource(id = R.string.createAccount_completion_subtitleNotFirst)
-        }
-        Text(
-            text = text,
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
-            textAlign = TextAlign.Center,
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
-        RadixPrimaryButton(
-            text = when (requestSource) {
-                CreateAccountRequestSource.AccountsList,
-                CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
-                CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled -> stringResource(
+    Scaffold(
+        modifier = modifier.statusBarsPadding(),
+        bottomBar = {
+            BottomPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                text = stringResource(
                     id = R.string.createEntity_completion_goToDestination,
-                    stringResource(id = R.string.createEntity_completion_destinationHome)
+                    when (requestSource) {
+                        CreateAccountRequestSource.AccountsList,
+                        CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
+                        CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled -> stringResource(
+                            id = R.string.createEntity_completion_destinationHome
+                        )
+                        CreateAccountRequestSource.ChooseAccount -> stringResource(
+                            R.string.createEntity_completion_destinationChooseAccounts
+                        )
+                        CreateAccountRequestSource.Gateways -> stringResource(id = R.string.createEntity_completion_destinationGateways)
+                    }
+                ),
+                onClick = accountConfirmed
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingDefault
                 )
-                CreateAccountRequestSource.ChooseAccount -> stringResource(R.string.createEntity_completion_destinationChooseAccounts)
-                CreateAccountRequestSource.Gateways -> stringResource(R.string.createEntity_completion_destinationGateways)
-            },
-            onClick = accountConfirmed,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.weight(2f))
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.weight(2f))
+            AccountCardWithStack(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                appearanceId = appearanceId,
+                accountName = accountName,
+                accountAddress = accountId
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(id = R.string.createEntity_completion_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            val text = if (requestSource.isFirstTime()) {
+                stringResource(id = R.string.createAccount_completion_subtitleFirst)
+            } else {
+                stringResource(id = R.string.createAccount_completion_subtitleNotFirst)
+            }
+            Text(
+                text = text,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1
+            )
+            Spacer(modifier = Modifier.weight(3f))
+        }
     }
     BackHandler(enabled = true) { }
 }
