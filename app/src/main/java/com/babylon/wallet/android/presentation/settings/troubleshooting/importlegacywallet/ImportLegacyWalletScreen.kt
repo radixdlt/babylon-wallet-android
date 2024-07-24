@@ -184,7 +184,7 @@ fun ImportLegacyWalletScreen(
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
-        importAllAccounts = viewModel::importAllAccounts,
+        importAllAccounts = viewModel::onImportAllAccounts,
         onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onErrorDismiss,
         seedPhraseInputState = state.seedPhraseInputState
     )
