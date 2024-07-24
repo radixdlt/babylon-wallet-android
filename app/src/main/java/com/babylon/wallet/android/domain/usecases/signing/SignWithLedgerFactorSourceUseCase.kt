@@ -121,9 +121,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     // of the requested signer and of the signature response
     private fun mapEntitiesWithSignatures(
         signersWithPublicKeys: Map<ProfileEntity, HierarchicalDeterministicPublicKey>,
-        responseWithSignaturesOfSigners: List<IncomingMessage.LedgerResponse.SignatureOfSigner>
-    ): Map<ProfileEntity, IncomingMessage.LedgerResponse.SignatureOfSigner> {
-        val entitiesWithSignatures = mutableMapOf<ProfileEntity, IncomingMessage.LedgerResponse.SignatureOfSigner>()
+        responseWithSignaturesOfSigners: List<SignatureOfSigner>
+    ): Map<ProfileEntity, SignatureOfSigner> {
+        val entitiesWithSignatures = mutableMapOf<ProfileEntity, SignatureOfSigner>()
 
         signersWithPublicKeys.forEach { (profileEntity, hdPublicKey) ->
             val signatureOfSigner = responseWithSignaturesOfSigners.find {
