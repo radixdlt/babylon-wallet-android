@@ -58,5 +58,5 @@ fun Resource.NonFungibleResource.displaySubtitle(): String = amount.toString()
 
 @Composable
 fun Resource.NonFungibleResource.Item.displaySubtitle(): String = remember(this) {
-    name?.takeIf { it.isNotBlank() } ?: localId.formatted()
+    nameTruncated?.takeIf { it.isNotBlank() } ?: localId.formatted()
 }
