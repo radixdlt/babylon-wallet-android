@@ -58,14 +58,14 @@ class ROLAClient @Inject constructor(
     suspend fun signAuthChallenge(
         signRequest: SignRequest.SignAuthChallengeRequest,
         entities: List<ProfileEntity>
-    ): Result<List<SignatureWithPublicKey>> {
+    ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
         return accessFactorSourcesProxy.getSignatures(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signRequest = signRequest,
                 signers = entities
             )
         ).mapCatching { output ->
-            output.signaturesWithPublicKey
+            output.signersWithSignatures
         }
     }
 }
