@@ -129,8 +129,8 @@ class GetSignaturesViewModel @Inject constructor(
 
             null -> {
                 accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.Signatures(
-                        signaturesWithPublicKey = state.value.signaturesWithPublicKeys
+                    output = AccessFactorSourcesOutput.EntitiesWithSignatures(
+                        signersWithSignatures = state.value.entitiesWithSignatures
                     )
                 )
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
@@ -176,21 +176,28 @@ class GetSignaturesViewModel @Inject constructor(
         collectSignaturesWithDeviceJob?.cancel()
         collectSignaturesWithDeviceJob = viewModelScope.launch {
             val request = state.value.nextRequest as? DeviceRequest ?: return@launch
-            val signatures = request.deviceFactorSources.flatMap { (deviceFactorSource, entities) ->
+            val entitiesWithSignaturesForAllDeviceFactorSources = mutableListOf<EntityWithSignature>()
+
+            request.deviceFactorSources.forEach { (deviceFactorSource, entities) ->
                 signWithDeviceFactorSourceUseCase(
                     deviceFactorSource = deviceFactorSource,
                     signers = entities,
                     signRequest = input.signRequest
-                ).onFailure {
+                ).onSuccess { entitiesWithSignaturesList ->
+                    entitiesWithSignaturesForAllDeviceFactorSources.addAll(entitiesWithSignaturesList)
+                }.onFailure {
                     // return the output (error) and end the signing process
                     accessFactorSourcesIOHandler.setOutput(
                         AccessFactorSourcesOutput.Failure(error = it)
                     )
                     sendEvent(event = Event.AccessingFactorSourceCompleted)
-                }.getOrNull() ?: return@launch
+                    return@launch
+                }
             }
 
-            _state.update { state -> state.addSignatures(signatures) }
+            _state.update { state ->
+                state.addEntitiesWithSignatures(entitiesWithSignaturesList = entitiesWithSignaturesForAllDeviceFactorSources)
+            }
             proceedToNextSigners()
         }
     }
@@ -206,8 +213,10 @@ class GetSignaturesViewModel @Inject constructor(
                 ledgerFactorSource = ledgerFactorSource,
                 signers = signers,
                 signRequest = signRequest
-            ).onSuccess { signatures ->
-                _state.update { state -> state.addSignatures(signatures) }
+            ).onSuccess { entitiesWithSignaturesList ->
+                _state.update { state ->
+                    state.addEntitiesWithSignatures(entitiesWithSignaturesList = entitiesWithSignaturesList)
+                }
                 proceedToNextSigners()
             }.onFailure { error ->
                 if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
@@ -269,8 +278,8 @@ class GetSignaturesViewModel @Inject constructor(
     data class State(
         private val signersRequests: List<FactorSourceRequest> = emptyList(),
         private val selectedSignersIndex: Int = -1,
-        // list to keep signatures from all factor sources. This will be returned as output once all signers are done.
-        val signaturesWithPublicKeys: List<SignatureWithPublicKey> = emptyList(),
+        // map to keep signature for each entity (signer). This will be returned as output once all signers are done.
+        val entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None,
     ) : UiState {
 
@@ -291,8 +300,14 @@ class GetSignaturesViewModel @Inject constructor(
 
         fun proceedToNextSigners() = copy(selectedSignersIndex = selectedSignersIndex + 1)
 
-        fun addSignatures(signatures: List<SignatureWithPublicKey>) = copy(
-            signaturesWithPublicKeys = signaturesWithPublicKeys.toMutableList().apply { addAll(signatures) }
+        fun addEntitiesWithSignatures(entitiesWithSignaturesList: List<EntityWithSignature>) = copy(
+            entitiesWithSignatures = entitiesWithSignatures.toMutableMap().apply {
+                putAll(
+                    entitiesWithSignaturesList.associate { entityWithSignature ->
+                        entityWithSignature.entity to entityWithSignature.signatureWithPublicKey
+                    }
+                )
+            }
         )
 
         sealed interface ShowContentForFactorSource {
