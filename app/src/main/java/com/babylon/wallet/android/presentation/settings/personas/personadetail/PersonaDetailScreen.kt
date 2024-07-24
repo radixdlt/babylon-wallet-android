@@ -133,7 +133,7 @@ private fun PersonaDetailContent(
                     actions = {
                         if (state.persona != null) {
                             UnderlineTextButton(
-                                text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
+                                text = stringResource(id = R.string.authorizedDapps_personaDetails_edit),
                                 onClick = { onEditPersona(state.persona.address) }
                             )
                         }
@@ -284,6 +284,7 @@ private fun PersonaDetailList(
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
                 onClick = onHidePersona
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
     }
 }
