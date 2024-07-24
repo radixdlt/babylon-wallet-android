@@ -16,18 +16,30 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 
 fun LazyListScope.tokensTab(
     assetsViewData: AssetsViewData,
@@ -167,6 +179,46 @@ private fun TokenItem(
             )
         } else {
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+        }
+    }
+}
+
+@Preview
+@UsesSampleValues
+@Composable
+private fun TokenCardPreview() {
+    RadixWalletTheme {
+        AssetCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            TokenItem(
+                token = Token(
+                    Resource.FungibleResource(
+                        ResourceAddress.sampleMainnet(),
+                        Decimal192.sample(),
+                        metadata = listOf(
+                            Metadata.Primitive(
+                                ExplicitMetadataKey.NAME.key,
+                                value = "XRD",
+                                valueType = MetadataType.String
+                            )
+                        )
+                    )
+                ),
+                fiatPrice = FiatPrice(Decimal192.sample(), SupportedCurrency.USD),
+                isLoadingBalance = false,
+                action = AssetsViewAction.Click(
+                    onFungibleClick = {},
+                    onNonFungibleItemClick = { _, _ -> },
+                    onLSUClick = {},
+                    onPoolUnitClick = {},
+                    onNextNFtsPageRequest = {},
+                    onClaimClick = {},
+                    onStakesRequest = {},
+                    onCollectionClick = {},
+                    onTabClick = {}
+                )
+            )
         }
     }
 }

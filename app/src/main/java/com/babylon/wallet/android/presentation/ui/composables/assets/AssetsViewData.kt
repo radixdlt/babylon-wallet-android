@@ -5,6 +5,7 @@ import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeSummary
@@ -33,6 +34,17 @@ data class AssetsViewData(
 
     val isValidatorWithStakesEmpty: Boolean
         get() = validatorsWithStakes.isEmpty()
+
+    val oneXrdPrice: FiatPrice?
+        get() = (
+            prices?.values?.find {
+                (it as? AssetPrice.LSUPrice)?.oneXrdPrice != null
+            } as? AssetPrice.LSUPrice
+            )?.oneXrdPrice ?: (
+            prices?.values?.find {
+                (it as? AssetPrice.StakeClaimPrice)?.oneXrdPrice != null
+            } as? AssetPrice.StakeClaimPrice
+            )?.oneXrdPrice
 
     val stakeSummary: StakeSummary? by lazy {
         if (epoch == null || validatorsWithStakes.any { !it.isDetailsAvailable }) return@lazy null
