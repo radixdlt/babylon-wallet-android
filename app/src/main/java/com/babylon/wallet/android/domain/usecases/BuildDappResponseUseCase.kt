@@ -4,7 +4,9 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.model.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DappWalletInteractionPersona

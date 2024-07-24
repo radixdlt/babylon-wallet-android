@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.domain.model.signing
 
 import com.babylon.wallet.android.utils.removeTrailingSlash
 import com.radixdlt.sargon.BagOfBytes

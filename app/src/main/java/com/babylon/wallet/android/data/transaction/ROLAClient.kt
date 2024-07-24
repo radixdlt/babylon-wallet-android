@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.domain.model.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput

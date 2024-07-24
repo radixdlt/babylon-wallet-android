@@ -3,9 +3,10 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.SignRequest
-import com.babylon.wallet.android.domain.usecases.transaction.SignWithDeviceFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SignWithLedgerFactorSourceUseCase
+import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.mockdata.sampleWithLedgerAccount
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler

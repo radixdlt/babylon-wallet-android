@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.transaction
 
 import android.util.Log
-import com.babylon.wallet.android.domain.model.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
