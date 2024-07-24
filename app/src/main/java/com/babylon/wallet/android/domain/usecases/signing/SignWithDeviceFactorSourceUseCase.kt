@@ -25,8 +25,8 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
         deviceFactorSource: FactorSource.Device,
         signers: List<ProfileEntity>,
         signRequest: SignRequest
-    ): Result<List<SignatureWithPublicKey>> {
-        val result = mutableListOf<SignatureWithPublicKey>()
+    ): Result<List<EntityWithSignature>> {
+        val entitiesWithSignaturesList = mutableListOf<EntityWithSignature>()
 
         signers.forEach { signer ->
             when (val securityState = signer.securityState) {
@@ -45,7 +45,12 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                             hash = signRequest.hashedDataToSign,
                             path = factorInstance.publicKey.derivationPath
                         )
-                        result.add(signatureWithPublicKey)
+                        entitiesWithSignaturesList.add(
+                            EntityWithSignature(
+                                entity = signer,
+                                signatureWithPublicKey = signatureWithPublicKey
+                            )
+                        )
                         val profile = profileRepository.profile.first()
                         profileRepository.saveProfile(profile.updateLastUsed(deviceFactorSource.id))
                     }.onFailure {
@@ -54,6 +59,6 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                 }
             }
         }
-        return Result.success(result)
+        return Result.success(entitiesWithSignaturesList)
     }
 }

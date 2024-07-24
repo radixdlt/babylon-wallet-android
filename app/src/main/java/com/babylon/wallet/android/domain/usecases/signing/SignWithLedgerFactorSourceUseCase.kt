@@ -24,9 +24,9 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
-typealias SignatureProviderResult = Result<List<IncomingMessage.LedgerResponse.SignatureOfSigner>>
+typealias SignatureProviderResult = Result<Map<ProfileEntity, SignatureOfSigner>>
 typealias SignatureProviderCall = suspend (
-    List<HierarchicalDeterministicPublicKey>,
+    Map<ProfileEntity, HierarchicalDeterministicPublicKey>,
     LedgerDeviceModel
 ) -> SignatureProviderResult
 
@@ -34,17 +34,19 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private val ledgerMessenger: LedgerMessenger,
     private val profileRepository: ProfileRepository
 ) {
+
     suspend operator fun invoke(
         ledgerFactorSource: FactorSource.Ledger,
         signers: List<ProfileEntity>,
         signRequest: SignRequest
-    ): Result<List<SignatureWithPublicKey>> {
+    ): Result<List<EntityWithSignature>> {
         return when (signRequest) {
             is SignRequest.SignAuthChallengeRequest -> signAuth(
                 signers = signers,
                 ledgerFactorSource = ledgerFactorSource,
                 request = signRequest
             )
+
             is SignRequest.SignTransactionRequest -> signTransaction(
                 signers = signers,
                 ledgerFactorSource = ledgerFactorSource,
@@ -57,15 +59,15 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         signers: List<ProfileEntity>,
         ledgerFactorSource: FactorSource.Ledger,
         request: SignRequest.SignTransactionRequest,
-    ): Result<List<SignatureWithPublicKey>> {
+    ): Result<List<EntityWithSignature>> {
         return signCommon(
             signers = signers,
             ledgerFactorSource = ledgerFactorSource,
             signRequest = request
-        ) { hdPublicKeys, deviceModel ->
+        ) { signersWithPublicKeys, deviceModel ->
             ledgerMessenger.signTransactionRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
-                hdPublicKeys = hdPublicKeys,
+                hdPublicKeys = signersWithPublicKeys.values.toList(),
                 compiledTransactionIntent = request.dataToSign.hex,
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice(
                     name = ledgerFactorSource.value.hint.name,
@@ -73,7 +75,10 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                     id = ledgerFactorSource.value.id.body.hex
                 )
             ).mapCatching { response ->
-                response.signatures
+                mapEntitiesWithSignatures(
+                    signersWithPublicKeys = signersWithPublicKeys,
+                    responseWithSignaturesOfSigners = response.signatures
+                )
             }
         }
     }
@@ -82,12 +87,12 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         signers: List<ProfileEntity>,
         ledgerFactorSource: FactorSource.Ledger,
         request: SignRequest.SignAuthChallengeRequest
-    ): Result<List<SignatureWithPublicKey>> {
+    ): Result<List<EntityWithSignature>> {
         return signCommon(
             signers = signers,
             ledgerFactorSource = ledgerFactorSource,
             signRequest = request
-        ) { hdPublicKeys, deviceModel ->
+        ) { signersWithPublicKeys, deviceModel ->
             ledgerMessenger.signChallengeRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice(
@@ -95,14 +100,38 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                     model = deviceModel,
                     id = ledgerFactorSource.value.id.body.hex
                 ),
-                hdPublicKeys = hdPublicKeys,
+                hdPublicKeys = signersWithPublicKeys.values.toList(),
                 challengeHex = request.challengeHex,
                 origin = request.origin,
                 dAppDefinitionAddress = request.dAppDefinitionAddress
             ).mapCatching { response ->
-                response.signatures
+                mapEntitiesWithSignatures(
+                    signersWithPublicKeys = signersWithPublicKeys,
+                    responseWithSignaturesOfSigners = response.signatures
+                )
             }
         }
+    }
+
+    // Returns a map of entity as key and its signature as value.
+    // This method iterates through the requested signers and from the responseWithSignaturesOfSigners,
+    // it tries to find their signatures by comparing the publicKeyHex
+    // of the requested signer and of the signature response
+    private fun mapEntitiesWithSignatures(
+        signersWithPublicKeys: Map<ProfileEntity, HierarchicalDeterministicPublicKey>,
+        responseWithSignaturesOfSigners: List<IncomingMessage.LedgerResponse.SignatureOfSigner>
+    ): Map<ProfileEntity, IncomingMessage.LedgerResponse.SignatureOfSigner> {
+        val entitiesWithSignatures = mutableMapOf<ProfileEntity, IncomingMessage.LedgerResponse.SignatureOfSigner>()
+
+        signersWithPublicKeys.forEach { (profileEntity, hdPublicKey) ->
+            val signatureOfSigner = responseWithSignaturesOfSigners.find {
+                it.derivedPublicKey.publicKeyHex == hdPublicKey.publicKey.hex
+            }
+            if (signatureOfSigner != null) {
+                entitiesWithSignatures[profileEntity] = signatureOfSigner
+            }
+        }
+        return entitiesWithSignatures
     }
 
     private suspend fun signCommon(
@@ -110,31 +139,41 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         ledgerFactorSource: FactorSource.Ledger,
         signRequest: SignRequest,
         signaturesProvider: SignatureProviderCall
-    ): Result<List<SignatureWithPublicKey>> {
-        val hdPublicKey = signers.map { signer ->
+    ): Result<List<EntityWithSignature>> {
+        val signersWithPublicKeys = signers.associateWith { signer ->
             val securityState = signer.securityState
             when (signRequest) {
                 is SignRequest.SignAuthChallengeRequest ->
                     securityState.authenticationSigningFactorInstance
                         ?: securityState.transactionSigningFactorInstance
+
                 is SignRequest.SignTransactionRequest -> securityState.transactionSigningFactorInstance
             }.publicKey
         }
+
         val deviceModel = LedgerDeviceModel.from(ledgerFactorSource.value.hint.model)
-        return signaturesProvider(hdPublicKey, deviceModel).map { signatures ->
-            signatures.map { signatureOfSigner ->
+        return signaturesProvider(signersWithPublicKeys, deviceModel).map { entitiesWithSignaturesResponse ->
+            entitiesWithSignaturesResponse.map { (entity, signatureOfSigner) ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     IncomingMessage.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
-                        SignatureWithPublicKey.Ed25519(
+                        val signatureWithPublicKey = SignatureWithPublicKey.Ed25519(
                             signature = Signature.Ed25519.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
                             publicKey = PublicKey.Ed25519.init(signatureOfSigner.derivedPublicKey.publicKeyHex).v1
+                        )
+                        EntityWithSignature(
+                            entity = entity,
+                            signatureWithPublicKey = signatureWithPublicKey
                         )
                     }
 
                     IncomingMessage.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
-                        SignatureWithPublicKey.Secp256k1(
+                        val signatureWithPublicKey = SignatureWithPublicKey.Secp256k1(
                             signature = Signature.Secp256k1.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
                             publicKey = PublicKey.Secp256k1.init(signatureOfSigner.derivedPublicKey.publicKeyHex).v1
+                        )
+                        EntityWithSignature(
+                            entity = entity,
+                            signatureWithPublicKey = signatureWithPublicKey
                         )
                     }
                 }
