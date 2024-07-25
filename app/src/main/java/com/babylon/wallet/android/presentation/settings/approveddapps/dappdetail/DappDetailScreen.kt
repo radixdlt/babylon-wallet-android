@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -39,7 +37,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,6 +63,7 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringF
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
@@ -432,23 +430,11 @@ private fun DappDetails(
             }
             item {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    onClick = onDeleteDapp,
-                    shape = RadixTheme.shapes.roundedRectSmall,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = RadixTheme.colors.red1
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
-                        style = RadixTheme.typography.body1Header,
-                        maxLines = 1,
-                    )
-                }
+                WarningButton(
+                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
+                    onClick = onDeleteDapp
+                )
             }
         }
     }
@@ -689,25 +675,11 @@ private fun PersonaDetailList(
             item {
                 HorizontalDivider(color = RadixTheme.colors.gray5)
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    onClick = {
-                        onDisconnectPersona(persona.persona)
-                    },
-                    shape = RadixTheme.shapes.roundedRectSmall,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = RadixTheme.colors.red1
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.authorizedDapps_personaDetails_removeAuthorization),
-                        style = RadixTheme.typography.body1Header,
-                        maxLines = 1,
-                    )
-                }
+                WarningButton(
+                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.authorizedDapps_personaDetails_removeAuthorization),
+                    onClick = { onDisconnectPersona(persona.persona) },
+                )
             }
         }
     }
