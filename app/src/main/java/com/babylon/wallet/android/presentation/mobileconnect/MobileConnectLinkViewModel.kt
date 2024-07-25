@@ -3,10 +3,8 @@ package com.babylon.wallet.android.presentation.mobileconnect
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -17,23 +15,21 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
-import rdx.works.core.then
-import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
 class MobileConnectLinkViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val wellKnownDAppDefinitionRepository: WellKnownDAppDefinitionRepository,
-    private val getProfileUseCase: GetProfileUseCase,
     private val getDAppsUseCase: GetDAppsUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
@@ -59,29 +55,12 @@ class MobileConnectLinkViewModel @Inject constructor(
             } else {
                 request = requestToHandle
             }
-            val developerMode = getProfileUseCase().appPreferences.security.isDeveloperModeEnabled
-            _state.update {
-                it.copy(
-                    isLoading = true,
-                    isInDevMode = developerMode
-                )
-            }
-            val remoteId = request.remoteEntityId as? RadixMobileConnectRemoteSession ?: return@launch
-            wellKnownDAppDefinitionRepository.getWellKnownDappDefinitions(
-                origin = remoteId.originVerificationUrl.toString()
-            ).then { dAppDefinitions ->
-                val dAppDefinition = dAppDefinitions.dAppDefinitions.firstOrNull()
-                if (dAppDefinition != null) {
-                    getDAppsUseCase(definitionAddress = dAppDefinition.dAppDefinitionAddress, needMostRecentData = false)
-                } else {
-                    Result.failure(NullPointerException("No dApp definition found")) // TODO check that
-                }
+            runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.mapCatching { address ->
+                getDAppsUseCase(definitionAddress = address, needMostRecentData = false).getOrThrow()
             }.onSuccess { dApp ->
                 _state.update { it.copy(dApp = dApp, isLoading = false) }
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(uiMessage = if (!developerMode) UiMessage.ErrorMessage(error) else null, isLoading = false)
-                }
+            }.onFailure {
+                _state.update { state -> state.copy(isLoading = false) }
             }
         }
     }
@@ -132,7 +111,6 @@ class MobileConnectLinkViewModel @Inject constructor(
         val dApp: DApp? = null,
         val uiMessage: UiMessage? = null,
         val isLoading: Boolean = true,
-        val isVerifying: Boolean = false,
-        val isInDevMode: Boolean = false
+        val isVerifying: Boolean = false
     ) : UiState
 }
