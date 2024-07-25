@@ -260,10 +260,10 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                     signers = oneTimeAccounts.map { it.asProfileEntity() },
                     signRequest = signRequest
                 )
-            ).onSuccess {
-                entitiesWithSignatures = it.signersWithSignatures
-            }.onFailure {
-                return Result.failure(it)
+            ).onSuccess { result ->
+                entitiesWithSignatures = result.signersWithSignatures
+            }.onFailure { error ->
+                return Result.failure(error)
             }
         }
 
