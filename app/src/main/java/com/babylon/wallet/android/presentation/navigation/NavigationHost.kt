@@ -42,6 +42,7 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
+import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
@@ -106,13 +107,21 @@ fun NavigationHost(
             exitTransition = { ExitTransition.None }
         ) {
             OnboardingScreen(
-                onCreateNewWalletClick = {
-                    navController.navigateToEulaScreen()
+                onCreateNewWalletClick = { isWithCloudBackupEnabled ->
+                    if (isWithCloudBackupEnabled) {
+                        navController.createAccountScreen()
+                    } else {
+                        navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet, popToRoute = ROUTE_EULA_SCREEN)
+                    }
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
                     navController.connectCloudBackupScreen(connectMode = ConnectMode.RestoreWallet)
-                }
+                },
+                onShowEula = {
+                    navController.navigateToEulaScreen()
+                },
+                viewModel = hiltViewModel()
             )
         }
         eulaScreen(
@@ -121,9 +130,9 @@ fun NavigationHost(
             },
             onAccepted = { isWithCloudBackupEnabled ->
                 if (isWithCloudBackupEnabled) {
-                    navController.createAccountScreen()
+                    navController.createAccountScreen(popToRoute = ROUTE_EULA_SCREEN)
                 } else {
-                    navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet)
+                    navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet, popToRoute = ROUTE_EULA_SCREEN)
                 }
             }
         )
@@ -412,6 +421,7 @@ fun NavigationHost(
                         amounts = spendingAsset.resource.ownedAmount?.let { mapOf(spendingAsset.resourceAddress to it) }.orEmpty(),
                         underAccountAddress = fromAccount.address
                     )
+
                     is SpendingAsset.NFT -> navController.nftAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
                         localId = spendingAsset.item.localId,

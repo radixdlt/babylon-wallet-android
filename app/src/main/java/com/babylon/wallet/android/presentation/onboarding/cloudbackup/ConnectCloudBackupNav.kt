@@ -20,8 +20,15 @@ internal class ConnectCloudBackupArgs private constructor(
     )
 }
 
-fun NavController.connectCloudBackupScreen(connectMode: ConnectCloudBackupViewModel.ConnectMode) {
-    navigate("route_connect_cloud_backup_screen/${connectMode.name}")
+fun NavController.connectCloudBackupScreen(connectMode: ConnectCloudBackupViewModel.ConnectMode, popToRoute: String? = null) {
+    navigate("route_connect_cloud_backup_screen/${connectMode.name}") {
+        launchSingleTop = true
+        popToRoute?.let { route ->
+            popUpTo(route) {
+                inclusive = true
+            }
+        }
+    }
 }
 
 fun NavGraphBuilder.connectCloudBackupScreen(

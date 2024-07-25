@@ -47,7 +47,8 @@ internal class CreateAccountNavArgs(
 fun NavController.createAccountScreen(
     requestSource: CreateAccountRequestSource = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
     networkUrl: Url? = null,
-    networkIdToSwitch: NetworkId? = null
+    networkIdToSwitch: NetworkId? = null,
+    popToRoute: String? = null
 ) {
     var route = "create_account_route?$ARG_REQUEST_SOURCE=$requestSource"
     networkUrl?.let {
@@ -64,6 +65,11 @@ fun NavController.createAccountScreen(
             // do not navigate back to ConnectCloudBackupScreen but to EulaScreen
             popUpTo(route = ROUTE_EULA_SCREEN) {
                 inclusive = false
+            }
+        }
+        popToRoute?.let { route ->
+            popUpTo(route) {
+                inclusive = true
             }
         }
     }
