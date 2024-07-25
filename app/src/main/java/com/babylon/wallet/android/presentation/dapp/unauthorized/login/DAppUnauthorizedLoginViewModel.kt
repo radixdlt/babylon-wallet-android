@@ -136,6 +136,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleRequestError(exception: Throwable) {
+        if (exception is RadixWalletException.DappRequestException.RejectedByUser) {
+            return // user rejected/cancelled signing, do not close the request screen
+        }
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
             when (exception.cause) {
@@ -227,7 +230,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun sendRequestResponse() {
+    private fun sendRequestResponse() {
         viewModelScope.launch {
             buildUnauthorizedDappResponseUseCase(
                 request = request,
