@@ -3,13 +3,14 @@ package rdx.works.profile.factorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.sargon.olympia
 import rdx.works.core.sargon.supportsOlympia
 import kotlin.test.Test
@@ -70,7 +71,7 @@ class FactorSourceTests {
 
         val factorSource = FactorSource.Device.olympia(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceInfo = DeviceInfo.sample(),
+            hostInfo = HostInfo.sample.other(),
         )
 
         assertTrue(factorSource.supportsOlympia)

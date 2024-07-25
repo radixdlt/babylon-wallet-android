@@ -33,7 +33,7 @@ import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.factorSourceById
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -50,7 +50,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val hostInfoRepository: HostInfoRepository
 ) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
@@ -77,10 +77,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
             if (factorSource == null) {
                 givenTempMnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase()
                 givenTempMnemonic?.let { mnemonic ->
-                    val deviceInfo = deviceInfoRepository.getDeviceInfo()
+                    val hostInfo = hostInfoRepository.getHostInfo()
                     val mainBabylonDeviceFactorSource = FactorSource.Device.babylon(
                         mnemonicWithPassphrase = mnemonic,
-                        deviceInfo = deviceInfo,
+                        hostInfo = hostInfo,
                         createdAt = TimestampGenerator(),
                         isMain = true
                     )

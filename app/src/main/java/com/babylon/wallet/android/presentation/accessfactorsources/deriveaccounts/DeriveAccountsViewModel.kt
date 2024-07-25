@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts
 
-import Constants
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve

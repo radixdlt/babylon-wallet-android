@@ -17,7 +17,7 @@ import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.core.sargon.olympiaBackwardsCompatible
 import rdx.works.core.sargon.supportsOlympia
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -28,18 +28,18 @@ import javax.inject.Inject
 class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val profileRepository: ProfileRepository,
-    private val deviceInfoRepository: DeviceInfoRepository,
+    private val hostInfoRepository: HostInfoRepository,
     private val preferencesManager: PreferencesManager
 ) {
 
     suspend operator fun invoke(): Result<Profile> {
         val profile = profileRepository.profile.first()
         if (profile.mainBabylonFactorSource != null) return Result.success(profile)
-        val deviceInfo = deviceInfoRepository.getDeviceInfo()
+        val hostInfo = hostInfoRepository.getHostInfo()
         return mnemonicRepository.createNew().fold(onSuccess = { mnemonic ->
             val deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonic,
-                deviceInfo = deviceInfo,
+                hostInfo = hostInfo,
                 createdAt = TimestampGenerator(),
                 isMain = true
             )
@@ -56,10 +56,10 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
 
     suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Result<Unit> {
         val profile = profileRepository.profile.first()
-        val deviceInfo = deviceInfoRepository.getDeviceInfo()
+        val hostInfo = hostInfoRepository.getHostInfo()
         val deviceFactorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonic,
-            deviceInfo = deviceInfo,
+            hostInfo = hostInfo,
             createdAt = TimestampGenerator(),
             isMain = false
         )

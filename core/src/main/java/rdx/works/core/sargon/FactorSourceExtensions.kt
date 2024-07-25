@@ -12,6 +12,7 @@ import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletHint
 import com.radixdlt.sargon.LedgerHardwareWalletModel
@@ -24,9 +25,10 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.extensions.vendor
+import com.radixdlt.sargon.extensions.version
 import com.radixdlt.sargon.samples.Sample
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.DeviceInfo
 import java.time.OffsetDateTime
 import kotlin.random.Random
 
@@ -47,12 +49,12 @@ val FactorSource.Device.isBabylonDeviceFactorSource: Boolean
 
 fun FactorSource.Device.Companion.babylon(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    deviceInfo: DeviceInfo,
+    hostInfo: HostInfo,
     createdAt: Timestamp = OffsetDateTime.now(),
     isMain: Boolean = false
 ): FactorSource.Device = device(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
-    deviceInfo = deviceInfo,
+    hostInfo = hostInfo,
     isOlympia = false,
     createdAt = createdAt,
     isMain = isMain
@@ -60,11 +62,11 @@ fun FactorSource.Device.Companion.babylon(
 
 fun FactorSource.Device.Companion.olympia(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    deviceInfo: DeviceInfo,
+    hostInfo: HostInfo,
     createdAt: Timestamp = OffsetDateTime.now()
 ): FactorSource.Device = device(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
-    deviceInfo = deviceInfo,
+    hostInfo = hostInfo,
     isOlympia = true,
     createdAt = createdAt,
     isMain = false
@@ -73,7 +75,7 @@ fun FactorSource.Device.Companion.olympia(
 @Suppress("LongParameterList")
 fun FactorSource.Device.Companion.device(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    deviceInfo: DeviceInfo,
+    hostInfo: HostInfo,
     isOlympia: Boolean,
     createdAt: Timestamp,
     isMain: Boolean = false
@@ -97,12 +99,12 @@ fun FactorSource.Device.Companion.device(
             flags = if (isMain) listOf(FactorSourceFlag.MAIN) else emptyList()
         ),
         hint = DeviceFactorSourceHint(
-            model = deviceInfo.model,
-            name = deviceInfo.name,
+            model = hostInfo.description.model,
+            name = hostInfo.description.name,
             mnemonicWordCount = mnemonicWithPassphrase.mnemonic.wordCount,
-            systemVersion = deviceInfo.systemVersion,
-            hostAppVersion = null, // TODO DeviceInfo
-            hostVendor = deviceInfo.manufacturer
+            systemVersion = hostInfo.hostOs.version,
+            hostAppVersion = hostInfo.hostOs.version,
+            hostVendor = hostInfo.hostOs.vendor
         )
     ).asGeneral()
 }

@@ -7,6 +7,8 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.HostId
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
@@ -20,7 +22,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addNetworkIfDoesNotExist
 import rdx.works.core.sargon.asIdentifiable
@@ -52,14 +53,15 @@ class CreatePersonaUseCaseTest {
     @Test
     fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() = testScope.runTest {
         // given
-        val deviceInfo = DeviceInfo.sample()
+        val hostInfo = HostInfo.sample()
         val profile = Profile.init(
             deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                deviceInfo = deviceInfo,
+                hostInfo = hostInfo,
                 isMain = true
             ),
-            deviceInfo = deviceInfo.toSargonDeviceInfo()
+            hostId = HostId.sample(),
+            hostInfo = hostInfo
         ).addNetworkIfDoesNotExist(onNetwork = NetworkId.MAINNET)
         profileRepository.saveProfile(profile)
 
