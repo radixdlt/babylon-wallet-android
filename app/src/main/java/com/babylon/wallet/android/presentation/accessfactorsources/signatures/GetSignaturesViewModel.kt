@@ -6,6 +6,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
 import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
@@ -50,7 +51,7 @@ class GetSignaturesViewModel @Inject constructor(
     private var collectSignaturesWithDeviceJob: Job? = null
     private var collectSignaturesWithLedgerJob: Job? = null
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(signType = input.signType)
 
     init {
         viewModelScope.launch {
@@ -276,6 +277,7 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     data class State(
+        val signType: SignType,
         private val signersRequests: List<FactorSourceRequest> = emptyList(),
         private val selectedSignersIndex: Int = -1,
         // map to keep signature for each entity (signer). This will be returned as output once all signers are done.
