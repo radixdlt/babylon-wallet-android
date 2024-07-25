@@ -68,8 +68,10 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -441,7 +443,7 @@ fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionAddress: String,
+    transactionId: IntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -478,27 +480,8 @@ fun FailureDialogContent(
                 )
             }
 
-            val transactionId = remember(transactionAddress) {
-                runCatching { IntentHash.init(transactionAddress) }.getOrNull()
-            }
             if (transactionId != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                        style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                    ActionableAddressView(
-                        transactionId = transactionId,
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
+                TransactionId(transactionId = transactionId)
             }
         }
         if (isMobileConnect) {
@@ -517,11 +500,33 @@ fun FailureDialogContent(
     }
 }
 
+@Composable
+fun TransactionId(modifier: Modifier = Modifier, transactionId: IntentHash) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(id = R.string.transactionStatus_transactionID_text),
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+        ActionableAddressView(
+            transactionId = transactionId,
+            textStyle = RadixTheme.typography.body1Header,
+            textColor = RadixTheme.colors.blue1,
+            iconColor = RadixTheme.colors.gray2
+        )
+    }
+}
+
 internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean> {
     override val values: Sequence<Boolean> = sequenceOf(true, false)
 }
 
 @Composable
+@UsesSampleValues
 @Preview
 private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean) {
     RadixWalletTheme {
@@ -529,7 +534,7 @@ private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParam
             isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
-            transactionAddress = "rdx1239j329fj292r32e23"
+            transactionId = IntentHash.sample()
         )
     }
 }

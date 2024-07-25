@@ -8,12 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,10 +33,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.TransactionId
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IntentHash
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -74,7 +73,7 @@ fun TransactionStatusDialog(
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    CompletingContent()
+                    CompletingContent(transactionId = state.transactionId)
                 }
 
                 androidx.compose.animation.AnimatedVisibility(
@@ -102,7 +101,7 @@ fun TransactionStatusDialog(
                     FailureDialogContent(
                         title = title,
                         subtitle = state.failureError,
-                        transactionAddress = state.transactionId,
+                        transactionId = state.transactionId,
                         isMobileConnect = state.status.isMobileConnect
                     )
                 }
@@ -114,7 +113,7 @@ fun TransactionStatusDialog(
                 ) {
                     // Need to send the correct transaction id
                     SuccessContent(
-                        transactionAddress = state.transactionId,
+                        transactionId = state.transactionId,
                         isMobileConnect = state.status.isMobileConnect
                     )
                 }
@@ -143,7 +142,7 @@ fun TransactionStatusDialog(
 @Composable
 private fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionAddress: String,
+    transactionId: IntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -175,23 +174,8 @@ private fun SuccessContent(
                 textAlign = TextAlign.Center
             )
 
-            if (transactionAddress.isNotEmpty()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                    ActionableAddressView(
-                        transactionId = IntentHash.init(transactionAddress),
-                        textStyle = RadixTheme.typography.body1Regular,
-                        textColor = RadixTheme.colors.gray1
-                    )
-                }
+            if (transactionId != null) {
+                TransactionId(transactionId = transactionId)
             }
         }
         if (isMobileConnect) {
@@ -212,7 +196,8 @@ private fun SuccessContent(
 
 @Composable
 private fun CompletingContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    transactionId: IntentHash?
 ) {
     Column(
         modifier
@@ -234,6 +219,9 @@ private fun CompletingContent(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
+        if (transactionId != null) {
+            TransactionId(transactionId = transactionId)
+        }
         Spacer(Modifier.height(36.dp))
     }
 }
@@ -243,22 +231,24 @@ internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 private fun SuccessBottomDialogPreview(
     @PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean
 ) {
     RadixWalletTheme {
         SuccessContent(
-            transactionAddress = "txid_tdx_21_1nsdfruuw5gd6tsh07ur5mgq4tjpns9vxj0nnaahaxpxmxapjzrfqmfzr4s",
+            transactionId = IntentHash.sample(),
             isMobileConnect = isMobileConnect
         )
     }
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 private fun CompletingBottomDialogPreview() {
     RadixWalletTheme {
-        CompletingContent()
+        CompletingContent(transactionId = IntentHash.sample())
     }
 }
