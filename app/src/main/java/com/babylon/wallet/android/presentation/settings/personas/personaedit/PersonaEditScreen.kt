@@ -338,7 +338,7 @@ private fun PersonaDetailList(
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = dimensions.paddingXLarge),
+                    .padding(vertical = dimensions.paddingXXLarge),
                 label = stringResource(id = field.entry.value.kind.toDisplayResource()),
                 field = field.entry.value,
                 onValueChanged = {

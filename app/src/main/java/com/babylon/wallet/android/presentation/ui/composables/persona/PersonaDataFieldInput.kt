@@ -228,7 +228,7 @@ fun PersonaNameInput(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
