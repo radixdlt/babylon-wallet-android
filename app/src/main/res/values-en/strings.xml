@@ -1237,5 +1237,4 @@ Code: %s</string>
   <string name="scanQR_connectorExtension_disclosureItem2">Follow the instructions there to install the Radix Connector.</string>
   <string name="scanQR_account_instructions">Scan a QR code of a Radix Account address from another wallet or an exchange.</string>
   <string name="scanQR_importOlympia_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
-  <string name="authorizedDapps_personaDetails_edit">Edit</string>
 </resources>
