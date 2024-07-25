@@ -5,7 +5,6 @@ import android.os.Build
 import android.provider.Settings
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.edit
-import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DeviceInfoDescription
 import com.radixdlt.sargon.HostId
 import com.radixdlt.sargon.HostInfo
@@ -13,8 +12,6 @@ import com.radixdlt.sargon.HostOs
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.Uuid
 import com.radixdlt.sargon.extensions.android
-import com.radixdlt.sargon.extensions.vendor
-import com.radixdlt.sargon.extensions.version
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -137,16 +134,3 @@ class HostInfoRepositoryImpl @Inject constructor(
         const val HOST_ID = "key_device_info"
     }
 }
-
-// TODO move to sargon
-fun DeviceInfo.Companion.from(
-    hostId: HostId,
-    hostInfo: HostInfo
-): DeviceInfo = DeviceInfo(
-    id = hostId.id,
-    date = hostId.generatedAt,
-    description = hostInfo.description.toString(),
-    systemVersion = hostInfo.hostOs.version,
-    hostAppVersion = hostInfo.hostAppVersion,
-    hostVendor = hostInfo.hostOs.vendor
-)

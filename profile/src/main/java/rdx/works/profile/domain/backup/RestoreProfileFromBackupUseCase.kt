@@ -3,6 +3,7 @@ package rdx.works.profile.domain.backup
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.from
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
@@ -17,7 +18,6 @@ import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.from
 import rdx.works.profile.domain.ProfileException
 import timber.log.Timber
 import javax.inject.Inject

@@ -3,6 +3,7 @@ package rdx.works.profile.data.repository
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.checkIfProfileJsonContainsLegacyP2PLinks
+import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher

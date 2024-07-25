@@ -15,6 +15,7 @@ import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.default
+import com.radixdlt.sargon.extensions.from
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -26,7 +27,6 @@ import rdx.works.core.sargon.babylon
 import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.from
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
