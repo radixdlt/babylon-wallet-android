@@ -37,21 +37,43 @@ import com.radixdlt.sargon.extensions.publicKey
 import com.radixdlt.sargon.extensions.signature
 import javax.inject.Inject
 
-open class BuildDappResponseUseCase {
+open class BuildDappResponseUseCase(private val accessFactorSourcesProxy: AccessFactorSourcesProxy) {
 
-    protected fun buildAccountsResponseItem(
+    protected suspend fun buildAccountsResponseItem(
+        request: IncomingMessage.IncomingRequest,
         accounts: List<Account>,
         challenge: Exactly32Bytes?,
-        entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
+        entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>,
     ): Result<WalletToDappInteractionAccountsRequestResponseItem?> {
         if (accounts.isEmpty()) {
             return Result.success(null)
         }
 
+        var allEntitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = entitiesWithSignatures
+        if (challenge != null && entitiesWithSignatures.isEmpty()) {
+            val signRequest = SignRequest.SignAuthChallengeRequest(
+                challengeHex = challenge.hex,
+                origin = request.metadata.origin,
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+            )
+
+            accessFactorSourcesProxy.getSignatures(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signType = SignType.ProvingOwnership,
+                    signers = accounts.map { it.asProfileEntity() },
+                    signRequest = signRequest
+                )
+            ).onSuccess {
+                allEntitiesWithSignatures = allEntitiesWithSignatures.toMutableMap().apply {
+                    putAll(it.signersWithSignatures)
+                }
+            }
+        }
+
         var accountProofs: List<WalletToDappInteractionAccountProof>? = null
         if (challenge != null) {
             accountProofs = accounts.map { account ->
-                val signatureForAccount = entitiesWithSignatures[account.asProfileEntity()]
+                val signatureForAccount = allEntitiesWithSignatures[account.asProfileEntity()]
                     ?: return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
 
                 WalletToDappInteractionAccountProof(
@@ -87,8 +109,9 @@ open class BuildDappResponseUseCase {
 }
 
 class BuildAuthorizedDappResponseUseCase @Inject constructor(
-    private val rolaClient: ROLAClient
-) : BuildDappResponseUseCase() {
+    private val rolaClient: ROLAClient,
+    accessFactorSourcesProxy: AccessFactorSourcesProxy
+) : BuildDappResponseUseCase(accessFactorSourcesProxy = accessFactorSourcesProxy) {
 
     @Suppress("LongParameterList", "ReturnCount", "LongMethod")
     suspend operator fun invoke(
@@ -170,6 +193,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
         if (authResponse.isSuccess) {
             val oneTimeAccountsResponseItem = buildAccountsResponseItem(
+                request = request,
                 accounts = oneTimeAccounts,
                 challenge = request.oneTimeAccountsRequestItem?.challenge,
                 entitiesWithSignatures = entitiesWithSignatures
@@ -182,6 +206,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             }
 
             val ongoingAccountsResponseItem = buildAccountsResponseItem(
+                request = request,
                 accounts = ongoingAccounts,
                 challenge = request.ongoingAccountsRequestItem?.challenge,
                 entitiesWithSignatures = entitiesWithSignatures
@@ -237,7 +262,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
 class BuildUnauthorizedDappResponseUseCase @Inject constructor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy
-) : BuildDappResponseUseCase() {
+) : BuildDappResponseUseCase(accessFactorSourcesProxy = accessFactorSourcesProxy) {
 
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
@@ -268,6 +293,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
         }
 
         val oneTimeAccountsResponseItem = buildAccountsResponseItem(
+            request = request,
             accounts = oneTimeAccounts,
             challenge = request.oneTimeAccountsRequestItem?.challenge,
             entitiesWithSignatures = entitiesWithSignatures
