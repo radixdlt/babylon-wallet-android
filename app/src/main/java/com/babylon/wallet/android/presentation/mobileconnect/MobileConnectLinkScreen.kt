@@ -47,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.utils.formattedSpans
+import com.google.accompanist.placeholder.placeholder
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
@@ -165,7 +166,12 @@ fun MobileConnectLinkContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
+                    .placeholder(
+                        visible = state.isLoading,
+                        color = RadixTheme.colors.gray4,
+                        shape = RadixTheme.shapes.roundedRectSmall,
+                    ),
                 text = stringResource(
                     id = R.string.mobileConnect_linkSubtitle,
                     dAppDisplayName
