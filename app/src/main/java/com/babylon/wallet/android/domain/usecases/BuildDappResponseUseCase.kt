@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.model.toWalletToDappInteractionPersonaDataRequestResponseItem
@@ -255,6 +256,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
 
             accessFactorSourcesProxy.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signType = SignType.ProvingOwnership,
                     signers = oneTimeAccounts.map { it.asProfileEntity() },
                     signRequest = signRequest
                 )

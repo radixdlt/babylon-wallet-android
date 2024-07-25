@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionConfig.EPOCH_WINDOW
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.domain.usecases.NotariseTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -104,6 +105,7 @@ class SignTransactionUseCase @Inject constructor(
             } else {
                 accessFactorSourcesProxy.getSignatures(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                        signType = SignType.SigningTransaction,
                         signers = notaryAndSigners.signers,
                         signRequest = signRequest
                     )
