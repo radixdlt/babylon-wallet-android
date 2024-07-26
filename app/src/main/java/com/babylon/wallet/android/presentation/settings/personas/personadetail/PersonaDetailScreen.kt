@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -37,12 +38,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.UnderlineTextButton
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -129,18 +130,19 @@ private fun PersonaDetailContent(
                 RadixCenteredTopAppBar(
                     title = state.persona?.displayName?.value.orEmpty(),
                     onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars,
-                    actions = {
-                        if (state.persona != null) {
-                            UnderlineTextButton(
-                                text = stringResource(id = R.string.authorizedDapps_personaDetails_edit),
-                                onClick = { onEditPersona(state.persona.address) }
-                            )
-                        }
-                    }
+                    windowInsets = WindowInsets.statusBars
                 )
 
                 HorizontalDivider(color = RadixTheme.colors.gray5)
+            }
+        },
+        bottomBar = {
+            if (state.persona != null) {
+                BottomPrimaryButton(
+                    modifier = Modifier.navigationBarsPadding(),
+                    text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
+                    onClick = { onEditPersona(state.persona.address) }
+                )
             }
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -221,22 +223,9 @@ private fun PersonaDetailList(
                         modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
                         color = RadixTheme.colors.gray4
                     )
+                } else {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
-            }
-        }
-        if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-            item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                    onClick = onCreateAndUploadAuthKey,
-                    enabled = !loading,
-                    throttleClicks = true
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
         }
         if (authorizedDapps.isNotEmpty()) {
@@ -278,6 +267,18 @@ private fun PersonaDetailList(
         }
         item {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
+                    onClick = onCreateAndUploadAuthKey,
+                    enabled = !loading,
+                    throttleClicks = true
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
             WarningButton(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
