@@ -64,9 +64,9 @@ fun TransactionStatusDialog(
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = dismissHandler,
-        dragToDismissEnabled = !state.blockUntilComplete,
-        showDefaultTopBar = !state.blockUntilComplete,
-        showDragHandle = !state.blockUntilComplete,
+        dragToDismissEnabled = state.isDismissible,
+        showDefaultTopBar = state.isDismissible,
+        showDragHandle = state.isDismissible,
         content = {
             Box {
                 androidx.compose.animation.AnimatedVisibility(
@@ -121,13 +121,7 @@ fun TransactionStatusDialog(
 
                 if (state.isIgnoreTransactionModalShowing) {
                     BasicPromptAlertDialog(
-                        finish = { accepted ->
-                            if (accepted) {
-                                viewModel.onDismissConfirmed()
-                            } else {
-                                viewModel.onDismissCanceled()
-                            }
-                        },
+                        finish = { viewModel.onDismissConfirmed() },
                         message = {
                             Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
                         },
