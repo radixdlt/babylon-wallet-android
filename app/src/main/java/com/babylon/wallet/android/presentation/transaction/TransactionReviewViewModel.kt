@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
@@ -112,8 +113,8 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        if (state.value.sheetState != State.Sheet.None) {
-            _state.update { it.copy(sheetState = State.Sheet.None) }
+        if (state.value.sheetState != Sheet.None) {
+            _state.update { it.copy(sheetState = Sheet.None) }
         } else {
             viewModelScope.launch {
                 submit.onDismiss(exception = RadixWalletException.DappRequestException.RejectedByUser)
@@ -145,7 +146,7 @@ class TransactionReviewViewModel @Inject constructor(
     fun onGuaranteesApplyClick() = guarantees.onApply()
 
     fun onCloseBottomSheetClick() {
-        _state.update { it.copy(sheetState = State.Sheet.None) }
+        _state.update { it.copy(sheetState = Sheet.None) }
     }
 
     fun onCustomizeClick() = viewModelScope.launch {
@@ -168,21 +169,35 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
-    fun onPayerSelected(selectedFeePayer: Account) {
+    fun onPayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
+        val selectFeePayerInput = state.value.selectedFeePayerInput ?: return
+
+        _state.update {
+            it.copy(
+                selectedFeePayerInput = selectFeePayerInput.copy(
+                    preselectedCandidate = selectedFeePayer
+                )
+            )
+        }
+    }
+
+    fun onPayerSelected() {
+        val selectFeePayerInput = state.value.selectedFeePayerInput ?: return
+        val selectedFeePayerAccount = selectFeePayerInput.preselectedCandidate?.account ?: return
+
         val feePayerSearchResult = state.value.feePayers
         val transactionFees = state.value.transactionFees
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selectedAccountAddress = selectedFeePayer.address,
+            selectedAccountAddress = selectedFeePayerAccount.address,
             candidates = feePayerSearchResult.candidates
         )
 
-        val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
-            .orEmpty().any { accountAddress ->
-                accountAddress == selectedFeePayer.address
-            }
+        val customizeFeesSheet = state.value.sheetState as? Sheet.CustomizeFees ?: return
+        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates().orEmpty().any { accountAddress ->
+            accountAddress == selectedFeePayerAccount.address
+        }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
 
@@ -193,8 +208,8 @@ class TransactionReviewViewModel @Inject constructor(
                 ),
                 feePayers = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
-                    feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                        feePayerCandidate = selectedFeePayer
+                    feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                        feePayerCandidate = selectedFeePayerAccount
                     )
                 )
             )
@@ -203,7 +218,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
         _state.update {
-            it.copy(sheetState = State.Sheet.UnknownAddresses(unknownAddresses))
+            it.copy(sheetState = Sheet.UnknownAddresses(unknownAddresses))
         }
     }
 
@@ -213,6 +228,10 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onAcknowledgeRawTransactionWarning() {
         _state.update { it.copy(showRawTransactionWarning = false) }
+    }
+
+    fun onFeePayerSelectionDismissRequest() {
+        _state.update { it.copy(selectedFeePayerInput = null) }
     }
 
     data class State(
@@ -231,7 +250,8 @@ class TransactionReviewViewModel @Inject constructor(
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
-        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom()
+        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
+        val selectedFeePayerInput: SelectFeePayerInput? = null
     ) : UiState {
 
         val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
@@ -263,13 +283,9 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         fun feePayerSelectionState(): State = copy(
-            transactionFees = transactionFees,
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
-                    preselectedCandidate = feePayers?.selectedAccountAddress,
-                    candidates = feePayers?.candidates.orEmpty()
-                ),
-                feesMode = latestFeesMode
+            selectedFeePayerInput = SelectFeePayerInput(
+                preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers?.selectedAccountAddress },
+                candidates = feePayers?.candidates.orEmpty()
             )
         )
 
@@ -296,9 +312,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transfer
 
-        val rawManifest: String = request
-            ?.transactionManifestData
-            ?.instructions.orEmpty()
+        val rawManifest: String = request?.transactionManifestData?.instructions.orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
@@ -382,11 +396,6 @@ class TransactionReviewViewModel @Inject constructor(
                     data class NoFeePayerSelected(
                         val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
-
-                    data class SelectFeePayer(
-                        val preselectedCandidate: AccountAddress?,
-                        val candidates: List<TransactionFeePayers.FeePayerCandidate>
-                    ) : FeePayerMode
                 }
 
                 enum class FeesMode {
@@ -398,6 +407,11 @@ class TransactionReviewViewModel @Inject constructor(
                 val unknownAddresses: ImmutableList<Address>
             ) : Sheet
         }
+
+        data class SelectFeePayerInput(
+            val preselectedCandidate: TransactionFeePayers.FeePayerCandidate?,
+            val candidates: List<TransactionFeePayers.FeePayerCandidate>
+        )
     }
 }
 
