@@ -63,7 +63,7 @@ class CreatePersonaViewModel @Inject constructor(
     fun onPersonaCreateClick() {
         accessFactorSourcesJob?.cancel()
         accessFactorSourcesJob = viewModelScope.launch {
-            val displayName = DisplayName(_state.value.personaDisplayName.value)
+            val displayName = DisplayName(_state.value.personaDisplayName.value.trim())
             val personaData = _state.value.currentFields.toPersonaData()
             val factorSource = getProfileUseCase().mainBabylonFactorSource ?: return@launch
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
