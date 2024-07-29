@@ -32,6 +32,7 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
@@ -289,7 +290,8 @@ class TransactionReviewViewModel @Inject constructor(
         fun feePayerSelectionState(): State = copy(
             selectedFeePayerInput = SelectFeePayerInput(
                 preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
-                candidates = feePayers?.candidates.orEmpty().toPersistentList()
+                candidates = feePayers?.candidates.orEmpty().toPersistentList(),
+                fee = transactionFees.defaultTransactionFee.formatted()
             )
         )
 
@@ -414,7 +416,8 @@ class TransactionReviewViewModel @Inject constructor(
 
         data class SelectFeePayerInput(
             val preselectedCandidate: TransactionFeePayers.FeePayerCandidate?,
-            val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>
+            val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
+            val fee: String
         )
     }
 }

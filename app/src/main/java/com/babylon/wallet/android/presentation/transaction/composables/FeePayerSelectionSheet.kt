@@ -50,7 +50,6 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.XrdResource
 import kotlin.random.Random
@@ -71,8 +70,7 @@ fun FeePayerSelectionSheet(
         enableImePadding = true,
         sheetContent = {
             FeePayerSelectionContent(
-                candidates = input.candidates,
-                selectedCandidateAddress = input.preselectedCandidate?.account?.address,
+                input = input,
                 onPayerSelected = onPayerChanged,
                 onSelectButtonClick = {
                     onSelectButtonClick()
@@ -87,8 +85,7 @@ fun FeePayerSelectionSheet(
 
 @Composable
 private fun FeePayerSelectionContent(
-    candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
-    selectedCandidateAddress: AccountAddress? = null,
+    input: TransactionReviewViewModel.State.SelectFeePayerInput,
     onPayerSelected: (TransactionFeePayers.FeePayerCandidate) -> Unit,
     onSelectButtonClick: () -> Unit
 ) {
@@ -113,7 +110,7 @@ private fun FeePayerSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle),
+                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2,
                     textAlign = TextAlign.Center
@@ -136,11 +133,11 @@ private fun FeePayerSelectionContent(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            items(candidates) { candidate ->
+            items(input.candidates) { candidate ->
                 FeePayerCard(
                     candidate = candidate,
                     onPayerSelected = onPayerSelected,
-                    selectedCandidateAddress = selectedCandidateAddress
+                    selectedCandidateAddress = input.preselectedCandidate?.account?.address
                 )
             }
         }
@@ -258,8 +255,11 @@ fun FeesPayersSelectionContentPreview() {
     }
     RadixWalletPreviewTheme {
         FeePayerSelectionContent(
-            candidates = candidates.toPersistentList(),
-            selectedCandidateAddress = null,
+            input = TransactionReviewViewModel.State.SelectFeePayerInput(
+                candidates = candidates.toPersistentList(),
+                preselectedCandidate = null,
+                fee = "0.234"
+            ),
             onPayerSelected = {},
             onSelectButtonClick = {}
         )
