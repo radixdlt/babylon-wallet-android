@@ -88,8 +88,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             isMobileConnect = status.isMobileConnect
                         )
                     )
-                    incomingRequestRepository.requestHandled(state.value.status.requestId)
-                    isRequestHandled = true
+                    markRequestAsHandled()
                 }.onFailure { error ->
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
@@ -134,8 +133,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
         }
     }
 
-    fun onInfoClose() {
-        if (state.value.dismissInfo == State.DismissInfo.STOP_WAITING) {
+    fun onInfoClose(confirmed: Boolean) {
+        if (state.value.dismissInfo == State.DismissInfo.STOP_WAITING && confirmed) {
             onDismissConfirmed()
         }
         _state.update { it.copy(dismissInfo = null) }
@@ -143,11 +142,18 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
     private fun onDismissConfirmed() {
         viewModelScope.launch {
-            if (!isRequestHandled) {
-                incomingRequestRepository.requestHandled(state.value.status.requestId)
-            }
+            markRequestAsHandled()
             sendEvent(Event.DismissDialog)
         }
+    }
+
+    private suspend fun markRequestAsHandled() {
+        if (isRequestHandled) {
+            return
+        }
+
+        incomingRequestRepository.requestHandled(state.value.status.requestId)
+        isRequestHandled = true
     }
 
     data class State(

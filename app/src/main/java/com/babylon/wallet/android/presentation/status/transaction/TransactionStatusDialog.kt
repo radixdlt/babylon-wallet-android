@@ -136,10 +136,10 @@ fun TransactionStatusDialog(
 @Composable
 private fun InfoDialog(
     type: TransactionStatusDialogViewModel.State.DismissInfo,
-    onClose: () -> Unit
+    onClose: (Boolean) -> Unit
 ) {
     BasicPromptAlertDialog(
-        finish = { onClose() },
+        finish = onClose,
         message = {
             Text(
                 text = stringResource(
