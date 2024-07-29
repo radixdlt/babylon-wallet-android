@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,11 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,52 +50,44 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.coroutines.launch
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.XrdResource
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeePayerSelectionSheet(
+    modifier: Modifier = Modifier,
     input: TransactionReviewViewModel.State.SelectFeePayerInput,
+    sheetState: SheetState,
     onPayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
     onSelectButtonClick: () -> Unit,
-    onDismissRequest: () -> Unit
+    onDismiss: () -> Unit
 ) {
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    val coroutineScope = rememberCoroutineScope()
-
-    BackHandler(
-        onBack = {
-            coroutineScope.launch {
-                modalBottomSheetState.hide()
-                onDismissRequest()
-            }
-        }
-    )
-
     DefaultModalSheetLayout(
-        modifier = Modifier.fillMaxSize(),
-        sheetState = modalBottomSheetState,
+        modifier = modifier.fillMaxSize(),
+        sheetState = sheetState,
         enableImePadding = true,
         sheetContent = {
             FeePayerSelectionContent(
                 candidates = input.candidates,
                 selectedCandidateAddress = input.preselectedCandidate?.account?.address,
                 onPayerSelected = onPayerChanged,
-                onSelectButtonClick = onSelectButtonClick
+                onSelectButtonClick = {
+                    onSelectButtonClick()
+                    onDismiss()
+                }
             )
         },
         showDragHandle = true,
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismiss
     )
 }
 
 @Composable
 private fun FeePayerSelectionContent(
-    candidates: List<TransactionFeePayers.FeePayerCandidate>,
+    candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
     selectedCandidateAddress: AccountAddress? = null,
     onPayerSelected: (TransactionFeePayers.FeePayerCandidate) -> Unit,
     onSelectButtonClick: () -> Unit
@@ -268,7 +258,7 @@ fun FeesPayersSelectionContentPreview() {
     }
     RadixWalletPreviewTheme {
         FeePayerSelectionContent(
-            candidates = candidates,
+            candidates = candidates.toPersistentList(),
             selectedCandidateAddress = null,
             onPayerSelected = {},
             onSelectButtonClick = {}

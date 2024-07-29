@@ -117,7 +117,7 @@ fun TransactionReviewScreen(
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning,
-        onFeePayerSelectionDismissRequest = viewModel::onFeePayerSelectionDismissRequest
+        onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest
     )
 }
 
@@ -152,7 +152,7 @@ private fun TransactionPreviewContent(
     onViewAdvancedModeClick: () -> Unit,
     dismissTransactionErrorDialog: () -> Unit,
     onAcknowledgeRawTransactionWarning: () -> Unit,
-    onFeePayerSelectionDismissRequest: () -> Unit
+    onFeePayerSelectionDismiss: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -386,12 +386,22 @@ private fun TransactionPreviewContent(
             onDismissRequest = onBackClick
         )
     }
+
+    val feePayerSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    SyncSheetState(
+        sheetState = feePayerSheetState,
+        isSheetVisible = state.selectedFeePayerInput != null,
+        onSheetClosed = onFeePayerSelectionDismiss
+    )
     if (state.selectedFeePayerInput != null) {
         FeePayerSelectionSheet(
             input = state.selectedFeePayerInput,
+            sheetState = feePayerSheetState,
             onPayerChanged = onPayerChanged,
             onSelectButtonClick = onPayerSelected,
-            onDismissRequest = onFeePayerSelectionDismissRequest
+            onDismiss = onFeePayerSelectionDismiss
         )
     }
 }
@@ -526,7 +536,7 @@ fun TransactionPreviewContentPreview() {
             onViewAdvancedModeClick = {},
             dismissTransactionErrorDialog = {},
             onAcknowledgeRawTransactionWarning = {},
-            onFeePayerSelectionDismissRequest = {}
+            onFeePayerSelectionDismiss = {}
         )
     }
 }

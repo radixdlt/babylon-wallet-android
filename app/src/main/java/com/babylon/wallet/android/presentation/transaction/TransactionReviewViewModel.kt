@@ -38,6 +38,8 @@ import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -195,9 +197,11 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates().orEmpty().any { accountAddress ->
-            accountAddress == selectedFeePayerAccount.address
-        }
+        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
+            .orEmpty()
+            .any { accountAddress ->
+                accountAddress == selectedFeePayerAccount.address
+            }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
 
@@ -284,8 +288,8 @@ class TransactionReviewViewModel @Inject constructor(
 
         fun feePayerSelectionState(): State = copy(
             selectedFeePayerInput = SelectFeePayerInput(
-                preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers?.selectedAccountAddress },
-                candidates = feePayers?.candidates.orEmpty()
+                preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
+                candidates = feePayers?.candidates.orEmpty().toPersistentList()
             )
         )
 
@@ -410,7 +414,7 @@ class TransactionReviewViewModel @Inject constructor(
 
         data class SelectFeePayerInput(
             val preselectedCandidate: TransactionFeePayers.FeePayerCandidate?,
-            val candidates: List<TransactionFeePayers.FeePayerCandidate>
+            val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>
         )
     }
 }
