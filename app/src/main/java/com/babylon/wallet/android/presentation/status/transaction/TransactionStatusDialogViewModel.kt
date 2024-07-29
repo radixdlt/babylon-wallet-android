@@ -120,6 +120,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                         )
                     )
                 }
+                _state.update { it.copy(blockUntilComplete = false) }
                 transactionStatusClient.statusHandled(status.transactionId)
             }
         }
