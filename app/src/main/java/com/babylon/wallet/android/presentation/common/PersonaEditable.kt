@@ -31,7 +31,6 @@ interface PersonaEditable {
     fun onAddFields()
     fun validateInput()
     fun onFieldFocusChanged(id: PersonaDataEntryId, focused: Boolean)
-    fun onPersonaDisplayNameFieldFocusChanged(focused: Boolean)
 }
 
 class PersonaEditableImpl : PersonaEditable {
@@ -104,18 +103,6 @@ class PersonaEditableImpl : PersonaEditable {
             )
         }
         validateInput()
-    }
-
-    override fun onPersonaDisplayNameFieldFocusChanged(focused: Boolean) {
-        if (!focused) {
-//            _state.update { s ->
-//                val displayName = s.personaDisplayName
-//                s.copy(
-//                    personaDisplayName = displayName.copy(shouldDisplayValidationError = displayName.wasEdited)
-//                )
-//            }
-            validateInput()
-        }
     }
 
     override fun onDisplayNameChanged(value: String) {

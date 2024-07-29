@@ -86,7 +86,6 @@ fun PersonaEditScreen(
         onValueChanged = viewModel::onFieldValueChanged,
         onDisplayNameChanged = viewModel::onDisplayNameChanged,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
-        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
         setAddFieldSheetVisible = viewModel::setAddFieldSheetVisible
     )
 }
@@ -104,7 +103,6 @@ private fun PersonaEditContent(
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     setAddFieldSheetVisible: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -206,7 +204,6 @@ private fun PersonaEditContent(
                 personaDisplayName = state.personaDisplayName,
                 addButtonEnabled = state.fieldsToAdd.isNotEmpty(),
                 onFieldFocusChanged = onFieldFocusChanged,
-                onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
                 dappContextEdit = state.dappContextEdit,
                 missingFields = state.missingFields
             )
@@ -264,7 +261,6 @@ private fun PersonaDetailList(
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
     missingFields: ImmutableList<PersonaDataField.Kind>
 ) {
@@ -302,9 +298,6 @@ private fun PersonaDetailList(
                     }
                 } else {
                     null
-                },
-                onFocusChanged = {
-                    onPersonaDisplayNameFocusChanged(it.hasFocus)
                 }
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
@@ -403,7 +396,6 @@ fun DappDetailContentPreview() {
             onValueChanged = { _, _ -> },
             onDisplayNameChanged = {},
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {},
             setAddFieldSheetVisible = {}
         )
     }

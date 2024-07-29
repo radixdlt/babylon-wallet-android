@@ -78,7 +78,6 @@ fun CreatePersonaScreen(
         onDeleteField = viewModel::onDeleteField,
         onValueChanged = viewModel::onFieldValueChanged,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
-        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
         onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
         onMessageShown = viewModel::onMessageShown
     )
@@ -109,7 +108,6 @@ fun CreatePersonaContent(
     onDeleteField: (PersonaDataEntryId) -> Unit,
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     onAddFieldSheetVisible: (Boolean) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -176,7 +174,6 @@ fun CreatePersonaContent(
                     bottomSheetState.show()
                 }
             },
-            onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
             onFieldFocusChanged = onFieldFocusChanged
         )
     }
@@ -227,8 +224,7 @@ private fun CreatePersonaContentList(
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -270,9 +266,6 @@ private fun CreatePersonaContentList(
                     )
                 ),
                 hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
-                onFocusChanged = {
-                    onPersonaDisplayNameFocusChanged(it.hasFocus)
-                },
                 error = if (personaName.wasEdited) {
                     when (personaName.validationState) {
                         PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)
@@ -358,7 +351,6 @@ fun CreateAccountContentPreview() {
             onDeleteField = {},
             onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {},
             onAddFieldSheetVisible = {},
             onMessageShown = {}
         )
