@@ -39,7 +39,6 @@ import io.mockk.every
 import io.mockk.mockk
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -81,9 +80,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
     private val appEventBus = AppEventBusImpl()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
-    private val signTransactionUseCase = mockk<SignTransactionUseCase>().apply {
-        every { signingState } returns flowOf()
-    }
+    private val signTransactionUseCase = mockk<SignTransactionUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
 
     private val profileRepository = FakeProfileRepository(profile = testProfile)
@@ -123,7 +120,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
             compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
             endEpoch = 0u
         )
-        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarization)
+        coEvery { signTransactionUseCase(any()) } returns Result.success(notarization)
         coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(TransactionSubmitResponse(duplicate = false))
 
 

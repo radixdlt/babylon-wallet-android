@@ -1,20 +1,18 @@
 package com.babylon.wallet.android.presentation.settings
 
-import Constants.RADIX_SUPPORT_EMAIL_ADDRESS
-import Constants.RADIX_SUPPORT_EMAIL_SUBJECT
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_ADDRESS
+import com.babylon.wallet.android.utils.Constants.RADIX_SUPPORT_EMAIL_SUBJECT
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 
 sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
-        data object LinkToConnector : TopLevelSettings
-
         data class SecurityCenter(val securityProblems: Set<SecurityProblem> = emptySet()) : TopLevelSettings
         data class Personas(
             val isCloudBackupNotWorking: SecurityProblem.CloudBackupNotWorking? = null, // security problem: 5,6,7
@@ -32,7 +30,6 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                LinkToConnector -> R.string.empty
                 ApprovedDapps -> R.string.walletSettings_dapps_title
                 is Personas -> R.string.walletSettings_personas_title
                 is Preferences -> R.string.walletSettings_preferences_title
@@ -46,7 +43,6 @@ sealed interface SettingsItem {
         @StringRes
         fun subtitleRes(): Int {
             return when (this) {
-                LinkToConnector -> R.string.empty
                 ApprovedDapps -> R.string.walletSettings_dapps_subtitle
                 is Personas -> R.string.walletSettings_personas_subtitle
                 is Preferences -> R.string.walletSettings_preferences_subtitle

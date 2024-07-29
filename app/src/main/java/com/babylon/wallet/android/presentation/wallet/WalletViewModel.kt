@@ -19,15 +19,20 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -46,14 +51,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.isLedgerAccount
 import rdx.works.core.sargon.isOlympia
@@ -77,11 +80,11 @@ class WalletViewModel @Inject constructor(
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
-    private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    private val homeCards: HomeCardsDelegate
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null
@@ -109,6 +112,7 @@ class WalletViewModel @Inject constructor(
         observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
+        homeCards(scope = viewModelScope, state = _state)
     }
 
     fun processBufferedDeepLinkRequest() {
@@ -118,6 +122,10 @@ class WalletViewModel @Inject constructor(
     }
 
     override fun initialState() = State()
+
+    fun onStart() {
+        loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+    }
 
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
 
@@ -184,9 +192,7 @@ class WalletViewModel @Inject constructor(
     private fun observeWalletAssets() {
         combine(
             accountsFlow,
-            refreshFlow.onStart {
-                loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
-            }
+            refreshFlow
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
@@ -216,7 +222,7 @@ class WalletViewModel @Inject constructor(
 
                     if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
                         _state.update { it.disableFiatPrices() }
-                        break
+                        return@onEach
                     }
                 }
 
@@ -233,11 +239,6 @@ class WalletViewModel @Inject constructor(
                 }
                 .flowOn(defaultDispatcher)
                 .collect()
-        }
-        viewModelScope.launch {
-            preferencesManager.isRadixBannerVisible.collect { isVisible ->
-                _state.update { it.copy(isRadixBannerVisible = isVisible) }
-            }
         }
     }
 
@@ -292,8 +293,24 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    fun onRadixBannerDismiss() = viewModelScope.launch {
-        preferencesManager.setRadixBannerVisibility(isVisible = false)
+    fun onCardClick(card: HomeCard) {
+        viewModelScope.launch {
+            when (card) {
+                HomeCard.Connector -> {
+                    sendEvent(Event.NavigateToLinkConnector)
+                }
+                HomeCard.StartRadQuest -> {
+                    sendEvent(Event.OpenUrl(RAD_QUEST_URL))
+                }
+                else -> {}
+            }
+            // Currently all the cards should be dismissed on tap
+            homeCards.dismissCard(card)
+        }
+    }
+
+    fun onCardClose(card: HomeCard) {
+        homeCards.dismissCard(card)
     }
 
     @Suppress("MagicNumber")
@@ -329,8 +346,8 @@ class WalletViewModel @Inject constructor(
         private val accountsWithAssets: List<AccountWithAssets>? = null,
         private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
         val prices: PricesState = PricesState.None,
-        val isRadixBannerVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
+        val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList()
     ) : UiState {
 
         val isRefreshing: Boolean = refreshType.showRefreshIndicator
@@ -397,6 +414,17 @@ class WalletViewModel @Inject constructor(
                 } else {
                     accountWithAssets
                 }
+            },
+            prices = if (prices is PricesState.None) {
+                // In case that prices were never received, show an error
+                // in the prices state
+                PricesState.Enabled(
+                    pricesPerAccount = accountsWithAssets?.associate {
+                        it.account.address to null
+                    }.orEmpty()
+                )
+            } else {
+                prices
             }
         )
 
@@ -407,7 +435,10 @@ class WalletViewModel @Inject constructor(
             )
         )
 
-        fun disableFiatPrices() = copy(prices = PricesState.Disabled)
+        fun disableFiatPrices() = copy(
+            prices = PricesState.Disabled,
+            refreshType = RefreshType.None,
+        )
 
         enum class AccountTag {
             LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
@@ -488,7 +519,12 @@ class WalletViewModel @Inject constructor(
     }
 
     internal sealed interface Event : OneOffEvent {
+
         data object NavigateToSecurityCenter : Event
+
+        data object NavigateToLinkConnector : Event
+
+        data class OpenUrl(val url: String) : Event
     }
 
     companion object {

@@ -184,7 +184,7 @@ fun ImportLegacyWalletScreen(
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
-        importAllAccounts = viewModel::importAllAccounts,
+        importAllAccounts = viewModel::onImportAllAccounts,
         onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onErrorDismiss,
         seedPhraseInputState = state.seedPhraseInputState
     )
@@ -502,7 +502,7 @@ private fun ScanQrPage(
                 )
             }
             Text(
-                text = stringResource(id = R.string.importOlympiaAccounts_scanQR_instructions),
+                text = stringResource(id = R.string.scanQR_importOlympia_instructions),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 overflow = TextOverflow.Ellipsis,

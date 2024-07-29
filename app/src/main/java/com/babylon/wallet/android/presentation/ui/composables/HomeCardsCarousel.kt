@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -56,7 +57,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.Url
+import com.radixdlt.sargon.HomeCard
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.toUrl
@@ -93,16 +94,18 @@ fun HomeCardsCarousel(
             )
         }
 
-        HorizontalPagerIndicator(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(top = RadixTheme.dimensions.paddingSmall),
-            pagerState = pagerState,
-            activeIndicatorWidth = 6.dp,
-            inactiveIndicatorWidth = 4.dp,
-            activeColor = RadixTheme.colors.gray2,
-            inactiveColor = RadixTheme.colors.gray4
-        )
+        if (pagerState.pageCount > 1) {
+            HorizontalPagerIndicator(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = RadixTheme.dimensions.paddingSmall),
+                pagerState = pagerState,
+                activeIndicatorWidth = 6.dp,
+                inactiveIndicatorWidth = 4.dp,
+                activeColor = RadixTheme.colors.gray2,
+                inactiveColor = RadixTheme.colors.gray4
+            )
+        }
     }
 }
 
@@ -126,21 +129,40 @@ private fun CardView(
             disabledContentColor = RadixTheme.colors.gray1
         )
     ) {
-        ConstraintLayout(modifier = Modifier.fillMaxSize().throttleClickable(onClick = onClick)) {
+        ConstraintLayout(
+            modifier = Modifier
+                .fillMaxSize()
+                .throttleClickable(onClick = onClick)
+        ) {
             val (titleView, descriptionView, endGraphicView, endIconView, closeIconView) = createRefs()
             createVerticalChain(titleView, descriptionView, chainStyle = ChainStyle.Packed)
 
-            card.EndGraphic(
-                modifier = Modifier.constrainAs(endGraphicView) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    end.linkTo(parent.end)
-                    start.linkTo(parent.start)
+            val endGraphicRes = card.EndGraphicRes()
+            endGraphicRes?.let { painter ->
+                Image(
+                    modifier = Modifier.constrainAs(endGraphicView) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                        start.linkTo(parent.start)
 
-                    width = Dimension.fillToConstraints
-                    height = Dimension.fillToConstraints
+                        width = Dimension.fillToConstraints
+                        height = Dimension.fillToConstraints
+                    },
+                    painter = painter,
+                    contentDescription = null,
+                    alignment = Alignment.CenterEnd,
+                    contentScale = ContentScale.FillHeight
+                )
+            }
+            val titleWidthPercent = remember(endGraphicRes) {
+                if (endGraphicRes == null) {
+                    // More content fits as there is no overlap with the graphic
+                    0.7f
+                } else {
+                    0.63f
                 }
-            )
+            }
 
             val titleStyle = RadixTheme.typography.body1Header
             Text(
@@ -150,10 +172,9 @@ private fun CardView(
                             start = parent.start,
                             end = parent.end,
                             startMargin = 20.dp,
-                            endMargin = 20.dp,
                             bias = 0f
                         )
-                        width = Dimension.percent(0.63f)
+                        width = Dimension.percent(titleWidthPercent)
                         height = Dimension.wrapContent
                     }
                     .padding(bottom = RadixTheme.dimensions.paddingSmall),
@@ -173,18 +194,29 @@ private fun CardView(
                             tint = RadixTheme.colors.gray2
                         )
                     }
-                )
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
 
             Text(
                 modifier = Modifier.constrainAs(descriptionView) {
-                    linkTo(start = titleView.start, end = titleView.end)
-
+                    linkTo(
+                        start = titleView.start,
+                        end = titleView.end
+                    )
+                    linkTo(
+                        top = titleView.bottom,
+                        bottom = parent.bottom,
+                        bias = 0f
+                    )
                     width = Dimension.fillToConstraints
-                    height = Dimension.wrapContent
+                    height = Dimension.preferredWrapContent
                 },
                 text = card.description(),
                 style = RadixTheme.typography.body2Regular,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
 
             card.EndIcon(
@@ -221,7 +253,7 @@ private fun HomeCard.title() = buildAnnotatedString {
     val title = when (this@title) {
         HomeCard.Connector -> stringResource(id = R.string.homePageCarousel_useDappsOnDesktop_title)
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
-        is HomeCard.DApp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
+        is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
     }
     append(title)
@@ -236,7 +268,7 @@ private fun HomeCard.title() = buildAnnotatedString {
 private fun HomeCard.description() = when (this) {
     HomeCard.Connector -> stringResource(id = R.string.homePageCarousel_useDappsOnDesktop_text)
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
-    is HomeCard.DApp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
+    is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
 }
 
@@ -246,7 +278,7 @@ private fun HomeCard.EndIcon(
 ) = when (this) {
     HomeCard.Connector -> {}
     HomeCard.ContinueRadQuest -> {}
-    is HomeCard.DApp -> {
+    is HomeCard.Dapp -> {
         val uri = remember(iconUrl) {
             iconUrl?.let { Uri.parse(it.toString()) }
         }
@@ -262,23 +294,11 @@ private fun HomeCard.EndIcon(
 }
 
 @Composable
-private fun HomeCard.EndGraphic(
-    modifier: Modifier = Modifier
-) = when (this) {
+private fun HomeCard.EndGraphicRes() = when (this) {
     HomeCard.Connector -> painterResource(id = R.drawable.ic_homecarousel_connect)
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
-    is HomeCard.DApp -> null
+    is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
-}.let { painter ->
-    if (painter != null) {
-        Image(
-            modifier = modifier,
-            painter = painter,
-            contentDescription = null,
-            alignment = Alignment.CenterEnd,
-            contentScale = ContentScale.FillHeight
-        )
-    }
 }
 
 private const val INLINE_LINK_ICON = "link_icon"
@@ -361,14 +381,6 @@ private fun HorizontalPagerIndicator(
     }
 }
 
-// To be replaced with sargon
-sealed interface HomeCard {
-    data object StartRadQuest : HomeCard
-    data object ContinueRadQuest : HomeCard
-    data class DApp(val iconUrl: Url?) : HomeCard
-    data object Connector : HomeCard
-}
-
 private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest
 
 @Preview
@@ -379,7 +391,7 @@ fun HomeCardsCarouselContinueRadQuestPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -400,7 +412,7 @@ fun HomeCardsCarouselStartRadQuestPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -422,7 +434,7 @@ fun HomeCardsCarouselDAppPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -444,7 +456,7 @@ fun HomeCardsCarouselConnectorPreview() {
             persistentListOf(
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
-                HomeCard.DApp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
                 HomeCard.Connector
             )
         }
@@ -452,6 +464,28 @@ fun HomeCardsCarouselConnectorPreview() {
             modifier = Modifier.fillMaxWidth(),
             cards = cards,
             initialPage = 3,
+            onClick = {},
+            onCloseClick = {}
+        )
+    }
+}
+
+@Preview(fontScale = 1.5f)
+@Composable
+fun HomeCardsCarouselScaledFontPreview() {
+    RadixWalletPreviewTheme {
+        val cards = remember {
+            persistentListOf(
+                HomeCard.ContinueRadQuest,
+                HomeCard.StartRadQuest,
+                HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
+                HomeCard.Connector
+            )
+        }
+        HomeCardsCarousel(
+            modifier = Modifier.fillMaxWidth(),
+            cards = cards,
+            initialPage = 1,
             onClick = {},
             onCloseClick = {}
         )

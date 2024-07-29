@@ -141,7 +141,6 @@ sealed interface BalanceChange : Comparable<BalanceChange> {
     data class NonFungibleBalanceChange(
         val removedIds: List<String>,
         val addedIds: List<String>,
-        val items: List<Item>,
         override val entityAddress: Address,
         override val asset: Asset.NonFungible? = null
     ) : BalanceChange {
@@ -159,11 +158,6 @@ sealed interface BalanceChange : Comparable<BalanceChange> {
             }
             return assetOrderComparison
         }
-
-        data class Item(
-            val name: String,
-            val resourceName: String
-        )
     }
 }
 
@@ -252,24 +246,9 @@ private fun List<TransactionNonFungibleBalanceChanges>.toNonFungibleBalanceChang
             null -> null
         }
 
-        val resourceName = relatedAsset?.let { asset ->
-            asset.resource.name.ifEmpty {
-                asset.resource.address.formatted()
-            }
-        }.orEmpty()
-        val items = relatedAsset?.let { asset ->
-            asset.resource.items.map { nftItem ->
-                BalanceChange.NonFungibleBalanceChange.Item(
-                    name = nftItem.name ?: nftItem.localId.formatted(),
-                    resourceName = resourceName
-                )
-            }
-        }.orEmpty()
-
         BalanceChange.NonFungibleBalanceChange(
             removedIds = item.removed,
             addedIds = item.added,
-            items = items,
             entityAddress = Address.init(item.entityAddress),
             asset = relatedAsset
         )

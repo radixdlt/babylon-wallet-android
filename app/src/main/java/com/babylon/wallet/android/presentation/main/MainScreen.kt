@@ -23,7 +23,8 @@ fun MainScreen(
     onNavigateToIncompatibleProfile: () -> Unit,
     showNPSSurvey: () -> Unit,
     onNavigateToRelinkConnectors: () -> Unit,
-    onNavigateToConnectCloudBackup: () -> Unit
+    onNavigateToConnectCloudBackup: () -> Unit,
+    onNavigateToLinkConnector: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -37,7 +38,8 @@ fun MainScreen(
                 onNavigateToSecurityCenter = onNavigateToSecurityCenter,
                 showNPSSurvey = showNPSSurvey,
                 onNavigateToRelinkConnectors = onNavigateToRelinkConnectors,
-                onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup
+                onNavigateToConnectCloudBackup = onNavigateToConnectCloudBackup,
+                onNavigateToLinkConnector = onNavigateToLinkConnector,
             )
         }
 

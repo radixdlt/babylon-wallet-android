@@ -14,12 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.domain.resources.Resource
@@ -54,7 +53,7 @@ fun FungibleCard(
         )
         Text(
             modifier = Modifier.weight(1f),
-            text = fungible.displayTitle.ifEmpty { stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName) },
+            text = fungible.displayTitleAsToken(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
             maxLines = 2,

@@ -106,9 +106,9 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.continueButtonEnabled)
-            assert(item.personaListToDisplay.size == 2)
-            val onePersonaAuthorized = item.personaListToDisplay.count { it.lastUsedOn != null } == 1
+            assert(item.isContinueButtonEnabled)
+            assert(item.personas.size == 2)
+            val onePersonaAuthorized = item.personas.count { it.lastUsedOn != null } == 1
             assert(onePersonaAuthorized)
         }
     }
@@ -120,9 +120,9 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(!item.continueButtonEnabled)
-            assert(item.personaListToDisplay.size == 2)
-            val noPersonaAuthorized = item.personaListToDisplay.all { it.lastUsedOn == null }
+            assert(!item.isContinueButtonEnabled)
+            assert(item.personas.size == 2)
+            val noPersonaAuthorized = item.personas.all { it.lastUsedOn == null }
             assert(noPersonaAuthorized)
         }
     }

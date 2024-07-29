@@ -49,13 +49,12 @@ class GetFreeXrdUseCase @Inject constructor(
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
-                signTransactionUseCase.sign(
+                signTransactionUseCase(
                     request = SignTransactionUseCase.Request(
                         manifest = manifest,
                         lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
                         tipPercentage = TIP_PERCENTAGE
-                    ),
-                    deviceBiometricAuthenticationProvider = { true }
+                    )
                 ).then { notarization ->
                     submitTransactionUseCase(notarizationResult = notarization)
                 }.onSuccess { notarization ->

@@ -43,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.presentation.account.history.State
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -190,7 +191,7 @@ private fun ResourcesSection(
                     val selected = state.filters.resource?.address == fungible.address
                     HistoryFilterTag(
                         selected = selected,
-                        text = fungible.displayTitle.ifEmpty { fungible.address.formatted() },
+                        text = fungible.displayTitleAsToken(fallback = { fungible.address.formatted() }),
                         onClick = {
                             onResourceFilterSelected(if (selected) null else fungible)
                         },

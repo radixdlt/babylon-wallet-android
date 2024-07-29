@@ -12,6 +12,8 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceOrNonFungible
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,15 +45,20 @@ class AssetDialogViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             resolveAssetsFromAddressUseCase(
-                fungibleAddresses = when (args) {
-                    is AssetDialogArgs.Fungible -> setOf(args.resourceAddress)
-                    is AssetDialogArgs.NFT -> setOf()
-                },
-                nonFungibleIds = when (args) {
-                    is AssetDialogArgs.Fungible -> mapOf()
-                    is AssetDialogArgs.NFT -> mapOf(
-                        args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty()
-                    )
+                addresses = when (args) {
+                    is AssetDialogArgs.Fungible -> setOf(ResourceOrNonFungible.Resource(args.resourceAddress))
+                    is AssetDialogArgs.NFT -> if (args.localId != null) {
+                        setOf(
+                            ResourceOrNonFungible.NonFungible(
+                                NonFungibleGlobalId(
+                                    resourceAddress = args.resourceAddress,
+                                    nonFungibleLocalId = args.localId
+                                )
+                            )
+                        )
+                    } else {
+                        setOf(ResourceOrNonFungible.Resource(args.resourceAddress))
+                    }
                 },
                 withAllMetadata = true
             ).mapCatching { assets ->

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
+import com.babylon.wallet.android.data.gateway.survey.SurveyRequest
 import com.babylon.wallet.android.data.gateway.survey.SurveyResponse
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -12,8 +13,8 @@ import javax.inject.Inject
 interface NPSSurveyRepository {
 
     suspend fun submitSurveyResponse(
-        npsQuestion: String,
-        reason: String,
+        npsScore: Int? = null,
+        reason: String? = null
     ): Result<SurveyResponse>
 }
 
@@ -24,17 +25,17 @@ class NPSSurveyRepositoryImpl @Inject constructor(
 ) : NPSSurveyRepository {
 
     override suspend fun submitSurveyResponse(
-        npsQuestion: String,
-        reason: String,
+        npsScore: Int?,
+        reason: String?
     ): Result<SurveyResponse> {
         return with(ioDispatcher) {
             val uuid = preferencesManager.surveyUuid.first()
             nPSSurveyApi.storeSurveyResponse(
-                params = mapOf(
-                    NPSSurveyApi.PARAM_ID to uuid,
-                    NPSSurveyApi.PARAM_FORM_UUID to BuildConfig.REFINER_FORM_UUID,
-                    NPSSurveyApi.PARAM_NPS to npsQuestion,
-                    NPSSurveyApi.PARAM_WHAT_DO_YOU_VALUE to reason
+                SurveyRequest(
+                    id = uuid,
+                    formUuid = BuildConfig.REFINER_FORM_UUID,
+                    nps = npsScore,
+                    whatDoYouValue = reason
                 )
             ).toResult()
         }

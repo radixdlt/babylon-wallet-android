@@ -1,9 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -15,27 +14,34 @@ import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.EntityKind
+import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
+import rdx.works.profile.domain.persona.CreatePersonaUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
-    private val createPersonaWithDeviceFactorSourceUseCase: CreatePersonaWithDeviceFactorSourceUseCase,
-    private val preferencesManager: PreferencesManager,
+    private val createPersonaUseCase: CreatePersonaUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
-    OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
 
     override fun initialState(): CreatePersonaUiState = CreatePersonaUiState()
+
+    private var accessFactorSourcesJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -55,38 +61,43 @@ class CreatePersonaViewModel @Inject constructor(
     }
 
     fun onPersonaCreateClick() {
-        _state.update { it.copy(loading = true) }
-        viewModelScope.launch {
+        accessFactorSourcesJob?.cancel()
+        accessFactorSourcesJob = viewModelScope.launch {
+            val displayName = DisplayName(_state.value.personaDisplayName.value)
             val personaData = _state.value.currentFields.toPersonaData()
-            createPersonaWithDeviceFactorSourceUseCase(
-                displayName = DisplayName(_state.value.personaDisplayName.value),
-                personaData = personaData
-            ).onSuccess { persona ->
-                val personaId = persona.address
-                _state.update { it.copy(loading = true) }
-                preferencesManager.markFirstPersonaCreated()
-
-                sendEvent(
-                    CreatePersonaEvent.Complete(
-                        personaId = personaId
-                    )
+            val factorSource = getProfileUseCase().mainBabylonFactorSource ?: return@launch
+            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    entityKind = EntityKind.PERSONA,
+                    forNetworkId = getProfileUseCase().currentGateway.network.id,
+                    factorSource = factorSource,
+                    isBiometricsProvided = false
                 )
+            ).mapCatching { hdPublicKey ->
+                createPersonaUseCase(
+                    displayName = displayName,
+                    personaData = personaData,
+                    factorSourceId = factorSource.value.id.asGeneral(),
+                    hdPublicKey = hdPublicKey.value
+                )
+            }.onSuccess {
+                _state.update { state -> state.copy(shouldNavigateToCompletion = true) }
             }.onFailure { error ->
                 when (error) {
                     is ProfileException.SecureStorageAccess -> {
-                        _state.update { it.copy(loading = false) }
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     }
 
-                    else -> {
+                    is ProfileException.NoMnemonic -> {
                         _state.update {
-                            val noMnemonic = error is ProfileException.NoMnemonic
                             it.copy(
-                                loading = false,
-                                isNoMnemonicErrorVisible = noMnemonic,
-                                uiMessage = if (!noMnemonic) UiMessage.ErrorMessage(error) else null
+                                isNoMnemonicErrorVisible = true
                             )
                         }
+                    }
+
+                    else -> {
+                        Timber.d(error)
                     }
                 }
             }
@@ -101,12 +112,15 @@ class CreatePersonaViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    fun onNavigationEventHandled() {
+        _state.update { it.copy(shouldNavigateToCompletion = false) }
+    }
+
     fun dismissNoMnemonicError() {
         _state.update { it.copy(isNoMnemonicErrorVisible = false) }
     }
 
     data class CreatePersonaUiState(
-        val loading: Boolean = false,
         val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
@@ -114,12 +128,7 @@ class CreatePersonaViewModel @Inject constructor(
         val anyFieldSelected: Boolean = false,
         val isAddFieldBottomSheetVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val isNoMnemonicErrorVisible: Boolean = false
+        val isNoMnemonicErrorVisible: Boolean = false,
+        val shouldNavigateToCompletion: Boolean = false
     ) : UiState
-}
-
-internal sealed interface CreatePersonaEvent : OneOffEvent {
-    data class Complete(
-        val personaId: IdentityAddress
-    ) : CreatePersonaEvent
 }

@@ -200,11 +200,11 @@ fun FeesSheet(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(
-                                    horizontal = RadixTheme.dimensions.paddingDefault,
+                                    horizontal = RadixTheme.dimensions.paddingLarge,
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
                             text = stringResource(id = R.string.transactionReview_insufficientBalance),
-                            contentColor = RadixTheme.colors.red1,
+                            contentColor = RadixTheme.colors.orange1,
                             iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                         )
                     }

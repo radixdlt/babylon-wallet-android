@@ -32,7 +32,7 @@ fun NavController.transactionReview(requestId: String, navOptionsBuilder: NavOpt
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
     onTransferableFungibleClick: (TransferableAsset.Fungible) -> Unit,
-    onTransferableNonFungibleClick: (TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleClick: (TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSACTION_REVIEW)

@@ -21,6 +21,7 @@ import rdx.works.core.toByteArray
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
 import javax.inject.Inject
 
+@Deprecated("will be removed after refactoring. Now it is used only in ROLAClient")
 class CollectSignersSignaturesUseCase @Inject constructor(
     private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
     private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
@@ -60,7 +61,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
-                        request = signRequest
+                        signRequest = signRequest
                     ).onSuccess { signatures ->
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {

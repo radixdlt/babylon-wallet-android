@@ -17,7 +17,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -39,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.linkedconnector.Li
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.collections.immutable.persistentListOf
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -108,6 +108,7 @@ private fun AddLinkConnectorContent(
                         )
                     }
                 }
+
                 is AddLinkConnectorUiState.Content.ApproveNewLinkConnector -> {
                     LinkedConnectorMessageScreen(
                         title = stringResource(id = R.string.linkedConnectors_approveNewConnector_title),
@@ -117,6 +118,7 @@ private fun AddLinkConnectorContent(
                         onNegativeClick = onCloseClick
                     )
                 }
+
                 is AddLinkConnectorUiState.Content.UpdateLinkConnector -> {
                     LinkedConnectorMessageScreen(
                         title = stringResource(id = R.string.linkedConnectors_approveExistingConnector_title),
@@ -126,6 +128,7 @@ private fun AddLinkConnectorContent(
                         onNegativeClick = onCloseClick
                     )
                 }
+
                 is AddLinkConnectorUiState.Content.NameLinkConnector -> {
                     NameNewConnector(
                         content = state.content,
@@ -148,6 +151,7 @@ private fun AddLinkConnectorContent(
                 message = stringResource(id = R.string.linkedConnectors_incorrectQrMessage),
                 onDismiss = onErrorDismiss
             )
+
             is AddLinkConnectorUiState.Error.Other -> ConnectionErrorDialog(
                 title = stringResource(id = R.string.linkedConnectors_linkFailedErrorTitle),
                 message = it.message.getMessage(),
@@ -165,20 +169,24 @@ private fun ScanQrCode(
     onQrCodeScanFailure: (Throwable) -> Unit
 ) {
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier
     ) {
         Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            text = stringResource(id = R.string.linkedConnectors_newConnection_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
 
         Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.linkedConnectors_newConnection_subtitle),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+            text = stringResource(id = R.string.scanQR_connectorExtension_instructions),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
@@ -189,14 +197,34 @@ private fun ScanQrCode(
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .padding(
-                    horizontal = RadixTheme.dimensions.paddingLarge,
-                    vertical = RadixTheme.dimensions.paddingDefault
+                    horizontal = RadixTheme.dimensions.paddingXXLarge,
+                    vertical = RadixTheme.dimensions.paddingLarge
                 )
                 .clip(RadixTheme.shapes.roundedRectMedium),
             disableBackHandler = false,
             isVisible = isCameraOn,
             onQrCodeDetected = onQrCodeScanned,
             onError = onQrCodeScanFailure
+        )
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
+            text = stringResource(id = R.string.scanQR_connectorExtension_disclosureTitle),
+            style = RadixTheme.typography.body2Header,
+            color = RadixTheme.colors.gray1
+        )
+
+        NumberedValuesList(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+            values = persistentListOf(
+                stringResource(id = R.string.scanQR_connectorExtension_disclosureItem1),
+                stringResource(id = R.string.scanQR_connectorExtension_disclosureItem2)
+            )
         )
     }
 }

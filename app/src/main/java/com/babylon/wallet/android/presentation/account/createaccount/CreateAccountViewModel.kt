@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
-import Constants.ACCOUNT_NAME_MAX_LENGTH
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
@@ -15,9 +15,11 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
@@ -28,7 +30,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -53,10 +54,10 @@ class CreateAccountViewModel @Inject constructor(
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val deleteNotInitializedProfileDataUseCase: DeleteNotInitializedProfileDataUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val preferencesManager: PreferencesManager,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val homeCardsRepository: HomeCardsRepository
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -137,6 +138,7 @@ class CreateAccountViewModel @Inject constructor(
 
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    entityKind = EntityKind.ACCOUNT,
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
                     isBiometricsProvided = isFirstAccount
@@ -226,8 +228,7 @@ class CreateAccountViewModel @Inject constructor(
         if (args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled ||
             args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
         ) {
-            preferencesManager.setRadixBannerVisibility(isVisible = true)
-
+            homeCardsRepository.walletCreated()
             val isCloudBackupEnabled = args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
             changeBackupSettingUseCase(isChecked = isCloudBackupEnabled)
         }

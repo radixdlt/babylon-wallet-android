@@ -7,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -17,7 +16,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -27,20 +25,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
@@ -60,11 +54,11 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.orZero
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -81,19 +75,23 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Dismiss -> onDismiss()
+            }
+        }
+    }
+
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
-        onApproveTransaction = {
-            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
-            })
-        },
+        onApproveTransaction = viewModel::onApproveTransaction,
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
@@ -107,7 +105,7 @@ fun TransactionReviewScreen(
         onDAppClick = onDAppClick,
         onUnknownAddressesClick = viewModel::onUnknownAddressesClick,
         onTransferableFungibleClick = onTransferableFungibleClick,
-        onNonTransferableFungibleClick = onTransferableNonFungibleClick,
+        onTransferableNonFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
         onPayerSelected = viewModel::onPayerSelected,
@@ -118,34 +116,6 @@ fun TransactionReviewScreen(
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning
     )
-
-    state.interactionState?.let {
-        when (it) {
-            is InteractionState.Ledger.Error -> {
-                BasicPromptAlertDialog(
-                    finish = { viewModel.onCancelSigningClick() },
-                    message = {
-                        Text(text = it.failure.userFriendlyMessage())
-                    },
-                    confirmText = stringResource(id = R.string.common_ok),
-                    dismissText = null
-                )
-            }
-
-            else -> FactorSourceInteractionBottomDialog(
-                modifier = Modifier.fillMaxHeight(0.8f),
-                onDismissDialogClick = viewModel::onBackClick,
-                interactionState = it
-            )
-        }
-    }
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                Event.Dismiss -> onDismiss()
-            }
-        }
-    }
 }
 
 @Suppress("CyclomaticComplexMethod")
@@ -168,7 +138,7 @@ private fun TransactionPreviewContent(
     onDAppClick: (DApp) -> Unit,
     onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Account) -> Unit,
@@ -297,7 +267,7 @@ private fun TransactionPreviewContent(
                                         onUnknownAddressesClick(componentAddresses.map { Address.Component(it) }.toPersistentList())
                                     },
                                     onTransferableFungibleClick = onTransferableFungibleClick,
-                                    onNonTransferableFungibleClick = onNonTransferableFungibleClick
+                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick
                                 )
                             }
 
@@ -311,7 +281,7 @@ private fun TransactionPreviewContent(
                                 StakeTypeContent(
                                     state = state,
                                     onTransferableFungibleClick = onTransferableFungibleClick,
-                                    onNonTransferableFungibleClick = onNonTransferableFungibleClick,
+                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick,
                                     onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
@@ -334,9 +304,29 @@ private fun TransactionPreviewContent(
 
                     Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
                         ReceiptEdge(color = RadixTheme.colors.gray5)
-                        if (state.previewType is PreviewType.Transfer.GeneralTransfer) {
-                            PresentingProofsContent(badges = state.previewType.badges.toPersistentList())
-                        }
+
+                        PresentingProofsContent(
+                            badges = state.previewType.badges.toPersistentList(),
+                            onClick = { badge ->
+                                when (val resource = badge.resource) {
+                                    is Resource.FungibleResource -> onTransferableFungibleClick(
+                                        TransferableAsset.Fungible.Token(
+                                            amount = resource.ownedAmount.orZero(),
+                                            resource = resource,
+                                            isNewlyCreated = false
+                                        )
+                                    )
+
+                                    is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
+                                        TransferableAsset.NonFungible.NFTAssets(
+                                            resource = resource,
+                                            isNewlyCreated = false
+                                        ),
+                                        resource.items.firstOrNull()
+                                    )
+                                }
+                            }
+                        )
 
                         NetworkFeeContent(
                             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
@@ -512,7 +502,7 @@ fun TransactionPreviewContentPreview() {
             onDAppClick = {},
             onUnknownAddressesClick = {},
             onTransferableFungibleClick = {},
-            onNonTransferableFungibleClick = { _, _ -> },
+            onTransferableNonFungibleClick = { _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},

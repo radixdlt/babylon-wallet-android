@@ -44,6 +44,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
     private var pollJob: Job? = null
+    private var isRequestHandled = false
 
     init {
         viewModelScope.launch {
@@ -91,6 +92,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             isMobileConnect = status.isMobileConnect
                         )
                     )
+                    incomingRequestRepository.requestHandled(state.value.status.requestId)
+                    isRequestHandled = true
                 }.onFailure { error ->
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
@@ -117,6 +120,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                         )
                     )
                 }
+                _state.update { it.copy(blockUntilComplete = false) }
                 transactionStatusClient.statusHandled(status.transactionId)
             }
         }
@@ -134,8 +138,10 @@ class TransactionStatusDialogViewModel @Inject constructor(
     fun onDismissConfirmed() {
         _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
         viewModelScope.launch {
+            if (!isRequestHandled) {
+                incomingRequestRepository.requestHandled(state.value.status.requestId)
+            }
             sendEvent(Event.DismissDialog)
-            incomingRequestRepository.requestHandled(state.value.status.requestId)
         }
     }
 

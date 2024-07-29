@@ -21,7 +21,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -57,11 +60,13 @@ fun DerivePublicKeyDialog(
                     context.biometricAuthenticate { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
                             BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
-                            BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
-                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
+                            else -> {
+                                /* do nothing */
+                            }
                         }
                     }
                 }
+
                 DerivePublicKeyViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
                 DerivePublicKeyViewModel.Event.UserDismissed -> onDismiss()
             }
@@ -70,8 +75,7 @@ fun DerivePublicKeyDialog(
 
     DerivePublicKeyBottomSheetContent(
         modifier = modifier,
-        showContentForFactorSource = state.showContentForFactorSource,
-        shouldShowRetryButton = state.shouldShowRetryButton,
+        contentType = state.contentType,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -80,14 +84,15 @@ fun DerivePublicKeyDialog(
 @Composable
 private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
-    showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
-    shouldShowRetryButton: Boolean,
+    contentType: DerivePublicKeyUiState.ContentType,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        heightFraction = 0.7f,
+        centerContent = true
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +101,6 @@ private fun DerivePublicKeyBottomSheetContent(
                 .background(RadixTheme.colors.defaultBackground),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(40.dp))
             Icon(
                 modifier = Modifier.size(80.dp),
                 painter = painterResource(
@@ -106,57 +110,61 @@ private fun DerivePublicKeyBottomSheetContent(
                 tint = RadixTheme.colors.gray3
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            Text(
-                style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.factorSourceActions_createAccount_title)
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            when (showContentForFactorSource) {
-                DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
-                    Text(
-                        style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
-                    )
-                    if (shouldShowRetryButton) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                        RadixTextButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.common_retry),
-                            onClick = onRetryClick
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(76.dp))
-                    }
+            val title = when (contentType) {
+                DerivePublicKeyUiState.ContentType.ForDeviceAccount,
+                is DerivePublicKeyUiState.ContentType.ForLedgerAccount -> {
+                    stringResource(id = R.string.factorSourceActions_createAccount_title)
                 }
 
-                is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
-                    Text(
-                        style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
-                            .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-                    RadixTextButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.common_retry),
-                        onClick = onRetryClick
-                    )
+                DerivePublicKeyUiState.ContentType.ForPersona -> {
+                    stringResource(id = R.string.factorSourceActions_createPersona_title)
                 }
             }
-            Spacer(Modifier.height(120.dp))
+            Text(
+                style = RadixTheme.typography.title,
+                text = title
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            when (contentType) {
+                DerivePublicKeyUiState.ContentType.ForPersona,
+                DerivePublicKeyUiState.ContentType.ForDeviceAccount -> {
+                    Text(
+                        style = RadixTheme.typography.body1Regular,
+                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                is DerivePublicKeyUiState.ContentType.ForLedgerAccount -> {
+                    Text(
+                        style = RadixTheme.typography.body1Regular,
+                        text = stringResource(id = R.string.factorSourceActions_ledger_message)
+                            .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.name)
+                }
+            }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            RadixTextButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.common_retry),
+                onClick = onRetryClick
+            )
         }
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun DerivePublicKeyDialogDevicePreview() {
+private fun DerivePublicKeyPreview(
+    @PreviewParameter(DerivePublicKeyPreviewParameterProvider::class) param: DerivePublicKeyUiState.ContentType
+) {
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
-            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Device,
-            shouldShowRetryButton = false,
+            contentType = param,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -164,17 +172,12 @@ fun DerivePublicKeyDialogDevicePreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = false)
-@Composable
-fun DerivePublicKeyDialogLedgerPreview() {
-    RadixWalletTheme {
-        DerivePublicKeyBottomSheetContent(
-            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
-                selectedLedgerDevice = FactorSource.Ledger.sample()
-            ),
-            shouldShowRetryButton = false,
-            onDismiss = {},
-            onRetryClick = {}
+class DerivePublicKeyPreviewParameterProvider : PreviewParameterProvider<DerivePublicKeyUiState.ContentType> {
+
+    override val values: Sequence<DerivePublicKeyUiState.ContentType>
+        get() = sequenceOf(
+            DerivePublicKeyUiState.ContentType.ForDeviceAccount,
+            DerivePublicKeyUiState.ContentType.ForLedgerAccount(selectedLedgerDevice = FactorSource.Ledger.sample()),
+            DerivePublicKeyUiState.ContentType.ForPersona
         )
-    }
 }

@@ -1,3 +1,5 @@
+package com.babylon.wallet.android.utils
+
 object Constants {
     const val SNACKBAR_SHOW_DURATION_MS = 2000L
     const val VM_STOP_TIMEOUT_MS = 5000L
@@ -10,4 +12,6 @@ object Constants {
 
     const val RADIX_SUPPORT_EMAIL_ADDRESS = "hello@radixdlt.com"
     const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"
+
+    const val RAD_QUEST_URL = "https://radquest.io?wallet=ready"
 }
