@@ -32,6 +32,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.status.transaction.TransactionStatusDialogViewModel.State.DismissInfo.REQUIRE_COMPLETION
+import com.babylon.wallet.android.presentation.status.transaction.TransactionStatusDialogViewModel.State.DismissInfo.STOP_WAITING
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
@@ -61,12 +63,13 @@ fun TransactionStatusDialog(
             }
         }
     }
+
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = dismissHandler,
         dragToDismissEnabled = state.isDismissible,
-        showDefaultTopBar = state.isDismissible,
         showDragHandle = state.isDismissible,
+        isDismissible = false,
         content = {
             Box {
                 androidx.compose.animation.AnimatedVisibility(
@@ -119,18 +122,36 @@ fun TransactionStatusDialog(
                     )
                 }
 
-                if (state.isIgnoreTransactionModalShowing) {
-                    BasicPromptAlertDialog(
-                        finish = { viewModel.onDismissConfirmed() },
-                        message = {
-                            Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
-                        },
-                        confirmText = stringResource(id = R.string.common_ok),
-                        dismissText = null
+                state.dismissInfo?.let {
+                    InfoDialog(
+                        type = it,
+                        onClose = viewModel::onInfoClose
                     )
                 }
             }
         }
+    )
+}
+
+@Composable
+private fun InfoDialog(
+    type: TransactionStatusDialogViewModel.State.DismissInfo,
+    onClose: () -> Unit
+) {
+    BasicPromptAlertDialog(
+        finish = { onClose() },
+        message = {
+            Text(
+                text = stringResource(
+                    id = when (type) {
+                        STOP_WAITING -> R.string.transactionStatus_dismissDialog_message
+                        REQUIRE_COMPLETION -> R.string.transactionStatus_dismissalDisabledDialog_text
+                    }
+                )
+            )
+        },
+        confirmText = stringResource(id = R.string.common_ok),
+        dismissText = null
     )
 }
 

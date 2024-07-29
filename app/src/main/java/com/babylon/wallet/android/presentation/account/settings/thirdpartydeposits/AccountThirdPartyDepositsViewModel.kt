@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -32,7 +31,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
@@ -54,7 +52,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val transactionStatusClient: TransactionStatusClient,
     private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
-    @ApplicationScope private val applicationScope: CoroutineScope,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
@@ -69,7 +66,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     private fun handleRequestStatus(requestId: String) {
         pollJob?.cancel()
-        pollJob = applicationScope.launch {
+        pollJob = viewModelScope.launch {
             transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
                 status.result.onSuccess {
                     when (val type = status.transactionType) {
@@ -148,7 +145,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 incomingRequestRepository.add(
                     manifest.prepareInternalTransactionRequest(
                         requestId = requestId,
-                        transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings)
+                        transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
+                        blockUntilCompleted = true
                     )
                 )
                 handleRequestStatus(requestId.toString())

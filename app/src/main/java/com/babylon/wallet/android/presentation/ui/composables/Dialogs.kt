@@ -116,6 +116,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
     centerContent: Boolean = false,
@@ -201,8 +202,13 @@ fun BottomSheetDialogWrapper(
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
                         onDismissRequest = {
-                            scope.launch {
-                                draggableState.animateTo(DragState.Collapsed)
+                            if (isDismissible) {
+                                scope.launch {
+                                    draggableState.animateTo(DragState.Collapsed)
+                                }
+                            } else {
+                                // Delegate the dismiss request logic to the caller
+                                onDismiss()
                             }
                         },
                         title = title

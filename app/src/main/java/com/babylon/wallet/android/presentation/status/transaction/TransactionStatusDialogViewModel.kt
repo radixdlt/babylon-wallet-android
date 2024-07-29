@@ -57,11 +57,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             status = status,
-                            isIgnoreTransactionModalShowing = if (status is TransactionStatus.Completing) {
-                                it.isIgnoreTransactionModalShowing
-                            } else {
-                                false
-                            }
+                            dismissInfo = it.dismissInfo.takeIf { status is TransactionStatus.Completing }
                         )
                     }
 
@@ -129,16 +125,25 @@ class TransactionStatusDialogViewModel @Inject constructor(
     }
 
     fun onDismiss() {
-        if (state.value.isCompleting && args.event.blockUntilComplete) return
-        if (state.value.isCompleting) {
-            _state.update { it.copy(isIgnoreTransactionModalShowing = true) }
-        } else {
-            onDismissConfirmed()
+        when {
+            state.value.isCompleting && args.event.blockUntilComplete -> {
+                _state.update { it.copy(dismissInfo = State.DismissInfo.REQUIRE_COMPLETION) }
+            }
+            state.value.isCompleting -> {
+                _state.update { it.copy(dismissInfo = State.DismissInfo.STOP_WAITING) }
+            }
+            else -> onDismissConfirmed()
         }
     }
 
-    fun onDismissConfirmed() {
-        _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
+    fun onInfoClose() {
+        if (state.value.dismissInfo == State.DismissInfo.STOP_WAITING) {
+            onDismissConfirmed()
+        }
+        _state.update { it.copy(dismissInfo = null) }
+    }
+
+    private fun onDismissConfirmed() {
         viewModelScope.launch {
             if (!isRequestHandled) {
                 incomingRequestRepository.requestHandled(state.value.status.requestId)
@@ -150,7 +155,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     data class State(
         val status: TransactionStatus,
         val isDismissible: Boolean,
-        val isIgnoreTransactionModalShowing: Boolean = false
+        val dismissInfo: DismissInfo? = null
     ) : UiState {
 
         val isCompleting: Boolean
@@ -170,6 +175,11 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
         val transactionId: String
             get() = status.transactionId
+
+        enum class DismissInfo {
+            STOP_WAITING,
+            REQUIRE_COMPLETION
+        }
     }
 
     sealed interface Event : OneOffEvent {
