@@ -273,11 +273,15 @@ private fun CreatePersonaContentList(
                 onFocusChanged = {
                     onPersonaDisplayNameFocusChanged(it.hasFocus)
                 },
-                error = if (personaName.shouldDisplayValidationError && personaName.valid == false) {
-                    stringResource(id = R.string.createPersona_emptyDisplayName)
+                error = if (personaName.wasEdited) {
+                    when (personaName.validationState) {
+                        PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)
+                        PersonaDisplayNameFieldWrapper.ValidationState.TooLong -> stringResource(id = R.string.error_personaLabel_tooLong)
+                        else -> null
+                    }
                 } else {
                     null
-                },
+                }
             )
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
             Text(
@@ -306,7 +310,7 @@ private fun CreatePersonaContentList(
                 },
                 required = field.required,
                 phoneInput = field.isPhoneNumber(),
-                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                error = if (field.shouldDisplayValidationError && field.isValid == false) {
                     stringResource(id = R.string.createPersona_requiredField)
                 } else {
                     null

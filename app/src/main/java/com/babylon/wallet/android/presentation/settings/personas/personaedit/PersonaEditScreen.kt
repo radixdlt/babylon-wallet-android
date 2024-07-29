@@ -294,8 +294,12 @@ private fun PersonaDetailList(
                 onValueChanged = onDisplayNameChanged,
                 value = personaDisplayName.value,
                 leftLabel = LabelType.Default(stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading)),
-                error = if (personaDisplayName.shouldDisplayValidationError && personaDisplayName.valid == false) {
-                    stringResource(id = R.string.createPersona_emptyDisplayName)
+                error = if (personaDisplayName.wasEdited) {
+                    when (personaDisplayName.validationState) {
+                        PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)
+                        PersonaDisplayNameFieldWrapper.ValidationState.TooLong -> stringResource(id = R.string.error_personaLabel_tooLong)
+                        else -> null
+                    }
                 } else {
                     null
                 },
@@ -351,7 +355,7 @@ private fun PersonaDetailList(
                 },
                 required = field.required,
                 phoneInput = field.isPhoneNumber(),
-                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                error = if (field.shouldDisplayValidationError && field.isValid == false) {
                     validationError
                 } else {
                     null

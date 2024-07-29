@@ -5,6 +5,7 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.isValid
 import com.babylon.wallet.android.presentation.model.sortOrderInt
+import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
@@ -46,7 +47,7 @@ class PersonaEditableImpl : PersonaEditable {
             PersonaFieldWrapper(
                 id = it.uuid,
                 entry = IdentifiedEntry.init(it.value, it.id),
-                valid = true,
+                isValid = true,
                 required = requiredFieldKinds.contains(it.value.kind)
             )
         }.orEmpty().sortedBy { it.entry.value.sortOrderInt() }.toPersistentList()
@@ -56,7 +57,9 @@ class PersonaEditableImpl : PersonaEditable {
                 requiredFieldKinds = requiredFieldKinds.toPersistentList(),
                 currentFields = currentFields,
                 fieldsToAdd = fieldsToAdd,
-                personaDisplayName = PersonaDisplayNameFieldWrapper(persona?.displayName?.value.orEmpty())
+                personaDisplayName = PersonaDisplayNameFieldWrapper(
+                    persona?.displayName?.value.orEmpty().take(Constants.ENTITY_NAME_MAX_LENGTH)
+                )
             )
         }
         if (shouldValidateInput) {
@@ -105,12 +108,12 @@ class PersonaEditableImpl : PersonaEditable {
 
     override fun onPersonaDisplayNameFieldFocusChanged(focused: Boolean) {
         if (!focused) {
-            _state.update { s ->
-                val displayName = s.personaDisplayName
-                s.copy(
-                    personaDisplayName = displayName.copy(shouldDisplayValidationError = displayName.wasEdited)
-                )
-            }
+//            _state.update { s ->
+//                val displayName = s.personaDisplayName
+//                s.copy(
+//                    personaDisplayName = displayName.copy(shouldDisplayValidationError = displayName.wasEdited)
+//                )
+//            }
             validateInput()
         }
     }
@@ -152,15 +155,12 @@ class PersonaEditableImpl : PersonaEditable {
 
     override fun validateInput() {
         val validatedFields = _state.value.currentFields.map { field ->
-            field.copy(valid = field.entry.value.isValid())
+            field.copy(isValid = field.entry.value.isValid())
         }
         _state.update { state ->
             state.copy(
                 currentFields = validatedFields.toPersistentList(),
-                inputValid = validatedFields.all { it.valid == true } && state.personaDisplayName.value.trim().isNotEmpty(),
-                personaDisplayName = state.personaDisplayName.copy(
-                    valid = state.personaDisplayName.value.trim().isNotEmpty()
-                )
+                inputValid = validatedFields.all { it.isValid == true } && state.personaDisplayName.isValid
             )
         }
     }
