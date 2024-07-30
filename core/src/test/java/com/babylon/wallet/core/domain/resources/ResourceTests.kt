@@ -27,48 +27,6 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 class ResourceTests {
 
     @Test
-    fun `given a fungible resource, when not null symbol and not null name, then display title has the symbol value`() {
-        val resource = fungibleResource(name = "name", symbol = "SYM")
-
-        Assert.assertEquals(resource.symbol, resource.displayTitle)
-    }
-
-    @Test
-    fun `given a fungible resource, when not null symbol and null name, then display title has the symbol value`() {
-        val resource = fungibleResource(name = null, symbol = "SYM")
-
-        Assert.assertEquals(resource.symbol, resource.displayTitle)
-    }
-
-    @Test
-    fun `given a fungible resource, when null symbol and not null name, then display title has the name value`() {
-        val resource = fungibleResource(name = "name", symbol = null)
-
-        Assert.assertEquals(resource.name, resource.displayTitle)
-    }
-
-    @Test
-    fun `given a fungible resource, when null symbol and null name, then display title has empty value`() {
-        val resource = fungibleResource(name = null, symbol = null)
-
-        Assert.assertEquals("", resource.displayTitle)
-    }
-
-    @Test
-    fun `given a fungible resource, when blank symbol and not null name or blank, then display title has name value`() {
-        val resource = fungibleResource(name = "name", symbol = " ")
-
-        Assert.assertEquals(resource.name, resource.displayTitle)
-    }
-
-    @Test
-    fun `given a fungible resource, when blank symbol and empty name, then display title has empty value`() {
-        val resource = fungibleResource(name = "", symbol = " ")
-
-        Assert.assertEquals("", resource.displayTitle)
-    }
-
-    @Test
     fun `given a list of fungible resources, when displayed in a list, they are sorted correctly`() {
         val resourceAddresses = List(9) {
             ResourceAddress.sampleMainnet.random()

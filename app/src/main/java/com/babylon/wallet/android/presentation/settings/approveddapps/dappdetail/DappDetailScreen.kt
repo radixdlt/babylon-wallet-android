@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -38,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -70,6 +67,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
@@ -196,7 +194,7 @@ private fun DappDetailContent(
                 RadixCenteredTopAppBar(
                     title = state.dAppWithResources?.dApp?.name.orEmpty(),
                     onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
                 HorizontalDivider(color = RadixTheme.colors.gray5)
             }
@@ -234,7 +232,6 @@ private fun DappDetailContent(
 
     if (state.isBottomSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 when (state.selectedSheetState) {
@@ -249,14 +246,6 @@ private fun DappDetailContent(
                                         bottomSheetState.hide()
                                     }
                                 },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .navigationBarsPadding()
-                                    .background(
-                                        RadixTheme.colors.defaultBackground,
-                                        shape = RadixTheme.shapes.roundedRectTopMedium
-                                    )
-                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
                                 dappName = state.dAppWithResources?.dApp?.name.orEmpty(),
                                 onDisconnectPersona = { persona ->
                                     hidePersonaBottomSheet()

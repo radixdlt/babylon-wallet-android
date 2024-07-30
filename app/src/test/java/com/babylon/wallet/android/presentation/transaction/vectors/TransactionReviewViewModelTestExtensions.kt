@@ -55,7 +55,6 @@ internal fun testViewModel(
     savedStateHandle: SavedStateHandle,
     testScope: TestScope
 ) = TransactionReviewViewModel(
-    signTransactionUseCase = signTransactionUseCase,
     analysis = TransactionAnalysisDelegate(
         previewTypeAnalyzer = PreviewTypeAnalyzer(
             generalTransferProcessor = GeneralTransferProcessor(
@@ -100,6 +99,7 @@ internal fun testViewModel(
     guarantees = TransactionGuaranteesDelegate(),
     fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository)),
     submit = TransactionSubmitDelegate(
+        signTransactionUseCase = signTransactionUseCase,
         respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
         incomingRequestRepository = incomingRequestRepository,

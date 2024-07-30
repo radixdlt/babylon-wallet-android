@@ -27,6 +27,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.XrdResource
@@ -62,18 +64,14 @@ fun TransferableLsuItemContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = transferableLsu.lsu.fungibleResource.displayTitle.ifEmpty {
-                        stringResource(
-                            id = R.string.transactionReview_unknown
-                        )
-                    },
+                    text = transferableLsu.displayTitle(),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferableLsu.lsu.validator.name,
+                    text = transferableLsu.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,

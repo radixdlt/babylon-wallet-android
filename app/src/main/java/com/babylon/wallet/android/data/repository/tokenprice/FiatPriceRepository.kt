@@ -16,7 +16,6 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.Timestamp
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
@@ -31,6 +30,7 @@ import timber.log.Timber
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Qualifier
+import javax.inject.Singleton
 import kotlin.random.Random
 
 @Retention(AnnotationRetention.BINARY)
@@ -148,17 +148,13 @@ class MainnetFiatPriceRepository @Inject constructor(
     }
 }
 
+// Keeps an in-memory cache of prices, so that prices of test tokens don't fluctuate between screens
+@Singleton
 class TestnetFiatPriceRepository @Inject constructor(
     @Mainnet private val delegate: FiatPriceRepository
 ) : FiatPriceRepository {
 
     private val mainnetXrdAddress = XrdResource.address(networkId = NetworkId.MAINNET)
-    private val mainnetAddresses = listOf(
-        "resource_rdx1t4tjx4g3qzd98nayqxm7qdpj0a0u8ns6a0jrchq49dyfevgh6u0gj3",
-        "resource_rdx1t45js47zxtau85v0tlyayerzrgfpmguftlfwfr5fxzu42qtu72tnt0",
-        "resource_rdx1tk7g72c0uv2g83g3dqtkg6jyjwkre6qnusgjhrtz0cj9u54djgnk3c",
-        "resource_rdx1tkk83magp3gjyxrpskfsqwkg4g949rmcjee4tu2xmw93ltw2cz94sq"
-    ).map { ResourceAddress.init(it) }
 
     private val testnetPricesCache: MutableMap<ResourceAddress, TestnetPrice> = mutableMapOf()
 
@@ -178,14 +174,8 @@ class TestnetFiatPriceRepository @Inject constructor(
             return Result.failure(FiatPriceRepository.PricesNotSupportedInNetwork())
         }
 
-        val mainnetAddressesToRequest = if (addresses.any { it.address in XrdResource.addressesPerNetwork().values }) {
-            mainnetAddresses + mainnetXrdAddress
-        } else {
-            mainnetAddresses
-        }.map { PriceRequestAddress.Regular(it) }.toSet()
-
         return delegate.getFiatPrices(
-            addresses = mainnetAddressesToRequest,
+            addresses = setOf(PriceRequestAddress.Regular(mainnetXrdAddress)),
             currency = currency,
             isRefreshing = isRefreshing
         ).map { result ->
@@ -227,8 +217,8 @@ class TestnetFiatPriceRepository @Inject constructor(
                 val price = cachedPrice.price.price.toDouble()
                 FiatPrice(
                     price = Random.nextDouble(
-                        from = (price - PRICE_FLUCTUATION).coerceAtLeast(PRICE_MINIMUM),
-                        until = price + PRICE_FLUCTUATION
+                        from = (price - PRICE_MINIMUM).coerceAtLeast(PRICE_MINIMUM),
+                        until = price + PRICE_MINIMUM
                     ).toDecimal192(),
                     currency = SupportedCurrency.USD
                 ).also {
@@ -249,8 +239,7 @@ class TestnetFiatPriceRepository @Inject constructor(
     )
 
     companion object {
-        private const val MEMORY_CACHE_VALIDITY_MINUTES = 5L
-        private const val PRICE_FLUCTUATION = 0.01
-        private const val PRICE_MINIMUM = 0.01
+        private const val MEMORY_CACHE_VALIDITY_MINUTES = 2L
+        private const val PRICE_MINIMUM = 0.0000001
     }
 }

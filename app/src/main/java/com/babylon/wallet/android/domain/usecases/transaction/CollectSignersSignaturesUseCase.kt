@@ -13,14 +13,17 @@ import com.radixdlt.sargon.extensions.bagOfBytesOf
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.kind
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.toByteArray
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
+@Deprecated("will be removed after refactoring. Now it is used only in ROLAClient")
 class CollectSignersSignaturesUseCase @Inject constructor(
     private val signWithDeviceFactorSourceUseCase: SignWithDeviceFactorSourceUseCase,
     private val signWithLedgerFactorSourceUseCase: SignWithLedgerFactorSourceUseCase,
@@ -60,7 +63,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                     signWithDeviceFactorSourceUseCase(
                         deviceFactorSource = factorSource,
                         signers = signers,
-                        request = signRequest
+                        signRequest = signRequest
                     ).onSuccess { signatures ->
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure {
@@ -94,6 +97,10 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         _interactionState.update { null }
                         return Result.failure(error)
                     }
+                }
+
+                else -> {
+                    Timber.w("FactorSourceKind: ${factorSource.kind} is not supported")
                 }
             }
         }

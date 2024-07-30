@@ -5,9 +5,9 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToReDeriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.DeriveAccountsViewModel.DeriveAccountsUiState.ShowContentForFactorSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -31,6 +31,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -58,7 +59,7 @@ import javax.inject.Inject
 class DeriveAccountsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val publicKeyProvider: PublicKeyProvider,
-    private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
+    private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
     private val ledgerMessenger: LedgerMessenger,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : StateViewModel<DeriveAccountsViewModel.DeriveAccountsUiState>(),
@@ -75,7 +76,7 @@ class DeriveAccountsViewModel @Inject constructor(
         reDerivePublicKeyJob = viewModelScope.launch {
             profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.flow.firstOrNull() else null
 
-            input = accessFactorSourcesUiProxy.getInput() as ToReDeriveAccounts
+            input = accessFactorSourcesIOHandler.getInput() as ToReDeriveAccounts
             nextDerivationPathOffset = input.nextDerivationPathOffset
             // if it is with given mnemonic it means it is an account recovery scan from onboarding,
             // thus profile is not initialized yet
@@ -86,6 +87,9 @@ class DeriveAccountsViewModel @Inject constructor(
                 when (input.factorSource) {
                     is FactorSource.Device -> sendEvent(Event.RequestBiometricPrompt) // request biometric auth
                     is FactorSource.Ledger -> initRecoveryFromLedgerFactorSource()
+                    else -> {
+                        Timber.w("FactorSourceKind ${input.factorSource.kind} not supported.")
+                    }
                 }
             }
         }
@@ -93,7 +97,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     fun biometricAuthenticationCompleted() {
         viewModelScope.launch {
-            when (val input = accessFactorSourcesUiProxy.getInput()) {
+            when (val input = accessFactorSourcesIOHandler.getInput()) {
                 is ToReDeriveAccounts -> {
                     when (input) {
                         is ToReDeriveAccounts.WithGivenFactorSource -> {
@@ -103,7 +107,7 @@ class DeriveAccountsViewModel @Inject constructor(
                                 }
                                 .onFailure { e ->
                                     if (e is ProfileException) {
-                                        accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                                        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(e))
                                         sendEvent(Event.DerivingAccountsCompleted)
                                     }
                                 }
@@ -174,7 +178,7 @@ class DeriveAccountsViewModel @Inject constructor(
                 forNetworkId = networkId
             )
 
-            accessFactorSourcesUiProxy.setOutput(
+            accessFactorSourcesIOHandler.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
                     nextDerivationPathOffset = indicesToScan.last() + 1u
@@ -200,7 +204,7 @@ class DeriveAccountsViewModel @Inject constructor(
                     hdPublicKeys = derivationPathsWithPublicKeys,
                     forNetworkId = networkId
                 )
-                accessFactorSourcesUiProxy.setOutput(
+                accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
                         nextDerivationPathOffset = indicesToScan.last() + 1u
@@ -261,24 +265,33 @@ class DeriveAccountsViewModel @Inject constructor(
                     }
                 }
             }
+
+            else -> Result.failure(IllegalStateException("FactorSourceKind ${factorSource.kind} not supported."))
         }
     }
 
     private fun deriveAccounts(
         hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         forNetworkId: NetworkId
-    ): List<Account> = hdPublicKeys.map { hdPublicKey ->
+    ): List<Account> = hdPublicKeys.mapNotNull { hdPublicKey ->
         val factorSourceId = when (val factorSource = input.factorSource) {
             is FactorSource.Device -> factorSource.value.id.asGeneral()
             is FactorSource.Ledger -> factorSource.value.id.asGeneral()
+            else -> {
+                Timber.w("FactorSourceKind ${factorSource.kind} not supported.")
+                null
+            }
         }
-        Account.initBabylon(
-            networkId = forNetworkId,
-            displayName = DisplayName(Constants.DEFAULT_ACCOUNT_NAME),
-            hdPublicKey = hdPublicKey,
-            factorSourceId = factorSourceId,
-            onLedgerSettings = OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.accountRecoveryScanned())
-        )
+
+        factorSourceId?.let {
+            Account.initBabylon(
+                networkId = forNetworkId,
+                displayName = DisplayName(Constants.DEFAULT_ACCOUNT_NAME),
+                hdPublicKey = hdPublicKey,
+                factorSourceId = it,
+                onLedgerSettings = OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.accountRecoveryScanned())
+            )
+        }
     }
 
     private fun computeIndicesToScan(
