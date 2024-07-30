@@ -159,7 +159,7 @@ fun AccountSettingsScreen(
                     AccountPreferenceUiState.BottomSheetContent.None -> {}
                 }
             },
-            showDragHandle = false,
+            showDragHandle = true,
             onDismissRequest = hideSheetAction
         )
     }
