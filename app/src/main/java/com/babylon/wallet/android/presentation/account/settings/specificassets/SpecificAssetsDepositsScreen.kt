@@ -67,7 +67,7 @@ import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -98,10 +98,12 @@ fun SpecificAssetsDepositsScreen(
         skipPartiallyExpanded = true
     )
     val kb = LocalSoftwareKeyboardController.current
-    val hideCallback = {
-        kb?.hide()
-        sharedViewModel.setAddAssetSheetVisible(false)
-        scope.launch { sheetState.hide() }
+    val hideCallback = remember {
+        {
+            kb?.hide()
+            sharedViewModel.setAddAssetSheetVisible(false)
+            scope.launch { sheetState.hide() }
+        }
     }
     BackHandler {
         if (sheetState.isVisible) {
@@ -178,31 +180,27 @@ fun SpecificAssetsDepositsScreen(
     )
 
     if (state.isAddAssetSheetVisible) {
-        BottomSheetDialogWrapper(
-            addScrim = true,
-            showDragHandle = true,
-            onDismiss = {
-                hideCallback()
-            },
-            showDefaultTopBar = false
-        ) {
-            AddAssetSheet(
-                onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
-                asset = state.assetExceptionToAdd,
-                onAddAsset = {
-                    hideCallback()
-                    sharedViewModel.onAddAssetException()
-                },
-                modifier = Modifier
-                    .imePadding()
-                    .fillMaxWidth()
-                    .clip(RadixTheme.shapes.roundedRectTopDefault),
-                onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
-                onDismiss = {
-                    hideCallback()
-                }
-            )
-        }
+        DefaultModalSheetLayout(
+            sheetState = sheetState,
+            wrapContent = true,
+            onDismissRequest = { hideCallback() },
+            sheetContent = {
+                AddAssetSheet(
+                    onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
+                    asset = state.assetExceptionToAdd,
+                    onAddAsset = {
+                        hideCallback()
+                        sharedViewModel.onAddAssetException()
+                    },
+                    modifier = Modifier
+                        .imePadding()
+                        .fillMaxWidth()
+                        .clip(RadixTheme.shapes.roundedRectTopDefault),
+                    onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
+                    onDismiss = { hideCallback() }
+                )
+            }
+        )
     }
 }
 
