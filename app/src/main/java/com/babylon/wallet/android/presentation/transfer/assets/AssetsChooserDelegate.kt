@@ -114,7 +114,7 @@ class AssetsChooserDelegate @Inject constructor(
     fun onNextNFTsPageRequest(resource: Resource.NonFungibleResource) {
         val sheet = _state.value.sheet as? Sheet.ChooseAssets ?: return
         val account = _state.value.fromAccount ?: return
-        if (resource.address !in sheet.nonFungiblesWithPendingNFTs) {
+        if (resource.address !in sheet.assetsViewState.fetchingNFTsPerCollection) {
             updateSheetState { state -> state.onNFTsLoading(resource) }
             viewModelScope.launch {
                 getNextNFTsPageUseCase(account, resource)

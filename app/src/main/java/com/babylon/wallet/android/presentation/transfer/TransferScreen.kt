@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -65,8 +65,17 @@ fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
     onBackClick: () -> Unit,
+    onShowAssetDetails: (SpendingAsset, Account) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is TransferViewModel.Event.ShowAssetDetails -> onShowAssetDetails(event.asset, event.fromAccount)
+            }
+        }
+    }
 
     TransferContent(
         modifier = modifier,
@@ -93,6 +102,7 @@ fun TransferScreen(
         onMaxAmountApplied = viewModel::onMaxAmountApplied,
         onLessThanFeeApplied = viewModel::onLessThanFeeApplied,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
+        onAssetClicked = viewModel::onAssetClicked,
         onUiMessageShown = viewModel::onUiMessageShown,
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
         onNextNFTsPageRequest = viewModel::onNextNFTsPageRequest,
@@ -128,6 +138,7 @@ fun TransferContent(
     onMaxAmountApplied: (Boolean) -> Unit,
     onLessThanFeeApplied: (Boolean) -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
+    onAssetClicked: (SpendingAsset) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
     onUiMessageShown: () -> Unit,
@@ -180,7 +191,7 @@ fun TransferContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 backIconType = BackIconType.Close,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -306,6 +317,9 @@ fun TransferContent(
                     },
                     onDeleteClick = {
                         deleteAccountClick(targetAccount)
+                    },
+                    onAssetClick = { asset ->
+                        onAssetClicked(asset)
                     },
                     isDeletable = !(targetAccount is TargetAccount.Skeleton && index == 0),
                     targetAccount = targetAccount
@@ -461,6 +475,7 @@ fun TransferContentPreview() {
             onMaxAmountApplied = {},
             onLessThanFeeApplied = {},
             onAssetSelectionChanged = { _, _ -> },
+            onAssetClicked = {},
             onUiMessageShown = {},
             onChooseAssetsSubmitted = {},
             onNextNFTsPageRequest = {},

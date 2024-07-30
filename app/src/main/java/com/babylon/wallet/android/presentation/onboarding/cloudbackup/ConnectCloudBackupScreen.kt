@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -39,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.rememberLauncherForSignInToGoogle
 
 @Composable
@@ -120,7 +120,7 @@ private fun ConnectCloudBackupContent(
                     ConnectMode.RestoreWallet -> BackIconType.Back
                     ConnectMode.ExistingWallet -> BackIconType.Close
                 },
-                windowInsets = WindowInsets.statusBars,
+                windowInsets = WindowInsets.statusBarsAndBanner,
             )
         },
         snackbarHost = {

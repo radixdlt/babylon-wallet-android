@@ -22,6 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
+import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -99,24 +102,19 @@ private fun PoolUnitItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = poolUnit.name(),
+                    text = poolUnit.displayTitle(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
 
-                val associatedDAppName = remember(poolUnit) {
-                    poolUnit.pool?.associatedDApp?.name
-                }
-                if (!associatedDAppName.isNullOrEmpty()) {
-                    Text(
-                        text = associatedDAppName,
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray2,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Text(
+                    text = poolUnit.displaySubtitle(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
 
             if (action is AssetsViewAction.Selection) {
@@ -181,7 +179,7 @@ fun PoolResourcesValues(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = resourceWithAmount.key.displayTitle,
+                    text = resourceWithAmount.key.displayTitleAsPoolUnit(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
@@ -218,7 +216,3 @@ fun PoolResourcesValues(
         }
     }
 }
-
-// Pool units just display the name and have no fallback
-@Composable
-fun PoolUnit.name() = displayTitle

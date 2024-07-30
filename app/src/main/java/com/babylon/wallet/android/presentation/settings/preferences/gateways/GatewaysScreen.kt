@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -53,9 +51,10 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
@@ -133,7 +132,7 @@ private fun GatewaysContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.gateways_title),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         }
     ) { padding ->
@@ -247,9 +246,7 @@ private fun GatewaysContent(
                 },
                 newUrlValid = state.newUrlValid,
                 addingGateway = state.addingGateway,
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .imePadding(),
+                modifier = Modifier.imePadding(),
                 gatewayAddFailure = state.gatewayAddFailure
             )
         }
@@ -334,12 +331,10 @@ private fun AddGatewaySheet(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         }
 
-        BottomPrimaryButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter),
-            text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
+        RadixBottomBar(
+            modifier = Modifier.align(Alignment.BottomCenter),
             onClick = onAddGatewayClick,
+            text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             enabled = newUrlValid,
             isLoading = addingGateway
         )

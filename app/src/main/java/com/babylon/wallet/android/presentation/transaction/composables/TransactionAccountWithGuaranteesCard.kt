@@ -35,6 +35,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
@@ -118,7 +119,7 @@ fun TransactionAccountWithGuaranteesCard(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = fungible.displayTitle,
+                    text = accountWithGuarantee.transferable.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,

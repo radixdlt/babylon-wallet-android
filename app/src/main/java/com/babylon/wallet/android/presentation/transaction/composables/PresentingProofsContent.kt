@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +18,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.extensions.formatted
@@ -74,19 +75,13 @@ fun PresentingProofsContent(
                     )
 
                     Column(modifier = Modifier.weight(1f)) {
-                        badge.name?.let { name ->
-                            Text(
-                                text = name,
-                                style = RadixTheme.typography.body1HighImportance,
-                                color = RadixTheme.colors.gray1
-                            )
-                        }
+                        Text(
+                            text = badge.displayTitle(),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray1
+                        )
 
-                        (badge.resource as? Resource.NonFungibleResource)?.items?.firstOrNull()?.let { nft ->
-                            val subtitle = remember(nft) {
-                                nft.name ?: nft.localId.formatted()
-                            }
-
+                        badge.displaySubtitle()?.let { subtitle ->
                             Text(
                                 text = subtitle,
                                 style = RadixTheme.typography.body2Regular,

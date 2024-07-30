@@ -7,13 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -45,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
 @Composable
 fun FactoryResetScreen(
@@ -105,7 +105,7 @@ private fun FactoryResetScreenContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.factoryReset_title),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         snackbarHost = {
@@ -117,11 +117,13 @@ private fun FactoryResetScreenContent(
         contentWindowInsets = WindowInsets.navigationBars,
         containerColor = RadixTheme.colors.gray4,
         bottomBar = {
-            Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
+            Column(
+                modifier = Modifier
+                    .background(RadixTheme.colors.defaultBackground)
+                    .padding(WindowInsets.navigationBars.asPaddingValues())
+            ) {
                 WarningButton(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(RadixTheme.dimensions.paddingDefault),
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(R.string.factoryReset_resetWallet),
                     onClick = onDeleteWalletClick
                 )

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -50,7 +51,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val homeCardsRepository: HomeCardsRepository
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -215,7 +217,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                                     hasSkippedMainSeedPhrase = false
                                 )
                             }
-                            sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                            onRestorationComplete()
                         }.onFailure {
                             Timber.w(it)
                             _state.update { state ->
@@ -232,15 +234,20 @@ class RestoreMnemonicsViewModel @Inject constructor(
                             hasSkippedMainSeedPhrase = false
                         )
                     }
-                    sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                    onRestorationComplete()
                 }
             } else {
                 args.backupType?.let { backupType ->
                     restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = false)
                 }
-                sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                onRestorationComplete()
             }
         }
+    }
+
+    private suspend fun onRestorationComplete() {
+        homeCardsRepository.walletRestored()
+        sendEvent(Event.FinishRestoration(isMovingToMain = true))
     }
 
     data class State(

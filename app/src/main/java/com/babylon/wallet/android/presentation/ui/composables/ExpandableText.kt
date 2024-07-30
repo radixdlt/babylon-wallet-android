@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -89,7 +88,7 @@ fun ExpandableText(
     }
 
     ClickableText(
-        modifier = modifier.animateContentSize(),
+        modifier = modifier,
         text = resultText,
         onClick = { offset ->
             onClick(offset)
