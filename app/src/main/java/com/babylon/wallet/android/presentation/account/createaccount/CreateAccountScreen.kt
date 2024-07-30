@@ -140,7 +140,7 @@ fun CreateAccountContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = BackIconType.Back,
+                backIconType = if (firstTime) BackIconType.Back else BackIconType.Close,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },

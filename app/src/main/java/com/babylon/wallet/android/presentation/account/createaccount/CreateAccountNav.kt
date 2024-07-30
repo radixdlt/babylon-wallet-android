@@ -1,7 +1,10 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
+import android.os.Build
+import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.core.os.BundleCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -92,10 +95,18 @@ fun NavGraphBuilder.createAccountScreen(
             }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            if (requiresHorizontalTransition(targetState.arguments)) {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            } else {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            }
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            if (requiresHorizontalTransition(targetState.arguments)) {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            } else {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            }
         }
     ) {
         CreateAccountScreen(
@@ -105,4 +116,14 @@ fun NavGraphBuilder.createAccountScreen(
             onAddLedgerDevice = onAddLedgerDevice
         )
     }
+}
+
+private fun requiresHorizontalTransition(arguments: Bundle?): Boolean {
+    arguments ?: return false
+    val requestSource = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arguments.getSerializable(ARG_REQUEST_SOURCE, CreateAccountRequestSource::class.java)
+    } else {
+        BundleCompat.getSerializable(arguments, ARG_REQUEST_SOURCE, CreateAccountRequestSource::class.java)
+    }
+    return requestSource?.isFirstTime() ?: false
 }
