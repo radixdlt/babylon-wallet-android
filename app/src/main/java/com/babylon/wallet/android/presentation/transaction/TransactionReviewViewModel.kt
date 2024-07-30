@@ -3,13 +3,11 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
-import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -52,7 +50,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
-    private val signTransactionUseCase: SignTransactionUseCase,
     private val analysis: TransactionAnalysisDelegate,
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
@@ -77,6 +74,22 @@ class TransactionReviewViewModel @Inject constructor(
         submit(scope = viewModelScope, state = _state)
         submit.oneOffEventHandler = this
 
+        observeDeferredRequests()
+        processIncomingRequest()
+    }
+
+    private fun observeDeferredRequests() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.Dismiss)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
+                }
+            }
+        }
+    }
+
+    private fun processIncomingRequest() {
         val request = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.TransactionRequest
         if (request == null) {
             viewModelScope.launch {
@@ -84,13 +97,6 @@ class TransactionReviewViewModel @Inject constructor(
             }
         } else {
             _state.update { it.copy(request = request) }
-            viewModelScope.launch {
-                signTransactionUseCase.signingState.collect { signingState ->
-                    _state.update { state ->
-                        state.copy(interactionState = signingState)
-                    }
-                }
-            }
             viewModelScope.launch {
                 analysis.analyse()
             }
@@ -103,14 +109,6 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
         }
-        viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
-                if (it.interactionId == args.interactionId) {
-                    sendEvent(Event.Dismiss)
-                    incomingRequestRepository.requestDeferred(args.interactionId)
-                }
-            }
-        }
     }
 
     fun onBackClick() {
@@ -118,10 +116,7 @@ class TransactionReviewViewModel @Inject constructor(
             _state.update { it.copy(sheetState = State.Sheet.None) }
         } else {
             viewModelScope.launch {
-                submit.onDismiss(
-                    signTransactionUseCase = signTransactionUseCase,
-                    exception = RadixWalletException.DappRequestException.RejectedByUser
-                )
+                submit.onDismiss(exception = RadixWalletException.DappRequestException.RejectedByUser)
             }
         }
     }
@@ -134,12 +129,7 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
     }
 
-    fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
-        submit.onSubmit(
-            signTransactionUseCase = signTransactionUseCase,
-            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        )
-    }
+    fun onApproveTransaction() = submit.onSubmit()
 
     fun promptForGuaranteesClick() = guarantees.onEdit()
 
@@ -158,14 +148,8 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(sheetState = State.Sheet.None) }
     }
 
-    fun onCustomizeClick() {
-        viewModelScope.launch {
-            fees.onCustomizeClick()
-        }
-    }
-
-    fun onCancelSigningClick() {
-        signTransactionUseCase.cancelSigning()
+    fun onCustomizeClick() = viewModelScope.launch {
+        fees.onCustomizeClick()
     }
 
     fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
@@ -225,7 +209,6 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun dismissTerminalErrorDialog() {
         _state.update { it.copy(error = null) }
-        onBackClick()
     }
 
     fun onAcknowledgeRawTransactionWarning() {
@@ -248,8 +231,7 @@ class TransactionReviewViewModel @Inject constructor(
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
-        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val interactionState: InteractionState? = null
+        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom()
     ) : UiState {
 
         val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
@@ -424,14 +406,24 @@ sealed interface Event : OneOffEvent {
 }
 
 sealed interface PreviewType {
-    data object None : PreviewType
 
-    data object UnacceptableManifest : PreviewType
+    val badges: List<Badge>
 
-    data object NonConforming : PreviewType
+    data object None : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
+
+    data object UnacceptableManifest : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
+
+    data object NonConforming : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
 
     data class AccountsDepositSettings(
-        val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
+        val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList(),
+        override val badges: List<Badge>
     ) : PreviewType {
         val hasSettingSection: Boolean
             get() = accountsWithDepositSettingsChanges.any { it.defaultDepositRule != null }
@@ -452,8 +444,9 @@ sealed interface PreviewType {
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
+            override val badges: List<Badge>,
             val validators: List<Validator>,
-            val actionType: ActionType
+            val actionType: ActionType,
         ) : Transfer {
             enum class ActionType {
                 Stake, Unstake, ClaimStake
@@ -463,6 +456,7 @@ sealed interface PreviewType {
         data class Pool(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
+            override val badges: List<Badge>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
@@ -480,7 +474,7 @@ sealed interface PreviewType {
         data class GeneralTransfer(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val badges: List<Badge> = emptyList(),
+            override val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList()
         ) : Transfer
     }

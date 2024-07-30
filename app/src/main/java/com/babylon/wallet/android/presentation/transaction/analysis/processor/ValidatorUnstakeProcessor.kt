@@ -10,6 +10,7 @@ import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIndicator
+import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
@@ -33,9 +34,9 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val networkId = getProfileUseCase().currentGateway.network.id
         val xrdAddress = XrdResource.address(networkId)
         val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
-            nonFungibleIds = summary.involvedNonFungibleIds()
+            addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
+        val badges = summary.resolveBadges(assets)
         val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
         val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
@@ -48,6 +49,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         return PreviewType.Transfer.Staking(
             from = fromAccounts,
             to = toAccounts,
+            badges = badges,
             validators = involvedValidators,
             actionType = PreviewType.Transfer.Staking.ActionType.Unstake
         )

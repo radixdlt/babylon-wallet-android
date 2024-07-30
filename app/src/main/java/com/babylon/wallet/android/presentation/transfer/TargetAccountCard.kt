@@ -50,6 +50,7 @@ fun TargetAccountCard(
     onAddAssetsClick: () -> Unit,
     onRemoveAssetClicked: (SpendingAsset) -> Unit,
     onAmountTyped: (SpendingAsset, String) -> Unit,
+    onAssetClick: (SpendingAsset) -> Unit,
     onMaxAmountClicked: (SpendingAsset) -> Unit,
     onDeleteClick: () -> Unit,
     isDeletable: Boolean = false,
@@ -107,13 +108,13 @@ fun TargetAccountCard(
                         Icon(
                             modifier = Modifier.size(18.dp),
                             painter = painterResource(id = DSR.ic_entity),
-                            tint = RadixTheme.colors.blue1,
+                            tint = RadixTheme.colors.blue2,
                             contentDescription = null
                         )
                         Text(
                             text = stringResource(id = R.string.assetTransfer_receivingAccount_chooseAccountButton),
                             style = RadixTheme.typography.body1Header,
-                            color = RadixTheme.colors.blue1,
+                            color = RadixTheme.colors.blue2,
                         )
                     }
                 }
@@ -151,7 +152,7 @@ fun TargetAccountCard(
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear",
-                        tint = if (targetAccount.validatedAddress != null) RadixTheme.colors.white else RadixTheme.colors.gray1,
+                        tint = if (targetAccount.validatedAddress != null) RadixTheme.colors.white else RadixTheme.colors.gray2,
                     )
                 }
             }
@@ -189,20 +190,26 @@ fun TargetAccountCard(
                         },
                         onMaxClicked = {
                             onMaxAmountClicked(spendingAsset)
+                        },
+                        onItemClick = {
+                            onAssetClick(spendingAsset)
                         }
                     )
 
-                    IconButton(
-                        onClick = {
-                            onRemoveAssetClicked(spendingAsset)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Clear,
-                            tint = RadixTheme.colors.gray2,
-                            contentDescription = "clear"
-                        )
-                    }
+                    Icon(
+                        modifier = Modifier
+                            .padding(
+                                start = RadixTheme.dimensions.paddingSmall,
+                                end = RadixTheme.dimensions.paddingMedium
+                            )
+                            .size(20.dp)
+                            .clickable {
+                                onRemoveAssetClicked(spendingAsset)
+                            },
+                        imageVector = Icons.Filled.Clear,
+                        tint = RadixTheme.colors.gray2,
+                        contentDescription = "clear"
+                    )
                 }
                 if (targetAccount.isSignatureRequiredForTransfer(resourceAddress = spendingAsset.resourceAddress)) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
@@ -237,7 +244,7 @@ fun TargetAccountCard(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
                 style = RadixTheme.typography.body1Header,
                 text = " + " + stringResource(id = R.string.assetTransfer_receivingAccount_addAssetsButton),
-                color = RadixTheme.colors.blue1
+                color = RadixTheme.colors.blue2
             )
         }
     }
@@ -257,6 +264,7 @@ fun TargetAccountCardPreview() {
                 onAddAssetsClick = {},
                 onRemoveAssetClicked = {},
                 onAmountTyped = { _, _ -> },
+                onAssetClick = {},
                 onMaxAmountClicked = {},
                 onDeleteClick = {},
                 targetAccount = TargetAccount.Skeleton()
@@ -267,6 +275,7 @@ fun TargetAccountCardPreview() {
                 onAddAssetsClick = {},
                 onRemoveAssetClicked = {},
                 onAmountTyped = { _, _ -> },
+                onAssetClick = {},
                 onMaxAmountClicked = {},
                 onDeleteClick = {},
                 targetAccount = TargetAccount.Owned(

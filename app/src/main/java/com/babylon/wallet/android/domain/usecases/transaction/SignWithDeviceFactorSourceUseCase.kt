@@ -23,14 +23,14 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(
         deviceFactorSource: FactorSource.Device,
         signers: List<ProfileEntity>,
-        request: SignRequest
+        signRequest: SignRequest
     ): Result<List<SignatureWithPublicKey>> {
         val result = mutableListOf<SignatureWithPublicKey>()
 
         signers.forEach { signer ->
             when (val securityState = signer.securityState) {
                 is EntitySecurityState.Unsecured -> {
-                    val factorInstance = when (request) {
+                    val factorInstance = when (signRequest) {
                         is SignRequest.SignAuthChallengeRequest ->
                             securityState.value.authenticationSigning
                                 ?: securityState.value.transactionSigning
@@ -41,7 +41,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                     if (mnemonicExist.not()) return Result.failure(ProfileException.NoMnemonic)
                     mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).mapCatching { mnemonic ->
                         val signatureWithPublicKey = mnemonic.sign(
-                            hash = request.hashedDataToSign,
+                            hash = signRequest.hashedDataToSign,
                             path = factorInstance.publicKey.derivationPath
                         )
                         result.add(signatureWithPublicKey)

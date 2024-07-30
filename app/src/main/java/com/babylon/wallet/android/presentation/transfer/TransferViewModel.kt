@@ -2,6 +2,9 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -59,7 +62,7 @@ class TransferViewModel @Inject constructor(
     private val assetsChooserDelegate: AssetsChooserDelegate,
     private val prepareManifestDelegate: PrepareManifestDelegate,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<TransferViewModel.State>() {
+) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
     internal val args = TransferArgs(savedStateHandle)
 
@@ -237,6 +240,14 @@ class TransferViewModel @Inject constructor(
         isChecked = isSelected
     )
 
+    fun onAssetClicked(asset: SpendingAsset) {
+        val account = _state.value.fromAccount ?: return
+
+        viewModelScope.launch {
+            sendEvent(Event.ShowAssetDetails(asset, account))
+        }
+    }
+
     fun onUiMessageShown() {
         if (_state.value.sheet is State.Sheet.ChooseAssets) {
             assetsChooserDelegate.onUiMessageShown()
@@ -401,7 +412,6 @@ class TransferViewModel @Inject constructor(
                 val isFiatBalancesEnabled: Boolean = true,
                 val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
-                val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
                 val pendingStakeUnits: Boolean = false,
                 val targetAccount: TargetAccount,
                 val assetsViewState: AssetsViewState = AssetsViewState.init(),
@@ -425,7 +435,7 @@ class TransferViewModel @Inject constructor(
                     get() = targetAccount.spendingAssets.size
 
                 fun onNFTsLoading(forResource: Resource.NonFungibleResource): ChooseAssets {
-                    return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
+                    return copy(assetsViewState = assetsViewState.nextPagePending(forResource.address))
                 }
 
                 fun onNFTsReceived(forResource: Resource.NonFungibleResource): ChooseAssets {
@@ -440,14 +450,14 @@ class TransferViewModel @Inject constructor(
                                 mutation = { NonFungibleCollection(forResource) }
                             )
                         ),
-                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address
+                        assetsViewState = assetsViewState.nextPageReceived(forResource.address)
                     )
                 }
 
                 fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): ChooseAssets {
                     if (assets?.nonFungibles == null) return this
                     return copy(
-                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address,
+                        assetsViewState = assetsViewState.nextPageReceived(forResource.address),
                         uiMessage = UiMessage.ErrorMessage(error = error)
                     )
                 }
@@ -485,6 +495,10 @@ class TransferViewModel @Inject constructor(
             val maxAccountAmountLessThanFee: Boolean
                 get() = maxAccountAmount < 1.toDecimal192()
         }
+    }
+
+    sealed interface Event : OneOffEvent {
+        data class ShowAssetDetails(val asset: SpendingAsset, val fromAccount: Account) : Event
     }
 }
 

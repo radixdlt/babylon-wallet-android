@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,9 +32,8 @@ fun NetworkFeeContent(
     onCustomizeClick: () -> Unit
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier.padding(top = RadixTheme.dimensions.paddingDefault)
     ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Row {
             Text(
                 text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),

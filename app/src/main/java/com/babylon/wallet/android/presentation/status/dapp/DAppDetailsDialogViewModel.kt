@@ -12,7 +12,7 @@ import com.radixdlt.sargon.AccountAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.then
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,19 +34,24 @@ class DAppDetailsDialogViewModel @Inject constructor(
                 needMostRecentData = false
             ).onSuccess { dAppWithResources ->
                 _state.update { it.copy(dAppWithResources = dAppWithResources) }
-            }.then { dAppWithResources ->
+            }.onFailure { error ->
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+            }.map { dAppWithResources ->
                 _state.update { it.copy(isWebsiteValidating = true) }
                 getValidatedDAppWebsiteUseCase(dAppWithResources.dApp).onSuccess { website ->
                     _state.update { it.copy(validatedWebsite = website, isWebsiteValidating = false) }
+                }.onFailure { error ->
+                    Timber.w(error)
+                    _state.update { it.copy(isWebsiteValidating = false) }
                 }
-            }.onFailure { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), isWebsiteValidating = false) }
             }
         }
     }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
+
     data class State(
         val dAppDefinitionAddress: AccountAddress,
         val dAppWithResources: DAppWithResources? = null,

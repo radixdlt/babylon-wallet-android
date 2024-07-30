@@ -12,7 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
-import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -77,6 +78,7 @@ import com.babylon.wallet.android.presentation.status.transaction.transactionSta
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
+import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.babylon.wallet.android.presentation.walletclaimed.claimedByAnotherDevice
@@ -260,12 +262,17 @@ fun NavigationHost(
                 navController.history(accountAddress)
             }
         )
-        derivePublicKey(
+        derivePublicKeyDialog(
             onDismiss = {
                 navController.popBackStack()
             }
         )
         deriveAccounts(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        getSignatures(
             onDismiss = {
                 navController.popBackStack()
             }
@@ -313,8 +320,8 @@ fun NavigationHost(
         )
         createPersonaScreen(
             onBackClick = { navController.navigateUp() }
-        ) { personaId ->
-            navController.createPersonaConfirmationScreen(personaId = personaId)
+        ) {
+            navController.createPersonaConfirmationScreen()
         }
         personaInfoScreen(
             onBackClick = { navController.navigateUp() },
@@ -386,7 +393,7 @@ fun NavigationHost(
             onTransferableNonFungibleClick = { asset, item ->
                 navController.nftAssetDialog(
                     resourceAddress = asset.resource.address,
-                    localId = item.localId,
+                    localId = item?.localId,
                     isNewlyCreated = asset.isNewlyCreated
                 )
             },
@@ -397,6 +404,20 @@ fun NavigationHost(
         transferScreen(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onShowAssetDetails = { spendingAsset, fromAccount ->
+                when (spendingAsset) {
+                    is SpendingAsset.Fungible -> navController.fungibleAssetDialog(
+                        resourceAddress = spendingAsset.resourceAddress,
+                        amounts = spendingAsset.resource.ownedAmount?.let { mapOf(spendingAsset.resourceAddress to it) }.orEmpty(),
+                        underAccountAddress = fromAccount.address
+                    )
+                    is SpendingAsset.NFT -> navController.nftAssetDialog(
+                        resourceAddress = spendingAsset.resourceAddress,
+                        localId = spendingAsset.item.localId,
+                        underAccountAddress = null // Marking as null hides claim button when the nft is a claim
+                    )
+                }
             }
         )
         accountSettings(

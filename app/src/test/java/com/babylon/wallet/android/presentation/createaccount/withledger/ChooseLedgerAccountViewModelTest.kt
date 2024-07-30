@@ -48,7 +48,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewModel>() {
+internal class ChooseLedgerAccountViewModelTest : StateViewModelTest<ChooseLedgerViewModel>() {
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val p2pLinksRepository = mockk<P2PLinksRepository>()

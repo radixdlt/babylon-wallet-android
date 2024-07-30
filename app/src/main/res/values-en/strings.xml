@@ -52,11 +52,15 @@
   <string name="assetDetails_moreInfo">For more info</string>
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
-  <string name="assetDetails_staking_unstaking">Ready to claim in about %d minutes or less.</string>
   <string name="assetDetails_staking_currentRedeemableValue">Current Redeemable Value</string>
   <string name="assetDetails_staking_readyToClaim">Ready to Claim</string>
   <string name="assetDetails_staking_readyToClaimIn">Ready to Claim in</string>
+  <string name="assetDetails_staking_readyToClaimInDays">%d days or less</string>
+  <string name="assetDetails_staking_readyToClaimInDay">1 day or less</string>
+  <string name="assetDetails_staking_readyToClaimInHours">%d hours or less</string>
+  <string name="assetDetails_staking_readyToClaimInHour">1 hour or less</string>
   <string name="assetDetails_staking_readyToClaimInMinutes">%d minutes or less</string>
+  <string name="assetDetails_staking_readyToClaimInMinute">1 minute or less</string>
   <string name="assetDetails_tags">Tags</string>
   <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
@@ -274,6 +278,7 @@
   <string name="authorizedDapps_personaDetails_nameVariantWestern">Western style (given name(s) first)</string>
   <string name="authorizedDapps_personaDetails_hideThisPersona">Hide This Persona</string>
   <string name="authorizedDapps_personaDetails_hidePersonaConfirmation">Are you sure you want to hide this persona?</string>
+  <string name="authorizedDapps_personaDetails_edit">Edit</string>
   <string name="editPersona_requiredByDapp">Required by dApp</string>
   <string name="editPersona_sharedInformationHeading">The following information can be seen if requested by the dApp</string>
   <string name="editPersona_error_blank">Label cannot be blank</string>
@@ -330,9 +335,9 @@
   <string name="createPersona_requiredField">Required field</string>
   <string name="createPersona_saveAndContinueButtonTitle">Save and Continue</string>
   <string name="dAppRequest_login_titleKnownDapp">Login Request</string>
-  <string name="dAppRequest_login_subtitleKnownDapp">%s is requesting that you login with a Persona.</string>
+  <string name="dAppRequest_login_subtitleKnownDapp">**%s** is requesting that you login with a Persona.</string>
   <string name="dAppRequest_login_titleNewDapp">New Login Request</string>
-  <string name="dAppRequest_login_subtitleNewDapp">%s is requesting that you login for the **first time** with a Persona.</string>
+  <string name="dAppRequest_login_subtitleNewDapp">**%s** is requesting that you login for the first time with a Persona.</string>
   <string name="dAppRequest_login_choosePersona">Choose a Persona</string>
   <string name="dAppRequest_login_lastLoginWasOn">Your last login was on %s</string>
   <string name="dAppRequest_login_continue">Continue</string>

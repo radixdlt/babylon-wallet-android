@@ -4,19 +4,14 @@ import androidx.annotation.VisibleForTesting
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.extensions.string
 
 @VisibleForTesting
-internal const val ARG_PERSONA_ID = "arg_persona_id"
-private const val ROUTE = "persona_completion_route/{$ARG_PERSONA_ID}"
+private const val ROUTE = "persona_completion_route"
 
-fun NavController.createPersonaConfirmationScreen(personaId: IdentityAddress) {
-    navigate("persona_completion_route/${personaId.string}")
+fun NavController.createPersonaConfirmationScreen() {
+    navigate("persona_completion_route")
 }
 
 fun NavGraphBuilder.createPersonaConfirmationScreen(
@@ -25,9 +20,6 @@ fun NavGraphBuilder.createPersonaConfirmationScreen(
     markAsHighPriority(ROUTE)
     composable(
         route = ROUTE,
-        arguments = listOf(
-            navArgument(ARG_PERSONA_ID) { type = NavType.StringType },
-        )
     ) {
         CreatePersonaConfirmationScreen(
             viewModel = hiltViewModel(),

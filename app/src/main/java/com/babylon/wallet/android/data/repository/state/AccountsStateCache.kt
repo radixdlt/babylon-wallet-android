@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.fetchAccountGatewayDetails
+import com.babylon.wallet.android.data.gateway.extensions.fetchFungibleAmountPerAccount
 import com.babylon.wallet.android.data.gateway.extensions.fetchPools
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.fetchVaultDetails
@@ -20,11 +21,13 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -134,21 +137,53 @@ class AccountsStateCache @Inject constructor(
         }
         .flowOn(dispatcher)
 
-    suspend fun getOwnedXRD(accounts: List<Account>) = withContext(dispatcher) {
-        if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
-
-        val xrdAddress = XrdResource.address(networkId = accounts.first().networkId)
-
-        val accountsWithXRDVaults = accounts.associateWith { account ->
-            dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
-        }
-
+    /**
+     * First checks if we have a vault address cached for XRD. If so we can immediately request [fetchVaultDetails] in order to query
+     * the XRD amount at that vault directly. If no vault information is found, we need to make the more expensive request
+     * of fetching account entity details. For more info about this method check [fetchFungibleAmountPerAccount].
+     */
+    suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> = withContext(dispatcher) {
         runCatching {
-            val vaultsWithAmounts = api.fetchVaultDetails(accountsWithXRDVaults.mapNotNull { it.value }.toSet())
+            if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
 
-            accountsWithXRDVaults.mapValues { entry ->
-                entry.value?.let { vaultsWithAmounts[it] }.orZero()
+            val xrdAddress = XrdResource.address(networkId = accounts.first().networkId)
+            // Initialize requesting accounts with 0 amounts
+            val result = accounts.associateWith { 0.toDecimal192() }.toMutableMap()
+
+            val accountsWithMaybeXRDVaults: Map<Account, VaultAddress?> = accounts.associateWith { account ->
+                dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
             }
+
+            // For accounts that we know the vault address were the XRD is stored, we can query directly
+            val vaultsPerAccount = accountsWithMaybeXRDVaults.filter { it.value != null }.map {
+                requireNotNull(it.value) to it.key
+            }.toMap()
+            api.fetchVaultDetails(vaultsPerAccount.keys).forEach { entry ->
+                val xrdAmount = entry.value
+                val account = vaultsPerAccount[entry.key]
+
+                if (account != null) {
+                    result[account] = xrdAmount
+                }
+            }
+
+            // For accounts with no vault information, we need to find the resource while requesting entity details for such accounts
+            val accountsWithNoVaults = accountsWithMaybeXRDVaults.filter { it.value == null }.map { it.key }.toSet()
+            if (accountsWithNoVaults.isNotEmpty()) {
+                api.fetchFungibleAmountPerAccount(
+                    accounts = accountsWithNoVaults.map { it.address }.toSet(),
+                    resourceAddress = xrdAddress,
+                    onStateVersion = null
+                ).getOrNull()?.forEach { entry ->
+                    val account = accountsWithNoVaults.find { it.address == entry.key }
+
+                    if (account != null) {
+                        result[account] = entry.value
+                    }
+                }
+            }
+
+            result
         }
     }
 

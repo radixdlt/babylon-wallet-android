@@ -1,13 +1,11 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -15,14 +13,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
@@ -53,7 +52,7 @@ fun ChooseAssetsSheet(
     )
 
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             BottomDialogHeader(
                 modifier = Modifier
@@ -66,25 +65,18 @@ fun ChooseAssetsSheet(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .background(color = RadixTheme.colors.defaultBackground)
-            ) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-
-                RadixPrimaryButton(
-                    text = when (val count = state.assetsSelectedCount) {
-                        0 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsNone)
-                        1 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsOne)
-                        else -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssets, count)
-                    },
-                    onClick = onChooseAssetsSubmitted,
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth(),
-                    enabled = state.isSubmitEnabled
-                )
-            }
+            RadixBottomBar(
+                onClick = onChooseAssetsSubmitted,
+                text = when (val count = state.assetsSelectedCount) {
+                    0 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsNone)
+                    1 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsOne)
+                    else -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssets, count)
+                },
+                enabled = state.isSubmitEnabled,
+                // Since the sheet is configured inside BottomSheetDialogWrapper, bottom padding is already added
+                // This should be fixed
+                insets = WindowInsets(0.dp)
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
