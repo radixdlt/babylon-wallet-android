@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -129,15 +130,17 @@ private fun DerivePublicKeyBottomSheetContent(
                 DerivePublicKeyUiState.ContentType.ForDeviceAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
+                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature),
+                        textAlign = TextAlign.Center
                     )
                 }
 
                 is DerivePublicKeyUiState.ContentType.ForLedgerAccount -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
-                            .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
+                        text = stringResource(id = R.string.factorSourceActions_ledger_message)
+                            .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                        textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.name)

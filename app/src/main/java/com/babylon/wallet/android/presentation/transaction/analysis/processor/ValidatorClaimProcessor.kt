@@ -10,6 +10,7 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceIndicator
+import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
 import rdx.works.core.domain.assets.Asset
@@ -30,9 +31,9 @@ class ValidatorClaimProcessor @Inject constructor(
         val networkId = getProfileUseCase().currentGateway.network.id
         val xrdAddress = XrdResource.address(networkId)
         val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
-            nonFungibleIds = summary.involvedNonFungibleIds()
+            addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
+        val badges = summary.resolveBadges(assets)
         val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map {
             it.validator
@@ -55,6 +56,7 @@ class ValidatorClaimProcessor @Inject constructor(
             validators = involvedValidators.toList(),
             from = fromAccounts,
             to = toAccounts,
+            badges = badges,
             actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake
         )
     }

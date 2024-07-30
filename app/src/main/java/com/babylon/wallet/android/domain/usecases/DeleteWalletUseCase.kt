@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import rdx.works.core.KeystoreManager
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
@@ -13,13 +14,15 @@ class DeleteWalletUseCase @Inject constructor(
     private val keystoreManager: KeystoreManager,
     private val googleSignInManager: GoogleSignInManager,
     private val stateRepository: StateRepository,
-    private val peerdroidClient: PeerdroidClient
+    private val peerdroidClient: PeerdroidClient,
+    private val homeCardsRepository: HomeCardsRepository
 ) {
 
     suspend operator fun invoke() {
         googleSignInManager.signOut()
         peerdroidClient.terminate()
         stateRepository.clearCachedState()
+        homeCardsRepository.walletReset()
         profileRepository.clearAllWalletData()
         keystoreManager.removeKeys().onFailure {
             Timber.d(it, "Failed to delete encryption keys")

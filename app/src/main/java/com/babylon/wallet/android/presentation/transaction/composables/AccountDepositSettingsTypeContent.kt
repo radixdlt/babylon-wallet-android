@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -261,7 +262,7 @@ private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modif
             else -> {}
         }
         val name = when (resource) {
-            is Resource.FungibleResource -> resource.displayTitle
+            is Resource.FungibleResource -> resource.displayTitleAsToken()
             is Resource.NonFungibleResource -> resource.name
             null -> ""
         }.ifEmpty { stringResource(id = R.string.account_poolUnits_unknownSymbolName) }
@@ -314,8 +315,8 @@ fun AccountDepositSettingsTypeContentPreview() {
                             )
                         )
                     )
-                )
-
+                ),
+                badges = emptyList()
             )
         )
     }
@@ -335,7 +336,8 @@ fun AccountDepositSettingsTypeContentPreviewJustRule() {
                         assetChanges = emptyList(),
                         depositorChanges = emptyList()
                     )
-                )
+                ),
+                badges = emptyList()
             )
         )
     }
@@ -366,8 +368,8 @@ fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
                             )
                         )
                     )
-                )
-
+                ),
+                badges = emptyList()
             )
         )
     }
@@ -394,8 +396,8 @@ fun AccountDepositSettingsTypeContentPreviewJustDepositorChanges() {
                             )
                         )
                     )
-                )
-
+                ),
+                badges = emptyList()
             )
         )
     }

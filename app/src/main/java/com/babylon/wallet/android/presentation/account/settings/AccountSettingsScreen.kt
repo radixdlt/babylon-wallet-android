@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -54,8 +51,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
@@ -121,6 +117,7 @@ fun AccountSettingsScreen(
     }
 
     AccountSettingsContent(
+        modifier = modifier,
         onBackClick = onBackClick,
         onMessageShown = viewModel::onMessageShown,
         error = state.error,
@@ -132,7 +129,6 @@ fun AccountSettingsScreen(
                 bottomSheetState.show()
             }
         },
-        modifier = Modifier.navigationBarsPadding(),
         settingsSections = state.settingsSections,
         onSettingClick = { item ->
             state.account?.address?.let { accountAddress ->
@@ -149,7 +145,6 @@ fun AccountSettingsScreen(
 
     if (state.isBottomSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             wrapContent = true,
             enableImePadding = true,
             sheetState = bottomSheetState,
@@ -157,7 +152,6 @@ fun AccountSettingsScreen(
                 when (state.bottomSheetContent) {
                     AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
                         RenameAccountSheet(
-                            modifier = Modifier.navigationBarsPadding(),
                             accountNameChanged = state.accountNameChanged,
                             onNewAccountNameChange = viewModel::onRenameAccountNameChange,
                             isNewNameValid = state.isNewNameValid,
@@ -181,7 +175,6 @@ fun AccountSettingsScreen(
                     AccountPreferenceUiState.BottomSheetContent.None -> {}
                 }
             },
-            showDragHandle = false,
             onDismissRequest = {
                 scope.launch {
                     bottomSheetState.hide()
@@ -220,7 +213,7 @@ private fun AccountSettingsContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.accountSettings_title),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         snackbarHost = {
@@ -297,8 +290,6 @@ private fun AccountSettingsContent(
             }
             item {
                 if (faucetState is FaucetState.Available) {
-                    val context = LocalContext.current
-
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
                     RadixSecondaryButton(
@@ -310,13 +301,7 @@ private fun AccountSettingsContent(
                                 top = RadixTheme.dimensions.paddingDefault
                             ),
                         text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                        onClick = {
-                            context.biometricAuthenticate { result ->
-                                if (result == BiometricAuthenticationResult.Succeeded) {
-                                    onGetFreeXrdClick()
-                                }
-                            }
-                        },
+                        onClick = onGetFreeXrdClick,
                         isLoading = isXrdLoading,
                         enabled = !isXrdLoading && faucetState.isEnabled
                     )

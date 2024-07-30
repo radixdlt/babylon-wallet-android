@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
-import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
@@ -52,7 +51,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val transactionStatusClient: TransactionStatusClient,
     private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
-    private val getResourcesUseCase: GetResourcesUseCase,
+    private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
@@ -175,39 +174,28 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
         checkIfSettingsChanged()
     }
 
-    private fun loadAssets(addresses: Set<ResourceAddress>) = viewModelScope.launch {
-        getResourcesUseCase(addresses = addresses).onSuccess { resources ->
-            val loadedResourcesAddresses = resources.map { it.address }.toSet()
+    private fun loadAssets(addresses: Set<ResourceOrNonFungible>) = viewModelScope.launch {
+        resolveAssetsFromAddressUseCase(addresses).onSuccess { assets ->
             _state.update { state ->
                 state.copy(
-                    assetExceptionsUiModels = state.assetExceptionsUiModels?.mapWhen(
-                        predicate = { it.assetAddress in loadedResourcesAddresses }
-                    ) { assetException ->
-                        val resource = resources.firstOrNull {
-                            it.address == assetException.assetAddress
-                        }
+                    assetExceptionsUiModels = state.assetExceptionsUiModels?.map { model ->
+                        val asset = assets.find { it.resource.address == model.assetAddress }
 
-                        if (resource != null) {
-                            assetException.copy(resource = resource)
+                        if (asset != null) {
+                            model.copy(resource = asset.resource)
                         } else {
-                            assetException
+                            model
                         }
                     }?.toPersistentList(),
-                    allowedDepositorsUiModels = state.allowedDepositorsUiModels?.mapWhen(
-                        predicate = {
-                            loadedResourcesAddresses.contains(it.depositorAddress?.resourceAddress)
-                        }
-                    ) { depositor ->
-                        val resource = resources.firstOrNull {
-                            it.address == depositor.depositorAddress?.resourceAddress
-                        }
+                    allowedDepositorsUiModels = state.allowedDepositorsUiModels?.map { model ->
+                        val asset = assets.find { it.resource.address == model.depositorAddress?.resourceAddress }
 
-                        if (resource != null) {
-                            depositor.copy(resource = resource)
+                        if (asset != null) {
+                            model.copy(resource = asset.resource)
                         } else {
-                            depositor
+                            model
                         }
-                    }?.toPersistentList(),
+                    }?.toPersistentList()
                 )
             }
         }
@@ -227,7 +215,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             )
         }
         if (assetExceptionToAdd.assetAddress != null) {
-            loadAssets(setOf(assetExceptionToAdd.assetAddress))
+            loadAssets(setOf(ResourceOrNonFungible.Resource(assetExceptionToAdd.assetAddress)))
         }
         checkIfSettingsChanged()
     }
@@ -248,7 +236,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 } ?: state
             }
-            loadAssets(setOf(depositorAddress.resourceAddress))
+            loadAssets(setOf(depositorAddress))
         }
         checkIfSettingsChanged()
     }
@@ -365,13 +353,13 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 }
                 checkIfSettingsChanged()
-                loadAssets(
-                    addresses = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.map {
-                        it.address
-                    }?.toSet().orEmpty() + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.map {
-                        it.resourceAddress
-                    }?.toSet().orEmpty()
-                )
+
+                val assetExceptionAddresses = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList.orEmpty().map {
+                    ResourceOrNonFungible.Resource(it.address)
+                }.toSet()
+                val depositorAddresses = account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList.orEmpty().toSet()
+
+                loadAssets(addresses = assetExceptionAddresses + depositorAddresses)
             }
         }
     }

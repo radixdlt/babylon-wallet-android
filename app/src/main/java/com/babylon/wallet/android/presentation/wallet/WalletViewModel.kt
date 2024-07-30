@@ -51,7 +51,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.AssetPrice
@@ -124,6 +123,10 @@ class WalletViewModel @Inject constructor(
 
     override fun initialState() = State()
 
+    fun onStart() {
+        loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+    }
+
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
 
     fun onPopUpScreenDismissed() {
@@ -189,9 +192,7 @@ class WalletViewModel @Inject constructor(
     private fun observeWalletAssets() {
         combine(
             accountsFlow,
-            refreshFlow.onStart {
-                loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
-            }
+            refreshFlow
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
@@ -221,7 +222,7 @@ class WalletViewModel @Inject constructor(
 
                     if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
                         _state.update { it.disableFiatPrices() }
-                        break
+                        return@onEach
                     }
                 }
 
@@ -413,6 +414,17 @@ class WalletViewModel @Inject constructor(
                 } else {
                     accountWithAssets
                 }
+            },
+            prices = if (prices is PricesState.None) {
+                // In case that prices were never received, show an error
+                // in the prices state
+                PricesState.Enabled(
+                    pricesPerAccount = accountsWithAssets?.associate {
+                        it.account.address to null
+                    }.orEmpty()
+                )
+            } else {
+                prices
             }
         )
 
@@ -423,7 +435,10 @@ class WalletViewModel @Inject constructor(
             )
         )
 
-        fun disableFiatPrices() = copy(prices = PricesState.Disabled)
+        fun disableFiatPrices() = copy(
+            prices = PricesState.Disabled,
+            refreshType = RefreshType.None,
+        )
 
         enum class AccountTag {
             LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE

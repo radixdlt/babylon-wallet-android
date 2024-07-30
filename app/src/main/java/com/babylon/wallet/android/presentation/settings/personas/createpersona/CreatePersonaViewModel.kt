@@ -68,10 +68,10 @@ class CreatePersonaViewModel @Inject constructor(
             val factorSource = getProfileUseCase().mainBabylonFactorSource ?: return@launch
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    entityKind = EntityKind.PERSONA,
                     forNetworkId = getProfileUseCase().currentGateway.network.id,
                     factorSource = factorSource,
-                    isBiometricsProvided = false,
-                    entityKind = EntityKind.PERSONA
+                    isBiometricsProvided = false
                 )
             ).mapCatching { hdPublicKey ->
                 createPersonaUseCase(

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -49,8 +48,11 @@ import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -70,6 +72,7 @@ import rdx.works.core.domain.resources.sampleMainnet
 fun SpendingAssetItem(
     modifier: Modifier = Modifier,
     asset: SpendingAsset,
+    onItemClick: () -> Unit,
     onAmountTyped: (String) -> Unit,
     onMaxClicked: () -> Unit
 ) {
@@ -93,7 +96,7 @@ fun SpendingAssetItem(
     ) {
         when (asset) {
             is SpendingAsset.Fungible -> FungibleSpendingAsset(
-                resource = asset.resource,
+                asset = asset,
                 amount = asset.amountString,
                 isExceedingBalance = asset.exceedingBalance,
                 onAmountChanged = onAmountTyped,
@@ -102,13 +105,14 @@ fun SpendingAssetItem(
                 onEditStateChanged = {
                     isEditingState.value = it
                 },
-                onMaxClicked = onMaxClicked
+                onMaxClicked = onMaxClicked,
+                onItemClick = onItemClick
             )
 
             is SpendingAsset.NFT -> NonFungibleSpendingAsset(
-                resource = asset.resource,
-                nft = asset.item,
+                asset = asset,
                 isExceedingBalance = asset.exceedingBalance,
+                onItemClick = onItemClick
             )
         }
     }
@@ -117,14 +121,15 @@ fun SpendingAssetItem(
 @Composable
 private fun ColumnScope.FungibleSpendingAsset(
     modifier: Modifier = Modifier,
-    resource: Resource.FungibleResource,
+    asset: SpendingAsset.Fungible,
     amount: String,
     isExceedingBalance: Boolean,
     onAmountChanged: (String) -> Unit,
     focusRequester: FocusRequester,
     isEditing: Boolean,
     onEditStateChanged: (Boolean) -> Unit,
-    onMaxClicked: () -> Unit
+    onMaxClicked: () -> Unit,
+    onItemClick: () -> Unit
 ) {
     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     Row(
@@ -132,16 +137,21 @@ private fun ColumnScope.FungibleSpendingAsset(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Thumbnail.Fungible(
-            modifier = Modifier.size(24.dp),
-            token = resource
+            modifier = Modifier
+                .size(24.dp)
+                .throttleClickable {
+                    onItemClick()
+                },
+            token = asset.resource
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         Text(
             modifier = Modifier
-                .weight(1f),
-            text = resource.displayTitle.ifEmpty {
-                stringResource(id = R.string.transactionReview_unknown)
-            },
+                .weight(1f)
+                .throttleClickable {
+                    onItemClick()
+                },
+            text = asset.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 2
@@ -238,7 +248,7 @@ private fun ColumnScope.FungibleSpendingAsset(
                 textDecoration = TextDecoration.Underline
             )
 
-            resource.ownedAmount?.let { amount ->
+            asset.resource.ownedAmount?.let { amount ->
                 Text(
                     text = "- Balance: ${amount.formatted()}",
                     style = RadixTheme.typography.body2HighImportance.copy(
@@ -256,36 +266,37 @@ private fun ColumnScope.FungibleSpendingAsset(
 @Composable
 private fun NonFungibleSpendingAsset(
     modifier: Modifier = Modifier,
-    resource: Resource.NonFungibleResource,
-    nft: Resource.NonFungibleResource.Item,
+    asset: SpendingAsset.NFT,
     isExceedingBalance: Boolean,
+    onItemClick: () -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 69.dp)
-            .padding(RadixTheme.dimensions.paddingSmall),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(RadixTheme.dimensions.paddingDefault)
+            .throttleClickable {
+                onItemClick()
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
         Thumbnail.NonFungible(
-            modifier = Modifier.size(55.dp),
-            collection = resource
+            modifier = Modifier.size(24.dp),
+            collection = asset.resource
         )
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+
         Column {
             Text(
-                text = nft.localId.formatted(),
+                text = asset.displayTitle(),
+                color = RadixTheme.colors.gray1,
+                style = RadixTheme.typography.body1HighImportance
+            )
+
+            Text(
+                text = asset.displaySubtitle(),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
-
-            nft.name?.let {
-                Text(
-                    text = it,
-                    color = RadixTheme.colors.gray1,
-                    style = RadixTheme.typography.body1HighImportance
-                )
-            }
 
             AnimatedVisibility(
                 visible = isExceedingBalance,
@@ -328,7 +339,8 @@ fun SpendingAssetItemsPreview() {
                 },
                 onMaxClicked = {
                     firstAmount = "10"
-                }
+                },
+                onItemClick = {}
             )
 
             var secondAmount by remember { mutableStateOf("3.4") }
@@ -343,7 +355,8 @@ fun SpendingAssetItemsPreview() {
                 },
                 onMaxClicked = {
                     secondAmount = "10"
-                }
+                },
+                onItemClick = {}
             )
 
             val item = Resource.NonFungibleResource.Item(
@@ -376,7 +389,8 @@ fun SpendingAssetItemsPreview() {
                 },
                 onMaxClicked = {
                     secondAmount = "10"
-                }
+                },
+                onItemClick = {}
             )
 
             SpendingAssetItem(
@@ -390,7 +404,8 @@ fun SpendingAssetItemsPreview() {
                 },
                 onMaxClicked = {
                     secondAmount = "10"
-                }
+                },
+                onItemClick = {}
             )
         }
     }

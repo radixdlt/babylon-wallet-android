@@ -11,7 +11,7 @@ import javax.inject.Inject
 @ActivityRetainedScoped
 class AccessFactorSourcesProxyImpl @Inject constructor(
     private val appEventBus: AppEventBus
-) : AccessFactorSourcesProxy, AccessFactorSourcesUiProxy {
+) : AccessFactorSourcesProxy, AccessFactorSourcesIOHandler {
 
     private var input: AccessFactorSourcesInput = AccessFactorSourcesInput.Init
     private val _output = MutableSharedFlow<AccessFactorSourcesOutput>()
@@ -46,6 +46,20 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
             Result.failure(result.error)
         } else {
             Result.success(result as AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath)
+        }
+    }
+
+    override suspend fun getSignatures(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
+    ): Result<AccessFactorSourcesOutput.Signatures> {
+        input = accessFactorSourcesInput
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.GetSignatures)
+        val result = _output.first()
+
+        return if (result is AccessFactorSourcesOutput.Failure) {
+            Result.failure(result.error)
+        } else {
+            Result.success(result as AccessFactorSourcesOutput.Signatures)
         }
     }
 
