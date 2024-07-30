@@ -6,11 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
@@ -58,16 +55,13 @@ fun ChooseAccountContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 backIconType = if (showBackButton) BackIconType.Back else BackIconType.Close,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            BottomPrimaryButton(
+            RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = isContinueButtonEnabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
                 text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)
             )
         },

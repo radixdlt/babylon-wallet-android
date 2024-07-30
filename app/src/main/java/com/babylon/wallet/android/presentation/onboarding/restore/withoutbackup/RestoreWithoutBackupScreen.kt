@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -35,8 +33,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.coroutines.launch
 
@@ -110,10 +109,10 @@ private fun RestoreWithoutBackupContent(
         backCallback()
     }
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                windowInsets = WindowInsets.statusBars,
+                windowInsets = WindowInsets.statusBarsAndBanner,
                 title = "",
                 onBackClick = {
                     backCallback()
@@ -270,7 +269,7 @@ private fun BDFSRecoveryInfoSection(
             style = RadixTheme.typography.body1Regular
         )
         Spacer(modifier = Modifier.weight(1f))
-        BottomPrimaryButton(onClick = onConfirmRecoverWithMainSeedPhrase, text = stringResource(id = R.string.common_continue))
+        RadixBottomBar(onClick = onConfirmRecoverWithMainSeedPhrase, text = stringResource(id = R.string.common_continue))
     }
 }
 

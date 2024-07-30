@@ -18,7 +18,7 @@ import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
 import rdx.works.profile.cloudbackup.model.BackupServiceException
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -61,7 +61,7 @@ class DriveClientImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val googleSignInManager: GoogleSignInManager,
     private val preferencesManager: PreferencesManager,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val hostInfoRepository: HostInfoRepository
 ) : DriveClient {
 
     private val backupFields = listOf(
@@ -141,7 +141,7 @@ class DriveClientImpl @Inject constructor(
                 .setFields(getFields)
                 .execute().let { file -> CloudBackupFileEntity(file) }
         }.mapCatching { entity ->
-            if (entity.header.lastUsedOnDevice.id != deviceInfoRepository.getDeviceInfo().id) {
+            if (entity.header.lastUsedOnDevice.id != hostInfoRepository.getHostId().id) {
                 throw BackupServiceException.ClaimedByAnotherDevice(entity)
             } else {
                 entity

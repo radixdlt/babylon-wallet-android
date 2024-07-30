@@ -20,15 +20,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -81,11 +83,11 @@ import com.babylon.wallet.android.presentation.account.composable.TransactionHis
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.DefaultPullToRefreshContainer
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT
@@ -180,7 +182,7 @@ private class AccountHeaderCardNestedScrollConnection(
 }
 
 @Suppress("CyclomaticComplexMethod")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun HistoryContent(
     modifier: Modifier = Modifier,
@@ -229,19 +231,25 @@ fun HistoryContent(
     }, onScrollEvent = {
         onScrollEvent(it)
     })
-    DefaultPullToRefreshContainer(
-        isRefreshing = state.isRefreshing,
+
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = state.isRefreshing,
         onRefresh = onRefresh,
-        canRefresh = state.shouldEnableUserInteraction
+        refreshingOffset = 116.dp
+    )
+
+    Box(
+        modifier = modifier
+            .pullRefresh(pullToRefreshState, enabled = state.shouldEnableUserInteraction)
     ) {
         Scaffold(
-            modifier = modifier.imePadding(),
+            modifier = Modifier.imePadding(),
             topBar = {
                 RadixCenteredTopAppBar(
                     title = stringResource(id = R.string.transactionHistory_title),
                     onBackClick = onBackClick,
                     backIconType = BackIconType.Close,
-                    windowInsets = WindowInsets.statusBars,
+                    windowInsets = WindowInsets.statusBarsAndBanner,
                     containerColor = RadixTheme.colors.defaultBackground,
                     actions = {
                         AnimatedVisibility(visible = state.shouldShowFiltersButton, enter = fadeIn(), exit = fadeOut()) {
@@ -418,12 +426,19 @@ fun HistoryContent(
                 }
             }
         }
+
+        PullRefreshIndicator(
+            modifier = Modifier.align(Alignment.TopCenter),
+            refreshing = state.isRefreshing,
+            state = pullToRefreshState,
+            contentColor = RadixTheme.colors.gray1,
+            backgroundColor = RadixTheme.colors.defaultBackground,
+        )
     }
 
     if (state.shouldShowFiltersSheet) {
         DefaultModalSheetLayout(sheetState = bottomSheetState, sheetContent = {
             FiltersDialog(
-                modifier = Modifier.navigationBarsPadding(),
                 state = state,
                 onDismiss = {
                     onShowFilters(false)

@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import rdx.works.core.logNonFatalException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -18,6 +19,7 @@ fun FragmentActivity.activityBiometricAuthenticate(
     val canAuthenticate = biometricManager.canAuthenticate(ALLOWED_AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
     if (!canAuthenticate) {
         authenticationCallback(BiometricAuthenticationResult.Error)
+        logNonFatalException(IllegalStateException("Biometric authentication error. Allowed authenticator types condition not met."))
         return
     }
 
@@ -28,6 +30,7 @@ fun FragmentActivity.activityBiometricAuthenticate(
 
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
             authenticationCallback(BiometricAuthenticationResult.Error)
+            logNonFatalException(IllegalStateException("Biometric authentication error. Code: $errorCode Message: $errString"))
         }
 
         override fun onAuthenticationFailed() {
@@ -56,6 +59,9 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
             val canAuthenticate = biometricManager.canAuthenticate(ALLOWED_AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
             if (!canAuthenticate) {
                 it.resume(false)
+                logNonFatalException(
+                    IllegalStateException("Biometric authentication error (suspend). Allowed authenticator types condition not met.")
+                )
                 return@suspendCoroutine
             }
             val authCallback = object : BiometricPrompt.AuthenticationCallback() {
@@ -64,6 +70,13 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    it.resume(false)
+                    logNonFatalException(
+                        IllegalStateException("Biometric authentication error (suspend). Code: $errorCode Message: $errString")
+                    )
+                }
+
+                override fun onAuthenticationFailed() {
                     it.resume(false)
                 }
             }
