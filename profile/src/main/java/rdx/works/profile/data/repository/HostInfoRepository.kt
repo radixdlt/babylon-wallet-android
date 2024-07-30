@@ -16,6 +16,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.UUIDGenerator
 import rdx.works.core.serializers.TimestampSerializer
 import rdx.works.core.serializers.UuidSerializer
 import timber.log.Timber
@@ -81,7 +82,7 @@ class HostInfoRepositoryImpl @Inject constructor(
 
         companion object {
             fun generate() = HostIdEntry(
-                id = Uuid.randomUUID(),
+                id = UUIDGenerator.uuid(),
                 date = Timestamp.now()
             ).also {
                 Timber.d("Generated host id: ${it.id}")
