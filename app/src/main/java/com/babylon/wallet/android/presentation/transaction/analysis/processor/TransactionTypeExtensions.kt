@@ -407,6 +407,7 @@ fun ExecutionSummary.resolveBadges(assets: List<Asset>): List<Badge> {
                 // In this case we need to attach the amount of the specifier to the resource since it is not resolved by GW
                 (asset.resource as? Resource.FungibleResource)?.copy(ownedAmount = specifier.amount) ?: return@mapNotNull null
             }
+
             is ResourceSpecifier.NonFungible -> asset.resource
         }
 

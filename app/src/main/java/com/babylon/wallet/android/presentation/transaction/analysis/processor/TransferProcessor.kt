@@ -4,6 +4,7 @@ import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddres
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -31,7 +32,13 @@ class TransferProcessor @Inject constructor(
                 allOwnedAccounts = allOwnedAccounts,
                 defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
             ),
-            badges = badges
+            badges = badges,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibles.map {
+                Resource.NonFungibleResource.Item(
+                    it.resourceAddress,
+                    it.nonFungibleLocalId
+                )
+            }
         )
     }
 }

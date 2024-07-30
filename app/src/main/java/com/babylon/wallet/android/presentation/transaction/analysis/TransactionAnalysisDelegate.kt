@@ -143,6 +143,10 @@ class TransactionAnalysisDelegate @Inject constructor(
             if (newlyCreated.isNotEmpty()) {
                 cacheNewlyCreatedEntitiesUseCase(newlyCreated)
             }
+            val newlyCreatedNFTItemsForExistingResources = previewType.newlyCreatedNFTItemsForExistingResources
+            if (newlyCreatedNFTItemsForExistingResources.isNotEmpty()) {
+                cacheNewlyCreatedEntitiesUseCase.cacheNewlyCreatedNFTs(newlyCreatedNFTItemsForExistingResources)
+            }
         }
 
         _state.update {

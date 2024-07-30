@@ -103,6 +103,8 @@ interface StateRepository {
 
         data object StateVersionMissing : Error(RuntimeException("State version missing for account."))
     }
+
+    suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>): Result<Unit>
 }
 
 @Suppress("TooManyFunctions")
@@ -546,6 +548,13 @@ class StateRepositoryImpl @Inject constructor(
 
             val newNFTs = newResources.filterIsInstance<Resource.NonFungibleResource>().map { it.items }.flatten()
             stateDao.insertNFTs(newNFTs.map { it.asEntity(syncedAt) })
+        }
+    }
+
+    override suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>) = withContext(dispatcher) {
+        runCatching {
+            val syncedAt = InstantGenerator()
+            stateDao.insertNFTs(newItems.map { it.asEntity(syncedAt) })
         }
     }
 

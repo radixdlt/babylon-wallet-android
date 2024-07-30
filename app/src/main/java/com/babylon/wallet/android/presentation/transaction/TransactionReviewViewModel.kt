@@ -441,6 +441,9 @@ sealed interface PreviewType {
                 allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable.resource }
             }.flatten()
 
+        val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
+            get() = emptyList()
+
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
@@ -475,7 +478,20 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             override val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList()
-        ) : Transfer
+            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList(),
+            private val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item> = emptyList()
+        ) : Transfer {
+            override val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
+                get() {
+                    val newlyCreatedNFTResources = newlyCreatedResources.filterIsInstance<Resource.NonFungibleResource>()
+                    val addresses = newlyCreatedNFTResources.map { it.address }
+                    return newlyCreatedNFTItems.filterNot { nftItem ->
+                        val newResource = newlyCreatedNFTResources.find { resource ->
+                            resource.address == nftItem.collectionAddress
+                        }
+                        nftItem.collectionAddress in addresses && nftItem.localId in newResource?.items?.map { it.localId }.orEmpty()
+                    }
+                }
+        }
     }
 }

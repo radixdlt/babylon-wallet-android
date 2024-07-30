@@ -8,6 +8,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -34,7 +35,13 @@ class GeneralTransferProcessor @Inject constructor(
                 defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
             ),
             badges = badges,
-            dApps = dApps
+            dApps = dApps,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibles.map {
+                Resource.NonFungibleResource.Item(
+                    it.resourceAddress,
+                    it.nonFungibleLocalId
+                )
+            }
         )
     }
 

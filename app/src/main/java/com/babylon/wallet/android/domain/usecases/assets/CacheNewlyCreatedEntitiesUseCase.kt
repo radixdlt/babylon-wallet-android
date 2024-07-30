@@ -11,4 +11,8 @@ class CacheNewlyCreatedEntitiesUseCase @Inject constructor(
     suspend operator fun invoke(resources: List<Resource>): Result<Unit> {
         return stateRepository.cacheNewlyCreatedResources(resources)
     }
+
+    suspend fun cacheNewlyCreatedNFTs(newNfts: List<Resource.NonFungibleResource.Item>): Result<Unit> {
+        return stateRepository.cacheNewlyCreatedNFTItems(newNfts)
+    }
 }
