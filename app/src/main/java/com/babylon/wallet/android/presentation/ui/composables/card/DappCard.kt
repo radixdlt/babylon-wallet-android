@@ -27,7 +27,7 @@ fun DappCard(
     modifier: Modifier = Modifier,
     dApp: DApp,
     showChevron: Boolean = true,
-    elevation: Dp = 8.dp
+    elevation: Dp = 2.dp
 ) {
     Row(
         modifier = modifier
