@@ -6,6 +6,8 @@ import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HostId
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
@@ -16,6 +18,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBabylonAddress
+import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -26,7 +29,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
@@ -52,8 +54,11 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             phrase = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote"
         )
 
+        val hostId = HostId.sample()
+        val hostInfo = HostInfo.sample.other()
         val factorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = babylonMnemonic,
+            hostInfo = hostInfo,
             isMain = true
         )
         val derivationPath = DerivationPath.Cap26.account(
@@ -63,7 +68,8 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         )
         val profile = Profile.init(
             deviceFactorSource = factorSource,
-            creatingDeviceName = DeviceInfo.sample().displayName
+            hostId = hostId,
+            hostInfo = hostInfo
         ).addAccounts(
             accounts = listOf(
                 Account.initBabylon(
