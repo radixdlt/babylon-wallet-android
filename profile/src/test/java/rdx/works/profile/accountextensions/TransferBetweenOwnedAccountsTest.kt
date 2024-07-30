@@ -36,7 +36,6 @@ import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
 import rdx.works.core.sargon.updateThirdPartyDepositSettings
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.repository.from
 import kotlin.test.assertTrue
 
 class TransferBetweenOwnedAccountsTest {
