@@ -10,7 +10,5 @@
     <string name="settings_debugSettings_inspectCloudBackups" translatable="false">Inspect Cloud Backups</string>
     <string name="no_email_client_installed" translatable="false">No email client installed</string>
     <string name="gateway_mainnet_title" translatable="false">Radix Mainnet Gateway</string>
-    <string name="gateway_mainnet_description" translatable="false">Radix Public Network</string>
-    <string name="gateway_stokenet_title" translatable="false">Radix Stokenet Gateway</string>
-    <string name="gateway_stokenet_description" translatable="false">Radix Public Network</string>
+    <string name="gateway_stokenet_title" translatable="false">Stokenet (testnet) Gateway</string>
 </resources>

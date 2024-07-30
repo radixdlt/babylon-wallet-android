@@ -371,7 +371,7 @@ private fun GatewayCard(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = gateway.description(),
+                text = gateway.gateway.network.displayDescription,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,
@@ -428,13 +428,6 @@ private fun GatewaysViewModel.State.GatewayUiItem.name(): String = if (isWellKno
     }
 } else {
     url
-}
-
-@Composable
-private fun GatewaysViewModel.State.GatewayUiItem.description(): String = when (gateway.network.id) {
-    NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_description)
-    NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_description)
-    else -> gateway.network.displayDescription
 }
 
 @Preview(showBackground = true)
@@ -496,7 +489,7 @@ class GatewaysPreviewProvider : PreviewParameterProvider<GatewaysViewModel.State
                 ),
                 newUrl = "",
                 newUrlValid = false,
-                addingGateway = true,
+                addingGateway = false,
                 gatewayAddFailure = null,
                 isAddGatewaySheetVisible = true
             ),
