@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -317,16 +318,18 @@ private fun DepositOptionItem(
                 contentDescription = null
             )
         },
-        trailingIcon = if (selectedRule == currentRule) {
-            {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.gray1
-                )
+        trailingIcon = {
+            Box(
+                modifier = Modifier.size(24.dp)
+            ) {
+                if (selectedRule == currentRule) {
+                    Icon(
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.gray1
+                    )
+                }
             }
-        } else {
-            {}
         }
     )
 }
