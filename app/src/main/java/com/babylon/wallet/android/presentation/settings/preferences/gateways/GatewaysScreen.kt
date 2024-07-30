@@ -424,7 +424,7 @@ private fun GatewaysViewModel.State.GatewayUiItem.name(): String = if (isWellKno
     when (gateway.network.id) {
         NetworkId.MAINNET -> stringResource(id = R.string.gateway_mainnet_title)
         NetworkId.STOKENET -> stringResource(id = R.string.gateway_stokenet_title)
-        else -> url
+        else -> gateway.network.displayDescription
     }
 } else {
     url
