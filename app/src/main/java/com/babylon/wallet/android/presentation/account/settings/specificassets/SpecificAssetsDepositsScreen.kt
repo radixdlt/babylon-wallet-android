@@ -15,10 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -65,14 +63,17 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.v
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
@@ -169,7 +170,6 @@ fun SpecificAssetsDepositsScreen(
             }
         },
         modifier = modifier
-            .navigationBarsPadding()
             .fillMaxSize()
             .background(RadixTheme.colors.gray5),
         allowedAssets = state.allowedAssets,
@@ -194,7 +194,6 @@ fun SpecificAssetsDepositsScreen(
                     sharedViewModel.onAddAssetException()
                 },
                 modifier = Modifier
-                    .navigationBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
                     .clip(RadixTheme.shapes.roundedRectTopDefault),
@@ -348,13 +347,13 @@ private fun SpecificAssetsDepositsContent(
                 title = stringResource(R.string.accountSettings_specificAssetsDeposits),
                 onBackClick = onBackClick,
                 containerColor = RadixTheme.colors.defaultBackground,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            BottomPrimaryButton(
-                text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
+            RadixBottomBar(
                 onClick = { onShowAddAssetSheet(selectedTab) },
+                text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
                 enabled = allowedAssets != null && deniedAssets != null
             )
         },
@@ -533,14 +532,19 @@ private fun AssetItem(
         Column(
             modifier = Modifier.weight(1f)
         ) {
+            val name = when (asset.resource) {
+                is Resource.FungibleResource -> asset.resource.displayTitleAsToken()
+                is Resource.NonFungibleResource -> asset.resource.displayTitleAsNFTCollection()
+                null -> null
+            }
+
             Text(
-                text = asset.resource?.name.orEmpty().ifEmpty {
-                    stringResource(id = R.string.authorizedDapps_dAppDetails_unknownTokenName)
-                },
+                text = name.orEmpty(),
                 maxLines = 1,
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
+
             Text(
                 text = asset.assetException?.address?.formatted().orEmpty(),
                 textAlign = TextAlign.Start,

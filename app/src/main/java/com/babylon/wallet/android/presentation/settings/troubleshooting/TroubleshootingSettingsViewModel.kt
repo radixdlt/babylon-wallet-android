@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -44,7 +43,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            if (getProfileUseCase().currentGateway.network.id != NetworkId.MAINNET && !BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+            if (getProfileUseCase().currentGateway.network.id != NetworkId.MAINNET) {
                 _state.update { state ->
                     val updatedSettings =
                         state.settings.filterNot {

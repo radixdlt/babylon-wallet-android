@@ -32,6 +32,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -444,7 +445,7 @@ private fun LiquidStakeUnit(
 
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.account_staking_liquidStakeUnits),
+                text = validatorWithStakes.liquidStakeUnit?.displayTitle().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
@@ -514,7 +515,7 @@ private fun StakeClaims(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.account_staking_stakeClaimNFTs),
+                text = validatorWithStakes.stakeClaimNft?.displayTitle().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )

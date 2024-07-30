@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
@@ -37,11 +35,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.ThirdPartyDeposits
@@ -100,8 +99,7 @@ fun AccountThirdPartyDepositsScreen(
         error = state.error,
         modifier = modifier
             .fillMaxSize()
-            .background(RadixTheme.colors.defaultBackground)
-            .navigationBarsPadding(),
+            .background(RadixTheme.colors.defaultBackground),
         onAllowAll = viewModel::onAllowAll,
         onAcceptKnown = viewModel::onAcceptKnown,
         onDenyAll = viewModel::onDenyAll,
@@ -141,13 +139,13 @@ private fun AccountThirdPartyDepositsContent(
                 title = stringResource(R.string.accountSettings_thirdPartyDeposits),
                 onBackClick = onBackClick,
                 containerColor = RadixTheme.colors.defaultBackground,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            BottomPrimaryButton(
-                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_update),
+            RadixBottomBar(
                 onClick = onUpdateThirdPartyDeposits,
+                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_update),
                 enabled = canUpdate
             )
         },

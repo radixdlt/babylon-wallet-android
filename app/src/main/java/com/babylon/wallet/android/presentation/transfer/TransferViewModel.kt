@@ -412,7 +412,6 @@ class TransferViewModel @Inject constructor(
                 val isFiatBalancesEnabled: Boolean = true,
                 val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
-                val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
                 val pendingStakeUnits: Boolean = false,
                 val targetAccount: TargetAccount,
                 val assetsViewState: AssetsViewState = AssetsViewState.init(),
@@ -436,7 +435,7 @@ class TransferViewModel @Inject constructor(
                     get() = targetAccount.spendingAssets.size
 
                 fun onNFTsLoading(forResource: Resource.NonFungibleResource): ChooseAssets {
-                    return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
+                    return copy(assetsViewState = assetsViewState.nextPagePending(forResource.address))
                 }
 
                 fun onNFTsReceived(forResource: Resource.NonFungibleResource): ChooseAssets {
@@ -451,14 +450,14 @@ class TransferViewModel @Inject constructor(
                                 mutation = { NonFungibleCollection(forResource) }
                             )
                         ),
-                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address
+                        assetsViewState = assetsViewState.nextPageReceived(forResource.address)
                     )
                 }
 
                 fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): ChooseAssets {
                     if (assets?.nonFungibles == null) return this
                     return copy(
-                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address,
+                        assetsViewState = assetsViewState.nextPageReceived(forResource.address),
                         uiMessage = UiMessage.ErrorMessage(error = error)
                     )
                 }
