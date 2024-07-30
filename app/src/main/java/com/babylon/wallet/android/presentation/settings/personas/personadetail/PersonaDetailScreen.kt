@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,10 +36,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
@@ -138,10 +137,9 @@ private fun PersonaDetailContent(
         },
         bottomBar = {
             if (state.persona != null) {
-                BottomPrimaryButton(
-                    modifier = Modifier.navigationBarsPadding(),
-                    text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
-                    onClick = { onEditPersona(state.persona.address) }
+                RadixBottomBar(
+                    onClick = { onEditPersona(state.persona.address) },
+                    text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona)
                 )
             }
         },
