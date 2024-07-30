@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
@@ -54,10 +53,8 @@ fun NPSSurveySheet(
 ) {
     Column(
         modifier = modifier
-            .navigationBarsPadding()
-            .fillMaxWidth()
-            .background(RadixTheme.colors.defaultBackground)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .background(RadixTheme.colors.defaultBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(

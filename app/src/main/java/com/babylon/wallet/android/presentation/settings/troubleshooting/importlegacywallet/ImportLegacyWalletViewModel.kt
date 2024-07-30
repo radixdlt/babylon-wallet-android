@@ -122,7 +122,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
     }
 
-    private suspend fun processLedgerResponse(
+    private fun processLedgerResponse(
         ledgerFactorSource: FactorSource.Ledger,
         derivePublicKeyResponse: IncomingMessage.LedgerResponse.DerivePublicKeyResponse
     ) {
@@ -148,10 +148,14 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
         verifiedHardwareAccounts[ledgerFactorSource] = verifiedAccounts
         updateHardwareAccountLeftToMigrateCount()
+        completeImport()
+    }
+
+    private fun completeImport() {
         val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
         if (hardwareAccountsLeftToMigrate.isEmpty()) {
             if (softwareAccountsToMigrate().isEmpty()) {
-                importAllAccounts()
+                onImportAllAccounts()
             } else {
                 viewModelScope.launch {
                     sendEvent(OlympiaImportEvent.BiometricPromptBeforeFinalImport)
@@ -247,8 +251,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
         olympiaAccounts: List<OlympiaAccountDetails>,
         mnemonicExistForSoftwareAccounts: Boolean
     ): PersistentList<ImportLegacyWalletUiState.Page> {
-        val hasSoftwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Software }
-        val hasHardwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Hardware }
+        val hasSoftwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Software && !it.alreadyImported }
+        val hasHardwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Hardware && !it.alreadyImported }
         var pages = listOf(ImportLegacyWalletUiState.Page.ScanQr, ImportLegacyWalletUiState.Page.AccountsToImportList)
         when {
             hasSoftwareAccounts && !mnemonicExistForSoftwareAccounts -> {
@@ -324,7 +328,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 }
                 if (mnemonicExistForSoftwareAccounts && hardwareAccountsLeftToMigrate().isEmpty()) {
                     // we just asked for biometrics, so assume we are authenticated
-                    importAllAccounts(biometricAuthProvider = { true })
+                    onImportAllAccounts(biometricAuthProvider = { true })
                 } else {
                     proceedToNextPage()
                 }
@@ -347,7 +351,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             if (accountsValid) {
                 when (_state.value.pages.nextPage(_state.value.currentPage)) {
                     ImportLegacyWalletUiState.Page.HardwareAccounts -> proceedToNextPage()
-                    else -> importAllAccounts(biometricAuthProvider)
+                    else -> onImportAllAccounts(biometricAuthProvider)
                 }
             } else {
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
@@ -356,7 +360,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     }
 
     @Suppress("UnsafeCallOnNullableType")
-    fun importAllAccounts(biometricAuthProvider: suspend () -> Boolean = { true }) {
+    fun onImportAllAccounts(biometricAuthProvider: suspend () -> Boolean = { true }) {
         viewModelScope.launch {
             if (_state.value.olympiaAccountsToImport.isNotEmpty()) {
                 val authenticated = biometricAuthProvider()
@@ -380,7 +384,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     }
                 }
                 val softwareAccountsToMigrate = softwareAccountsToMigrate()
-                if (softwareAccountsToMigrate.isNotEmpty() && verifiedHardwareAccounts.isEmpty()) {
+                if (softwareAccountsToMigrate.isNotEmpty()) {
                     migrateOlympiaAccountsUseCase(
                         olympiaAccounts = softwareAccountsToMigrate,
                         factorSourceId = factorSourceID
@@ -467,16 +471,21 @@ class ImportLegacyWalletViewModel @Inject constructor(
     }
 
     fun onContinueWithLedgerClick() {
-        viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
-                .asList()
-                .isNotEmpty()
+        val hardwareAccountsLeft = hardwareAccountsLeftToMigrate()
+        if (hardwareAccountsLeft.isEmpty()) {
+            completeImport()
+        } else {
+            viewModelScope.launch {
+                val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
+                    .asList()
+                    .isNotEmpty()
 
-            if (hasAtLeastOneLinkedConnector) {
-                useLedgerDelegate.onSendAddLedgerRequest()
-            } else {
-                _state.update {
-                    it.copy(shouldShowAddLinkConnectorScreen = true)
+                if (hasAtLeastOneLinkedConnector) {
+                    useLedgerDelegate.onSendAddLedgerRequest()
+                } else {
+                    _state.update {
+                        it.copy(shouldShowAddLinkConnectorScreen = true)
+                    }
                 }
             }
         }

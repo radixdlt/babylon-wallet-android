@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
+import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
@@ -55,11 +56,12 @@ fun FiltersStrip(
             }
         }
         historyFilters?.resource?.let { resource ->
-            val name = when (resource) {
-                is Resource.FungibleResource -> resource.displayTitle
-                is Resource.NonFungibleResource -> resource.name
-            }
             item(key = resource.address.string) {
+                val name = when (resource) {
+                    is Resource.FungibleResource -> resource.displayTitleAsToken()
+                    is Resource.NonFungibleResource -> resource.name
+                }
+
                 HistoryFilterTag(
                     modifier = Modifier.animateItemPlacement(),
                     selected = true,

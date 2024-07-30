@@ -90,6 +90,10 @@ fun SlideToSignButton(
         LaunchedEffect(draggableState) {
             snapshotFlow { draggableState.currentValue }.distinctUntilChanged().filter { it == ButtonSliderPosition.End }.collect {
                 onSwipeComplete()
+            }
+        }
+        LaunchedEffect(isSubmitting) {
+            if (!isSubmitting && draggableState.currentValue == ButtonSliderPosition.End) {
                 draggableState.animateTo(ButtonSliderPosition.Start)
             }
         }

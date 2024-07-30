@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -40,6 +39,7 @@ import com.babylon.wallet.android.presentation.settings.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
@@ -80,7 +80,7 @@ private fun SecurityCenterContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars,
+                windowInsets = WindowInsets.statusBarsAndBanner,
                 contentColor = RadixTheme.colors.gray1,
                 containerColor = RadixTheme.colors.gray5
             )

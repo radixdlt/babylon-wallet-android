@@ -222,7 +222,7 @@ class WalletViewModel @Inject constructor(
 
                     if (pricesError != null && pricesError is FiatPriceRepository.PricesNotSupportedInNetwork) {
                         _state.update { it.disableFiatPrices() }
-                        break
+                        return@onEach
                     }
                 }
 
@@ -414,6 +414,17 @@ class WalletViewModel @Inject constructor(
                 } else {
                     accountWithAssets
                 }
+            },
+            prices = if (prices is PricesState.None) {
+                // In case that prices were never received, show an error
+                // in the prices state
+                PricesState.Enabled(
+                    pricesPerAccount = accountsWithAssets?.associate {
+                        it.account.address to null
+                    }.orEmpty()
+                )
+            } else {
+                prices
             }
         )
 
@@ -424,7 +435,10 @@ class WalletViewModel @Inject constructor(
             )
         )
 
-        fun disableFiatPrices() = copy(prices = PricesState.Disabled)
+        fun disableFiatPrices() = copy(
+            prices = PricesState.Disabled,
+            refreshType = RefreshType.None,
+        )
 
         enum class AccountTag {
             LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE

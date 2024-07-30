@@ -3,12 +3,13 @@ package com.babylon.wallet.android.presentation.account.createaccount.confirmati
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
@@ -26,7 +27,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.AppearanceId
 
 @Composable
@@ -65,13 +67,13 @@ fun CreateAccountConfirmationContent(
     appearanceId: AppearanceId,
     requestSource: CreateAccountRequestSource,
 ) {
+    BackHandler(enabled = true) { }
+
     Scaffold(
-        modifier = modifier.statusBarsPadding(),
+        modifier = modifier,
         bottomBar = {
-            BottomPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
+            RadixBottomBar(
+                onClick = accountConfirmed,
                 text = stringResource(
                     id = R.string.createEntity_completion_goToDestination,
                     when (requestSource) {
@@ -85,11 +87,11 @@ fun CreateAccountConfirmationContent(
                         )
                         CreateAccountRequestSource.Gateways -> stringResource(id = R.string.createEntity_completion_destinationGateways)
                     }
-                ),
-                onClick = accountConfirmed
+                )
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.defaultBackground,
+        contentWindowInsets = WindowInsets.statusBarsAndBanner.add(WindowInsets.navigationBars)
     ) { padding ->
         Column(
             modifier = Modifier
@@ -139,7 +141,6 @@ fun CreateAccountConfirmationContent(
             Spacer(modifier = Modifier.weight(3f))
         }
     }
-    BackHandler(enabled = true) { }
 }
 
 @Preview(showBackground = true)

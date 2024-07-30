@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -26,7 +27,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.FiatPrice
-import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.assets.Token
 
 fun LazyListScope.tokensTab(
     assetsViewData: AssetsViewData,
@@ -49,8 +50,8 @@ fun LazyListScope.tokensTab(
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge)
             ) {
-                FungibleResourceItem(
-                    resource = assetsViewData.xrd.resource,
+                TokenItem(
+                    token = assetsViewData.xrd,
                     fiatPrice = assetsViewData.prices?.get(assetsViewData.xrd)?.price,
                     isLoadingBalance = isLoadingBalance,
                     action = action
@@ -70,8 +71,8 @@ fun LazyListScope.tokensTab(
                 itemIndex = index,
                 allItemsSize = assetsViewData.nonXrdTokens.size
             ) {
-                FungibleResourceItem(
-                    resource = token.resource,
+                TokenItem(
+                    token = token,
                     fiatPrice = assetsViewData.prices?.get(token)?.price,
                     isLoadingBalance = isLoadingBalance,
                     action = action
@@ -89,8 +90,8 @@ fun LazyListScope.tokensTab(
 }
 
 @Composable
-private fun FungibleResourceItem(
-    resource: Resource.FungibleResource,
+private fun TokenItem(
+    token: Token,
     fiatPrice: FiatPrice?,
     isLoadingBalance: Boolean,
     modifier: Modifier = Modifier,
@@ -102,11 +103,11 @@ private fun FungibleResourceItem(
             .throttleClickable {
                 when (action) {
                     is AssetsViewAction.Click -> {
-                        action.onFungibleClick(resource)
+                        action.onFungibleClick(token.resource)
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.address))
+                        action.onFungibleCheckChanged(token.resource, !action.isSelected(token.resource.address))
                     }
                 }
             }
@@ -119,19 +120,19 @@ private fun FungibleResourceItem(
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
-            token = resource
+            token = token.resource
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
         Text(
             modifier = Modifier.weight(1f),
-            text = resource.displayTitle,
+            text = token.displayTitle(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
             maxLines = 1
         )
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-        resource.ownedAmount?.let { amount ->
+        token.resource.ownedAmount?.let { amount ->
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = amount.formatted(),
@@ -155,13 +156,13 @@ private fun FungibleResourceItem(
         }
 
         if (action is AssetsViewAction.Selection) {
-            val isSelected = remember(resource, action) {
-                action.isSelected(resource.address)
+            val isSelected = remember(token.resource, action) {
+                action.isSelected(token.resource.address)
             }
             AssetsViewCheckBox(
                 isSelected = isSelected,
                 onCheckChanged = { isChecked ->
-                    action.onFungibleCheckChanged(resource, isChecked)
+                    action.onFungibleCheckChanged(token.resource, isChecked)
                 }
             )
         } else {

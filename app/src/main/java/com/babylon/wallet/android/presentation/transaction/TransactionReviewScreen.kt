@@ -7,9 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,7 +15,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -27,20 +24,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
@@ -60,7 +53,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
@@ -86,15 +78,19 @@ fun TransactionReviewScreen(
     onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Dismiss -> onDismiss()
+            }
+        }
+    }
+
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
-        onApproveTransaction = {
-            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
-            })
-        },
+        onApproveTransaction = viewModel::onApproveTransaction,
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
@@ -119,34 +115,6 @@ fun TransactionReviewScreen(
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning
     )
-
-    state.interactionState?.let {
-        when (it) {
-            is InteractionState.Ledger.Error -> {
-                BasicPromptAlertDialog(
-                    finish = { viewModel.onCancelSigningClick() },
-                    message = {
-                        Text(text = it.failure.userFriendlyMessage())
-                    },
-                    confirmText = stringResource(id = R.string.common_ok),
-                    dismissText = null
-                )
-            }
-
-            else -> FactorSourceInteractionBottomDialog(
-                modifier = Modifier.fillMaxHeight(0.8f),
-                onDismissDialogClick = viewModel::onBackClick,
-                interactionState = it
-            )
-        }
-    }
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                Event.Dismiss -> onDismiss()
-            }
-        }
-    }
 }
 
 @Suppress("CyclomaticComplexMethod")
@@ -391,7 +359,6 @@ private fun TransactionPreviewContent(
             enableImePadding = true,
             sheetContent = {
                 BottomSheetContent(
-                    modifier = Modifier.navigationBarsPadding(),
                     sheetState = state.sheetState,
                     transactionFees = state.transactionFees,
                     insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,

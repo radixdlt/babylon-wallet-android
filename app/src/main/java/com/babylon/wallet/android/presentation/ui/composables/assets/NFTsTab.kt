@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -31,6 +33,7 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(
@@ -53,7 +56,7 @@ fun LazyListScope.nftsTab(
             contentType = { "collection" }
         ) {
             NFTHeader(
-                collection = nonFungible.collection,
+                collection = nonFungible,
                 state = state,
                 action = action
             )
@@ -64,7 +67,7 @@ fun LazyListScope.nftsTab(
             key = { index -> "${nonFungible.collection.address}$index" },
             contentType = { "nft" }
         ) { index ->
-            NFTItem(index, nonFungible.collection, action)
+            NFTItem(index, nonFungible.collection, state, action)
         }
     }
 }
@@ -73,6 +76,7 @@ fun LazyListScope.nftsTab(
 private fun NFTItem(
     index: Int,
     collection: Resource.NonFungibleResource,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     AssetCard(
@@ -91,9 +95,8 @@ private fun NFTItem(
                 action = action
             )
         } else {
-            LaunchedEffect(index, collection.items.size) {
-                // First shimmering item
-                if (index == collection.items.size) {
+            LaunchedEffect(collection.address, state.fetchingNFTsPerCollection) {
+                if (collection.address !in state.fetchingNFTsPerCollection) {
                     action.onNextNFtsPageRequest(collection)
                 }
             }
@@ -107,23 +110,23 @@ private fun NFTItem(
 
 @Composable
 private fun NFTHeader(
-    collection: Resource.NonFungibleResource,
+    collection: NonFungibleCollection,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    val isCollapsed = state.isCollapsed(collection.address.string)
+    val isCollapsed = state.isCollapsed(collection.resource.address.string)
     CollapsibleAssetCard(
         modifier = Modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(top = RadixTheme.dimensions.paddingSemiLarge),
         isCollapsed = isCollapsed,
-        collapsedItems = collection.amount.toInt()
+        collapsedItems = collection.resource.amount.toInt()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    action.onCollectionClick(collection.address.string)
+                    action.onCollectionClick(collection.resource.address.string)
                 }
                 .padding(RadixTheme.dimensions.paddingLarge),
             verticalAlignment = Alignment.CenterVertically,
@@ -131,20 +134,18 @@ private fun NFTHeader(
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(44.dp),
-                collection = collection
+                collection = collection.resource
             )
             Column(verticalArrangement = Arrangement.Center) {
-                if (collection.name.isNotEmpty()) {
-                    Text(
-                        collection.name,
-                        style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 2
-                    )
-                }
+                Text(
+                    text = collection.displayTitle(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
 
                 Text(
-                    text = collection.amount.toString(),
+                    text = collection.displaySubtitle(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2,
                 )
