@@ -19,10 +19,15 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.TransactionId
+import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 
 @Composable
 internal fun CompletingContent(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    transactionId: IntentHash?
 ) {
     Column(
         modifier
@@ -44,14 +49,18 @@ internal fun CompletingContent(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
+        if (transactionId != null) {
+            TransactionId(transactionId = transactionId)
+        }
         Spacer(Modifier.height(36.dp))
     }
 }
 
 @Preview(showBackground = true)
+@UsesSampleValues
 @Composable
 private fun CompletingBottomDialogPreview() {
     RadixWalletTheme {
-        CompletingContent()
+        CompletingContent(transactionId = IntentHash.sample())
     }
 }
