@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Button
@@ -45,7 +46,7 @@ fun RadixSecondaryButton(
     val isPressed by interactionSource.collectIsPressedAsState()
     val lastClickMs = remember { mutableStateOf(0L) }
     Button(
-        modifier = modifier,
+        modifier = modifier.heightIn(min = RadixTheme.dimensions.buttonDefaultHeight),
         onClick = {
             ClickListenerUtils.throttleOnClick(
                 lastClickMs = lastClickMs,

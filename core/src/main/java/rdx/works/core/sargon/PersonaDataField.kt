@@ -2,8 +2,8 @@ package rdx.works.core.sargon
 
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryEmailAddress
 import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
@@ -112,7 +112,7 @@ fun List<PersonaDataField>.toPersonaData(): PersonaData {
         emailAddresses = filterIsInstance<PersonaDataField.Email>().let { field ->
             CollectionOfEmailAddresses(
                 collection = field.map {
-                    PersonaDataIdentifiedEmailAddress(id = PersonaDataEntryId.randomUUID(), value = PersonaDataEntryEmailAddress(it.value))
+                    PersonaDataIdentifiedEmailAddress(id = PersonaDataEntryId.randomUUID(), value = EmailAddress(it.value))
                 }
             )
         },

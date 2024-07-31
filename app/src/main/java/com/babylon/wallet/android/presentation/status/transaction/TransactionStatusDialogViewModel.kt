@@ -95,6 +95,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             dAppName = status.dAppName
                         )
                     )
+                    incomingRequestRepository.requestHandled(state.value.status.requestId)
+                    isRequestHandled = true
                 }.onFailure { error ->
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
@@ -122,11 +124,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                         )
                     )
                 }
+                _state.update { it.copy(blockUntilComplete = false) }
                 transactionStatusClient.statusHandled(status.transactionId)
-                if (incomingRequestRepository.getAmountOfRequests() == 1) {
-                    incomingRequestRepository.requestHandled(state.value.status.requestId)
-                    isRequestHandled = true
-                }
             }
         }
     }

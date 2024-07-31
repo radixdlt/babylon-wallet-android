@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
@@ -38,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorSc
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -108,7 +108,7 @@ private fun LinkedConnectorsContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.linkedConnectors_title),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         }
     ) { padding ->
