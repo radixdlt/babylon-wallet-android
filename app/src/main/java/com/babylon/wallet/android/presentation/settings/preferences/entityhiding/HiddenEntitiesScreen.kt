@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,6 +31,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
 @Composable
 fun HiddenEntitiesScreen(
@@ -88,7 +88,7 @@ private fun HiddenEntitiesContent(
         RadixCenteredTopAppBar(
             title = stringResource(R.string.appSettings_entityHiding_title),
             onBackClick = onBackClick,
-            windowInsets = WindowInsets.statusBars
+            windowInsets = WindowInsets.statusBarsAndBanner
         )
     }) { padding ->
         Column(

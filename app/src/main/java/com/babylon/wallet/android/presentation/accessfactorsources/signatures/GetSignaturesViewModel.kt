@@ -79,6 +79,19 @@ class GetSignaturesViewModel @Inject constructor(
                             )
                         )
                     }
+
+                    is FactorSource.ArculusCard -> {
+                        // Not implemented yet
+                    }
+                    is FactorSource.OffDeviceMnemonic -> {
+                        // Not implemented yet
+                    }
+                    is FactorSource.SecurityQuestions -> {
+                        // Not implemented yet
+                    }
+                    is FactorSource.TrustedContact -> {
+                        // Not implemented yet
+                    }
                 }
             }
 

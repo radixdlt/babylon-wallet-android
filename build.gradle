@@ -4,7 +4,7 @@ buildscript {
     ext {
         minSdk = 27
         compileSdk = 34
-        targetSdk = 33
+        targetSdk = 34
         internalVersionName = "babylon"
         kotlinCompilerExtensionVersion = "1.5.8"
     }

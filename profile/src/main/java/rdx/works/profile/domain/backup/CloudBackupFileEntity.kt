@@ -44,11 +44,17 @@ data class CloudBackupFileEntity(
                 id = UUID.fromString(properties.getValue(HEADER_CREATING_DEVICE_ID)),
                 date = properties.getValue(HEADER_CREATING_DEVICE_DATE).asTimestamp(),
                 description = properties.getValue(HEADER_CREATING_DEVICE_DESCRIPTION),
+                hostVendor = null,
+                systemVersion = null,
+                hostAppVersion = null
             ),
             lastUsedOnDevice = DeviceInfo(
                 id = UUID.fromString(properties.getValue(HEADER_LAST_USED_ON_DEVICE_ID)),
                 date = properties.getValue(HEADER_LAST_USED_ON_DEVICE_DATE).asTimestamp(),
                 description = properties.getValue(HEADER_LAST_USED_ON_DEVICE_DESCRIPTION),
+                hostVendor = null,
+                systemVersion = null,
+                hostAppVersion = null
             ),
             contentHint = ContentHint(
                 numberOfAccountsOnAllNetworksInTotal = properties.getValue(HEADER_CONTENT_HINT_TOTAL_ACCOUNTS).toUShort(),

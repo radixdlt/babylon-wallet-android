@@ -2,6 +2,7 @@ package rdx.works.profile.domain
 
 import com.radixdlt.sargon.AppPreferences
 import com.radixdlt.sargon.ContentHint
+import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -14,6 +15,7 @@ import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.default
+import com.radixdlt.sargon.extensions.from
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -22,7 +24,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -31,15 +33,15 @@ import javax.inject.Inject
 class GenerateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val mnemonicRepository: MnemonicRepository,
-    private val deviceInfoRepository: DeviceInfoRepository,
+    private val hostInfoRepository: HostInfoRepository,
     private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
-        val device = deviceInfoRepository.getDeviceInfo()
-
-        val creatingDevice = device.toSargonDeviceInfo()
+        val hostId = hostInfoRepository.getHostId()
+        val hostInfo = hostInfoRepository.getHostInfo()
+        val creatingDevice = DeviceInfo.from(hostId, hostInfo)
 
         val date = TimestampGenerator()
         val header = Header(
@@ -57,8 +59,7 @@ class GenerateProfileUseCase @Inject constructor(
 
         val bdfs = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            model = device.model,
-            name = device.name,
+            hostInfo = hostInfoRepository.getHostInfo(),
             createdAt = date,
             isMain = true
         )
@@ -84,9 +85,9 @@ class GenerateProfileUseCase @Inject constructor(
             when (val state = profileRepository.profileState.first()) {
                 is ProfileState.Restored -> state.profile
                 else -> withContext(defaultDispatcher) {
-                    val device = deviceInfoRepository.getDeviceInfo()
-
-                    val creatingDevice = device.toSargonDeviceInfo()
+                    val hostId = hostInfoRepository.getHostId()
+                    val hostInfo = hostInfoRepository.getHostInfo()
+                    val creatingDevice = DeviceInfo.from(hostId, hostInfo)
 
                     val header = Header(
                         snapshotVersion = ProfileSnapshotVersion.V100,
