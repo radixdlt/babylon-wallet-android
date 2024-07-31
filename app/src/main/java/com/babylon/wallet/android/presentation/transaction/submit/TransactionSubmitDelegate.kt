@@ -172,6 +172,7 @@ class TransactionSubmitDelegate @Inject constructor(
             appEventBus.sendEvent(AppEvent.SecureFolderWarning)
         }
         when (radixWalletException) {
+            // if signing rejected by user do not show any error dialog
             is RadixWalletException.DappRequestException.RejectedByUser -> {
                 _state.update { it.copy(isSubmitting = false) }
                 approvalJob = null

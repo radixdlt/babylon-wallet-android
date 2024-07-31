@@ -22,6 +22,7 @@ import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -143,12 +144,14 @@ class CreateAccountViewModel @Inject constructor(
                     factorSource = selectedFactorSource,
                     isBiometricsProvided = isFirstAccount
                 )
-            ).onSuccess {
+            ).mapCatching {
+                val factorSourceId = when (selectedFactorSource) {
+                    is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
+                    is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
+                    else -> error("FactorSourceKind ${selectedFactorSource.kind} not supported.")
+                }
+
                 handleAccountCreation { nameOfAccount ->
-                    val factorSourceId = when (selectedFactorSource) {
-                        is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
-                        is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
-                    }
                     createAccountUseCase(
                         displayName = DisplayName(nameOfAccount),
                         factorSourceId = factorSourceId,

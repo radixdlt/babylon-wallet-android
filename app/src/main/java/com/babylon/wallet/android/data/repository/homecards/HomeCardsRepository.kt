@@ -19,6 +19,8 @@ interface HomeCardsRepository {
 
     suspend fun walletCreated()
 
+    suspend fun walletRestored()
+
     suspend fun cardDismissed(card: HomeCard)
 
     suspend fun walletReset()
@@ -55,6 +57,14 @@ class HomeCardsRepositoryImpl @Inject constructor(
             runCatching { homeCardsManager.walletCreated() }
                 .onFailure { Timber.w("Failed to notify HomeCardsManager about wallet creation. Error: $it") }
                 .onSuccess { Timber.d("Notified HomeCardsManager about wallet creation") }
+        }
+    }
+
+    override suspend fun walletRestored() {
+        withContext(defaultDispatcher) {
+            runCatching { homeCardsManager.walletRestored() }
+                .onFailure { Timber.w("Failed to notify HomeCardsManager about wallet restoration. Error: $it") }
+                .onSuccess { Timber.d("Notified HomeCardsManager about wallet restoration") }
         }
     }
 

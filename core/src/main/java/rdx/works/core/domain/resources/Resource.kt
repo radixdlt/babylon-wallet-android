@@ -213,7 +213,11 @@ sealed class Resource {
             }
 
             val name: String? by lazy {
-                metadata.name()?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
+                metadata.name()
+            }
+
+            val nameTruncated: String? by lazy {
+                name?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
             }
 
             val description: String? by lazy {

@@ -14,7 +14,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun WarningButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
-        modifier = modifier.fillMaxWidth().heightIn(min = 50.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = RadixTheme.dimensions.buttonDefaultHeight),
         onClick = onClick,
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = ButtonDefaults.buttonColors(
