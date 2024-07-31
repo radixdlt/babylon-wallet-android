@@ -13,6 +13,7 @@ import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.olympia
 import rdx.works.core.sargon.olympiaBackwardsCompatible
 import rdx.works.core.sargon.supportsBabylon
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.updateProfile
@@ -22,11 +23,16 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val profileRepository: ProfileRepository,
     private val mnemonicRepository: MnemonicRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val hostInfoRepository: HostInfoRepository,
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Result<FactorSourceId.Hash> {
-        val olympiaFactorSource = FactorSource.Device.olympia(mnemonicWithPassphrase)
+        val hostInfo = hostInfoRepository.getHostInfo()
+        val olympiaFactorSource = FactorSource.Device.olympia(
+            mnemonicWithPassphrase = mnemonicWithPassphrase,
+            hostInfo = hostInfo
+        )
         val existingFactorSource = getProfileUseCase().factorSourceById(olympiaFactorSource.id) as? FactorSource.Device
         val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.value.id.asGeneral())
         return if (mnemonicExist) {

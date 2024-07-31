@@ -1,5 +1,6 @@
 package rdx.works.core.sargon
 
+import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DeviceFactorSourceHint
@@ -11,15 +12,21 @@ import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletHint
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.OffDeviceMnemonicFactorSource
+import com.radixdlt.sargon.SecurityQuestionsNotProductionReadyFactorSource
 import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.TrustedContactFactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.extensions.vendor
+import com.radixdlt.sargon.extensions.version
 import com.radixdlt.sargon.samples.Sample
 import rdx.works.core.TimestampGenerator
 import java.time.OffsetDateTime
@@ -42,14 +49,12 @@ val FactorSource.Device.isBabylonDeviceFactorSource: Boolean
 
 fun FactorSource.Device.Companion.babylon(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    model: String = "",
-    name: String = "",
+    hostInfo: HostInfo,
     createdAt: Timestamp = OffsetDateTime.now(),
     isMain: Boolean = false
 ): FactorSource.Device = device(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
-    model = model,
-    name = name,
+    hostInfo = hostInfo,
     isOlympia = false,
     createdAt = createdAt,
     isMain = isMain
@@ -57,13 +62,11 @@ fun FactorSource.Device.Companion.babylon(
 
 fun FactorSource.Device.Companion.olympia(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    model: String = "",
-    name: String = "",
+    hostInfo: HostInfo,
     createdAt: Timestamp = OffsetDateTime.now()
 ): FactorSource.Device = device(
     mnemonicWithPassphrase = mnemonicWithPassphrase,
-    model = model,
-    name = name,
+    hostInfo = hostInfo,
     isOlympia = true,
     createdAt = createdAt,
     isMain = false
@@ -72,8 +75,7 @@ fun FactorSource.Device.Companion.olympia(
 @Suppress("LongParameterList")
 fun FactorSource.Device.Companion.device(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
-    model: String = "",
-    name: String = "",
+    hostInfo: HostInfo,
     isOlympia: Boolean,
     createdAt: Timestamp,
     isMain: Boolean = false
@@ -97,9 +99,12 @@ fun FactorSource.Device.Companion.device(
             flags = if (isMain) listOf(FactorSourceFlag.MAIN) else emptyList()
         ),
         hint = DeviceFactorSourceHint(
-            model = model,
-            name = name,
-            mnemonicWordCount = mnemonicWithPassphrase.mnemonic.wordCount
+            model = hostInfo.description.model,
+            name = hostInfo.description.name,
+            mnemonicWordCount = mnemonicWithPassphrase.mnemonic.wordCount,
+            systemVersion = hostInfo.hostOs.version,
+            hostAppVersion = hostInfo.hostOs.version,
+            hostVendor = hostInfo.hostOs.vendor
         )
     ).asGeneral()
 }
@@ -129,6 +134,12 @@ fun LedgerHardwareWalletModel.displayName() = when (this) {
     LedgerHardwareWalletModel.NANO_X -> "Ledger Nano X"
 }
 
+// TODO move to sargon
+fun ArculusCardFactorSource.asGeneral() = FactorSource.ArculusCard(value = this)
+fun OffDeviceMnemonicFactorSource.asGeneral() = FactorSource.OffDeviceMnemonic(value = this)
+fun SecurityQuestionsNotProductionReadyFactorSource.asGeneral() = FactorSource.SecurityQuestions(value = this)
+fun TrustedContactFactorSource.asGeneral() = FactorSource.TrustedContact(value = this)
+
 @UsesSampleValues
 @Suppress("MagicNumber")
 val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
@@ -148,7 +159,10 @@ val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
                 hint = DeviceFactorSourceHint(
                     name = "Babylon",
                     model = "Device 1",
-                    mnemonicWordCount = Bip39WordCount.TWENTY_FOUR
+                    mnemonicWordCount = Bip39WordCount.TWENTY_FOUR,
+                    systemVersion = "Android 14 (API 34)",
+                    hostAppVersion = "1.0.0",
+                    hostVendor = "Android"
                 )
             )
         )
@@ -168,7 +182,10 @@ val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
                 hint = DeviceFactorSourceHint(
                     name = "Olympia",
                     model = "Device 1",
-                    mnemonicWordCount = Bip39WordCount.TWENTY_FOUR
+                    mnemonicWordCount = Bip39WordCount.TWENTY_FOUR,
+                    systemVersion = "Android 14 (API 34)",
+                    hostAppVersion = "1.0.0",
+                    hostVendor = "Android"
                 )
             )
         )
