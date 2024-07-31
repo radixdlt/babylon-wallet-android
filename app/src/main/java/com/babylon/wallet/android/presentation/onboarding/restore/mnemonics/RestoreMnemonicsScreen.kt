@@ -14,13 +14,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -28,18 +29,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -56,6 +57,8 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
@@ -133,11 +136,6 @@ private fun RestoreMnemonicsContent(
         onMessageShown = onMessageShown
     )
 
-    var focusedWordIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
-    val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -148,50 +146,56 @@ private fun RestoreMnemonicsContent(
             )
         },
         bottomBar = {
-            val isSeedPhraseValid = remember(state.seedPhraseState) {
-                state.seedPhraseState.isValidSeedPhrase()
-            }
-            RadixBottomBar(
-                text = stringResource(
-                    when (state.screenType) {
-                        RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
-                        RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
-                        RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> R.string.recoverSeedPhrase_skipMainSeedPhraseButton
-                    }
-                ),
-                enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase || isSeedPhraseValid,
-                isLoading = state.isRestoring,
-                onClick = onSubmitClick,
-                additionalContent = {
-                    if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
-                        if (state.isMainBabylonSeedPhrase) {
-                            RadixTextButton(
-                                modifier = Modifier
+            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Loading) {
+                RadixBottomBar(
+                    text = stringResource(
+                        when (state.screenType) {
+                            RestoreMnemonicsViewModel.State.ScreenType.Loading -> R.string.empty
+                            RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
+                            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
+                            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
+                                R.string.recoverSeedPhrase_skipMainSeedPhraseButton
+                        }
+                    ),
+                    enabled = state.isPrimaryButtonEnabled,
+                    isLoading = state.isPrimaryButtonLoading,
+                    onClick = onSubmitClick,
+                    additionalContent = {
+                        if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
+                            if (state.isSecondaryButtonLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .padding(vertical = RadixTheme.dimensions.paddingMedium)
+                                        .size(20.dp),
+                                    color = RadixTheme.colors.gray1,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                val buttonModifier = Modifier
                                     .fillMaxWidth()
                                     .padding(
                                         top = RadixTheme.dimensions.paddingMedium,
                                         start = RadixTheme.dimensions.paddingLarge,
                                         end = RadixTheme.dimensions.paddingLarge,
-                                    ),
-                                text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
-                                onClick = onSkipMainSeedPhraseClick
-                            )
-                        } else {
-                            RadixTextButton(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingMedium,
-                                        start = RadixTheme.dimensions.paddingLarge,
-                                        end = RadixTheme.dimensions.paddingLarge,
-                                    ),
-                                text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-                                onClick = onSkipSeedPhraseClick
-                            )
+                                    )
+                                if (state.isMainBabylonSeedPhrase) {
+                                    RadixTextButton(
+                                        modifier = buttonModifier,
+                                        text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
+                                        onClick = onSkipMainSeedPhraseClick
+                                    )
+                                } else {
+                                    RadixTextButton(
+                                        modifier = buttonModifier,
+                                        text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                                        onClick = onSkipSeedPhraseClick
+                                    )
+                                }
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -201,53 +205,38 @@ private fun RestoreMnemonicsContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        when (state.screenType) {
-            RestoreMnemonicsViewModel.State.ScreenType.Entities -> {
-                AnimatedVisibility(
-                    modifier = Modifier.padding(padding),
-                    visible = true,
-                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
-                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
-                ) {
-                    EntitiesView(
-                        state = state
-                    )
-                }
+        if (state.screenType !is RestoreMnemonicsViewModel.State.ScreenType.Loading) {
+            AnimatedVisibility(
+                modifier = Modifier.padding(padding),
+                visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities,
+                enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
+                exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
+            ) {
+                EntitiesView(
+                    state = state
+                )
             }
 
-            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
-                AnimatedVisibility(
-                    modifier = Modifier
-                        .padding(
-                            top = padding.calculateTopPadding(),
-                            bottom = if (isKeyboardVisible) {
-                                RadixTheme.dimensions.paddingSmall
-                            } else {
-                                padding.calculateBottomPadding()
-                            }
-                        ),
-                    visible = true,
-                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
-                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
-                ) {
-                    SeedPhraseView(
-                        state = state,
-                        onWordChanged = onWordTyped,
-                        onPassphraseChanged = onPassphraseChanged,
-                        onFocusedWordIndexChanged = { focusedWordIndex = it }
-                    )
-                }
+            AnimatedVisibility(
+                modifier = Modifier.dynamicImePadding(padding),
+                visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase,
+                enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+                exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+            ) {
+                SeedPhraseView(
+                    state = state,
+                    onWordChanged = onWordTyped,
+                    onPassphraseChanged = onPassphraseChanged
+                )
             }
 
-            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
-                AnimatedVisibility(
-                    modifier = Modifier.padding(padding),
-                    visible = true,
-                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
-                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
-                ) {
-                    NoMainSeedPhraseView()
-                }
+            AnimatedVisibility(
+                modifier = Modifier.padding(padding),
+                visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase,
+                enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+                exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+            ) {
+                NoMainSeedPhraseView()
             }
         }
     }
@@ -363,15 +352,18 @@ private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
     onWordChanged: (Int, String) -> Unit,
-    onPassphraseChanged: (String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
+    onPassphraseChanged: (String) -> Unit
 ) {
     SecureScreen()
+
+    val scrollState = rememberScrollState()
+    HideKeyboardOnFullScroll(scrollState)
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .imePadding()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
     ) {
         Text(
             modifier = Modifier
@@ -403,7 +395,7 @@ private fun SeedPhraseView(
             bip39Passphrase = state.seedPhraseState.bip39Passphrase,
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged
+            showAdvancedMode = state.showAdvancedMode
         )
         val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
             state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
@@ -421,18 +413,12 @@ private fun SeedPhraseView(
 @UsesSampleValues
 @Preview
 @Composable
-fun RestoreMnemonicsIntroContent() {
+private fun RestoreMnemonicsContentPreview(
+    @PreviewParameter(RestoreMnemonicsPreviewProvider::class) state: RestoreMnemonicsViewModel.State,
+) {
     RadixWalletTheme {
         RestoreMnemonicsContent(
-            state = RestoreMnemonicsViewModel.State(
-                recoverableFactorSources = listOf(
-                    RecoverableFactorSource(
-                        associatedAccounts = Account.sampleMainnet.all,
-                        factorSource = FactorSource.Device.sample()
-                    )
-                ),
-                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
-            ),
+            state = state,
             onBackClick = {},
             onSkipSeedPhraseClick = {},
             onSkipMainSeedPhraseClick = {},
@@ -445,12 +431,20 @@ fun RestoreMnemonicsIntroContent() {
 }
 
 @UsesSampleValues
-@Preview
-@Composable
-fun RestoreMnemonicsSeedPhraseContent() {
-    RadixWalletTheme {
-        RestoreMnemonicsContent(
-            state = RestoreMnemonicsViewModel.State(
+class RestoreMnemonicsPreviewProvider : PreviewParameterProvider<RestoreMnemonicsViewModel.State> {
+
+    override val values: Sequence<RestoreMnemonicsViewModel.State>
+        get() = sequenceOf(
+            RestoreMnemonicsViewModel.State(
+                recoverableFactorSources = listOf(
+                    RecoverableFactorSource(
+                        associatedAccounts = Account.sampleMainnet.all,
+                        factorSource = FactorSource.Device.sample()
+                    )
+                ),
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
+            ),
+            RestoreMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
                         associatedAccounts = Account.sampleMainnet.all,
@@ -467,24 +461,7 @@ fun RestoreMnemonicsSeedPhraseContent() {
                     }.toPersistentList()
                 )
             ),
-            onBackClick = {},
-            onSkipSeedPhraseClick = {},
-            onSkipMainSeedPhraseClick = {},
-            onSubmitClick = {},
-            onWordTyped = { _, _ -> },
-            onPassphraseChanged = {},
-            onMessageShown = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Preview
-@Composable
-fun RestoreMnemonicsNoMainSeedPhraseContent() {
-    RadixWalletTheme {
-        RestoreMnemonicsContent(
-            state = RestoreMnemonicsViewModel.State(
+            RestoreMnemonicsViewModel.State(
                 recoverableFactorSources = listOf(
                     RecoverableFactorSource(
                         associatedAccounts = Account.sampleMainnet.all,
@@ -493,13 +470,8 @@ fun RestoreMnemonicsNoMainSeedPhraseContent() {
                 ),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase
             ),
-            onBackClick = {},
-            onSkipSeedPhraseClick = {},
-            onSkipMainSeedPhraseClick = {},
-            onSubmitClick = {},
-            onWordTyped = { _, _ -> },
-            onPassphraseChanged = {},
-            onMessageShown = {}
+            RestoreMnemonicsViewModel.State(
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.Loading
+            )
         )
-    }
 }

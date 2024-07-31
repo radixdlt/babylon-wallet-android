@@ -20,9 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
@@ -99,10 +97,6 @@ private fun ConfirmMnemonicContent(
         onMessageShown = onMessageShown
     )
 
-    var focusedWordIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -131,8 +125,7 @@ private fun ConfirmMnemonicContent(
         SeedPhraseView(
             modifier = Modifier.padding(padding),
             state = state,
-            onWordChanged = onWordTyped,
-            onFocusedWordIndexChanged = { focusedWordIndex = it }
+            onWordChanged = onWordTyped
         )
     }
 }
@@ -141,8 +134,7 @@ private fun ConfirmMnemonicContent(
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     state: ConfirmMnemonicViewModel.State,
-    onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
+    onWordChanged: (Int, String) -> Unit
 ) {
     SecureScreen()
     Column(
@@ -174,8 +166,7 @@ private fun SeedPhraseView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             seedPhraseWords = state.seedPhraseState.seedPhraseWords,
-            onWordChanged = onWordChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged
+            onWordChanged = onWordChanged
         )
     }
 }

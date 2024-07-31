@@ -52,6 +52,8 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
@@ -115,10 +117,6 @@ private fun AddSingleMnemonicsContent(
         onMessageShown = onMessageShown
     )
 
-    var focusedWordIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -129,19 +127,13 @@ private fun AddSingleMnemonicsContent(
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                val isEnabled = remember(state.seedPhraseState) {
+            RadixBottomBar(
+                text = stringResource(R.string.common_continue),
+                enabled = remember(state.seedPhraseState) {
                     state.seedPhraseState.isValidSeedPhrase()
-                }
-                RadixBottomBar(
-                    modifier = Modifier.imePadding(),
-                    text = stringResource(R.string.common_continue),
-                    enabled = isEnabled,
-                    onClick = onSubmitClick
-                )
-            }
+                },
+                onClick = onSubmitClick
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -160,11 +152,10 @@ private fun AddSingleMnemonicsContent(
         SeedPhraseView(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .dynamicImePadding(padding),
             title = title,
             onWordChanged = onWordTyped,
             onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = { focusedWordIndex = it },
             seedPhraseState = state.seedPhraseState,
             onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
             isOlympia = isOlympia
@@ -178,16 +169,20 @@ private fun SeedPhraseView(
     title: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
     onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit = {},
     seedPhraseState: SeedPhraseInputDelegate.State,
     isOlympia: Boolean
 ) {
     SecureScreen()
+
+    val scrollState = rememberScrollState()
+    HideKeyboardOnFullScroll(scrollState)
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .imePadding()
+            .verticalScroll(scrollState)
     ) {
         Text(
             modifier = Modifier
@@ -277,7 +272,6 @@ private fun SeedPhraseView(
             bip39Passphrase = seedPhraseState.bip39Passphrase,
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged,
             showAdvancedMode = isOlympia
         )
 

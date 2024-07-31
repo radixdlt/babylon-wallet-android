@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.hasOlympiaSeedPhraseLength
 import rdx.works.core.sargon.isHidden
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.core.sargon.usesEd25519
@@ -167,13 +168,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val factorSourceToRecover = state.value
             .recoverableFactorSource?.factorSource ?: return
         if (biometricAuthProvider.invoke().not()) return
-        _state.update { it.copy(isRestoring = true) }
+        _state.update { it.copy(isPrimaryButtonLoading = true) }
         restoreMnemonicUseCase(
             factorSource = factorSourceToRecover,
             mnemonicWithPassphrase = _state.value.seedPhraseState.toMnemonicWithPassphrase()
         ).onSuccess {
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
-            _state.update { state -> state.copy(isRestoring = false) }
+            _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
             showNextRecoverableFactorSourceOrFinish(skipAuth = true)
         }.onFailure { error ->
             if (error is ProfileException.SecureStorageAccess) {
@@ -181,7 +182,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             } else {
                 _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            _state.update { state -> state.copy(isRestoring = false) }
+            _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
         }
     }
 
@@ -195,7 +196,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.proceedToNextRecoverable() }
         } else {
             if (_state.value.hasSkippedMainSeedPhrase) {
-                _state.update { it.copy(isRestoring = true) }
+                _state.update { it.copy(isPrimaryButtonLoading = true) }
 
                 args.backupType?.let { backupType ->
                     if (skipAuth.not() && biometricAuthProvider().not()) return
@@ -204,7 +205,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                         .onSuccess {
                             _state.update { state ->
                                 state.copy(
-                                    isRestoring = false,
+                                    isPrimaryButtonLoading = false,
                                     hasSkippedMainSeedPhrase = false
                                 )
                             }
@@ -213,7 +214,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                             Timber.w(it)
                             _state.update { state ->
                                 state.copy(
-                                    isRestoring = false,
+                                    isPrimaryButtonLoading = false,
                                     uiMessage = UiMessage.ErrorMessage(it)
                                 )
                             }
@@ -221,13 +222,18 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 } ?: run {
                     _state.update { state ->
                         state.copy(
-                            isRestoring = false,
+                            isPrimaryButtonLoading = false,
                             hasSkippedMainSeedPhrase = false
                         )
                     }
                     onRestorationComplete()
                 }
             } else {
+                _state.update { state ->
+                    state.copy(
+                        isSecondaryButtonLoading = true
+                    )
+                }
                 args.backupType?.let { backupType ->
                     restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = false)
                 }
@@ -245,15 +251,17 @@ class RestoreMnemonicsViewModel @Inject constructor(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
         private val mainBabylonFactorSourceId: FactorSourceId.Hash? = null,
         private val selectedIndex: Int = -1,
-        val screenType: ScreenType = ScreenType.Entities,
+        val screenType: ScreenType = ScreenType.Loading,
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val isRestoring: Boolean = false,
+        val isPrimaryButtonLoading: Boolean = false,
+        val isSecondaryButtonLoading: Boolean = false,
         val hasSkippedMainSeedPhrase: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
         sealed interface ScreenType {
+            data object Loading : ScreenType
             data object Entities : ScreenType
             data object SeedPhrase : ScreenType
             data object NoMainSeedPhrase : ScreenType
@@ -267,6 +275,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val isMainBabylonSeedPhrase: Boolean
             get() = recoverableFactorSource?.factorSource?.id == mainBabylonFactorSourceId
+
+        val showAdvancedMode: Boolean
+            get() = recoverableFactorSource?.factorSource?.hasOlympiaSeedPhraseLength ?: false
+
+        val isPrimaryButtonEnabled: Boolean
+            get() = (screenType != ScreenType.SeedPhrase || seedPhraseState.isValidSeedPhrase()) && !isSecondaryButtonLoading
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
