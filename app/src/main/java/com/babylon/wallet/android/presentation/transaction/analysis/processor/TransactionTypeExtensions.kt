@@ -415,6 +415,13 @@ fun ExecutionSummary.resolveBadges(assets: List<Asset>): List<Badge> {
     }
 }
 
+fun ExecutionSummary.newlyCreatedNonFungibleItems() = newlyCreatedNonFungibles.map {
+    Item(
+        it.resourceAddress,
+        it.nonFungibleLocalId
+    )
+}
+
 private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
     val metadata = mutableListOf<Metadata>()
 

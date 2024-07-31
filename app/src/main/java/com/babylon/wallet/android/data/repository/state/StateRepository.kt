@@ -94,6 +94,8 @@ interface StateRepository {
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
+    suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>): Result<Unit>
+
     suspend fun clearCachedState(): Result<Unit>
 
     sealed class Error(cause: Throwable) : Exception(cause) {
@@ -103,8 +105,6 @@ interface StateRepository {
 
         data object StateVersionMissing : Error(RuntimeException("State version missing for account."))
     }
-
-    suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>): Result<Unit>
 }
 
 @Suppress("TooManyFunctions")

@@ -435,6 +435,7 @@ sealed interface PreviewType {
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
+        val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
@@ -442,7 +443,16 @@ sealed interface PreviewType {
             }.flatten()
 
         val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
-            get() = emptyList()
+            get() {
+                val newlyCreatedNFTResources = newlyCreatedResources.filterIsInstance<Resource.NonFungibleResource>()
+                val addresses = newlyCreatedNFTResources.map { it.address }
+                return newlyCreatedNFTItems.filterNot { nftItem ->
+                    val newResource = newlyCreatedNFTResources.find { resource ->
+                        resource.address == nftItem.collectionAddress
+                    }
+                    nftItem.collectionAddress in addresses && nftItem.localId in newResource?.items?.map { it.localId }.orEmpty()
+                }
+            }
 
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
@@ -450,6 +460,7 @@ sealed interface PreviewType {
             override val badges: List<Badge>,
             val validators: List<Validator>,
             val actionType: ActionType,
+            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
         ) : Transfer {
             enum class ActionType {
                 Stake, Unstake, ClaimStake
@@ -460,7 +471,8 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             override val badges: List<Badge>,
-            val actionType: ActionType
+            val actionType: ActionType,
+            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
@@ -479,19 +491,7 @@ sealed interface PreviewType {
             override val to: List<AccountWithTransferableResources>,
             override val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList(),
-            private val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item> = emptyList()
-        ) : Transfer {
-            override val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
-                get() {
-                    val newlyCreatedNFTResources = newlyCreatedResources.filterIsInstance<Resource.NonFungibleResource>()
-                    val addresses = newlyCreatedNFTResources.map { it.address }
-                    return newlyCreatedNFTItems.filterNot { nftItem ->
-                        val newResource = newlyCreatedNFTResources.find { resource ->
-                            resource.address == nftItem.collectionAddress
-                        }
-                        nftItem.collectionAddress in addresses && nftItem.localId in newResource?.items?.map { it.localId }.orEmpty()
-                    }
-                }
-        }
+            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
+        ) : Transfer
     }
 }
