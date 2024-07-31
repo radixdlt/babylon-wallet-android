@@ -18,6 +18,16 @@ class OnboardingViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) : ViewModel(), OneOffEventHandler<OnboardingViewModel.OnboardingEvent> by OneOffEventHandlerImpl() {
 
+    init {
+        // we need to revoke access to GDrive here in case user kills app on account create screen
+        viewModelScope.launch {
+            val shouldShowEula = preferencesManager.isEulaAccepted.firstOrNull() == false
+            if (!shouldShowEula) {
+                googleSignInManager.signOut()
+            }
+        }
+    }
+
     fun onCreateNewWalletClick() {
         viewModelScope.launch {
             val shouldShowEula = preferencesManager.isEulaAccepted.firstOrNull() == false
