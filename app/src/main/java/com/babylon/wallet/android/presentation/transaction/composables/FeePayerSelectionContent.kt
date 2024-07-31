@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -125,8 +126,11 @@ private fun FeePayerCard(
                 .throttleClickable {
                     onPayerSelected(candidate.account)
                 }
-                .padding(start = RadixTheme.dimensions.paddingDefault)
-                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                .padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingSmall
+                )
+                .padding(vertical = RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -156,12 +160,15 @@ private fun FeePayerCard(
                 maxLines = 2
             )
 
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+
             RadixRadioButton(
                 selected = candidate.account.address == selectedCandidateAddress,
                 colors = RadixRadioButtonDefaults.darkColors(),
                 onClick = {
                     onPayerSelected(candidate.account)
                 },
+                size = 18.dp
             )
         }
     }

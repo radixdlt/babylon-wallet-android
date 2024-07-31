@@ -22,10 +22,12 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
+private val RADIO_BUTTON_SIZE = 20.dp
 private val RADIO_BUTTON_PADDING = 2.dp
 private val RADIO_BUTTON_DOT_SIZE = 8.dp
 private val RADIO_STROKE_WIDTH = 1.dp
@@ -39,9 +41,9 @@ fun RadixRadioButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: RadixRadioButtonColors = RadixRadioButtonDefaults.darkColors(),
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    size: Dp = RADIO_BUTTON_SIZE
 ) {
-    val iconSize = 20.dp
     val dotRadius = animateDpAsState(
         targetValue = RADIO_BUTTON_DOT_SIZE / 2,
         animationSpec = tween(durationMillis = RADIO_ANIMATION_DURATION)
@@ -60,7 +62,7 @@ fun RadixRadioButton(
                 interactionSource = interactionSource,
                 indication = androidx.compose.material.ripple.rememberRipple(
                     bounded = false,
-                    radius = iconSize
+                    radius = size
                 )
             )
         } else {
@@ -78,11 +80,11 @@ fun RadixRadioButton(
             .then(selectableModifier)
             .wrapContentSize(Alignment.Center)
             .padding(RADIO_BUTTON_PADDING)
-            .requiredSize(iconSize)
+            .requiredSize(size)
     ) {
         // Draw the border
         val strokeWidth = RADIO_STROKE_WIDTH.toPx()
-        val outerCircleSize = (iconSize / 2).toPx() - strokeWidth / 2
+        val outerCircleSize = (size / 2).toPx() - strokeWidth / 2
         drawCircle(
             color = borderColor.value,
             radius = outerCircleSize,
