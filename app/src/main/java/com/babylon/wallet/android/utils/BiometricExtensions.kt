@@ -64,6 +64,11 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
                 )
                 return@suspendCoroutine
             }
+
+            /**
+             * onAuthenticationFailed is omitted intentionally as it's invoked whenever the presented biometric is not recognized.
+             * We must wait for the biometric session to complete.
+             */
             val authCallback = object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     it.resume(true)
@@ -74,10 +79,6 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
                     logNonFatalException(
                         IllegalStateException("Biometric authentication error (suspend). Code: $errorCode Message: $errString")
                     )
-                }
-
-                override fun onAuthenticationFailed() {
-                    it.resume(false)
                 }
             }
 
