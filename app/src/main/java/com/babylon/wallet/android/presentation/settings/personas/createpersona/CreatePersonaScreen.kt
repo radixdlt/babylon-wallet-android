@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -229,8 +231,9 @@ private fun CreatePersonaContentList(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(
-            horizontal = dimensions.paddingLarge,
-            vertical = dimensions.paddingDefault
+            start = dimensions.paddingLarge,
+            end = dimensions.paddingLarge,
+            bottom = dimensions.paddingDefault
         )
     ) {
         item {
@@ -265,6 +268,7 @@ private fun CreatePersonaContentList(
                     )
                 ),
                 hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
+                hintColor = RadixTheme.colors.gray2,
                 onFocusChanged = {
                     onPersonaDisplayNameFocusChanged(it.hasFocus)
                 },
@@ -273,18 +277,24 @@ private fun CreatePersonaContentList(
                 } else {
                     null
                 },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
             )
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = dimensions.paddingXXXLarge),
                 text = stringResource(id = R.string.createPersona_explanation_thisWillBeShared),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
         }
         itemsIndexed(currentFields, key = { _, field -> field.id }) { index, field ->
-            val isLast = currentFields.lastIndex == index
+            val spacerHeight = if (currentFields.lastIndex == index) {
+                dimensions.paddingXXXLarge
+            } else {
+                dimensions.paddingLarge
+            }
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -308,14 +318,13 @@ private fun CreatePersonaContentList(
                     null
                 },
             )
-            if (isLast.not()) {
-                Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            }
+            Spacer(modifier = Modifier.height(spacerHeight))
         }
         item {
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-            HorizontalDivider(color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4,
+                modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge)
+            )
             Text(
                 text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
                 style = RadixTheme.typography.body1HighImportance,
