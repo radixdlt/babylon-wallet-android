@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -73,7 +72,7 @@ fun RadixPrimaryButton(
                 )
             } else {
                 icon?.invoke()
-                Text(text = text, style = RadixTheme.typography.button.copy(fontSize = 16.sp))
+                Text(text = text, style = RadixTheme.typography.button)
             }
         }
     }
