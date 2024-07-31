@@ -95,6 +95,9 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
         },
         exitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+        },
+        popEnterTransition = {
+            EnterTransition.None
         }
     ) {
         GatewaysScreen(

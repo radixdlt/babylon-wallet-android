@@ -7,6 +7,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.DeviceInfo
+import com.radixdlt.sargon.extensions.from
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
@@ -14,7 +16,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.claim
 import rdx.works.profile.cloudbackup.data.DriveClient
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
@@ -25,7 +27,7 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val profileRepository: ProfileRepository,
     private val driveClient: DriveClient,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val hostInfoRepository: HostInfoRepository
 ) : StateViewModel<ClaimedByAnotherDeviceViewModel.State>(),
     OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -43,7 +45,9 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
         val currentProfile = profileRepository.profile.firstOrNull() ?: return@launch
 
         _state.update { it.copy(isReclaiming = true) }
-        val claimingProfile = currentProfile.claim(deviceInfo = deviceInfoRepository.getDeviceInfo())
+        val hostId = hostInfoRepository.getHostId()
+        val hostInfo = hostInfoRepository.getHostInfo()
+        val claimingProfile = currentProfile.claim(deviceInfo = DeviceInfo.from(hostId, hostInfo))
 
         driveClient.claimCloudBackup(
             file = args.claimedEntity,

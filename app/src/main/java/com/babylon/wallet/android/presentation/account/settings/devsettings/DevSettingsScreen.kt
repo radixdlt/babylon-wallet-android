@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +22,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
@@ -36,7 +35,7 @@ fun DevSettingsScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     DevSettingsContent(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         onBackClick = onBackClick,
         isAuthSigningLoading = state.isLoading,
         hasAuthKey = state.hasAuthKey,
@@ -64,7 +63,7 @@ private fun DevSettingsContent(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.accountSettings_devPreferences),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.gray5

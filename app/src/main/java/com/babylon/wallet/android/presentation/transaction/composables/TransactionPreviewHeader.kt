@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,6 +38,7 @@ import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.TransactionManifestData
@@ -164,7 +166,7 @@ fun TransactionPreviewHeader(
             scrolledContainerColor = Color.Transparent,
         ),
         titleBottomPadding = RadixTheme.dimensions.paddingSemiLarge,
-        windowInsets = TopAppBarDefaults.windowInsets,
+        windowInsets = WindowInsets.statusBarsAndBanner,
         maxHeight = 200.dp,
         pinnedHeight = 82.dp,
         scrollBehavior = scrollBehavior
