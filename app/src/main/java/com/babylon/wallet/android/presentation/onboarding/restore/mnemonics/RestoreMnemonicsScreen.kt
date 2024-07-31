@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -133,6 +136,7 @@ private fun RestoreMnemonicsContent(
     var focusedWordIndex by remember {
         mutableStateOf<Int?>(null)
     }
+    val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
     Scaffold(
         modifier = modifier,
@@ -213,7 +217,15 @@ private fun RestoreMnemonicsContent(
 
             RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
                 AnimatedVisibility(
-                    modifier = Modifier.padding(padding),
+                    modifier = Modifier
+                        .padding(
+                            top = padding.calculateTopPadding(),
+                            bottom = if (isKeyboardVisible) {
+                                RadixTheme.dimensions.paddingSmall
+                            } else {
+                                padding.calculateBottomPadding()
+                            }
+                        ),
                     visible = true,
                     enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
                     exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
@@ -358,6 +370,7 @@ private fun SeedPhraseView(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .imePadding()
             .verticalScroll(rememberScrollState())
     ) {
         Text(
