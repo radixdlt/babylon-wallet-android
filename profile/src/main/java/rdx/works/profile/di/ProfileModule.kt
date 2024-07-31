@@ -12,8 +12,8 @@ import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.BackupProfileRepositoryImpl
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.DAppConnectionRepositoryImpl
-import rdx.works.profile.data.repository.DeviceInfoRepository
-import rdx.works.profile.data.repository.DeviceInfoRepositoryImpl
+import rdx.works.profile.data.repository.HostInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepositoryImpl
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.ProfileRepositoryImpl
 import javax.inject.Singleton
@@ -53,6 +53,6 @@ interface ProfileModule {
 
     @Binds
     fun bindDeviceInfoRepository(
-        deviceInfoRepositoryImpl: DeviceInfoRepositoryImpl
-    ): DeviceInfoRepository
+        deviceInfoRepositoryImpl: HostInfoRepositoryImpl
+    ): HostInfoRepository
 }

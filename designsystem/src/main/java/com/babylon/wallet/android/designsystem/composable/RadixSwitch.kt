@@ -2,16 +2,12 @@ package com.babylon.wallet.android.designsystem.composable
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
@@ -27,13 +23,8 @@ fun RadixSwitch(
         checked = checked,
         onCheckedChange = onCheckedChange,
         enabled = enabled,
-        thumbContent = {
-            Icon(
-                modifier = Modifier.padding(4.dp),
-                painter = painterResource(id = R.drawable.ic_check_bold),
-                contentDescription = null
-            )
-        },
+        // Specifying any thumbContent makes the handle size consistent between the states
+        thumbContent = {},
         colors = RadixSwitchDefaults.colors(),
     )
 }
