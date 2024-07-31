@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
@@ -44,11 +42,12 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event.CreatePersona
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaSelectableCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -57,7 +56,6 @@ import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
@@ -189,16 +187,13 @@ private fun SelectPersonaContent(
                 title = stringResource(id = R.string.empty),
                 backIconType = BackIconType.Close,
                 onBackClick = onCancelClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            BottomPrimaryButton(
+            RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = state.isContinueButtonEnabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
                 text = stringResource(id = R.string.dAppRequest_login_continue)
             )
         },
@@ -224,14 +219,13 @@ private fun SelectPersonaContent(
             exit = fadeOut()
         ) {
             LazyColumn(
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingLarge),
+                contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Thumbnail.DApp(
-                        modifier = Modifier.size(104.dp),
+                        modifier = Modifier.size(64.dp),
                         dapp = dapp
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -247,7 +241,7 @@ private fun SelectPersonaContent(
                         style = RadixTheme.typography.title,
                         color = RadixTheme.colors.gray1
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     LoginRequestHeader(
                         dappName = dapp?.name.orEmpty().ifEmpty {
                             stringResource(
@@ -255,11 +249,11 @@ private fun SelectPersonaContent(
                             )
                         },
                         firstTimeLogin = state.isFirstTimeLogin,
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge)
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     )
                     if (state.personas.isNotEmpty()) {
                         Text(
-                            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
                             text = stringResource(R.string.dAppRequest_login_choosePersona),
                             textAlign = TextAlign.Center,
                             style = RadixTheme.typography.body1Header,
@@ -267,7 +261,8 @@ private fun SelectPersonaContent(
                         )
                     }
                 }
-                itemsIndexed(items = state.personas) { _, personaItem ->
+                itemsIndexed(items = state.personas) { index, personaItem ->
+                    val addSpacer = index != state.personas.lastIndex
                     PersonaSelectableCard(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -282,14 +277,17 @@ private fun SelectPersonaContent(
                         persona = personaItem,
                         onSelectPersona = onSelectPersona
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    if (addSpacer) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
                 }
                 item {
                     RadixSecondaryButton(
+                        modifier = Modifier.padding(top = RadixTheme.dimensions.paddingLarge),
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona
                     )
-                    Spacer(modifier = Modifier.height(100.dp))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
             }
         }
@@ -332,7 +330,7 @@ fun SelectPersonaPreview() {
             state = SelectPersonaViewModel.State(
                 isLoading = false,
                 authorizedDApp = AuthorizedDapp.sampleMainnet(),
-                personas = persistentListOf()
+                personas = persistentListOf(Persona.sampleMainnet().toUiModel())
             )
         )
     }

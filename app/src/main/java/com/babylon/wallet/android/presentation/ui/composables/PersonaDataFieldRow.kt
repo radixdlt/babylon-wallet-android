@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
@@ -16,13 +17,18 @@ import com.babylon.wallet.android.presentation.model.toDisplayResource
 import rdx.works.core.sargon.PersonaDataField
 
 @Composable
-fun PersonaDataFieldRow(modifier: Modifier, field: PersonaDataField) {
+fun PersonaDataFieldRow(
+    modifier: Modifier,
+    field: PersonaDataField,
+    labelStyle: TextStyle = RadixTheme.typography.body1Regular
+) {
     when (field) {
         is PersonaDataField.Email -> {
             PersonaDataStringField(
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),
-                value = field.value
+                value = field.value,
+                labelStyle = labelStyle
             )
         }
 
@@ -31,7 +37,8 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaDataField) {
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),
                 value = field.fullName,
-                singleLine = false
+                singleLine = false,
+                labelStyle = labelStyle
             )
         }
 
@@ -39,7 +46,8 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaDataField) {
             PersonaDataStringField(
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),
-                value = field.value
+                value = field.value,
+                labelStyle = labelStyle
             )
         }
 
@@ -48,11 +56,17 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaDataField) {
 }
 
 @Composable
-fun PersonaDataStringField(modifier: Modifier, label: String, value: String, singleLine: Boolean = true) {
+fun PersonaDataStringField(
+    modifier: Modifier,
+    label: String,
+    value: String,
+    labelStyle: TextStyle = RadixTheme.typography.body1Regular,
+    singleLine: Boolean = true
+) {
     Column(modifier = modifier) {
         Text(
             text = label,
-            style = RadixTheme.typography.body1Regular,
+            style = labelStyle,
             color = RadixTheme.colors.gray2
         )
         Spacer(modifier = Modifier.height(dimensions.paddingSmall))

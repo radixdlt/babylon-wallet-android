@@ -14,15 +14,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -38,8 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,10 +60,12 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringF
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
@@ -196,7 +192,7 @@ private fun DappDetailContent(
                 RadixCenteredTopAppBar(
                     title = state.dAppWithResources?.dApp?.name.orEmpty(),
                     onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
                 HorizontalDivider(color = RadixTheme.colors.gray5)
             }
@@ -234,7 +230,6 @@ private fun DappDetailContent(
 
     if (state.isBottomSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 when (state.selectedSheetState) {
@@ -249,14 +244,6 @@ private fun DappDetailContent(
                                         bottomSheetState.hide()
                                     }
                                 },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .navigationBarsPadding()
-                                    .background(
-                                        RadixTheme.colors.defaultBackground,
-                                        shape = RadixTheme.shapes.roundedRectTopMedium
-                                    )
-                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
                                 dappName = state.dAppWithResources?.dApp?.name.orEmpty(),
                                 onDisconnectPersona = { persona ->
                                     hidePersonaBottomSheet()
@@ -432,23 +419,11 @@ private fun DappDetails(
             }
             item {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    onClick = onDeleteDapp,
-                    shape = RadixTheme.shapes.roundedRectSmall,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = RadixTheme.colors.red1
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
-                        style = RadixTheme.typography.body1Header,
-                        maxLines = 1,
-                    )
-                }
+                WarningButton(
+                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
+                    onClick = onDeleteDapp
+                )
             }
         }
     }
@@ -689,25 +664,11 @@ private fun PersonaDetailList(
             item {
                 HorizontalDivider(color = RadixTheme.colors.gray5)
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    onClick = {
-                        onDisconnectPersona(persona.persona)
-                    },
-                    shape = RadixTheme.shapes.roundedRectSmall,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = RadixTheme.colors.red1
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.authorizedDapps_personaDetails_removeAuthorization),
-                        style = RadixTheme.typography.body1Header,
-                        maxLines = 1,
-                    )
-                }
+                WarningButton(
+                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                    text = stringResource(R.string.authorizedDapps_personaDetails_removeAuthorization),
+                    onClick = { onDisconnectPersona(persona.persona) },
+                )
             }
         }
     }

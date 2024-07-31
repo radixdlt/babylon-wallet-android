@@ -12,11 +12,11 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.Per
 import com.babylon.wallet.android.utils.isValidEmail
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryEmailAddress
 import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
@@ -74,7 +74,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
                     )
                 ),
                 emailAddresses = CollectionOfEmailAddresses(
-                    listOf(PersonaDataIdentifiedEmailAddress(id = emailFieldId, value = PersonaDataEntryEmailAddress("test@test.pl")))
+                    listOf(PersonaDataIdentifiedEmailAddress(id = emailFieldId, value = EmailAddress("test@test.pl")))
                 ),
                 phoneNumbers = CollectionOfPhoneNumbers(emptyList())
             )

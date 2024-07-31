@@ -6,10 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
@@ -29,7 +27,6 @@ import com.babylon.wallet.android.presentation.account.settings.specificdeposito
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
-import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
@@ -42,6 +39,7 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
+import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
@@ -106,13 +104,21 @@ fun NavigationHost(
             exitTransition = { ExitTransition.None }
         ) {
             OnboardingScreen(
-                onCreateNewWalletClick = {
-                    navController.navigateToEulaScreen()
+                onCreateNewWalletClick = { isWithCloudBackupEnabled ->
+                    if (isWithCloudBackupEnabled) {
+                        navController.createAccountScreen()
+                    } else {
+                        navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet, popToRoute = ROUTE_EULA_SCREEN)
+                    }
                 },
                 onBack = onCloseApp,
                 onRestoreFromBackupClick = {
                     navController.connectCloudBackupScreen(connectMode = ConnectMode.RestoreWallet)
-                }
+                },
+                onShowEula = {
+                    navController.navigateToEulaScreen()
+                },
+                viewModel = hiltViewModel()
             )
         }
         eulaScreen(
@@ -121,9 +127,9 @@ fun NavigationHost(
             },
             onAccepted = { isWithCloudBackupEnabled ->
                 if (isWithCloudBackupEnabled) {
-                    navController.createAccountScreen()
+                    navController.createAccountScreen(popToRoute = ROUTE_EULA_SCREEN)
                 } else {
-                    navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet)
+                    navController.connectCloudBackupScreen(connectMode = ConnectMode.NewWallet, popToRoute = ROUTE_EULA_SCREEN)
                 }
             }
         )
@@ -412,6 +418,7 @@ fun NavigationHost(
                         amounts = spendingAsset.resource.ownedAmount?.let { mapOf(spendingAsset.resourceAddress to it) }.orEmpty(),
                         underAccountAddress = fromAccount.address
                     )
+
                     is SpendingAsset.NFT -> navController.nftAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
                         localId = spendingAsset.item.localId,
@@ -470,19 +477,6 @@ fun NavigationHost(
                 navController.popPersonaCreation()
             }
         )
-        composable(
-            route = Screen.ChooseAccountsCompleteDestination.route + "/{${Screen.ARG_DAPP_NAME}}",
-            arguments = listOf(
-                navArgument(Screen.ARG_DAPP_NAME) { type = NavType.StringType }
-            )
-        ) {
-            ChooseAccountsCompletionScreen(
-                viewModel = hiltViewModel(),
-                onContinueClick = {
-                    navController.navigateUp()
-                }
-            )
-        }
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
