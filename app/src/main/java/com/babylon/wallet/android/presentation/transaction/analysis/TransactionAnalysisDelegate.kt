@@ -33,7 +33,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase,
-    private val transactionRepository: TransactionRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
