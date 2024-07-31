@@ -22,6 +22,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.isCompatible
+import rdx.works.core.then
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
 import rdx.works.profile.data.repository.HostInfoRepository
@@ -185,22 +186,22 @@ class RestoreFromBackupViewModel @Inject constructor(
 
                 downloadBackedUpProfileFromCloud(
                     entity = restoringProfile.entity
-                ).fold(
-                    onSuccess = { cloudBackupFile ->
-                        val backupType = BackupType.Cloud(restoringProfile.entity)
-                        saveTemporaryRestoringSnapshotUseCase.forCloud(cloudBackupFile.serializedProfile, backupType)
-                        _state.update { it.copy(isDownloadingSelectedCloudBackup = false) }
-                        sendEvent(Event.OnRestoreConfirmed(backupType))
-                    },
-                    onFailure = { exception ->
-                        _state.update {
-                            it.copy(
-                                uiMessage = UiMessage.ErrorMessage(exception),
-                                isDownloadingSelectedCloudBackup = false
-                            )
-                        }
+                ).then { cloudBackupFile ->
+                    val backupType = BackupType.Cloud(restoringProfile.entity)
+                    saveTemporaryRestoringSnapshotUseCase.forCloud(cloudBackupFile.serializedProfile, backupType).map {
+                        backupType
                     }
-                )
+                }.onSuccess { backupType ->
+                    _state.update { it.copy(isDownloadingSelectedCloudBackup = false) }
+                    sendEvent(Event.OnRestoreConfirmed(backupType))
+                }.onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            uiMessage = UiMessage.ErrorMessage(exception),
+                            isDownloadingSelectedCloudBackup = false
+                        )
+                    }
+                }
             }
 
             is State.RestoringProfile.DeprecatedCloudBackup -> sendEvent(Event.OnRestoreConfirmed(BackupType.DeprecatedCloud))
