@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,6 +59,7 @@ fun AccountCardView(
                 shape = RadixTheme.shapes.roundedRectMedium
             )
             .fillMaxWidth()
+            .heightIn(min = 160.dp)
             .padding(
                 vertical = RadixTheme.dimensions.paddingDefault,
                 horizontal = RadixTheme.dimensions.paddingLarge
