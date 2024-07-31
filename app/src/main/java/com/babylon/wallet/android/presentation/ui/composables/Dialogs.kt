@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,8 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -34,7 +31,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -52,23 +48,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.main.OlympiaErrorState
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -436,102 +426,4 @@ fun NotSecureAlertDialog(
         confirmText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_openSettings),
         dismissText = stringResource(id = R.string.biometrics_deviceNotSecureAlert_quit)
     )
-}
-
-@Composable
-fun FailureDialogContent(
-    modifier: Modifier = Modifier,
-    title: String,
-    subtitle: String?,
-    transactionAddress: String,
-    isMobileConnect: Boolean
-) {
-    Column {
-        Column(
-            modifier
-                .fillMaxWidth()
-                .background(color = RadixTheme.colors.defaultBackground)
-                .padding(RadixTheme.dimensions.paddingLarge),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-        ) {
-            Icon(
-                modifier = Modifier.size(104.dp),
-                painter = painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-                ),
-                contentDescription = null,
-                tint = RadixTheme.colors.orange1
-            )
-            Text(
-                text = title,
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-            )
-
-            subtitle?.let {
-                Text(
-                    text = it,
-                    style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            val transactionId = remember(transactionAddress) {
-                runCatching { IntentHash.init(transactionAddress) }.getOrNull()
-            }
-            if (transactionId != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                        style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                    ActionableAddressView(
-                        transactionId = transactionId,
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
-            }
-        }
-        if (isMobileConnect) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = RadixTheme.colors.gray5)
-                    .padding(vertical = RadixTheme.dimensions.paddingLarge, horizontal = RadixTheme.dimensions.paddingXLarge),
-                text = stringResource(id = R.string.mobileConnect_interactionSuccess),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean> {
-    override val values: Sequence<Boolean> = sequenceOf(true, false)
-}
-
-@Composable
-@Preview
-private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean) {
-    RadixWalletTheme {
-        FailureDialogContent(
-            isMobileConnect = isMobileConnect,
-            title = "Title",
-            subtitle = "Subtitle",
-            transactionAddress = "rdx1239j329fj292r32e23"
-        )
-    }
 }

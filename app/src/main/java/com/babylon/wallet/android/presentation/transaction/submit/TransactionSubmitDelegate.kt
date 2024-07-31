@@ -141,7 +141,8 @@ class TransactionSubmitDelegate @Inject constructor(
                     transactionId = notarization.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete,
-                    isMobileConnect = transactionRequest.isMobileConnectRequest
+                    isMobileConnect = transactionRequest.isMobileConnectRequest,
+                    dAppName = _state.value.proposingDApp?.name
                 )
             )
             transactionStatusClient.pollTransactionStatus(
@@ -178,6 +179,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 approvalJob = null
                 return
             }
+
             is RadixWalletException.SignatureCancelled,
             is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
             is RadixWalletException.LedgerCommunicationException -> {
@@ -202,7 +204,8 @@ class TransactionSubmitDelegate @Inject constructor(
                         errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
                         blockUntilComplete = transactionRequest.blockUntilComplete,
                         walletErrorType = radixWalletException.toConnectorExtensionError(),
-                        isMobileConnect = transactionRequest.isMobileConnectRequest
+                        isMobileConnect = transactionRequest.isMobileConnectRequest,
+                        dAppName = _state.value.proposingDApp?.name
                     )
                 )
             }
