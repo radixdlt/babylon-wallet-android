@@ -17,11 +17,9 @@ sealed class Screen(override val route: String, override val args: String = "") 
     object SettingsDestination : Screen("settings_route")
     object SettingsAllDestination : Screen("settings_all_route")
     object SettingsEditGatewayApiDestination : Screen("settings_edit_gateway_api_route")
-    object ChooseAccountsCompleteDestination : Screen("choose_accounts_completion_route")
 
     companion object {
         const val ARG_ACCOUNT_NAME = "arg_account_name"
-        const val ARG_DAPP_NAME = "arg_dapp_name"
         const val ARG_HAS_PROFILE = "arg_has_profile"
     }
 }

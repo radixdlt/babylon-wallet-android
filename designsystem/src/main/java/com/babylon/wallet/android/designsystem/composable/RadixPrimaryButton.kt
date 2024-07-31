@@ -43,7 +43,7 @@ fun RadixPrimaryButton(
     val lastClickMs = remember { mutableLongStateOf(0L) }
 
     Button(
-        modifier = modifier.heightIn(min = 50.dp),
+        modifier = modifier.heightIn(min = RadixTheme.dimensions.buttonDefaultHeight),
         onClick = {
             ClickListenerUtils.throttleOnClick(
                 lastClickMs = lastClickMs,
