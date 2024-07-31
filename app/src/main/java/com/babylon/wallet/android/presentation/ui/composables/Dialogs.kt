@@ -107,6 +107,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
     centerContent: Boolean = false,
@@ -128,14 +129,24 @@ fun BottomSheetDialogWrapper(
             }
         )
     }
+    val onDismissRequest = remember(isDismissible) {
+        {
+            if (isDismissible) {
+                scope.launch {
+                    draggableState.animateTo(DragState.Collapsed)
+                }
+            } else {
+                // Delegate the dismiss request logic to the caller
+                onDismiss()
+            }
+        }
+    }
     Box(
         modifier = modifier
             .fillMaxSize()
             .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
             .clickable(interactionSource = interactionSource, indication = null) {
-                scope.launch {
-                    draggableState.animateTo(DragState.Collapsed)
-                }
+                onDismissRequest()
             }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
@@ -192,11 +203,7 @@ fun BottomSheetDialogWrapper(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
-                        onDismissRequest = {
-                            scope.launch {
-                                draggableState.animateTo(DragState.Collapsed)
-                            }
-                        },
+                        onDismissRequest = { onDismissRequest() },
                         title = title
                     )
                 }
