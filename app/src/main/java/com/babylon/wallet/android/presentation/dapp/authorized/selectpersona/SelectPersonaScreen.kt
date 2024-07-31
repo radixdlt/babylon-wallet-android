@@ -261,7 +261,8 @@ private fun SelectPersonaContent(
                         )
                     }
                 }
-                itemsIndexed(items = state.personas) { _, personaItem ->
+                itemsIndexed(items = state.personas) { index, personaItem ->
+                    val addSpacer = index != state.personas.lastIndex
                     PersonaSelectableCard(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -276,10 +277,13 @@ private fun SelectPersonaContent(
                         persona = personaItem,
                         onSelectPersona = onSelectPersona
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    if (addSpacer) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
                 }
                 item {
                     RadixSecondaryButton(
+                        modifier = Modifier.padding(top = RadixTheme.dimensions.paddingLarge),
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona
                     )
