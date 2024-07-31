@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -29,15 +30,26 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 @Composable
 fun OnboardingScreen(
     modifier: Modifier = Modifier,
+    viewModel: OnboardingViewModel,
     onBack: () -> Unit,
-    onCreateNewWalletClick: () -> Unit,
+    onCreateNewWalletClick: (Boolean) -> Unit,
+    onShowEula: () -> Unit,
     onRestoreFromBackupClick: () -> Unit
 ) {
     BackHandler { onBack() }
 
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is OnboardingViewModel.OnboardingEvent.NavigateToCreateNewWallet -> onCreateNewWalletClick(event.isWithCloudBackupEnabled)
+                is OnboardingViewModel.OnboardingEvent.NavigateToEula -> onShowEula()
+            }
+        }
+    }
+
     OnboardingScreenContent(
         modifier = modifier,
-        onProceedClick = onCreateNewWalletClick,
+        onProceedClick = viewModel::onCreateNewWalletClick,
         onRestoreWalletClick = onRestoreFromBackupClick,
     )
 }
