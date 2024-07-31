@@ -22,9 +22,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.isCompatible
+import rdx.works.core.then
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import rdx.works.profile.cloudbackup.model.GoogleAccount
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
@@ -44,7 +45,7 @@ class RestoreFromBackupViewModel @Inject constructor(
     private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase,
     private val googleSignInManager: GoogleSignInManager,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val hostInfoRepository: HostInfoRepository
 ) : StateViewModel<RestoreFromBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -185,22 +186,22 @@ class RestoreFromBackupViewModel @Inject constructor(
 
                 downloadBackedUpProfileFromCloud(
                     entity = restoringProfile.entity
-                ).fold(
-                    onSuccess = { cloudBackupFile ->
-                        val backupType = BackupType.Cloud(restoringProfile.entity)
-                        saveTemporaryRestoringSnapshotUseCase.forCloud(cloudBackupFile.serializedProfile, backupType)
-                        _state.update { it.copy(isDownloadingSelectedCloudBackup = false) }
-                        sendEvent(Event.OnRestoreConfirmed(backupType))
-                    },
-                    onFailure = { exception ->
-                        _state.update {
-                            it.copy(
-                                uiMessage = UiMessage.ErrorMessage(exception),
-                                isDownloadingSelectedCloudBackup = false
-                            )
-                        }
+                ).then { cloudBackupFile ->
+                    val backupType = BackupType.Cloud(restoringProfile.entity)
+                    saveTemporaryRestoringSnapshotUseCase.forCloud(cloudBackupFile.serializedProfile, backupType).map {
+                        backupType
                     }
-                )
+                }.onSuccess { backupType ->
+                    _state.update { it.copy(isDownloadingSelectedCloudBackup = false) }
+                    sendEvent(Event.OnRestoreConfirmed(backupType))
+                }.onFailure { exception ->
+                    _state.update {
+                        it.copy(
+                            uiMessage = UiMessage.ErrorMessage(exception),
+                            isDownloadingSelectedCloudBackup = false
+                        )
+                    }
+                }
             }
 
             is State.RestoringProfile.DeprecatedCloudBackup -> sendEvent(Event.OnRestoreConfirmed(BackupType.DeprecatedCloud))
@@ -216,13 +217,13 @@ class RestoreFromBackupViewModel @Inject constructor(
             }
             .getOrNull()
 
-        val deviceInfo = deviceInfoRepository.getDeviceInfo()
+        val hostId = hostInfoRepository.getHostId()
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.map { fileEntity ->
                 Selectable<State.RestoringProfile>(
                     data = State.RestoringProfile.GoogleDrive(
                         entity = fileEntity,
-                        isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == deviceInfo.id
+                        isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == hostId.id
                     )
                 )
             }
@@ -235,7 +236,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     val restoringProfile = Selectable<State.RestoringProfile>(
                         data = State.RestoringProfile.DeprecatedCloudBackup(
                             header = profile.header,
-                            isBackedUpByTheSameDevice = profile.header.lastUsedOnDevice.id == deviceInfo.id
+                            isBackedUpByTheSameDevice = profile.header.lastUsedOnDevice.id == hostId.id
                         )
                     )
                     _state.update {

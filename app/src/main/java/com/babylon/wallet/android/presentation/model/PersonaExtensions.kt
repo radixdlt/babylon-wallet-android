@@ -7,9 +7,9 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryEmailAddress
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
 import com.radixdlt.sargon.PersonaDataNameVariant
@@ -78,7 +78,7 @@ fun PersonaData.toWalletToDappInteractionPersonaDataRequestResponseItem(): Walle
             )
         },
         emailAddresses = emailAddresses.collection.map {
-            PersonaDataEntryEmailAddress(it.value.email)
+            EmailAddress(it.value.email)
         },
         phoneNumbers = phoneNumbers.collection.map {
             PersonaDataEntryPhoneNumber(it.value.number)

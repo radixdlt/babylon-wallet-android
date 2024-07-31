@@ -237,7 +237,7 @@
   <string name="gateways_addNewGateway_establishingConnectionErrorMessage">There was an error establishing a connection</string>
   <string name="gateways_removeGatewayAlert_title">Remove Gateway</string>
   <string name="gateways_removeGatewayAlert_message">You will no longer be able to connect to this gateway.</string>
-  <string name="authorizedDapps_title">Authorized dApps</string>
+  <string name="authorizedDapps_title">Approved dApps</string>
   <string name="authorizedDapps_subtitle">These are the dApps that you have logged into using the Radix Wallet.</string>
   <string name="authorizedDapps_whatIsDapp">What is a dApp?</string>
   <string name="authorizedDapps_dAppDetails_dAppDefinition">dApp Definition</string>
