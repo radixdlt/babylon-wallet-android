@@ -6,10 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
@@ -29,7 +27,6 @@ import com.babylon.wallet.android.presentation.account.settings.specificdeposito
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.accountThirdPartyDeposits
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
-import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
@@ -470,19 +467,6 @@ fun NavigationHost(
                 navController.popPersonaCreation()
             }
         )
-        composable(
-            route = Screen.ChooseAccountsCompleteDestination.route + "/{${Screen.ARG_DAPP_NAME}}",
-            arguments = listOf(
-                navArgument(Screen.ARG_DAPP_NAME) { type = NavType.StringType }
-            )
-        ) {
-            ChooseAccountsCompletionScreen(
-                viewModel = hiltViewModel(),
-                onContinueClick = {
-                    navController.navigateUp()
-                }
-            )
-        }
         composable(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {

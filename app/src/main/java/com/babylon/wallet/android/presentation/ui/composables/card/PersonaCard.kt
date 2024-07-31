@@ -45,7 +45,7 @@ fun PersonaCard(
     modifier: Modifier = Modifier,
     persona: Persona,
     showChevron: Boolean = true,
-    elevation: Dp = 8.dp,
+    elevation: Dp = 2.dp,
     onNavigateToSecurityCenter: (() -> Unit)? = null,
     securityPrompts: ImmutableList<SecurityPromptType>? = null
 ) {
