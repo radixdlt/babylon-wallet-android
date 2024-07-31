@@ -14,8 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -33,6 +31,8 @@ import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -156,13 +156,9 @@ private fun FeePayerCard(
                 maxLines = 2
             )
 
-            RadioButton(
+            RadixRadioButton(
                 selected = candidate.account.address == selectedCandidateAddress,
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = RadixTheme.colors.gray1,
-                    unselectedColor = RadixTheme.colors.gray3,
-                    disabledSelectedColor = Color.White
-                ),
+                colors = RadixRadioButtonDefaults.darkColors(),
                 onClick = {
                     onPayerSelected(candidate.account)
                 },

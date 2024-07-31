@@ -30,8 +30,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
@@ -74,6 +72,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -265,9 +265,11 @@ fun AddAssetSheet(
                 error = null
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)) {
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            ) {
                 LabeledRadioButton(
-                    modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetAllow),
                     selected = asset.rule == DepositAddressExceptionRule.ALLOW,
                     onSelected = {
@@ -275,7 +277,6 @@ fun AddAssetSheet(
                     }
                 )
                 LabeledRadioButton(
-                    modifier = Modifier.weight(1f),
                     label = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetDeny),
                     selected = asset.rule == DepositAddressExceptionRule.DENY,
                     onSelected = {
@@ -298,25 +299,22 @@ fun AddAssetSheet(
 }
 
 @Composable
-private fun LabeledRadioButton(modifier: Modifier, label: String, selected: Boolean, onSelected: () -> Unit) {
+private fun LabeledRadioButton(
+    modifier: Modifier = Modifier,
+    label: String,
+    selected: Boolean,
+    onSelected: () -> Unit
+) {
     Row(
-        modifier = modifier.clickable {
-            onSelected()
-        },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround
+        modifier = modifier.clickable { onSelected() },
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(
+        RadixRadioButton(
             selected = selected,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = RadixTheme.colors.gray1,
-                unselectedColor = RadixTheme.colors.gray3,
-                disabledSelectedColor = Color.White
-            ),
+            colors = RadixRadioButtonDefaults.darkColors(),
             onClick = onSelected,
         )
         Text(
-            modifier = Modifier.fillMaxWidth(),
             text = label,
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
