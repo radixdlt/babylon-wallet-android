@@ -221,6 +221,10 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
+    fun onFeePayerSelectionDismissRequest() {
+        _state.update { it.copy(selectedFeePayerInput = null) }
+    }
+
     fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
         _state.update {
             it.copy(sheetState = Sheet.UnknownAddresses(unknownAddresses))
@@ -233,10 +237,6 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onAcknowledgeRawTransactionWarning() {
         _state.update { it.copy(showRawTransactionWarning = false) }
-    }
-
-    fun onFeePayerSelectionDismissRequest() {
-        _state.update { it.copy(selectedFeePayerInput = null) }
     }
 
     data class State(

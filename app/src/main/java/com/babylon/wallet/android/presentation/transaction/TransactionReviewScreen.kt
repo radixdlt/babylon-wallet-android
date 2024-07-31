@@ -111,12 +111,12 @@ fun TransactionReviewScreen(
         onPayerChanged = viewModel::onPayerChanged,
         onPayerSelected = viewModel::onPayerSelected,
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
+        onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
-        onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning,
-        onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest
+        onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning
     )
 }
 
@@ -146,12 +146,12 @@ private fun TransactionPreviewContent(
     onPayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
     onPayerSelected: () -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
+    onFeePayerSelectionDismiss: () -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
     dismissTransactionErrorDialog: () -> Unit,
-    onAcknowledgeRawTransactionWarning: () -> Unit,
-    onFeePayerSelectionDismiss: () -> Unit
+    onAcknowledgeRawTransactionWarning: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
