@@ -20,6 +20,7 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -29,6 +30,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.ProfileException
+import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 
@@ -75,6 +77,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                         sendEvent(Event.RequestBiometricPrompt)
                     }
                 }
+                else -> Timber.w("FactorSourceKind ${input.factorSource.kind} not supported.")
             }
         }
     }
@@ -145,6 +148,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                     ledgerFactorSource = factorSource
                 )
             }
+            else -> Result.failure(IllegalStateException("FactorSourceKind ${input.factorSource.kind} not supported."))
         }
     }
 

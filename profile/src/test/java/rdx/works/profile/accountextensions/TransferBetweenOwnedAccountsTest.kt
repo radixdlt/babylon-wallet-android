@@ -6,9 +6,12 @@ import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HostId
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -20,13 +23,13 @@ import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.initBabylon
@@ -42,17 +45,18 @@ class TransferBetweenOwnedAccountsTest {
                 "humble limb repeat video sudden possible story mask neutral prize goose mandate"
     )
 
-    private val deviceInfo = DeviceInfo.sample()
+    private val hostId = HostId.sample()
+    private val hostInfo = HostInfo.sample.other()
     private val babylonFactorSource = FactorSource.Device.babylon(
         mnemonicWithPassphrase = mnemonicWithPassphrase,
-        model = deviceInfo.model,
-        name = deviceInfo.name,
+        hostInfo = hostInfo,
         isMain = true
     )
 
     var profile = Profile.init(
         deviceFactorSource = babylonFactorSource,
-        creatingDeviceName = deviceInfo.displayName
+        hostId = hostId,
+        hostInfo = hostInfo
     )
 
     private val defaultNetwork = NetworkId.MAINNET

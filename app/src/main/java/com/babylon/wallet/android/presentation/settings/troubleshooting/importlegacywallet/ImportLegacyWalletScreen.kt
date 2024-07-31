@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -87,6 +86,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -294,7 +294,7 @@ private fun ImportLegacyWalletContent(
                     title = stringResource(R.string.empty),
                     onBackClick = if (currentPage == Page.ImportComplete) onCloseScreen else onBackClick,
                     backIconType = if (currentPage == Page.ImportComplete) BackIconType.Close else BackIconType.Back,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
             },
             snackbarHost = {

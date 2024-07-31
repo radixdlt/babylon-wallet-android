@@ -1,9 +1,12 @@
 package rdx.works.profile
 
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HostId
+import com.radixdlt.sargon.HostInfo
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
@@ -15,11 +18,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GenerateProfileUseCase
 import java.util.UUID
@@ -28,14 +30,9 @@ import kotlin.test.Test
 class GenerateProfileUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private val fakeDeviceInfoRepository = mockk<DeviceInfoRepository>().apply {
-        every { getDeviceInfo() } returns DeviceInfo(
-            id = UUID.randomUUID(),
-            date = TimestampGenerator(),
-            name = "Unit",
-            manufacturer = "Test",
-            model = ""
-        )
+    private val fakeHostInfoRepository = mockk<HostInfoRepository>().apply {
+        every { getHostId() } returns HostId.sample()
+        every { getHostInfo() } returns HostInfo.sample.other()
     }
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val preferencesManager = mockk<PreferencesManager>()
@@ -43,7 +40,7 @@ class GenerateProfileUseCaseTest {
     private val testScope = TestScope(testDispatcher)
     val generateProfileUseCase = GenerateProfileUseCase(
         profileRepository = profileRepository,
-        deviceInfoRepository = fakeDeviceInfoRepository,
+        hostInfoRepository = fakeHostInfoRepository,
         defaultDispatcher = testDispatcher,
         mnemonicRepository = mnemonicRepository,
         preferencesManager = preferencesManager
@@ -62,8 +59,10 @@ class GenerateProfileUseCaseTest {
                 phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
                         "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             )
+            val hostInfo = HostInfo.sample()
             val babylonFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
+                hostInfo = hostInfo,
                 isMain = true
             )
 

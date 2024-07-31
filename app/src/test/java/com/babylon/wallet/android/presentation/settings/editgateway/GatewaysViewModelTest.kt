@@ -4,9 +4,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
-import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewayAddFailure
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysViewModel
-import com.babylon.wallet.android.presentation.settings.preferences.gateways.SettingsEditGatewayEvent
 import com.babylon.wallet.android.utils.isValidUrl
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
@@ -20,6 +18,8 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -44,6 +44,7 @@ class GatewaysViewModelTest {
     private val addGatewayUseCase = mockk<AddGatewayUseCase>()
     private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
     private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
 
@@ -54,7 +55,8 @@ class GatewaysViewModelTest {
             changeGatewayIfNetworkExistUseCase = changeGatewayIfNetworkExistUseCase,
             addGatewayUseCase = addGatewayUseCase,
             deleteGatewayUseCase = deleteGatewayUseCase,
-            getNetworkInfoUseCase = getNetworkInfoUseCase
+            getNetworkInfoUseCase = getNetworkInfoUseCase,
+            defaultDispatcher = testDispatcher
         )
         every { getProfileUseCase.flow } returns flowOf(profile)
         coEvery { changeGatewayIfNetworkExistUseCase(any()) } returns true
@@ -88,7 +90,7 @@ class GatewaysViewModelTest {
         coVerify(exactly = 1) { addGatewayUseCase(any()) }
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
-            assert(item is SettingsEditGatewayEvent.GatewayAdded)
+            assert(item is GatewaysViewModel.Event.GatewayAdded)
         }
     }
 
@@ -102,7 +104,7 @@ class GatewaysViewModelTest {
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
-            assert(item is SettingsEditGatewayEvent.CreateProfileOnNetwork)
+            assert(item is GatewaysViewModel.Event.CreateProfileOnNetwork)
         }
     }
 
@@ -125,7 +127,7 @@ class GatewaysViewModelTest {
         vm.onGatewayClick(gateway)
         advanceUntilIdle()
         coVerify(exactly = 0) { changeGatewayIfNetworkExistUseCase(gateway) }
-        assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.AlreadyExist)
+        assert(vm.state.value.gatewayAddFailure == GatewaysViewModel.State.GatewayAddFailure.AlreadyExist)
     }
 
     @Test
@@ -137,6 +139,6 @@ class GatewaysViewModelTest {
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
-        assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.ErrorWhileAdding)
+        assert(vm.state.value.gatewayAddFailure == GatewaysViewModel.State.GatewayAddFailure.ErrorWhileAdding)
     }
 }

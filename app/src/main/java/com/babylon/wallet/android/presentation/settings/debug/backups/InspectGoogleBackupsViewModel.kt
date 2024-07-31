@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
-import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.FetchBackedUpProfilesMetadataFromCloud
 import java.util.UUID
@@ -18,10 +18,10 @@ import javax.inject.Inject
 class InspectGoogleBackupsViewModel @Inject constructor(
     private val fetchBackedUpProfilesMetadataFromCloud: FetchBackedUpProfilesMetadataFromCloud,
     private val googleSignInManager: GoogleSignInManager,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val hostInfoRepository: HostInfoRepository
 ) : StateViewModel<InspectGoogleBackupsViewModel.State>() {
 
-    override fun initialState(): State = State(isLoading = true, deviceId = deviceInfoRepository.getDeviceInfo().id)
+    override fun initialState(): State = State(isLoading = true, deviceId = hostInfoRepository.getHostId().id)
 
     init {
         viewModelScope.launch {
