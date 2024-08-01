@@ -57,9 +57,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.UnknownDepositRulesStateInfo
-import com.babylon.wallet.android.presentation.account.settings.specificassets.views.LabeledRadioButton
-import com.babylon.wallet.android.presentation.account.settings.specificassets.views.SpecificAssetsTab
-import com.babylon.wallet.android.presentation.account.settings.specificassets.views.SpecificAssetsTabs
+import com.babylon.wallet.android.presentation.account.settings.specificassets.composables.LabeledRadioButton
+import com.babylon.wallet.android.presentation.account.settings.specificassets.composables.SpecificAssetsTab
+import com.babylon.wallet.android.presentation.account.settings.specificassets.composables.SpecificAssetsTabs
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage

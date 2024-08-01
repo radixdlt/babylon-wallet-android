@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.settings.specificassets.views
+package com.babylon.wallet.android.presentation.account.settings.specificassets.composables
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
