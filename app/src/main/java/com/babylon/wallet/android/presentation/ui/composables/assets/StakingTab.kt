@@ -557,7 +557,9 @@ private fun StakeClaims(
                 )
             }
         }
-        val unstakingItemsEmpty = unstakingItems.isEmpty()
+        val unstakingItemsEmpty = remember(unstakingItems) {
+            unstakingItems.isEmpty()
+        }
         if (claimItems.isNotEmpty() && claim != null) {
             Row(
                 modifier = Modifier.padding(
