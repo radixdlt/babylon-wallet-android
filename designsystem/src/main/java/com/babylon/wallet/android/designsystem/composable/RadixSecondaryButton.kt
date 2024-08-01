@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Button
@@ -12,7 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,9 +46,9 @@ fun RadixSecondaryButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val lastClickMs = remember { mutableStateOf(0L) }
+    val lastClickMs = remember { mutableLongStateOf(0L) }
     Button(
-        modifier = modifier,
+        modifier = modifier.heightIn(min = RadixTheme.dimensions.buttonDefaultHeight),
         onClick = {
             ClickListenerUtils.throttleOnClick(
                 lastClickMs = lastClickMs,
@@ -76,7 +77,7 @@ fun RadixSecondaryButton(
                 )
             } else {
                 leadingContent?.invoke()
-                Text(text = text, style = textStyle)
+                Text(text = text, style = RadixTheme.typography.body1Header)
                 trailingContent?.invoke()
             }
         }

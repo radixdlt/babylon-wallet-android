@@ -17,15 +17,14 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -68,8 +67,10 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -116,6 +117,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
     centerContent: Boolean = false,
@@ -137,14 +139,24 @@ fun BottomSheetDialogWrapper(
             }
         )
     }
+    val onDismissRequest = remember(isDismissible) {
+        {
+            if (isDismissible) {
+                scope.launch {
+                    draggableState.animateTo(DragState.Collapsed)
+                }
+            } else {
+                // Delegate the dismiss request logic to the caller
+                onDismiss()
+            }
+        }
+    }
     Box(
         modifier = modifier
             .fillMaxSize()
             .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
             .clickable(interactionSource = interactionSource, indication = null) {
-                scope.launch {
-                    draggableState.animateTo(DragState.Collapsed)
-                }
+                onDismissRequest()
             }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
@@ -189,6 +201,7 @@ fun BottomSheetDialogWrapper(
                     )
                     .animateContentSize()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
+                    .navigationBarsPadding()
                     .clip(RadixTheme.shapes.roundedRectTopMedium),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -200,11 +213,7 @@ fun BottomSheetDialogWrapper(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
-                        onDismissRequest = {
-                            scope.launch {
-                                draggableState.animateTo(DragState.Collapsed)
-                            }
-                        },
+                        onDismissRequest = { onDismissRequest() },
                         title = title
                     )
                 }
@@ -441,7 +450,7 @@ fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionAddress: String,
+    transactionId: IntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -478,27 +487,8 @@ fun FailureDialogContent(
                 )
             }
 
-            val transactionId = remember(transactionAddress) {
-                runCatching { IntentHash.init(transactionAddress) }.getOrNull()
-            }
             if (transactionId != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                        style = RadixTheme.typography.body1Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                    ActionableAddressView(
-                        transactionId = transactionId,
-                        textStyle = RadixTheme.typography.body1Header,
-                        textColor = RadixTheme.colors.blue1,
-                        iconColor = RadixTheme.colors.gray2
-                    )
-                }
+                TransactionId(transactionId = transactionId)
             }
         }
         if (isMobileConnect) {
@@ -522,6 +512,7 @@ internal class MobileConnectParameterProvider : PreviewParameterProvider<Boolean
 }
 
 @Composable
+@UsesSampleValues
 @Preview
 private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParameterProvider::class) isMobileConnect: Boolean) {
     RadixWalletTheme {
@@ -529,7 +520,7 @@ private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParam
             isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
-            transactionAddress = "rdx1239j329fj292r32e23"
+            transactionId = IntentHash.sample()
         )
     }
 }

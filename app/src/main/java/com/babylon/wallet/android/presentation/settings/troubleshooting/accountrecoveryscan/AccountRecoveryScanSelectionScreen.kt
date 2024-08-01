@@ -4,12 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -30,6 +27,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
@@ -70,22 +68,26 @@ private fun AccountRecoveryScanSelectionContent(
     BackHandler {
         backCallback()
     }
-    Scaffold(modifier = modifier.navigationBarsPadding(), topBar = {
-        RadixCenteredTopAppBar(
-            windowInsets = WindowInsets.statusBars,
-            title = stringResource(id = R.string.empty),
-            onBackClick = {
-                backCallback()
-            },
-            backIconType = BackIconType.Close
-        )
-    }, containerColor = RadixTheme.colors.defaultBackground) { padding ->
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                windowInsets = WindowInsets.statusBarsAndBanner,
+                title = stringResource(id = R.string.empty),
+                onBackClick = {
+                    backCallback()
+                },
+                backIconType = BackIconType.Close
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .verticalScroll(state = rememberScrollState())
                 .padding(padding)
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                .verticalScroll(state = rememberScrollState())
+
         ) {
             Text(
                 modifier = Modifier

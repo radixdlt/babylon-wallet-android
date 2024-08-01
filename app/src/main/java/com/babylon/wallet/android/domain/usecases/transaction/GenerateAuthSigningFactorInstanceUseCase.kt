@@ -15,6 +15,7 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,6 +73,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 factorSource,
                 authSigningDerivationPath
             )
+            else -> Result.failure(IllegalStateException("FactorSourceKind ${factorSource.kind} not supported."))
         }
     }
 

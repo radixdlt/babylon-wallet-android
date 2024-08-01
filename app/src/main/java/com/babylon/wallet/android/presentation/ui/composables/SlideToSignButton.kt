@@ -90,6 +90,10 @@ fun SlideToSignButton(
         LaunchedEffect(draggableState) {
             snapshotFlow { draggableState.currentValue }.distinctUntilChanged().filter { it == ButtonSliderPosition.End }.collect {
                 onSwipeComplete()
+            }
+        }
+        LaunchedEffect(isSubmitting) {
+            if (!isSubmitting && draggableState.currentValue == ButtonSliderPosition.End) {
                 draggableState.animateTo(ButtonSliderPosition.Start)
             }
         }
@@ -105,7 +109,12 @@ fun SlideToSignButton(
                         drawContent()
                         drawRect(
                             buttonColor,
-                            size = Size(draggableState.requireOffset().roundToInt() + indicatorWidthPx - textPositionInRoot.x, size.height)
+                            size = Size(
+                                draggableState
+                                    .requireOffset()
+                                    .roundToInt() + indicatorWidthPx - textPositionInRoot.x,
+                                size.height
+                            )
                         )
                     }
                 },
@@ -136,7 +145,8 @@ fun SlideToSignButton(
             modifier = Modifier
                 .offset {
                     IntOffset(
-                        draggableState.requireOffset()
+                        draggableState
+                            .requireOffset()
                             .roundToInt()
                             .coerceIn(0, maxWidthPx.roundToInt()),
                         0

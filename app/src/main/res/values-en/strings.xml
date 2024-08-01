@@ -237,7 +237,7 @@
   <string name="gateways_addNewGateway_establishingConnectionErrorMessage">There was an error establishing a connection</string>
   <string name="gateways_removeGatewayAlert_title">Remove Gateway</string>
   <string name="gateways_removeGatewayAlert_message">You will no longer be able to connect to this gateway.</string>
-  <string name="authorizedDapps_title">Authorized dApps</string>
+  <string name="authorizedDapps_title">Approved dApps</string>
   <string name="authorizedDapps_subtitle">These are the dApps that you have logged into using the Radix Wallet.</string>
   <string name="authorizedDapps_whatIsDapp">What is a dApp?</string>
   <string name="authorizedDapps_dAppDetails_dAppDefinition">dApp Definition</string>
@@ -278,6 +278,7 @@
   <string name="authorizedDapps_personaDetails_nameVariantWestern">Western style (given name(s) first)</string>
   <string name="authorizedDapps_personaDetails_hideThisPersona">Hide This Persona</string>
   <string name="authorizedDapps_personaDetails_hidePersonaConfirmation">Are you sure you want to hide this persona?</string>
+  <string name="authorizedDapps_personaDetails_edit">Edit</string>
   <string name="editPersona_requiredByDapp">Required by dApp</string>
   <string name="editPersona_sharedInformationHeading">The following information can be seen if requested by the dApp</string>
   <string name="editPersona_error_blank">Label cannot be blank</string>

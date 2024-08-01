@@ -37,10 +37,7 @@ fun AccountSelectionCard(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = RadixTheme.dimensions.paddingLarge,
-                vertical = RadixTheme.dimensions.paddingDefault,
-            ),
+            .padding(RadixTheme.dimensions.paddingLarge),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -52,7 +49,7 @@ fun AccountSelectionCard(
                     textAlign = TextAlign.Start,
                     maxLines = 2,
                     style = RadixTheme.typography.body1Header,
-                    color = Color.White
+                    color = RadixTheme.colors.white
                 )
             }
 
@@ -68,8 +65,8 @@ fun AccountSelectionCard(
                 selected = checked,
                 colors = RadioButtonDefaults.colors(
                     selectedColor = RadixTheme.colors.gray1,
-                    unselectedColor = RadixTheme.colors.gray3,
-                    disabledSelectedColor = Color.White
+                    unselectedColor = RadixTheme.colors.white,
+                    disabledSelectedColor = RadixTheme.colors.white
                 ),
                 onClick = radioButtonClicked,
                 enabled = isEnabledForSelection
@@ -77,10 +74,13 @@ fun AccountSelectionCard(
         } else {
             Checkbox(
                 checked = checked,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = RadixTheme.colors.gray1,
-                    uncheckedColor = RadixTheme.colors.gray3,
-                    checkmarkColor = Color.White
+                colors = CheckboxDefaults.colors().copy(
+                    checkedCheckmarkColor = RadixTheme.colors.gray1,
+                    checkedBorderColor = RadixTheme.colors.white,
+                    checkedBoxColor = RadixTheme.colors.white,
+                    uncheckedCheckmarkColor = Color.Transparent,
+                    uncheckedBorderColor = RadixTheme.colors.white,
+                    uncheckedBoxColor = RadixTheme.colors.white.copy(alpha = 0.5f)
                 ),
                 onCheckedChange = null
             )
@@ -89,7 +89,7 @@ fun AccountSelectionCard(
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun DAppAccountCardPreview() {
     RadixWalletTheme {
@@ -105,7 +105,7 @@ fun DAppAccountCardPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Preview("large font", fontScale = 2f)
 @Composable
 fun DAppAccountCardLargeFontPreview() {
@@ -122,7 +122,7 @@ fun DAppAccountCardLargeFontPreview() {
 }
 
 @UsesSampleValues
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun DAppAccountCardSingleChoicePreview() {
     RadixWalletTheme {

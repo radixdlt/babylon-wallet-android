@@ -27,13 +27,13 @@ class ApprovedDappsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            dAppConnectionRepository.getAuthorizedDApps().collect { authorisedDApps ->
-                val addresses = authorisedDApps.map { it.dappDefinitionAddress }.toSet()
+            dAppConnectionRepository.getAuthorizedDApps().collect { approvedDapps ->
+                val addresses = approvedDapps.map { it.dappDefinitionAddress }.toSet()
                 getDAppsUseCase(
                     definitionAddresses = addresses,
                     needMostRecentData = false
                 ).onSuccess { dApps ->
-                    val result = authorisedDApps.mapNotNull { authorisedDApp ->
+                    val result = approvedDapps.mapNotNull { authorisedDApp ->
                         dApps.find { it.dAppAddress == authorisedDApp.dappDefinitionAddress }
                     }
 

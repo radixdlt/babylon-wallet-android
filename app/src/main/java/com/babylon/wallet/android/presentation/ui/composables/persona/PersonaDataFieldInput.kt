@@ -1,19 +1,24 @@
 package com.babylon.wallet.android.presentation.ui.composables.persona
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.IconButton
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,12 +32,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSelector
 import com.babylon.wallet.android.presentation.ui.composables.SelectorItem
 import kotlinx.collections.immutable.toPersistentList
@@ -114,24 +121,12 @@ fun PersonaDataStringInput(
     error: String? = null
 ) {
     val focusManager = LocalFocusManager.current
+    val showRightLabel = required || onDeleteField != null
     RadixTextField(
         modifier = modifier,
         onValueChanged = onValueChanged,
         value = value,
         leftLabel = LabelType.Default(label),
-        iconToTheRight = if (onDeleteField != null) {
-            {
-                IconButton(onClick = onDeleteField) {
-                    Icon(
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = null,
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline)
-                    )
-                }
-            }
-        } else {
-            null
-        },
         onFocusChanged = onFocusChanged,
         keyboardActions = KeyboardActions(onNext = {
             focusManager.moveFocus(FocusDirection.Next)
@@ -144,7 +139,43 @@ fun PersonaDataStringInput(
                 KeyboardOptions.Default.keyboardType
             }
         ),
-        rightLabel = if (required) LabelType.Default(stringResource(id = R.string.editPersona_requiredByDapp)) else null,
+        rightLabel = if (!showRightLabel) {
+            null
+        } else {
+            LabelType.Custom {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall, alignment = Alignment.End)
+                ) {
+                    if (required) {
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = stringResource(id = R.string.editPersona_requiredByDapp),
+                            style = RadixTheme.typography.body1Regular,
+                            color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray2,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                    if (onDeleteField != null) {
+                        Icon(
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember {
+                                        MutableInteractionSource()
+                                    },
+                                    indication = rememberRipple(bounded = false),
+                                    onClick = onDeleteField
+                                )
+                                .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                            tint = RadixTheme.colors.gray1,
+                            contentDescription = null,
+                            painter = painterResource(id = DSR.ic_delete_outline)
+                        )
+                    }
+                }
+            }
+        },
         error = error,
         singleLine = true
     )
@@ -197,7 +228,7 @@ fun PersonaNameInput(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
@@ -352,7 +383,7 @@ fun rememberPersonaNameInputState(
 
 @Composable
 @Preview(showBackground = true)
-fun PersonaDataStringInputPreview() {
+private fun PersonaDataStringInputPreview1() {
     RadixWalletTheme {
         PersonaDataStringInput(
             label = "Label",
@@ -360,6 +391,49 @@ fun PersonaDataStringInputPreview() {
             onValueChanged = {},
             required = false,
             onFocusChanged = {}
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PersonaDataStringInputPreview2() {
+    RadixWalletTheme {
+        PersonaDataStringInput(
+            label = "Label",
+            value = "Field",
+            onValueChanged = {},
+            required = true,
+            onFocusChanged = {}
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PersonaDataStringInputPreview3() {
+    RadixWalletTheme {
+        PersonaDataStringInput(
+            label = "Label",
+            value = "Field",
+            onValueChanged = {},
+            required = true,
+            onFocusChanged = {},
+            onDeleteField = {}
+        )
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun PersonaDataStringInputPreview4() {
+    RadixWalletTheme {
+        PersonaDataStringInput(
+            label = "Label",
+            value = "Field",
+            onValueChanged = {},
+            onFocusChanged = {},
+            onDeleteField = {}
         )
     }
 }

@@ -5,12 +5,11 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
+import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -18,23 +17,15 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERAC
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.AuthorizedDapp
-import com.radixdlt.sargon.ComponentAddress
-import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.NonFungibleLocalId
-import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.Personas
-import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.forNetwork
@@ -46,23 +37,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
-import rdx.works.core.domain.DApp
-import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.Pool
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.Validator
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
@@ -277,88 +257,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             val item = expectMostRecentItem()
             assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.ChooseAccount)
         }
-    }
-
-    private class StateRepositoryFake : StateRepository {
-        override fun observeAccountsOnLedger(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getNextNFTsPage(
-            account: Account,
-            resource: Resource.NonFungibleResource
-        ): Result<Resource.NonFungibleResource> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun updateLSUsInfo(
-            account: Account,
-            validatorsWithStakes: List<ValidatorWithStakes>
-        ): Result<List<ValidatorWithStakes>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getResources(
-            addresses: Set<ResourceAddress>,
-            underAccountAddress: AccountAddress?,
-            withDetails: Boolean,
-            withAllMetadata: Boolean
-        ): Result<List<Resource>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getNFTDetails(
-            resourceAddress: ResourceAddress,
-            localIds: Set<NonFungibleLocalId>
-        ): Result<List<Resource.NonFungibleResource.Item>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getEntityOwnerKeys(entities: List<ProfileEntity>): Result<Map<ProfileEntity, List<PublicKeyHash>>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
-            return Result.success(
-                definitionAddresses.mapIndexed { index, accountAddress ->
-                    DApp(
-                        dAppAddress = accountAddress,
-                        metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp $index", MetadataType.String)
-                        )
-                    )
-                }
-            )
-        }
-
-        override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun clearCachedState(): Result<Unit> {
-            TODO("Not yet implemented")
-        }
-
     }
 
 }
