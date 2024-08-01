@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.cloudbackup
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException.CloudBackupException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -11,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.CanSignInToGoogle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
@@ -26,7 +28,8 @@ class ConnectCloudBackupViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val googleSignInManager: GoogleSignInManager,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    private val changeBackupSettingUseCase: ChangeBackupSettingUseCase
+    private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
+    @ApplicationScope private val appScope: CoroutineScope
 ) : StateViewModel<ConnectCloudBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<ConnectCloudBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -75,6 +78,13 @@ class ConnectCloudBackupViewModel @Inject constructor(
         sendEvent(Event.SignInToGoogle)
     }
 
+    fun onBackPress() {
+        appScope.launch {
+            googleSignInManager.signOut()
+            sendEvent(Event.Close)
+        }
+    }
+
     fun onErrorMessageShown() {
         _state.update { it.copy(errorMessage = null) }
     }
@@ -108,7 +118,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-
+        data object Close : Event
         data object SignInToGoogle : Event
         data class Proceed(val mode: ConnectMode, val isCloudBackupEnabled: Boolean) : Event
     }

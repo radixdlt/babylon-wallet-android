@@ -33,7 +33,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase,
-    private val transactionRepository: TransactionRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
@@ -139,9 +139,13 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
 
         if (previewType is PreviewType.Transfer) {
-            val newlyCreated = previewType.newlyCreatedResources
-            if (newlyCreated.isNotEmpty()) {
-                cacheNewlyCreatedEntitiesUseCase(newlyCreated)
+            val newlyCreatedResources = previewType.newlyCreatedResources
+            if (newlyCreatedResources.isNotEmpty()) {
+                cacheNewlyCreatedEntitiesUseCase.forResources(newlyCreatedResources)
+            }
+            val newlyCreatedNFTItemsForExistingResources = previewType.newlyCreatedNFTItemsForExistingResources
+            if (newlyCreatedNFTItemsForExistingResources.isNotEmpty()) {
+                cacheNewlyCreatedEntitiesUseCase.forNFTs(newlyCreatedNFTItemsForExistingResources)
             }
         }
 

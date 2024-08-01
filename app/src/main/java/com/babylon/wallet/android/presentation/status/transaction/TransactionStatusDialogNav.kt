@@ -105,7 +105,8 @@ fun AppEvent.Status.Transaction.toTransactionStatusFields(): TransactionStatusFi
         error = errorSerialized,
         walletErrorType = walletErrorType,
         blockUntilComplete = blockUntilComplete,
-        isMobileConnect = isMobileConnect
+        isMobileConnect = isMobileConnect,
+        dAppName = dAppName
     )
 }
 
@@ -119,7 +120,8 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             errorMessage = transactionStatusFields.error?.let { Json.decodeFromString(it) },
             blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
             walletErrorType = transactionStatusFields.walletErrorType?.let { Json.decodeFromString(it) },
-            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect)
+            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect),
+            dAppName = transactionStatusFields.dAppName
         )
 
         VALUE_STATUS_SUCCESS -> AppEvent.Status.Transaction.Success(
@@ -127,7 +129,8 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             transactionId = checkNotNull(transactionStatusFields.transactionId),
             isInternal = checkNotNull(transactionStatusFields.isInternal),
             blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
-            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect)
+            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect),
+            dAppName = transactionStatusFields.dAppName
         )
 
         VALUE_STATUS_IN_PROGRESS -> AppEvent.Status.Transaction.InProgress(
@@ -135,7 +138,8 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.Transaction {
             transactionId = checkNotNull(transactionStatusFields.transactionId),
             isInternal = checkNotNull(transactionStatusFields.isInternal),
             blockUntilComplete = checkNotNull(transactionStatusFields.blockUntilComplete),
-            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect)
+            isMobileConnect = checkNotNull(transactionStatusFields.isMobileConnect),
+            dAppName = transactionStatusFields.dAppName
         )
 
         else -> error("Status not received")

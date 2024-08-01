@@ -50,7 +50,7 @@ fun ConnectCloudBackupScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    BackHandler { onBackClick() }
+    BackHandler { viewModel.onBackPress() }
 
     val signInLauncher = rememberLauncherForSignInToGoogle(viewModel = viewModel)
 
@@ -59,6 +59,7 @@ fun ConnectCloudBackupScreen(
             when (event) {
                 is ConnectCloudBackupViewModel.Event.SignInToGoogle -> signInLauncher.launch(Unit)
                 is ConnectCloudBackupViewModel.Event.Proceed -> onProceed(event.mode, event.isCloudBackupEnabled)
+                ConnectCloudBackupViewModel.Event.Close -> onBackClick()
             }
         }
     }
@@ -71,7 +72,7 @@ fun ConnectCloudBackupScreen(
             if (state.mode == ConnectMode.ExistingWallet) {
                 viewModel.onSkipClick()
             } else {
-                onBackClick()
+                viewModel.onBackPress()
             }
         },
         onLoginToGoogleClick = viewModel::onLoginToGoogleClick,

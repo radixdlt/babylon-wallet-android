@@ -13,7 +13,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +44,7 @@ fun RadixSecondaryButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val lastClickMs = remember { mutableStateOf(0L) }
+    val lastClickMs = remember { mutableLongStateOf(0L) }
     Button(
         modifier = modifier.heightIn(min = RadixTheme.dimensions.buttonDefaultHeight),
         onClick = {
@@ -75,7 +75,7 @@ fun RadixSecondaryButton(
                 )
             } else {
                 leadingContent?.invoke()
-                Text(text = text, style = RadixTheme.typography.button)
+                Text(text = text, style = RadixTheme.typography.body1Header)
                 trailingContent?.invoke()
             }
         }
