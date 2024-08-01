@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -143,7 +141,7 @@ private fun TopLabelRow(
     isError: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.fillMaxWidth()) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)) {
         when (leftLabel) {
             is LabelType.Custom -> {
                 Column(modifier = Modifier.weight(1f)) {
@@ -155,14 +153,13 @@ private fun TopLabelRow(
                 Text(
                     modifier = Modifier.weight(1f),
                     text = leftLabel.value,
-                    style = RadixTheme.typography.body1HighImportance,
+                    style = RadixTheme.typography.body1Link,
                     color = if (isError) RadixTheme.colors.red1 else RadixTheme.colors.gray1
                 )
             }
 
             else -> {}
         }
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
         when (rightLabel) {
             is LabelType.Default -> {
                 Text(
@@ -174,7 +171,14 @@ private fun TopLabelRow(
                 )
             }
 
-            else -> {}
+            is LabelType.Custom -> {
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                    rightLabel.content()
+                }
+            }
+
+            else -> {
+            }
         }
     }
 }

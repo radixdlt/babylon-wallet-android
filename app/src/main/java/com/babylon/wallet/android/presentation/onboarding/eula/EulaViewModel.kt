@@ -7,12 +7,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.data.GoogleSignInManager
 import javax.inject.Inject
 
 @HiltViewModel
 class EulaViewModel @Inject constructor(
-    private val googleSignInManager: GoogleSignInManager
+    private val googleSignInManager: GoogleSignInManager,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel(), OneOffEventHandler<EulaViewModel.EulaEvent> by OneOffEventHandlerImpl() {
 
     init {
@@ -34,6 +36,7 @@ class EulaViewModel @Inject constructor(
     }
 
     fun onAcceptClick() = viewModelScope.launch {
+        preferencesManager.markEulaAccepted()
         sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = googleSignInManager.isSignedIn()))
     }
 
