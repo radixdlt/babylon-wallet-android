@@ -245,7 +245,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         sendEvent(Event.FinishRestoration(isMovingToMain = true))
     }
 
-    private suspend fun updateSecondaryButtonLoading(isLoading: Boolean) {
+    private fun updateSecondaryButtonLoading(isLoading: Boolean) {
         _state.update { state ->
             state.copy(
                 isSecondaryButtonLoading = isLoading
