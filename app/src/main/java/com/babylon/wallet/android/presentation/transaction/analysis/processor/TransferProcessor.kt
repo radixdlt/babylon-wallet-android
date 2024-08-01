@@ -31,7 +31,8 @@ class TransferProcessor @Inject constructor(
                 allOwnedAccounts = allOwnedAccounts,
                 defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
             ),
-            badges = badges
+            badges = badges,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 }

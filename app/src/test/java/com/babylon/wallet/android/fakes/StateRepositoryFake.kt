@@ -11,14 +11,18 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 
 open class StateRepositoryFake : StateRepository {
@@ -56,14 +60,31 @@ open class StateRepositoryFake : StateRepository {
     ): Result<List<Resource.NonFungibleResource.Item>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> =
-        Result.failure(RuntimeException("Not implemented"))
+    override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> {
+        return Result.success(accounts.associateWith {
+            if (it == accounts.first()) {
+                100.toDecimal192()
+            } else {
+                0.toDecimal192()
+            }
+        })
+    }
 
     override suspend fun getEntityOwnerKeys(entities: List<ProfileEntity>): Result<Map<ProfileEntity, List<PublicKeyHash>>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> =
-        Result.failure(RuntimeException("Not implemented"))
+    override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
+        return Result.success(
+            definitionAddresses.mapIndexed { index, accountAddress ->
+                DApp(
+                    dAppAddress = accountAddress,
+                    metadata = listOf(
+                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp $index", MetadataType.String)
+                    )
+                )
+            }
+        )
+    }
 
     override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> =
         Result.failure(RuntimeException("Not implemented"))
@@ -72,5 +93,9 @@ open class StateRepositoryFake : StateRepository {
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun clearCachedState(): Result<Unit> = Result.success(Unit)
+
+    override suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>): Result<Unit> {
+        return Result.success(Unit)
+    }
 
 }
