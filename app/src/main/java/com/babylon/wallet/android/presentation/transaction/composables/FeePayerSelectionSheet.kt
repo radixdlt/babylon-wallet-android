@@ -2,20 +2,24 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -32,7 +36,10 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -42,35 +49,96 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.XrdResource
 import kotlin.random.Random
 
-fun LazyListScope.feePayerSelectionContent(
-    candidates: List<TransactionFeePayers.FeePayerCandidate>,
-    selectedCandidateAddress: AccountAddress? = null,
-    onPayerSelected: (Account) -> Unit
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FeePayerSelectionSheet(
+    modifier: Modifier = Modifier,
+    input: TransactionReviewViewModel.State.SelectFeePayerInput,
+    sheetState: SheetState,
+    onPayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
+    onSelectButtonClick: () -> Unit,
+    onDismiss: () -> Unit
 ) {
-    item {
-        Text(
+    DefaultModalSheetLayout(
+        modifier = modifier.fillMaxSize(),
+        sheetState = sheetState,
+        enableImePadding = true,
+        sheetContent = {
+            FeePayerSelectionContent(
+                input = input,
+                onPayerSelected = onPayerChanged,
+                onSelectButtonClick = {
+                    onSelectButtonClick()
+                    onDismiss()
+                }
+            )
+        },
+        showDragHandle = true,
+        onDismissRequest = onDismiss
+    )
+}
+
+@Composable
+private fun FeePayerSelectionContent(
+    input: TransactionReviewViewModel.State.SelectFeePayerInput,
+    onPayerSelected: (TransactionFeePayers.FeePayerCandidate) -> Unit,
+    onSelectButtonClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            Column {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+        },
+        bottomBar = {
+            RadixBottomBar(
+                onClick = onSelectButtonClick,
+                text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_selectAccountButtonTitle)
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = RadixTheme.dimensions.paddingXXXXLarge,
-                    vertical = RadixTheme.dimensions.paddingDefault
-                ),
-            text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-    }
-    items(candidates) { candidate ->
-        FeePayerCard(
-            candidate = candidate,
-            onPayerSelected = onPayerSelected,
-            selectedCandidateAddress = selectedCandidateAddress
-        )
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            items(input.candidates) { candidate ->
+                FeePayerCard(
+                    candidate = candidate,
+                    onPayerSelected = onPayerSelected,
+                    selectedCandidateAddress = input.preselectedCandidate?.account?.address
+                )
+            }
+        }
     }
 }
 
@@ -78,13 +146,16 @@ fun LazyListScope.feePayerSelectionContent(
 private fun FeePayerCard(
     modifier: Modifier = Modifier,
     candidate: TransactionFeePayers.FeePayerCandidate,
-    onPayerSelected: (Account) -> Unit,
+    onPayerSelected: (TransactionFeePayers.FeePayerCandidate) -> Unit,
     selectedCandidateAddress: AccountAddress?
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault),
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingSmall
+            ),
         shape = RadixTheme.shapes.roundedRectMedium,
         colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
         elevation = CardDefaults.elevatedCardElevation(
@@ -123,7 +194,7 @@ private fun FeePayerCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .throttleClickable {
-                    onPayerSelected(candidate.account)
+                    onPayerSelected(candidate)
                 }
                 .padding(start = RadixTheme.dimensions.paddingDefault)
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
@@ -164,7 +235,7 @@ private fun FeePayerCard(
                     disabledSelectedColor = Color.White
                 ),
                 onClick = {
-                    onPayerSelected(candidate.account)
+                    onPayerSelected(candidate)
                 },
             )
         }
@@ -181,12 +252,14 @@ fun FeesPayersSelectionContentPreview() {
         }
     }
     RadixWalletPreviewTheme {
-        LazyColumn(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
-            feePayerSelectionContent(
-                candidates = candidates,
-                selectedCandidateAddress = null,
-                onPayerSelected = {}
-            )
-        }
+        FeePayerSelectionContent(
+            input = TransactionReviewViewModel.State.SelectFeePayerInput(
+                candidates = candidates.toPersistentList(),
+                preselectedCandidate = null,
+                fee = "0.234"
+            ),
+            onPayerSelected = {},
+            onSelectButtonClick = {}
+        )
     }
 }

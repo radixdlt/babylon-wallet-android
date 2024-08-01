@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -36,6 +37,7 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
@@ -53,7 +55,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -107,8 +108,10 @@ fun TransactionReviewScreen(
         onTransferableNonFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
+        onPayerChanged = viewModel::onPayerChanged,
         onPayerSelected = viewModel::onPayerSelected,
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
+        onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
@@ -140,8 +143,10 @@ private fun TransactionPreviewContent(
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Account) -> Unit,
+    onPayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
+    onPayerSelected: () -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
+    onFeePayerSelectionDismiss: () -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
@@ -369,7 +374,6 @@ private fun TransactionPreviewContent(
                     onGuaranteeValueDecreased = onGuaranteeValueDecreased,
                     onChangeFeePayerClick = onChangeFeePayerClick,
                     onSelectFeePayerClick = onSelectFeePayerClick,
-                    onPayerSelected = onPayerSelected,
                     onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                     onTipPercentageChanged = onTipPercentageChanged,
                     onViewDefaultModeClick = onViewDefaultModeClick,
@@ -378,6 +382,24 @@ private fun TransactionPreviewContent(
             },
             showDragHandle = true,
             onDismissRequest = onBackClick
+        )
+    }
+
+    val feePayerSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    SyncSheetState(
+        sheetState = feePayerSheetState,
+        isSheetVisible = state.selectedFeePayerInput != null,
+        onSheetClosed = onFeePayerSelectionDismiss
+    )
+    if (state.selectedFeePayerInput != null) {
+        FeePayerSelectionSheet(
+            input = state.selectedFeePayerInput,
+            sheetState = feePayerSheetState,
+            onPayerChanged = onPayerChanged,
+            onSelectButtonClick = onPayerSelected,
+            onDismiss = onFeePayerSelectionDismiss
         )
     }
 }
@@ -395,7 +417,6 @@ private fun BottomSheetContent(
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Account) -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
@@ -423,7 +444,6 @@ private fun BottomSheetContent(
                 onClose = onCloseBottomSheetClick,
                 onChangeFeePayerClick = onChangeFeePayerClick,
                 onSelectFeePayerClick = onSelectFeePayerClick,
-                onPayerSelected = onPayerSelected,
                 onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                 onTipPercentageChanged = onTipPercentageChanged,
                 onViewDefaultModeClick = onViewDefaultModeClick,
@@ -506,13 +526,15 @@ fun TransactionPreviewContentPreview() {
             onGuaranteeValueDecreased = {},
             onChangeFeePayerClick = {},
             onSelectFeePayerClick = {},
+            onPayerChanged = {},
             onPayerSelected = {},
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
             onViewAdvancedModeClick = {},
             dismissTransactionErrorDialog = {},
-            onAcknowledgeRawTransactionWarning = {}
+            onAcknowledgeRawTransactionWarning = {},
+            onFeePayerSelectionDismiss = {}
         )
     }
 }
