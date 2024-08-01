@@ -229,13 +229,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     onRestorationComplete()
                 }
             } else {
-                _state.update { state ->
-                    state.copy(
-                        isSecondaryButtonLoading = true
-                    )
-                }
+                updateSecondaryButtonLoading(true)
                 args.backupType?.let { backupType ->
                     restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = false)
+                        .onSuccess { updateSecondaryButtonLoading(false) }
+                        .onFailure { updateSecondaryButtonLoading(false) }
                 }
                 onRestorationComplete()
             }
@@ -245,6 +243,14 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private suspend fun onRestorationComplete() {
         homeCardsRepository.walletRestored()
         sendEvent(Event.FinishRestoration(isMovingToMain = true))
+    }
+
+    private suspend fun updateSecondaryButtonLoading(isLoading: Boolean) {
+        _state.update { state ->
+            state.copy(
+                isSecondaryButtonLoading = isLoading
+            )
+        }
     }
 
     data class State(
