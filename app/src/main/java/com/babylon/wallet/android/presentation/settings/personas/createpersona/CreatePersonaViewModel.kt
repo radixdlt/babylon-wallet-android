@@ -50,7 +50,6 @@ class CreatePersonaViewModel @Inject constructor(
                     it.copy(
                         anyFieldSelected = s.areThereFieldsSelected,
                         personaDisplayName = s.personaDisplayName,
-                        continueButtonEnabled = s.inputValid,
                         currentFields = s.currentFields,
                         fieldsToAdd = s.fieldsToAdd
                     )
@@ -124,11 +123,16 @@ class CreatePersonaViewModel @Inject constructor(
         val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
-        val continueButtonEnabled: Boolean = false,
         val anyFieldSelected: Boolean = false,
         val isAddFieldBottomSheetVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isNoMnemonicErrorVisible: Boolean = false,
         val shouldNavigateToCompletion: Boolean = false
-    ) : UiState
+    ) : UiState {
+        val isContinueButtonEnabled: Boolean
+            get() {
+                val valid = currentFields.all { it.isValid == true } && personaDisplayName.isValid
+                return valid
+            }
+    }
 }

@@ -142,7 +142,7 @@ fun CreatePersonaContent(
             RadixBottomBar(
                 onClick = onPersonaCreateClick,
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
-                enabled = state.continueButtonEnabled,
+                enabled = state.isContinueButtonEnabled,
                 insets = WindowInsets.navigationBars.union(WindowInsets.ime)
             )
         },
@@ -332,7 +332,6 @@ fun CreateAccountContentPreview() {
                 currentFields = persistentListOf(),
                 fieldsToAdd = persistentListOf(),
                 personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),
-                continueButtonEnabled = false,
                 anyFieldSelected = false,
                 isAddFieldBottomSheetVisible = false
             ),

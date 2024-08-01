@@ -146,8 +146,7 @@ class PersonaEditableImpl : PersonaEditable {
         }
         _state.update { state ->
             state.copy(
-                currentFields = validatedFields.toPersistentList(),
-                inputValid = validatedFields.all { it.isValid == true } && state.personaDisplayName.isValid
+                currentFields = validatedFields.toPersistentList()
             )
         }
     }
@@ -173,6 +172,8 @@ data class PersonaEditLogicState(
     val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
     val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
     val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
-    val areThereFieldsSelected: Boolean = false,
-    val inputValid: Boolean = true
-)
+    val areThereFieldsSelected: Boolean = false
+) {
+    val isInputValid: Boolean
+        get() = currentFields.all { it.isValid == true } && personaDisplayName.isValid
+}
