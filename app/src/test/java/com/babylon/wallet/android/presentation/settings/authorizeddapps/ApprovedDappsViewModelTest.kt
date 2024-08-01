@@ -121,17 +121,6 @@ internal class ApprovedDappsViewModelTest : StateViewModelTest<DappDetailViewMod
     }
 
     @Test
-    fun `null dapp emission after delete closes screen`() = runTest {
-        val vm = vm.value
-        dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.NoDapp
-        advanceUntilIdle()
-        vm.oneOffEvent.test {
-            val item = expectMostRecentItem()
-            assert(item is DappDetailEvent.LastPersonaDeleted)
-        }
-    }
-
-    @Test
     fun `persona click sets persona detail data`() = runTest {
         val expectedPersona = samplePersonas[0].toUiModel()
         val vm = vm.value

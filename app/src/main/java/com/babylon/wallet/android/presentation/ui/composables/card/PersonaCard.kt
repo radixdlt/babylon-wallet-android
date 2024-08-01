@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +32,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -51,7 +51,7 @@ fun PersonaCard(
 ) {
     Column(
         modifier = modifier
-            .shadow(elevation = elevation, shape = RadixTheme.shapes.roundedRectMedium)
+            .defaultCardShadow(elevation = elevation)
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
