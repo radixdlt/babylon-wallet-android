@@ -283,10 +283,24 @@ private fun CreatePersonaContentList(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = dimensions.paddingXXXLarge),
+                    .padding(bottom = dimensions.paddingXLarge),
                 text = stringResource(id = R.string.createPersona_explanation_thisWillBeShared),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
+            )
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4,
+                modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge)
+            )
+            Text(
+                modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge),
+                text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4,
+                modifier = Modifier.padding(bottom = dimensions.paddingXXXLarge)
             )
         }
         itemsIndexed(currentFields, key = { _, field -> field.id }) { index, field ->
@@ -321,16 +335,6 @@ private fun CreatePersonaContentList(
             Spacer(modifier = Modifier.height(spacerHeight))
         }
         item {
-            HorizontalDivider(
-                color = RadixTheme.colors.gray4,
-                modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge)
-            )
-            Text(
-                text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(Modifier.height(30.dp))
             RadixSecondaryButton(
                 modifier = Modifier.widthIn(min = 200.dp),
                 text = stringResource(id = R.string.editPersona_addAField),
