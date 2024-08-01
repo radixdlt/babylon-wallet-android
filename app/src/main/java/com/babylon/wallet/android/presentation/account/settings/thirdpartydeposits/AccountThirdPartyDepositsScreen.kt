@@ -4,11 +4,8 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,12 +36,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.ThirdPartyDeposits
@@ -169,13 +165,6 @@ private fun AccountThirdPartyDepositsContent(
                 .verticalScroll(rememberScrollState())
         ) {
             val accountDepositRule = accountThirdPartyDepositSettings?.depositRule
-            val checkIcon: @Composable () -> Unit = {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
-                    contentDescription = null,
-                    tint = RadixTheme.colors.gray1
-                )
-            }
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -184,102 +173,86 @@ private fun AccountThirdPartyDepositsContent(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-            var titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
-                depositRule = DepositRule.ACCEPT_ALL
-            )
-            DepositOptionItem(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                onClick = onAllowAll,
-                icon = titleSubtitleAndIcon.third,
-                title = titleSubtitleAndIcon.first,
-                subtitle = titleSubtitleAndIcon.second,
-                trailingContent = if (accountDepositRule == DepositRule.ACCEPT_ALL) {
-                    checkIcon
-                } else {
-                    {}
-                }
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.white)
+            ) {
+                DepositOptionItem(
+                    onClick = onAllowAll,
+                    currentRule = DepositRule.ACCEPT_ALL,
+                    selectedRule = accountDepositRule
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
+                )
+                DepositOptionItem(
+                    onClick = onAcceptKnown,
+                    currentRule = DepositRule.ACCEPT_KNOWN,
+                    selectedRule = accountDepositRule
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
+                )
+                DepositOptionItem(
+                    onClick = onDenyAll,
+                    currentRule = DepositRule.DENY_ALL,
+                    selectedRule = accountDepositRule,
+                    warning = stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAllWarning)
+                )
+            }
             HorizontalDivider(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                color = RadixTheme.colors.gray5
-            )
-            titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
-                depositRule = DepositRule.ACCEPT_KNOWN
-            )
-            DepositOptionItem(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                onClick = onAcceptKnown,
-                icon = titleSubtitleAndIcon.third,
-                title = titleSubtitleAndIcon.first,
-                subtitle = titleSubtitleAndIcon.second,
-                trailingContent = if (accountDepositRule == DepositRule.ACCEPT_KNOWN) {
-                    checkIcon
-                } else {
-                    {}
-                }
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                color = RadixTheme.colors.gray5
-            )
-            titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
-                depositRule = DepositRule.DENY_ALL
-            )
-            DepositOptionItem(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                onClick = onDenyAll,
-                icon = titleSubtitleAndIcon.third,
-                title = titleSubtitleAndIcon.first,
-                subtitle = titleSubtitleAndIcon.second,
-                trailingContent = if (accountDepositRule == DepositRule.DENY_ALL) {
-                    checkIcon
-                } else {
-                    {}
-                },
-                warning = stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAllWarning)
+                color = RadixTheme.colors.gray4
             )
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(RadixTheme.dimensions.paddingLarge)
+                    .height(RadixTheme.dimensions.paddingXLarge)
                     .background(RadixTheme.colors.gray4)
             )
-            DepositOptionItem(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                onClick = onAssetSpecificRulesClick,
-                title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecific),
-                subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecificSubtitle),
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray1
-                    )
-                }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.white)
+            ) {
+                DepositOptionItem(
+                    onClick = onAssetSpecificRulesClick,
+                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecific),
+                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowDenySpecificSubtitle),
+                    trailingContent = {
+                        Icon(
+                            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.gray1
+                        )
+                    }
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    color = RadixTheme.colors.gray4
+                )
+                DepositOptionItem(
+                    onClick = onSpecificDepositorsClick,
+                    title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
+                    subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsSubtitle),
+                    trailingContent = {
+                        Icon(
+                            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.gray1
+                        )
+                    }
+                )
+            }
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4
             )
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(RadixTheme.dimensions.paddingLarge)
-                    .background(RadixTheme.colors.gray4)
-            )
-            DepositOptionItem(
-                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                onClick = onSpecificDepositorsClick,
-                title = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositors),
-                subtitle = stringResource(id = R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsSubtitle),
-                trailingContent = {
-                    Icon(
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray1
-                    )
-                }
-            )
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(RadixTheme.dimensions.paddingLarge)
+                    .height(RadixTheme.dimensions.paddingXXXXLarge)
                     .background(RadixTheme.colors.gray4)
             )
         }
@@ -316,59 +289,77 @@ fun getDepositRuleCopiesAndIcon(depositRule: DepositRule): Triple<String, String
 }
 
 @Composable
-fun DepositOptionItem(
+private fun DepositOptionItem(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    warning: String? = null,
+    currentRule: DepositRule,
+    selectedRule: DepositRule?
+) {
+    val titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(currentRule)
+    DefaultSettingsItem(
+        modifier = modifier,
+        title = titleSubtitleAndIcon.first,
+        subtitle = titleSubtitleAndIcon.second,
+        onClick = onClick,
+        warningView = warning?.let {
+            {
+                Text(
+                    text = warning,
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.orange1
+                )
+            }
+        },
+        leadingIcon = {
+            Image(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(id = titleSubtitleAndIcon.third),
+                contentDescription = null
+            )
+        },
+        trailingIcon = {
+            Box(
+                modifier = Modifier.size(24.dp)
+            ) {
+                if (selectedRule == currentRule) {
+                    Icon(
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_check),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.gray1
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun DepositOptionItem(
     title: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    warning: String? = null,
     @DrawableRes icon: Int? = null,
     trailingContent: @Composable () -> Unit = {}
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(RadixTheme.colors.defaultBackground)
-            .throttleClickable(onClick = onClick)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-            .then(modifier),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        icon?.let {
-            Image(painter = painterResource(id = it), contentDescription = null)
-        }
-        Column(
-            modifier = Modifier
-                .height(IntrinsicSize.Max)
-                .weight(1f),
-            verticalArrangement = Arrangement.Center
-        ) {
-            androidx.compose.material3.Text(
-                text = title,
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1
-            )
-            subtitle?.let { subtitle ->
-                Text(
-                    text = subtitle,
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+    DefaultSettingsItem(
+        modifier = modifier,
+        title = title,
+        subtitle = subtitle,
+        onClick = onClick,
+        warningView = null,
+        leadingIcon = icon?.let {
+            {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(id = it),
+                    contentDescription = null
                 )
             }
-            warning?.let { warning ->
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                Text(
-                    text = warning,
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.orange1
-                )
-            }
-        }
-        Box(modifier = Modifier.size(24.dp)) {
-            trailingContent()
-        }
-    }
+        },
+        trailingIcon = trailingContent
+    )
 }
 
 @UsesSampleValues
