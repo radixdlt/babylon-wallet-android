@@ -45,10 +45,10 @@ sealed interface AccountSettingItem {
     fun subtitleRes(): Int {
         return when (this) {
             AccountColor -> R.string.accountSettings_accountColorSubtitle
-            AccountLabel -> R.string.accountSettings_accountColor_text
+            AccountLabel -> R.string.accountSettings_accountLabelSubtitle
             AccountSecurity -> R.string.accountSettings_setBehaviorHeading
             ShowAssetsWithTags -> R.string.accountSettings_showAssetsSubtitle
-            is ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
+            is ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDepositsSubtitle
             DevSettings -> R.string.accountSettings_devPreferences
         }
     }

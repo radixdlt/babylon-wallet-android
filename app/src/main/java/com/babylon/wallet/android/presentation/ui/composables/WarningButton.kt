@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -12,7 +13,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun WarningButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Button(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = RadixTheme.dimensions.buttonDefaultHeight),
         onClick = onClick,
         shape = RadixTheme.shapes.roundedRectSmall,
         colors = ButtonDefaults.buttonColors(

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -191,7 +191,7 @@ fun TransferContent(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 backIconType = BackIconType.Close,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.defaultBackground

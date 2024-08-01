@@ -5,14 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,18 +47,22 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.presentation.ui.composables.persona.RequiredPersonaInformationInfo
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaDataEntryId
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.IdentifiedEntry
 import rdx.works.core.sargon.PersonaDataField
 
 @Composable
@@ -154,6 +158,7 @@ private fun PersonaEditContent(
 
     state.persona?.let { selectedPersona ->
         Scaffold(
+            modifier = modifier,
             topBar = {
                 Column {
                     RadixCenteredTopAppBar(
@@ -166,21 +171,17 @@ private fun PersonaEditContent(
                             }
                         },
                         backIconType = BackIconType.Close,
-                        windowInsets = WindowInsets.statusBars
+                        windowInsets = WindowInsets.statusBarsAndBanner
                     )
                     HorizontalDivider(color = RadixTheme.colors.gray5)
                 }
             },
             bottomBar = {
-                BottomPrimaryButton(
+                RadixBottomBar(
                     onClick = onSave,
                     enabled = state.saveButtonEnabled,
                     text = stringResource(id = R.string.common_save),
-                    modifier = Modifier
-                        .imePadding()
-                        .navigationBarsPadding()
-                        .fillMaxWidth(),
-                    buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault),
+                    insets = WindowInsets.navigationBars.union(WindowInsets.ime)
                 )
             },
             containerColor = RadixTheme.colors.defaultBackground
@@ -216,7 +217,6 @@ private fun PersonaEditContent(
 
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
@@ -233,9 +233,6 @@ private fun PersonaEditContent(
                         onAddFields()
                     },
                     onSelectionChanged = onSelectionChanged,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding(),
                     anyFieldSelected = state.addFieldButtonEnabled
                 )
             },
@@ -265,14 +262,14 @@ private fun PersonaDetailList(
     missingFields: ImmutableList<PersonaDataField.Kind>
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = PaddingValues(horizontal = dimensions.paddingLarge),
         modifier = modifier
     ) {
         item {
             Thumbnail.Persona(
                 modifier = Modifier
-                    .padding(vertical = dimensions.paddingDefault)
+                    .padding(vertical = dimensions.paddingLarge)
                     .size(104.dp),
                 persona = persona
             )
@@ -280,13 +277,13 @@ private fun PersonaDetailList(
 //                text = stringResource(R.string.authorizedDapps_personaDetails_editAvatarButtonTitle),
 //                onClick = onEditAvatar
 //            )
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
+            HorizontalDivider(color = RadixTheme.colors.gray4)
         }
         item {
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
+                    .padding(vertical = dimensions.paddingXLarge),
                 onValueChanged = onDisplayNameChanged,
                 value = personaDisplayName.value,
                 leftLabel = LabelType.Default(stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading)),
@@ -300,30 +297,27 @@ private fun PersonaDetailList(
                     null
                 }
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
-            )
+            HorizontalDivider(color = RadixTheme.colors.gray4)
         }
         item {
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             Text(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
+                    .fillMaxWidth(),
                 text = stringResource(R.string.editPersona_sharedInformationHeading),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
             if (missingFields.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 RequiredPersonaInformationInfo(
                     requiredFields = missingFields,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(dimensions.paddingDefault)
                 )
             }
             Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            HorizontalDivider(color = RadixTheme.colors.gray4)
         }
         items(editedFields) { field ->
             val validationError = if (dappContextEdit) {
@@ -334,7 +328,7 @@ private fun PersonaDetailList(
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
+                    .padding(vertical = dimensions.paddingXXLarge),
                 label = stringResource(id = field.entry.value.kind.toDisplayResource()),
                 field = field.entry.value,
                 onValueChanged = {
@@ -356,14 +350,15 @@ private fun PersonaDetailList(
             )
             HorizontalDivider(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault, vertical = dimensions.paddingLarge),
+                    .fillMaxWidth(),
                 color = RadixTheme.colors.gray4
             )
         }
         item {
-            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
             RadixSecondaryButton(
+                modifier = Modifier
+                    .padding(vertical = dimensions.paddingLarge)
+                    .widthIn(min = 200.dp),
                 text = stringResource(id = R.string.editPersona_addAField),
                 onClick = onAddField,
                 enabled = addButtonEnabled
@@ -372,6 +367,7 @@ private fun PersonaDetailList(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DappDetailContentPreview() {
@@ -379,8 +375,25 @@ fun DappDetailContentPreview() {
         PersonaEditContent(
             onBackClick = {},
             state = PersonaEditUiState(
-                persona = null,
-                currentFields = persistentListOf(),
+                persona = Persona.sampleMainnet(),
+                currentFields = persistentListOf(
+                    PersonaFieldWrapper(
+                        entry = IdentifiedEntry.Companion.init(
+                            PersonaDataField.Name(
+                                variant = PersonaDataField.Name.Variant.Western,
+                                given = "John",
+                                family = "Smith",
+                                nickname = "JS"
+                            )
+                        )
+                    ),
+                    PersonaFieldWrapper(
+                        entry = IdentifiedEntry.Companion.init(PersonaDataField.Email("test@test.pl"))
+                    ),
+                    PersonaFieldWrapper(
+                        entry = IdentifiedEntry.Companion.init(PersonaDataField.PhoneNumber("123456789"))
+                    )
+                ),
                 fieldsToAdd = persistentListOf(),
                 personaDisplayName = PersonaDisplayNameFieldWrapper("Persona"),
                 addFieldButtonEnabled = false,
