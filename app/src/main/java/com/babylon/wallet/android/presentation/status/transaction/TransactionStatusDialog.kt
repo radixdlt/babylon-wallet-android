@@ -16,10 +16,10 @@ import com.babylon.wallet.android.presentation.status.transaction.TransactionSta
 import com.babylon.wallet.android.presentation.status.transaction.TransactionStatusDialogViewModel.State.DismissInfo.STOP_WAITING
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 
 @Composable
-@Suppress("CyclomaticComplexMethod")
 fun TransactionStatusDialog(
     modifier: Modifier = Modifier,
     viewModel: TransactionStatusDialogViewModel,
@@ -53,7 +53,7 @@ fun TransactionStatusDialog(
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    CompletingContent()
+                    CompletingContent(transactionId = state.transactionId)
                 }
 
                 androidx.compose.animation.AnimatedVisibility(
