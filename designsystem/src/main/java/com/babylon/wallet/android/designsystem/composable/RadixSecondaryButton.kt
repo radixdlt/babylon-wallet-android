@@ -40,7 +40,7 @@ fun RadixSecondaryButton(
     isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
-    textStyle: TextStyle = RadixTheme.typography.button,
+    textStyle: TextStyle = RadixTheme.typography.body1Header,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
@@ -77,7 +77,7 @@ fun RadixSecondaryButton(
                 )
             } else {
                 leadingContent?.invoke()
-                Text(text = text, style = RadixTheme.typography.body1Header)
+                Text(text = text, style = textStyle)
                 trailingContent?.invoke()
             }
         }
