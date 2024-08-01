@@ -47,6 +47,8 @@ class FakePreferenceManager : PreferencesManager {
         get() = TODO("Not yet implemented")
     override val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
         get() = TODO("Not yet implemented")
+    override val isEulaAccepted: Flow<Boolean>
+        get() = TODO("Not yet implemented")
 
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
         TODO("Not yet implemented")
@@ -145,6 +147,10 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override suspend fun clear(): Preferences {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun markEulaAccepted() {
         TODO("Not yet implemented")
     }
 

@@ -51,7 +51,8 @@ class ValidatorStakeProcessor @Inject constructor(
             to = toAccounts,
             badges = badges,
             validators = involvedValidators,
-            actionType = PreviewType.Transfer.Staking.ActionType.Stake
+            actionType = PreviewType.Transfer.Staking.ActionType.Stake,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 
