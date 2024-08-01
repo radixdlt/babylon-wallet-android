@@ -21,9 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
 @Composable
@@ -59,7 +59,17 @@ fun CreatePersonaConfirmationContent(
     Scaffold(
         modifier = modifier,
         contentColor = RadixTheme.colors.defaultBackground,
-        contentWindowInsets = WindowInsets.statusBarsAndBanner.add(WindowInsets.navigationBars)
+        contentWindowInsets = WindowInsets.statusBarsAndBanner.add(WindowInsets.navigationBars),
+        bottomBar = {
+            RadixBottomBar(
+                text = stringResource(
+                    id = R.string.createEntity_completion_goToDestination,
+                    stringResource(R.string.createEntity_completion_destinationChoosePersonas)
+                ),
+                onClick = personaConfirmed,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -70,7 +80,7 @@ fun CreatePersonaConfirmationContent(
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.weight(0.2f))
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = stringResource(id = R.string.createEntity_completion_title),
                 style = RadixTheme.typography.title,
@@ -96,12 +106,7 @@ fun CreatePersonaConfirmationContent(
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.weight(0.6f))
-            RadixPrimaryButton(
-                text = stringResource(R.string.createEntity_completion_destinationChoosePersonas),
-                onClick = personaConfirmed,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Spacer(Modifier.weight(2f))
         }
     }
 }
