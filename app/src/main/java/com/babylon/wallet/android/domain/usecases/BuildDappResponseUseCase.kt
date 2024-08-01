@@ -136,12 +136,18 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                         RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
 
+                    val ongoingAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
+                        ongoingAccounts.map { it.asProfileEntity() }
+                    } ?: emptyList()
+
+                    val onetimeAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
+                        oneTimeAccounts.map { it.asProfileEntity() }
+                    } ?: emptyList()
+
                     getSignaturesForAllEntities(
                         challenge = authRequest.challenge,
                         metadata = request.metadata,
-                        entities = ongoingAccounts.map { it.asProfileEntity() } +
-                            oneTimeAccounts.map { it.asProfileEntity() } +
-                            selectedPersona.asProfileEntity()
+                        entities = ongoingAccountsToSign + onetimeAccountsToSign + selectedPersona.asProfileEntity()
                     ).onSuccess { entitiesWithSignaturesResult ->
                         entitiesWithSignatures = entitiesWithSignaturesResult
 
