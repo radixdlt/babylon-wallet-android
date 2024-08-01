@@ -92,7 +92,7 @@ private fun TroubleshootingSettingsContent(
                                 val item = troubleshootingItem.item
                                 DefaultSettingsItem(
                                     title = stringResource(id = item.descriptionRes()),
-                                    leadingIcon = item.getIcon(),
+                                    leadingIconRes = item.getIcon(),
                                     subtitle = stringResource(id = item.subtitleRes()),
                                     onClick = {
                                         when (item) {
