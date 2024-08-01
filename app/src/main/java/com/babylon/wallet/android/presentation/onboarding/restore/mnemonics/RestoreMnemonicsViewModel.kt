@@ -246,11 +246,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     private fun updateSecondaryButtonLoading(isLoading: Boolean) {
-        _state.update { state ->
-            state.copy(
-                isSecondaryButtonLoading = isLoading
-            )
-        }
+        _state.update { state -> state.copy(isSecondaryButtonLoading = isLoading) }
     }
 
     data class State(

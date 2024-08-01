@@ -76,10 +76,10 @@ fun SeedPhraseInputForm(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
-                        onFocusChanged = onFocusedWordIndexChanged?.let {
+                        onFocusChanged = onFocusedWordIndexChanged?.let { callback ->
                             {
                                 if (it.hasFocus) {
-                                    onFocusedWordIndexChanged(word.index)
+                                    callback(word.index)
                                 }
                             }
                         },
