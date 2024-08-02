@@ -323,7 +323,6 @@ private fun WalletAccountList(
         item {
             RadixSecondaryButton(
                 text = stringResource(id = R.string.homePage_createNewAccount),
-                textStyle = RadixTheme.typography.body1Header,
                 onClick = onAccountCreationClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

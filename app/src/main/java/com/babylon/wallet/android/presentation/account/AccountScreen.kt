@@ -464,7 +464,6 @@ private fun TransferButton(
         containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
         contentColor = RadixTheme.colors.white,
         shape = RadixTheme.shapes.circle,
-        textStyle = RadixTheme.typography.body1Header,
         leadingContent = {
             Icon(
                 modifier = Modifier.size(16.dp),
@@ -488,7 +487,6 @@ private fun HistoryButton(
         containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
         contentColor = RadixTheme.colors.white,
         shape = RadixTheme.shapes.circle,
-        textStyle = RadixTheme.typography.body1Header,
         leadingContent = {
             Icon(
                 modifier = Modifier.size(16.dp),
