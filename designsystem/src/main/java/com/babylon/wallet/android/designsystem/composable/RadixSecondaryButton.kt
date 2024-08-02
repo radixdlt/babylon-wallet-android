@@ -41,7 +41,6 @@ fun RadixSecondaryButton(
     isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
-    textStyle: TextStyle = RadixTheme.typography.body1Header,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
