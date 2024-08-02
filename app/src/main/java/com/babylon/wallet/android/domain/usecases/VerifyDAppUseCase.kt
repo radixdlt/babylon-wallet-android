@@ -11,6 +11,7 @@ import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.DApp
+import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -54,6 +55,7 @@ class VerifyDAppUseCase @Inject constructor(
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = dAppDefinitionAddress
             ).onFailure { error ->
+                logNonFatalException(error)
                 val walletErrorType =
                     error.toConnectorExtensionError() ?: ConnectorExtensionError.UNKNOWN_DAPP_DEFINITION_ADDRESS
                 val message = error.getDappMessage()
