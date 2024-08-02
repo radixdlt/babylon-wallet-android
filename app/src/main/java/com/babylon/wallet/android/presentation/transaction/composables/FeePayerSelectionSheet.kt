@@ -10,14 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -40,6 +39,8 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -196,8 +197,11 @@ private fun FeePayerCard(
                 .throttleClickable {
                     onPayerSelected(candidate)
                 }
-                .padding(start = RadixTheme.dimensions.paddingDefault)
-                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                .padding(
+                    start = RadixTheme.dimensions.paddingDefault,
+                    end = RadixTheme.dimensions.paddingSmall
+                )
+                .padding(vertical = RadixTheme.dimensions.paddingDefault),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -227,16 +231,15 @@ private fun FeePayerCard(
                 maxLines = 2
             )
 
-            RadioButton(
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+
+            RadixRadioButton(
                 selected = candidate.account.address == selectedCandidateAddress,
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = RadixTheme.colors.gray1,
-                    unselectedColor = RadixTheme.colors.gray3,
-                    disabledSelectedColor = Color.White
-                ),
+                colors = RadixRadioButtonDefaults.darkColors(),
                 onClick = {
                     onPayerSelected(candidate)
                 },
+                size = 18.dp
             )
         }
     }

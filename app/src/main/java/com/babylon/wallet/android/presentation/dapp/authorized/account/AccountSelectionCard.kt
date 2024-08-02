@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -61,15 +61,11 @@ fun AccountSelectionCard(
         }
         Spacer(modifier = Modifier.weight(0.1f))
         if (isSingleChoice) {
-            RadioButton(
+            RadixRadioButton(
                 selected = checked,
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = RadixTheme.colors.gray1,
-                    unselectedColor = RadixTheme.colors.white,
-                    disabledSelectedColor = RadixTheme.colors.white
-                ),
                 onClick = radioButtonClicked,
-                enabled = isEnabledForSelection
+                enabled = isEnabledForSelection,
+                colors = RadixRadioButtonDefaults.lightColors()
             )
         } else {
             Checkbox(
