@@ -274,7 +274,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
 
                 else -> {
-                    respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
+                    respondToIncomingRequestUseCase.respondWithFailure(
+                        request,
+                        exception.dappWalletInteractionErrorType,
+                        exception.getDappMessage()
+                    )
                     _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
                 }
             }
@@ -283,7 +287,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         val exception = (_state.value.failureDialog as? FailureDialogState.Open)?.dappRequestException ?: return@launch
-        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.dappWalletInteractionErrorType, exception.getDappMessage())
         _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)

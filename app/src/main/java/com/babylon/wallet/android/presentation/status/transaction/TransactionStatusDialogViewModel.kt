@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
-import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -98,7 +98,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             incomingRequestRepository.getRequest(status.requestId)?.let { transactionRequest ->
                                 respondToIncomingRequestUseCase.respondWithFailure(
                                     request = transactionRequest,
-                                    error = exception.ceError,
+                                    dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
                                     message = exception.getDappMessage()
                                 )
                             }
@@ -113,7 +113,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             isInternal = status.isInternal,
                             errorMessage = exceptionMessageProvider.throwableMessage(error),
                             blockUntilComplete = status.blockUntilComplete,
-                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError(),
+                            walletErrorType = error.asRadixWalletException()?.toDappWalletInteractionErrorType(),
                             isMobileConnect = status.isMobileConnect,
                             dAppName = status.dAppName
                         )

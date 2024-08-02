@@ -168,7 +168,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 else -> {
                     respondToIncomingRequestUseCase.respondWithFailure(
                         request = request,
-                        error = exception.ceError,
+                        dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
                         message = exception.getDappMessage()
                     )
                     _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
@@ -183,7 +183,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         val exception = (_state.value.failureDialogState as? FailureDialogState.Open)?.dappRequestException ?: return@launch
-        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.dappWalletInteractionErrorType, exception.getDappMessage())
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
