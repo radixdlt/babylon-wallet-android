@@ -185,33 +185,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
         val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
         val ongoingAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
-            authRequest.identityAddress,
-            ongoingAccountsRequestItem
+            personaAddress = authRequest.identityAddress,
+            accountsRequestItem = ongoingAccountsRequestItem
         )
-        val needSignature = request.needSignatures()
-        val ongoingDataAlreadyGranted =
-            personaDataAccessAlreadyGranted(ongoingPersonaDataRequestItem, persona.address)
+        val ongoingDataAlreadyGranted = personaDataAccessAlreadyGranted(
+            requestItem = ongoingPersonaDataRequestItem,
+            personaAddress = persona.address
+        )
         when {
-            needSignature && ongoingAccountsAlreadyGranted && ongoingDataAlreadyGranted && request.hasOngoingRequestItemsOnly() -> {
-                _state.update {
-                    // automatically fill in persona, the persona data, accounts and complete request
-                    it.copy(
-                        selectedAccountsOngoing = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                            dapp.dappDefinitionAddress,
-                            persona.address,
-                            ongoingAccountsRequestItem!!.numberOfValues.quantity,
-                            ongoingAccountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
-                        ).mapNotNull { address ->
-                            getProfileUseCase().activeAccountOnCurrentNetwork(address)?.toUiModel()
-                        },
-                        selectedOngoingPersonaData = persona.getPersonaDataForFieldKinds(
-                            ongoingPersonaDataRequestItem!!.toRequiredFields().fields
-                        ),
-                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.CompleteRequest
-                    )
-                }
-            }
-
             ongoingAccountsRequestItem != null && (!ongoingAccountsAlreadyGranted || resetAccounts) -> {
                 _state.update {
                     it.copy(
@@ -253,6 +234,32 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimePersonaData(
                             oneTimePersonaDataRequestItem.toRequiredFields()
                         )
+                    )
+                }
+            }
+
+            else -> {
+                _state.update {
+                    val selectedOngoingAccounts = ongoingAccountsRequestItem?.let { ongoingAccountsRequest ->
+                        dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+                            dapp.dappDefinitionAddress,
+                            persona.address,
+                            ongoingAccountsRequest.numberOfValues.quantity,
+                            ongoingAccountsRequest.numberOfValues.toRequestedNumberQuantifier()
+                        ).mapNotNull { address ->
+                            getProfileUseCase().activeAccountOnCurrentNetwork(address)?.toUiModel()
+                        }
+                    }.orEmpty()
+                    val selectedOngoingPersonaData = ongoingPersonaDataRequestItem?.let { personaDataRequest ->
+                        persona.getPersonaDataForFieldKinds(
+                            personaDataRequest.toRequiredFields().fields
+                        )
+                    }
+                    // automatically fill in persona, the persona data, accounts and complete request
+                    it.copy(
+                        selectedAccountsOngoing = selectedOngoingAccounts,
+                        selectedOngoingPersonaData = selectedOngoingPersonaData,
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.CompleteRequest
                     )
                 }
             }

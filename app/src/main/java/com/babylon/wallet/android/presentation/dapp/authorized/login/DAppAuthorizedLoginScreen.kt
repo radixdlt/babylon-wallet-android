@@ -132,14 +132,14 @@ fun DappAuthorizedLoginScreen(
                 onMessageShown = viewModel::onMessageShown,
                 modifier = Modifier.imePadding()
             )
-            sharedState.interactionState?.let {
-                FactorSourceInteractionBottomDialog(
-                    modifier = Modifier.fillMaxHeight(0.8f),
-                    onDismissDialogClick = viewModel::onDismissSigningStatusDialog,
-                    interactionState = it
-                )
-            }
         }
+    }
+    sharedState.interactionState?.let {
+        FactorSourceInteractionBottomDialog(
+            modifier = Modifier.fillMaxHeight(0.8f),
+            onDismissDialogClick = viewModel::onDismissSigningStatusDialog,
+            interactionState = it
+        )
     }
 }
 
