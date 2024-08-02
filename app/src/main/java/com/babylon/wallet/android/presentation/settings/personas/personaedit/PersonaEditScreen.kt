@@ -364,7 +364,8 @@ private fun PersonaDetailList(
                     .widthIn(min = 200.dp),
                 text = stringResource(id = R.string.editPersona_addAField),
                 onClick = onAddField,
-                enabled = addButtonEnabled
+                enabled = addButtonEnabled,
+                textStyle = RadixTheme.typography.body1Header
             )
         }
     }
