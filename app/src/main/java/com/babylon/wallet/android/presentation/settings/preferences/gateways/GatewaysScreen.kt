@@ -88,21 +88,19 @@ fun GatewaysScreen(
         onSheetClosed = { viewModel.setAddGatewaySheetVisible(false) }
     )
 
-    if (state.addGatewayInput != null) {
+    state.addGatewayInput?.let { input ->
         DefaultModalSheetLayout(
             sheetState = bottomSheetState,
             showDragHandle = true,
             wrapContent = true,
             onDismissRequest = { viewModel.setAddGatewaySheetVisible(false) },
             sheetContent = {
-                state.addGatewayInput?.let {
-                    AddGatewaySheet(
-                        input = it,
-                        onAddGatewayClick = viewModel::onAddGateway,
-                        onUrlChanged = viewModel::onNewUrlChanged,
-                        onClose = { viewModel.setAddGatewaySheetVisible(false) }
-                    )
-                }
+                AddGatewaySheet(
+                    input = input,
+                    onAddGatewayClick = viewModel::onAddGateway,
+                    onUrlChanged = viewModel::onNewUrlChanged,
+                    onClose = { viewModel.setAddGatewaySheetVisible(false) }
+                )
             }
         )
     }
