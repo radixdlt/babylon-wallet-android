@@ -394,6 +394,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
                         R.string.error_transactionFailure_prepare
                     }
                 }
+
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
         }
@@ -438,18 +439,18 @@ fun RadixWalletException.userFriendlyMessage(): String {
     return toUserFriendlyMessage(LocalContext.current)
 }
 
-fun RadixWalletException.getDappMessage(): String? {
+fun Throwable.getDappMessage(): String? {
     return when (this) {
         is RadixWalletException.TransactionSubmitException -> getDappMessage()
         is RadixWalletException.DappRequestException.WrongNetwork -> {
             "Wallet is using network ID: $currentNetworkId, request sent specified network ID: $requestNetworkId"
         }
 
-        else -> null
+        else -> message
     }
 }
 
-fun RadixWalletException.toConnectorExtensionError(): ConnectorExtensionError? {
+fun Throwable.toConnectorExtensionError(): ConnectorExtensionError? {
     return (this as? ConnectorExtensionThrowable?)?.ceError
 }
 
