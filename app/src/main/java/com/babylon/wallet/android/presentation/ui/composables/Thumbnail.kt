@@ -307,7 +307,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = liquidStakeUnit?.fungibleResource?.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
-            emptyDrawable = R.drawable.ic_pool_units,
+            emptyDrawable = DSR.ic_lsu,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = liquidStakeUnit?.fungibleResource?.name.orEmpty()

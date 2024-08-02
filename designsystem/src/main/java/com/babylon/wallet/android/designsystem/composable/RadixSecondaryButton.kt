@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
@@ -39,6 +40,7 @@ fun RadixSecondaryButton(
     isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
+    textStyle: TextStyle = RadixTheme.typography.body1Header,
     leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
@@ -75,7 +77,7 @@ fun RadixSecondaryButton(
                 )
             } else {
                 leadingContent?.invoke()
-                Text(text = text, style = RadixTheme.typography.body1Header)
+                Text(text = text, style = textStyle)
                 trailingContent?.invoke()
             }
         }
