@@ -9,7 +9,7 @@ import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
@@ -100,7 +100,7 @@ class TransactionSubmitDelegate @Inject constructor(
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(
                     request = request,
-                    error = exception.ceError,
+                    dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
                     message = exception.getDappMessage()
                 )
             }
@@ -203,7 +203,7 @@ class TransactionSubmitDelegate @Inject constructor(
                         isInternal = transactionRequest.isInternal,
                         errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
                         blockUntilComplete = transactionRequest.blockUntilComplete,
-                        walletErrorType = radixWalletException.toConnectorExtensionError(),
+                        walletErrorType = radixWalletException.toDappWalletInteractionErrorType(),
                         isMobileConnect = transactionRequest.isMobileConnectRequest,
                         dAppName = _state.value.proposingDApp?.name
                     )
@@ -237,10 +237,10 @@ class TransactionSubmitDelegate @Inject constructor(
             return
         }
         error.asRadixWalletException()?.let { radixWalletException ->
-            radixWalletException.toConnectorExtensionError()?.let { walletErrorType ->
+            radixWalletException.toDappWalletInteractionErrorType()?.let { walletErrorType ->
                 respondToIncomingRequestUseCase.respondWithFailure(
                     request = currentState.requestNonNull,
-                    error = walletErrorType,
+                    dappWalletInteractionErrorType = walletErrorType,
                     message = radixWalletException.getDappMessage()
                 )
             }

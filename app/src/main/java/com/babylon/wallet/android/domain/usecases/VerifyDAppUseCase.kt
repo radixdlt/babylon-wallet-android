@@ -2,13 +2,13 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.ConnectorExtensionError
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
-import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
@@ -33,7 +33,7 @@ class VerifyDAppUseCase @Inject constructor(
             )
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = request,
-                error = error.ceError,
+                dappWalletInteractionErrorType = error.dappWalletInteractionErrorType,
                 message = error.getDappMessage()
             )
             return Result.failure(error)
@@ -42,7 +42,7 @@ class VerifyDAppUseCase @Inject constructor(
             val error = RadixWalletException.DappRequestException.InvalidRequest
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = request,
-                error = error.ceError,
+                dappWalletInteractionErrorType = error.dappWalletInteractionErrorType,
                 message = "Invalid dApp definition address: ${request.metadata.dAppDefinitionAddress}"
             )
             return Result.failure(error)
@@ -56,10 +56,14 @@ class VerifyDAppUseCase @Inject constructor(
                 dAppDefinitionAddress = dAppDefinitionAddress
             ).onFailure { error ->
                 logNonFatalException(error)
-                val walletErrorType =
-                    error.toConnectorExtensionError() ?: ConnectorExtensionError.UNKNOWN_DAPP_DEFINITION_ADDRESS
+                val dappWalletInteractionErrorType =
+                    error.toDappWalletInteractionErrorType() ?: DappWalletInteractionErrorType.UNKNOWN_DAPP_DEFINITION_ADDRESS
                 val message = error.getDappMessage()
-                respondToIncomingRequestUseCase.respondWithFailure(request, walletErrorType, message)
+                respondToIncomingRequestUseCase.respondWithFailure(
+                    request = request,
+                    dappWalletInteractionErrorType = dappWalletInteractionErrorType,
+                    message = message
+                )
             }
         }
     }

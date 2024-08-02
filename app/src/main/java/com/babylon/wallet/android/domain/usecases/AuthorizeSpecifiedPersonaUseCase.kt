@@ -132,7 +132,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private suspend fun respondWithInvalidPersona(incomingRequest: AuthorizedRequest) {
         respondToIncomingRequestUseCase.respondWithFailure(
             request = incomingRequest,
-            error = DappWalletInteractionErrorType.INVALID_PERSONA
+            dappWalletInteractionErrorType = DappWalletInteractionErrorType.INVALID_PERSONA
         )
     }
 
