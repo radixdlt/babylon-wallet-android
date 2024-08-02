@@ -37,7 +37,7 @@ fun RadixSecondaryButton(
     containerColor: Color = RadixTheme.colors.gray4,
     contentColor: Color = RadixTheme.colors.gray1,
     shape: Shape = RadixTheme.shapes.roundedRectSmall,
-    textStyle: TextStyle = RadixTheme.typography.button,
+    textStyle: TextStyle = RadixTheme.typography.body1Header,
     isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
