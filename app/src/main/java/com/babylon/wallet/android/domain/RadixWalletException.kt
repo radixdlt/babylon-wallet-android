@@ -81,9 +81,11 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
             }
     }
 
-    sealed class PrepareTransactionException(cause: Throwable? = null) : RadixWalletException(
-        cause = cause
-    ), DappWalletInteractionThrowable {
+    sealed class PrepareTransactionException(cause: Throwable? = null) :
+        RadixWalletException(
+            cause = cause
+        ),
+        DappWalletInteractionThrowable {
         data object ConvertManifest : PrepareTransactionException()
         data class BuildTransactionHeader(override val cause: Throwable) : PrepareTransactionException(cause)
         data object FailedToFindAccountWithEnoughFundsToLockFee : PrepareTransactionException()
