@@ -55,8 +55,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -155,27 +154,19 @@ fun SpecificDepositorScreen(
     )
 
     if (state.isAddDepositorSheetVisible) {
-        DefaultModalSheetLayout(
-            sheetState = sheetState,
-            showDragHandle = true,
-            wrapContent = true,
-            onDismissRequest = { hideCallback() },
-            sheetContent = {
-                AddDepositorSheet(
-                    onResourceAddressChanged = sharedViewModel::depositorAddressTyped,
-                    onAddDepositor = {
-                        hideCallback()
-                        sharedViewModel.onAddDepositor()
-                    },
-                    modifier = Modifier
-                        .imePadding()
-                        .fillMaxWidth()
-                        .clip(RadixTheme.shapes.roundedRectTopDefault),
-                    depositor = state.depositorToAdd,
-                    onDismiss = {
-                        hideCallback()
-                    }
-                )
+        AddDepositorSheet(
+            onResourceAddressChanged = sharedViewModel::depositorAddressTyped,
+            onAddDepositor = {
+                hideCallback()
+                sharedViewModel.onAddDepositor()
+            },
+            modifier = Modifier
+                .imePadding()
+                .fillMaxWidth()
+                .clip(RadixTheme.shapes.roundedRectTopDefault),
+            depositor = state.depositorToAdd,
+            onDismiss = {
+                hideCallback()
             }
         )
     }
@@ -194,69 +185,70 @@ fun AddDepositorSheet(
         inputFocusRequester.requestFocus()
     }
 
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .imePadding(),
-        verticalArrangement = Arrangement.Center,
+    BottomSheetDialogWrapper(
+        addScrim = true,
+        showDragHandle = true,
+        onDismiss = onDismiss,
+        showDefaultTopBar = true
     ) {
-        BottomDialogHeader(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = RadixTheme.dimensions.paddingSmall),
-            onDismissRequest = onDismiss
-        )
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = RadixTheme.dimensions.paddingDefault,
-                    end = RadixTheme.dimensions.paddingDefault,
-                    bottom = RadixTheme.dimensions.paddingDefault
-                )
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+                .imePadding(),
+            verticalArrangement = Arrangement.Center,
         ) {
-            Text(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorTitle),
-                style = RadixTheme.typography.title,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorSubtitle),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            RadixTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                    .focusRequester(inputFocusRequester),
-                onValueChanged = onResourceAddressChanged,
-                value = depositor.addressToDisplay,
-                hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
-                hintColor = RadixTheme.colors.gray2,
-                singleLine = true,
-                error = null
-            )
-            Spacer(modifier = Modifier.height(60.dp))
-            RadixPrimaryButton(
-                text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
-                onClick = {
-                    onAddDepositor()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = depositor.addressValid,
-                isLoading = false
-            )
+                    .fillMaxSize()
+                    .padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault,
+                        bottom = RadixTheme.dimensions.paddingDefault
+                    )
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorTitle),
+                    style = RadixTheme.typography.title,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.accountSettings_thirdPartyDeposits_addDepositorSubtitle),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                RadixTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .focusRequester(inputFocusRequester),
+                    onValueChanged = onResourceAddressChanged,
+                    value = depositor.addressToDisplay,
+                    hint = stringResource(id = R.string.accountSettings_specificAssetsDeposits_addAnAssetInputHint),
+                    hintColor = RadixTheme.colors.gray2,
+                    singleLine = true,
+                    error = null
+                )
+                Spacer(modifier = Modifier.height(60.dp))
+                RadixPrimaryButton(
+                    text = stringResource(R.string.accountSettings_thirdPartyDeposits_allowSpecificDepositorsButton),
+                    onClick = {
+                        onAddDepositor()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = depositor.addressValid,
+                    isLoading = false
+                )
+            }
         }
     }
 }
