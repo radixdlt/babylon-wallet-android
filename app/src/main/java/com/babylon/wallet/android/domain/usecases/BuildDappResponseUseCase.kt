@@ -136,18 +136,14 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                         RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
 
-                    val ongoingAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
-                        ongoingAccounts.map { it.asProfileEntity() }
-                    } ?: emptyList()
-
-                    val onetimeAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
-                        oneTimeAccounts.map { it.asProfileEntity() }
-                    } ?: emptyList()
-
                     getSignaturesForAllEntities(
                         challenge = authRequest.challenge,
                         metadata = request.metadata,
-                        entities = ongoingAccountsToSign + onetimeAccountsToSign + selectedPersona.asProfileEntity()
+                        entities = getAccountsWithSignatureRequired(
+                            request = request,
+                            ongoingAccounts = ongoingAccounts,
+                            oneTimeAccounts = oneTimeAccounts
+                        ) + selectedPersona.asProfileEntity()
                     ).onSuccess { entitiesWithSignaturesResult ->
                         entitiesWithSignatures = entitiesWithSignaturesResult
 
@@ -246,6 +242,22 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
             )
         }
+    }
+
+    private fun getAccountsWithSignatureRequired(
+        request: AuthorizedRequest,
+        ongoingAccounts: List<Account>,
+        oneTimeAccounts: List<Account>
+    ): List<ProfileEntity.AccountEntity> {
+        val ongoingAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
+            ongoingAccounts.map { account -> account.asProfileEntity() }
+        }.orEmpty()
+
+        val onetimeAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
+            oneTimeAccounts.map { account -> account.asProfileEntity() }
+        }.orEmpty()
+
+        return onetimeAccountsToSign + ongoingAccountsToSign
     }
 
     private suspend fun getSignaturesForAllEntities(
