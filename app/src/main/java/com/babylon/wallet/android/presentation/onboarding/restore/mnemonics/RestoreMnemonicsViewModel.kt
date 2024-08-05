@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
-import rdx.works.core.sargon.hasOlympiaSeedPhraseLength
 import rdx.works.core.sargon.isHidden
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.core.sargon.usesEd25519
@@ -150,6 +149,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onWordChanged(index: Int, value: String) {
         seedPhraseInputDelegate.onWordChanged(index, value)
+    }
+
+    fun onWordSelected(index: Int, value: String) {
+        seedPhraseInputDelegate.onWordSelected(index, value)
+        viewModelScope.launch {
+            sendEvent(Event.MoveToNextWord)
+        }
     }
 
     fun onPassphraseChanged(value: String) {
@@ -278,9 +284,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val isMainBabylonSeedPhrase: Boolean
             get() = recoverableFactorSource?.factorSource?.id == mainBabylonFactorSourceId
 
-        val showAdvancedMode: Boolean
-            get() = recoverableFactorSource?.factorSource?.hasOlympiaSeedPhraseLength ?: false
-
         val isPrimaryButtonEnabled: Boolean
             get() = (screenType != ScreenType.SeedPhrase || seedPhraseState.isValidSeedPhrase()) && !isSecondaryButtonLoading
 
@@ -294,6 +297,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
         data object CloseApp : Event
+        data object MoveToNextWord : Event
     }
 }
 

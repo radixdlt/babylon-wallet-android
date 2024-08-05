@@ -42,11 +42,23 @@ class SeedPhraseInputDelegate(
         }
     }
 
+    fun onWordSelected(index: Int, value: String) {
+        _state.update { state ->
+            val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
+                it.copy(value = value, state = SeedPhraseWord.State.Valid)
+            }).toPersistentList()
+            state.copy(
+                seedPhraseWords = updatedWords,
+                wordAutocompleteCandidates = persistentListOf()
+            )
+        }
+    }
+
     @Suppress("LongMethod")
     fun onWordChanged(index: Int, value: String) {
         _state.update { state ->
             val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
-                it.copy(value = value)
+                it.copy(value = value.trim())
             }).toPersistentList()
             state.copy(
                 seedPhraseWords = updatedWords,
@@ -73,19 +85,29 @@ class SeedPhraseInputDelegate(
                     return@launch
                 }
             }
-            val wordCandidates = englishWordList.filter { it.startsWith(value) }
+            val wordCandidates = if (value.isEmpty()) {
+                emptyList()
+            } else {
+                englishWordList.filter { it.startsWith(value) }
+            }
+
             val wordState = when {
-                value.isEmpty() -> SeedPhraseWord.State.Empty
                 wordCandidates.contains(value) -> SeedPhraseWord.State.Valid
+                value.isEmpty() -> SeedPhraseWord.State.Empty
                 wordCandidates.isEmpty() -> SeedPhraseWord.State.Invalid
                 else -> SeedPhraseWord.State.HasValue
             }
             _state.update { state ->
                 val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
-                    it.copy(value = value, state = wordState)
+                    it.copy(value = value.trim(), state = wordState)
                 }).toPersistentList()
                 state.copy(
-                    seedPhraseWords = updatedWords
+                    seedPhraseWords = updatedWords,
+                    wordAutocompleteCandidates = if (wordCandidates.size == 1 && wordCandidates.first() == value) {
+                        emptyList()
+                    } else {
+                        wordCandidates
+                    }.toPersistentList()
                 )
             }
         }
@@ -103,7 +125,8 @@ class SeedPhraseInputDelegate(
 
     data class State(
         val bip39Passphrase: String = "",
-        val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf()
+        val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
+        val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf()
     ) : UiState {
 
         private val isInputEmpty: Boolean

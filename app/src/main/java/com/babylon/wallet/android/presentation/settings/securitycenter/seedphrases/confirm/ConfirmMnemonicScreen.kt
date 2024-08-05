@@ -22,9 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,11 +65,9 @@ fun ConfirmMnemonicScreen(
         onMessageShown = viewModel::onMessageShown
     )
 
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                ConfirmMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 ConfirmMnemonicViewModel.Event.MnemonicBackedUp -> onMnemonicBackedUp()
             }
         }
@@ -166,7 +162,8 @@ private fun SeedPhraseView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             seedPhraseWords = state.seedPhraseState.seedPhraseWords,
-            onWordChanged = onWordChanged
+            onWordChanged = onWordChanged,
+            onFocusedWordIndexChanged = {}
         )
     }
 }

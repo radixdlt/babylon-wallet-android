@@ -29,9 +29,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -53,11 +57,13 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
+import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
@@ -100,13 +106,16 @@ fun RestoreMnemonicsScreen(
         },
         onWordTyped = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
+        onWordSelected = viewModel::onWordSelected,
         onMessageShown = viewModel::onMessageShown
     )
 
+    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
                 is RestoreMnemonicsViewModel.Event.FinishRestoration -> onDismiss(it.isMovingToMain)
+                is RestoreMnemonicsViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 is RestoreMnemonicsViewModel.Event.CloseApp -> onCloseApp()
             }
         }
@@ -123,6 +132,7 @@ private fun RestoreMnemonicsContent(
     onSkipMainSeedPhraseClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
+    onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -136,6 +146,10 @@ private fun RestoreMnemonicsContent(
         onMessageShown = onMessageShown
     )
 
+    var focusedWordIndex by remember {
+        mutableStateOf<Int?>(null)
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -146,7 +160,22 @@ private fun RestoreMnemonicsContent(
             )
         },
         bottomBar = {
-            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Loading) {
+            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities && isSuggestionsVisible(state = state)) {
+                SeedPhraseSuggestions(
+                    wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding()
+                        .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
+                        .padding(RadixTheme.dimensions.paddingSmall),
+                    onCandidateClick = { candidate ->
+                        focusedWordIndex?.let {
+                            onWordSelected(it, candidate)
+                            focusedWordIndex = null
+                        }
+                    }
+                )
+            } else if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Loading) {
                 RadixBottomBar(
                     text = stringResource(
                         when (state.screenType) {
@@ -218,7 +247,14 @@ private fun RestoreMnemonicsContent(
             }
 
             AnimatedVisibility(
-                modifier = Modifier.dynamicImePadding(padding),
+                modifier = Modifier.dynamicImePadding(
+                    padding = padding,
+                    keyboardVisibleBottomPadding = if (isSuggestionsVisible(state)) {
+                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight + RadixTheme.dimensions.paddingDefault
+                    } else {
+                        RadixTheme.dimensions.paddingDefault
+                    }
+                ),
                 visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase,
                 enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
                 exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
@@ -226,7 +262,8 @@ private fun RestoreMnemonicsContent(
                 SeedPhraseView(
                     state = state,
                     onWordChanged = onWordTyped,
-                    onPassphraseChanged = onPassphraseChanged
+                    onPassphraseChanged = onPassphraseChanged,
+                    onFocusedWordIndexChanged = { focusedWordIndex = it }
                 )
             }
 
@@ -352,6 +389,7 @@ private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
     onWordChanged: (Int, String) -> Unit,
+    onFocusedWordIndexChanged: (Int) -> Unit,
     onPassphraseChanged: (String) -> Unit
 ) {
     SecureScreen()
@@ -395,7 +433,7 @@ private fun SeedPhraseView(
             bip39Passphrase = state.seedPhraseState.bip39Passphrase,
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
-            showAdvancedMode = state.showAdvancedMode
+            onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
         val shouldDisplaySeedPhraseWarning = remember(state.seedPhraseState) {
             state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
@@ -408,6 +446,11 @@ private fun SeedPhraseView(
             )
         }
     }
+}
+
+@Composable
+private fun isSuggestionsVisible(state: RestoreMnemonicsViewModel.State): Boolean {
+    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
 @UsesSampleValues
@@ -425,6 +468,7 @@ private fun RestoreMnemonicsContentPreview(
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
+            onWordSelected = { _, _ -> },
             onMessageShown = {}
         )
     }

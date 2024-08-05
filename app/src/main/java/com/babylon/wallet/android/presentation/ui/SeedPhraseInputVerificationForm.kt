@@ -38,7 +38,7 @@ fun SeedPhraseInputVerificationForm(
     modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
     onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: ((Int) -> Unit)? = null
+    onFocusedWordIndexChanged: (Int) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     val firstFocusedIndex by remember(seedPhraseWords) {
@@ -62,11 +62,9 @@ fun SeedPhraseInputVerificationForm(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
-                        onFocusChanged = onFocusedWordIndexChanged?.let { callback ->
-                            {
-                                if (it.hasFocus) {
-                                    callback(word.index)
-                                }
+                        onFocusChanged = {
+                            if (it.hasFocus) {
+                                onFocusedWordIndexChanged(word.index)
                             }
                         },
                         enabled = word.inputDisabled.not(),

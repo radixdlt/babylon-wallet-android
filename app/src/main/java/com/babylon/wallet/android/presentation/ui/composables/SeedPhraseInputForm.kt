@@ -52,8 +52,8 @@ fun SeedPhraseInputForm(
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
-    onFocusedWordIndexChanged: ((Int) -> Unit)? = null,
-    showAdvancedMode: Boolean = false
+    onFocusedWordIndexChanged: (Int) -> Unit,
+    showAdvancedMode: Boolean = true
 ) {
     val focusManager = LocalFocusManager.current
     Column(
@@ -76,11 +76,9 @@ fun SeedPhraseInputForm(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
-                        onFocusChanged = onFocusedWordIndexChanged?.let { callback ->
-                            {
-                                if (it.hasFocus) {
-                                    callback(word.index)
-                                }
+                        onFocusChanged = {
+                            if (it.hasFocus) {
+                                onFocusedWordIndexChanged(word.index)
                             }
                         },
                         enabled = word.inputDisabled.not()
