@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ROUTE_PERSONA_DETAIL
 import com.radixdlt.sargon.IdentityAddress
+import rdx.works.core.flatMapError
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
 const val ROUTE_PERSONA_INFO = "persona_info_route"
@@ -32,12 +33,14 @@ fun NavController.personaInfoScreen() {
 
 @Suppress("SwallowedException")
 fun NavController.popPersonaCreation() {
-    val entryToPop = try {
-        getBackStackEntry(ROUTE_PERSONA_INFO)
-    } catch (e: java.lang.IllegalArgumentException) {
-        getBackStackEntry(ROUTE_CREATE_PERSONA)
+    val entryToPop = runCatching { getBackStackEntry(ROUTE_PERSONA_INFO) }.flatMapError {
+        runCatching { getBackStackEntry(ROUTE_CREATE_PERSONA) }
+    }.getOrNull()
+    if (entryToPop == null) {
+        popBackStack()
+    } else {
+        popBackStack(entryToPop.destination.id, true)
     }
-    popBackStack(entryToPop.destination.id, true)
 }
 
 fun NavGraphBuilder.personaInfoScreen(
