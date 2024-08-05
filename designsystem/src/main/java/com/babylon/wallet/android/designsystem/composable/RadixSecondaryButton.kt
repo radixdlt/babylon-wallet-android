@@ -23,7 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.darken
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
