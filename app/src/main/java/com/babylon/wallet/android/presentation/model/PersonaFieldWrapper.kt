@@ -17,7 +17,7 @@ import rdx.works.core.sargon.PersonaDataField
 data class PersonaFieldWrapper(
     val entry: IdentifiedEntry<PersonaDataField>,
     val selected: Boolean = false,
-    val valid: Boolean? = null,
+    val isValid: Boolean? = null,
     val required: Boolean = false,
     val wasEdited: Boolean = false,
     val shouldDisplayValidationError: Boolean = false,
