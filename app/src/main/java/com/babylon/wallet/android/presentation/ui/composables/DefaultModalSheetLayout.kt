@@ -33,7 +33,8 @@ fun DefaultModalSheetLayout(
     sheetContent: @Composable () -> Unit,
     showDragHandle: Boolean = true,
     containerColor: Color = RadixTheme.colors.defaultBackground,
-    onDismissRequest: () -> Unit
+    windowInsets: WindowInsets = WindowInsets.systemBars,
+    onDismissRequest: () -> Unit,
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -50,7 +51,7 @@ fun DefaultModalSheetLayout(
             },
             // The insets are the system bars (nav bars + status bars), no need to inset the dev banner since the
             // modal is rendered above it in the z-axis.
-            windowInsets = WindowInsets.systemBars,
+            windowInsets = windowInsets,
             shape = RadixTheme.shapes.roundedRectTopDefault,
             content = {
                 Box(
