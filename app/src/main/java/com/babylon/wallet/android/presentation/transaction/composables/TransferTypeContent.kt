@@ -95,7 +95,8 @@ fun TransactionPreviewTypePreview() {
                             )
                         )
                     )
-                )
+                ),
+                newlyCreatedNFTItems = emptyList()
             ),
             onPromptForGuarantees = {},
             onDAppClick = { _ -> },

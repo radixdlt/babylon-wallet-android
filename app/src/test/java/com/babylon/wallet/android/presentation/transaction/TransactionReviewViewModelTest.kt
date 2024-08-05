@@ -239,7 +239,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = any(),
-                error = any(),
+                dappWalletInteractionErrorType = any(),
                 message = any()
             )
         } returns Result.success(IncomingRequestResponse.SuccessCE)
@@ -312,7 +312,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = sampleRequest,
-                error = capture(errorSlot),
+                dappWalletInteractionErrorType = capture(errorSlot),
                 message = any()
             )
         }
@@ -336,7 +336,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = sampleRequest,
-                error = capture(errorSlot),
+                dappWalletInteractionErrorType = capture(errorSlot),
                 message = any()
             )
         }

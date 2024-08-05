@@ -72,7 +72,7 @@ fun RadixPrimaryButton(
                 )
             } else {
                 icon?.invoke()
-                Text(text = text, style = RadixTheme.typography.button)
+                Text(text = text, style = RadixTheme.typography.body1Header)
             }
         }
     }

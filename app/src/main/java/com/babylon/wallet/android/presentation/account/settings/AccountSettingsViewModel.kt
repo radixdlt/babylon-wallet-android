@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
+import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
@@ -112,8 +112,8 @@ class AccountSettingsViewModel @Inject constructor(
         _state.update { accountPreferenceUiState ->
             accountPreferenceUiState.copy(
                 accountNameChanged = accountNameChanged,
-                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= ACCOUNT_NAME_MAX_LENGTH,
-                isNewNameLengthMoreThanTheMaximum = accountNameChanged.count() > ACCOUNT_NAME_MAX_LENGTH
+                isNewNameValid = accountNameChanged.isNotBlank() && accountNameChanged.count() <= ENTITY_NAME_MAX_LENGTH,
+                isNewNameLengthMoreThanTheMaximum = accountNameChanged.count() > ENTITY_NAME_MAX_LENGTH
             )
         }
     }

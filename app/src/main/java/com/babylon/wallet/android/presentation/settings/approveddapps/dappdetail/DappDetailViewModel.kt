@@ -91,7 +91,6 @@ class DappDetailViewModel @Inject constructor(
         viewModelScope.launch {
             dAppConnectionRepository.getAuthorizedDAppFlow(args.dappDefinitionAddress).collect {
                 if (it == null) {
-                    sendEvent(DappDetailEvent.LastPersonaDeleted)
                     return@collect
                 } else {
                     authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress))
@@ -174,8 +173,12 @@ class DappDetailViewModel @Inject constructor(
     }
 
     fun onDisconnectPersona(persona: Persona) {
+        val lastPersona = _state.value.personas.size == 1 && _state.value.personas.first().address == persona.address
         viewModelScope.launch {
             dAppConnectionRepository.deletePersonaForDApp(args.dappDefinitionAddress, persona.address)
+            if (lastPersona) {
+                sendEvent(DappDetailEvent.DappDeleted)
+            }
         }
     }
 
@@ -245,7 +248,6 @@ sealed interface DappDetailEvent : OneOffEvent {
     data class EditPersona(val personaAddress: IdentityAddress, val requiredPersonaFields: RequiredPersonaFields? = null) :
         DappDetailEvent
 
-    data object LastPersonaDeleted : DappDetailEvent
     data object DappDeleted : DappDetailEvent
     data class OnFungibleClick(val resource: Resource.FungibleResource) : DappDetailEvent
     data class OnNonFungibleClick(val resource: Resource.NonFungibleResource) : DappDetailEvent

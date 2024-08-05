@@ -19,7 +19,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -47,7 +46,7 @@ class PersonaEditViewModel @Inject constructor(
             personaEditState.collect { s ->
                 _state.update { state ->
                     state.copy(
-                        saveButtonEnabled = s.inputValid,
+                        saveButtonEnabled = s.isInputValid,
                         personaDisplayName = s.personaDisplayName,
                         addFieldButtonEnabled = s.areThereFieldsSelected,
                         currentFields = s.currentFields,

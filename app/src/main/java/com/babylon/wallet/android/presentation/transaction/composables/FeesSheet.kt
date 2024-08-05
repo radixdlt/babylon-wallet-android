@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -30,9 +31,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.extensions.formatted
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -45,7 +46,6 @@ fun FeesSheet(
     onClose: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Account) -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
@@ -248,13 +248,7 @@ fun FeesSheet(
                 }
             }
 
-            is TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.SelectFeePayer -> {
-                feePayerSelectionContent(
-                    candidates = feePayer.candidates,
-                    selectedCandidateAddress = feePayer.preselectedCandidate,
-                    onPayerSelected = onPayerSelected
-                )
-            }
+            else -> {}
         }
 
         item {
@@ -794,5 +788,27 @@ fun NetworkFeesAdvancedView(
                 )
             }
         }
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun FeesSheetPreview() {
+    RadixWalletPreviewTheme {
+        FeesSheet(
+            state = TransactionReviewViewModel.State.Sheet.CustomizeFees(
+                feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default
+            ),
+            transactionFees = TransactionFees(),
+            insufficientBalanceToPayTheFee = false,
+            onClose = {},
+            onChangeFeePayerClick = {},
+            onSelectFeePayerClick = {},
+            onFeePaddingAmountChanged = {},
+            onTipPercentageChanged = {},
+            onViewDefaultModeClick = {},
+            onViewAdvancedModeClick = {}
+        )
     }
 }

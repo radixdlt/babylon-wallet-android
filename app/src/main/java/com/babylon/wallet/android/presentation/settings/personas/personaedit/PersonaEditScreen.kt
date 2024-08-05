@@ -90,7 +90,6 @@ fun PersonaEditScreen(
         onValueChanged = viewModel::onFieldValueChanged,
         onDisplayNameChanged = viewModel::onDisplayNameChanged,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
-        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
         setAddFieldSheetVisible = viewModel::setAddFieldSheetVisible
     )
 }
@@ -108,7 +107,6 @@ private fun PersonaEditContent(
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     setAddFieldSheetVisible: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -207,7 +205,6 @@ private fun PersonaEditContent(
                 personaDisplayName = state.personaDisplayName,
                 addButtonEnabled = state.fieldsToAdd.isNotEmpty(),
                 onFieldFocusChanged = onFieldFocusChanged,
-                onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
                 dappContextEdit = state.dappContextEdit,
                 missingFields = state.missingFields
             )
@@ -261,7 +258,6 @@ private fun PersonaDetailList(
     personaDisplayName: PersonaDisplayNameFieldWrapper,
     addButtonEnabled: Boolean,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     dappContextEdit: Boolean,
     missingFields: ImmutableList<PersonaDataField.Kind>
 ) {
@@ -291,13 +287,14 @@ private fun PersonaDetailList(
                 onValueChanged = onDisplayNameChanged,
                 value = personaDisplayName.value,
                 leftLabel = LabelType.Default(stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading)),
-                error = if (personaDisplayName.shouldDisplayValidationError && personaDisplayName.valid == false) {
-                    stringResource(id = R.string.createPersona_emptyDisplayName)
+                error = if (personaDisplayName.wasEdited) {
+                    when (personaDisplayName.validationState) {
+                        PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)
+                        PersonaDisplayNameFieldWrapper.ValidationState.TooLong -> stringResource(id = R.string.error_personaLabel_tooLong)
+                        else -> null
+                    }
                 } else {
                     null
-                },
-                onFocusChanged = {
-                    onPersonaDisplayNameFocusChanged(it.hasFocus)
                 }
             )
             HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -345,7 +342,7 @@ private fun PersonaDetailList(
                 },
                 required = field.required,
                 phoneInput = field.isPhoneNumber(),
-                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                error = if (field.shouldDisplayValidationError && field.isValid == false) {
                     validationError
                 } else {
                     null
@@ -412,7 +409,6 @@ fun DappDetailContentPreview() {
             onValueChanged = { _, _ -> },
             onDisplayNameChanged = {},
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {},
             setAddFieldSheetVisible = {}
         )
     }

@@ -39,7 +39,8 @@ class PoolContributionProcessor @Inject constructor(
             from = from,
             to = to,
             badges = badges,
-            actionType = PreviewType.Transfer.Pool.ActionType.Contribution
+            actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 

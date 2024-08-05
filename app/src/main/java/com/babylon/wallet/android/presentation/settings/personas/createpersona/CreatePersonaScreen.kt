@@ -82,7 +82,6 @@ fun CreatePersonaScreen(
         onDeleteField = viewModel::onDeleteField,
         onValueChanged = viewModel::onFieldValueChanged,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
-        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
         onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
         onMessageShown = viewModel::onMessageShown
     )
@@ -113,7 +112,6 @@ fun CreatePersonaContent(
     onDeleteField: (PersonaDataEntryId) -> Unit,
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     onAddFieldSheetVisible: (Boolean) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -147,7 +145,7 @@ fun CreatePersonaContent(
             RadixBottomBar(
                 onClick = onPersonaCreateClick,
                 text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
-                enabled = state.continueButtonEnabled,
+                enabled = state.isContinueButtonEnabled,
                 insets = WindowInsets.navigationBars.union(WindowInsets.ime)
             )
         },
@@ -173,7 +171,6 @@ fun CreatePersonaContent(
                     bottomSheetState.show()
                 }
             },
-            onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
             onFieldFocusChanged = onFieldFocusChanged
         )
     }
@@ -224,8 +221,7 @@ private fun CreatePersonaContentList(
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -269,11 +265,12 @@ private fun CreatePersonaContentList(
                 ),
                 hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
                 hintColor = RadixTheme.colors.gray2,
-                onFocusChanged = {
-                    onPersonaDisplayNameFocusChanged(it.hasFocus)
-                },
-                error = if (personaName.shouldDisplayValidationError && personaName.valid == false) {
-                    stringResource(id = R.string.createPersona_emptyDisplayName)
+                error = if (personaName.wasEdited) {
+                    when (personaName.validationState) {
+                        PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)
+                        PersonaDisplayNameFieldWrapper.ValidationState.TooLong -> stringResource(id = R.string.error_personaLabel_tooLong)
+                        else -> null
+                    }
                 } else {
                     null
                 },
@@ -326,7 +323,7 @@ private fun CreatePersonaContentList(
                 },
                 required = field.required,
                 phoneInput = field.isPhoneNumber(),
-                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                error = if (field.shouldDisplayValidationError && field.isValid == false) {
                     stringResource(id = R.string.createPersona_requiredField)
                 } else {
                     null
@@ -354,7 +351,6 @@ fun CreateAccountContentPreview() {
                 currentFields = persistentListOf(),
                 fieldsToAdd = persistentListOf(),
                 personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),
-                continueButtonEnabled = false,
                 anyFieldSelected = false,
                 isAddFieldBottomSheetVisible = false
             ),
@@ -367,7 +363,6 @@ fun CreateAccountContentPreview() {
             onDeleteField = {},
             onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {},
             onAddFieldSheetVisible = {},
             onMessageShown = {}
         )

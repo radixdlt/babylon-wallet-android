@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +20,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.ImmutableList
@@ -59,15 +59,12 @@ fun PersonaDetailCard(
             )
             if (onSelectPersona != null) {
                 Spacer(modifier = Modifier.weight(1f))
-                RadioButton(
+                RadixRadioButton(
                     selected = persona.selected,
                     onClick = {
                         onSelectPersona(persona.persona)
                     },
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = RadixTheme.colors.gray1,
-                        unselectedColor = RadixTheme.colors.gray4
-                    ),
+                    colors = RadixRadioButtonDefaults.darkColors()
                 )
             }
         }

@@ -12,12 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.presentation.status.transaction.TransactionStatusDialogViewModel.State.DismissInfo.REQUIRE_COMPLETION
+import com.babylon.wallet.android.presentation.status.transaction.TransactionStatusDialogViewModel.State.DismissInfo.STOP_WAITING
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 
 @Composable
-@Suppress("CyclomaticComplexMethod")
 fun TransactionStatusDialog(
     modifier: Modifier = Modifier,
     viewModel: TransactionStatusDialogViewModel,
@@ -37,12 +39,13 @@ fun TransactionStatusDialog(
             }
         }
     }
+
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = dismissHandler,
-        dragToDismissEnabled = !state.blockUntilComplete,
-        showDefaultTopBar = !state.blockUntilComplete,
-        showDragHandle = !state.blockUntilComplete,
+        dragToDismissEnabled = state.isDismissible,
+        showDragHandle = state.isDismissible,
+        isDismissible = false,
         content = {
             Box {
                 androidx.compose.animation.AnimatedVisibility(
@@ -50,7 +53,7 @@ fun TransactionStatusDialog(
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    CompletingContent()
+                    CompletingContent(transactionId = state.transactionId)
                 }
 
                 androidx.compose.animation.AnimatedVisibility(
@@ -97,23 +100,35 @@ fun TransactionStatusDialog(
                     )
                 }
 
-                if (state.isIgnoreTransactionModalShowing) {
-                    BasicPromptAlertDialog(
-                        finish = { accepted ->
-                            if (accepted) {
-                                viewModel.onDismissConfirmed()
-                            } else {
-                                viewModel.onDismissCanceled()
-                            }
-                        },
-                        message = {
-                            Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
-                        },
-                        confirmText = stringResource(id = R.string.common_ok),
-                        dismissText = null
+                state.dismissInfo?.let {
+                    InfoDialog(
+                        type = it,
+                        onClose = viewModel::onInfoClose
                     )
                 }
             }
         }
+    )
+}
+
+@Composable
+private fun InfoDialog(
+    type: TransactionStatusDialogViewModel.State.DismissInfo,
+    onClose: (Boolean) -> Unit
+) {
+    BasicPromptAlertDialog(
+        finish = onClose,
+        message = {
+            Text(
+                text = stringResource(
+                    id = when (type) {
+                        STOP_WAITING -> R.string.transactionStatus_dismissDialog_message
+                        REQUIRE_COMPLETION -> R.string.transactionStatus_dismissalDisabledDialog_text
+                    }
+                )
+            )
+        },
+        confirmText = stringResource(id = R.string.common_ok),
+        dismissText = null
     )
 }

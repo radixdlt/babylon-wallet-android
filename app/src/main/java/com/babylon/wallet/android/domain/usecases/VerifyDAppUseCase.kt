@@ -3,15 +3,15 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
-import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.DApp
+import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -27,23 +27,25 @@ class VerifyDAppUseCase @Inject constructor(
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
         val networkId = getProfileUseCase().currentGateway.network.id
         if (networkId != request.metadata.networkId) {
+            val error = RadixWalletException.DappRequestException.WrongNetwork(
+                currentNetworkId = networkId,
+                requestNetworkId = request.metadata.networkId
+            )
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = request,
-                error = DappWalletInteractionErrorType.INVALID_REQUEST
+                dappWalletInteractionErrorType = error.dappWalletInteractionErrorType,
+                message = error.getDappMessage()
             )
-            return Result.failure(
-                RadixWalletException.DappRequestException.WrongNetwork(
-                    currentNetworkId = networkId,
-                    requestNetworkId = request.metadata.networkId
-                )
-            )
+            return Result.failure(error)
         }
         val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrElse {
+            val error = RadixWalletException.DappRequestException.InvalidRequest
             respondToIncomingRequestUseCase.respondWithFailure(
                 request = request,
-                error = DappWalletInteractionErrorType.INVALID_REQUEST
+                dappWalletInteractionErrorType = error.dappWalletInteractionErrorType,
+                message = "Invalid dApp definition address: ${request.metadata.dAppDefinitionAddress}"
             )
-            return Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
+            return Result.failure(error)
         }
         val developerMode = getProfileUseCase().appPreferences.security.isDeveloperModeEnabled
         return if (developerMode) {
@@ -53,10 +55,15 @@ class VerifyDAppUseCase @Inject constructor(
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = dAppDefinitionAddress
             ).onFailure { error ->
-                error.asRadixWalletException()?.let { radixWalletException ->
-                    val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
-                    respondToIncomingRequestUseCase.respondWithFailure(request, walletErrorType, radixWalletException.getDappMessage())
-                }
+                logNonFatalException(error)
+                val dappWalletInteractionErrorType =
+                    error.toDappWalletInteractionErrorType() ?: DappWalletInteractionErrorType.UNKNOWN_DAPP_DEFINITION_ADDRESS
+                val message = error.getDappMessage()
+                respondToIncomingRequestUseCase.respondWithFailure(
+                    request = request,
+                    dappWalletInteractionErrorType = dappWalletInteractionErrorType,
+                    message = message
+                )
             }
         }
     }

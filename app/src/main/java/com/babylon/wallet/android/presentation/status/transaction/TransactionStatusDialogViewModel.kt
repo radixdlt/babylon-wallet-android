@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
-import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -41,7 +41,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     OneOffEventHandler<TransactionStatusDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State {
-        return State(status = TransactionStatus.from(args.event), blockUntilComplete = args.event.blockUntilComplete)
+        return State(status = TransactionStatus.from(args.event), isDismissible = !args.event.blockUntilComplete)
     }
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
@@ -59,11 +59,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             status = status,
-                            isIgnoreTransactionModalShowing = if (status is TransactionStatus.Completing) {
-                                it.isIgnoreTransactionModalShowing
-                            } else {
-                                false
-                            }
+                            dismissInfo = it.dismissInfo.takeIf { status is TransactionStatus.Completing }
                         )
                     }
 
@@ -95,15 +91,14 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             dAppName = status.dAppName
                         )
                     )
-                    incomingRequestRepository.requestHandled(state.value.status.requestId)
-                    isRequestHandled = true
+                    markRequestAsHandled()
                 }.onFailure { error ->
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
                             incomingRequestRepository.getRequest(status.requestId)?.let { transactionRequest ->
                                 respondToIncomingRequestUseCase.respondWithFailure(
                                     request = transactionRequest,
-                                    error = exception.ceError,
+                                    dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
                                     message = exception.getDappMessage()
                                 )
                             }
@@ -118,45 +113,57 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             isInternal = status.isInternal,
                             errorMessage = exceptionMessageProvider.throwableMessage(error),
                             blockUntilComplete = status.blockUntilComplete,
-                            walletErrorType = error.asRadixWalletException()?.toConnectorExtensionError(),
+                            walletErrorType = error.asRadixWalletException()?.toDappWalletInteractionErrorType(),
                             isMobileConnect = status.isMobileConnect,
                             dAppName = status.dAppName
                         )
                     )
                 }
-                _state.update { it.copy(blockUntilComplete = false) }
                 transactionStatusClient.statusHandled(status.transactionId)
+                _state.update { it.copy(isDismissible = true) }
             }
         }
     }
 
     fun onDismiss() {
-        if (state.value.isCompleting && args.event.blockUntilComplete) return
-        if (state.value.isCompleting) {
-            _state.update { it.copy(isIgnoreTransactionModalShowing = true) }
-        } else {
-            onDismissConfirmed()
+        when {
+            state.value.isCompleting && args.event.blockUntilComplete -> {
+                _state.update { it.copy(dismissInfo = State.DismissInfo.REQUIRE_COMPLETION) }
+            }
+            state.value.isCompleting -> {
+                _state.update { it.copy(dismissInfo = State.DismissInfo.STOP_WAITING) }
+            }
+            else -> onDismissConfirmed()
         }
     }
 
-    fun onDismissConfirmed() {
-        _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
+    fun onInfoClose(confirmed: Boolean) {
+        if (state.value.dismissInfo == State.DismissInfo.STOP_WAITING && confirmed) {
+            onDismissConfirmed()
+        }
+        _state.update { it.copy(dismissInfo = null) }
+    }
+
+    private fun onDismissConfirmed() {
         viewModelScope.launch {
-            if (!isRequestHandled) {
-                incomingRequestRepository.requestHandled(state.value.status.requestId)
-            }
+            markRequestAsHandled()
             sendEvent(Event.DismissDialog)
         }
     }
 
-    fun onDismissCanceled() {
-        _state.update { it.copy(isIgnoreTransactionModalShowing = false) }
+    private suspend fun markRequestAsHandled() {
+        if (isRequestHandled) {
+            return
+        }
+
+        incomingRequestRepository.requestHandled(state.value.status.requestId)
+        isRequestHandled = true
     }
 
     data class State(
         val status: TransactionStatus,
-        val blockUntilComplete: Boolean,
-        val isIgnoreTransactionModalShowing: Boolean = false
+        val isDismissible: Boolean,
+        val dismissInfo: DismissInfo? = null
     ) : UiState {
 
         val isCompleting: Boolean
@@ -176,6 +183,11 @@ class TransactionStatusDialogViewModel @Inject constructor(
 
         val transactionId: IntentHash?
             get() = runCatching { IntentHash.init(status.transactionId) }.getOrNull()
+
+        enum class DismissInfo {
+            STOP_WAITING,
+            REQUIRE_COMPLETION
+        }
     }
 
     sealed interface Event : OneOffEvent {

@@ -14,7 +14,7 @@ fun Modifier.throttleClickable(
 ): Modifier {
     return composed {
         val lastClickMs = remember { mutableLongStateOf(0L) }
-        clickable(enabled = enabled) {
+        this.clickable(enabled = enabled) {
             ClickListenerUtils.throttleOnClick(
                 lastClickMs = lastClickMs,
                 onClick = onClick,

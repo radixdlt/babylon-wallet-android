@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transfer
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -17,14 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,7 +53,6 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
 
 @Composable
@@ -146,17 +141,6 @@ fun TransferContent(
     onTransferSubmit: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-
-    SyncSheetState(
-        sheetState = bottomSheetState,
-        isSheetVisible = state.isSheetVisible,
-        onSheetClosed = onSheetClosed
-    )
-
     state.maxXrdError?.let { error ->
         if (error.maxAccountAmountLessThanFee) {
             BasicPromptAlertDialog(
@@ -412,33 +396,6 @@ fun TransferContent(
 
                 is State.Sheet.None -> {}
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SyncSheetState(
-    sheetState: SheetState,
-    isSheetVisible: Boolean,
-    onSheetClosed: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    BackHandler(enabled = isSheetVisible) {
-        onSheetClosed()
-    }
-
-    LaunchedEffect(isSheetVisible) {
-        if (isSheetVisible) {
-            scope.launch { sheetState.show() }
-        } else {
-            scope.launch { sheetState.hide() }
-        }
-    }
-
-    LaunchedEffect(sheetState.isVisible) {
-        if (!sheetState.isVisible) {
-            onSheetClosed()
         }
     }
 }

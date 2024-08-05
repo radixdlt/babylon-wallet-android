@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,6 +44,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.HomeCardsCarousel
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -60,6 +60,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.AccountMainnetSample
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toPersistentList
@@ -270,7 +271,7 @@ private fun WalletAccountList(
     ) {
         if (state.cards.isNotEmpty()) {
             item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 HomeCardsCarousel(
                     cards = state.cards,
                     onClick = onCardClick,
@@ -281,7 +282,7 @@ private fun WalletAccountList(
 
         if (!state.isFiatPricesDisabled) {
             item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(R.string.homePage_totalValue).uppercase(),
                     style = RadixTheme.typography.body2Header,
@@ -298,7 +299,7 @@ private fun WalletAccountList(
                         TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
                     }
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
             }
         } else {
             item {
@@ -320,11 +321,9 @@ private fun WalletAccountList(
         }
 
         item {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RadixSecondaryButton(
                 text = stringResource(id = R.string.homePage_createNewAccount),
-                onClick = onAccountCreationClick,
-                modifier = Modifier.fillMaxWidth(0.8f)
+                onClick = onAccountCreationClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
@@ -372,11 +371,21 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletViewModel.State> {
                                 Token(Resource.FungibleResource.sampleMainnet())
                             )
                         )
+                    ),
+                    AccountWithAssets(
+                        account = AccountMainnetSample.carol,
+                        assets = Assets(),
+                    )
+                ),
+                accountsWithSecurityPrompts = mapOf(
+                    Account.sampleMainnet.other().address to setOf(
+                        SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
+                        SecurityPromptType.RECOVERY_REQUIRED
                     )
                 ),
                 prices = WalletViewModel.State.PricesState.Enabled(
                     pricesPerAccount = mapOf(
-                        Account.sampleMainnet().address to emptyList<AssetPrice>(),
+                        Account.sampleMainnet().address to emptyList(),
                         Account.sampleMainnet.other().address to listOf<AssetPrice>(
                             AssetPrice.TokenPrice(
                                 asset = Token(Resource.FungibleResource.sampleMainnet()),

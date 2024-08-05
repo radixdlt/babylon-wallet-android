@@ -59,6 +59,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceAddress
@@ -176,7 +177,6 @@ object Thumbnail {
 
             var painterState: AsyncImagePainter.State by remember(image) { mutableStateOf(AsyncImagePainter.State.Empty) }
             val density = LocalDensity.current
-
             SubcomposeAsyncImage(
                 modifier = modifier,
                 model = request,
@@ -185,12 +185,24 @@ object Thumbnail {
             ) {
                 Image(
                     modifier = Modifier
+                        .clip(RoundedCornerShape(cornerRadius))
+                        .applyIf(
+                            condition = painterState !is AsyncImagePainter.State.Success,
+                            modifier = Modifier.background(RadixTheme.colors.gray4)
+                        )
                         .applyIf(
                             condition = cropped,
                             modifier = when (val state = painterState) {
                                 is AsyncImagePainter.State.Empty -> Modifier
                                 is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
-                                is AsyncImagePainter.State.Loading -> Modifier
+                                is AsyncImagePainter.State.Loading ->
+                                    Modifier
+                                        .aspectRatio(NFTAspectRatio)
+                                        .radixPlaceholder(
+                                            visible = true,
+                                            shape = RoundedCornerShape(NFTCornerRadius)
+                                        )
+
                                 is AsyncImagePainter.State.Success -> {
                                     val intrinsicSize = state.painter.intrinsicSize
                                     if (intrinsicSize.height > intrinsicSize.width) {
@@ -213,11 +225,6 @@ object Thumbnail {
                                 is AsyncImagePainter.State.Error -> Modifier.aspectRatio(maxAspectRatio)
                                 else -> Modifier.wrapContentHeight()
                             }
-                        )
-                        .clip(RoundedCornerShape(cornerRadius))
-                        .applyIf(
-                            condition = painterState !is AsyncImagePainter.State.Success,
-                            modifier = Modifier.background(RadixTheme.colors.gray4)
                         ),
                     painter = painter,
                     contentDescription = null,
@@ -254,6 +261,7 @@ object Thumbnail {
                 modifier = modifier,
                 token = resource
             )
+
             is Resource.NonFungibleResource -> NonFungible(
                 modifier = modifier,
                 collection = resource
@@ -299,7 +307,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = liquidStakeUnit?.fungibleResource?.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
-            emptyDrawable = R.drawable.ic_pool_units,
+            emptyDrawable = DSR.ic_lsu,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = liquidStakeUnit?.fungibleResource?.name.orEmpty()
