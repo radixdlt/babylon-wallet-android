@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -43,6 +45,8 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
+import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 
@@ -135,7 +139,7 @@ fun CreateAccountContent(
     )
 
     Scaffold(
-        modifier = modifier.imePadding(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
@@ -148,7 +152,8 @@ fun CreateAccountContent(
             RadixBottomBar(
                 onClick = { onAccountCreateClick(isWithLedger) },
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
-                enabled = buttonEnabled
+                enabled = buttonEnabled,
+                insets = if (isKeyboardVisible()) WindowInsets.ime else WindowInsets.navigationBars
             )
         },
         containerColor = RadixTheme.colors.defaultBackground,
