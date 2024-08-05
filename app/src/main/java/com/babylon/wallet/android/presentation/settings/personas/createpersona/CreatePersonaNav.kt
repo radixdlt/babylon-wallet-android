@@ -48,17 +48,17 @@ fun NavGraphBuilder.personaInfoScreen(
         route = ROUTE_PERSONA_INFO,
         arguments = listOf(),
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            null
-        },
-        popExitTransition = {
             ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
         },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+        }
     ) {
         CreatePersonaInfoScreen(
             onBackClick = onBackClick,
@@ -76,17 +76,17 @@ fun NavGraphBuilder.createPersonaScreen(
         route = ROUTE_CREATE_PERSONA,
         arguments = listOf(),
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            null
-        },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
         },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+        }
     ) {
         CreatePersonaScreen(
             viewModel = hiltViewModel(),
@@ -109,7 +109,7 @@ fun NavGraphBuilder.personasScreen(
         },
         exitTransition = {
             when (targetState.destination.route) {
-                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> null
+                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> ExitTransition.None
                 else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         },

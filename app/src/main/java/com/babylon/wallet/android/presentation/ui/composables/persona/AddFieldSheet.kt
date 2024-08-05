@@ -38,6 +38,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.toDisplayResource
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -63,6 +64,7 @@ fun AddFieldSheet(
                 title = stringResource(id = R.string.editPersona_addAField_title),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1,
+                backIconType = BackIconType.Close
             )
             HorizontalDivider(color = RadixTheme.colors.gray4)
         }
