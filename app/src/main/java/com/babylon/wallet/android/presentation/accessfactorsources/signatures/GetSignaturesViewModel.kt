@@ -123,7 +123,10 @@ class GetSignaturesViewModel @Inject constructor(
 
             is DeviceRequest -> {
                 _state.update { state ->
-                    state.copy(showContentForFactorSource = State.ShowContentForFactorSource.Device)
+                    state.copy(
+                        showContentForFactorSource = State.ShowContentForFactorSource.Device,
+                        isRetryButtonEnabled = true // enable the Retry button, reason is at line 184
+                    )
                 }
                 sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)
             }
@@ -176,6 +179,10 @@ class GetSignaturesViewModel @Inject constructor(
     fun collectSignaturesForDeviceFactorSource() {
         collectSignaturesWithDeviceJob?.cancel()
         collectSignaturesWithDeviceJob = viewModelScope.launch {
+            // user has already authenticated with biometric prompt
+            // so disable the Retry button as long as wallet is collecting the signatures
+            _state.update { state -> state.copy(isRetryButtonEnabled = false) }
+
             val request = state.value.nextRequest as? DeviceRequest ?: return@launch
             val entitiesWithSignaturesForAllDeviceFactorSources = mutableListOf<EntityWithSignature>()
 
@@ -283,6 +290,7 @@ class GetSignaturesViewModel @Inject constructor(
         // map to keep signature for each entity (signer). This will be returned as output once all signers are done.
         val entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None,
+        val isRetryButtonEnabled: Boolean = true
     ) : UiState {
 
         sealed class FactorSourceRequest {

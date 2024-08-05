@@ -75,6 +75,7 @@ fun GetSignaturesDialog(
         modifier = modifier,
         signType = state.signType,
         showContentForFactorSource = state.showContentForFactorSource,
+        isRetryButtonEnabled = state.isRetryButtonEnabled,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -85,6 +86,7 @@ private fun GetSignaturesBottomSheetContent(
     modifier: Modifier = Modifier,
     signType: SignType,
     showContentForFactorSource: State.ShowContentForFactorSource,
+    isRetryButtonEnabled: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -150,6 +152,7 @@ private fun GetSignaturesBottomSheetContent(
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.common_retry),
+                enabled = isRetryButtonEnabled,
                 onClick = onRetryClick
             )
         }
@@ -164,6 +167,7 @@ fun GetSignaturesForSigningTransactionWithDevicePreview() {
         GetSignaturesBottomSheetContent(
             signType = SignType.SigningTransaction,
             showContentForFactorSource = State.ShowContentForFactorSource.Device,
+            isRetryButtonEnabled = true,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -180,6 +184,7 @@ fun GetSignaturesForSigningTransactionWithLedgerPreview() {
             showContentForFactorSource = State.ShowContentForFactorSource.Ledger(
                 ledgerFactorSource = FactorSource.Ledger.sample()
             ),
+            isRetryButtonEnabled = true,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -194,6 +199,7 @@ fun GetSignaturesForProvingOwnershipWithDevicePreview() {
         GetSignaturesBottomSheetContent(
             signType = SignType.ProvingOwnership,
             showContentForFactorSource = State.ShowContentForFactorSource.Device,
+            isRetryButtonEnabled = true,
             onDismiss = {},
             onRetryClick = {}
         )
