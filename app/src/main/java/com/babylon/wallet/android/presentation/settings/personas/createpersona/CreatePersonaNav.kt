@@ -31,7 +31,6 @@ fun NavController.personaInfoScreen() {
     navigate(ROUTE_PERSONA_INFO)
 }
 
-@Suppress("SwallowedException")
 fun NavController.popPersonaCreation() {
     val entryToPop = runCatching { getBackStackEntry(ROUTE_PERSONA_INFO) }.flatMapError {
         runCatching { getBackStackEntry(ROUTE_CREATE_PERSONA) }
