@@ -129,13 +129,12 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             label = selectedPersona.displayName.value
         )
 
-        val authResponse: Result<WalletToDappInteractionAuthRequestResponseItem> =
+        val authResponseItem: Result<WalletToDappInteractionAuthRequestResponseItem> =
             when (val authRequest = request.authRequest) {
                 is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
                     var response: Result<WalletToDappInteractionAuthRequestResponseItem> = Result.failure(
                         RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
-
                     getSignaturesForAllEntities(
                         challenge = authRequest.challenge,
                         metadata = request.metadata,
@@ -193,7 +192,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 }
             }
 
-        if (authResponse.isSuccess) {
+        if (authResponseItem.isSuccess) {
             val oneTimeAccountsResponseItem = buildAccountsResponseItem(
                 request = request,
                 accounts = oneTimeAccounts,
@@ -226,7 +225,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                         interactionId = request.interactionId,
                         items = WalletToDappInteractionResponseItems.AuthorizedRequest(
                             v1 = WalletToDappInteractionAuthorizedRequestResponseItems(
-                                auth = authResponse.getOrThrow(),
+                                auth = authResponseItem.getOrThrow(),
                                 oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                                 ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
                                 ongoingPersonaData = ongoingSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
@@ -238,7 +237,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             )
         } else {
             return Result.failure(
-                exception = authResponse.exceptionOrNull()
+                exception = authResponseItem.exceptionOrNull()
                     ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
             )
         }
