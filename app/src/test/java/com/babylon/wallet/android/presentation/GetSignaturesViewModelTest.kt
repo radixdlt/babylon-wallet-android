@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
 import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.domain.model.signing.SignType
+import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
@@ -138,7 +138,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         backgroundScope.launch(Dispatchers.Default)   { // TransactionReviewScreen needs to access factor sources to get signatures
             val result = accessFactorSourcesProxyFake.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signType = SignType.SigningTransaction,
+                    signPurpose = SignPurpose.SignTransaction,
                     signers = listOf(signerWithLedgerFactorSource, signerWithDeviceFactorSource),
                     signRequest = signRequest
                 )
@@ -176,7 +176,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         backgroundScope.launch(Dispatchers.Default)  { // TransactionReviewScreen needs to access factor sources to get signatures
             val result = accessFactorSourcesProxyFake.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signType = SignType.SigningTransaction,
+                    signPurpose = SignPurpose.SignTransaction,
                     signers = signers,
                     signRequest = signRequest
                 )
@@ -235,7 +235,7 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
 
     override fun getInput(): AccessFactorSourcesInput {
         return AccessFactorSourcesInput.ToGetSignatures(
-            signType = SignType.SigningTransaction,
+            signPurpose = SignPurpose.SignTransaction,
             signers = signers,
             signRequest = signRequest
         )
