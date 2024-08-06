@@ -29,6 +29,13 @@ import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthoriz
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
+import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
+import com.babylon.wallet.android.presentation.dialogs.assets.assetDialog
+import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
+import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
+import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -66,13 +73,6 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.seedphras
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
-import com.babylon.wallet.android.presentation.status.address.addressDetails
-import com.babylon.wallet.android.presentation.status.assets.assetDialog
-import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
-import com.babylon.wallet.android.presentation.status.dapp.dAppDetailsDialog
-import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
-import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
