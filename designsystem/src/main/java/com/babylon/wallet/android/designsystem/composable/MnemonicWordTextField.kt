@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
@@ -72,8 +74,7 @@ fun MnemonicWordTextField(
         }
     }
     Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        modifier = modifier
     ) {
         Text(
             text = label,
@@ -95,6 +96,7 @@ fun MnemonicWordTextField(
             focused -> RadixTheme.colors.gray1
             else -> RadixTheme.colors.gray4
         }
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
             BasicTextField(
                 modifier = Modifier
@@ -143,6 +145,7 @@ fun MnemonicWordTextField(
             )
         }
         if (error != null || errorFixedSize) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
                 verticalAlignment = Alignment.CenterVertically

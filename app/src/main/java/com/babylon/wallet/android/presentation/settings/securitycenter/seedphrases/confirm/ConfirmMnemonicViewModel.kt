@@ -91,7 +91,6 @@ class ConfirmMnemonicViewModel @Inject constructor(
     ) : UiState
 
     sealed interface Event : OneOffEvent {
-        data object MoveToNextWord : Event
         data object MnemonicBackedUp : Event
     }
 }
