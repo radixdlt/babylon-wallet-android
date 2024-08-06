@@ -63,7 +63,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     .referencesToAuthorizedPersonas
                     .firstOrNull { authorizedPersonaSimple ->
                         authorizedPersonaSimple.identityAddress.string ==
-                                (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.identityAddress?.string
+                            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.identityAddress?.string
                     }
                 if (authorizedPersonaSimple == null) {
                     respondWithInvalidPersona(incomingRequest)
