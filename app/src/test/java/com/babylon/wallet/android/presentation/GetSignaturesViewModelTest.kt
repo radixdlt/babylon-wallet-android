@@ -3,9 +3,11 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.babylon.wallet.android.domain.usecases.transaction.SignWithDeviceFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SignWithLedgerFactorSourceUseCase
+import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
+import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.mockdata.sampleWithLedgerAccount
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
@@ -37,7 +39,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import rdx.works.core.sargon.allAccountsOnCurrentNetwork
-import rdx.works.core.sargon.deviceFactorSources
+import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 
 private val sampleProfile = Profile.sampleWithLedgerAccount()
@@ -122,19 +124,37 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         }
     }
 
-
     // caller = the WalletSignatureGatherer of the SignTransactionUseCase -> TransactionSubmitDelegate -> TransactionReviewViewModel
     @Test
     fun `given ledger and device factor sources to sign, when signing successfully, then return successful output to the caller`() = runTest {
+        assertTrue(signers[0].securityState.transactionSigningFactorInstance.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET)
+        val signerWithLedgerFactorSource = signers[0]
+        assertTrue(signers[1].securityState.transactionSigningFactorInstance.factorSourceId.kind == FactorSourceKind.DEVICE)
+        val signerWithDeviceFactorSource = signers[1]
+
+        val signatureFromLedger = SignatureWithPublicKey.sample.invoke()
+        val signatureFromDevice = SignatureWithPublicKey.sample.other()
+
         backgroundScope.launch(Dispatchers.Default)   { // TransactionReviewScreen needs to access factor sources to get signatures
-            val result = accessFactorSourcesProxyFake.getSignatures(AccessFactorSourcesInput.ToGetSignatures(signers, signRequest))
+            val result = accessFactorSourcesProxyFake.getSignatures(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signType = SignType.SigningTransaction,
+                    signers = listOf(signerWithLedgerFactorSource, signerWithDeviceFactorSource),
+                    signRequest = signRequest
+                )
+            )
             assertTrue(result.isSuccess)
-            assertTrue(result.getOrNull()!!.signaturesWithPublicKey.size == 2)
+            assertTrue(result.getOrNull()!!.signersWithSignatures.size == 2)
+            assertTrue(result.getOrNull()!!.signersWithSignatures[signers[0]] == signatureFromLedger)
+            assertTrue(result.getOrNull()!!.signersWithSignatures[signers[1]] == signatureFromDevice)
         }
 
-        val signature = SignatureWithPublicKey.sample()
-        coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf(signature))
-        coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf(signature))
+        coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
+            listOf(EntityWithSignature(entity = signerWithLedgerFactorSource, signatureWithPublicKey = signatureFromLedger))
+        )
+        coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
+            listOf(EntityWithSignature(entity = signerWithDeviceFactorSource, signatureWithPublicKey = signatureFromDevice))
+        )
 
         val viewModel = vm.value
         advanceUntilIdle()
@@ -143,8 +163,10 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         advanceUntilIdle()
         viewModel.state.test {
             val state = expectMostRecentItem()
-            val isSignatureCollected = state.signaturesWithPublicKeys.contains(signature)
-            assertTrue(isSignatureCollected)
+            val isSignatureFromLedgerCollected = state.entitiesWithSignatures.values.toList().contains(signatureFromLedger)
+            assertTrue(isSignatureFromLedgerCollected)
+            val isSignatureFromDeviceCollected = state.entitiesWithSignatures.values.toList().contains(signatureFromDevice)
+            assertTrue(isSignatureFromDeviceCollected)
         }
     }
 
@@ -152,12 +174,20 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
     @Test
     fun `given ledger and device factor sources to sign, when one of the factor source sign fails, then end signing process and return failure`() = runTest {
         backgroundScope.launch(Dispatchers.Default)  { // TransactionReviewScreen needs to access factor sources to get signatures
-            val result = accessFactorSourcesProxyFake.getSignatures(AccessFactorSourcesInput.ToGetSignatures(signers, signRequest))
+            val result = accessFactorSourcesProxyFake.getSignatures(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signType = SignType.SigningTransaction,
+                    signers = signers,
+                    signRequest = signRequest
+                )
+            )
             assertTrue(result.isFailure)
         }
 
         val signature = SignatureWithPublicKey.sample()
-        coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf(signature))
+        coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
+            listOf(EntityWithSignature(entity = signers[0], signatureWithPublicKey = signature))
+        )
         coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.failure(exception = IllegalStateException("User has no fingers"))
 
         val viewModel = vm.value
@@ -167,7 +197,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         advanceUntilIdle()
         viewModel.state.test {
             val state = expectMostRecentItem()
-            val isSignatureCollected = state.signaturesWithPublicKeys.contains(signature)
+            val isSignatureCollected = state.entitiesWithSignatures.containsValue(signature)
             assertTrue(isSignatureCollected)
         }
     }
@@ -186,12 +216,12 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSignatures(accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures): Result<AccessFactorSourcesOutput.Signatures> {
+    override suspend fun getSignatures(accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures): Result<AccessFactorSourcesOutput.EntitiesWithSignatures> {
         val result = _output.first()
         return if (result is AccessFactorSourcesOutput.Failure) {
             Result.failure(result.error)
         } else {
-            Result.success(result as AccessFactorSourcesOutput.Signatures)
+            Result.success(result as AccessFactorSourcesOutput.EntitiesWithSignatures)
         }
     }
 
@@ -205,6 +235,7 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
 
     override fun getInput(): AccessFactorSourcesInput {
         return AccessFactorSourcesInput.ToGetSignatures(
+            signType = SignType.SigningTransaction,
             signers = signers,
             signRequest = signRequest
         )

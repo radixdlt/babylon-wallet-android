@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -99,7 +98,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             }
         }
-        observeSigningState()
         viewModelScope.launch {
             val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? AuthorizedRequest
             if (requestToHandle == null) {
@@ -127,20 +125,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
             setInitialDappLoginRoute(dAppDefinitionAddress)
         }
-    }
-
-    private fun observeSigningState() {
-        viewModelScope.launch {
-            buildAuthorizedDappResponseUseCase.signingState.collect { signingState ->
-                _state.update { state ->
-                    state.copy(interactionState = signingState)
-                }
-            }
-        }
-    }
-
-    fun onDismissSigningStatusDialog() {
-        _state.update { it.copy(interactionState = null) }
     }
 
     private suspend fun setInitialDappLoginRoute(dAppDefinitionAddress: AccountAddress) {
@@ -321,7 +305,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val request = request
         when {
             request.hasOnlyAuthItem() -> {
-                promptForBiometrics()
+                completeRequestHandling()
             }
 
             request.ongoingAccountsRequestItem != null -> {
@@ -347,7 +331,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
 
             else -> {
-                promptForBiometrics()
+                completeRequestHandling()
             }
         }
     }
@@ -402,7 +386,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     selectedOnetimePersonaData = sharedPersonaData
                 )
             }
-            promptForBiometrics()
+            completeRequestHandling()
         }
     }
 
@@ -468,7 +452,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
             }
 
-            else -> promptForBiometrics()
+            else -> completeRequestHandling()
         }
     }
 
@@ -551,7 +535,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                 }
 
-                else -> promptForBiometrics()
+                else -> completeRequestHandling()
             }
         }
     }
@@ -664,7 +648,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     }
 
                     else -> {
-                        promptForBiometrics()
+                        completeRequestHandling()
                     }
                 }
             }
@@ -678,21 +662,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
                 else -> {
                     viewModelScope.launch {
-                        promptForBiometrics()
+                        completeRequestHandling()
                     }
                 }
             }
         }
     }
 
-    private suspend fun promptForBiometrics() {
-        sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
-    }
-
-    fun completeRequestHandling(
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },
-        abortOnFailure: Boolean = false
-    ) {
+    fun completeRequestHandling() {
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
@@ -713,8 +690,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
                     },
                     ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
-                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
-                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData
                 ).mapCatching { response ->
                     respondToIncomingRequestUseCase.respondWithSuccess(request, response).getOrThrow()
                 }.onSuccess { result ->
@@ -725,7 +701,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
-                                requestId = request.interactionId.toString(),
+                                requestId = request.interactionId,
                                 dAppName = state.value.dapp?.name,
                                 isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                             )
@@ -733,9 +709,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     }
                 }.onFailure { throwable ->
                     handleRequestError(throwable)
-                    if (abortOnFailure) {
-                        onAbortDappLogin()
-                    }
                 }
             }
         }
@@ -745,7 +718,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 sealed interface Event : OneOffEvent {
 
     data object CloseLoginFlow : Event
-    data class RequestCompletionBiometricPrompt(val isSignatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
     data class DisplayPermission(
@@ -779,6 +751,5 @@ data class DAppLoginUiState(
     val selectedOnetimePersonaData: PersonaData? = null,
     val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
     val selectedPersona: PersonaUiModel? = null,
-    val interactionState: InteractionState? = null,
     val isNoMnemonicErrorVisible: Boolean = false
 ) : UiState

@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -40,7 +38,6 @@ import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event.CreatePersona
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -49,9 +46,6 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaSelectableCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Persona
@@ -74,7 +68,6 @@ fun SelectPersonaScreen(
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     if (sharedState.isNoMnemonicErrorVisible) {
@@ -89,20 +82,7 @@ fun SelectPersonaScreen(
         onChooseAccounts = onChooseAccounts,
         onDisplayPermission = onDisplayPermission,
         onPersonaDataOngoing = onPersonaDataOngoing,
-        onPersonaDataOnetime = onPersonaDataOnetime,
-        onBiometricPrompt = { signatureRequired ->
-            if (signatureRequired) {
-                sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
-                    context.biometricAuthenticateSuspend()
-                })
-            } else {
-                context.biometricAuthenticate { result ->
-                    if (result == BiometricAuthenticationResult.Succeeded) {
-                        sharedViewModel.completeRequestHandling()
-                    }
-                }
-            }
-        }
+        onPersonaDataOnetime = onPersonaDataOnetime
     )
 
     LaunchedEffect(state.selectedPersona?.address) {
@@ -135,13 +115,6 @@ fun SelectPersonaScreen(
         dapp = sharedState.dapp,
         state = state
     )
-    sharedState.interactionState?.let {
-        FactorSourceInteractionBottomDialog(
-            modifier = Modifier.fillMaxHeight(0.8f),
-            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
-            interactionState = it
-        )
-    }
 }
 
 @Composable
@@ -152,8 +125,7 @@ private fun HandleOneOffEvents(
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     onDisplayPermission: (Event.DisplayPermission) -> Unit,
     onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
-    onBiometricPrompt: (signtureReguired: Boolean) -> Unit
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
@@ -164,7 +136,6 @@ private fun HandleOneOffEvents(
                 is Event.DisplayPermission -> onDisplayPermission(event)
                 is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
-                is Event.RequestCompletionBiometricPrompt -> onBiometricPrompt(event.isSignatureRequired)
             }
         }
     }

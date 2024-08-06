@@ -12,13 +12,11 @@ import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IdentityAddress
@@ -184,7 +182,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         every { appEventBus.events } returns emptyFlow()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
-        every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
         coEvery { getProfileUseCase() } returns sampleProfile
         coEvery { incomingRequestRepository.getRequest(any()) } returns requestWithNonExistingDappAddress
@@ -211,12 +208,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         advanceUntilIdle()
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is Event.DisplayPermission)
-        }
-        vm.onAccountsSelected(listOf(AccountItemUiModel(AccountAddress.sampleMainnet(), "account 1", AppearanceId(0u))), false)
-        advanceUntilIdle()
-        vm.oneOffEvent.test {
-            val mostRecentItem = expectMostRecentItem()
-            assert(mostRecentItem is Event.RequestCompletionBiometricPrompt)
         }
     }
 
