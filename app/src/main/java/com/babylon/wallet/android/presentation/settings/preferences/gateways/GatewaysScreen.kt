@@ -47,7 +47,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -89,19 +89,11 @@ fun GatewaysScreen(
     )
 
     state.addGatewayInput?.let { input ->
-        DefaultModalSheetLayout(
-            sheetState = bottomSheetState,
-            showDragHandle = true,
-            wrapContent = true,
-            onDismissRequest = { viewModel.setAddGatewaySheetVisible(false) },
-            sheetContent = {
-                AddGatewaySheet(
-                    input = input,
-                    onAddGatewayClick = viewModel::onAddGateway,
-                    onUrlChanged = viewModel::onNewUrlChanged,
-                    onClose = { viewModel.setAddGatewaySheetVisible(false) }
-                )
-            }
+        AddGatewaySheet(
+            input = input,
+            onAddGatewayClick = viewModel::onAddGateway,
+            onUrlChanged = viewModel::onNewUrlChanged,
+            onDismiss = { viewModel.setAddGatewaySheetVisible(false) }
         )
     }
 }
@@ -224,8 +216,7 @@ private fun AddGatewaySheet(
     input: GatewaysViewModel.State.AddGatewayInput,
     onAddGatewayClick: () -> Unit,
     onUrlChanged: (String) -> Unit,
-    onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    onDismiss: () -> Unit
 ) {
     val inputFocusRequester = remember { FocusRequester() }
 
@@ -233,29 +224,15 @@ private fun AddGatewaySheet(
         inputFocusRequester.requestFocus()
     }
 
-    Box(
-        modifier = modifier.imePadding()
+    BottomSheetDialogWrapper(
+        addScrim = true,
+        showDragHandle = true,
+        onDismiss = onDismiss
     ) {
         Column(
-            modifier = Modifier
-                .padding(bottom = 88.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
         ) {
-            IconButton(
-                modifier = Modifier.padding(
-                    start = RadixTheme.dimensions.paddingXSmall,
-                    top = RadixTheme.dimensions.paddingMedium
-                ),
-                onClick = onClose
-            ) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
-                    tint = RadixTheme.colors.gray1,
-                    contentDescription = null
-                )
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(id = R.string.gateways_addNewGateway_title),
@@ -297,7 +274,7 @@ private fun AddGatewaySheet(
         }
 
         RadixBottomBar(
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier.imePadding(),
             onClick = onAddGatewayClick,
             text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             enabled = input.isUrlValid,
@@ -435,7 +412,7 @@ private fun AddGatewaySheetPreview() {
             input = GatewaysViewModel.State.AddGatewayInput(),
             onAddGatewayClick = {},
             onUrlChanged = {},
-            onClose = {}
+            onDismiss = {}
         )
     }
 }

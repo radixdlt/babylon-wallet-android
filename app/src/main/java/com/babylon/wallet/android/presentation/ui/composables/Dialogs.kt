@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -185,6 +186,7 @@ fun BottomSheetDialogWrapper(
                     .applyIf(
                         dragToDismissEnabled,
                         Modifier
+                            .fillMaxWidth()
                             .anchoredDraggable(
                                 state = draggableState,
                                 orientation = Orientation.Vertical,
@@ -205,17 +207,27 @@ fun BottomSheetDialogWrapper(
                     .clip(RadixTheme.shapes.roundedRectTopMedium),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (showDragHandle) {
-                    DefaultModalSheetDragHandle()
-                }
-                if (showDefaultTopBar) {
-                    BottomDialogHeader(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
-                        onDismissRequest = { onDismissRequest() },
-                        title = title
-                    )
+                Box(
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    if (showDefaultTopBar) {
+                        BottomDialogHeader(
+                            modifier = Modifier
+                                .padding(top = RadixTheme.dimensions.paddingMedium)
+                                .fillMaxWidth()
+                                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
+                            onDismissRequest = { onDismissRequest() },
+                            title = title
+                        )
+                    }
+                    if (showDragHandle) {
+                        DefaultModalSheetDragHandle(
+                            padding = PaddingValues(
+                                top = RadixTheme.dimensions.paddingSmall,
+                                bottom = RadixTheme.dimensions.paddingLarge
+                            )
+                        )
+                    }
                 }
                 if (centerContent) {
                     Column(
