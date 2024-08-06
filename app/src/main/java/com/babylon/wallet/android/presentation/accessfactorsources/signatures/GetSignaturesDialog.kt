@@ -28,6 +28,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -72,7 +73,9 @@ fun GetSignaturesDialog(
 
     GetSignaturesBottomSheetContent(
         modifier = modifier,
+        signType = state.signType,
         showContentForFactorSource = state.showContentForFactorSource,
+        isRetryButtonEnabled = state.isRetryButtonEnabled,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
     )
@@ -81,7 +84,9 @@ fun GetSignaturesDialog(
 @Composable
 private fun GetSignaturesBottomSheetContent(
     modifier: Modifier = Modifier,
+    signType: SignType,
     showContentForFactorSource: State.ShowContentForFactorSource,
+    isRetryButtonEnabled: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -109,21 +114,30 @@ private fun GetSignaturesBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.factorSourceActions_signature_title)
+                text = when (signType) {
+                    SignType.SigningTransaction -> stringResource(id = R.string.factorSourceActions_signature_title)
+                    SignType.ProvingOwnership -> stringResource(id = R.string.factorSourceActions_proveOwnership_title)
+                }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 is State.ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
+                        text = when (signType) {
+                            SignType.SigningTransaction -> stringResource(id = R.string.factorSourceActions_device_messageSignature)
+                            SignType.ProvingOwnership -> stringResource(id = R.string.factorSourceActions_device_message)
+                        }
                     )
                 }
 
                 is State.ShowContentForFactorSource.Ledger -> {
+                    val stringRes = when (signType) {
+                        SignType.SigningTransaction -> stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
+                        SignType.ProvingOwnership -> stringResource(id = R.string.factorSourceActions_ledger_message)
+                    }
                     Text(
-                        text = stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
-                            .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                        text = stringRes.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                         style = RadixTheme.typography.body1Regular,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.Center
@@ -138,6 +152,7 @@ private fun GetSignaturesBottomSheetContent(
             RadixTextButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.common_retry),
+                enabled = isRetryButtonEnabled,
                 onClick = onRetryClick
             )
         }
@@ -147,10 +162,12 @@ private fun GetSignaturesBottomSheetContent(
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun DerivePublicKeyDialogDevicePreview() {
+fun GetSignaturesForSigningTransactionWithDevicePreview() {
     RadixWalletTheme {
         GetSignaturesBottomSheetContent(
+            signType = SignType.SigningTransaction,
             showContentForFactorSource = State.ShowContentForFactorSource.Device,
+            isRetryButtonEnabled = true,
             onDismiss = {},
             onRetryClick = {}
         )
@@ -160,12 +177,29 @@ fun DerivePublicKeyDialogDevicePreview() {
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-fun DerivePublicKeyDialogLedgerPreview() {
+fun GetSignaturesForSigningTransactionWithLedgerPreview() {
     RadixWalletTheme {
         GetSignaturesBottomSheetContent(
+            signType = SignType.SigningTransaction,
             showContentForFactorSource = State.ShowContentForFactorSource.Ledger(
                 ledgerFactorSource = FactorSource.Ledger.sample()
             ),
+            isRetryButtonEnabled = true,
+            onDismiss = {},
+            onRetryClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = false)
+@Composable
+fun GetSignaturesForProvingOwnershipWithDevicePreview() {
+    RadixWalletTheme {
+        GetSignaturesBottomSheetContent(
+            signType = SignType.ProvingOwnership,
+            showContentForFactorSource = State.ShowContentForFactorSource.Device,
+            isRetryButtonEnabled = true,
             onDismiss = {},
             onRetryClick = {}
         )

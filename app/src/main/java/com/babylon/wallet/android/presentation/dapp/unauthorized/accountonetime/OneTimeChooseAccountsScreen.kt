@@ -1,12 +1,10 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -15,12 +13,8 @@ import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -38,7 +32,6 @@ fun OneTimeChooseAccountsScreen(
     onPersonaOnetime: (RequiredPersonaFields) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val sharedViewModelState by sharedViewModel.state.collectAsStateWithLifecycle()
     if (sharedViewModelState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
@@ -51,19 +44,6 @@ fun OneTimeChooseAccountsScreen(
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.PersonaDataOnetime -> onPersonaOnetime(event.requiredPersonaFields)
                 Event.CloseLoginFlow -> onLoginFlowComplete()
-                is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.requestDuringSigning) {
-                        sharedViewModel.sendRequestResponse(deviceBiometricAuthenticationProvider = {
-                            context.biometricAuthenticateSuspend()
-                        })
-                    } else {
-                        context.biometricAuthenticate { result ->
-                            if (result == BiometricAuthenticationResult.Succeeded) {
-                                sharedViewModel.sendRequestResponse()
-                            }
-                        }
-                    }
-                }
             }
         }
     }
@@ -102,13 +82,6 @@ fun OneTimeChooseAccountsScreen(
         showBackButton = false,
         modifier = modifier
     )
-    sharedState.interactionState?.let {
-        FactorSourceInteractionBottomDialog(
-            modifier = Modifier.fillMaxHeight(0.8f),
-            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
-            interactionState = it
-        )
-    }
     DappInteractionFailureDialog(
         dialogState = sharedState.failureDialogState,
         onAcknowledgeFailureDialog = sharedViewModel::onAcknowledgeFailureDialog

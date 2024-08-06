@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -75,11 +76,12 @@ fun DefaultModalSheetLayout(
 
 @Composable
 fun DefaultModalSheetDragHandle(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    padding: PaddingValues = PaddingValues(top = RadixTheme.dimensions.paddingSmall)
 ) {
     Box(
         modifier = modifier
-            .padding(top = RadixTheme.dimensions.paddingSmall)
+            .padding(padding)
             .size(38.dp, 4.dp)
             .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
     )

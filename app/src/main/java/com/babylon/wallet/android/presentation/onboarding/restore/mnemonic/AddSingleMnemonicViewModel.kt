@@ -56,9 +56,7 @@ class AddSingleMnemonicViewModel @Inject constructor(
     }
 
     fun onWordChanged(index: Int, value: String) {
-        seedPhraseInputDelegate.onWordChanged(index, value) {
-            sendEvent(Event.MoveToNextWord)
-        }
+        seedPhraseInputDelegate.onWordChanged(index, value)
     }
 
     fun onWordSelected(index: Int, value: String) {

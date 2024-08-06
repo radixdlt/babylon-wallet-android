@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
@@ -28,9 +29,17 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 
+    /**
+     * This method is used for signing, and based on [SignType] it can be
+     * - either for signing a transaction
+     * - or proving ownership.
+     *
+     * The output is a map of entities and their signatures.
+     *
+     */
     suspend fun getSignatures(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): Result<AccessFactorSourcesOutput.Signatures>
+    ): Result<AccessFactorSourcesOutput.EntitiesWithSignatures>
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -106,6 +115,7 @@ sealed interface AccessFactorSourcesInput {
     }
 
     data class ToGetSignatures(
+        val signType: SignType,
         val signers: List<ProfileEntity>,
         val signRequest: SignRequest
     ) : AccessFactorSourcesInput
@@ -132,8 +142,8 @@ sealed interface AccessFactorSourcesOutput {
         val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
-    data class Signatures(
-        val signaturesWithPublicKey: List<SignatureWithPublicKey>
+    data class EntitiesWithSignatures(
+        val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
     ) : AccessFactorSourcesOutput
 
     data class Failure(

@@ -272,9 +272,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     }
 
     fun onWordChanged(index: Int, value: String) {
-        seedPhraseInputDelegate.onWordChanged(index, value) {
-            sendEvent(OlympiaImportEvent.MoveFocusToNextWord)
-        }
+        seedPhraseInputDelegate.onWordChanged(index, value)
     }
 
     fun onWordSelected(index: Int, value: String) {

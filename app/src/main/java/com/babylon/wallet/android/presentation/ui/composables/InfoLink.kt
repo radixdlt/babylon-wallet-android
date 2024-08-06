@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
@@ -18,12 +19,13 @@ fun InfoLink(
     modifier: Modifier = Modifier,
     contentColor: Color = RadixTheme.colors.blue1,
     textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline
+    iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline,
+    spacing: Dp = RadixTheme.dimensions.paddingSmall
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        horizontalArrangement = Arrangement.spacedBy(spacing)
     ) {
         Icon(
             painter = painterResource(

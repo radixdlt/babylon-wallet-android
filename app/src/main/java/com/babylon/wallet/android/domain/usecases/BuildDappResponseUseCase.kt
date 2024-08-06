@@ -4,7 +4,10 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DappWalletInteractionPersona
@@ -12,6 +15,7 @@ import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.WalletInteractionWalletAccount
 import com.radixdlt.sargon.WalletToDappInteractionAccountProof
@@ -26,55 +30,61 @@ import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionUnauthorizedRequestResponseItems
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.publicKey
 import com.radixdlt.sargon.extensions.signature
 import javax.inject.Inject
 
-open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
-
-    val signingState = rolaClient.signingState
+open class BuildDappResponseUseCase(private val accessFactorSourcesProxy: AccessFactorSourcesProxy) {
 
     protected suspend fun buildAccountsResponseItem(
         request: IncomingMessage.IncomingRequest,
         accounts: List<Account>,
         challenge: Exactly32Bytes?,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean,
+        entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>,
     ): Result<WalletToDappInteractionAccountsRequestResponseItem?> {
         if (accounts.isEmpty()) {
             return Result.success(null)
         }
+
+        var allEntitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = entitiesWithSignatures
+        if (challenge != null && entitiesWithSignatures.isEmpty()) {
+            val signRequest = SignRequest.SignAuthChallengeRequest(
+                challengeHex = challenge.hex,
+                origin = request.metadata.origin,
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+            )
+
+            accessFactorSourcesProxy.getSignatures(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signType = SignType.ProvingOwnership,
+                    signers = accounts.map { it.asProfileEntity() },
+                    signRequest = signRequest
+                )
+            ).onSuccess {
+                allEntitiesWithSignatures = allEntitiesWithSignatures.toMutableMap().apply {
+                    putAll(it.signersWithSignatures)
+                }
+            }
+        }
+
         var accountProofs: List<WalletToDappInteractionAccountProof>? = null
         if (challenge != null) {
-            accountProofs = accounts.mapIndexed { index, account ->
-                // TODO this is hacky workaround to only ask for biometrics once - this will go away with MFA refactor
-                val biometricAuthProvider: suspend () -> Boolean = if (index == 0) {
-                    deviceBiometricAuthenticationProvider
-                } else {
-                    { true }
-                }
-                val signRequest = SignRequest.SignAuthChallengeRequest(
-                    challenge.hex,
-                    request.metadata.origin,
-                    request.metadata.dAppDefinitionAddress
-                )
-                val signatureWithPublicKey =
-                    rolaClient.signAuthChallenge(account.asProfileEntity(), signRequest, biometricAuthProvider)
-                if (signatureWithPublicKey.isFailure) {
-                    return Result.failure(
-                        signatureWithPublicKey.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
-                    )
-                }
+            accountProofs = accounts.map { account ->
+                val signatureForAccount = allEntitiesWithSignatures[account.asProfileEntity()]
+                    ?: return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
+
                 WalletToDappInteractionAccountProof(
-                    account.address,
-                    WalletToDappInteractionAuthProof(
-                        publicKey = signatureWithPublicKey.getOrThrow().publicKey,
-                        curve = when (signatureWithPublicKey.getOrThrow().publicKey) {
+                    accountAddress = account.address,
+                    proof = WalletToDappInteractionAuthProof(
+                        publicKey = signatureForAccount.publicKey,
+                        curve = when (signatureForAccount.publicKey) {
                             is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
                             is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
                         },
-                        signature = signatureWithPublicKey.getOrThrow().signature
+                        signature = signatureForAccount.signature
                     )
                 )
             }
@@ -99,59 +109,123 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
 }
 
 class BuildAuthorizedDappResponseUseCase @Inject constructor(
-    private val rolaClient: ROLAClient
-) : BuildDappResponseUseCase(rolaClient) {
+    private val rolaClient: ROLAClient,
+    accessFactorSourcesProxy: AccessFactorSourcesProxy
+) : BuildDappResponseUseCase(accessFactorSourcesProxy = accessFactorSourcesProxy) {
 
-    @Suppress("LongParameterList", "ReturnCount")
+    @Suppress("LongParameterList", "ReturnCount", "LongMethod")
     suspend operator fun invoke(
         request: AuthorizedRequest,
         selectedPersona: Persona,
         oneTimeAccounts: List<Account>,
         ongoingAccounts: List<Account>,
         ongoingSharedPersonaData: PersonaData? = null,
-        onetimeSharedPersonaData: PersonaData? = null,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }
+        onetimeSharedPersonaData: PersonaData? = null
     ): Result<WalletToDappInteractionResponse> {
-        val loginWithChallenge = request.authRequest is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge
-        val authResponse: Result<WalletToDappInteractionAuthRequestResponseItem> =
-            buildAuthResponseItem(request, selectedPersona, deviceBiometricAuthenticationProvider)
-        if (authResponse.isSuccess) {
-            val authProvider = if (loginWithChallenge) {
-                { true } // TODO this will go away with MFA, don't ask for biometrics twice
-            } else {
-                deviceBiometricAuthenticationProvider
+        var entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
+
+        val dappInteractionPersona = DappWalletInteractionPersona(
+            identityAddress = selectedPersona.address,
+            label = selectedPersona.displayName.value
+        )
+
+        val authResponseItem: Result<WalletToDappInteractionAuthRequestResponseItem> =
+            when (val authRequest = request.authRequest) {
+                is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
+                    var response: Result<WalletToDappInteractionAuthRequestResponseItem> = Result.failure(
+                        RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                    )
+                    getSignaturesForAllEntities(
+                        challenge = authRequest.challenge,
+                        metadata = request.metadata,
+                        entities = getAccountsWithSignatureRequired(
+                            request = request,
+                            ongoingAccounts = ongoingAccounts,
+                            oneTimeAccounts = oneTimeAccounts
+                        ) + selectedPersona.asProfileEntity()
+                    ).onSuccess { entitiesWithSignaturesResult ->
+                        entitiesWithSignatures = entitiesWithSignaturesResult
+
+                        val signatureForPersona = entitiesWithSignatures[selectedPersona.asProfileEntity()]
+                            ?: return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
+
+                        response = Result.success(
+                            WalletToDappInteractionAuthRequestResponseItem.LoginWithChallenge(
+                                v1 = WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem(
+                                    persona = dappInteractionPersona,
+                                    challenge = authRequest.challenge,
+                                    proof = WalletToDappInteractionAuthProof(
+                                        publicKey = signatureForPersona.publicKey,
+                                        curve = when (signatureForPersona.publicKey) {
+                                            is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
+                                            is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
+                                        },
+                                        signature = signatureForPersona.signature
+                                    )
+                                )
+                            )
+                        )
+                    }.onFailure {
+                        response = Result.failure(it)
+                    }
+                    response
+                }
+
+                AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
+                    Result.success(
+                        WalletToDappInteractionAuthRequestResponseItem.LoginWithoutChallenge(
+                            v1 = WalletToDappInteractionAuthLoginWithoutChallengeRequestResponseItem(
+                                persona = dappInteractionPersona
+                            )
+                        )
+                    )
+                }
+
+                is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+                    Result.success(
+                        WalletToDappInteractionAuthRequestResponseItem.UsePersona(
+                            v1 = WalletToDappInteractionAuthUsePersonaRequestResponseItem(
+                                persona = dappInteractionPersona
+                            )
+                        )
+                    )
+                }
             }
-            val oneTimeAccountsResponseItem =
-                buildAccountsResponseItem(
-                    request = request,
-                    accounts = oneTimeAccounts,
-                    challenge = request.oneTimeAccountsRequestItem?.challenge,
-                    deviceBiometricAuthenticationProvider = authProvider
-                )
+
+        if (authResponseItem.isSuccess) {
+            val oneTimeAccountsResponseItem = buildAccountsResponseItem(
+                request = request,
+                accounts = oneTimeAccounts,
+                challenge = request.oneTimeAccountsRequestItem?.challenge,
+                entitiesWithSignatures = entitiesWithSignatures
+            )
             if (oneTimeAccountsResponseItem.isFailure) {
                 return Result.failure(
-                    oneTimeAccountsResponseItem.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                    exception = oneTimeAccountsResponseItem.exceptionOrNull()
+                        ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
             }
-            val ongoingAccountsResponseItem =
-                buildAccountsResponseItem(
-                    request = request,
-                    accounts = ongoingAccounts,
-                    challenge = request.ongoingAccountsRequestItem?.challenge,
-                    deviceBiometricAuthenticationProvider = authProvider
-                )
+
+            val ongoingAccountsResponseItem = buildAccountsResponseItem(
+                request = request,
+                accounts = ongoingAccounts,
+                challenge = request.ongoingAccountsRequestItem?.challenge,
+                entitiesWithSignatures = entitiesWithSignatures
+            )
             if (ongoingAccountsResponseItem.isFailure) {
                 return Result.failure(
-                    ongoingAccountsResponseItem.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                    exception = ongoingAccountsResponseItem.exceptionOrNull()
+                        ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
             }
+
             return Result.success(
                 WalletToDappInteractionResponse.Success(
-                    WalletToDappInteractionSuccessResponse(
+                    v1 = WalletToDappInteractionSuccessResponse(
                         interactionId = request.interactionId,
                         items = WalletToDappInteractionResponseItems.AuthorizedRequest(
                             v1 = WalletToDappInteractionAuthorizedRequestResponseItems(
-                                auth = authResponse.getOrThrow(),
+                                auth = authResponseItem.getOrThrow(),
                                 oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                                 ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
                                 ongoingPersonaData = ongoingSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
@@ -162,107 +236,94 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                 )
             )
         } else {
-            return Result.failure(authResponse.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
+            return Result.failure(
+                exception = authResponseItem.exceptionOrNull()
+                    ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+            )
         }
     }
 
-    @Suppress("LongMethod")
-    private suspend fun buildAuthResponseItem(
+    private fun getAccountsWithSignatureRequired(
         request: AuthorizedRequest,
-        selectedPersona: Persona,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<WalletToDappInteractionAuthRequestResponseItem> {
-        val dappInteractionPersona = DappWalletInteractionPersona(
-            identityAddress = selectedPersona.address,
-            label = selectedPersona.displayName.value
+        ongoingAccounts: List<Account>,
+        oneTimeAccounts: List<Account>
+    ): List<ProfileEntity.AccountEntity> {
+        val ongoingAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
+            ongoingAccounts.map { account -> account.asProfileEntity() }
+        }.orEmpty()
+
+        val onetimeAccountsToSign = request.ongoingAccountsRequestItem?.challenge?.let {
+            oneTimeAccounts.map { account -> account.asProfileEntity() }
+        }.orEmpty()
+
+        return onetimeAccountsToSign + ongoingAccountsToSign
+    }
+
+    private suspend fun getSignaturesForAllEntities(
+        challenge: Exactly32Bytes,
+        metadata: IncomingMessage.IncomingRequest.RequestMetadata,
+        entities: List<ProfileEntity>
+    ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
+        val signRequest = SignRequest.SignAuthChallengeRequest(
+            challengeHex = challenge.hex,
+            origin = metadata.origin,
+            dAppDefinitionAddress = metadata.dAppDefinitionAddress
         )
-        val authResponse: Result<WalletToDappInteractionAuthRequestResponseItem> = when (val authRequest = request.authRequest) {
-            is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
-                var response: Result<WalletToDappInteractionAuthRequestResponseItem> = Result.failure(
-                    RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
-                )
-                val signRequest = SignRequest.SignAuthChallengeRequest(
-                    challengeHex = authRequest.challenge.hex,
-                    origin = request.metadata.origin,
-                    dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-                )
-                rolaClient.signAuthChallenge(
-                    selectedPersona.asProfileEntity(),
-                    signRequest,
-                    deviceBiometricAuthenticationProvider
-                ).onSuccess { signature ->
-                    response = Result.success(
-                        WalletToDappInteractionAuthRequestResponseItem.LoginWithChallenge(
-                            v1 = WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem(
-                                persona = dappInteractionPersona,
-                                challenge = authRequest.challenge,
-                                proof = WalletToDappInteractionAuthProof(
-                                    publicKey = signature.publicKey,
-                                    curve = when (signature.publicKey) {
-                                        is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
-                                        is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
-                                    },
-                                    signature = signature.signature
-                                )
-                            )
-                        )
-                    )
-                }.onFailure {
-                    response = Result.failure(it)
-                }
-                response
-            }
 
-            AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
-                Result.success(
-                    WalletToDappInteractionAuthRequestResponseItem.LoginWithoutChallenge(
-                        v1 = WalletToDappInteractionAuthLoginWithoutChallengeRequestResponseItem(
-                            persona = dappInteractionPersona
-                        )
-                    )
-                )
-            }
-
-            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
-                Result.success(
-                    WalletToDappInteractionAuthRequestResponseItem.UsePersona(
-                        v1 = WalletToDappInteractionAuthUsePersonaRequestResponseItem(
-                            persona = dappInteractionPersona
-                        )
-                    )
-                )
-            }
-        }
-        return authResponse
+        return rolaClient.signAuthChallenge(
+            signRequest = signRequest,
+            entities = entities
+        )
     }
 }
 
 class BuildUnauthorizedDappResponseUseCase @Inject constructor(
-    rolaClient: ROLAClient
-) : BuildDappResponseUseCase(rolaClient) {
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
+) : BuildDappResponseUseCase(accessFactorSourcesProxy = accessFactorSourcesProxy) {
 
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: IncomingMessage.IncomingRequest.UnauthorizedRequest,
         oneTimeAccounts: List<Account> = emptyList(),
-        onetimeSharedPersonaData: PersonaData? = null,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },
+        onetimeSharedPersonaData: PersonaData? = null
     ): Result<WalletToDappInteractionResponse> {
-        val oneTimeAccountsResponseItem =
-            buildAccountsResponseItem(
-                request = request,
-                accounts = oneTimeAccounts,
-                challenge = request.oneTimeAccountsRequestItem?.challenge,
-                deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+        var entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
+
+        if (request.oneTimeAccountsRequestItem?.challenge != null) {
+            val signRequest = SignRequest.SignAuthChallengeRequest(
+                challengeHex = request.oneTimeAccountsRequestItem.challenge.hex,
+                origin = request.metadata.origin,
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
             )
+
+            accessFactorSourcesProxy.getSignatures(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                    signType = SignType.ProvingOwnership,
+                    signers = oneTimeAccounts.map { it.asProfileEntity() },
+                    signRequest = signRequest
+                )
+            ).onSuccess { result ->
+                entitiesWithSignatures = result.signersWithSignatures
+            }.onFailure { error ->
+                return Result.failure(error)
+            }
+        }
+
+        val oneTimeAccountsResponseItem = buildAccountsResponseItem(
+            request = request,
+            accounts = oneTimeAccounts,
+            challenge = request.oneTimeAccountsRequestItem?.challenge,
+            entitiesWithSignatures = entitiesWithSignatures
+        )
         if (oneTimeAccountsResponseItem.isFailure) {
             return Result.failure(
-                oneTimeAccountsResponseItem.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+                exception = oneTimeAccountsResponseItem.exceptionOrNull()
+                    ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
             )
         }
         return Result.success(
             WalletToDappInteractionResponse.Success(
-                WalletToDappInteractionSuccessResponse(
+                v1 = WalletToDappInteractionSuccessResponse(
                     interactionId = request.interactionId,
                     items = WalletToDappInteractionResponseItems.UnauthorizedRequest(
                         v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(

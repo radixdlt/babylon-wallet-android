@@ -127,12 +127,9 @@ sealed interface IncomingMessage {
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
         ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
+
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
-            }
-
-            fun needSignatures(): Boolean {
-                return oneTimeAccountsRequestItem?.challenge != null
             }
         }
 

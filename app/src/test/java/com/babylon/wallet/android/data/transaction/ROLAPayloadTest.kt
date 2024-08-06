@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.transaction
 
 import android.util.Log
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
@@ -12,7 +12,6 @@ import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.hash
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import java.io.File

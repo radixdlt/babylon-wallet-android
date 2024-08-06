@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.PublicKeyHash
@@ -14,7 +15,6 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.setOwnerKeysHashes
-import kotlinx.coroutines.flow.merge
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import javax.inject.Inject
@@ -22,13 +22,8 @@ import javax.inject.Inject
 class ROLAClient @Inject constructor(
     private val getEntitiesOwnerKeysUseCase: GetEntitiesOwnerKeysUseCase,
     private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase,
-    private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
 ) {
-
-    val signingState = merge(
-        collectSignersSignaturesUseCase.interactionState,
-        generateAuthSigningFactorInstanceUseCase.interactionState
-    )
 
     suspend fun generateAuthSigningFactorInstance(entity: ProfileEntity): Result<HierarchicalDeterministicFactorInstance> {
         return generateAuthSigningFactorInstanceUseCase(entity)
@@ -62,25 +57,17 @@ class ROLAClient @Inject constructor(
     }
 
     suspend fun signAuthChallenge(
-        entity: ProfileEntity,
         signRequest: SignRequest.SignAuthChallengeRequest,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<SignatureWithPublicKey> {
-        val result = collectSignersSignaturesUseCase(
-            signers = listOf(entity),
-            signRequest = signRequest,
-            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        )
-        return when (val exception = result.exceptionOrNull()) {
-            null -> result.mapCatching { signatures ->
-                if (signatures.size == 1) {
-                    signatures.first()
-                } else {
-                    throw RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
-                }
-            }
-
-            else -> Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception))
+        entities: List<ProfileEntity>
+    ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
+        return accessFactorSourcesProxy.getSignatures(
+            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                signType = SignType.ProvingOwnership,
+                signRequest = signRequest,
+                signers = entities
+            )
+        ).mapCatching { output ->
+            output.signersWithSignatures
         }
     }
 }
