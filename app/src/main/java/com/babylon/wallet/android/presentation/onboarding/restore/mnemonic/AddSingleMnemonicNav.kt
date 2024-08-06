@@ -64,7 +64,7 @@ fun NavGraphBuilder.addSingleMnemonic(
             }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
             ExitTransition.None
@@ -73,7 +73,7 @@ fun NavGraphBuilder.addSingleMnemonic(
             EnterTransition.None
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         AddSingleMnemonicScreen(

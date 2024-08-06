@@ -20,13 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,11 +65,9 @@ fun ConfirmMnemonicScreen(
         onMessageShown = viewModel::onMessageShown
     )
 
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                ConfirmMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 ConfirmMnemonicViewModel.Event.MnemonicBackedUp -> onMnemonicBackedUp()
             }
         }
@@ -98,10 +92,6 @@ private fun ConfirmMnemonicContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
-
-    var focusedWordIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
 
     Scaffold(
         modifier = modifier,
@@ -131,8 +121,7 @@ private fun ConfirmMnemonicContent(
         SeedPhraseView(
             modifier = Modifier.padding(padding),
             state = state,
-            onWordChanged = onWordTyped,
-            onFocusedWordIndexChanged = { focusedWordIndex = it }
+            onWordChanged = onWordTyped
         )
     }
 }
@@ -141,8 +130,7 @@ private fun ConfirmMnemonicContent(
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     state: ConfirmMnemonicViewModel.State,
-    onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
+    onWordChanged: (Int, String) -> Unit
 ) {
     SecureScreen()
     Column(
@@ -175,7 +163,7 @@ private fun SeedPhraseView(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             seedPhraseWords = state.seedPhraseState.seedPhraseWords,
             onWordChanged = onWordChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged
+            onFocusedWordIndexChanged = {}
         )
     }
 }

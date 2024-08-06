@@ -47,13 +47,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         var operationResult: Result<DAppData> = Result.failure(
             RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
         )
-        if (incomingRequest.isMobileConnectRequest) {
-            return operationResult
-        }
+
         (incomingRequest as? AuthorizedRequest)?.let { request ->
-            if (incomingRequest.needSignatures()) {
-                return@let
-            }
             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(
                     dAppDefinitionAddress = AccountAddress.init(request.metadata.dAppDefinitionAddress)
@@ -61,6 +56,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 if (authorizedDapp == null) {
                     respondWithInvalidPersona(incomingRequest)
                     return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
+                }
+                if (incomingRequest.needSignatures() || incomingRequest.isMobileConnectRequest) {
+                    return operationResult
                 }
                 val authorizedPersonaSimple = authorizedDapp
                     .referencesToAuthorizedPersonas

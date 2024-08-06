@@ -4,9 +4,11 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.babylon.wallet.android.domain.usecases.transaction.SignWithDeviceFactorSourceUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SignWithLedgerFactorSourceUseCase
+import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.model.signing.SignType
+import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -49,7 +51,7 @@ class GetSignaturesViewModel @Inject constructor(
     private var collectSignaturesWithDeviceJob: Job? = null
     private var collectSignaturesWithLedgerJob: Job? = null
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(signType = input.signType)
 
     init {
         viewModelScope.launch {
@@ -121,15 +123,18 @@ class GetSignaturesViewModel @Inject constructor(
 
             is DeviceRequest -> {
                 _state.update { state ->
-                    state.copy(showContentForFactorSource = State.ShowContentForFactorSource.Device)
+                    state.copy(
+                        showContentForFactorSource = State.ShowContentForFactorSource.Device,
+                        isRetryButtonEnabled = true // enable the Retry button, reason is at line 184
+                    )
                 }
                 sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)
             }
 
             null -> {
                 accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.Signatures(
-                        signaturesWithPublicKey = state.value.signaturesWithPublicKeys
+                    output = AccessFactorSourcesOutput.EntitiesWithSignatures(
+                        signersWithSignatures = state.value.entitiesWithSignatures
                     )
                 )
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
@@ -174,22 +179,33 @@ class GetSignaturesViewModel @Inject constructor(
     fun collectSignaturesForDeviceFactorSource() {
         collectSignaturesWithDeviceJob?.cancel()
         collectSignaturesWithDeviceJob = viewModelScope.launch {
+            // user has already authenticated with biometric prompt
+            // so disable the Retry button as long as wallet is collecting the signatures
+            _state.update { state -> state.copy(isRetryButtonEnabled = false) }
+
             val request = state.value.nextRequest as? DeviceRequest ?: return@launch
-            val signatures = request.deviceFactorSources.flatMap { (deviceFactorSource, entities) ->
+            val entitiesWithSignaturesForAllDeviceFactorSources = mutableListOf<EntityWithSignature>()
+
+            request.deviceFactorSources.forEach { (deviceFactorSource, entities) ->
                 signWithDeviceFactorSourceUseCase(
                     deviceFactorSource = deviceFactorSource,
                     signers = entities,
                     signRequest = input.signRequest
-                ).onFailure {
+                ).onSuccess { entitiesWithSignaturesList ->
+                    entitiesWithSignaturesForAllDeviceFactorSources.addAll(entitiesWithSignaturesList)
+                }.onFailure {
                     // return the output (error) and end the signing process
                     accessFactorSourcesIOHandler.setOutput(
                         AccessFactorSourcesOutput.Failure(error = it)
                     )
                     sendEvent(event = Event.AccessingFactorSourceCompleted)
-                }.getOrNull() ?: return@launch
+                    return@launch
+                }
             }
 
-            _state.update { state -> state.addSignatures(signatures) }
+            _state.update { state ->
+                state.addEntitiesWithSignatures(entitiesWithSignaturesList = entitiesWithSignaturesForAllDeviceFactorSources)
+            }
             proceedToNextSigners()
         }
     }
@@ -205,8 +221,10 @@ class GetSignaturesViewModel @Inject constructor(
                 ledgerFactorSource = ledgerFactorSource,
                 signers = signers,
                 signRequest = signRequest
-            ).onSuccess { signatures ->
-                _state.update { state -> state.addSignatures(signatures) }
+            ).onSuccess { entitiesWithSignaturesList ->
+                _state.update { state ->
+                    state.addEntitiesWithSignatures(entitiesWithSignaturesList = entitiesWithSignaturesList)
+                }
                 proceedToNextSigners()
             }.onFailure { error ->
                 if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
@@ -266,11 +284,13 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     data class State(
+        val signType: SignType,
         private val signersRequests: List<FactorSourceRequest> = emptyList(),
         private val selectedSignersIndex: Int = -1,
-        // list to keep signatures from all factor sources. This will be returned as output once all signers are done.
-        val signaturesWithPublicKeys: List<SignatureWithPublicKey> = emptyList(),
+        // map to keep signature for each entity (signer). This will be returned as output once all signers are done.
+        val entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.None,
+        val isRetryButtonEnabled: Boolean = true
     ) : UiState {
 
         sealed class FactorSourceRequest {
@@ -290,8 +310,14 @@ class GetSignaturesViewModel @Inject constructor(
 
         fun proceedToNextSigners() = copy(selectedSignersIndex = selectedSignersIndex + 1)
 
-        fun addSignatures(signatures: List<SignatureWithPublicKey>) = copy(
-            signaturesWithPublicKeys = signaturesWithPublicKeys.toMutableList().apply { addAll(signatures) }
+        fun addEntitiesWithSignatures(entitiesWithSignaturesList: List<EntityWithSignature>) = copy(
+            entitiesWithSignatures = entitiesWithSignatures.toMutableMap().apply {
+                putAll(
+                    entitiesWithSignaturesList.associate { entityWithSignature ->
+                        entityWithSignature.entity to entityWithSignature.signatureWithPublicKey
+                    }
+                )
+            }
         )
 
         sealed interface ShowContentForFactorSource {

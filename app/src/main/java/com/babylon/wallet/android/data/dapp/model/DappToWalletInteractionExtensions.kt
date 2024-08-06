@@ -74,8 +74,7 @@ private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedReq
     )
 }
 
-fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): PersonaRequestItem? {
-    if (isRequestingName == null && numberOfRequestedPhoneNumbers == null && numberOfRequestedEmailAddresses == null) return null
+fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): PersonaRequestItem {
     return PersonaRequestItem(
         isRequestingName = isRequestingName == true,
         numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),

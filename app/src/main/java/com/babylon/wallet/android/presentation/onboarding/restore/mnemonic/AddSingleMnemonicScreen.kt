@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -58,6 +55,9 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
+import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
@@ -145,7 +145,7 @@ private fun AddSingleMnemonicsContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .imePadding()
-                        .height(56.dp)
+                        .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                         .padding(RadixTheme.dimensions.paddingSmall),
                     onCandidateClick = { candidate ->
                         focusedWordIndex?.let {
@@ -155,12 +155,11 @@ private fun AddSingleMnemonicsContent(
                     }
                 )
             } else {
-                val isEnabled = remember(state.seedPhraseState) {
-                    state.seedPhraseState.isValidSeedPhrase()
-                }
                 RadixBottomBar(
                     text = stringResource(R.string.common_continue),
-                    enabled = isEnabled,
+                    enabled = remember(state.seedPhraseState) {
+                        state.seedPhraseState.isValidSeedPhrase()
+                    },
                     onClick = onSubmitClick
                 )
             }
@@ -182,7 +181,14 @@ private fun AddSingleMnemonicsContent(
         SeedPhraseView(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .dynamicImePadding(
+                    padding = padding,
+                    keyboardVisibleBottomPadding = if (isSuggestionsVisible(state)) {
+                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight + RadixTheme.dimensions.paddingDefault
+                    } else {
+                        RadixTheme.dimensions.paddingDefault
+                    }
+                ),
             title = title,
             onWordChanged = onWordTyped,
             onPassphraseChanged = onPassphraseChanged,
@@ -206,10 +212,15 @@ private fun SeedPhraseView(
     isOlympia: Boolean
 ) {
     SecureScreen()
+
+    val scrollState = rememberScrollState()
+    HideKeyboardOnFullScroll(scrollState)
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .imePadding()
+            .verticalScroll(scrollState)
     ) {
         Text(
             modifier = Modifier
@@ -319,12 +330,7 @@ private fun SeedPhraseView(
 
 @Composable
 private fun isSuggestionsVisible(state: AddSingleMnemonicViewModel.State): Boolean {
-    val density = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val keyboardVisible by remember {
-        derivedStateOf { imeInsets.getBottom(density) > 0 }
-    }
-    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && keyboardVisible
+    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
 @Preview

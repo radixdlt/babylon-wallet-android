@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.sargon.AccountAddress

@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
@@ -50,13 +49,6 @@ class DevSettingsViewModel @Inject constructor(
 
     init {
         loadAccount()
-        viewModelScope.launch {
-            rolaClient.signingState.collect { signingState ->
-                _state.update { state ->
-                    state.copy(interactionState = signingState)
-                }
-            }
-        }
     }
 
     private fun loadAccount() {
@@ -135,6 +127,5 @@ data class DevSettingsUiState(
     val account: Account? = null,
     val accountAddress: AccountAddress,
     val isLoading: Boolean = false,
-    val hasAuthKey: Boolean = false,
-    val interactionState: InteractionState? = null,
+    val hasAuthKey: Boolean = false
 ) : UiState
