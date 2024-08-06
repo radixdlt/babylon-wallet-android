@@ -356,8 +356,8 @@ private fun ImportLegacyWalletContent(
                     Page.AccountsToImportList -> {
                         AccountsToImportListPage(
                             modifier = Modifier
-                                .padding(padding)
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .padding(top = padding.calculateTopPadding()),
                             olympiaAccountsToImport = olympiaAccountsToImport,
                             onImportAccounts = onImportAccounts,
                             importButtonEnabled = importButtonEnabled,
