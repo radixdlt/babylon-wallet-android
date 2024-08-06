@@ -35,7 +35,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
     private val args = PersonaDataOnetimeUnauthorizedArgs(savedStateHandle)
 
     override fun initialState(): PersonaDataOnetimeUiState {
-        return PersonaDataOnetimeUiState()
+        return PersonaDataOnetimeUiState(showBack = args.showBack)
     }
 
     init {
@@ -95,5 +95,6 @@ sealed interface PersonaDataOnetimeEvent : OneOffEvent {
 
 data class PersonaDataOnetimeUiState(
     val personaListToDisplay: ImmutableList<PersonaUiModel> = persistentListOf(),
-    val continueButtonEnabled: Boolean = false
+    val continueButtonEnabled: Boolean = false,
+    val showBack: Boolean = false
 ) : UiState

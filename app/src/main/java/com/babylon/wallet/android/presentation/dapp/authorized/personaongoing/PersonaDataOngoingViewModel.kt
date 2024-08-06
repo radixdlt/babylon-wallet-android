@@ -28,7 +28,7 @@ class PersonaDataOngoingViewModel @Inject constructor(
     private val args = PersonaDataOngoingPermissionArgs(savedStateHandle)
 
     override fun initialState(): PersonaDataOngoingUiState {
-        return PersonaDataOngoingUiState()
+        return PersonaDataOngoingUiState(showBack = args.showBack)
     }
 
     init {
@@ -61,5 +61,6 @@ sealed interface PersonaDataOngoingEvent : OneOffEvent {
 
 data class PersonaDataOngoingUiState(
     val persona: PersonaUiModel? = null,
-    val continueButtonEnabled: Boolean = false
+    val continueButtonEnabled: Boolean = false,
+    val showBack: Boolean = false
 ) : UiState

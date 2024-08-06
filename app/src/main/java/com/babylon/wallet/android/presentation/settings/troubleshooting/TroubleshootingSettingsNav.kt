@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.troubleshooting
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -33,13 +34,13 @@ fun NavGraphBuilder.troubleshootingSettings(onBackClick: () -> Unit, onSettingIt
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            null
-        },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         TroubleshootingSettingsScreen(

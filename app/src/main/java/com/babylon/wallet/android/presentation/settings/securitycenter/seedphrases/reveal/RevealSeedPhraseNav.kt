@@ -42,11 +42,11 @@ fun NavGraphBuilder.revealSeedPhrase(
         exitTransition = {
             ExitTransition.None
         },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-        },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
         arguments = listOf(
             navArgument(ARG_FACTOR_SOURCE_ID) {

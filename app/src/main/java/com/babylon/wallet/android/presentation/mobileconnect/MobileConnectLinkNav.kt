@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.mobileconnect
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -44,6 +46,12 @@ fun NavGraphBuilder.mobileConnect(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {

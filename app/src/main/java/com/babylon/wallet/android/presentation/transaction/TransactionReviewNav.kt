@@ -48,13 +48,13 @@ fun NavGraphBuilder.transactionReviewScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
         },
         popExitTransition = {
-            ExitTransition.None
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
         TransactionReviewScreen(

@@ -49,7 +49,8 @@ fun LoginPermissionScreen(
     isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit,
     onBackClick: () -> Unit,
-    oneTime: Boolean
+    oneTime: Boolean,
+    showBack: Boolean
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -82,7 +83,7 @@ fun LoginPermissionScreen(
         },
         numberOfAccounts = numberOfAccounts,
         isExactAccountsCount = isExactAccountsCount,
-        isFirstScreenInFlow = state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission
+        showBack = showBack
     )
 }
 
@@ -94,7 +95,7 @@ private fun LoginPermissionContent(
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     modifier: Modifier = Modifier,
-    isFirstScreenInFlow: Boolean,
+    showBack: Boolean
 ) {
     Scaffold(
         modifier = modifier,
@@ -102,7 +103,7 @@ private fun LoginPermissionContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = if (isFirstScreenInFlow) BackIconType.Close else BackIconType.Back,
+                backIconType = if (showBack) BackIconType.Back else BackIconType.Close,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
@@ -230,7 +231,7 @@ fun LoginPermissionContentPreview() {
             numberOfAccounts = 2,
             isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize(),
-            isFirstScreenInFlow = false
+            showBack = true
         )
     }
 }
@@ -247,7 +248,7 @@ fun LoginPermissionContentSmallDevicePreview() {
             numberOfAccounts = 2,
             isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize(),
-            isFirstScreenInFlow = false
+            showBack = true
         )
     }
 }
@@ -264,7 +265,7 @@ fun LoginPermissionContentFirstTimePreview() {
             numberOfAccounts = 2,
             isExactAccountsCount = false,
             modifier = Modifier.fillMaxSize(),
-            isFirstScreenInFlow = false
+            showBack = false
         )
     }
 }

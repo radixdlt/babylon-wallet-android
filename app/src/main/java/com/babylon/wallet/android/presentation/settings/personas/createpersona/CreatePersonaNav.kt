@@ -9,7 +9,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
-import com.babylon.wallet.android.presentation.settings.personas.personadetail.ROUTE_PERSONA_DETAIL
 import com.radixdlt.sargon.IdentityAddress
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
@@ -108,14 +107,14 @@ fun NavGraphBuilder.personasScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            when (targetState.destination.route) {
-                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> ExitTransition.None
-                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-            }
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
         },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+        }
     ) {
         PersonasScreen(
             viewModel = hiltViewModel(),

@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ResolveInfoFlags
 import android.os.Build
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -35,6 +37,7 @@ fun isBackupScreenNavigationSupported(): Boolean {
         }.size > 0
     }
 }
+
 fun NavController.backupScreen() {
     navigate("settings_backup") {
         launchSingleTop = true
@@ -51,6 +54,12 @@ fun NavGraphBuilder.backupScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {

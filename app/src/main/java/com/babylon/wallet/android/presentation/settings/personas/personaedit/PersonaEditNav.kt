@@ -56,16 +56,13 @@ fun NavGraphBuilder.personaEditScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            when (targetState.destination.route) {
-                ROUTE_EDIT_PERSONA -> ExitTransition.None
-                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
-            }
-        },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         },
         arguments = listOf(
             navArgument(ARG_PERSONA_ADDRESS) {

@@ -1,6 +1,10 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
+import android.os.Bundle
 import androidx.annotation.VisibleForTesting
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -76,7 +80,27 @@ fun NavGraphBuilder.chooseAccounts(
             navArgument(ARG_SHOW_BACK) {
                 type = NavType.BoolType
             },
-        )
+        ),
+        enterTransition = {
+            if (requiresHorizontalTransition(targetState.arguments)) {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            } else {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            }
+        },
+        exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            if (requiresHorizontalTransition(initialState.arguments)) {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            } else {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            }
+        }
     ) {
         val parentEntry = remember(it) {
             navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)
@@ -93,4 +117,9 @@ fun NavGraphBuilder.chooseAccounts(
             onPersonaDataOnetime = onPersonaDataOnetime
         )
     }
+}
+
+private fun requiresHorizontalTransition(arguments: Bundle?): Boolean {
+    arguments ?: return false
+    return arguments.getBoolean(ARG_SHOW_BACK)
 }

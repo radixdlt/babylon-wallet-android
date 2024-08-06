@@ -40,11 +40,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
             exitTransition = {
                 ExitTransition.None
             },
-            popExitTransition = {
-                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-            },
             popEnterTransition = {
                 EnterTransition.None
+            },
+            popExitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         ) {
             SecurityCenterScreen(
