@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -52,13 +53,13 @@ fun NavGraphBuilder.personaInfoScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            null
-        },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         CreatePersonaInfoScreen(
@@ -80,13 +81,13 @@ fun NavGraphBuilder.createPersonaScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            null
-        },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         CreatePersonaScreen(
@@ -110,7 +111,7 @@ fun NavGraphBuilder.personasScreen(
         },
         exitTransition = {
             when (targetState.destination.route) {
-                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> null
+                ROUTE_PERSONAS, ROUTE_PERSONA_DETAIL, ROUTE_CREATE_PERSONA, ROUTE_PERSONA_INFO -> ExitTransition.None
                 else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         },

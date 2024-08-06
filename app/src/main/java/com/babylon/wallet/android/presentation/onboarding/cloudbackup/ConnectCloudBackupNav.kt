@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.presentation.onboarding.cloudbackup
 
+import android.os.Bundle
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -43,10 +46,24 @@ fun NavGraphBuilder.connectCloudBackupScreen(
             }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            if (requiresHorizontalTransition(targetState.arguments)) {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            } else {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            }
+        },
+        popEnterTransition = {
+            EnterTransition.None
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            ExitTransition.None
+        },
+        popExitTransition = {
+            if (requiresHorizontalTransition(initialState.arguments)) {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            } else {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            }
         }
     ) {
         ConnectCloudBackupScreen(
@@ -55,4 +72,10 @@ fun NavGraphBuilder.connectCloudBackupScreen(
             onProceed = onProceed
         )
     }
+}
+
+private fun requiresHorizontalTransition(arguments: Bundle?): Boolean {
+    arguments ?: return false
+    val connectMode = arguments.getString(ARG_CONNECT_MODE)?.let { ConnectCloudBackupViewModel.ConnectMode.valueOf(it) }
+    return connectMode == ConnectCloudBackupViewModel.ConnectMode.RestoreWallet
 }

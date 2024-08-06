@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.settings.devsettings
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -42,11 +43,11 @@ fun NavGraphBuilder.devSettings(
         exitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-        },
         popEnterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         DevSettingsScreen(

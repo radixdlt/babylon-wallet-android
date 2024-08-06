@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -52,16 +53,16 @@ fun NavGraphBuilder.personaEditScreen(
     composable(
         route = ROUTE_EDIT_PERSONA,
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
             when (targetState.destination.route) {
-                ROUTE_EDIT_PERSONA -> null
-                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+                ROUTE_EDIT_PERSONA -> ExitTransition.None
+                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
             }
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         },
         popEnterTransition = {
             EnterTransition.None

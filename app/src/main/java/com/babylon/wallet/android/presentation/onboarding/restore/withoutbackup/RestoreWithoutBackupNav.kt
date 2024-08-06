@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -20,10 +22,16 @@ fun NavGraphBuilder.restoreWithoutBackupScreen(
     composable(
         route = ROUTE_RESTORE_WITHOUT_BACKUP,
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         RestoreWithoutBackupScreen(

@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -37,7 +39,19 @@ fun NavGraphBuilder.transferScreen(
         route = ROUTE_TRANSFER,
         arguments = listOf(
             navArgument(ARG_ACCOUNT_ID) { type = NavType.StringType },
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        }
     ) {
         TransferScreen(
             viewModel = hiltViewModel(),

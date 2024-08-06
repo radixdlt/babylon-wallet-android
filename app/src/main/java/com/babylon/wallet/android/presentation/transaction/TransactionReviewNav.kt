@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -40,7 +43,19 @@ fun NavGraphBuilder.transactionReviewScreen(
         route = ROUTE_TRANSACTION_REVIEW,
         arguments = listOf(
             navArgument(ARG_TRANSACTION_REQUEST_ID) { type = NavType.StringType }
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            ExitTransition.None
+        }
     ) {
         TransactionReviewScreen(
             viewModel = hiltViewModel(),

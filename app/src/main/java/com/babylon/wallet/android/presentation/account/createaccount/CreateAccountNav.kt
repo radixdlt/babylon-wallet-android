@@ -4,6 +4,8 @@ import android.os.Build
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.core.os.BundleCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -108,7 +110,13 @@ fun NavGraphBuilder.createAccountScreen(
             }
         },
         exitTransition = {
-            if (requiresHorizontalTransition(targetState.arguments)) {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            if (requiresHorizontalTransition(initialState.arguments)) {
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             } else {
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
