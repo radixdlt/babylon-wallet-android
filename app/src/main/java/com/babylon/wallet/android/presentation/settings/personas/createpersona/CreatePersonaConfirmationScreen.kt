@@ -30,13 +30,15 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 fun CreatePersonaConfirmationScreen(
     viewModel: CreatePersonaConfirmationViewModel,
     modifier: Modifier = Modifier,
-    finishPersonaCreation: () -> Unit
+    finishPersonaCreation: () -> Unit,
+    requestSource: CreatePersonaRequestSource
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     CreatePersonaConfirmationContent(
         modifier = modifier,
         isFirstPersona = state.isFirstPersona,
-        personaConfirmed = viewModel::personaConfirmed
+        personaConfirmed = viewModel::personaConfirmed,
+        requestSource = requestSource
     )
 
     LaunchedEffect(Unit) {
@@ -52,7 +54,8 @@ fun CreatePersonaConfirmationScreen(
 fun CreatePersonaConfirmationContent(
     modifier: Modifier,
     isFirstPersona: Boolean,
-    personaConfirmed: () -> Unit
+    personaConfirmed: () -> Unit,
+    requestSource: CreatePersonaRequestSource
 ) {
     BackHandler(enabled = true) { }
 
@@ -64,7 +67,10 @@ fun CreatePersonaConfirmationContent(
             RadixBottomBar(
                 text = stringResource(
                     id = R.string.createEntity_completion_goToDestination,
-                    stringResource(R.string.createEntity_completion_destinationChoosePersonas)
+                    when (requestSource) {
+                        CreatePersonaRequestSource.Settings -> stringResource(R.string.createEntity_completion_destinationPersonaList)
+                        CreatePersonaRequestSource.DappRequest -> stringResource(R.string.createEntity_completion_destinationChoosePersonas)
+                    }
                 ),
                 onClick = personaConfirmed,
                 modifier = Modifier.fillMaxWidth()
@@ -117,8 +123,10 @@ fun CreateAccountConfirmationContentPreview() {
     RadixWalletTheme {
         CreatePersonaConfirmationContent(
             modifier = Modifier,
-            isFirstPersona = false
-        ) {}
+            isFirstPersona = false,
+            {},
+            CreatePersonaRequestSource.Settings
+        )
     }
 }
 
@@ -128,7 +136,9 @@ fun CreateAccountConfirmationContentFirstPersonaPreview() {
     RadixWalletTheme {
         CreatePersonaConfirmationContent(
             modifier = Modifier,
-            isFirstPersona = true
-        ) {}
+            isFirstPersona = true,
+            {},
+            CreatePersonaRequestSource.DappRequest
+        )
     }
 }

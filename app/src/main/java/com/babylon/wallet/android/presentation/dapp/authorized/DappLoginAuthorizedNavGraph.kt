@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.permission.loginP
 import com.babylon.wallet.android.presentation.dapp.authorized.personaonetime.personaDataOnetimeAuthorized
 import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.personaDataOngoing
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.selectPersona
+import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
@@ -65,9 +66,9 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             createNewPersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {
-                    navController.createPersonaScreen()
+                    navController.createPersonaScreen(CreatePersonaRequestSource.DappRequest)
                 } else {
-                    navController.personaInfoScreen()
+                    navController.personaInfoScreen(CreatePersonaRequestSource.DappRequest)
                 }
             },
             onDisplayPermission = { event ->
@@ -158,9 +159,9 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onCreatePersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {
-                    navController.createPersonaScreen()
+                    navController.createPersonaScreen(CreatePersonaRequestSource.DappRequest)
                 } else {
-                    navController.personaInfoScreen()
+                    navController.personaInfoScreen(CreatePersonaRequestSource.DappRequest)
                 }
             }
         )
