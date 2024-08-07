@@ -209,7 +209,6 @@ class EncryptedPreferencesManager @Inject constructor(
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->
         if (exception is IOException) {
-            DataStoreIOExceptionHolder.exception = exception
             logNonFatalException(exception)
             emit(emptyPreferences())
         } else {
@@ -230,10 +229,4 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val RETRY_COUNT = 3L
         private const val RETRY_DELAY = 1500L
     }
-}
-
-// keeps the exception from datastore in memory
-// so it can be passed in the email. See: IncompatibleProfileViewModel
-object DataStoreIOExceptionHolder {
-    var exception: Throwable? = null
 }

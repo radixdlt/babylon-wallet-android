@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.ProfileState
+import rdx.works.core.logNonFatalException
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
@@ -73,9 +74,15 @@ class ProfileRepositoryImpl @Inject constructor(
             if (snapshotResult == null) {
                 profileStateFlow.update { ProfileState.None }
             } else {
-                val snapshot = snapshotResult.getOrNull().orEmpty()
-                ensureP2PLinkMigrationAcknowledged(snapshot)
-                profileStateFlow.update { deriveProfileState(snapshot) }
+                snapshotResult
+                    .onFailure { exception ->
+                        logNonFatalException(exception)
+                        profileStateFlow.update { ProfileState.Incompatible(cause = exception) }
+                    }
+                    .onSuccess { snapshot ->
+                        ensureP2PLinkMigrationAcknowledged(snapshot)
+                        profileStateFlow.update { deriveProfileState(snapshot) }
+                    }
             }
         }
     }
