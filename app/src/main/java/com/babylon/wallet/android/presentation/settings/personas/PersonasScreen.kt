@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -119,9 +120,11 @@ fun PersonasContent(
 //                }
                 itemsIndexed(items = state.personas) { _, personaItem ->
                     PersonaCard(
-                        modifier = Modifier.throttleClickable {
-                            onPersonaClick(personaItem.address)
-                        },
+                        modifier = Modifier
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onPersonaClick(personaItem.address)
+                            },
                         persona = personaItem,
                         securityPrompts = state.securityPrompt(personaItem)?.toPersistentList(),
                         onNavigateToSecurityCenter = onNavigateToSecurityCenter
