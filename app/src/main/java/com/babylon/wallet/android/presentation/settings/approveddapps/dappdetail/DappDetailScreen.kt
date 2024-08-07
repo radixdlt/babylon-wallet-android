@@ -671,19 +671,19 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-        }
-        item {
-            GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingLarge),
-                    text = stringResource(
-                        R.string.authorizedDapps_personaDetails_editAccountSharing
-                    ),
-                    onClick = onEditAccountSharing
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            item {
+                GrayBackgroundWrapper(Modifier.fillMaxWidth()) {
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingLarge),
+                        text = stringResource(
+                            R.string.authorizedDapps_personaDetails_editAccountSharing
+                        ),
+                        onClick = onEditAccountSharing
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                }
             }
         }
         item {
