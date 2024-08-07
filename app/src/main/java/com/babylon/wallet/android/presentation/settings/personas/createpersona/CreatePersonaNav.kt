@@ -1,23 +1,40 @@
 package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
+import android.os.Build
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ROUTE_PERSONA_DETAIL
 import com.radixdlt.sargon.IdentityAddress
 import rdx.works.core.flatMapError
 
-const val ROUTE_CREATE_PERSONA = "create_persona_route"
-const val ROUTE_PERSONA_INFO = "persona_info_route"
+const val ARG_REQUEST_SOURCE = "arg_request_source"
+const val ROUTE_CREATE_PERSONA = "create_persona_route/{$ARG_REQUEST_SOURCE}"
+const val ROUTE_PERSONA_INFO = "persona_info_route/{$ARG_REQUEST_SOURCE}"
 const val ROUTE_PERSONAS = "personas_route"
 
-fun NavController.createPersonaScreen() {
-    navigate(ROUTE_CREATE_PERSONA)
+enum class CreatePersonaRequestSource {
+    Settings, DappRequest
+}
+
+internal fun NavBackStackEntry.getCreatePersonaRequestSource(): CreatePersonaRequestSource {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        checkNotNull(arguments?.getSerializable(ARG_REQUEST_SOURCE, CreatePersonaRequestSource::class.java))
+    } else {
+        arguments?.getSerializable(ARG_REQUEST_SOURCE) as CreatePersonaRequestSource
+    }
+}
+
+fun NavController.createPersonaScreen(requestSource: CreatePersonaRequestSource) {
+    navigate("create_persona_route/$requestSource")
 }
 
 fun NavController.personasScreen() {
@@ -26,8 +43,8 @@ fun NavController.personasScreen() {
     }
 }
 
-fun NavController.personaInfoScreen() {
-    navigate(ROUTE_PERSONA_INFO)
+fun NavController.personaInfoScreen(requestSource: CreatePersonaRequestSource) {
+    navigate("persona_info_route/$requestSource")
 }
 
 fun NavController.popPersonaCreation() {
@@ -43,11 +60,15 @@ fun NavController.popPersonaCreation() {
 
 fun NavGraphBuilder.personaInfoScreen(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: (CreatePersonaRequestSource) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_INFO,
-        arguments = listOf(),
+        arguments = listOf(
+            navArgument(ARG_REQUEST_SOURCE) {
+                type = NavType.EnumType(CreatePersonaRequestSource::class.java)
+            }
+        ),
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -61,21 +82,28 @@ fun NavGraphBuilder.personaInfoScreen(
             EnterTransition.None
         }
     ) {
+        val requestSource = it.getCreatePersonaRequestSource()
         CreatePersonaInfoScreen(
             onBackClick = onBackClick,
-            onContinueClick = onContinueClick
+            onContinueClick = {
+                onContinueClick(requestSource)
+            }
         )
     }
 }
 
 fun NavGraphBuilder.createPersonaScreen(
     onBackClick: () -> Unit,
-    onContinueClick: () -> Unit
+    onContinueClick: (CreatePersonaRequestSource) -> Unit
 ) {
     markAsHighPriority(ROUTE_CREATE_PERSONA)
     composable(
         route = ROUTE_CREATE_PERSONA,
-        arguments = listOf(),
+        arguments = listOf(
+            navArgument(ARG_REQUEST_SOURCE) {
+                type = NavType.EnumType(CreatePersonaRequestSource::class.java)
+            }
+        ),
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -89,17 +117,20 @@ fun NavGraphBuilder.createPersonaScreen(
             EnterTransition.None
         }
     ) {
+        val requestSource = it.getCreatePersonaRequestSource()
         CreatePersonaScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onContinueClick = onContinueClick
+            onContinueClick = {
+                onContinueClick(requestSource)
+            }
         )
     }
 }
 
 fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
-    createPersonaScreen: (Boolean) -> Unit,
+    onCreatePersona: (Boolean) -> Unit,
     onPersonaClick: (IdentityAddress) -> Unit,
     onNavigateToSecurityCenter: () -> Unit
 ) {
@@ -121,7 +152,7 @@ fun NavGraphBuilder.personasScreen(
         PersonasScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            createNewPersona = createPersonaScreen,
+            createNewPersona = onCreatePersona,
             onPersonaClick = onPersonaClick,
             onNavigateToSecurityCenter = onNavigateToSecurityCenter
         )
