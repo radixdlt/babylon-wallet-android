@@ -276,14 +276,16 @@ private fun ChooseAccountContent(
             )
         }
 
-        item {
-            Text(
-                modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
-            )
+        if (state.ownedAccounts.isNotEmpty()) {
+            item {
+                Text(
+                    modifier = Modifier
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            }
         }
 
         items(state.ownedAccounts.size) { index ->
