@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.transaction
 
+import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -62,7 +62,7 @@ class ROLAClient @Inject constructor(
     ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
         return accessFactorSourcesProxy.getSignatures(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                signType = SignType.ProvingOwnership,
+                signPurpose = SignPurpose.SignAuth,
                 signRequest = signRequest,
                 signers = entities
             )

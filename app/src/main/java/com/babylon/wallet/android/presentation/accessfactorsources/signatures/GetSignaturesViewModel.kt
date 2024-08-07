@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
+import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
@@ -51,7 +51,7 @@ class GetSignaturesViewModel @Inject constructor(
     private var collectSignaturesWithDeviceJob: Job? = null
     private var collectSignaturesWithLedgerJob: Job? = null
 
-    override fun initialState(): State = State(signType = input.signType)
+    override fun initialState(): State = State(signPurpose = input.signPurpose)
 
     init {
         viewModelScope.launch {
@@ -85,12 +85,15 @@ class GetSignaturesViewModel @Inject constructor(
                     is FactorSource.ArculusCard -> {
                         // Not implemented yet
                     }
+
                     is FactorSource.OffDeviceMnemonic -> {
                         // Not implemented yet
                     }
+
                     is FactorSource.SecurityQuestions -> {
                         // Not implemented yet
                     }
+
                     is FactorSource.TrustedContact -> {
                         // Not implemented yet
                     }
@@ -253,7 +256,11 @@ class GetSignaturesViewModel @Inject constructor(
         signers.forEach { signer ->
             when (val securityState = signer.securityState) {
                 is EntitySecurityState.Unsecured -> {
-                    val factorSourceId = securityState.value.transactionSigning.factorSourceId.asGeneral()
+                    val factorSourceId = when (state.value.signPurpose) {
+                        SignPurpose.SignTransaction -> securityState.value.transactionSigning.factorSourceId.asGeneral()
+                        SignPurpose.SignAuth -> securityState.value.authenticationSigning?.factorSourceId?.asGeneral()
+                            ?: securityState.value.transactionSigning.factorSourceId.asGeneral()
+                    }
                     val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
 
                     if (factorSource.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
@@ -284,7 +291,7 @@ class GetSignaturesViewModel @Inject constructor(
     }
 
     data class State(
-        val signType: SignType,
+        val signPurpose: SignPurpose,
         private val signersRequests: List<FactorSourceRequest> = emptyList(),
         private val selectedSignersIndex: Int = -1,
         // map to keep signature for each entity (signer). This will be returned as output once all signers are done.
