@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -52,7 +55,19 @@ fun NavGraphBuilder.chooseAccountsOneTime(
             navArgument(ARG_EXACT_ACCOUNT_COUNT) {
                 type = NavType.BoolType
             }
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        }
     ) {
         val parentEntry = remember(it) {
             navController.getBackStackEntry(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH)

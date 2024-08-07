@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -28,7 +31,19 @@ fun NavGraphBuilder.createPersonaConfirmationScreen(
                     CreatePersonaRequestSource::class.java
                 )
             }
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        }
     ) {
         val requestSource = it.getCreatePersonaRequestSource()
         CreatePersonaConfirmationScreen(

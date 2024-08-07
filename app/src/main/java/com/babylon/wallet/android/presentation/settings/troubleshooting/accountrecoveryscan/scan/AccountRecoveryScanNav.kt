@@ -63,7 +63,7 @@ fun NavGraphBuilder.accountRecoveryScan(
             EnterTransition.None
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
         arguments = listOf(
             navArgument(ARG_FACTOR_SOURCE_ID) {

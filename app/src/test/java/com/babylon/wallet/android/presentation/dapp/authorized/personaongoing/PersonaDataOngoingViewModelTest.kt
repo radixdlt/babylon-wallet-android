@@ -102,6 +102,7 @@ internal class PersonaDataOngoingViewModelTest {
                 )
             )
         )
+        every { savedStateHandle.get<Boolean>(ARG_SHOW_BACK) } returns true
         coEvery { getProfileUseCase() } returns profile
         coEvery { getProfileUseCase.flow } returns flowOf(profile)
     }

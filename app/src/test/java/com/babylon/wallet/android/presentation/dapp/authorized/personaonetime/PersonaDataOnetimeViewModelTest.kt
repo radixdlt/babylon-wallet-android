@@ -68,6 +68,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
                 )
             )
         )
+        every { savedStateHandle.get<Boolean>(ARG_SHOW_BACK) } returns true
         coEvery { preferencesManager.firstPersonaCreated } returns flowOf(true)
         coEvery { getProfileUseCase() } returns profile
         coEvery { getProfileUseCase.flow } returns flowOf(profile)

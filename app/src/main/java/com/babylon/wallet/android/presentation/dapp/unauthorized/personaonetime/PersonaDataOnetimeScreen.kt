@@ -95,7 +95,7 @@ fun PersonaDataOnetimeScreen(
                 onBackClick()
             }
         },
-        isFirstScreenInFlow = sharedState.initialUnauthorizedLoginRoute is InitialUnauthorizedLoginRoute.OnetimePersonaData,
+        showBack = state.showBack,
         personas = state.personaListToDisplay,
         onSelectPersona = {
             viewModel.onSelectPersona(it)
@@ -113,7 +113,7 @@ private fun PersonaDataOnetimeContent(
     dapp: DApp?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isFirstScreenInFlow: Boolean,
+    showBack: Boolean,
     personas: ImmutableList<PersonaUiModel>,
     onSelectPersona: ((Persona) -> Unit)?,
     onCreatePersona: () -> Unit,
@@ -126,7 +126,7 @@ private fun PersonaDataOnetimeContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = if (isFirstScreenInFlow) BackIconType.Close else BackIconType.Back,
+                backIconType = if (showBack) BackIconType.Back else BackIconType.Close,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
@@ -230,7 +230,7 @@ fun LoginPermissionContentPreview() {
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
-            isFirstScreenInFlow = false,
+            showBack = true,
             personas = persistentListOf(PersonaUiModel(Persona.sampleMainnet())),
             onSelectPersona = {},
             onCreatePersona = {},

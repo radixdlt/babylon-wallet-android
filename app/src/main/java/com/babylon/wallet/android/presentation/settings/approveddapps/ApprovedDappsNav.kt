@@ -2,11 +2,11 @@ package com.babylon.wallet.android.presentation.settings.approveddapps
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ROUTE_DAPP_DETAIL
 import com.radixdlt.sargon.AccountAddress
 
 const val ROUTE_APPROVED_DAPPS = "settings_approved_dapps"
@@ -27,20 +27,14 @@ fun NavGraphBuilder.approvedDAppsScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            when (targetState.destination.route) {
-                ROUTE_DAPP_DETAIL -> null
-                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-            }
-        },
-        popExitTransition = {
-            when (initialState.destination.route) {
-                ROUTE_DAPP_DETAIL -> null
-                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-            }
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
         },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+        }
     ) {
         ApprovedDAppsScreen(
             viewModel = hiltViewModel(),

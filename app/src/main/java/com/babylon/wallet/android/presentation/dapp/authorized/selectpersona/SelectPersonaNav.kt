@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -48,7 +51,19 @@ fun NavGraphBuilder.selectPersona(
             navArgument(ARG_DAPP_DEFINITION_ADDRESS) {
                 type = NavType.StringType
             }
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        }
     ) {
         val parentEntry = remember(it) {
             navController.getBackStackEntry(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH)

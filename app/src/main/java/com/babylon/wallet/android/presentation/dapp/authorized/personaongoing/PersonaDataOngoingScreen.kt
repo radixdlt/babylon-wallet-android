@@ -104,7 +104,7 @@ fun PersonaDataOngoingScreen(
                 onBackClick()
             }
         },
-        isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData,
+        showBack = state.showBack,
         persona = state.persona,
         onEditClick = viewModel::onEditClick,
         continueButtonEnabled = state.continueButtonEnabled,
@@ -118,7 +118,7 @@ private fun PersonaDataOngoingPermissionContent(
     dapp: DApp?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isFirstScreenInFlow: Boolean,
+    showBack: Boolean,
     persona: PersonaUiModel?,
     onEditClick: (Persona) -> Unit,
     continueButtonEnabled: Boolean,
@@ -129,7 +129,7 @@ private fun PersonaDataOngoingPermissionContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = if (isFirstScreenInFlow) BackIconType.Close else BackIconType.Back,
+                backIconType = if (showBack) BackIconType.Back else BackIconType.Close,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
@@ -222,7 +222,7 @@ fun LoginPermissionContentPreview() {
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
-            isFirstScreenInFlow = false,
+            showBack = true,
             persona = PersonaUiModel(Persona.sampleMainnet()),
             onEditClick = {},
             continueButtonEnabled = true

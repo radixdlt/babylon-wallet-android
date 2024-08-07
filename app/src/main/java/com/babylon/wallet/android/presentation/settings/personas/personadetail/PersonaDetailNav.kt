@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.settings.personas.personadetail
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -9,8 +11,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ROUTE_DAPP_DETAIL
-import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -42,16 +42,13 @@ fun NavGraphBuilder.personaDetailScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            when (targetState.destination.route) {
-                ROUTE_EDIT_PERSONA, ROUTE_DAPP_DETAIL -> null
-                else -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-            }
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
         },
         popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-        },
-        popEnterTransition = {
-            null
         },
         arguments = listOf(
             navArgument(ARG_PERSONA_ADDRESS) {

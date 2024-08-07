@@ -45,11 +45,11 @@ fun NavGraphBuilder.history(
         exitTransition = {
             ExitTransition.None
         },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
-        },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
         HistoryScreen(

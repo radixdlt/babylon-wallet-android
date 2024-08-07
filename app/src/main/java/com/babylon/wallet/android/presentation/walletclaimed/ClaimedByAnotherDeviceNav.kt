@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.presentation.walletclaimed
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -40,7 +43,19 @@ fun NavGraphBuilder.claimedByAnotherDevice(
             navArgument(ARG_CLAIMED_ENTITY) {
                 type = NavType.StringType
             }
-        )
+        ),
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        },
+        exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        }
     ) {
         ClaimedByAnotherDeviceScreen(
             viewModel = hiltViewModel(),

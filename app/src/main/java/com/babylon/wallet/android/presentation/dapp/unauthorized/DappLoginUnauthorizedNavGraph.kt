@@ -27,7 +27,7 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
                 navController.chooseAccountsOneTime(numberOfAccounts, isExactAccountsCount)
             },
             navigateToOneTimePersonaData = {
-                navController.personaDataOnetimeUnauthorized(it)
+                navController.personaDataOnetimeUnauthorized(it, false)
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
@@ -44,7 +44,7 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
             },
             onPersonaOnetime = {
-                navController.personaDataOnetimeUnauthorized(it)
+                navController.personaDataOnetimeUnauthorized(it, true)
             },
             navController = navController
         )
