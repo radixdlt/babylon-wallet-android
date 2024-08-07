@@ -60,8 +60,10 @@ class IncompatibleProfileViewModel @Inject constructor(
                     body.appendLine(_state.value.incompatibleCause?.stackTraceToString())
                 }
             }
+            body.appendLine(DataStoreIOExceptionHolder.exception?.message)
             body.appendLine()
             body.appendLine(DataStoreIOExceptionHolder.exception?.stackTraceToString())
+            DataStoreIOExceptionHolder.exception = null
             sendEvent(Event.OnSendLogsToSupport(body = body.toString()))
         }
     }
