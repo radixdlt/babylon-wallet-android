@@ -143,8 +143,8 @@ private fun AddSingleMnemonicsContent(
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
-                        .fillMaxWidth()
                         .imePadding()
+                        .fillMaxWidth()
                         .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                         .padding(RadixTheme.dimensions.paddingSmall),
                     onCandidateClick = { candidate ->
@@ -178,25 +178,27 @@ private fun AddSingleMnemonicsContent(
             MnemonicType.Olympia -> stringResource(id = R.string.enterSeedPhrase_titleOlympia)
         }
         val isOlympia = state.mnemonicType == MnemonicType.Olympia
-        SeedPhraseView(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
                 .dynamicImePadding(
                     padding = padding,
                     keyboardVisibleBottomPadding = if (isSuggestionsVisible(state)) {
-                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight + RadixTheme.dimensions.paddingDefault
+                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                     } else {
                         RadixTheme.dimensions.paddingDefault
                     }
-                ),
-            title = title,
-            onWordChanged = onWordTyped,
-            onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = { focusedWordIndex = it },
-            seedPhraseState = state.seedPhraseState,
-            onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
-            isOlympia = isOlympia
-        )
+                )
+        ) {
+            SeedPhraseView(
+                title = title,
+                onWordChanged = onWordTyped,
+                onPassphraseChanged = onPassphraseChanged,
+                onFocusedWordIndexChanged = { focusedWordIndex = it },
+                seedPhraseState = state.seedPhraseState,
+                onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
+                isOlympia = isOlympia
+            )
+        }
     }
 }
 
