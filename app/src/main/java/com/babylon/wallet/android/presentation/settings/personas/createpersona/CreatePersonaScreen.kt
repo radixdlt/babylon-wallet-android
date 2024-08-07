@@ -5,14 +5,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -179,6 +180,7 @@ fun CreatePersonaContent(
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
+            windowInsets = WindowInsets.systemBars.exclude(WindowInsets.navigationBars),
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
@@ -196,8 +198,7 @@ fun CreatePersonaContent(
                     },
                     onSelectionChanged = onSelectionChanged,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding(),
+                        .fillMaxSize(),
                     anyFieldSelected = state.anyFieldSelected
                 )
             },
