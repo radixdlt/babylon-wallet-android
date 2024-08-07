@@ -32,6 +32,34 @@ fun RadixBottomBar(
     insets: WindowInsets = WindowInsets.navigationBars,
     additionalContent: @Composable ColumnScope.() -> Unit = {}
 ) {
+    RadixBottomBar(
+        modifier = modifier,
+        color = color,
+        insets = insets,
+        additionalContent = additionalContent,
+        button = {
+            RadixPrimaryButton(
+                text = text,
+                onClick = onClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(buttonPadding),
+                enabled = enabled,
+                isLoading = isLoading,
+                throttleClicks = throttleClicks
+            )
+        }
+    )
+}
+
+@Composable
+fun RadixBottomBar(
+    button: @Composable ColumnScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = RadixTheme.colors.defaultBackground,
+    insets: WindowInsets = WindowInsets.navigationBars,
+    additionalContent: @Composable ColumnScope.() -> Unit = {}
+) {
     Column(
         modifier = modifier
             .background(color)
@@ -39,20 +67,13 @@ fun RadixBottomBar(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HorizontalDivider(color = RadixTheme.colors.gray5)
+
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         additionalContent()
 
-        RadixPrimaryButton(
-            text = text,
-            onClick = onClick,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(buttonPadding),
-            enabled = enabled,
-            isLoading = isLoading,
-            throttleClicks = throttleClicks
-        )
+        button()
+
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
 }

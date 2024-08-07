@@ -138,8 +138,15 @@ private fun PersonaDetailContent(
         bottomBar = {
             if (state.persona != null) {
                 RadixBottomBar(
-                    onClick = { onEditPersona(state.persona.address) },
-                    text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona)
+                    button = {
+                        WarningButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
+                            onClick = onHidePersona
+                        )
+                    }
                 )
             }
         },
@@ -156,7 +163,7 @@ private fun PersonaDetailContent(
                 hasAuthKey = state.hasAuthKey,
                 onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
                 loading = state.loading,
-                onHidePersona = onHidePersona
+                onEditPersona = onEditPersona
             )
         } else {
             FullscreenCircularProgressContent()
@@ -173,7 +180,7 @@ private fun PersonaDetailList(
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean,
-    onHidePersona: () -> Unit
+    onEditPersona: (IdentityAddress) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault),
@@ -207,7 +214,6 @@ private fun PersonaDetailList(
         }
         val allFields = persona.personaData.fields
         if (allFields.isNotEmpty()) {
-            val lastItem = allFields.last()
             items(allFields) { field ->
                 PersonaDataFieldRow(
                     modifier = Modifier
@@ -216,15 +222,20 @@ private fun PersonaDetailList(
                     field = field.value,
                     labelStyle = RadixTheme.typography.body1Header
                 )
-                if (field != lastItem) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
-                        color = RadixTheme.colors.gray4
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                }
+                HorizontalDivider(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                    color = RadixTheme.colors.gray4
+                )
             }
+        }
+        item {
+            RadixSecondaryButton(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
+                onClick = { onEditPersona(persona.address) },
+                throttleClicks = true
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
         if (authorizedDapps.isNotEmpty()) {
             item {
@@ -263,27 +274,17 @@ private fun PersonaDetailList(
                 }
             }
         }
-        item {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
+        if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,
                     throttleClicks = true
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
-            WarningButton(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
-                onClick = onHidePersona
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
     }
 }
