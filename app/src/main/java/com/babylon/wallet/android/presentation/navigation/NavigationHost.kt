@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTIO
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.relink.relinkConnectors
+import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
@@ -325,21 +326,22 @@ fun NavigationHost(
             }
         )
         createPersonaScreen(
-            onBackClick = { navController.navigateUp() }
-        ) {
-            navController.createPersonaConfirmationScreen()
-        }
+            onBackClick = { navController.navigateUp() },
+            onContinueClick = { navController.createPersonaConfirmationScreen(it) }
+        )
         personaInfoScreen(
             onBackClick = { navController.navigateUp() },
-            onContinueClick = { navController.createPersonaScreen() }
+            onContinueClick = { requestSource ->
+                navController.createPersonaScreen(requestSource)
+            }
         )
         personasScreen(
             onBackClick = { navController.navigateUp() },
-            createPersonaScreen = {
+            onCreatePersona = {
                 if (it) {
-                    navController.createPersonaScreen()
+                    navController.createPersonaScreen(CreatePersonaRequestSource.Settings)
                 } else {
-                    navController.personaInfoScreen()
+                    navController.personaInfoScreen(CreatePersonaRequestSource.Settings)
                 }
             },
             onPersonaClick = { personaAddress ->

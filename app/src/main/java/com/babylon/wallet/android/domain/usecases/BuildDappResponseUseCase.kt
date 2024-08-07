@@ -4,8 +4,8 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.domain.model.signing.SignType
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.model.toWalletToDappInteractionPersonaDataRequestResponseItem
@@ -59,7 +59,7 @@ open class BuildDappResponseUseCase(private val accessFactorSourcesProxy: Access
 
             accessFactorSourcesProxy.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signType = SignType.ProvingOwnership,
+                    signPurpose = SignPurpose.SignAuth,
                     signers = accounts.map { it.asProfileEntity() },
                     signRequest = signRequest
                 )
@@ -298,7 +298,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
 
             accessFactorSourcesProxy.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signType = SignType.ProvingOwnership,
+                    signPurpose = SignPurpose.SignAuth,
                     signers = oneTimeAccounts.map { it.asProfileEntity() },
                     signRequest = signRequest
                 )
