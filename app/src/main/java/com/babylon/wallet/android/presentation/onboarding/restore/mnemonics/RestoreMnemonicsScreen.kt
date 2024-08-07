@@ -235,11 +235,14 @@ private fun RestoreMnemonicsContent(
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
         if (state.screenType !is RestoreMnemonicsViewModel.State.ScreenType.Loading) {
+            val enterTransition = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it })
+            val exitTransition = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+
             AnimatedVisibility(
                 modifier = Modifier.padding(padding),
                 visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities,
-                enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
-                exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
+                enter = enterTransition,
+                exit = exitTransition
             ) {
                 EntitiesView(
                     state = state
@@ -256,8 +259,8 @@ private fun RestoreMnemonicsContent(
                     }
                 ),
                 visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase,
-                enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
-                exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+                enter = enterTransition,
+                exit = exitTransition
             ) {
                 SeedPhraseView(
                     state = state,
@@ -270,8 +273,8 @@ private fun RestoreMnemonicsContent(
             AnimatedVisibility(
                 modifier = Modifier.padding(padding),
                 visible = state.screenType is RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase,
-                enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
-                exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+                enter = enterTransition,
+                exit = exitTransition
             ) {
                 NoMainSeedPhraseView()
             }

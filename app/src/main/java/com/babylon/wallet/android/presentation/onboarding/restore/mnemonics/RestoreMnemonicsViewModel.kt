@@ -132,7 +132,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onSkipMainSeedPhraseClick() {
         _state.update {
-            it.copy(screenType = State.ScreenType.NoMainSeedPhrase)
+            it.copy(
+                screenType = State.ScreenType.NoMainSeedPhrase,
+                isMovingForward = true
+            )
         }
     }
 
@@ -164,7 +167,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onSubmit() {
         if (state.value.screenType == State.ScreenType.Entities) {
-            _state.update { it.copy(screenType = State.ScreenType.SeedPhrase, isMovingForward = false) }
+            _state.update {
+                it.copy(
+                    screenType = State.ScreenType.SeedPhrase,
+                    isMovingForward = true
+                )
+            }
         } else {
             viewModelScope.launch { restoreMnemonic() }
         }
@@ -205,7 +213,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 _state.update { it.copy(isPrimaryButtonLoading = true) }
 
                 args.backupType?.let { backupType ->
-                    if (skipAuth.not() && biometricAuthProvider().not()) return
+                    if (skipAuth.not() && biometricAuthProvider().not()) {
+                        _state.update { it.copy(isPrimaryButtonLoading = false) }
+                        return
+                    }
 
                     restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = true)
                         .onSuccess {
