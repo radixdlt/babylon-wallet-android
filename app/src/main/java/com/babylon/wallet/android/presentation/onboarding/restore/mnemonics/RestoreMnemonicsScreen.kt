@@ -164,8 +164,8 @@ private fun RestoreMnemonicsContent(
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
-                        .fillMaxWidth()
                         .imePadding()
+                        .fillMaxWidth()
                         .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                         .padding(RadixTheme.dimensions.paddingSmall),
                     onCandidateClick = { candidate ->
@@ -250,7 +250,7 @@ private fun RestoreMnemonicsContent(
                 modifier = Modifier.dynamicImePadding(
                     padding = padding,
                     keyboardVisibleBottomPadding = if (isSuggestionsVisible(state)) {
-                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight + RadixTheme.dimensions.paddingDefault
+                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                     } else {
                         RadixTheme.dimensions.paddingDefault
                     }
