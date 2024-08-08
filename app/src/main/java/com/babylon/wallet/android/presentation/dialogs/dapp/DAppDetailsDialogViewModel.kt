@@ -11,14 +11,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
@@ -37,7 +36,6 @@ class DAppDetailsDialogViewModel @Inject constructor(
 ) : StateViewModel<DAppDetailsDialogViewModel.State>(), OneOffEventHandler<DAppDetailsDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = DAppDetailsDialogArgs(savedStateHandle)
-    private lateinit var authorizedDapp: AuthorizedDapp
     override fun initialState(): State = State(
         dAppDefinitionAddress = args.dAppDefinitionAddress
     )
@@ -73,18 +71,13 @@ class DAppDetailsDialogViewModel @Inject constructor(
 
     private fun observeDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.getAuthorizedDAppFlow(args.dAppDefinitionAddress).collect {
-                if (it == null) {
-                    return@collect
-                } else {
-                    authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDApp(args.dAppDefinitionAddress))
-                }
+            dAppConnectionRepository.getAuthorizedDAppFlow(args.dAppDefinitionAddress).filterNotNull().collect { authorizedDapp ->
                 val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
                     getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
                 }
                 _state.update { state ->
                     state.copy(
-                        personas = personas.toPersistentList(),
+                        authorizedPersonas = personas.toPersistentList(),
                     )
                 }
             }
@@ -100,7 +93,7 @@ class DAppDetailsDialogViewModel @Inject constructor(
         val dAppWithResources: DAppWithResources? = null,
         val validatedWebsite: String? = null,
         val isWebsiteValidating: Boolean = false,
-        val personas: ImmutableList<Persona> = persistentListOf(),
+        val authorizedPersonas: ImmutableList<Persona> = persistentListOf(),
         val uiMessage: UiMessage? = null
     ) : UiState
 

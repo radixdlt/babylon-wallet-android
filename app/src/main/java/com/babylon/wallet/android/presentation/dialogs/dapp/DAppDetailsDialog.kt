@@ -94,7 +94,7 @@ private fun DAppDetailsDialogContent(
                 dAppWithResources = state.dAppWithResources,
                 isValidatingWebsite = state.isWebsiteValidating,
                 validatedWebsite = state.validatedWebsite,
-                personaList = state.personas,
+                personaList = state.authorizedPersonas,
                 onFungibleTokenClick = onFungibleClick,
                 onNonFungibleClick = onNonFungibleClick,
                 onDeleteDapp = {

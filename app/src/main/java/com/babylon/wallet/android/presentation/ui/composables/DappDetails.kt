@@ -186,6 +186,7 @@ fun DappDetails(
                                     onPersonaClick?.invoke(persona)
                                 }
                             ),
+                            showChevron = onPersonaClick != null,
                             persona = persona
                         )
                         Spacer(modifier = Modifier.height(spacerHeight))

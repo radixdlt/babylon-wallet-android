@@ -209,7 +209,7 @@ private fun DappDetailContent(
                 dAppWithResources = state.dAppWithResources,
                 isValidatingWebsite = state.isValidatingWebsite,
                 validatedWebsite = state.validatedWebsite,
-                personaList = state.personas,
+                personaList = state.authorizedPersonas,
                 onPersonaClick = { persona ->
                     onPersonaClick(persona)
                     scope.launch {
@@ -568,7 +568,7 @@ private fun DappDetailContentPreview(
             onBackClick = {},
             state = DappDetailUiState(
                 loading = false,
-                personas = persistentListOf(Persona.sampleMainnet(), Persona.sampleMainnet.ripley),
+                authorizedPersonas = persistentListOf(Persona.sampleMainnet(), Persona.sampleMainnet.ripley),
                 dAppWithResources = previewValues.first,
                 sharedPersonaAccounts = persistentListOf(
                     AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", AppearanceId(0u))
