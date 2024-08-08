@@ -16,8 +16,7 @@ class GetDAppWithResourcesUseCase @Inject constructor(
 
     suspend operator fun invoke(
         definitionAddress: AccountAddress,
-        needMostRecentData: Boolean,
-        verifyResources: Boolean = true
+        needMostRecentData: Boolean
     ): Result<DAppWithResources> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(definitionAddress),
         isRefreshing = needMostRecentData
@@ -32,16 +31,14 @@ class GetDAppWithResourcesUseCase @Inject constructor(
             withDetails = false,
             withAllMetadata = false
         ).getOrNull().orEmpty()
-        val dAppResources = if (verifyResources) {
-            resources.filter { it.metadata.dAppDefinitions().contains(definitionAddress.string) }
-        } else {
-            resources
+        val verifiedResources = resources.filter {
+            it.metadata.dAppDefinitions().contains(definitionAddress.string)
         }
 
         DAppWithResources(
             dApp = dApp,
-            fungibleResources = dAppResources.filterIsInstance<Resource.FungibleResource>(),
-            nonFungibleResources = dAppResources.filterIsInstance<Resource.NonFungibleResource>()
+            fungibleResources = verifiedResources.filterIsInstance<Resource.FungibleResource>(),
+            nonFungibleResources = verifiedResources.filterIsInstance<Resource.NonFungibleResource>()
         )
     }
 }
