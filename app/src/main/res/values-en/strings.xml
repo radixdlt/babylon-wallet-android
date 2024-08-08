@@ -49,6 +49,7 @@
   <string name="assetDetails_validator">Validator</string>
   <string name="assetDetails_name">Name</string>
   <string name="assetDetails_currentSupply">Current Supply</string>
+  <string name="assetDetails_divisibility">Divisibility</string>
   <string name="assetDetails_moreInfo">For more info</string>
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
