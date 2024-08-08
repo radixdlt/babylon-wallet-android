@@ -117,7 +117,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
             val item = expectMostRecentItem()
             assertNotNull(item.dAppWithResources)
             assertNotNull(item.dapp)
-            assertEquals(1, item.personas.size)
+            assertEquals(1, item.authorizedPersonas.size)
         }
     }
 

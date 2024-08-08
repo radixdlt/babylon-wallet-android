@@ -27,6 +27,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
@@ -89,12 +90,8 @@ class DappDetailViewModel @Inject constructor(
 
     private fun observeDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.getAuthorizedDAppFlow(args.dappDefinitionAddress).collect {
-                if (it == null) {
-                    return@collect
-                } else {
-                    authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress))
-                }
+            dAppConnectionRepository.getAuthorizedDAppFlow(args.dappDefinitionAddress).filterNotNull().collect { dapp ->
+                authorizedDapp = dapp
                 val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
                     getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
                 }
@@ -104,7 +101,7 @@ class DappDetailViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         dapp = authorizedDapp,
-                        personas = personas.toPersistentList(),
+                        authorizedPersonas = personas.toPersistentList(),
                     )
                 }
             }
@@ -173,7 +170,7 @@ class DappDetailViewModel @Inject constructor(
     }
 
     fun onDisconnectPersona(persona: Persona) {
-        val lastPersona = _state.value.personas.size == 1 && _state.value.personas.first().address == persona.address
+        val lastPersona = _state.value.authorizedPersonas.size == 1 && _state.value.authorizedPersonas.first().address == persona.address
         viewModelScope.launch {
             dAppConnectionRepository.deletePersonaForDApp(args.dappDefinitionAddress, persona.address)
             if (lastPersona) {
@@ -259,7 +256,7 @@ data class DappDetailUiState(
     val dAppWithResources: DAppWithResources? = null,
     val isValidatingWebsite: Boolean = false,
     val validatedWebsite: String? = null,
-    val personas: ImmutableList<Persona> = persistentListOf(),
+    val authorizedPersonas: ImmutableList<Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null
 ) : UiState {

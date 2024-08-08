@@ -116,7 +116,7 @@ internal class ApprovedDappsViewModelTest : StateViewModelTest<DappDetailViewMod
             val item = expectMostRecentItem()
             assert(item.dAppWithResources != null)
             assert(item.dapp != null)
-            assert(item.personas.size == 1)
+            assert(item.authorizedPersonas.size == 1)
         }
     }
 
