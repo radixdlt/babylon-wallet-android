@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.backup.restore
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
@@ -156,7 +157,12 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onRestoreConfirmed = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs(backupType = it))
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs(
+                        backupType = it,
+                        requestSource = RestoreMnemonicsRequestSource.Onboarding
+                    )
+                )
             },
             onOtherRestoreOptionsClick = {
                 navController.restoreWithoutBackupScreen()
