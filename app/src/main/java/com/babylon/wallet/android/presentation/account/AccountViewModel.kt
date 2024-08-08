@@ -28,7 +28,6 @@ import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -274,7 +273,7 @@ class AccountViewModel @Inject constructor(
 
     fun onNextNftPageRequest(resource: Resource.NonFungibleResource) {
         val account = state.value.accountWithAssets?.account ?: return
-        if (!state.value.isRefreshing && resource.address !in state.value.nonFungiblesWithPendingNFTs) {
+        if (!state.value.isRefreshing && resource.address !in state.value.assetsViewState.fetchingNFTsPerCollection) {
             _state.update { state -> state.onNFTsLoading(resource) }
             viewModelScope.launch {
                 getNextNFTsPageUseCase(account, resource)
@@ -360,7 +359,6 @@ class AccountViewModel @Inject constructor(
         val accountWithAssets: AccountWithAssets? = null,
         private val pricesState: PricesState = PricesState.None,
         val refreshType: RefreshType = RefreshType.None,
-        val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
         val pendingStakeUnits: Boolean = false,
         val securityPrompts: List<SecurityPromptType>? = null,
         val assetsViewState: AssetsViewState = AssetsViewState.init(),
@@ -403,7 +401,9 @@ class AccountViewModel @Inject constructor(
             data class Enabled(
                 val prices: Map<Asset, AssetPrice?>
             ) : PricesState {
-                override val totalPrice: FiatPrice = run {
+                override val totalPrice: FiatPrice? = run {
+                    if (prices.isEmpty()) return@run null
+
                     var total = 0.toDecimal192()
                     var currency = SupportedCurrency.USD
                     prices.values.mapNotNull { it }
@@ -443,7 +443,12 @@ class AccountViewModel @Inject constructor(
 
         fun onAssetsError(error: Throwable): State = copy(
             refreshType = RefreshType.None,
-            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error = error)
+            uiMessage = if (refreshType is RefreshType.Automatic) null else UiMessage.ErrorMessage(error = error),
+            pricesState = if (pricesState is PricesState.None) {
+                PricesState.Enabled(emptyMap())
+            } else {
+                pricesState
+            }
         )
 
         fun onAssetsReceived(assets: Assets?): State = copy(
@@ -460,7 +465,9 @@ class AccountViewModel @Inject constructor(
         )
 
         fun onNFTsLoading(forResource: Resource.NonFungibleResource): State {
-            return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
+            return copy(
+                assetsViewState = assetsViewState.nextPagePending(forResource.address)
+            )
         }
 
         fun onNFTsReceived(forResource: Resource.NonFungibleResource): State {
@@ -477,14 +484,14 @@ class AccountViewModel @Inject constructor(
                         )
                     )
                 ),
-                nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address
+                assetsViewState = assetsViewState.nextPageReceived(forResource.address)
             )
         }
 
         fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): State {
             if (accountWithAssets?.assets?.nonFungibles == null) return this
             return copy(
-                nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address,
+                assetsViewState = assetsViewState.nextPageReceived(forResource.address),
                 uiMessage = UiMessage.ErrorMessage(error = error)
             )
         }

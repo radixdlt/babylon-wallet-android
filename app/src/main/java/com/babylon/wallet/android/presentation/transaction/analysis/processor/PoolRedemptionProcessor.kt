@@ -62,7 +62,8 @@ class PoolRedemptionProcessor @Inject constructor(
             from = from,
             to = to,
             badges = badges,
-            actionType = PreviewType.Transfer.Pool.ActionType.Redemption
+            actionType = PreviewType.Transfer.Pool.ActionType.Redemption,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 }

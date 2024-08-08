@@ -2,20 +2,23 @@ package com.babylon.wallet.android.presentation.settings.personas.createpersona
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -31,12 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.LabelType
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -47,12 +51,14 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.PersonaDataEntryId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -78,7 +84,6 @@ fun CreatePersonaScreen(
         onDeleteField = viewModel::onDeleteField,
         onValueChanged = viewModel::onFieldValueChanged,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
-        onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
         onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
         onMessageShown = viewModel::onMessageShown
     )
@@ -109,7 +114,6 @@ fun CreatePersonaContent(
     onDeleteField: (PersonaDataEntryId) -> Unit,
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     onAddFieldSheetVisible: (Boolean) -> Unit,
     onMessageShown: () -> Unit
 ) {
@@ -136,23 +140,16 @@ fun CreatePersonaContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            Column {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-                RadixPrimaryButton(
-                    text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
-                    onClick = onPersonaCreateClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(dimensions.paddingDefault)
-                        .navigationBarsPadding()
-                        .imePadding(),
-                    enabled = state.continueButtonEnabled
-                )
-            }
+            RadixBottomBar(
+                onClick = onPersonaCreateClick,
+                text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
+                enabled = state.isContinueButtonEnabled,
+                insets = WindowInsets.navigationBars.union(WindowInsets.ime)
+            )
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -176,7 +173,6 @@ fun CreatePersonaContent(
                     bottomSheetState.show()
                 }
             },
-            onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
             onFieldFocusChanged = onFieldFocusChanged
         )
     }
@@ -184,6 +180,7 @@ fun CreatePersonaContent(
     if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
+            windowInsets = WindowInsets.systemBars.exclude(WindowInsets.navigationBars),
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
@@ -201,8 +198,7 @@ fun CreatePersonaContent(
                     },
                     onSelectionChanged = onSelectionChanged,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding(),
+                        .fillMaxSize(),
                     anyFieldSelected = state.anyFieldSelected
                 )
             },
@@ -227,15 +223,15 @@ private fun CreatePersonaContentList(
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,
     onAddFieldClick: () -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = PaddingValues(
-            horizontal = dimensions.paddingLarge,
-            vertical = dimensions.paddingDefault
+            start = dimensions.paddingLarge,
+            end = dimensions.paddingLarge,
+            bottom = dimensions.paddingDefault
         )
     ) {
         item {
@@ -270,25 +266,52 @@ private fun CreatePersonaContentList(
                     )
                 ),
                 hint = stringResource(id = R.string.createPersona_nameNewPersona_placeholder),
-                onFocusChanged = {
-                    onPersonaDisplayNameFocusChanged(it.hasFocus)
-                },
-                error = if (personaName.shouldDisplayValidationError && personaName.valid == false) {
-                    stringResource(id = R.string.createPersona_emptyDisplayName)
+                hintColor = RadixTheme.colors.gray2,
+                error = if (personaName.wasEdited) {
+                    when (personaName.validationState) {
+                        PersonaDisplayNameFieldWrapper.ValidationState.Empty -> stringResource(id = R.string.createPersona_emptyDisplayName)
+                        PersonaDisplayNameFieldWrapper.ValidationState.TooLong -> stringResource(id = R.string.error_personaLabel_tooLong)
+                        else -> null
+                    }
                 } else {
                     null
                 },
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Done
+                ),
+                singleLine = true,
             )
             Spacer(modifier = Modifier.height(dimensions.paddingMedium))
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = dimensions.paddingXLarge),
                 text = stringResource(id = R.string.createPersona_explanation_thisWillBeShared),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4,
+                modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge)
+            )
+            Text(
+                modifier = Modifier.padding(bottom = dimensions.paddingSemiLarge),
+                text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4,
+                modifier = Modifier.padding(bottom = dimensions.paddingXXXLarge)
+            )
         }
-        items(currentFields, key = { it.id }) { field ->
+        itemsIndexed(currentFields, key = { _, field -> field.id }) { index, field ->
+            val spacerHeight = if (currentFields.lastIndex == index) {
+                dimensions.paddingXXXLarge
+            } else {
+                dimensions.paddingLarge
+            }
             PersonaDataFieldInput(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -306,24 +329,17 @@ private fun CreatePersonaContentList(
                 },
                 required = field.required,
                 phoneInput = field.isPhoneNumber(),
-                error = if (field.shouldDisplayValidationError && field.valid == false) {
+                error = if (field.shouldDisplayValidationError && field.isValid == false) {
                     stringResource(id = R.string.createPersona_requiredField)
                 } else {
                     null
                 },
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+            Spacer(modifier = Modifier.height(spacerHeight))
         }
         item {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            Text(
-                text = stringResource(id = R.string.createPersona_explanation_someDappsMayRequest),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(Modifier.height(30.dp))
             RadixSecondaryButton(
+                modifier = Modifier.widthIn(min = 200.dp),
                 text = stringResource(id = R.string.editPersona_addAField),
                 onClick = onAddFieldClick,
                 enabled = addButtonEnabled
@@ -341,7 +357,6 @@ fun CreateAccountContentPreview() {
                 currentFields = persistentListOf(),
                 fieldsToAdd = persistentListOf(),
                 personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),
-                continueButtonEnabled = false,
                 anyFieldSelected = false,
                 isAddFieldBottomSheetVisible = false
             ),
@@ -354,7 +369,6 @@ fun CreateAccountContentPreview() {
             onDeleteField = {},
             onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {},
             onAddFieldSheetVisible = {},
             onMessageShown = {}
         )

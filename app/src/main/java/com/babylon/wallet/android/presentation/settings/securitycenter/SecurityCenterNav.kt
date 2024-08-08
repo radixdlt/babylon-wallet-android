@@ -2,12 +2,14 @@ package com.babylon.wallet.android.presentation.settings.securitycenter
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
@@ -37,13 +39,13 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
             },
             exitTransition = {
-                null
-            },
-            popExitTransition = {
-                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+                ExitTransition.None
             },
             popEnterTransition = {
                 EnterTransition.None
+            },
+            popExitTransition = {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
             }
         ) {
             SecurityCenterScreen(
@@ -57,7 +59,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.backupScreen()
                 },
                 onRecoverEntitiesClick = {
-                    navController.restoreMnemonics(args = RestoreMnemonicsArgs())
+                    navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
                 },
                 onBackupEntities = {
                     navController.seedPhrases()
@@ -90,7 +92,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
         seedPhrases(
             onBackClick = { navController.popBackStack() },
             onNavigateToRecoverMnemonic = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs())
+                navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
             },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it) }
         )

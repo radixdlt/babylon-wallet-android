@@ -1,11 +1,16 @@
 package com.babylon.wallet.android.presentation.settings
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
@@ -19,8 +24,6 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityC
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenterNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
-import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
 
 @Suppress("LongMethod")
 fun NavGraphBuilder.settingsNavGraph(
@@ -67,7 +70,19 @@ fun NavGraphBuilder.settingsNavGraph(
 
 private fun NavGraphBuilder.settingsAll(navController: NavController) {
     composable(
-        route = Screen.SettingsAllDestination.route
+        route = Screen.SettingsAllDestination.route,
+        enterTransition = {
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+        },
+        exitTransition = {
+            ExitTransition.None
+        },
+        popEnterTransition = {
+            EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+        }
     ) {
         SettingsScreen(
             viewModel = hiltViewModel(),

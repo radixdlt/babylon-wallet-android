@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.IncomingMessage
@@ -48,8 +47,8 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
-@Suppress("LongParameterList", "TooManyFunctions")
 class DAppUnauthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
@@ -66,7 +65,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private lateinit var request: IncomingMessage.IncomingRequest.UnauthorizedRequest
 
     init {
-        observeSigningState()
         viewModelScope.launch {
             appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
                 if (it.interactionId == args.interactionId) {
@@ -104,20 +102,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private fun observeSigningState() {
-        viewModelScope.launch {
-            buildUnauthorizedDappResponseUseCase.signingState.collect { signingState ->
-                _state.update { state ->
-                    state.copy(interactionState = signingState)
-                }
-            }
-        }
-    }
-
-    fun onDismissSigningStatusDialog() {
-        _state.update { it.copy(interactionState = null) }
-    }
-
     fun dismissNoMnemonicError() {
         _state.update { it.copy(isNoMnemonicErrorVisible = false) }
     }
@@ -152,6 +136,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleRequestError(exception: Throwable) {
+        if (exception is RadixWalletException.DappRequestException.RejectedByUser) {
+            return // user rejected/cancelled signing, do not close the request screen
+        }
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
             when (exception.cause) {
@@ -168,7 +155,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 else -> {
                     respondToIncomingRequestUseCase.respondWithFailure(
                         request = request,
-                        error = exception.ceError,
+                        dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
                         message = exception.getDappMessage()
                     )
                     _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
@@ -183,7 +170,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         val exception = (_state.value.failureDialogState as? FailureDialogState.Open)?.dappRequestException ?: return@launch
-        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.dappWalletInteractionErrorType, exception.getDappMessage())
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
@@ -210,7 +197,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         selectedPersonaData = dataFields.map { it.value }.toPersonaData()
                     )
                 }
-                sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
+                sendRequestResponse()
             }
         }
     }
@@ -238,20 +225,19 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     )
                 )
             } else {
-                sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
+                sendRequestResponse()
             }
         }
     }
 
-    fun sendRequestResponse(deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true }) {
+    private fun sendRequestResponse() {
         viewModelScope.launch {
             buildUnauthorizedDappResponseUseCase(
                 request = request,
                 oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
                     getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
                 },
-                onetimeSharedPersonaData = state.value.selectedPersonaData,
-                deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+                onetimeSharedPersonaData = state.value.selectedPersonaData
             ).mapCatching {
                 respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
             }.onSuccess { result ->
@@ -278,7 +264,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
 sealed interface Event : OneOffEvent {
 
-    data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
     data object CloseLoginFlow : Event
 
     data object LoginFlowCompleted : Event
@@ -294,6 +279,5 @@ data class DAppUnauthorizedLoginUiState(
     val selectedPersonaData: PersonaData? = null,
     val selectedAccountsOneTime: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
-    val interactionState: InteractionState? = null,
     val isNoMnemonicErrorVisible: Boolean = false
 ) : UiState

@@ -2,8 +2,8 @@ package com.babylon.wallet.android.presentation.model
 
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryEmailAddress
 import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
@@ -17,7 +17,7 @@ import rdx.works.core.sargon.PersonaDataField
 data class PersonaFieldWrapper(
     val entry: IdentifiedEntry<PersonaDataField>,
     val selected: Boolean = false,
-    val valid: Boolean? = null,
+    val isValid: Boolean? = null,
     val required: Boolean = false,
     val wasEdited: Boolean = false,
     val shouldDisplayValidationError: Boolean = false,
@@ -51,7 +51,7 @@ fun List<PersonaFieldWrapper>.toPersonaData(): PersonaData {
         },
         emailAddresses = fields.filter { it.value.kind == PersonaDataField.Kind.EmailAddress }.map {
             val emailField = it.value as PersonaDataField.Email
-            PersonaDataIdentifiedEmailAddress(id = it.uuid, value = PersonaDataEntryEmailAddress(emailField.value))
+            PersonaDataIdentifiedEmailAddress(id = it.uuid, value = EmailAddress(emailField.value))
         }.let { CollectionOfEmailAddresses(it) },
         phoneNumbers = fields.filter { it.value.kind == PersonaDataField.Kind.PhoneNumber }.map {
             val phoneValue = it.value as PersonaDataField.PhoneNumber

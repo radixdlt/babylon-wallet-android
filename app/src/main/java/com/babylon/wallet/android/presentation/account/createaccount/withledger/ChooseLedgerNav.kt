@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -44,7 +46,13 @@ fun NavGraphBuilder.chooseLedger(
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
+        popEnterTransition = {
+            EnterTransition.None
+        },
         exitTransition = {
+            ExitTransition.None
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         },
         arguments = listOf(

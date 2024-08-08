@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,15 +19,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
+import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableMap
@@ -49,14 +56,14 @@ fun LazyListScope.poolUnitsTab(
         }
     }
 
-    items(
+    itemsIndexed(
         items = assetsViewData.poolUnits,
-        key = { poolUnitItem -> poolUnitItem.resourceAddress.string }
-    ) { poolUnitItem ->
+        key = { index, poolUnitItem -> poolUnitItem.resourceAddress.string }
+    ) { index, poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+                .padding(top = if (index == 0) RadixTheme.dimensions.paddingSemiLarge else RadixTheme.dimensions.paddingDefault),
             poolUnit = poolUnitItem,
             poolUnitPrice = assetsViewData.prices?.get(poolUnitItem) as? AssetPrice.PoolUnitPrice,
             isLoadingBalance = isLoadingBalance,
@@ -90,7 +97,7 @@ private fun PoolUnitItem(
         Row(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
             Thumbnail.PoolUnit(
                 modifier = Modifier.size(44.dp),
@@ -99,24 +106,19 @@ private fun PoolUnitItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = poolUnit.name(),
+                    text = poolUnit.displayTitle(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
 
-                val associatedDAppName = remember(poolUnit) {
-                    poolUnit.pool?.associatedDApp?.name
-                }
-                if (!associatedDAppName.isNullOrEmpty()) {
-                    Text(
-                        text = associatedDAppName,
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray2,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Text(
+                    text = poolUnit.displaySubtitle(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
 
             if (action is AssetsViewAction.Selection) {
@@ -181,7 +183,7 @@ fun PoolResourcesValues(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = resourceWithAmount.key.displayTitle,
+                    text = resourceWithAmount.key.displayTitleAsPoolUnit(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
@@ -219,6 +221,27 @@ fun PoolResourcesValues(
     }
 }
 
-// Pool units just display the name and have no fallback
+@Preview(showBackground = true)
+@UsesSampleValues
 @Composable
-fun PoolUnit.name() = displayTitle
+fun PoolUnitTabPreview() {
+    RadixWalletTheme {
+        LazyColumn {
+            poolUnitsTab(
+                assetsViewData = previewAssetViewData,
+                isLoadingBalance = false,
+                action = AssetsViewAction.Click(
+                    onTabClick = {},
+                    onStakesRequest = {},
+                    onCollectionClick = {},
+                    onLSUClick = {},
+                    onClaimClick = {},
+                    onNextNFtsPageRequest = {},
+                    onFungibleClick = {},
+                    onPoolUnitClick = {},
+                    onNonFungibleItemClick = { _, _ -> }
+                )
+            )
+        }
+    }
+}

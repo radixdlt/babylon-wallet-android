@@ -30,14 +30,14 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
     suspend fun respondWithFailure(
         request: IncomingMessage.IncomingRequest,
-        error: DappWalletInteractionErrorType,
+        dappWalletInteractionErrorType: DappWalletInteractionErrorType,
         message: String? = null
     ) =
         withContext(ioDispatcher) {
             val payload = WalletToDappInteractionResponse.Failure(
                 v1 = WalletToDappInteractionFailureResponse(
                     interactionId = request.interactionId,
-                    error = error,
+                    error = dappWalletInteractionErrorType,
                     message = message
                 )
             )

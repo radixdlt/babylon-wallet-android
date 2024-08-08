@@ -15,13 +15,14 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
+import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -74,8 +75,8 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountNameChange(accountName: String) {
         savedStateHandle[ACCOUNT_NAME] = accountName
-        savedStateHandle[IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX] = accountName.count() > ACCOUNT_NAME_MAX_LENGTH
-        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ACCOUNT_NAME_MAX_LENGTH
+        savedStateHandle[IS_ACCOUNT_NAME_LENGTH_MORE_THAN_THE_MAX] = accountName.count() > ENTITY_NAME_MAX_LENGTH
+        savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ENTITY_NAME_MAX_LENGTH
     }
 
     fun onAccountCreateClick(isWithLedger: Boolean) {
@@ -138,17 +139,19 @@ class CreateAccountViewModel @Inject constructor(
 
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
+                    entityKind = EntityKind.ACCOUNT,
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
-                    isBiometricsProvided = isFirstAccount,
-                    entityKind = EntityKind.ACCOUNT
+                    isBiometricsProvided = isFirstAccount
                 )
-            ).onSuccess {
+            ).mapCatching {
+                val factorSourceId = when (selectedFactorSource) {
+                    is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
+                    is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
+                    else -> error("FactorSourceKind ${selectedFactorSource.kind} not supported.")
+                }
+
                 handleAccountCreation { nameOfAccount ->
-                    val factorSourceId = when (selectedFactorSource) {
-                        is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
-                        is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
-                    }
                     createAccountUseCase(
                         displayName = DisplayName(nameOfAccount),
                         factorSourceId = factorSourceId,

@@ -5,32 +5,42 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displaySubtitle
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(
@@ -47,15 +57,19 @@ fun LazyListScope.nftsTab(
         }
     }
 
-    assetsViewData.nonFungibleCollections.forEach { nonFungible ->
+    item {
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+    }
+    assetsViewData.nonFungibleCollections.forEachIndexed { outerIndex, nonFungible ->
         item(
             key = nonFungible.collection.address.string,
             contentType = { "collection" }
         ) {
             NFTHeader(
-                collection = nonFungible.collection,
+                collection = nonFungible,
                 state = state,
-                action = action
+                action = action,
+                modifier = Modifier.padding(top = if (outerIndex == 0) 0.dp else RadixTheme.dimensions.paddingLarge)
             )
         }
 
@@ -64,7 +78,7 @@ fun LazyListScope.nftsTab(
             key = { index -> "${nonFungible.collection.address}$index" },
             contentType = { "nft" }
         ) { index ->
-            NFTItem(index, nonFungible.collection, action)
+            NFTItem(index, nonFungible.collection, state, action)
         }
     }
 }
@@ -73,6 +87,7 @@ fun LazyListScope.nftsTab(
 private fun NFTItem(
     index: Int,
     collection: Resource.NonFungibleResource,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     AssetCard(
@@ -91,9 +106,8 @@ private fun NFTItem(
                 action = action
             )
         } else {
-            LaunchedEffect(index, collection.items.size) {
-                // First shimmering item
-                if (index == collection.items.size) {
+            LaunchedEffect(collection.address, state.fetchingNFTsPerCollection) {
+                if (collection.address !in state.fetchingNFTsPerCollection) {
                     action.onNextNFtsPageRequest(collection)
                 }
             }
@@ -107,23 +121,23 @@ private fun NFTItem(
 
 @Composable
 private fun NFTHeader(
-    collection: Resource.NonFungibleResource,
+    collection: NonFungibleCollection,
     state: AssetsViewState,
-    action: AssetsViewAction
+    action: AssetsViewAction,
+    modifier: Modifier = Modifier
 ) {
-    val isCollapsed = state.isCollapsed(collection.address.string)
+    val isCollapsed = state.isCollapsed(collection.resource.address.string)
     CollapsibleAssetCard(
-        modifier = Modifier
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-            .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         isCollapsed = isCollapsed,
-        collapsedItems = collection.amount.toInt()
+        collapsedItems = collection.resource.amount.toInt()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    action.onCollectionClick(collection.address.string)
+                    action.onCollectionClick(collection.resource.address.string)
                 }
                 .padding(RadixTheme.dimensions.paddingLarge),
             verticalAlignment = Alignment.CenterVertically,
@@ -131,20 +145,18 @@ private fun NFTHeader(
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(44.dp),
-                collection = collection
+                collection = collection.resource
             )
             Column(verticalArrangement = Arrangement.Center) {
-                if (collection.name.isNotEmpty()) {
-                    Text(
-                        collection.name,
-                        style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 2
-                    )
-                }
+                Text(
+                    text = collection.displayTitle(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
 
                 Text(
-                    text = collection.amount.toString(),
+                    text = collection.displaySubtitle(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2,
                 )
@@ -173,21 +185,22 @@ private fun NonFungibleResourceItem(
                     }
                 }
             }
-            .padding(RadixTheme.dimensions.paddingDefault),
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Thumbnail.NFT(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
                 nft = item
             )
             item.name?.let { name ->
                 Text(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = RadixTheme.dimensions.paddingXSmall),
                     text = name,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1
@@ -259,5 +272,55 @@ private fun NonFungibleResourcePlaceholder(
                     highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
                 )
         )
+    }
+}
+
+@Preview
+@UsesSampleValues
+@Composable
+fun NFTCItemCollapsedPreview() {
+    RadixWalletTheme {
+        LazyColumn {
+            nftsTab(
+                assetsViewData = previewAssetViewData,
+                state = AssetsViewState(AssetsTab.Nfts, mapOf(ResourceAddress.sampleMainnet().string to true), emptySet()),
+                action = AssetsViewAction.Click(
+                    onTabClick = {},
+                    onCollectionClick = {},
+                    onNextNFtsPageRequest = {},
+                    onStakesRequest = {},
+                    onNonFungibleItemClick = { _, _ -> },
+                    onFungibleClick = {},
+                    onLSUClick = {},
+                    onPoolUnitClick = {},
+                    onClaimClick = {}
+                )
+            )
+        }
+    }
+}
+
+@Preview
+@UsesSampleValues
+@Composable
+fun NFTItemExpandedPreview() {
+    RadixWalletTheme {
+        LazyColumn {
+            nftsTab(
+                assetsViewData = previewAssetViewData,
+                state = AssetsViewState(AssetsTab.Nfts, mapOf(ResourceAddress.sampleMainnet().string to false), emptySet()),
+                action = AssetsViewAction.Click(
+                    onTabClick = {},
+                    onCollectionClick = {},
+                    onNextNFtsPageRequest = {},
+                    onStakesRequest = {},
+                    onNonFungibleItemClick = { _, _ -> },
+                    onFungibleClick = {},
+                    onLSUClick = {},
+                    onPoolUnitClick = {},
+                    onClaimClick = {}
+                )
+            )
+        }
     }
 }

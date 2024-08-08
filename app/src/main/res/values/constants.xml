@@ -2,6 +2,7 @@
 <resources>
     <!-- Strings not needing translation -->
     <string name="dot_separator" translatable="false">\u2022</string>
+    <string name="dash" translatable="false">-</string>
     <string name="empty" translatable="false"/>
     <string name="settings_debugSettings" translatable="false">Debug Settings</string>
     <string name="settings_debugSettings_inspectProfile" translatable="false">Inspect Profile</string>
@@ -9,4 +10,6 @@
     <string name="settings_debugSettings_inspectCloudBackups" translatable="false">Inspect Cloud Backups</string>
     <string name="settings_debugSettings_appLock" translatable="false">Lock app in background</string>
     <string name="no_email_client_installed" translatable="false">No email client installed</string>
+    <string name="gateway_mainnet_title" translatable="false">Radix Mainnet Gateway</string>
+    <string name="gateway_stokenet_title" translatable="false">Stokenet (testnet) Gateway</string>
 </resources>

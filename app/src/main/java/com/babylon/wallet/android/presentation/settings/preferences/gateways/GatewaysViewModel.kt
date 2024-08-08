@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.preferences.gateways
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,7 +21,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,9 +42,10 @@ class GatewaysViewModel @Inject constructor(
     private val addGatewayUseCase: AddGatewayUseCase,
     private val deleteGatewayUseCase: DeleteGatewayUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
-) : StateViewModel<SettingsUiState>(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+) : StateViewModel<GatewaysViewModel.State>(), OneOffEventHandler<GatewaysViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): SettingsUiState = SettingsUiState()
+    override fun initialState(): State = State()
 
     init {
         observeProfile()
@@ -53,24 +57,25 @@ class GatewaysViewModel @Inject constructor(
                 getProfileUseCase.flow.map { it.appPreferences.gateways },
                 getProfileUseCase.flow.map { it.appPreferences.security.isDeveloperModeEnabled }
             ) { gateways, isDeveloperModeEnabled ->
-                Pair(gateways, isDeveloperModeEnabled)
-            }.collect { pair ->
-                val current = pair.first.current
-                _state.update { state ->
-                    state.copy(
-                        currentGateway = current,
-                        gatewayList = pair.first.all
-                            .sortedWith(Gateway.comparator)
-                            .toPersistentList().map {
-                                GatewayWrapper(
-                                    gateway = it,
-                                    selected = it == current
-                                )
-                            }.toPersistentList(),
-                        isDeveloperModeEnabled = pair.second
-                    )
-                }
+                state.value.copy(
+                    currentGateway = gateways.current,
+                    gatewayList = gateways.all
+                        .sortedWith(Gateway.comparator)
+                        .toPersistentList().map {
+                            State.GatewayUiItem(
+                                gateway = it,
+                                selected = it == gateways.current
+                            )
+                        }.toPersistentList(),
+                    isDeveloperModeEnabled = isDeveloperModeEnabled,
+                    addGatewayInput = null
+                )
             }
+                .flowOn(defaultDispatcher)
+                .collect { state ->
+                    println("Profile emitted")
+                    _state.emit(state)
+                }
         }
     }
 
@@ -80,14 +85,16 @@ class GatewaysViewModel @Inject constructor(
             val sanitizedUrl = newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.isDeveloperModeEnabled)
             val urlAlreadyAdded = state.gatewayList.map { it.gateway.string }.any { it == newUrl || it == sanitizedUrl }
             state.copy(
-                newUrlValid = !urlAlreadyAdded && sanitizedUrl?.isValidUrl() == true && newUrl.isValidUrl(),
-                newUrl = newUrl,
-                gatewayAddFailure = if (urlAlreadyAdded) GatewayAddFailure.AlreadyExist else null
+                addGatewayInput = state.addGatewayInput?.copy(
+                    isUrlValid = !urlAlreadyAdded && sanitizedUrl?.isValidUrl() == true && newUrl.isValidUrl(),
+                    url = newUrl,
+                    failure = State.AddGatewayInput.Failure.AlreadyExist.takeIf { urlAlreadyAdded }
+                )
             )
         }
     }
 
-    fun onDeleteGateway(gateway: GatewayWrapper) {
+    fun onDeleteGateway(gateway: State.GatewayUiItem) {
         viewModelScope.launch {
             if (gateway.selected) {
                 val defaultGateway = state.value.gatewayList.first { it.gateway.network.id == Gateway.default.network.id }
@@ -99,25 +106,29 @@ class GatewaysViewModel @Inject constructor(
 
     fun onAddGateway() {
         viewModelScope.launch {
-            val newUrl = state.value
-                .newUrl
-                .sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled)
+            val newUrl = state.value.addGatewayInput?.url
+                ?.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled)
                 ?: return@launch
 
-            _state.update { state -> state.copy(addingGateway = true) }
+            _state.update { state ->
+                state.copy(
+                    addGatewayInput = state.addGatewayInput?.copy(
+                        isLoading = true
+                    )
+                )
+            }
 
             getNetworkInfoUseCase(newUrl)
                 .onSuccess { info ->
                     addGatewayUseCase(Gateway.init(newUrl, info.id))
-                    _state.update { state ->
-                        state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
-                    }
-                    sendEvent(SettingsEditGatewayEvent.GatewayAdded)
+                    setAddGatewaySheetVisible(false)
                 }.onFailure {
                     _state.update { state ->
                         state.copy(
-                            gatewayAddFailure = GatewayAddFailure.ErrorWhileAdding,
-                            addingGateway = false
+                            addGatewayInput = state.addGatewayInput?.copy(
+                                failure = State.AddGatewayInput.Failure.ErrorWhileAdding,
+                                isLoading = false
+                            )
                         )
                     }
                 }
@@ -139,38 +150,50 @@ class GatewaysViewModel @Inject constructor(
 
         val isGatewayChanged = changeGatewayIfNetworkExistUseCase(gateway)
         if (isGatewayChanged) {
-            _state.update { state -> state.copy(addingGateway = false) }
+            setAddGatewaySheetVisible(false)
         } else {
-            sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(gateway.url, gateway.network.id))
+            sendEvent(Event.CreateProfileOnNetwork(gateway.url, gateway.network.id))
         }
     }
 
     fun setAddGatewaySheetVisible(isVisible: Boolean) {
-        _state.update { it.copy(isAddGatewaySheetVisible = isVisible) }
+        _state.update { it.setAddGatewaySheetVisible(isVisible) }
     }
-}
 
-internal sealed interface SettingsEditGatewayEvent : OneOffEvent {
-    data object GatewayAdded : SettingsEditGatewayEvent
-    data class CreateProfileOnNetwork(val newUrl: Url, val networkId: NetworkId) : SettingsEditGatewayEvent
-}
+    internal sealed interface Event : OneOffEvent {
+        data class CreateProfileOnNetwork(val newUrl: Url, val networkId: NetworkId) : Event
+    }
 
-data class SettingsUiState(
-    val currentGateway: Gateway? = null,
-    val gatewayList: PersistentList<GatewayWrapper> = persistentListOf(),
-    val newUrl: String = "",
-    val newUrlValid: Boolean = false,
-    val addingGateway: Boolean = false,
-    val gatewayAddFailure: GatewayAddFailure? = null,
-    val isDeveloperModeEnabled: Boolean = false,
-    val isAddGatewaySheetVisible: Boolean = false
-) : UiState
+    data class State(
+        val currentGateway: Gateway? = null,
+        val gatewayList: PersistentList<GatewayUiItem> = persistentListOf(),
+        val isDeveloperModeEnabled: Boolean = false,
+        val addGatewayInput: AddGatewayInput? = null
+    ) : UiState {
 
-enum class GatewayAddFailure {
-    AlreadyExist, ErrorWhileAdding
-}
+        fun setAddGatewaySheetVisible(isVisible: Boolean) = copy(
+            addGatewayInput = AddGatewayInput().takeIf { isVisible }
+        )
 
-data class GatewayWrapper(val gateway: Gateway, val selected: Boolean) {
+        data class GatewayUiItem(
+            val gateway: Gateway,
+            val selected: Boolean
+        ) {
 
-    val canBeDeleted: Boolean = !gateway.isWellKnown
+            val isWellKnown: Boolean = gateway.isWellKnown
+            val url = gateway.string
+        }
+
+        data class AddGatewayInput(
+            val url: String = "",
+            val isUrlValid: Boolean = false,
+            val isLoading: Boolean = false,
+            val failure: Failure? = null
+        ) {
+
+            enum class Failure {
+                AlreadyExist, ErrorWhileAdding
+            }
+        }
+    }
 }

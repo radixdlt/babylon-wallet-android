@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
@@ -24,7 +24,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,17 +38,20 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.HomeCardsCarousel
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.Event
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -58,6 +60,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.AccountMainnetSample
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toPersistentList
@@ -101,11 +104,12 @@ fun WalletScreen(
         onCardCloseClick = viewModel::onCardClose
     )
 
-    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateFlow.collectAsState()
-    LaunchedEffect(lifecycleState) {
-        if (lifecycleState == Lifecycle.State.RESUMED) {
-            viewModel.processBufferedDeepLinkRequest()
-        }
+    LifecycleEventEffect(event = Lifecycle.Event.ON_START) {
+        viewModel.onStart()
+    }
+
+    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
+        viewModel.processBufferedDeepLinkRequest()
     }
 
     LaunchedEffect(Unit) {
@@ -207,7 +211,7 @@ private fun WalletContent(
                         }
                     }
                 },
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         snackbarHost = {
@@ -220,10 +224,13 @@ private fun WalletContent(
         contentColor = RadixTheme.colors.defaultText
     ) { padding ->
         val pullRefreshState = rememberPullRefreshState(state.isRefreshing, onRefresh = onRefresh)
-        Box(modifier = Modifier.padding(padding)) {
+        Box {
             WalletAccountList(
-                modifier = Modifier.pullRefresh(pullRefreshState),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState),
                 state = state,
+                contentPadding = padding,
                 onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
@@ -237,7 +244,9 @@ private fun WalletContent(
                 state = pullRefreshState,
                 contentColor = RadixTheme.colors.gray1,
                 backgroundColor = RadixTheme.colors.defaultBackground,
-                modifier = Modifier.align(Alignment.TopCenter)
+                modifier = Modifier
+                    .padding(padding)
+                    .align(Alignment.TopCenter)
             )
         }
     }
@@ -247,6 +256,7 @@ private fun WalletContent(
 private fun WalletAccountList(
     modifier: Modifier = Modifier,
     state: WalletViewModel.State,
+    contentPadding: PaddingValues,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
@@ -254,10 +264,14 @@ private fun WalletAccountList(
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
-    LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+    LazyColumn(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = contentPadding
+    ) {
         if (state.cards.isNotEmpty()) {
             item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 HomeCardsCarousel(
                     cards = state.cards,
                     onClick = onCardClick,
@@ -268,7 +282,7 @@ private fun WalletAccountList(
 
         if (!state.isFiatPricesDisabled) {
             item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
                     text = stringResource(R.string.homePage_totalValue).uppercase(),
                     style = RadixTheme.typography.body2Header,
@@ -285,6 +299,10 @@ private fun WalletAccountList(
                         TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
                     }
                 )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            }
+        } else {
+            item {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
             }
         }
@@ -303,11 +321,9 @@ private fun WalletAccountList(
         }
 
         item {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RadixSecondaryButton(
                 text = stringResource(id = R.string.homePage_createNewAccount),
-                onClick = onAccountCreationClick,
-                modifier = Modifier.fillMaxWidth(0.8f)
+                onClick = onAccountCreationClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
@@ -355,11 +371,21 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletViewModel.State> {
                                 Token(Resource.FungibleResource.sampleMainnet())
                             )
                         )
+                    ),
+                    AccountWithAssets(
+                        account = AccountMainnetSample.carol,
+                        assets = Assets(),
+                    )
+                ),
+                accountsWithSecurityPrompts = mapOf(
+                    Account.sampleMainnet.other().address to setOf(
+                        SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
+                        SecurityPromptType.RECOVERY_REQUIRED
                     )
                 ),
                 prices = WalletViewModel.State.PricesState.Enabled(
                     pricesPerAccount = mapOf(
-                        Account.sampleMainnet().address to emptyList<AssetPrice>(),
+                        Account.sampleMainnet().address to emptyList(),
                         Account.sampleMainnet.other().address to listOf<AssetPrice>(
                             AssetPrice.TokenPrice(
                                 asset = Token(Resource.FungibleResource.sampleMainnet()),

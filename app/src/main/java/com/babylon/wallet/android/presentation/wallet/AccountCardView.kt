@@ -167,6 +167,10 @@ fun AccountCardView(
             )
         }
 
+        val assetsPresent = remember(accountWithAssets.isLoadingAssets, accountWithAssets.assets) {
+            !accountWithAssets.isLoadingAssets && accountWithAssets.assets?.tokens?.isNotEmpty() == true
+        }
+
         Spacer(
             modifier = Modifier.constrainAs(spacer) {
                 linkTo(
@@ -175,24 +179,30 @@ fun AccountCardView(
                     top = addressLabel.bottom,
                     bottom = assetsContainer.top,
                 )
-                height = Dimension.value(32.dp)
+                height = Dimension.value(if (assetsPresent || accountWithAssets.securityPrompts != null) 32.dp else 0.dp)
             }
         )
 
-        AccountAssetsRow(
-            modifier = Modifier.constrainAs(assetsContainer) {
-                linkTo(
-                    start = parent.start,
-                    end = parent.end,
-                    top = spacer.bottom,
-                    bottom = if (accountWithAssets.securityPrompts != null) promptsContainer.top else parent.bottom,
-                    bottomMargin = if (accountWithAssets.securityPrompts != null) 18.dp else 0.dp
-                )
-                width = Dimension.fillToConstraints
-            },
-            assets = accountWithAssets.assets,
-            isLoading = accountWithAssets.isLoadingAssets
-        )
+        val assetsModifier = Modifier.constrainAs(assetsContainer) {
+            linkTo(
+                start = parent.start,
+                end = parent.end,
+                top = spacer.bottom,
+                bottom = if (accountWithAssets.securityPrompts != null) promptsContainer.top else parent.bottom,
+                bottomMargin = if (accountWithAssets.securityPrompts != null) 18.dp else 0.dp
+            )
+            width = Dimension.fillToConstraints
+        }
+
+        if (assetsPresent) {
+            AccountAssetsRow(
+                modifier = assetsModifier,
+                assets = accountWithAssets.assets,
+                isLoading = accountWithAssets.isLoadingAssets
+            )
+        } else {
+            Box(modifier = assetsModifier)
+        }
 
         Column(
             modifier = Modifier.constrainAs(promptsContainer) {
@@ -373,6 +383,33 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                         tag = AccountTag.DAPP_DEFINITION,
                         securityPrompts = listOf(SecurityPromptType.WALLET_NOT_RECOVERABLE),
+                        isLoadingAssets = false,
+                        isLoadingBalance = false,
+                        isFiatBalanceVisible = true
+                    ),
+                    onApplySecuritySettingsClick = {}
+                )
+            }
+        }
+    }
+}
+
+@UsesSampleValues
+@Preview
+@Composable
+fun AccountCardEmptyPreview() {
+    RadixWalletPreviewTheme {
+        CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                AccountCardView(
+                    accountWithAssets = AccountUiItem(
+                        account = Account.sampleMainnet().copy(
+                            displayName = DisplayName("a very long name for my account again much more longer oh god ")
+                        ),
+                        assets = Assets(),
+                        fiatTotalValue = null,
+                        tag = AccountTag.DAPP_DEFINITION,
+                        securityPrompts = emptyList(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true

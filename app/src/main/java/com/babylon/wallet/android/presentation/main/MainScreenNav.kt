@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.main
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.radixdlt.sargon.Account
@@ -21,7 +23,13 @@ fun NavGraphBuilder.main(
     onNavigateToConnectCloudBackup: () -> Unit,
     onNavigateToLinkConnector: () -> Unit,
 ) {
-    composable(route = MAIN_ROUTE) {
+    composable(
+        route = MAIN_ROUTE,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
+    ) {
         MainScreen(
             mainUiState = mainUiState,
             onMenuClick = onMenuClick,

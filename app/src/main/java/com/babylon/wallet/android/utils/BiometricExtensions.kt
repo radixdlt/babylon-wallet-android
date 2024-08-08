@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import rdx.works.core.logNonFatalException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -17,6 +18,7 @@ fun FragmentActivity.activityBiometricAuthenticate(
     val biometricManager = BiometricManager.from(this)
     val canAuthenticate = biometricManager.canAuthenticate(ALLOWED_AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
     if (!canAuthenticate) {
+        logNonFatalException(IllegalStateException("Biometric authentication error. Allowed authenticator types condition not met."))
         authenticationCallback(BiometricAuthenticationResult.Error)
         return
     }
@@ -27,6 +29,7 @@ fun FragmentActivity.activityBiometricAuthenticate(
         }
 
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            logNonFatalException(IllegalStateException("Biometric authentication error. Code: $errorCode Message: $errString"))
             authenticationCallback(BiometricAuthenticationResult.Error)
         }
 
@@ -55,15 +58,25 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
             val biometricManager = BiometricManager.from(this@biometricAuthenticateSuspend)
             val canAuthenticate = biometricManager.canAuthenticate(ALLOWED_AUTHENTICATORS) == BiometricManager.BIOMETRIC_SUCCESS
             if (!canAuthenticate) {
+                logNonFatalException(
+                    IllegalStateException("Biometric authentication error (suspend). Allowed authenticator types condition not met.")
+                )
                 it.resume(false)
                 return@suspendCoroutine
             }
+            /**
+             * onAuthenticationFailed is omitted intentionally as it's invoked whenever the presented biometric is not recognized.
+             * We must wait for the biometric session to complete.
+             */
             val authCallback = object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     it.resume(true)
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    logNonFatalException(
+                        IllegalStateException("Biometric authentication error (suspend). Code: $errorCode Message: $errString")
+                    )
                     it.resume(false)
                 }
             }

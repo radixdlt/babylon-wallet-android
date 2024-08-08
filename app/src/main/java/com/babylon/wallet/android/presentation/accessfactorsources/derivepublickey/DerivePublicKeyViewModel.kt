@@ -4,10 +4,10 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ContentType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -20,6 +20,7 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -29,13 +30,14 @@ import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.ProfileException
+import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
 class DerivePublicKeyViewModel @Inject constructor(
     private val publicKeyProvider: PublicKeyProvider,
-    private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
+    private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
     private val ledgerMessenger: LedgerMessenger
 ) : StateViewModel<DerivePublicKeyViewModel.DerivePublicKeyUiState>(),
     OneOffEventHandler<DerivePublicKeyViewModel.Event> by OneOffEventHandlerImpl() {
@@ -47,7 +49,7 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     init {
         derivePublicKeyJob = viewModelScope.launch {
-            input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
+            input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             when (val factorSource = input.factorSource) {
                 is FactorSource.Ledger -> {
                     _state.update { uiState ->
@@ -75,6 +77,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                         sendEvent(Event.RequestBiometricPrompt)
                     }
                 }
+                else -> Timber.w("FactorSourceKind ${input.factorSource.kind} not supported.")
             }
         }
     }
@@ -92,7 +95,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     private suspend fun DerivePublicKeyViewModel.handleFailure(e: Throwable) {
         when (e) {
             is ProfileException -> {
-                accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(e))
                 sendEvent(Event.AccessingFactorSourceCompleted)
             }
 
@@ -122,7 +125,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     fun onUserDismiss() {
         viewModelScope.launch {
             derivePublicKeyJob?.cancel()
-            accessFactorSourcesUiProxy.setOutput(
+            accessFactorSourcesIOHandler.setOutput(
                 output = AccessFactorSourcesOutput.Failure(CancellationException("User cancelled"))
             )
             sendEvent(Event.UserDismissed)
@@ -145,6 +148,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                     ledgerFactorSource = factorSource
                 )
             }
+            else -> Result.failure(IllegalStateException("FactorSourceKind ${input.factorSource.kind} not supported."))
         }
     }
 
@@ -162,7 +166,7 @@ class DerivePublicKeyViewModel @Inject constructor(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
         ).mapCatching { hdPublicKey ->
-            accessFactorSourcesUiProxy.setOutput(output = HDPublicKey(hdPublicKey))
+            accessFactorSourcesIOHandler.setOutput(output = HDPublicKey(hdPublicKey))
         }
     }
 
@@ -183,7 +187,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                 publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex),
                 derivationPath = derivationPath
             )
-            accessFactorSourcesUiProxy.setOutput(HDPublicKey(hdPublicKey))
+            accessFactorSourcesIOHandler.setOutput(HDPublicKey(hdPublicKey))
             return Result.success(Unit)
         }.onFailure { error -> // it failed for some reason to derive the public keys (e.g. lost link connection)
             return Result.failure(error)

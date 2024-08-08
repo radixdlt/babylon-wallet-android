@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -31,6 +30,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
@@ -79,7 +79,7 @@ private fun WalletPreferencesContent(
             RadixCenteredTopAppBar(
                 title = "Preferences", // TODO crowdin
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.gray5
@@ -143,7 +143,7 @@ private fun WalletPreferencesContent(
                                     else -> {
                                         DefaultSettingsItem(
                                             title = stringResource(id = item.descriptionRes()),
-                                            leadingIcon = item.getIcon(),
+                                            leadingIconRes = item.getIcon(),
                                             subtitle = item.subtitleRes()?.let { stringResource(id = it) },
                                             onClick = {
                                                 onWalletPreferenceItemClick(item)

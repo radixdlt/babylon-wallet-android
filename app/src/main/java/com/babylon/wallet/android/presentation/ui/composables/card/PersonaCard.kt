@@ -11,14 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -31,8 +27,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
+import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -45,14 +44,13 @@ fun PersonaCard(
     modifier: Modifier = Modifier,
     persona: Persona,
     showChevron: Boolean = true,
-    elevation: Dp = 8.dp,
+    elevation: Dp = 2.dp,
     onNavigateToSecurityCenter: (() -> Unit)? = null,
     securityPrompts: ImmutableList<SecurityPromptType>? = null
 ) {
     Column(
         modifier = modifier
-            .shadow(elevation = elevation, shape = RadixTheme.shapes.roundedRectMedium)
-            .clip(RadixTheme.shapes.roundedRectMedium)
+            .defaultCardShadow(elevation = elevation)
             .fillMaxWidth()
             .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
             .padding(
@@ -133,15 +131,12 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1
             )
-            RadioButton(
+            RadixRadioButton(
                 selected = persona.selected,
                 onClick = {
                     onSelectPersona(persona.persona)
                 },
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = RadixTheme.colors.gray1,
-                    unselectedColor = RadixTheme.colors.gray4
-                ),
+                colors = RadixRadioButtonDefaults.darkColors(),
             )
         }
         persona.lastUsedOn?.let {

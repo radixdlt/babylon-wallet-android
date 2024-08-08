@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
@@ -20,25 +20,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.SeedPhraseInputVerificationForm
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.FactorSource
@@ -68,11 +65,9 @@ fun ConfirmMnemonicScreen(
         onMessageShown = viewModel::onMessageShown
     )
 
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                ConfirmMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 ConfirmMnemonicViewModel.Event.MnemonicBackedUp -> onMnemonicBackedUp()
             }
         }
@@ -98,30 +93,21 @@ private fun ConfirmMnemonicContent(
         onMessageShown = onMessageShown
     )
 
-    var focusedWordIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
-
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = "",
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            RadixPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(
-                    id = R.string.common_continue
-                ),
+            RadixBottomBar(
+                text = stringResource(id = R.string.common_continue),
                 onClick = onSubmitClick,
-                enabled = state.seedPhraseState.allFieldsHaveValue
+                enabled = state.seedPhraseState.allFieldsHaveValue,
+                insets = WindowInsets.navigationBars.union(WindowInsets.ime)
             )
         },
         snackbarHost = {
@@ -135,8 +121,7 @@ private fun ConfirmMnemonicContent(
         SeedPhraseView(
             modifier = Modifier.padding(padding),
             state = state,
-            onWordChanged = onWordTyped,
-            onFocusedWordIndexChanged = { focusedWordIndex = it }
+            onWordChanged = onWordTyped
         )
     }
 }
@@ -145,8 +130,7 @@ private fun ConfirmMnemonicContent(
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     state: ConfirmMnemonicViewModel.State,
-    onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit,
+    onWordChanged: (Int, String) -> Unit
 ) {
     SecureScreen()
     Column(
@@ -179,7 +163,7 @@ private fun SeedPhraseView(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             seedPhraseWords = state.seedPhraseState.seedPhraseWords,
             onWordChanged = onWordChanged,
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged
+            onFocusedWordIndexChanged = {}
         )
     }
 }

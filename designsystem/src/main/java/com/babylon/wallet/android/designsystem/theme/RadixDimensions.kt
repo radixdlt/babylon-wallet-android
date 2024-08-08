@@ -20,6 +20,9 @@ data class RadixDimensions(
     val paddingXXLarge: Dp = 32.dp,
     val paddingXXXLarge: Dp = 40.dp,
     val paddingXXXXLarge: Dp = 48.dp,
+
+    val buttonDefaultHeight: Dp = 50.dp,
+    val seedPhraseWordsSuggestionsHeight: Dp = 56.dp
 )
 
 @Composable

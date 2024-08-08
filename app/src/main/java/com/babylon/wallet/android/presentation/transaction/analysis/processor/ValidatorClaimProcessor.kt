@@ -57,7 +57,8 @@ class ValidatorClaimProcessor @Inject constructor(
             from = fromAccounts,
             to = toAccounts,
             badges = badges,
-            actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake
+            actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 

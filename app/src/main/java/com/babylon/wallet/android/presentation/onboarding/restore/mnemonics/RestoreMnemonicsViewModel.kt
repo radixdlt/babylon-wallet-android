@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.mnemonics
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -50,7 +51,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
-    private val appEventBus: AppEventBus
+    private val appEventBus: AppEventBus,
+    private val homeCardsRepository: HomeCardsRepository
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -130,7 +132,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onSkipMainSeedPhraseClick() {
         _state.update {
-            it.copy(screenType = State.ScreenType.NoMainSeedPhrase)
+            it.copy(
+                screenType = State.ScreenType.NoMainSeedPhrase,
+                isMovingForward = true
+            )
         }
     }
 
@@ -146,9 +151,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     fun onWordChanged(index: Int, value: String) {
-        seedPhraseInputDelegate.onWordChanged(index, value) {
-            sendEvent(Event.MoveToNextWord)
-        }
+        seedPhraseInputDelegate.onWordChanged(index, value)
     }
 
     fun onWordSelected(index: Int, value: String) {
@@ -164,7 +167,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onSubmit() {
         if (state.value.screenType == State.ScreenType.Entities) {
-            _state.update { it.copy(screenType = State.ScreenType.SeedPhrase, isMovingForward = false) }
+            _state.update {
+                it.copy(
+                    screenType = State.ScreenType.SeedPhrase,
+                    isMovingForward = true
+                )
+            }
         } else {
             viewModelScope.launch { restoreMnemonic() }
         }
@@ -174,13 +182,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val factorSourceToRecover = state.value
             .recoverableFactorSource?.factorSource ?: return
         if (biometricAuthProvider.invoke().not()) return
-        _state.update { it.copy(isRestoring = true) }
+        _state.update { it.copy(isPrimaryButtonLoading = true) }
         restoreMnemonicUseCase(
             factorSource = factorSourceToRecover,
             mnemonicWithPassphrase = _state.value.seedPhraseState.toMnemonicWithPassphrase()
         ).onSuccess {
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
-            _state.update { state -> state.copy(isRestoring = false) }
+            _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
             showNextRecoverableFactorSourceOrFinish(skipAuth = true)
         }.onFailure { error ->
             if (error is ProfileException.SecureStorageAccess) {
@@ -188,7 +196,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             } else {
                 _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            _state.update { state -> state.copy(isRestoring = false) }
+            _state.update { state -> state.copy(isPrimaryButtonLoading = false) }
         }
     }
 
@@ -202,25 +210,28 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.proceedToNextRecoverable() }
         } else {
             if (_state.value.hasSkippedMainSeedPhrase) {
-                _state.update { it.copy(isRestoring = true) }
+                _state.update { it.copy(isPrimaryButtonLoading = true) }
 
                 args.backupType?.let { backupType ->
-                    if (skipAuth.not() && biometricAuthProvider().not()) return
+                    if (skipAuth.not() && biometricAuthProvider().not()) {
+                        _state.update { it.copy(isPrimaryButtonLoading = false) }
+                        return
+                    }
 
                     restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = true)
                         .onSuccess {
                             _state.update { state ->
                                 state.copy(
-                                    isRestoring = false,
+                                    isPrimaryButtonLoading = false,
                                     hasSkippedMainSeedPhrase = false
                                 )
                             }
-                            sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                            onRestorationComplete()
                         }.onFailure {
                             Timber.w(it)
                             _state.update { state ->
                                 state.copy(
-                                    isRestoring = false,
+                                    isPrimaryButtonLoading = false,
                                     uiMessage = UiMessage.ErrorMessage(it)
                                 )
                             }
@@ -228,34 +239,48 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 } ?: run {
                     _state.update { state ->
                         state.copy(
-                            isRestoring = false,
+                            isPrimaryButtonLoading = false,
                             hasSkippedMainSeedPhrase = false
                         )
                     }
-                    sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                    onRestorationComplete()
                 }
             } else {
+                updateSecondaryButtonLoading(true)
                 args.backupType?.let { backupType ->
                     restoreProfileFromBackupUseCase(backupType = backupType, mainSeedPhraseSkipped = false)
+                        .onSuccess { updateSecondaryButtonLoading(false) }
+                        .onFailure { updateSecondaryButtonLoading(false) }
                 }
-                sendEvent(Event.FinishRestoration(isMovingToMain = true))
+                onRestorationComplete()
             }
         }
+    }
+
+    private suspend fun onRestorationComplete() {
+        homeCardsRepository.walletRestored()
+        sendEvent(Event.FinishRestoration(isMovingToMain = true))
+    }
+
+    private fun updateSecondaryButtonLoading(isLoading: Boolean) {
+        _state.update { state -> state.copy(isSecondaryButtonLoading = isLoading) }
     }
 
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
         private val mainBabylonFactorSourceId: FactorSourceId.Hash? = null,
         private val selectedIndex: Int = -1,
-        val screenType: ScreenType = ScreenType.Entities,
+        val screenType: ScreenType = ScreenType.Loading,
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val isRestoring: Boolean = false,
+        val isPrimaryButtonLoading: Boolean = false,
+        val isSecondaryButtonLoading: Boolean = false,
         val hasSkippedMainSeedPhrase: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
         sealed interface ScreenType {
+            data object Loading : ScreenType
             data object Entities : ScreenType
             data object SeedPhrase : ScreenType
             data object NoMainSeedPhrase : ScreenType
@@ -269,6 +294,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val isMainBabylonSeedPhrase: Boolean
             get() = recoverableFactorSource?.factorSource?.id == mainBabylonFactorSourceId
+
+        val isPrimaryButtonEnabled: Boolean
+            get() = (screenType != ScreenType.SeedPhrase || seedPhraseState.isValidSeedPhrase()) && !isSecondaryButtonLoading
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,

@@ -172,7 +172,7 @@ class LedgerMessengerImpl @Inject constructor(
                 }
             }
             .onFailure { throwable ->
-                emit(Result.failure(Exception("Failed to connect Ledger device ", throwable)))
+                emit(Result.failure(RadixWalletException.LedgerCommunicationException.FailedToConnect))
             }
     }.first()
 }

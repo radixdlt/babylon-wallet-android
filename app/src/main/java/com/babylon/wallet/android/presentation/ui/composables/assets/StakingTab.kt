@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
 import androidx.compose.foundation.Image
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -29,9 +32,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -40,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.orZero
@@ -103,7 +108,7 @@ private fun StakingSummary(
     modifier: Modifier = Modifier,
     assetsViewData: AssetsViewData,
     isLoadingBalance: Boolean,
-    action: AssetsViewAction
+    action: AssetsViewAction,
 ) {
     val stakeSummary = assetsViewData.stakeSummary
     AssetCard(
@@ -116,7 +121,7 @@ private fun StakingSummary(
         Row(
             modifier = Modifier
                 .padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSemiLarge
                 ),
             verticalAlignment = Alignment.CenterVertically,
@@ -124,7 +129,7 @@ private fun StakingSummary(
         ) {
             Image(
                 modifier = Modifier.size(56.dp),
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lsu),
+                painter = painterResource(id = DSR.ic_lsu),
                 contentDescription = null
             )
 
@@ -144,17 +149,7 @@ private fun StakingSummary(
         }
 
         val oneXrdPrice = remember(assetsViewData) {
-            val oneXrdPrice = (
-                assetsViewData.prices?.values?.find {
-                    (it as? AssetPrice.LSUPrice)?.oneXrdPrice != null
-                } as? AssetPrice.LSUPrice
-                )?.oneXrdPrice
-            oneXrdPrice
-                ?: (
-                    assetsViewData.prices?.values?.find {
-                        (it as? AssetPrice.StakeClaimPrice)?.oneXrdPrice != null
-                    } as? AssetPrice.StakeClaimPrice
-                    )?.oneXrdPrice
+            assetsViewData.oneXrdPrice
         }
 
         val stakedFiatPrice = remember(stakeSummary, oneXrdPrice) {
@@ -319,7 +314,7 @@ fun ValidatorsSize(
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(id = R.string.account_staking_stakedValidators, assetsViewData.validatorsWithStakes.size),
-            style = RadixTheme.typography.body1HighImportance,
+            style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2
         )
     }
@@ -435,7 +430,7 @@ private fun LiquidStakeUnit(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.LSU(
                 modifier = Modifier.size(36.dp),
@@ -444,7 +439,7 @@ private fun LiquidStakeUnit(
 
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.account_staking_liquidStakeUnits),
+                text = validatorWithStakes.liquidStakeUnit?.displayTitle().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
@@ -514,7 +509,7 @@ private fun StakeClaims(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.account_staking_stakeClaimNFTs),
+                text = validatorWithStakes.stakeClaimNft?.displayTitle().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
@@ -543,7 +538,7 @@ private fun StakeClaims(
                     .fillMaxWidth()
                     .padding(
                         top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingMedium
+                        bottom = RadixTheme.dimensions.paddingSmall
                     ),
                 text = stringResource(id = R.string.account_staking_unstaking).uppercase(),
                 style = RadixTheme.typography.body2HighImportance,
@@ -553,7 +548,7 @@ private fun StakeClaims(
             val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
             unstakingItems.forEachIndexed { index, item ->
                 ClaimWorth(
-                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
+                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingDefault else 0.dp),
                     claimCollection = claim.nonFungibleResource,
                     claimNft = item,
                     stakeClaimPrice = stakeClaimPrice,
@@ -562,16 +557,18 @@ private fun StakeClaims(
                 )
             }
         }
-
+        val unstakingItemsEmpty = remember(unstakingItems) {
+            unstakingItems.isEmpty()
+        }
         if (claimItems.isNotEmpty() && claim != null) {
             Row(
                 modifier = Modifier.padding(
-                    top = if (action is AssetsViewAction.Selection) {
+                    top = if (action is AssetsViewAction.Selection || unstakingItemsEmpty) {
                         RadixTheme.dimensions.paddingDefault
                     } else {
                         RadixTheme.dimensions.paddingSmall
                     },
-                    bottom = if (action is AssetsViewAction.Selection) RadixTheme.dimensions.paddingSmall else 0.dp
+                    bottom = RadixTheme.dimensions.paddingSmall
                 ),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                 verticalAlignment = Alignment.CenterVertically
@@ -584,12 +581,13 @@ private fun StakeClaims(
                 )
 
                 if (action is AssetsViewAction.Click) {
-                    RadixTextButton(
-                        text = stringResource(id = R.string.account_staking_claim),
-                        onClick = {
+                    Text(
+                        modifier = Modifier.clickable {
                             action.onClaimClick(listOf(claim))
                         },
-                        textStyle = RadixTheme.typography.body2Link
+                        text = stringResource(id = R.string.account_staking_claim),
+                        style = RadixTheme.typography.body2Link,
+                        color = RadixTheme.colors.blue1
                     )
                 }
             }
@@ -597,7 +595,7 @@ private fun StakeClaims(
             val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
             claimItems.forEachIndexed { index, item ->
                 ClaimWorth(
-                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
+                    modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingXSmall else 0.dp),
                     claimCollection = claim.nonFungibleResource,
                     claimNft = item,
                     stakeClaimPrice = stakeClaimPrice,
@@ -733,7 +731,7 @@ fun WorthXRD(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+            painter = painterResource(id = DSR.ic_xrd_token),
             contentDescription = null,
             modifier = Modifier
                 .size(iconSize)
@@ -763,7 +761,7 @@ fun WorthXRD(
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = amount?.formatted().orEmpty(),
-                style = RadixTheme.typography.secondaryHeader,
+                style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
                 maxLines = 2
@@ -786,6 +784,32 @@ fun WorthXRD(
         }
 
         trailingContent?.invoke()
+    }
+}
+
+@Preview(showBackground = true)
+@UsesSampleValues
+@Composable
+fun StakingTabPreview() {
+    RadixWalletTheme {
+        LazyColumn {
+            stakingTab(
+                assetsViewData = previewAssetViewData,
+                state = AssetsViewState(AssetsTab.Staking, emptyMap(), emptySet()),
+                isLoadingBalance = false,
+                action = AssetsViewAction.Click(
+                    onTabClick = {},
+                    onStakesRequest = {},
+                    onCollectionClick = {},
+                    onLSUClick = {},
+                    onClaimClick = {},
+                    onNextNFtsPageRequest = {},
+                    onFungibleClick = {},
+                    onPoolUnitClick = {},
+                    onNonFungibleItemClick = { _, _ -> }
+                )
+            )
+        }
     }
 }
 

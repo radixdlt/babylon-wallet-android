@@ -1,24 +1,18 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -51,8 +45,7 @@ fun ChooseAccountsScreen(
         onChooseAccounts = onChooseAccounts,
         onLoginFlowComplete = onLoginFlowComplete,
         onPersonaOngoingData = onPersonaOngoingData,
-        onPersonaDataOnetime = onPersonaDataOnetime,
-        completeRequestHandling = sharedViewModel::completeRequestHandling
+        onPersonaDataOnetime = onPersonaDataOnetime
     )
     BackHandler {
         if (state.showBackButton) {
@@ -90,13 +83,6 @@ fun ChooseAccountsScreen(
         dialogState = sharedState.failureDialog,
         onAcknowledgeFailureDialog = sharedViewModel::onAcknowledgeFailureDialog
     )
-    sharedState.interactionState?.let {
-        FactorSourceInteractionBottomDialog(
-            modifier = Modifier.fillMaxHeight(0.8f),
-            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
-            interactionState = it
-        )
-    }
 }
 
 @Composable
@@ -105,10 +91,8 @@ private fun HandleOneOffEvents(
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
-    completeRequestHandling: (deviceBiometricAuthenticationProvider: (suspend () -> Boolean)) -> Unit
+    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
 ) {
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
             when (event) {
@@ -117,20 +101,6 @@ private fun HandleOneOffEvents(
                 is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.CloseLoginFlow -> onLoginFlowComplete()
-                is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.isSignatureRequired) {
-                        completeRequestHandling {
-                            context.biometricAuthenticateSuspend()
-                        }
-                    } else {
-                        context.biometricAuthenticate { result ->
-                            if (result == BiometricAuthenticationResult.Succeeded) {
-                                completeRequestHandling { true }
-                            }
-                        }
-                    }
-                }
-
                 else -> {}
             }
         }
@@ -140,7 +110,7 @@ private fun HandleOneOffEvents(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun ChooseAccountContentPreview() {
+fun ChooseAccountsScreenPreview() {
     RadixWalletPreviewTheme {
         ChooseAccountContent(
             onBackClick = {},

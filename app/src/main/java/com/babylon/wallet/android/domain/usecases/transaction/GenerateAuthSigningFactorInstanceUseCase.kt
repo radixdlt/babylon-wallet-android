@@ -3,7 +3,6 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.Cap26Path
 import com.radixdlt.sargon.DerivationPath
@@ -15,11 +14,8 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.update
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.authenticationSigningFactorInstance
@@ -39,9 +35,6 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val ledgerMessenger: LedgerMessenger
 ) {
-
-    private val _interactionState = MutableStateFlow<InteractionState?>(null)
-    val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
 
     suspend operator fun invoke(entity: ProfileEntity): Result<HierarchicalDeterministicFactorInstance> {
         if (entity.securityState.authenticationSigningFactorInstance != null) {
@@ -72,6 +65,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                 factorSource,
                 authSigningDerivationPath
             )
+            else -> Result.failure(IllegalStateException("FactorSourceKind ${factorSource.kind} not supported."))
         }
     }
 
@@ -79,9 +73,6 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         ledgerHardwareWalletFactorSource: FactorSource.Ledger,
         authSigningDerivationPath: DerivationPath
     ): Result<HierarchicalDeterministicFactorInstance> {
-        _interactionState.update {
-            InteractionState.Ledger.DerivingPublicKey(ledgerHardwareWalletFactorSource)
-        }
         val deriveResult = ledgerMessenger.sendDerivePublicKeyRequest(
             interactionId = UUIDGenerator.uuid().toString(),
             keyParameters = listOf(
@@ -105,10 +96,6 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                     derivationPath = authSigningDerivationPath
                 )
             )
-        }.onSuccess {
-            _interactionState.update { null }
-        }.onFailure {
-            _interactionState.update { null }
         }.mapError {
             RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys
         }

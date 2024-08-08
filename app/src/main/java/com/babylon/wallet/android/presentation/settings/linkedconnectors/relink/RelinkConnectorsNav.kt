@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.linkedconnectors.relink
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -22,13 +23,13 @@ fun NavGraphBuilder.relinkConnectors(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            null
-        },
-        popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            ExitTransition.None
         },
         popEnterTransition = {
             EnterTransition.None
+        },
+        popExitTransition = {
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
         RelinkConnectorsScreen(

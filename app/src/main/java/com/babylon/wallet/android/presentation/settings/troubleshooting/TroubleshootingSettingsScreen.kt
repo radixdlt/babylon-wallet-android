@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,6 +26,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.Troubleshoo
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.openEmail
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableSet
@@ -61,7 +61,7 @@ private fun TroubleshootingSettingsContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.troubleshooting_title),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.gray5
@@ -92,7 +92,7 @@ private fun TroubleshootingSettingsContent(
                                 val item = troubleshootingItem.item
                                 DefaultSettingsItem(
                                     title = stringResource(id = item.descriptionRes()),
-                                    leadingIcon = item.getIcon(),
+                                    leadingIconRes = item.getIcon(),
                                     subtitle = stringResource(id = item.subtitleRes()),
                                     onClick = {
                                         when (item) {

@@ -26,8 +26,12 @@ import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
+import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
+import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
@@ -35,9 +39,6 @@ import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
-import com.babylon.wallet.android.presentation.status.address.addressDetails
-import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
-import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -227,7 +228,8 @@ private fun HandleAccessFactorSourcesEvents(
         accessFactorSourcesEvents.collect { event ->
             when (event) {
                 AppEvent.AccessFactorSources.DerivePublicKey -> navController.derivePublicKeyDialog()
-                AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
+                is AppEvent.AccessFactorSources.DeriveAccounts -> navController.deriveAccounts()
+                AppEvent.AccessFactorSources.GetSignatures -> navController.getSignatures()
                 is AppEvent.AccessFactorSources.SelectedLedgerDevice -> {}
             }
         }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -21,6 +20,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
 @Composable
 fun DebugSettingsScreen(
@@ -36,7 +36,7 @@ fun DebugSettingsScreen(
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.settings_debugSettings),
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -79,7 +79,7 @@ fun DebugSettingsScreen(
                             else -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = debugSettingsItem.descriptionRes()),
-                                    leadingIcon = debugSettingsItem.getIcon(),
+                                    leadingIconRes = debugSettingsItem.getIcon(),
                                     onClick = {
                                         onItemClick(debugSettingsItem)
                                     }

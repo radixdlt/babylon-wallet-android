@@ -44,6 +44,7 @@ interface PreferencesManager {
     val lastSyncedAccountsWithCE: Flow<String?>
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
     val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
+    val isEulaAccepted: Flow<Boolean>
     val isAppLockEnabled: Flow<Boolean>
 
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
@@ -88,6 +89,8 @@ interface PreferencesManager {
     suspend fun clearShowRelinkConnectors()
 
     suspend fun clear(): Preferences
+
+    suspend fun markEulaAccepted()
 
     suspend fun enableAppLock(enabled: Boolean)
 }
@@ -134,6 +137,10 @@ class PreferencesManagerImpl @Inject constructor(
             .map { preferences ->
                 preferences[KEY_APP_LOCK_ENABLED] ?: BuildConfig.APP_LOCK_ENABLED
             }
+
+    override val isEulaAccepted = dataStore.data.map { preferences ->
+        preferences[KEY_EULA_ACCEPTED] ?: false
+    }
 
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
         dataStore.edit { preferences ->
@@ -326,6 +333,12 @@ class PreferencesManagerImpl @Inject constructor(
 
     override suspend fun clear() = dataStore.edit { it.clear() }
 
+    override suspend fun markEulaAccepted() {
+        dataStore.edit { preferences ->
+            preferences[KEY_EULA_ACCEPTED] = true
+        }
+    }
+
     override suspend fun enableAppLock(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_APP_LOCK_ENABLED] = enabled
@@ -349,6 +362,7 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")
+        val KEY_EULA_ACCEPTED = booleanPreferencesKey("eula_accepted")
         val KEY_APP_LOCK_ENABLED = booleanPreferencesKey("enable_app_lock")
     }
 }

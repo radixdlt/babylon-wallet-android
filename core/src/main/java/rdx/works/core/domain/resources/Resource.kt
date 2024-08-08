@@ -113,15 +113,6 @@ sealed class Resource {
             assetBehaviours
         }
 
-        val displayTitle: String
-            get() = if (symbol.isNotBlank()) {
-                symbol
-            } else if (name.isNotBlank()) {
-                name
-            } else {
-                ""
-            }
-
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
             // XRD should always be first
@@ -222,7 +213,11 @@ sealed class Resource {
             }
 
             val name: String? by lazy {
-                metadata.name()?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
+                metadata.name()
+            }
+
+            val nameTruncated: String? by lazy {
+                name?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
             }
 
             val description: String? by lazy {

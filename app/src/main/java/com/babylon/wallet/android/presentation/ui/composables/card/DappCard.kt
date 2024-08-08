@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -20,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import rdx.works.core.domain.DApp
 
 @Composable
@@ -27,11 +27,11 @@ fun DappCard(
     modifier: Modifier = Modifier,
     dApp: DApp,
     showChevron: Boolean = true,
-    elevation: Dp = 8.dp
+    elevation: Dp = 2.dp
 ) {
     Row(
         modifier = modifier
-            .shadow(elevation = elevation, shape = RadixTheme.shapes.roundedRectMedium)
+            .defaultCardShadow(elevation = elevation)
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)

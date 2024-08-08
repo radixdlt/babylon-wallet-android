@@ -5,20 +5,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
+import com.babylon.wallet.android.designsystem.theme.NavigationBarDefaultScrim
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.main.AppState
@@ -57,7 +58,14 @@ class MainActivity : FragmentActivity() {
             viewModel.state.value.initialAppState == AppState.Loading
         }
         setSplashExitAnimation(splashScreen)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // TODO use auto style when we implement dark mode
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.auto(
+                lightScrim = NavigationBarDefaultScrim.toArgb(),
+                darkScrim = NavigationBarDefaultScrim.toArgb()
+            )
+        )
+
         super.onCreate(savedInstanceState)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
@@ -89,9 +97,8 @@ class MainActivity : FragmentActivity() {
                     DevelopmentPreviewWrapper(
                         devBannerState = devBannerState,
                         linkConnectionsStatus = linkConnectionsStatus
-                    ) { padding ->
+                    ) {
                         WalletApp(
-                            modifier = Modifier.padding(padding),
                             mainViewModel = viewModel,
                             onCloseApp = { finish() }
                         )

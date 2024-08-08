@@ -27,18 +27,26 @@ class AppEventBusImpl @Inject constructor() : AppEventBus {
 }
 
 sealed interface AppEvent {
+
     data object AppNotSecure : AppEvent
+
     data object RefreshAssetsNeeded : AppEvent
+
     data object RestoredMnemonic : AppEvent
+
     data object BabylonFactorSourceDoesNotExist : AppEvent
+
     data object NPSSurveySubmitted : AppEvent
 
     data object SecureFolderWarning : AppEvent
+
     data class DeferRequestHandling(val interactionId: String) : AppEvent
+
     data object ProcessBufferedDeepLinkRequest : AppEvent
 
     data class AddressDetails(val address: ActionableAddress) : AppEvent
 
+    // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources
@@ -46,6 +54,8 @@ sealed interface AppEvent {
         data object DerivePublicKey : AccessFactorSources
 
         data object DeriveAccounts : AccessFactorSources
+
+        data object GetSignatures : AccessFactorSources
     }
 
     sealed class Status : AppEvent {
@@ -62,13 +72,15 @@ sealed interface AppEvent {
             abstract val isInternal: Boolean
             abstract val blockUntilComplete: Boolean
             abstract val isMobileConnect: Boolean
+            abstract val dAppName: String?
 
             data class InProgress(
                 override val requestId: String,
                 override val transactionId: String,
                 override val isInternal: Boolean,
                 override val blockUntilComplete: Boolean,
-                override val isMobileConnect: Boolean
+                override val isMobileConnect: Boolean,
+                override val dAppName: String?
             ) : Transaction()
 
             data class Success(
@@ -76,7 +88,8 @@ sealed interface AppEvent {
                 override val transactionId: String,
                 override val isInternal: Boolean,
                 override val blockUntilComplete: Boolean,
-                override val isMobileConnect: Boolean
+                override val isMobileConnect: Boolean,
+                override val dAppName: String?
             ) : Transaction()
 
             data class Fail(
@@ -86,7 +99,8 @@ sealed interface AppEvent {
                 override val blockUntilComplete: Boolean,
                 val errorMessage: String?,
                 val walletErrorType: DappWalletInteractionErrorType?,
-                override val isMobileConnect: Boolean
+                override val isMobileConnect: Boolean,
+                override val dAppName: String?
             ) : Transaction()
         }
     }

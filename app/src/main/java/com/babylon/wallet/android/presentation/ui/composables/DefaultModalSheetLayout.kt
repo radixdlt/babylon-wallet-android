@@ -3,12 +3,14 @@ package com.babylon.wallet.android.presentation.ui.composables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -30,13 +32,14 @@ fun DefaultModalSheetLayout(
     enableImePadding: Boolean = false,
     wrapContent: Boolean = false,
     sheetContent: @Composable () -> Unit,
-    showDragHandle: Boolean = false,
+    showDragHandle: Boolean = true,
     containerColor: Color = RadixTheme.colors.defaultBackground,
-    onDismissRequest: () -> Unit
+    windowInsets: WindowInsets = WindowInsets.systemBars,
+    onDismissRequest: () -> Unit,
 ) {
-    val windowInsets = WindowInsets(0)
-
-    BoxWithConstraints(modifier = modifier) {
+    BoxWithConstraints(
+        modifier = modifier
+    ) {
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
             sheetState = sheetState,
@@ -47,6 +50,8 @@ fun DefaultModalSheetLayout(
                     DefaultModalSheetDragHandle()
                 }
             },
+            // The insets are the system bars (nav bars + status bars), no need to inset the dev banner since the
+            // modal is rendered above it in the z-axis.
             windowInsets = windowInsets,
             shape = RadixTheme.shapes.roundedRectTopDefault,
             content = {
@@ -55,7 +60,10 @@ fun DefaultModalSheetLayout(
                         .applyIf(enableImePadding, Modifier.imePadding())
                         .fillMaxWidth()
                         .applyIf(wrapContent, Modifier.wrapContentHeight())
-                        .applyIf(!wrapContent, Modifier.height(sheetHeight))
+                        .applyIf(
+                            !wrapContent,
+                            Modifier.height(sheetHeight)
+                        )
                         .clip(shape = RadixTheme.shapes.roundedRectTopMedium)
                 ) {
                     sheetContent()
@@ -68,11 +76,12 @@ fun DefaultModalSheetLayout(
 
 @Composable
 fun DefaultModalSheetDragHandle(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    padding: PaddingValues = PaddingValues(top = RadixTheme.dimensions.paddingSmall)
 ) {
     Box(
         modifier = modifier
-            .padding(top = RadixTheme.dimensions.paddingSmall)
+            .padding(padding)
             .size(38.dp, 4.dp)
             .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
     )

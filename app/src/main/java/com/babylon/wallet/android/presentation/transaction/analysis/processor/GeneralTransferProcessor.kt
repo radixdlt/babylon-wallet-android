@@ -34,7 +34,8 @@ class GeneralTransferProcessor @Inject constructor(
                 defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
             ),
             badges = badges,
-            dApps = dApps
+            dApps = dApps,
+            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 

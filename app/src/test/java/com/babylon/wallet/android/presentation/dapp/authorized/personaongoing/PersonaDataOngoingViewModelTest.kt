@@ -10,10 +10,10 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
+import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryEmailAddress
 import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataEntryName
 import com.radixdlt.sargon.PersonaDataIdentifiedEmailAddress
@@ -67,7 +67,7 @@ internal class PersonaDataOngoingViewModelTest {
                         listOf(
                             PersonaDataIdentifiedEmailAddress(
                                 id = PersonaDataEntryId.randomUUID(),
-                                value = PersonaDataEntryEmailAddress("test@test.pl")
+                                value = EmailAddress("test@test.pl")
                             )
                         )
                     ),
@@ -102,6 +102,7 @@ internal class PersonaDataOngoingViewModelTest {
                 )
             )
         )
+        every { savedStateHandle.get<Boolean>(ARG_SHOW_BACK) } returns true
         coEvery { getProfileUseCase() } returns profile
         coEvery { getProfileUseCase.flow } returns flowOf(profile)
     }

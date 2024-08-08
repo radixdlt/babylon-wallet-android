@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.permission.loginP
 import com.babylon.wallet.android.presentation.dapp.authorized.personaonetime.personaDataOnetimeAuthorized
 import com.babylon.wallet.android.presentation.dapp.authorized.personaongoing.personaDataOngoing
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.selectPersona
+import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
@@ -32,10 +33,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.chooseAccounts(numberOfAccounts, isExactAccountsCount, oneTime, showBack)
             },
             navigateToPermissions = { numberOfAccounts, isExactAccountsCount, oneTime, showBack ->
-                navController.loginPermission(numberOfAccounts, isExactAccountsCount, oneTime)
+                navController.loginPermission(numberOfAccounts, isExactAccountsCount, oneTime, showBack)
             },
             navigateToOneTimePersonaData = {
-                navController.personaDataOnetimeAuthorized(it)
+                navController.personaDataOnetimeAuthorized(it, false)
             },
             navigateToSelectPersona = { dappDefinitionAddress ->
                 navController.selectPersona(dappDefinitionAddress)
@@ -44,7 +45,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
             },
             navigateToOngoingPersonaData = { personaAddress, requiredFields ->
-                navController.personaDataOngoing(personaAddress, requiredFields)
+                navController.personaDataOngoing(personaAddress, requiredFields, false)
             }
         )
         selectPersona(
@@ -65,19 +66,19 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             createNewPersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {
-                    navController.createPersonaScreen()
+                    navController.createPersonaScreen(CreatePersonaRequestSource.DappRequest)
                 } else {
-                    navController.personaInfoScreen()
+                    navController.personaInfoScreen(CreatePersonaRequestSource.DappRequest)
                 }
             },
             onDisplayPermission = { event ->
-                navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime)
+                navController.loginPermission(event.numberOfAccounts, event.isExactAccountsCount, event.oneTime, true)
             },
             onPersonaDataOngoing = {
-                navController.personaDataOngoing(it.personaAddress, it.requiredPersonaFields)
+                navController.personaDataOngoing(it.personaAddress, it.requiredPersonaFields, true)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.requiredPersonaFields)
+                navController.personaDataOnetimeAuthorized(it.requiredPersonaFields, true)
             }
         )
         loginPermission(
@@ -116,10 +117,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack()
             },
             onPersonaOngoingData = {
-                navController.personaDataOngoing(it.personaAddress, it.requiredPersonaFields)
+                navController.personaDataOngoing(it.personaAddress, it.requiredPersonaFields, true)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.requiredPersonaFields)
+                navController.personaDataOnetimeAuthorized(it.requiredPersonaFields, true)
             }
         )
         personaDataOngoing(
@@ -134,7 +135,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
             },
             onPersonaDataOnetime = {
-                navController.personaDataOnetimeAuthorized(it.requiredPersonaFields)
+                navController.personaDataOnetimeAuthorized(it.requiredPersonaFields, true)
             },
             onChooseAccounts = { event ->
                 navController.chooseAccounts(
@@ -158,9 +159,9 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             },
             onCreatePersona = { isFirstPersonaCreated ->
                 if (isFirstPersonaCreated) {
-                    navController.createPersonaScreen()
+                    navController.createPersonaScreen(CreatePersonaRequestSource.DappRequest)
                 } else {
-                    navController.personaInfoScreen()
+                    navController.personaInfoScreen(CreatePersonaRequestSource.DappRequest)
                 }
             }
         )

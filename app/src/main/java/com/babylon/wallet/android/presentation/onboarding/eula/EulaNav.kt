@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.presentation.onboarding.eula
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -16,7 +19,11 @@ fun NavGraphBuilder.eulaScreen(
     onAccepted: (isWithCloudBackupEnabled: Boolean) -> Unit
 ) {
     composable(
-        route = ROUTE_EULA_SCREEN
+        route = ROUTE_EULA_SCREEN,
+        enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up) },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down) }
     ) {
         EulaScreen(
             viewModel = hiltViewModel(),

@@ -7,42 +7,35 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
@@ -60,15 +53,13 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
-import com.radixdlt.sargon.Account
+import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.orZero
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionManifestData.TransactionMessage
@@ -86,15 +77,19 @@ fun TransactionReviewScreen(
     onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                Event.Dismiss -> onDismiss()
+            }
+        }
+    }
+
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
-        onApproveTransaction = {
-            viewModel.approveTransaction(deviceBiometricAuthenticationProvider = {
-                context.biometricAuthenticateSuspend()
-            })
-        },
+        onApproveTransaction = viewModel::onApproveTransaction,
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
@@ -111,42 +106,16 @@ fun TransactionReviewScreen(
         onTransferableNonFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
+        onPayerChanged = viewModel::onPayerChanged,
         onPayerSelected = viewModel::onPayerSelected,
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
+        onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
         onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning
     )
-
-    state.interactionState?.let {
-        when (it) {
-            is InteractionState.Ledger.Error -> {
-                BasicPromptAlertDialog(
-                    finish = { viewModel.onCancelSigningClick() },
-                    message = {
-                        Text(text = it.failure.userFriendlyMessage())
-                    },
-                    confirmText = stringResource(id = R.string.common_ok),
-                    dismissText = null
-                )
-            }
-
-            else -> FactorSourceInteractionBottomDialog(
-                modifier = Modifier.fillMaxHeight(0.8f),
-                onDismissDialogClick = viewModel::onBackClick,
-                interactionState = it
-            )
-        }
-    }
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                Event.Dismiss -> onDismiss()
-            }
-        }
-    }
 }
 
 @Suppress("CyclomaticComplexMethod")
@@ -172,8 +141,10 @@ private fun TransactionPreviewContent(
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Account) -> Unit,
+    onPayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
+    onPayerSelected: () -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
+    onFeePayerSelectionDismiss: () -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
@@ -391,7 +362,6 @@ private fun TransactionPreviewContent(
             enableImePadding = true,
             sheetContent = {
                 BottomSheetContent(
-                    modifier = Modifier.navigationBarsPadding(),
                     sheetState = state.sheetState,
                     transactionFees = state.transactionFees,
                     insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
@@ -402,7 +372,6 @@ private fun TransactionPreviewContent(
                     onGuaranteeValueDecreased = onGuaranteeValueDecreased,
                     onChangeFeePayerClick = onChangeFeePayerClick,
                     onSelectFeePayerClick = onSelectFeePayerClick,
-                    onPayerSelected = onPayerSelected,
                     onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                     onTipPercentageChanged = onTipPercentageChanged,
                     onViewDefaultModeClick = onViewDefaultModeClick,
@@ -411,6 +380,24 @@ private fun TransactionPreviewContent(
             },
             showDragHandle = true,
             onDismissRequest = onBackClick
+        )
+    }
+
+    val feePayerSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    SyncSheetState(
+        sheetState = feePayerSheetState,
+        isSheetVisible = state.selectedFeePayerInput != null,
+        onSheetClosed = onFeePayerSelectionDismiss
+    )
+    if (state.selectedFeePayerInput != null) {
+        FeePayerSelectionSheet(
+            input = state.selectedFeePayerInput,
+            sheetState = feePayerSheetState,
+            onPayerChanged = onPayerChanged,
+            onSelectButtonClick = onPayerSelected,
+            onDismiss = onFeePayerSelectionDismiss
         )
     }
 }
@@ -428,7 +415,6 @@ private fun BottomSheetContent(
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Account) -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
@@ -456,7 +442,6 @@ private fun BottomSheetContent(
                 onClose = onCloseBottomSheetClick,
                 onChangeFeePayerClick = onChangeFeePayerClick,
                 onSelectFeePayerClick = onSelectFeePayerClick,
-                onPayerSelected = onPayerSelected,
                 onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                 onTipPercentageChanged = onTipPercentageChanged,
                 onViewDefaultModeClick = onViewDefaultModeClick,
@@ -473,30 +458,6 @@ private fun BottomSheetContent(
         }
 
         is State.Sheet.None -> {}
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SyncSheetState(
-    sheetState: SheetState,
-    isSheetVisible: Boolean,
-    onSheetClosed: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(isSheetVisible) {
-        if (isSheetVisible) {
-            scope.launch { sheetState.show() }
-        } else {
-            scope.launch { sheetState.hide() }
-        }
-    }
-
-    LaunchedEffect(sheetState.isVisible) {
-        if (!sheetState.isVisible) {
-            onSheetClosed()
-        }
     }
 }
 
@@ -539,13 +500,15 @@ fun TransactionPreviewContentPreview() {
             onGuaranteeValueDecreased = {},
             onChangeFeePayerClick = {},
             onSelectFeePayerClick = {},
+            onPayerChanged = {},
             onPayerSelected = {},
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
             onViewAdvancedModeClick = {},
             dismissTransactionErrorDialog = {},
-            onAcknowledgeRawTransactionWarning = {}
+            onAcknowledgeRawTransactionWarning = {},
+            onFeePayerSelectionDismiss = {}
         )
     }
 }

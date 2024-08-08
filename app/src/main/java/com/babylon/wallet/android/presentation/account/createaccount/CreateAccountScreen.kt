@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -25,11 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -39,9 +39,12 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 
@@ -134,30 +137,21 @@ fun CreateAccountContent(
     )
 
     Scaffold(
-        modifier = modifier.imePadding(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = BackIconType.Close,
-                windowInsets = WindowInsets.statusBars
+                backIconType = if (firstTime) BackIconType.Back else BackIconType.Close,
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
-            RadixPrimaryButton(
+            RadixBottomBar(
+                onClick = { onAccountCreateClick(isWithLedger) },
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
-                onClick = {
-                    onAccountCreateClick(isWithLedger)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
-                    )
-                    .navigationBarsPadding(),
                 enabled = buttonEnabled,
-                throttleClicks = true
+                insets = if (isKeyboardVisible()) WindowInsets.ime else WindowInsets.navigationBars
             )
         },
         containerColor = RadixTheme.colors.defaultBackground,
@@ -171,7 +165,7 @@ fun CreateAccountContent(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
                 .padding(top = RadixTheme.dimensions.paddingDefault)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -188,6 +182,7 @@ fun CreateAccountContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 text = stringResource(id = R.string.createAccount_nameNewAccount_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
@@ -211,7 +206,10 @@ fun CreateAccountContent(
                 },
                 hint = stringResource(id = R.string.createAccount_nameNewAccount_placeholder),
                 hintColor = RadixTheme.colors.gray2,
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    capitalization = KeyboardCapitalization.Sentences
+                )
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             CreateWithLedgerSwitch(

@@ -20,10 +20,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -37,7 +35,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,7 +47,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -60,7 +56,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
@@ -85,6 +80,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
@@ -93,7 +89,11 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -184,7 +184,7 @@ fun ImportLegacyWalletScreen(
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
-        importAllAccounts = viewModel::importAllAccounts,
+        importAllAccounts = viewModel::onImportAllAccounts,
         onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onErrorDismiss,
         seedPhraseInputState = state.seedPhraseInputState
     )
@@ -307,7 +307,7 @@ private fun ImportLegacyWalletContent(
                     title = stringResource(R.string.empty),
                     onBackClick = if (currentPage == Page.ImportComplete) onCloseScreen else onBackClick,
                     backIconType = if (currentPage == Page.ImportComplete) BackIconType.Close else BackIconType.Back,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
             },
             snackbarHost = {
@@ -316,15 +316,14 @@ private fun ImportLegacyWalletContent(
                     hostState = snackBarHostState
                 )
             },
-            containerColor = RadixTheme.colors.defaultBackground,
             bottomBar = {
-                if (seedPhraseSuggestionsVisible(wordAutocompleteCandidates = seedPhraseInputState.wordAutocompleteCandidates)) {
+                if (seedPhraseSuggestionsVisible(seedPhraseInputState.wordAutocompleteCandidates)) {
                     SeedPhraseSuggestions(
                         wordAutocompleteCandidates = seedPhraseInputState.wordAutocompleteCandidates,
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding()
-                            .height(56.dp)
+                            .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                             .padding(RadixTheme.dimensions.paddingSmall),
                         onCandidateClick = { candidate ->
                             focusedWordIndex?.let {
@@ -334,7 +333,8 @@ private fun ImportLegacyWalletContent(
                         }
                     )
                 }
-            }
+            },
+            containerColor = RadixTheme.colors.defaultBackground
         ) { padding ->
             HorizontalPager(
                 state = pagerState,
@@ -356,8 +356,8 @@ private fun ImportLegacyWalletContent(
                     Page.AccountsToImportList -> {
                         AccountsToImportListPage(
                             modifier = Modifier
-                                .padding(padding)
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .padding(top = padding.calculateTopPadding()),
                             olympiaAccountsToImport = olympiaAccountsToImport,
                             onImportAccounts = onImportAccounts,
                             importButtonEnabled = importButtonEnabled,
@@ -367,8 +367,18 @@ private fun ImportLegacyWalletContent(
                     Page.MnemonicInput -> {
                         VerifyWithYourSeedPhrasePage(
                             modifier = Modifier
-                                .padding(padding)
-                                .fillMaxSize(),
+                                .fillMaxSize()
+                                .dynamicImePadding(
+                                    padding = padding,
+                                    keyboardVisibleBottomPadding = if (seedPhraseSuggestionsVisible(
+                                            seedPhraseInputState.wordAutocompleteCandidates
+                                        )
+                                    ) {
+                                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight + RadixTheme.dimensions.paddingDefault
+                                    } else {
+                                        RadixTheme.dimensions.paddingDefault
+                                    }
+                                ),
                             seedPhraseWords = seedPhraseInputState.seedPhraseWords,
                             bip39Passphrase = seedPhraseInputState.bip39Passphrase,
                             onWordChanged = onWordChanged,
@@ -441,12 +451,7 @@ private fun ImportLegacyWalletContent(
 
 @Composable
 private fun seedPhraseSuggestionsVisible(wordAutocompleteCandidates: ImmutableList<String>): Boolean {
-    val density = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val kbVisible by remember {
-        derivedStateOf { imeInsets.getBottom(density) > 0 }
-    }
-    return wordAutocompleteCandidates.isNotEmpty() && kbVisible
+    return wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
 @Composable
@@ -570,15 +575,12 @@ private fun AccountsToImportListPage(
                 )
             }
         }
-        RadixPrimaryButton(
+        RadixBottomBar(
             text = stringResource(
                 R.string.importOlympiaAccounts_accountsToImport_buttonManyAccounts,
                 olympiaAccountsToImport.size
             ),
             onClick = onImportAccounts,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
             enabled = importButtonEnabled
         )
     }
@@ -662,12 +664,9 @@ private fun VerifyWithLedgerDevicePage(
                     textAlign = TextAlign.Center
                 )
             }
-            RadixPrimaryButton(
-                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger),
+            RadixBottomBar(
                 onClick = onContinueWithLedgerClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingDefault)
+                text = stringResource(id = R.string.ledgerHardwareDevices_continueWithLedger)
             )
         }
         if (waitingForLedgerResponse) {
@@ -759,13 +758,9 @@ private fun ImportCompletePage(
                 )
             }
         }
-        RadixPrimaryButton(
+        RadixBottomBar(
             text = stringResource(R.string.importOlympiaAccounts_completion_accountListButtonTitle),
-            onClick = onContinue,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(RadixTheme.dimensions.paddingDefault),
-            throttleClicks = true
+            onClick = onContinue
         )
     }
 }
@@ -802,66 +797,66 @@ private fun VerifyWithYourSeedPhrasePage(
         )
     }
     SecureScreen()
+
+    val scrollState = rememberScrollState()
+    HideKeyboardOnFullScroll(scrollState)
+
     Column(
         modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(
-                start = RadixTheme.dimensions.paddingLarge,
-                end = RadixTheme.dimensions.paddingLarge
-            )
-            .imePadding(),
+            .imePadding()
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge)
     ) {
-        Text(
-            text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_subtitle),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
-        InfoLink(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning),
-            contentColor = RadixTheme.colors.orange1,
-            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-        SeedPhraseInputForm(
-            seedPhraseWords = seedPhraseWords,
-            onWordChanged = onWordChanged,
-            onPassphraseChanged = onPassphraseChanged,
-            bip39Passphrase = bip39Passphrase,
-            modifier = Modifier.fillMaxWidth(),
-            onFocusedWordIndexChanged = onFocusedWordIndexChanged
-        )
-
-        val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseInputState) {
-            seedPhraseInputState.shouldDisplayInvalidSeedPhraseWarning()
-        }
-        if (shouldDisplayInvalidSeedPhraseWarning) {
-            WarningText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
+        Column(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge)
+        ) {
+            Text(
+                text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
             )
+            Text(
+                text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_subtitle),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            InfoLink(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning),
+                contentColor = RadixTheme.colors.orange1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            SeedPhraseInputForm(
+                seedPhraseWords = seedPhraseWords,
+                onWordChanged = onWordChanged,
+                onPassphraseChanged = onPassphraseChanged,
+                bip39Passphrase = bip39Passphrase,
+                modifier = Modifier.fillMaxWidth(),
+                onFocusedWordIndexChanged = onFocusedWordIndexChanged
+            )
+
+            val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseInputState) {
+                seedPhraseInputState.shouldDisplayInvalidSeedPhraseWarning()
+            }
+            if (shouldDisplayInvalidSeedPhraseWarning) {
+                WarningText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = RadixTheme.dimensions.paddingDefault),
+                    text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
+                )
+            }
         }
-        RadixPrimaryButton(
+        RadixBottomBar(
             text = stringResource(R.string.importOlympiaAccounts_importLabel),
-            onClick = {
-                showOlympiaSeedPhrasePrompt = true
-            },
-            modifier = Modifier.fillMaxWidth(),
-            throttleClicks = true,
+            onClick = { showOlympiaSeedPhrasePrompt = true },
             enabled = seedPhraseInputState.isValidSeedPhrase()
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
 }
 

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package com.babylon.wallet.android.presentation.account
 
 import androidx.compose.animation.fadeIn
@@ -8,16 +10,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -41,6 +52,7 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
@@ -48,18 +60,17 @@ import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
-import com.babylon.wallet.android.presentation.ui.composables.DefaultPullToRefreshContainer
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -67,6 +78,7 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
@@ -158,13 +170,18 @@ private fun AccountScreenContent(
     )
 
     val lazyListState = rememberLazyListState()
-    DefaultPullToRefreshContainer(
-        isRefreshing = state.isRefreshing,
+
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = state.isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier.background(gradient)
+        refreshingOffset = 116.dp
+    )
+
+    Box(
+        modifier = modifier.pullRefresh(pullToRefreshState)
     ) {
         Scaffold(
-            modifier = Modifier,
+            modifier = Modifier.background(gradient),
             topBar = {
                 RadixCenteredTopAppBar(
                     title = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
@@ -172,15 +189,12 @@ private fun AccountScreenContent(
                     contentColor = RadixTheme.colors.white,
                     containerColor = Color.Transparent,
                     actions = {
-                        // TODO revisit after compose update and remove if library update fixes the issue
-                        // https://radixdlt.atlassian.net/browse/ABW-2504
-                        ThrottleIconButton(
+                        IconButton(
                             onClick = {
                                 state.accountWithAssets?.account?.let {
                                     onAccountPreferenceClick(it.address)
                                 }
-                            },
-                            thresholdMs = 1000L
+                            }
                         ) {
                             Icon(
                                 imageVector = ImageVector.vectorResource(
@@ -190,7 +204,8 @@ private fun AccountScreenContent(
                                 contentDescription = "account settings"
                             )
                         }
-                    }
+                    },
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
             },
             containerColor = Color.Transparent,
@@ -200,7 +215,8 @@ private fun AccountScreenContent(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     hostState = snackBarHostState
                 )
-            }
+            },
+            contentWindowInsets = WindowInsets.statusBarsAndBanner
         ) { innerPadding ->
             AssetsContent(
                 modifier = Modifier.padding(innerPadding),
@@ -230,6 +246,14 @@ private fun AccountScreenContent(
                 onCollectionClick = onCollectionClick,
             )
         }
+
+        PullRefreshIndicator(
+            modifier = Modifier.align(Alignment.TopCenter),
+            refreshing = state.isRefreshing,
+            state = pullToRefreshState,
+            contentColor = RadixTheme.colors.gray1,
+            backgroundColor = RadixTheme.colors.defaultBackground,
+        )
     }
 }
 
@@ -272,103 +296,20 @@ fun AssetsContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
-            contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingSemiLarge)
+            contentPadding = WindowInsets.navigationBars.asPaddingValues().plus(
+                other = PaddingValues(bottom = RadixTheme.dimensions.paddingSemiLarge)
+            )
         ) {
             item {
-                Box {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(brush = gradient)
-                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
-                            .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        accountAddress?.let {
-                            ActionableAddressView(
-                                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
-                                address = Address.Account(it),
-                                textStyle = RadixTheme.typography.body2HighImportance,
-                                textColor = RadixTheme.colors.white
-                            )
-                        }
-
-                        if (!state.isPricesDisabled) {
-                            TotalFiatBalanceView(
-                                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
-                                fiatPrice = state.totalFiatValue,
-                                isLoading = state.isAccountBalanceLoading,
-                                currency = SupportedCurrency.USD,
-                                contentColor = RadixTheme.colors.white,
-                                shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
-                                formattedContentStyle = RadixTheme.typography.header,
-                                onVisibilityToggle = onShowHideBalanceToggle,
-                                trailingContent = {
-                                    TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
-                                }
-                            )
-                        }
-
-                        androidx.compose.animation.AnimatedVisibility(
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
-                            visible = state.isTransferEnabled,
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingXSmall),
-                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-                            ) {
-                                if (accountAddress != null) {
-                                    HistoryButton(
-                                        modifier = Modifier.weight(1f),
-                                        onHistoryClick = {
-                                            onHistoryClick(accountAddress)
-                                        }
-                                    )
-
-                                    TransferButton(
-                                        modifier = Modifier.weight(1f),
-                                        accountAddress = accountAddress,
-                                        onTransferClick = onTransferClick
-                                    )
-                                }
-                            }
-                        }
-
-                        androidx.compose.animation.AnimatedVisibility(
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
-                            visible = state.securityPrompts != null,
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            Column {
-                                state.securityPrompts?.forEach { securityPromptType ->
-                                    ApplySecuritySettingsLabel(
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
-                                        onClick = {
-                                            onApplySecuritySettingsClick()
-                                        },
-                                        text = securityPromptType.toText()
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .height(RadixTheme.dimensions.paddingSemiLarge)
-                            .background(
-                                color = RadixTheme.colors.gray5,
-                                shape = RadixTheme.shapes.roundedRectTopDefault
-                            )
-                    )
-                }
+                AccountHeader(
+                    gradient = gradient,
+                    accountAddress = accountAddress,
+                    state = state,
+                    onShowHideBalanceToggle = onShowHideBalanceToggle,
+                    onHistoryClick = onHistoryClick,
+                    onTransferClick = onTransferClick,
+                    onApplySecuritySettingsClick = onApplySecuritySettingsClick
+                )
             }
 
             assetsView(
@@ -392,6 +333,121 @@ fun AssetsContent(
                 )
             )
         }
+    }
+}
+
+@Composable
+private fun AccountHeader(
+    gradient: Brush,
+    accountAddress: AccountAddress?,
+    state: State,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
+    onHistoryClick: (AccountAddress) -> Unit,
+    onTransferClick: (AccountAddress) -> Unit,
+    onApplySecuritySettingsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(brush = gradient)
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            accountAddress?.let {
+                ActionableAddressView(
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
+                    address = Address.Account(it),
+                    textStyle = RadixTheme.typography.body2HighImportance,
+                    textColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+                    iconColor = RadixTheme.colors.white.copy(alpha = 0.6f)
+                )
+            }
+
+            if (!state.isPricesDisabled) {
+                TotalFiatBalanceView(
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
+                    fiatPrice = state.totalFiatValue,
+                    isLoading = state.isAccountBalanceLoading,
+                    currency = SupportedCurrency.USD,
+                    contentColor = RadixTheme.colors.white,
+                    shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                    formattedContentStyle = RadixTheme.typography.header,
+                    onVisibilityToggle = onShowHideBalanceToggle,
+                    trailingContent = {
+                        TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
+                    }
+                )
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
+                visible = state.isTransferEnabled,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXSmall),
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                ) {
+                    if (accountAddress != null) {
+                        HistoryButton(
+                            modifier = Modifier
+                                .heightIn(min = 50.dp)
+                                .weight(1f),
+                            onHistoryClick = {
+                                onHistoryClick(accountAddress)
+                            }
+                        )
+
+                        TransferButton(
+                            modifier = Modifier
+                                .heightIn(min = 50.dp)
+                                .weight(1f),
+                            accountAddress = accountAddress,
+                            onTransferClick = onTransferClick
+                        )
+                    }
+                }
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
+                visible = state.securityPrompts != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Column {
+                    state.securityPrompts?.forEach { securityPromptType ->
+                        ApplySecuritySettingsLabel(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                                .padding(bottom = RadixTheme.dimensions.paddingSmall),
+                            onClick = {
+                                onApplySecuritySettingsClick()
+                            },
+                            text = securityPromptType.toText()
+                        )
+                    }
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(RadixTheme.dimensions.paddingSemiLarge)
+                .background(
+                    color = RadixTheme.colors.gray5,
+                    shape = RadixTheme.shapes.roundedRectTopDefault
+                )
+        )
     }
 }
 
@@ -451,7 +507,8 @@ fun AccountContentPreview() {
             state = State(
                 pricesState = State.PricesState.Enabled(emptyMap()),
                 accountWithAssets = AccountWithAssets(
-                    account = Account.sampleMainnet()
+                    account = Account.sampleMainnet(),
+                    assets = Assets()
                 ),
                 securityPrompts = listOf(
                     SecurityPromptType.WRITE_DOWN_SEED_PHRASE,

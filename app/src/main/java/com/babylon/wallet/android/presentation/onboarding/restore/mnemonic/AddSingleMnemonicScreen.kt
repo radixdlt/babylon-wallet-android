@@ -11,11 +11,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -46,12 +41,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
@@ -59,6 +54,10 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
+import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
+import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
@@ -131,12 +130,12 @@ private fun AddSingleMnemonicsContent(
     }
 
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = "",
                 onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         bottomBar = {
@@ -144,9 +143,9 @@ private fun AddSingleMnemonicsContent(
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
-                        .fillMaxWidth()
                         .imePadding()
-                        .height(56.dp)
+                        .fillMaxWidth()
+                        .height(RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight)
                         .padding(RadixTheme.dimensions.paddingSmall),
                     onCandidateClick = { candidate ->
                         focusedWordIndex?.let {
@@ -156,23 +155,13 @@ private fun AddSingleMnemonicsContent(
                     }
                 )
             } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    val isEnabled = remember(state.seedPhraseState) {
+                RadixBottomBar(
+                    text = stringResource(R.string.common_continue),
+                    enabled = remember(state.seedPhraseState) {
                         state.seedPhraseState.isValidSeedPhrase()
-                    }
-                    RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .imePadding()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(R.string.common_continue),
-                        enabled = isEnabled,
-                        onClick = onSubmitClick
-                    )
-                }
+                    },
+                    onClick = onSubmitClick
+                )
             }
         },
         snackbarHost = {
@@ -189,18 +178,27 @@ private fun AddSingleMnemonicsContent(
             MnemonicType.Olympia -> stringResource(id = R.string.enterSeedPhrase_titleOlympia)
         }
         val isOlympia = state.mnemonicType == MnemonicType.Olympia
-        SeedPhraseView(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            title = title,
-            onWordChanged = onWordTyped,
-            onPassphraseChanged = onPassphraseChanged,
-            onFocusedWordIndexChanged = { focusedWordIndex = it },
-            seedPhraseState = state.seedPhraseState,
-            onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
-            isOlympia = isOlympia
-        )
+                .dynamicImePadding(
+                    padding = padding,
+                    keyboardVisibleBottomPadding = if (isSuggestionsVisible(state)) {
+                        RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
+                    } else {
+                        RadixTheme.dimensions.paddingDefault
+                    }
+                )
+        ) {
+            SeedPhraseView(
+                title = title,
+                onWordChanged = onWordTyped,
+                onPassphraseChanged = onPassphraseChanged,
+                onFocusedWordIndexChanged = { focusedWordIndex = it },
+                seedPhraseState = state.seedPhraseState,
+                onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
+                isOlympia = isOlympia
+            )
+        }
     }
 }
 
@@ -216,10 +214,15 @@ private fun SeedPhraseView(
     isOlympia: Boolean
 ) {
     SecureScreen()
+
+    val scrollState = rememberScrollState()
+    HideKeyboardOnFullScroll(scrollState)
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .imePadding()
+            .verticalScroll(scrollState)
     ) {
         Text(
             modifier = Modifier
@@ -329,12 +332,7 @@ private fun SeedPhraseView(
 
 @Composable
 private fun isSuggestionsVisible(state: AddSingleMnemonicViewModel.State): Boolean {
-    val density = LocalDensity.current
-    val imeInsets = WindowInsets.ime
-    val keyboardVisible by remember {
-        derivedStateOf { imeInsets.getBottom(density) > 0 }
-    }
-    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && keyboardVisible
+    return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
 @Preview

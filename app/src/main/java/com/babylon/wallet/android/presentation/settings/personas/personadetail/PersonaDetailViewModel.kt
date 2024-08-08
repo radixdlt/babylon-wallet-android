@@ -53,7 +53,7 @@ class PersonaDetailViewModel @Inject constructor(
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
     private var authSigningFactorInstance: HierarchicalDeterministicFactorInstance? = null
-    private lateinit var uploadAuthKeyRequestId: WalletInteractionId
+    private var uploadAuthKeyInteractionId: WalletInteractionId? = null
 
     init {
         viewModelScope.launch {
@@ -84,7 +84,7 @@ class PersonaDetailViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyRequestId.toString() }
+            appEventBus.events.filterIsInstance<AppEvent.Status.Transaction>().filter { it.requestId == uploadAuthKeyInteractionId }
                 .collect { event ->
                     when (event) {
                         is AppEvent.Status.Transaction.Fail -> {
@@ -129,10 +129,11 @@ class PersonaDetailViewModel @Inject constructor(
                                 _state.update { state -> state.copy(loading = false) }
                                 return@launch
                             }
-                        uploadAuthKeyRequestId = UUID.randomUUID().toString()
+                        val interactionId = UUID.randomUUID().toString()
+                        uploadAuthKeyInteractionId = interactionId
                         incomingRequestRepository.add(
                             manifest.prepareInternalTransactionRequest(
-                                requestId = uploadAuthKeyRequestId
+                                requestId = interactionId
                             )
                         )
                     }

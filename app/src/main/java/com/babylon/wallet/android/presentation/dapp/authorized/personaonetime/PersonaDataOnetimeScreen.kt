@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -40,18 +38,14 @@ import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -70,7 +64,6 @@ fun PersonaDataOnetimeScreen(
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     if (sharedState.isNoMnemonicErrorVisible) {
@@ -82,19 +75,6 @@ fun PersonaDataOnetimeScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.RequestCompletionBiometricPrompt -> {
-                    if (event.isSignatureRequired) {
-                        sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
-                            context.biometricAuthenticateSuspend()
-                        })
-                    } else {
-                        context.biometricAuthenticate { result ->
-                            if (result == BiometricAuthenticationResult.Succeeded) {
-                                sharedViewModel.completeRequestHandling()
-                            }
-                        }
-                    }
-                }
                 else -> {}
             }
         }
@@ -129,7 +109,7 @@ fun PersonaDataOnetimeScreen(
                 onBackClick()
             }
         },
-        isFirstScreenInFlow = sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimePersonaData,
+        showBack = state.showBack,
         personas = state.personaListToDisplay,
         onSelectPersona = viewModel::onSelectPersona,
         onCreatePersona = viewModel::onCreatePersona,
@@ -137,13 +117,6 @@ fun PersonaDataOnetimeScreen(
         continueButtonEnabled = state.continueButtonEnabled,
         modifier = modifier
     )
-    sharedState.interactionState?.let {
-        FactorSourceInteractionBottomDialog(
-            modifier = Modifier.fillMaxHeight(0.8f),
-            onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
-            interactionState = it
-        )
-    }
 }
 
 @Composable
@@ -152,7 +125,7 @@ private fun PersonaDataOnetimeContent(
     dapp: DApp?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isFirstScreenInFlow: Boolean,
+    showBack: Boolean,
     personas: ImmutableList<PersonaUiModel>,
     onSelectPersona: ((Persona) -> Unit)?,
     onCreatePersona: () -> Unit,
@@ -165,12 +138,12 @@ private fun PersonaDataOnetimeContent(
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
-                backIconType = if (isFirstScreenInFlow) BackIconType.Close else BackIconType.Back,
+                backIconType = if (showBack) BackIconType.Back else BackIconType.Close,
                 windowInsets = WindowInsets.statusBars
             )
         },
         bottomBar = {
-            BottomPrimaryButton(
+            RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = continueButtonEnabled,
                 modifier = Modifier
@@ -273,7 +246,7 @@ fun LoginPermissionContentPreview() {
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
-            isFirstScreenInFlow = false,
+            showBack = true,
             personas = persistentListOf(PersonaUiModel(Persona.sampleMainnet())),
             onSelectPersona = {},
             onCreatePersona = {},

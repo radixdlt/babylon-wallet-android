@@ -3,19 +3,18 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
-import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
@@ -33,12 +32,15 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -52,7 +54,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
-    private val signTransactionUseCase: SignTransactionUseCase,
     private val analysis: TransactionAnalysisDelegate,
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
@@ -77,6 +78,22 @@ class TransactionReviewViewModel @Inject constructor(
         submit(scope = viewModelScope, state = _state)
         submit.oneOffEventHandler = this
 
+        observeDeferredRequests()
+        processIncomingRequest()
+    }
+
+    private fun observeDeferredRequests() {
+        viewModelScope.launch {
+            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
+                if (it.interactionId == args.interactionId) {
+                    sendEvent(Event.Dismiss)
+                    incomingRequestRepository.requestDeferred(args.interactionId)
+                }
+            }
+        }
+    }
+
+    private fun processIncomingRequest() {
         val request = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.TransactionRequest
         if (request == null) {
             viewModelScope.launch {
@@ -84,13 +101,6 @@ class TransactionReviewViewModel @Inject constructor(
             }
         } else {
             _state.update { it.copy(request = request) }
-            viewModelScope.launch {
-                signTransactionUseCase.signingState.collect { signingState ->
-                    _state.update { state ->
-                        state.copy(interactionState = signingState)
-                    }
-                }
-            }
             viewModelScope.launch {
                 analysis.analyse()
             }
@@ -103,25 +113,14 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
         }
-        viewModelScope.launch {
-            appEventBus.events.filterIsInstance<AppEvent.DeferRequestHandling>().collect {
-                if (it.interactionId == args.interactionId) {
-                    sendEvent(Event.Dismiss)
-                    incomingRequestRepository.requestDeferred(args.interactionId)
-                }
-            }
-        }
     }
 
     fun onBackClick() {
-        if (state.value.sheetState != State.Sheet.None) {
-            _state.update { it.copy(sheetState = State.Sheet.None) }
+        if (state.value.sheetState != Sheet.None) {
+            _state.update { it.copy(sheetState = Sheet.None) }
         } else {
             viewModelScope.launch {
-                submit.onDismiss(
-                    signTransactionUseCase = signTransactionUseCase,
-                    exception = RadixWalletException.DappRequestException.RejectedByUser
-                )
+                submit.onDismiss(exception = RadixWalletException.DappRequestException.RejectedByUser)
             }
         }
     }
@@ -134,12 +133,7 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
     }
 
-    fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
-        submit.onSubmit(
-            signTransactionUseCase = signTransactionUseCase,
-            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        )
-    }
+    fun onApproveTransaction() = submit.onSubmit()
 
     fun promptForGuaranteesClick() = guarantees.onEdit()
 
@@ -155,17 +149,11 @@ class TransactionReviewViewModel @Inject constructor(
     fun onGuaranteesApplyClick() = guarantees.onApply()
 
     fun onCloseBottomSheetClick() {
-        _state.update { it.copy(sheetState = State.Sheet.None) }
+        _state.update { it.copy(sheetState = Sheet.None) }
     }
 
-    fun onCustomizeClick() {
-        viewModelScope.launch {
-            fees.onCustomizeClick()
-        }
-    }
-
-    fun onCancelSigningClick() {
-        signTransactionUseCase.cancelSigning()
+    fun onCustomizeClick() = viewModelScope.launch {
+        fees.onCustomizeClick()
     }
 
     fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
@@ -184,20 +172,36 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
-    fun onPayerSelected(selectedFeePayer: Account) {
+    fun onPayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
+        val selectFeePayerInput = state.value.selectedFeePayerInput ?: return
+
+        _state.update {
+            it.copy(
+                selectedFeePayerInput = selectFeePayerInput.copy(
+                    preselectedCandidate = selectedFeePayer
+                )
+            )
+        }
+    }
+
+    fun onPayerSelected() {
+        val selectFeePayerInput = state.value.selectedFeePayerInput ?: return
+        val selectedFeePayerAccount = selectFeePayerInput.preselectedCandidate?.account ?: return
+
         val feePayerSearchResult = state.value.feePayers
         val transactionFees = state.value.transactionFees
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selectedAccountAddress = selectedFeePayer.address,
+            selectedAccountAddress = selectedFeePayerAccount.address,
             candidates = feePayerSearchResult.candidates
         )
 
-        val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
+        val customizeFeesSheet = state.value.sheetState as? Sheet.CustomizeFees ?: return
         val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
-            .orEmpty().any { accountAddress ->
-                accountAddress == selectedFeePayer.address
+            .orEmpty()
+            .any { accountAddress ->
+                accountAddress == selectedFeePayerAccount.address
             }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
@@ -209,23 +213,26 @@ class TransactionReviewViewModel @Inject constructor(
                 ),
                 feePayers = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
-                    feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                        feePayerCandidate = selectedFeePayer
+                    feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                        feePayerCandidate = selectedFeePayerAccount
                     )
                 )
             )
         }
     }
 
+    fun onFeePayerSelectionDismissRequest() {
+        _state.update { it.copy(selectedFeePayerInput = null) }
+    }
+
     fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
         _state.update {
-            it.copy(sheetState = State.Sheet.UnknownAddresses(unknownAddresses))
+            it.copy(sheetState = Sheet.UnknownAddresses(unknownAddresses))
         }
     }
 
     fun dismissTerminalErrorDialog() {
         _state.update { it.copy(error = null) }
-        onBackClick()
     }
 
     fun onAcknowledgeRawTransactionWarning() {
@@ -249,7 +256,7 @@ class TransactionReviewViewModel @Inject constructor(
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val interactionState: InteractionState? = null
+        val selectedFeePayerInput: SelectFeePayerInput? = null
     ) : UiState {
 
         val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
@@ -281,13 +288,10 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         fun feePayerSelectionState(): State = copy(
-            transactionFees = transactionFees,
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
-                    preselectedCandidate = feePayers?.selectedAccountAddress,
-                    candidates = feePayers?.candidates.orEmpty()
-                ),
-                feesMode = latestFeesMode
+            selectedFeePayerInput = SelectFeePayerInput(
+                preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
+                candidates = feePayers?.candidates.orEmpty().toPersistentList(),
+                fee = transactionFees.defaultTransactionFee.formatted()
             )
         )
 
@@ -314,9 +318,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transfer
 
-        val rawManifest: String = request
-            ?.transactionManifestData
-            ?.instructions.orEmpty()
+        val rawManifest: String = request?.transactionManifestData?.instructions.orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
@@ -400,11 +402,6 @@ class TransactionReviewViewModel @Inject constructor(
                     data class NoFeePayerSelected(
                         val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
-
-                    data class SelectFeePayer(
-                        val preselectedCandidate: AccountAddress?,
-                        val candidates: List<TransactionFeePayers.FeePayerCandidate>
-                    ) : FeePayerMode
                 }
 
                 enum class FeesMode {
@@ -416,6 +413,12 @@ class TransactionReviewViewModel @Inject constructor(
                 val unknownAddresses: ImmutableList<Address>
             ) : Sheet
         }
+
+        data class SelectFeePayerInput(
+            val preselectedCandidate: TransactionFeePayers.FeePayerCandidate?,
+            val candidates: PersistentList<TransactionFeePayers.FeePayerCandidate>,
+            val fee: String
+        )
     }
 }
 
@@ -453,11 +456,24 @@ sealed interface PreviewType {
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
+        val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
                 allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable.resource }
             }.flatten()
+
+        val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
+            get() {
+                val newlyCreatedNFTResources = newlyCreatedResources.filterIsInstance<Resource.NonFungibleResource>()
+                val addresses = newlyCreatedNFTResources.map { it.address }
+                return newlyCreatedNFTItems.filterNot { nftItem ->
+                    val newResource = newlyCreatedNFTResources.find { resource ->
+                        resource.address == nftItem.collectionAddress
+                    }
+                    nftItem.collectionAddress in addresses && nftItem.localId in newResource?.items?.map { it.localId }.orEmpty()
+                }
+            }
 
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
@@ -465,6 +481,7 @@ sealed interface PreviewType {
             override val badges: List<Badge>,
             val validators: List<Validator>,
             val actionType: ActionType,
+            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
         ) : Transfer {
             enum class ActionType {
                 Stake, Unstake, ClaimStake
@@ -475,7 +492,8 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             override val badges: List<Badge>,
-            val actionType: ActionType
+            val actionType: ActionType,
+            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
@@ -493,7 +511,8 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             override val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList()
+            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList(),
+            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
         ) : Transfer
     }
 }

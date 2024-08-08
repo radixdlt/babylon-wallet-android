@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
@@ -34,17 +33,18 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -129,10 +129,25 @@ private fun PersonaDetailContent(
                 RadixCenteredTopAppBar(
                     title = state.persona?.displayName?.value.orEmpty(),
                     onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
 
                 HorizontalDivider(color = RadixTheme.colors.gray5)
+            }
+        },
+        bottomBar = {
+            if (state.persona != null) {
+                RadixBottomBar(
+                    button = {
+                        WarningButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
+                            onClick = onHidePersona
+                        )
+                    }
+                )
             }
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -145,11 +160,10 @@ private fun PersonaDetailContent(
                 persona = state.persona,
                 authorizedDapps = state.authorizedDapps,
                 onDAppClick = onDAppClick,
-                onEditPersona = onEditPersona,
                 hasAuthKey = state.hasAuthKey,
                 onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
                 loading = state.loading,
-                onHidePersona = onHidePersona
+                onEditPersona = onEditPersona
             )
         } else {
             FullscreenCircularProgressContent()
@@ -163,21 +177,23 @@ private fun PersonaDetailList(
     persona: Persona,
     authorizedDapps: ImmutableList<DApp>,
     onDAppClick: (DApp) -> Unit,
-    onEditPersona: (IdentityAddress) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean,
-    onHidePersona: () -> Unit
+    onEditPersona: (IdentityAddress) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
+        contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
         item {
             Thumbnail.Persona(
                 modifier = Modifier
-                    .padding(vertical = dimensions.paddingDefault)
+                    .padding(
+                        top = RadixTheme.dimensions.paddingDefault,
+                        bottom = RadixTheme.dimensions.paddingLarge
+                    )
                     .size(104.dp),
                 persona = persona
             )
@@ -186,68 +202,57 @@ private fun PersonaDetailList(
             PersonaDataStringField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
+                labelStyle = RadixTheme.typography.body1Header,
                 value = persona.displayName.value
             )
-            HorizontalDivider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
+            HorizontalDivider(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                color = RadixTheme.colors.gray4
+            )
         }
         val allFields = persona.personaData.fields
         if (allFields.isNotEmpty()) {
-            val lastItem = allFields.last()
             items(allFields) { field ->
                 PersonaDataFieldRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    field = field.value
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    field = field.value,
+                    labelStyle = RadixTheme.typography.body1Header
                 )
-                if (field != lastItem) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            horizontal = dimensions.paddingDefault,
-                            vertical = dimensions.paddingLarge
-                        ),
-                        color = RadixTheme.colors.gray4
-                    )
-                }
+                HorizontalDivider(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingLarge),
+                    color = RadixTheme.colors.gray4
+                )
             }
         }
         item {
-            Spacer(modifier = Modifier.height(dimensions.paddingLarge))
             RadixSecondaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingXXLarge),
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
                 onClick = { onEditPersona(persona.address) },
                 throttleClicks = true
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingXXLarge),
-                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                    onClick = onCreateAndUploadAuthKey,
-                    enabled = !loading,
-                    throttleClicks = true
-                )
-                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            }
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
         if (authorizedDapps.isNotEmpty()) {
             item {
+                HorizontalDivider(
+                    color = RadixTheme.colors.gray4
+                )
                 GrayBackgroundWrapper {
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     Text(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                         text = stringResource(R.string.authorizedDapps_personaDetails_authorizedDappsHeading),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
                     )
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
                 }
             }
             items(authorizedDapps) { dApp ->
@@ -258,18 +263,28 @@ private fun PersonaDetailList(
                         },
                         dApp = dApp
                     )
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+            }
+            item {
+                GrayBackgroundWrapper(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
                 }
             }
         }
-        item {
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-            WarningButton(
-                modifier = Modifier
-                    .padding(horizontal = dimensions.paddingDefault),
-                text = stringResource(id = R.string.authorizedDapps_personaDetails_hideThisPersona),
-                onClick = onHidePersona
-            )
+        if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
+            item {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                RadixSecondaryButton(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
+                    onClick = onCreateAndUploadAuthKey,
+                    enabled = !loading,
+                    throttleClicks = true
+                )
+            }
         }
     }
 }
@@ -282,7 +297,10 @@ fun PersonaDetailContentPreview() {
         PersonaDetailContent(
             modifier = Modifier.fillMaxSize(),
             state = PersonaDetailUiState(
-                authorizedDapps = persistentListOf(),
+                authorizedDapps = persistentListOf(
+                    DApp.sampleMainnet(),
+                    DApp.sampleMainnet.other()
+                ),
                 persona = Persona.sampleMainnet(),
                 loading = false,
                 hasAuthKey = false

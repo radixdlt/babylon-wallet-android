@@ -7,18 +7,15 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -27,12 +24,11 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +46,6 @@ fun DappAuthorizedLoginScreen(
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     HandleOneOffEvents(viewModel.oneOffEvent, onBackClick, onLoginFlowComplete)
     val sharedState by viewModel.state.collectAsStateWithLifecycle()
     val initialRoute = sharedState.initialAuthorizedLoginRoute
@@ -60,9 +55,7 @@ fun DappAuthorizedLoginScreen(
     LaunchedEffect(initialRoute) {
         snapshotFlow { initialRoute }.distinctUntilChanged().collect { route ->
             if (route == InitialAuthorizedLoginRoute.CompleteRequest) {
-                viewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
-                    context.biometricAuthenticateSuspend()
-                }, abortOnFailure = true)
+                viewModel.completeRequestHandling()
             }
         }
     }
@@ -103,7 +96,7 @@ fun DappAuthorizedLoginScreen(
                 title = stringResource(id = R.string.empty),
                 backIconType = BackIconType.Close,
                 onBackClick = viewModel::onAbortDappLogin,
-                windowInsets = WindowInsets.statusBars
+                windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -132,13 +125,6 @@ fun DappAuthorizedLoginScreen(
                 onMessageShown = viewModel::onMessageShown,
                 modifier = Modifier.imePadding()
             )
-            sharedState.interactionState?.let {
-                FactorSourceInteractionBottomDialog(
-                    modifier = Modifier.fillMaxHeight(0.8f),
-                    onDismissDialogClick = viewModel::onDismissSigningStatusDialog,
-                    interactionState = it
-                )
-            }
         }
     }
 }

@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.sargon.AccountAddress
@@ -49,13 +50,12 @@ class GetFreeXrdUseCase @Inject constructor(
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
-                signTransactionUseCase.sign(
+                signTransactionUseCase(
                     request = SignTransactionUseCase.Request(
                         manifest = manifest,
                         lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
                         tipPercentage = TIP_PERCENTAGE
-                    ),
-                    deviceBiometricAuthenticationProvider = { true }
+                    )
                 ).then { notarization ->
                     submitTransactionUseCase(notarizationResult = notarization)
                 }.onSuccess { notarization ->

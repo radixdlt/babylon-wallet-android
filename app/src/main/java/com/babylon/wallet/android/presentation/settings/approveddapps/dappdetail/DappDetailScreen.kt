@@ -14,15 +14,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -38,11 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -57,7 +51,9 @@ import com.babylon.wallet.android.presentation.common.FullscreenCircularProgress
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.DappDetails
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.LinkText
@@ -66,12 +62,10 @@ import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringF
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
-import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
-import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
+import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AppearanceId
@@ -85,7 +79,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.sargon.fields
 import java.util.Locale
 
@@ -102,7 +98,6 @@ fun DappDetailScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                DappDetailEvent.LastPersonaDeleted -> onBackClick()
                 DappDetailEvent.DappDeleted -> onBackClick()
                 is DappDetailEvent.EditPersona -> {
                     onEditPersona(it.personaAddress, it.requiredPersonaFields)
@@ -180,7 +175,7 @@ private fun DappDetailContent(
             },
             message = {
                 Text(
-                    text = stringResource(id = R.string.authorizedDapps_removeAuthorizationAlert_message),
+                    text = stringResource(id = R.string.authorizedDapps_forgetDappAlert_message),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -194,21 +189,27 @@ private fun DappDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = state.dAppWithResources?.dApp?.name.orEmpty(),
+                    title = state.dAppWithResources?.dApp?.name.orEmpty().ifEmpty {
+                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                    },
                     onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars
+                    windowInsets = WindowInsets.statusBarsAndBanner
                 )
                 HorizontalDivider(color = RadixTheme.colors.gray5)
             }
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
+        Box(
+            modifier = Modifier
+                .background(RadixTheme.colors.defaultBackground)
+                .padding(padding)
+        ) {
             DappDetails(
                 modifier = Modifier.fillMaxSize(),
                 dAppWithResources = state.dAppWithResources,
                 isValidatingWebsite = state.isValidatingWebsite,
                 validatedWebsite = state.validatedWebsite,
-                personaList = state.personas,
+                personaList = state.authorizedPersonas,
                 onPersonaClick = { persona ->
                     onPersonaClick(persona)
                     scope.launch {
@@ -234,7 +235,6 @@ private fun DappDetailContent(
 
     if (state.isBottomSheetVisible) {
         DefaultModalSheetLayout(
-            modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 when (state.selectedSheetState) {
@@ -249,14 +249,6 @@ private fun DappDetailContent(
                                         bottomSheetState.hide()
                                     }
                                 },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .navigationBarsPadding()
-                                    .background(
-                                        RadixTheme.colors.defaultBackground,
-                                        shape = RadixTheme.shapes.roundedRectTopMedium
-                                    )
-                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
                                 dappName = state.dAppWithResources?.dApp?.name.orEmpty(),
                                 onDisconnectPersona = { persona ->
                                     hidePersonaBottomSheet()
@@ -285,176 +277,6 @@ private fun DappDetailContent(
 }
 
 @Composable
-private fun DappDetails(
-    modifier: Modifier,
-    dAppWithResources: DAppWithResources?,
-    isValidatingWebsite: Boolean,
-    validatedWebsite: String?,
-    personaList: ImmutableList<Persona>,
-    onPersonaClick: (Persona) -> Unit,
-    onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
-    onDeleteDapp: () -> Unit
-) {
-    Column(modifier = modifier) {
-        LazyColumn(
-            contentPadding = PaddingValues(vertical = dimensions.paddingDefault),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            dAppWithResources?.dApp?.let { dApp ->
-                item {
-                    Thumbnail.DApp(
-                        modifier = Modifier
-                            .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                            .size(104.dp),
-                        dapp = dApp
-                    )
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
-                }
-            }
-            dAppWithResources?.dApp?.description?.let { description ->
-                item {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(dimensions.paddingDefault),
-                        text = description,
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Start
-                    )
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
-                }
-            }
-            dAppWithResources?.dApp?.dAppAddress?.let { dappDefinitionAddress ->
-                item {
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                    DappDefinitionAddressRow(
-                        dappDefinitionAddress = dappDefinitionAddress,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingDefault)
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                }
-            }
-            if (isValidatingWebsite || validatedWebsite != null) {
-                item {
-                    DAppWebsiteAddressRow(
-                        website = validatedWebsite,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingDefault)
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                }
-            }
-            if (dAppWithResources?.fungibleResources?.isNotEmpty() == true) {
-                item {
-                    GrayBackgroundWrapper {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(dimensions.paddingDefault),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2,
-                            textAlign = TextAlign.Start
-                        )
-                    }
-                }
-            }
-            itemsIndexed(dAppWithResources?.fungibleResources.orEmpty()) { _, fungibleToken ->
-                GrayBackgroundWrapper {
-                    FungibleCard(
-                        fungible = fungibleToken,
-                        showChevron = false,
-                        onClick = {
-                            onFungibleTokenClick(fungibleToken)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                }
-            }
-            if (dAppWithResources?.nonFungibleResources?.isNotEmpty() == true) {
-                item {
-                    GrayBackgroundWrapper {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(dimensions.paddingDefault),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2,
-                            textAlign = TextAlign.Start
-                        )
-                    }
-                }
-            }
-            items(dAppWithResources?.nonFungibleResources.orEmpty()) { nonFungibleResource ->
-                GrayBackgroundWrapper {
-                    NonFungibleCard(
-                        nonFungible = nonFungibleResource,
-                        showChevron = false,
-                        onClick = {
-                            onNonFungibleClick(nonFungibleResource)
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                }
-            }
-            item {
-                GrayBackgroundWrapper {
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.authorizedDapps_dAppDetails_personasHeading),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray2,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
-                }
-            }
-            items(personaList) { persona ->
-                GrayBackgroundWrapper {
-                    PersonaCard(
-                        modifier = Modifier.throttleClickable {
-                            onPersonaClick(persona)
-                        },
-                        persona = persona,
-                        showChevron = false
-                    )
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                }
-            }
-            item {
-                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    onClick = onDeleteDapp,
-                    shape = RadixTheme.shapes.roundedRectSmall,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = RadixTheme.colors.red1
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
-                        style = RadixTheme.typography.body1Header,
-                        maxLines = 1,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun DappDefinitionAddressRow(
     dappDefinitionAddress: AccountAddress,
     modifier: Modifier = Modifier
@@ -472,8 +294,9 @@ fun DappDefinitionAddressRow(
 
         ActionableAddressView(
             address = Address.Account(dappDefinitionAddress),
-            textStyle = RadixTheme.typography.body1Regular,
-            textColor = RadixTheme.colors.gray1
+            textStyle = RadixTheme.typography.body1HighImportance,
+            textColor = RadixTheme.colors.gray1,
+            iconColor = RadixTheme.colors.gray2
         )
     }
 }
@@ -500,7 +323,8 @@ fun DAppWebsiteAddressRow(
                 .fillMaxWidth()
                 .radixPlaceholder(visible = website == null),
             clickable = website != null,
-            url = website.orEmpty()
+            url = website.orEmpty(),
+            linkIconColor = RadixTheme.colors.gray3
         )
     }
 }
@@ -522,7 +346,8 @@ private fun PersonaDetailsSheet(
             RadixCenteredTopAppBar(
                 title = persona.persona.displayName.value,
                 onBackClick = onCloseClick,
-                contentColor = RadixTheme.colors.gray1
+                contentColor = RadixTheme.colors.gray1,
+                backIconType = BackIconType.Close
             )
             HorizontalDivider(color = RadixTheme.colors.gray5)
             PersonaDetailList(
@@ -686,50 +511,70 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            item {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingDefault),
-                    onClick = {
-                        onDisconnectPersona(persona.persona)
-                    },
-                    shape = RadixTheme.shapes.roundedRectSmall,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = Color.White,
-                        containerColor = RadixTheme.colors.red1
-                    )
-                ) {
-                    Text(
-                        text = stringResource(R.string.authorizedDapps_personaDetails_removeAuthorization),
-                        style = RadixTheme.typography.body1Header,
-                        maxLines = 1,
-                    )
+        }
+        item {
+            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            WarningButton(
+                modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                text = stringResource(id = R.string.authorizedDapps_personaDetails_removeAuthorization),
+                onClick = {
+                    onDisconnectPersona(persona.persona)
                 }
-            }
+            )
         }
     }
 }
 
 @UsesSampleValues
+class PreviewValuesProvider : PreviewParameterProvider<Pair<DAppWithResources, String?>> {
+
+    val sampleDapp = DApp.sampleMainnet()
+
+    override val values: Sequence<Pair<DAppWithResources, String?>>
+        get() = sequenceOf(
+            DAppWithResources(
+                dApp = sampleDapp,
+                fungibleResources = listOf(Resource.FungibleResource.sampleMainnet(), Resource.FungibleResource.sampleMainnet()),
+                nonFungibleResources = listOf(
+                    Resource.NonFungibleResource.sampleMainnet(),
+                    Resource.NonFungibleResource.sampleMainnet()
+                )
+            ) to "https://example.com",
+            DAppWithResources(
+                dApp = sampleDapp,
+                nonFungibleResources = listOf(
+                    Resource.NonFungibleResource.sampleMainnet(),
+                    Resource.NonFungibleResource.sampleMainnet()
+                )
+            ) to null,
+            DAppWithResources(
+                dApp = sampleDapp,
+            ) to "https://example.com",
+            DAppWithResources(
+                dApp = sampleDapp.copy(metadata = sampleDapp.metadata.filter { it.key != ExplicitMetadataKey.CLAIMED_WEBSITES.key })
+            ) to null,
+        )
+}
+
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun DappDetailContentPreview() {
+private fun DappDetailContentPreview(
+    @PreviewParameter(PreviewValuesProvider::class) previewValues: Pair<DAppWithResources, String?>
+) {
     RadixWalletPreviewTheme {
         DappDetailContent(
             onBackClick = {},
             state = DappDetailUiState(
                 loading = false,
-                personas = persistentListOf(Persona.sampleMainnet()),
-                dAppWithResources = DAppWithResources(
-                    dApp = DApp.sampleMainnet()
-                ),
+                authorizedPersonas = persistentListOf(Persona.sampleMainnet(), Persona.sampleMainnet.ripley),
+                dAppWithResources = previewValues.first,
                 sharedPersonaAccounts = persistentListOf(
                     AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", AppearanceId(0u))
                 ),
-                selectedSheetState = null
+                selectedSheetState = null,
+                validatedWebsite = previewValues.second
             ),
             onPersonaClick = {},
             onFungibleTokenClick = {},

@@ -4,9 +4,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
-import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewayAddFailure
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysViewModel
-import com.babylon.wallet.android.presentation.settings.preferences.gateways.SettingsEditGatewayEvent
 import com.babylon.wallet.android.utils.isValidUrl
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
@@ -20,6 +18,7 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -44,6 +43,7 @@ class GatewaysViewModelTest {
     private val addGatewayUseCase = mockk<AddGatewayUseCase>()
     private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
     private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
 
@@ -54,7 +54,8 @@ class GatewaysViewModelTest {
             changeGatewayIfNetworkExistUseCase = changeGatewayIfNetworkExistUseCase,
             addGatewayUseCase = addGatewayUseCase,
             deleteGatewayUseCase = deleteGatewayUseCase,
-            getNetworkInfoUseCase = getNetworkInfoUseCase
+            getNetworkInfoUseCase = getNetworkInfoUseCase,
+            defaultDispatcher = testDispatcher
         )
         every { getProfileUseCase.flow } returns flowOf(profile)
         coEvery { changeGatewayIfNetworkExistUseCase(any()) } returns true
@@ -74,22 +75,21 @@ class GatewaysViewModelTest {
     @Test
     fun `url change updates it's value and valid state`() = runTest {
         val sampleUrl = "https://test.com"
+        vm.setAddGatewaySheetVisible(true)
         vm.onNewUrlChanged(sampleUrl)
-        assert(vm.state.value.newUrl == sampleUrl)
-        assert(vm.state.value.newUrlValid)
+        assert(vm.state.value.addGatewayInput?.url == sampleUrl)
+        assert(vm.state.value.addGatewayInput?.isUrlValid == true)
     }
 
     @Test
     fun `adding network triggers network save`() = runTest {
         val sampleUrl = Gateway.forNetwork(NetworkId.MAINNET).url.toString()
+        vm.setAddGatewaySheetVisible(true)
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
         coVerify(exactly = 1) { addGatewayUseCase(any()) }
-        vm.oneOffEvent.test {
-            val item = expectMostRecentItem()
-            assert(item is SettingsEditGatewayEvent.GatewayAdded)
-        }
+        assert(vm.state.value.addGatewayInput == null)
     }
 
     @Test
@@ -102,7 +102,7 @@ class GatewaysViewModelTest {
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
-            assert(item is SettingsEditGatewayEvent.CreateProfileOnNetwork)
+            assert(item is GatewaysViewModel.Event.CreateProfileOnNetwork)
         }
     }
 
@@ -121,22 +121,26 @@ class GatewaysViewModelTest {
     fun `trying to switch to current network is no op`() = runTest {
         val gateway = Gateway.default
         val sampleUrl = gateway.url.toString()
+        vm.setAddGatewaySheetVisible(true)
         vm.onNewUrlChanged(sampleUrl)
         vm.onGatewayClick(gateway)
         advanceUntilIdle()
         coVerify(exactly = 0) { changeGatewayIfNetworkExistUseCase(gateway) }
-        assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.AlreadyExist)
+        assert(vm.state.value.addGatewayInput?.failure == GatewaysViewModel.State.AddGatewayInput.Failure.AlreadyExist)
     }
 
     @Test
     fun `network info error triggers ui error`() = runTest {
+        every { getProfileUseCase.flow } returns flowOf()
         coEvery { getNetworkInfoUseCase(any()) } returns Result.failure(
             Throwable()
         )
         val sampleUrl = Gateway.forNetwork(NetworkId.NEBUNET).url.toString()
+        vm.setAddGatewaySheetVisible(true)
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
-        assert(vm.state.value.gatewayAddFailure == GatewayAddFailure.ErrorWhileAdding)
+        println("Vm state: ${vm.state.value}")
+        assert(vm.state.value.addGatewayInput?.failure == GatewaysViewModel.State.AddGatewayInput.Failure.ErrorWhileAdding)
     }
 }

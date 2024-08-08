@@ -5,13 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
@@ -45,7 +46,6 @@ import androidx.compose.ui.text.input.PlatformImeOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
@@ -54,6 +54,7 @@ import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -77,7 +78,7 @@ fun ChooseAccountSheet(
     val focusManager = LocalFocusManager.current
 
     Scaffold(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         topBar = {
             BottomDialogHeader(
                 modifier = Modifier
@@ -107,14 +108,14 @@ fun ChooseAccountSheet(
         },
         bottomBar = {
             if (state.mode == ChooseAccounts.Mode.Chooser) {
-                RadixPrimaryButton(
-                    text = stringResource(id = R.string.common_choose),
+                RadixBottomBar(
                     onClick = onChooseAccountSubmitted,
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth(),
+                    text = stringResource(id = R.string.common_choose),
                     enabled = state.isChooseButtonEnabled,
-                    isLoading = state.isLoadingAssetsForAccount
+                    isLoading = state.isLoadingAssetsForAccount,
+                    // Since the sheet is configured inside BottomSheetDialogWrapper, bottom padding is already added
+                    // This should be fixed
+                    insets = WindowInsets(0.dp)
                 )
             }
         }
@@ -123,8 +124,8 @@ fun ChooseAccountSheet(
             ChooseAccounts.Mode.Chooser -> {
                 ChooseAccountContent(
                     modifier = Modifier
-                        .background(color = RadixTheme.colors.white)
-                        .padding(padding),
+                        .background(color = RadixTheme.colors.white),
+                    contentPadding = padding,
                     onAddressChanged = onAddressChanged,
                     state = state,
                     cameraPermissionState = cameraPermissionState,
@@ -151,6 +152,7 @@ fun ChooseAccountSheet(
 @Composable
 private fun ChooseAccountContent(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues,
     focusManager: FocusManager,
     cameraPermissionState: PermissionState,
     state: ChooseAccounts,
@@ -159,10 +161,9 @@ private fun ChooseAccountContent(
     onOwnedAccountSelected: (Account) -> Unit
 ) {
     LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .navigationBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        contentPadding = contentPadding
     ) {
         item {
             Text(
@@ -275,14 +276,16 @@ private fun ChooseAccountContent(
             )
         }
 
-        item {
-            Text(
-                modifier = Modifier
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
-            )
+        if (state.ownedAccounts.isNotEmpty()) {
+            item {
+                Text(
+                    modifier = Modifier
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.assetTransfer_chooseReceivingAccount_chooseOwnAccount),
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            }
         }
 
         items(state.ownedAccounts.size) { index ->
