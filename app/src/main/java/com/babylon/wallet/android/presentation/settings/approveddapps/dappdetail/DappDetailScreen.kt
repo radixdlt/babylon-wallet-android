@@ -685,17 +685,17 @@ private fun PersonaDetailList(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            item {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-                Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                WarningButton(
-                    modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
-                    text = stringResource(id = R.string.authorizedDapps_personaDetails_removeAuthorization),
-                    onClick = {
-                        onDisconnectPersona(persona.persona)
-                    }
-                )
-            }
+        }
+        item {
+            HorizontalDivider(color = RadixTheme.colors.gray5)
+            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+            WarningButton(
+                modifier = Modifier.padding(horizontal = dimensions.paddingDefault),
+                text = stringResource(id = R.string.authorizedDapps_personaDetails_removeAuthorization),
+                onClick = {
+                    onDisconnectPersona(persona.persona)
+                }
+            )
         }
     }
 }
