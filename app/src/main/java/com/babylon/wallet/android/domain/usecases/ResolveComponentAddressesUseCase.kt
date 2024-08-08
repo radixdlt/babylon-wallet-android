@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import javax.inject.Inject
@@ -29,7 +30,7 @@ class ResolveComponentAddressesUseCase @Inject constructor(
                 isRefreshing = true
             ).mapCatching { dApps ->
                 val dApp = dApps.first()
-                componentAddress to dApp
+                componentAddress to dApp.takeIf { it.claimedEntities.contains(componentAddress.string) }
             }
         } else {
             Result.success(componentAddress to null)

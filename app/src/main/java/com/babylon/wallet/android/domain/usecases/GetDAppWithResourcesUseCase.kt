@@ -5,7 +5,9 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.dAppDefinitions
 import javax.inject.Inject
 
 class GetDAppWithResourcesUseCase @Inject constructor(
@@ -14,7 +16,8 @@ class GetDAppWithResourcesUseCase @Inject constructor(
 
     suspend operator fun invoke(
         definitionAddress: AccountAddress,
-        needMostRecentData: Boolean
+        needMostRecentData: Boolean,
+        verifyResources: Boolean = true
     ): Result<DAppWithResources> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(definitionAddress),
         isRefreshing = needMostRecentData
@@ -29,11 +32,16 @@ class GetDAppWithResourcesUseCase @Inject constructor(
             withDetails = false,
             withAllMetadata = false
         ).getOrNull().orEmpty()
+        val dAppResources = if (verifyResources) {
+            resources.filter { it.metadata.dAppDefinitions().contains(definitionAddress.string) }
+        } else {
+            resources
+        }
 
         DAppWithResources(
             dApp = dApp,
-            fungibleResources = resources.filterIsInstance<Resource.FungibleResource>(),
-            nonFungibleResources = resources.filterIsInstance<Resource.NonFungibleResource>()
+            fungibleResources = dAppResources.filterIsInstance<Resource.FungibleResource>(),
+            nonFungibleResources = dAppResources.filterIsInstance<Resource.NonFungibleResource>()
         )
     }
 }
