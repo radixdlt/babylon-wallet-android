@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -273,7 +274,8 @@ class TransferViewModel @Inject constructor(
         val sheet: Sheet = Sheet.None,
         val error: UiMessage? = null,
         val maxXrdError: MaxAmountMessage? = null,
-        val transferRequestId: String? = null
+        val transferRequestId: String? = null,
+        val accountDepositResourceRulesSet: ImmutableSet<AccountDepositResourceRules> = persistentSetOf()
     ) : UiState {
 
         val isSheetVisible: Boolean
@@ -282,9 +284,6 @@ class TransferViewModel @Inject constructor(
         val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all {
             it.isValidForSubmission
         }
-
-        val submittedMessage: String?
-            get() = (messageState as? Message.Added)?.message
 
         fun addSkeleton(): State = copy(
             targetAccounts = targetAccounts.toMutableList().apply {
@@ -300,6 +299,26 @@ class TransferViewModel @Inject constructor(
                 mutation = { account }
             ).toPersistentList()
         ).withCheckedBalances()
+
+        fun withUpdatedDepositRules(): State {
+            val targetAccounts = targetAccounts.map { targetAccount ->
+                val accountDepositResourceRule = accountDepositResourceRulesSet.find { it.accountAddress == targetAccount.address }
+                targetAccount.updateAssets { assets ->
+                    assets.map { asset ->
+                        when (asset) {
+                            is SpendingAsset.Fungible -> asset.copy(
+                                canDeposit = accountDepositResourceRule?.canDeposit(asset.resourceAddress) ?: true
+                            )
+
+                            is SpendingAsset.NFT -> asset.copy(
+                                canDeposit = accountDepositResourceRule?.canDeposit(asset.resourceAddress) ?: true
+                            )
+                        }
+                    }.toPersistentSet()
+                }
+            }
+            return copy(targetAccounts = targetAccounts.toPersistentList())
+        }
 
         fun remove(at: TargetAccount): State {
             val targetAccounts = targetAccounts.toMutableList()
@@ -611,11 +630,13 @@ sealed class SpendingAsset {
     abstract val resourceAddress: ResourceAddress
     abstract val resourceAddressOrGlobalId: String
     abstract val isValidForSubmission: Boolean
+    abstract val canDeposit: Boolean
 
     data class Fungible(
         val resource: Resource.FungibleResource,
         val amountString: String = "",
-        val exceedingBalance: Boolean = false
+        val exceedingBalance: Boolean = false,
+        override val canDeposit: Boolean = true
     ) : SpendingAsset() {
         override val resourceAddress: ResourceAddress
             get() = resource.address
@@ -633,7 +654,8 @@ sealed class SpendingAsset {
     data class NFT(
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
-        val exceedingBalance: Boolean = false
+        val exceedingBalance: Boolean = false,
+        override val canDeposit: Boolean = true
     ) : SpendingAsset() {
         override val resourceAddress: ResourceAddress
             get() = resource.address

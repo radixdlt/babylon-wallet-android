@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
+import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
@@ -13,6 +14,10 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.extensions.string
+import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,7 +32,19 @@ class AssetsChooserDelegate @Inject constructor(
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
+    private val getAccountDepositResourceRulesUseCase: GetAccountDepositResourceRulesUseCase
 ) : ViewModelDelegate<TransferViewModel.State>() {
+
+    override operator fun invoke(scope: CoroutineScope, state: MutableStateFlow<TransferViewModel.State>) {
+        super.invoke(scope, state)
+        viewModelScope.launch {
+            getAccountDepositResourceRulesUseCase.accountDepositResourceRulesList.collect { result ->
+                _state.update {
+                    it.copy(accountDepositResourceRulesSet = result.toPersistentSet()).withUpdatedDepositRules()
+                }
+            }
+        }
+    }
 
     /**
      * Starts the assets chooser flow
@@ -108,6 +125,18 @@ class AssetsChooserDelegate @Inject constructor(
             state
                 .replace(chooseAssetState.targetAccount)
                 .copy(sheet = Sheet.None)
+                .withUpdatedDepositRules()
+        }
+        viewModelScope.launch {
+            val accountAddressesWithResources =
+                _state.value.targetAccounts.filterIsInstance<TargetAccount.Other>().mapNotNull { targetAccount ->
+                    val address = targetAccount.address?.string ?: return@mapNotNull null
+                    val resourceAddresses = targetAccount.spendingAssets.map {
+                        it.resourceAddressOrGlobalId
+                    }.toSet()
+                    address to resourceAddresses
+                }.toMap()
+            getAccountDepositResourceRulesUseCase(accountAddressesWithResources)
         }
     }
 
