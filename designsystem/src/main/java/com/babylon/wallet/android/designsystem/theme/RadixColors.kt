@@ -40,7 +40,8 @@ val DarkMode1 = Color(0xFF28292A)
 val DarkMode2 = Color(0xFF404243)
 val DarkMode3 = Color(0xFF373839)
 
-val NavigationBarDefaultScrim = Color(android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF))
+val DefaultLightScrim = android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF)
+val DefaultDarkScrim = android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
 
 val RadixBackground = Color(226, 226, 226)
 val RadixCardBackground = Color(190, 189, 189)
