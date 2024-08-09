@@ -204,7 +204,7 @@ fun SeedPhraseCard(
                             if (data.allAccounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsLabel_one
                             } else if (data.allAccounts.isEmpty()) {
-                                R.string.seedPhrases_seedPhrase_noConnectedAccountsReveal
+                                R.string.seedPhrases_seedPhrase_noConnectedAccounts
                             } else {
                                 R.string.displayMnemonics_connectedAccountsLabel_many
                             }
