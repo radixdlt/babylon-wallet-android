@@ -124,6 +124,7 @@ private fun GetSignaturesBottomSheetContent(
                 is State.ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
+                        textAlign = TextAlign.Center,
                         text = when (signPurpose) {
                             SignPurpose.SignTransaction -> stringResource(id = R.string.factorSourceActions_device_messageSignature)
                             SignPurpose.SignAuth -> stringResource(id = R.string.factorSourceActions_device_message)
