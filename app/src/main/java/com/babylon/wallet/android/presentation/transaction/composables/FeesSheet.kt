@@ -203,7 +203,7 @@ fun FeesSheet(
                                     horizontal = RadixTheme.dimensions.paddingLarge,
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
-                            text = stringResource(id = R.string.transactionReview_insufficientBalance),
+                            text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
                             contentColor = RadixTheme.colors.orange1,
                             iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                         )
