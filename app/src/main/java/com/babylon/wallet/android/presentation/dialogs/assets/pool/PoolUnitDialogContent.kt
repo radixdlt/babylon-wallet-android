@@ -202,6 +202,26 @@ fun PoolUnitDialogContent(
             )
         }
 
+        poolUnit?.resource?.divisibility?.let {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            MetadataView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                key = stringResource(id = R.string.assetDetails_divisibility)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = RadixTheme.dimensions.paddingDefault)
+                        .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2),
+                    text = it.value.toString(),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
+                )
+            }
+        }
+
         BehavioursSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             behaviours = poolUnit?.resource?.behaviours
