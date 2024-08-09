@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -112,10 +111,7 @@ fun ChooseAccountSheet(
                     onClick = onChooseAccountSubmitted,
                     text = stringResource(id = R.string.common_choose),
                     enabled = state.isChooseButtonEnabled,
-                    isLoading = state.isLoadingAssetsForAccount,
-                    // Since the sheet is configured inside BottomSheetDialogWrapper, bottom padding is already added
-                    // This should be fixed
-                    insets = WindowInsets(0.dp)
+                    isLoading = state.isLoadingAssetsForAccount
                 )
             }
         }
