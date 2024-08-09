@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transfer.assets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -72,10 +70,7 @@ fun ChooseAssetsSheet(
                     1 -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssetsOne)
                     else -> stringResource(id = R.string.assetTransfer_addAssets_buttonAssets, count)
                 },
-                enabled = state.isSubmitEnabled,
-                // Since the sheet is configured inside BottomSheetDialogWrapper, bottom padding is already added
-                // This should be fixed
-                insets = WindowInsets(0.dp)
+                enabled = state.isSubmitEnabled
             )
         },
         snackbarHost = {
