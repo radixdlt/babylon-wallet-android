@@ -19,6 +19,7 @@ sealed interface SettingsItem {
             val isBackupNeeded: Boolean = false, // security problem 3
             val isRecoveryNeeded: Boolean = false // security problem 9
         ) : TopLevelSettings
+
         data object ApprovedDapps : TopLevelSettings
 
         data object LinkedConnectors : TopLevelSettings
@@ -198,12 +199,15 @@ sealed interface SettingsItem {
 
         data object InspectCloudBackups : DebugSettingsItem
 
+        data object EnableAppLockInBackground : DebugSettingsItem
+
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
                 InspectCloudBackups -> R.string.settings_debugSettings_inspectCloudBackups
+                EnableAppLockInBackground -> R.string.settings_debugSettings_appLock
             }
         }
 
@@ -213,6 +217,7 @@ sealed interface SettingsItem {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 InspectCloudBackups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
+                EnableAppLockInBackground -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
             }
         }
 
@@ -220,7 +225,8 @@ sealed interface SettingsItem {
             fun values() = setOf(
                 InspectProfile,
                 LinkConnectionStatusIndicator,
-                InspectCloudBackups
+                InspectCloudBackups,
+                EnableAppLockInBackground
             )
         }
     }

@@ -45,6 +45,7 @@ interface PreferencesManager {
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
     val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
     val isEulaAccepted: Flow<Boolean>
+    val isAppLockEnabled: Flow<Boolean>
 
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
@@ -90,6 +91,8 @@ interface PreferencesManager {
     suspend fun clear(): Preferences
 
     suspend fun markEulaAccepted()
+
+    suspend fun enableAppLock(enabled: Boolean)
 }
 
 @Suppress("TooManyFunctions") // TODO maybe break it into two or more classes
@@ -129,6 +132,11 @@ class PreferencesManagerImpl @Inject constructor(
         .map { preferences ->
             preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE] ?: false
         }
+    override val isAppLockEnabled: Flow<Boolean>
+        get() = dataStore.data
+            .map { preferences ->
+                preferences[KEY_APP_LOCK_ENABLED] ?: BuildConfig.APP_LOCK_ENABLED
+            }
 
     override val isEulaAccepted = dataStore.data.map { preferences ->
         preferences[KEY_EULA_ACCEPTED] ?: false
@@ -331,6 +339,12 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun enableAppLock(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_APP_LOCK_ENABLED] = enabled
+        }
+    }
+
     companion object {
         val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
         val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
@@ -349,5 +363,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE = booleanPreferencesKey("show_relink_connectors_after_update")
         val KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE = booleanPreferencesKey("show_relink_connectors_after_profile_restore")
         val KEY_EULA_ACCEPTED = booleanPreferencesKey("eula_accepted")
+        val KEY_APP_LOCK_ENABLED = booleanPreferencesKey("enable_app_lock")
     }
 }
