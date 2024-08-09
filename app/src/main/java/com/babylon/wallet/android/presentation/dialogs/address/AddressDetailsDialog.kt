@@ -346,6 +346,7 @@ private fun VerifyAddressOnLedger(
     RadixSecondaryButton(
         modifier = modifier
             .fillMaxWidth()
+            .padding(top = RadixTheme.dimensions.paddingDefault)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         text = stringResource(id = R.string.addressDetails_verifyOnLedger),
         onClick = onClick,

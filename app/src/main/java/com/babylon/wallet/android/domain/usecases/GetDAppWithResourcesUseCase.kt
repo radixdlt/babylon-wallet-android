@@ -5,7 +5,9 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.dAppDefinitions
 import javax.inject.Inject
 
 class GetDAppWithResourcesUseCase @Inject constructor(
@@ -29,11 +31,14 @@ class GetDAppWithResourcesUseCase @Inject constructor(
             withDetails = false,
             withAllMetadata = false
         ).getOrNull().orEmpty()
+        val verifiedResources = resources.filter {
+            it.metadata.dAppDefinitions().contains(definitionAddress.string)
+        }
 
         DAppWithResources(
             dApp = dApp,
-            fungibleResources = resources.filterIsInstance<Resource.FungibleResource>(),
-            nonFungibleResources = resources.filterIsInstance<Resource.NonFungibleResource>()
+            fungibleResources = verifiedResources.filterIsInstance<Resource.FungibleResource>(),
+            nonFungibleResources = verifiedResources.filterIsInstance<Resource.NonFungibleResource>()
         )
     }
 }

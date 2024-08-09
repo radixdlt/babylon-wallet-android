@@ -80,6 +80,7 @@ fun FiltersDialog(
             RadixBottomBar(
                 onClick = onDismiss,
                 text = stringResource(id = R.string.transactionHistory_filters_showResultsButton),
+                insets = WindowInsets(0.dp)
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
