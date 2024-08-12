@@ -5,6 +5,7 @@ import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
@@ -24,6 +25,7 @@ import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
@@ -54,6 +56,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val getAccountDepositResourceRulesUseCase = mockk<GetAccountDepositResourceRulesUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
@@ -63,6 +66,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         details = null,
         assets = null
     )
+
     private val getProfileUseCase = GetProfileUseCase(FakeProfileRepository(profile))
 
     override fun initVM(): TransferViewModel {
@@ -74,7 +78,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             ),
             assetsChooserDelegate = AssetsChooserDelegate(
                 getWalletAssetsUseCase = getWalletAssetsUseCase,
-                getFiatValueUseCase =getFiatValueUseCase,
+                getFiatValueUseCase = getFiatValueUseCase,
                 getNextNFTsPageUseCase = getNextNFTsPageUseCase,
                 updateLSUsInfo = updateLSUsInfoUseCase,
                 getNetworkInfoUseCase = getNetworkInfoUseCase
@@ -83,13 +87,15 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
                 incomingRequestRepository = incomingRequestRepository,
                 mnemonicRepository = mnemonicRepository
             ),
-            savedStateHandle = savedStateHandle
+            savedStateHandle = savedStateHandle,
+            getAccountDepositResourceRulesUseCase = getAccountDepositResourceRulesUseCase
         )
     }
 
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        coEvery { getAccountDepositResourceRulesUseCase.invoke(any()) } returns emptySet()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address.string
         every { getWalletAssetsUseCase(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
     }
@@ -158,10 +164,12 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             assertOpenSheetForSkeleton(viewModel, initialSkeletonAccount)
             assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
 
-            viewModel.deleteAccountClick(from = TargetAccount.Owned(
-                account = otherAccounts[0],
-                id = initialSkeletonAccount.id
-            ))
+            viewModel.deleteAccountClick(
+                from = TargetAccount.Owned(
+                    account = otherAccounts[0],
+                    id = initialSkeletonAccount.id
+                )
+            )
             val resultState = awaitItem()
             assertTrue(resultState.targetAccounts.size == 1)
             assertTrue(resultState.targetAccounts[0] is TargetAccount.Skeleton)
@@ -230,6 +238,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             ),
             awaitItem()
         )
+        awaitItem()
     }
 
     private suspend fun ReceiveTurbine<TransferViewModel.State>.assertOtherAccountSubmitted(viewModel: TransferViewModel, address: String) {
@@ -240,7 +249,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         // Check that the address is passed as valid
         assertEquals(
             sheetState.selectedAccount,
-             TargetAccount.Other(
+            TargetAccount.Other(
                 typedAddress = address,
                 validity = TargetAccount.Other.AddressValidity.VALID,
                 id = skeletonAccount.id
@@ -265,6 +274,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             ),
             awaitItem()
         )
+        awaitItem()
     }
 }
 

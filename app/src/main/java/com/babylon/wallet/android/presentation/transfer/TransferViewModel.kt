@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transfer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
+import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -62,6 +63,7 @@ class TransferViewModel @Inject constructor(
     private val accountsChooserDelegate: AccountsChooserDelegate,
     private val assetsChooserDelegate: AssetsChooserDelegate,
     private val prepareManifestDelegate: PrepareManifestDelegate,
+    private val getAccountDepositResourceRulesUseCase: GetAccountDepositResourceRulesUseCase,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -212,7 +214,27 @@ class TransferViewModel @Inject constructor(
 
     fun onOwnedAccountSelected(account: Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
 
-    fun onChooseAccountSubmitted() = accountsChooserDelegate.chooseAccountSubmitted()
+    fun onChooseAccountSubmitted() {
+        viewModelScope.launch {
+            accountsChooserDelegate.chooseAccountSubmitted()
+            loadAccountDepositResourceRules()
+        }
+    }
+
+    private suspend fun TransferViewModel.loadAccountDepositResourceRules() {
+        val accountAddressesWithResources =
+            _state.value.targetAccounts.filterIsInstance<TargetAccount.Other>().mapNotNull { targetAccount ->
+                val address = targetAccount.address?.string ?: return@mapNotNull null
+                val resourceAddresses = targetAccount.spendingAssets.map {
+                    it.resourceAddressOrGlobalId
+                }.toSet()
+                address to resourceAddresses
+            }.toMap()
+        val rules = getAccountDepositResourceRulesUseCase(accountAddressesWithResources)
+        _state.update { state ->
+            state.copy(accountDepositResourceRulesSet = rules.toPersistentSet()).withUpdatedDepositRules()
+        }
+    }
 
     fun onQRAddressDecoded(address: String) = accountsChooserDelegate.onQRAddressDecoded(address = address)
 
@@ -257,7 +279,12 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    fun onChooseAssetsSubmitted() = assetsChooserDelegate.onChooseAssetsSubmitted()
+    fun onChooseAssetsSubmitted() {
+        assetsChooserDelegate.onChooseAssetsSubmitted()
+        viewModelScope.launch {
+            loadAccountDepositResourceRules()
+        }
+    }
 
     fun onNextNFTsPageRequest(resource: Resource.NonFungibleResource) = assetsChooserDelegate.onNextNFTsPageRequest(resource)
 
@@ -275,15 +302,20 @@ class TransferViewModel @Inject constructor(
         val error: UiMessage? = null,
         val maxXrdError: MaxAmountMessage? = null,
         val transferRequestId: String? = null,
-        val accountDepositResourceRulesSet: ImmutableSet<AccountDepositResourceRules> = persistentSetOf()
+        val accountDepositResourceRulesSet: ImmutableSet<AccountDepositResourceRules>? = null
     ) : UiState {
+
+        private val canDepositToAllTargetAccounts: Boolean
+            get() = accountDepositResourceRulesSet != null && targetAccounts.all { targetAccount ->
+                accountDepositResourceRulesSet.find { it.accountAddress.string == targetAccount.address?.string }?.canDepositAll ?: true
+            }
 
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
 
         val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all {
             it.isValidForSubmission
-        }
+        } && canDepositToAllTargetAccounts
 
         fun addSkeleton(): State = copy(
             targetAccounts = targetAccounts.toMutableList().apply {
@@ -302,7 +334,7 @@ class TransferViewModel @Inject constructor(
 
         fun withUpdatedDepositRules(): State {
             val targetAccounts = targetAccounts.map { targetAccount ->
-                val accountDepositResourceRule = accountDepositResourceRulesSet.find { it.accountAddress == targetAccount.address }
+                val accountDepositResourceRule = accountDepositResourceRulesSet?.find { it.accountAddress == targetAccount.address }
                 targetAccount.updateAssets { assets ->
                     assets.map { asset ->
                         when (asset) {
