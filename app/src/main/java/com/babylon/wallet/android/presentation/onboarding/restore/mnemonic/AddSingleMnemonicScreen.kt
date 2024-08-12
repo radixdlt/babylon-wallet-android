@@ -30,10 +30,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +55,7 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboardOnFullScroll
 import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
-import com.babylon.wallet.android.presentation.ui.modifier.dynamicImePadding
+import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.Bip39WordCount
@@ -91,11 +89,9 @@ fun AddSingleMnemonicScreen(
         onSeedPhraseLengthChanged = viewModel::onSeedPhraseLengthChanged
     )
 
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                AddSingleMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 AddSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
                 AddSingleMnemonicViewModel.Event.MainSeedPhraseCompleted -> onStartRecovery()
             }
@@ -150,7 +146,6 @@ private fun AddSingleMnemonicsContent(
                     onCandidateClick = { candidate ->
                         focusedWordIndex?.let {
                             onWordSelected(it, candidate)
-                            focusedWordIndex = null
                         }
                     }
                 )
@@ -180,9 +175,9 @@ private fun AddSingleMnemonicsContent(
         val isOlympia = state.mnemonicType == MnemonicType.Olympia
         Box(
             modifier = Modifier
-                .dynamicImePadding(
+                .keyboardVisiblePadding(
                     padding = padding,
-                    keyboardVisibleBottomPadding = if (isSuggestionsVisible(state)) {
+                    bottom = if (isSuggestionsVisible(state)) {
                         RadixTheme.dimensions.seedPhraseWordsSuggestionsHeight
                     } else {
                         RadixTheme.dimensions.paddingDefault
@@ -307,13 +302,15 @@ private fun SeedPhraseView(
         SeedPhraseInputForm(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .padding(bottom = RadixTheme.dimensions.paddingXLarge),
             seedPhraseWords = seedPhraseState.seedPhraseWords,
             bip39Passphrase = seedPhraseState.bip39Passphrase,
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged,
-            showAdvancedMode = isOlympia
+            showAdvancedMode = isOlympia,
+            initiallyFocusedIndex = 0
         )
 
         val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseState) {
