@@ -5,7 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.AppLockContent
 
 @Composable
-fun AppLockDialog(
+fun AppLockScreen(
     viewModel: AppLockViewModel = hiltViewModel(),
     onUnlock: () -> Unit
 ) {

@@ -25,7 +25,6 @@ fun NavController.dAppDetailsDialog(
 internal class DAppDetailsDialogArgs(
     val dAppDefinitionAddress: AccountAddress
 ) {
-
     constructor(savedStateHandle: SavedStateHandle) : this(
         dAppDefinitionAddress = AccountAddress.init(requireNotNull(savedStateHandle[ARG_DAPP_DEFINITION_ADDRESS]))
     )

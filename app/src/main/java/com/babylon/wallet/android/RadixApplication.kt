@@ -2,6 +2,9 @@ package com.babylon.wallet.android
 
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
@@ -33,6 +36,9 @@ class RadixApplication : Application(), Configuration.Provider {
     lateinit var scope: CoroutineScope
 
     @Inject
+    lateinit var appStateProvider: AppStateProvider
+
+    @Inject
     lateinit var homeCardsRepository: HomeCardsRepository
 
     override val workManagerConfiguration: Configuration =
@@ -48,6 +54,16 @@ class RadixApplication : Application(), Configuration.Provider {
 
         appsFlyerIntegrationManager.init()
         bootstrapHomeCards()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver(appStateProvider))
+    }
+
+    class AppLifecycleObserver(private val appStateProvider: AppStateProvider) :
+        DefaultLifecycleObserver {
+
+        override fun onPause(owner: LifecycleOwner) {
+            appStateProvider.lockApp()
+        }
+
     }
 
     private fun bootstrapHomeCards() {

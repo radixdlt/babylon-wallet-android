@@ -18,16 +18,14 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
-import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 
 @Composable
-fun AppLockScreen(onUnlock: () -> Unit, modifier: Modifier = Modifier) {
+fun AppLockContent(onUnlock: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    SetStatusBarColor(color = RadixTheme.colors.blue1, useDarkIcons = false)
     BackHandler {
         context.findFragmentActivity()?.moveTaskToBack(true)
     }

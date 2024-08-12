@@ -13,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -32,7 +31,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAu
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
-import com.babylon.wallet.android.presentation.dialogs.lock.appLockScreen
+import com.babylon.wallet.android.presentation.dialogs.lock.AppLockActivity
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
@@ -50,6 +49,7 @@ import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedBy
 import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
+import timber.log.Timber
 
 @Composable
 fun WalletApp(
@@ -62,13 +62,26 @@ fun WalletApp(
     val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        snapshotFlow { state.isAppLocked }.collect {
-            if (it) {
-                navController.appLockScreen()
-            }
-        }
-    }
+//    val owner = LocalLifecycleOwner.current
+//    DisposableEffect(state.isAppLocked) {
+//        Timber.d("Lock WIP: setting DisposableEffect: isLocked: ${state.isAppLocked}")
+//        val observer = LifecycleEventObserver { _, event ->
+//            if (event == Lifecycle.Event.ON_RESUME) {
+//                if (state.isAppLocked) {
+//                    Timber.d("Lock WIP: Starting lock screen, isLocked: ${state.isAppLocked}")
+//                    context.startActivity(Intent(context, AppLockActivity::class.java))
+//                }
+//            }
+//        }
+//        owner.lifecycle.addObserver(observer)
+//        onDispose {
+//            Timber.d("Lock WIP: disposing")
+//            owner.lifecycle.removeObserver(observer)
+//        }
+//    }
+//    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
+//        mainViewModel.checkAppLock()
+//    }
     Box(modifier = modifier.fillMaxSize()) {
         NavigationHost(
             modifier = Modifier.fillMaxSize(),
@@ -100,6 +113,11 @@ fun WalletApp(
                                 navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                             }
                         }
+                    }
+
+                    MainEvent.LockApp -> {
+                        Timber.d("Lock WIP: Starting lock screen")
+                        context.startActivity(Intent(context, AppLockActivity::class.java))
                     }
                 }
             }

@@ -7,9 +7,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,16 +46,14 @@ class AppStateProvider @Inject constructor(
         }
     }
 
-    suspend fun lockApp() {
-        preferencesManager.isAppLockEnabled.firstOrNull()?.let { enabled ->
-            if (enabled) {
-                _lockState.tryEmit(LockState.Locked)
-            }
-        }
+    fun lockApp() {
+        Timber.d("Lock WIP: Locking app")
+        _lockState.update { LockState.Locked }
     }
 
     fun unlockApp() {
-        _lockState.tryEmit(LockState.Unlocked)
+        Timber.d("Lock WIP: Unlocking app")
+        _lockState.update { LockState.Unlocked }
     }
 }
 

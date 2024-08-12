@@ -160,10 +160,18 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             appStateProvider.state.collect { lockState ->
                 val isLocked = lockState == LockState.Locked
-                Timber.d("Lock WIP: isLocked $isLocked")
+                Timber.d("Lock WIP: app isLocked: $isLocked")
                 _state.update { state ->
                     state.copy(isAppLocked = isLocked)
                 }
+            }
+        }
+    }
+
+    fun checkAppLock() {
+        if (_state.value.isAppLocked) {
+            viewModelScope.launch {
+                sendEvent(MainEvent.LockApp)
             }
         }
     }
@@ -208,7 +216,7 @@ class MainViewModel @Inject constructor(
                                 val requestId = incomingRequest.interactionId
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
-                                        "remote connector $remoteConnectorId with id $requestId"
+                                            "remote connector $remoteConnectorId with id $requestId"
                                 )
                                 verifyIncomingRequest(incomingRequest)
                             }
@@ -378,9 +386,9 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAppToBackground() {
-        lockJob = appScope.launch {
-            appStateProvider.lockApp()
-        }
+//        lockJob = appScope.launch {
+//            appStateProvider.lockApp()
+//        }
     }
 
     private fun startOlympiaErrorCountdown(): Job {
@@ -408,6 +416,7 @@ class MainViewModel @Inject constructor(
 
 sealed class MainEvent : OneOffEvent {
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
+    data object LockApp : MainEvent()
 }
 
 data class MainUiState(
