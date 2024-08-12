@@ -379,7 +379,6 @@ class MainViewModel @Inject constructor(
 
     fun onAppToBackground() {
         lockJob = appScope.launch {
-            delay(LOCK_DELAY_MS)
             appStateProvider.lockApp()
         }
     }

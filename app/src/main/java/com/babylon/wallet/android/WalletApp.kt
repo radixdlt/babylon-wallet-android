@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +32,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAu
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.dialogs.lock.appLockScreen
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
@@ -60,6 +62,13 @@ fun WalletApp(
     val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        snapshotFlow { state.isAppLocked }.collect {
+            if (it) {
+                navController.appLockScreen()
+            }
+        }
+    }
     Box(modifier = modifier.fillMaxSize()) {
         NavigationHost(
             modifier = Modifier.fillMaxSize(),
@@ -194,9 +203,12 @@ fun WalletApp(
                 dismissText = null
             )
         }
-        if (state.isAppLocked) {
-            AppLockScreen(mainViewModel::unlockApp)
-        } else {
+//        if (state.isAppLocked) {
+//            AppLockScreen(mainViewModel::unlockApp)
+//        } else {
+//            SyncStatusBarWithScreenChanges(navController)
+//        }
+        if (state.isAppLocked.not()) {
             SyncStatusBarWithScreenChanges(navController)
         }
     }

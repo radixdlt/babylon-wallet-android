@@ -27,7 +27,7 @@ import com.babylon.wallet.android.utils.findFragmentActivity
 @Composable
 fun AppLockScreen(onUnlock: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    SetStatusBarColor(useDarkIcons = false)
+    SetStatusBarColor(color = RadixTheme.colors.blue1, useDarkIcons = false)
     BackHandler {
         context.findFragmentActivity()?.moveTaskToBack(true)
     }
