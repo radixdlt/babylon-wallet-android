@@ -229,7 +229,7 @@ class TransferViewModel @Inject constructor(
                     it.resourceAddressOrGlobalId
                 }.toSet()
                 address to resourceAddresses
-            }.toMap()
+            }.filter { it.second.isNotEmpty() }.toMap()
         val rules = getAccountDepositResourceRulesUseCase(accountAddressesWithResources)
         _state.update { state ->
             state.copy(accountDepositResourceRulesSet = rules.toPersistentSet()).withUpdatedDepositRules()
