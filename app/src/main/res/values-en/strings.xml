@@ -421,8 +421,6 @@
   <string name="transactionReview_poolUnits">Pool Units</string>
   <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
-  <string name="transactionReview_insufficientBalance">Not enough XRD for transaction fee</string>
-  <string name="transactionReview_feePayerRequiredMessage">Fee payer account required</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
   <string name="transactionReview_depositsHeading">Depositing To</string>
   <string name="transactionReview_sendingToHeading">Sending to</string>
@@ -769,13 +767,7 @@ Code: %s</string>
   <string name="seedPhrases_hiddenAccountsOnly">Hidden Accounts only</string>
   <string name="seedPhrases_seedPhrase_headingNeedsImport">Seed Phrase Entry Required</string>
   <string name="seedPhrases_seedPhrase_headingReveal">Reveal Seed Phrase</string>
-  <string name="seedPhrases_seedPhrase_noConnectedAccountsReveal">Not connected to any Accounts</string>
-  <string name="seedPhrases_seedPhrase_oneConnectedAccountReveal">Connected to 1 Account</string>
-  <string name="seedPhrases_seedPhrase_multipleConnectedAccountsReveal">Connected to %d Accounts</string>
   <string name="seedPhrases_seedPhrase_headingScan">Seed Phrase</string>
-  <string name="seedPhrases_seedPhrase_noConnectedAccountsScan">Not yet connected to any Accounts</string>
-  <string name="seedPhrases_seedPhrase_oneConnectedAccountScan">Currently connected to 1 Account</string>
-  <string name="seedPhrases_seedPhrase_multipleConnectedAccountsScan">Currently connected to %d Accounts</string>
   <string name="seedPhrases_seedPhrase_noConnectedAccounts">Not connected to any Accounts</string>
   <string name="seedPhrases_seedPhrase_oneConnectedAccount">Connected to 1 Account</string>
   <string name="seedPhrases_seedPhrase_multipleConnectedAccounts">Connected to %d Accounts</string>
