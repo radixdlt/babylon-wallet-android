@@ -13,13 +13,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
-import com.babylon.wallet.android.designsystem.theme.NavigationBarDefaultScrim
+import com.babylon.wallet.android.designsystem.theme.DefaultDarkScrim
+import com.babylon.wallet.android.designsystem.theme.DefaultLightScrim
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.main.AppState
@@ -58,14 +58,6 @@ class MainActivity : FragmentActivity() {
             viewModel.state.value.initialAppState == AppState.Loading
         }
         setSplashExitAnimation(splashScreen)
-        // TODO use auto style when we implement dark mode
-        enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.auto(
-                lightScrim = NavigationBarDefaultScrim.toArgb(),
-                darkScrim = NavigationBarDefaultScrim.toArgb()
-            )
-        )
-
         super.onCreate(savedInstanceState)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
@@ -136,6 +128,13 @@ class MainActivity : FragmentActivity() {
             fadeIn.duration = splashExitAnimDurationMs
             fadeIn.doOnEnd {
                 splashScreenView.remove()
+                // TODO use auto style when we implement dark mode
+                enableEdgeToEdge(
+                    navigationBarStyle = SystemBarStyle.light(
+                        scrim = DefaultLightScrim,
+                        darkScrim = DefaultDarkScrim
+                    )
+                )
             }
             fadeIn.start()
         }
