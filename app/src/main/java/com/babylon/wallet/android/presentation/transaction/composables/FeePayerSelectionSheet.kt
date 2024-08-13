@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -80,7 +82,8 @@ fun FeePayerSelectionSheet(
                 onSelectButtonClick = {
                     onSelectButtonClick()
                     onDismiss()
-                }
+                },
+                onClose = onDismiss
             )
         },
         showDragHandle = true,
@@ -92,36 +95,53 @@ fun FeePayerSelectionSheet(
 private fun FeePayerSelectionContent(
     input: TransactionReviewViewModel.State.SelectFeePayerInput,
     onPayerSelected: (TransactionFeePayers.FeePayerCandidate) -> Unit,
-    onSelectButtonClick: () -> Unit
+    onSelectButtonClick: () -> Unit,
+    onClose: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            Column {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Box {
+                IconButton(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingXSmall,
+                        top = RadixTheme.dimensions.paddingMedium
+                    ),
+                    onClick = onClose
+                ) {
+                    Icon(
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = null
+                    )
+                }
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
-                    style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.Center
-                )
+                Column {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                        text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
+                        style = RadixTheme.typography.title,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.Center
+                    )
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
-                    style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2,
-                    textAlign = TextAlign.Center
-                )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                        text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
             }
         },
         bottomBar = {
@@ -267,7 +287,8 @@ fun FeesPayersSelectionContentPreview() {
                 fee = "0.234"
             ),
             onPayerSelected = {},
-            onSelectButtonClick = {}
+            onSelectButtonClick = {},
+            onClose = {}
         )
     }
 }
