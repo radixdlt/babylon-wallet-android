@@ -29,8 +29,9 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
     operator fun invoke(): Flow<List<EntityWithSecurityPrompt>> = combine(
         getProfileUseCase.flow.map { it.allEntitiesOnCurrentNetwork },
         preferencesManager.getBackedUpFactorSourceIds(),
-        getBackupStateUseCase()
-    ) { entities, backedUpFactorSourceIds, cloudBackupState ->
+        getBackupStateUseCase(),
+        mnemonicRepository.mnemonicDataStoreChanged
+    ) { entities, backedUpFactorSourceIds, cloudBackupState, _ ->
         entities.mapNotNull { entity ->
             mapToEntityWithSecurityPrompt(entity, backedUpFactorSourceIds, cloudBackupState)
         }

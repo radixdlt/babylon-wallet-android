@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
@@ -53,6 +54,10 @@ class EncryptedPreferencesManager @Inject constructor(
         }
         encryptedValue.decrypt(KeySpec.Profile())
     }.flowOn(ioDispatcher)
+
+    val preferencesSize = preferences.data.catchIOException().map { preferences ->
+        preferences.asMap().size
+    }.flowOn(ioDispatcher).distinctUntilChanged()
 
     private val p2pLinksKeySpec by lazy { KeySpec.Cache(P2P_LINKS_CACHE_KEY_ALIAS) }
 
@@ -122,20 +127,6 @@ class EncryptedPreferencesManager @Inject constructor(
     suspend fun putProfileSnapshot(snapshotSerialized: String) {
         putString(PROFILE_PREFERENCES_KEY, snapshotSerialized, KeySpec.Profile())
     }
-
-    suspend fun putDappLinks(dappLinksSerialized: String) {
-        putString(DAPP_LINKS_KEY, dappLinksSerialized, KeySpec.Profile()) // TODO encrypt with mnemonic key
-    }
-
-    suspend fun getDappLinks() = preferences.data.catchIOException().map { preferences ->
-        val dappLinksEncrypted = preferences[stringPreferencesKey(DAPP_LINKS_KEY)]
-
-        if (dappLinksEncrypted.isNullOrEmpty()) {
-            null
-        } else {
-            dappLinksEncrypted.decrypt(KeySpec.Profile()) // TODO decrypt with mnemonic key
-        }
-    }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
 
     suspend fun getProfileSnapshotFromCloudBackup() = preferences.data.catchIOException().map { preferences ->
         val snapshotEncrypted = preferences[stringPreferencesKey(RESTORED_PROFILE_CLOUD_PREFERENCES_KEY)]
@@ -220,7 +211,6 @@ class EncryptedPreferencesManager @Inject constructor(
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         const val PERMANENT_DATA_STORE_NAME = "rdx_permanent_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
-        private const val DAPP_LINKS_KEY = "dapp_links_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
         private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
