@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -44,10 +45,12 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -181,7 +184,8 @@ private fun FeePayerCard(
             .padding(
                 horizontal = RadixTheme.dimensions.paddingDefault,
                 vertical = RadixTheme.dimensions.paddingSmall
-            ),
+            )
+            .applyIf(candidate.hasEnoughBalance, Modifier.throttleClickable { onPayerSelected(candidate) }),
         shape = RadixTheme.shapes.roundedRectMedium,
         colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
         elevation = CardDefaults.elevatedCardElevation(
@@ -216,17 +220,15 @@ private fun FeePayerCard(
             )
         }
 
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .throttleClickable {
-                    onPayerSelected(candidate)
-                }
                 .padding(
                     start = RadixTheme.dimensions.paddingDefault,
                     end = RadixTheme.dimensions.paddingSmall
-                )
-                .padding(vertical = RadixTheme.dimensions.paddingDefault),
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -264,8 +266,33 @@ private fun FeePayerCard(
                 onClick = {
                     onPayerSelected(candidate)
                 },
-                size = 18.dp
+                size = 18.dp,
+                enabled = candidate.hasEnoughBalance
             )
+        }
+
+        if (!candidate.hasEnoughBalance) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+
+            InfoLink(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
+                    ),
+                text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
+                contentColor = RadixTheme.colors.orange1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+                textStyle = RadixTheme.typography.body1StandaloneLink.copy(
+                    fontSize = 14.sp
+                ),
+                spacing = RadixTheme.dimensions.paddingXSmall
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        } else {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
     }
 }
@@ -276,7 +303,11 @@ private fun FeePayerCard(
 fun FeesPayersSelectionContentPreview() {
     val candidates = remember {
         Account.sampleMainnet.all.map {
-            TransactionFeePayers.FeePayerCandidate(account = it, xrdAmount = Random.nextDouble(10000.0).toDecimal192())
+            TransactionFeePayers.FeePayerCandidate(
+                account = it,
+                xrdAmount = Random.nextDouble(10000.0).toDecimal192(),
+                hasEnoughBalance = true
+            )
         }
     }
     RadixWalletPreviewTheme {
