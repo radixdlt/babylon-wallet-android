@@ -35,15 +35,8 @@ class WalletPreferencesViewModel @Inject constructor(
     }
 
     private fun readSettings() {
-        viewModelScope.launch {
-            getProfileUseCase.flow
-                .map { it.appPreferences.security.isDeveloperModeEnabled }
-                .collect { isInDeveloperMode ->
-                    _state.updateSetting<SettingsItem.WalletPreferences.DeveloperMode> {
-                        SettingsItem.WalletPreferences.DeveloperMode(isInDeveloperMode)
-                    }
-                }
-        }
+        observeDevModeSetting()
+        observeAppLockSetting()
         if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
                 val updateCrashReportingPreference = PreferencesUiItem.Preference(
@@ -55,17 +48,44 @@ class WalletPreferencesViewModel @Inject constructor(
                     settings = (settingsUiState.settings + updateCrashReportingPreference).toPersistentSet()
                 )
             }
-            viewModelScope.launch {
-                preferencesManager.isCrashReportingEnabled.collect { enabled ->
-                    if (enabled) {
-                        deleteCrashlyticsUnsentReports()
-                    }
-                    enableCrashlytics(enabled)
-                    _state.updateSetting<SettingsItem.WalletPreferences.CrashReporting> {
-                        SettingsItem.WalletPreferences.CrashReporting(enabled)
-                    }
+            observeCrashReportingSetting()
+        }
+    }
+
+    private fun observeCrashReportingSetting() {
+        viewModelScope.launch {
+            preferencesManager.isCrashReportingEnabled.collect { enabled ->
+                if (enabled) {
+                    deleteCrashlyticsUnsentReports()
+                }
+                enableCrashlytics(enabled)
+                _state.updateSetting<SettingsItem.WalletPreferences.CrashReporting> {
+                    SettingsItem.WalletPreferences.CrashReporting(enabled)
                 }
             }
+        }
+    }
+
+    private fun observeDevModeSetting() {
+        viewModelScope.launch {
+            getProfileUseCase.flow
+                .map { it.appPreferences.security.isDeveloperModeEnabled }
+                .collect { isInDeveloperMode ->
+                    _state.updateSetting<SettingsItem.WalletPreferences.DeveloperMode> {
+                        SettingsItem.WalletPreferences.DeveloperMode(isInDeveloperMode)
+                    }
+                }
+        }
+    }
+
+    private fun observeAppLockSetting() {
+        viewModelScope.launch {
+            preferencesManager.isAppLockEnabled
+                .collect { isAppLockEnabled ->
+                    _state.updateSetting<SettingsItem.WalletPreferences.EnableAppLockInBackground> {
+                        SettingsItem.WalletPreferences.EnableAppLockInBackground(isAppLockEnabled)
+                    }
+                }
         }
     }
 
@@ -75,6 +95,12 @@ class WalletPreferencesViewModel @Inject constructor(
 
     fun onCrashReportingToggled(enabled: Boolean) = viewModelScope.launch {
         preferencesManager.enableCrashReporting(enabled)
+    }
+
+    fun onToggleAppLock(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.enableAppLock(enabled)
+        }
     }
 
     private inline fun <reified S : SettingsItem.WalletPreferences> MutableStateFlow<WalletPreferencesUiState>.updateSetting(
@@ -108,7 +134,8 @@ data class WalletPreferencesUiState(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false)),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EnableAppLockInBackground(false))
             )
         )
     }

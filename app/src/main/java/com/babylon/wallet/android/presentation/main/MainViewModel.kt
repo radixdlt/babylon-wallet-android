@@ -2,12 +2,11 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.AppStateProvider
+import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.LockState
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
@@ -24,10 +23,10 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.RadixConnectPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -47,6 +46,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
@@ -73,15 +73,13 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val appStateProvider: AppStateProvider,
-    @ApplicationScope private val appScope: CoroutineScope
+    private val appLockStateProvider: AppLockStateProvider,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
     private var incomingDappRequestsJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
-    private var lockJob: Job? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val observeP2PLinks = getProfileUseCase.state
@@ -124,8 +122,15 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.AccessFactorSources>()
 
-    val isDevBannerVisible = appStateProvider.isDevBannerVisible
-    val appLockState = appStateProvider.state
+    val isDevBannerVisible = getProfileUseCase.state.map { profileState ->
+        when (profileState) {
+            is ProfileState.Restored -> {
+                profileState.profile.currentGateway.network.id != NetworkId.MAINNET
+            }
+
+            else -> false
+        }
+    }
 
     val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
@@ -135,15 +140,17 @@ class MainViewModel @Inject constructor(
             combine(
                 getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown,
+                preferencesManager.isAppLockEnabled,
                 cloudBackupErrorStream.errors
-            ) { profileState, isDeviceRootedDialogShown, backupError ->
+            ) { profileState, isDeviceRootedDialogShown, isAppLockEnabled, backupError ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
-                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice
+                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
+                        isAppLockEnabled = isAppLockEnabled
                     )
                 }
             }.collect()
@@ -158,20 +165,12 @@ class MainViewModel @Inject constructor(
 
     private fun observeLockState() {
         viewModelScope.launch {
-            appStateProvider.state.collect { lockState ->
+            appLockStateProvider.state.collect { lockState ->
                 val isLocked = lockState == LockState.Locked
                 Timber.d("Lock WIP: app isLocked: $isLocked")
                 _state.update { state ->
                     state.copy(isAppLocked = isLocked)
                 }
-            }
-        }
-    }
-
-    fun checkAppLock() {
-        if (_state.value.isAppLocked) {
-            viewModelScope.launch {
-                sendEvent(MainEvent.LockApp)
             }
         }
     }
@@ -216,7 +215,7 @@ class MainViewModel @Inject constructor(
                                 val requestId = incomingRequest.interactionId
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
-                                            "remote connector $remoteConnectorId with id $requestId"
+                                        "remote connector $remoteConnectorId with id $requestId"
                                 )
                                 verifyIncomingRequest(incomingRequest)
                             }
@@ -348,13 +347,7 @@ class MainViewModel @Inject constructor(
         _state.update { it.copy(olympiaErrorState = null) }
     }
 
-    fun unlockApp() {
-        appStateProvider.unlockApp()
-        runForegroundChecks()
-    }
-
     fun onAppToForeground() {
-        lockJob?.cancel()
         if (!_state.value.isAppLocked) {
             runForegroundChecks()
         }
@@ -387,6 +380,7 @@ class MainViewModel @Inject constructor(
 
     fun onAppToBackground() {
 //        lockJob = appScope.launch {
+//            sendEvent(MainEvent.LockApp)
 //            appStateProvider.lockApp()
 //        }
     }
@@ -410,7 +404,6 @@ class MainViewModel @Inject constructor(
         private val PEERDROID_STOP_TIMEOUT = 60.seconds
         private const val REQUEST_HANDLING_DELAY = 300L
         private const val TICK_MS = 1000L
-        private const val LOCK_DELAY_MS = 2000L
     }
 }
 
@@ -426,7 +419,8 @@ data class MainUiState(
     val olympiaErrorState: OlympiaErrorState? = null,
     val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
     val showMobileConnectWarning: Boolean = false,
-    val isAppLocked: Boolean = false
+    val isAppLocked: Boolean = false,
+    val isAppLockEnabled: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(

@@ -1,9 +1,12 @@
 package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
+import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.AnticipateInterpolator
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -13,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -20,6 +24,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.designsystem.theme.DefaultDarkScrim
 import com.babylon.wallet.android.designsystem.theme.DefaultLightScrim
@@ -31,6 +37,7 @@ import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
+import com.babylon.wallet.android.presentation.ui.composables.LockScreenBackground
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -40,6 +47,10 @@ import javax.inject.Inject
 // Extending from FragmentActivity because of Biometric
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
+
+    private lateinit var windowManager: WindowManager
+
+    private lateinit var privacyOverlay: ComposeView
 
     private val viewModel: MainViewModel by viewModels()
 
@@ -58,11 +69,19 @@ class MainActivity : FragmentActivity() {
     lateinit var actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        setupPrivacyOverlay()
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
             viewModel.state.value.initialAppState == AppState.Loading
         }
         setSplashExitAnimation(splashScreen)
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.light(
+                scrim = DefaultLightScrim,
+                darkScrim = DefaultDarkScrim
+            )
+        )
         super.onCreate(savedInstanceState)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
@@ -103,11 +122,38 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+        monitorLockState()
+    }
+
+    private fun setupPrivacyOverlay() {
+        privacyOverlay = ComposeView(this).apply {
+            setViewTreeSavedStateRegistryOwner(this@MainActivity)
+            setViewTreeLifecycleOwner(this@MainActivity)
+        }
+        privacyOverlay.setContent {
+            RadixWalletTheme {
+                LockScreenBackground()
+            }
+        }
+    }
+
+    private fun monitorLockState() {
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.state.collect { state ->
+                    if (state.isAppLockEnabled) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
                     if (state.isAppLocked) {
-                        startActivity(Intent(this@MainActivity, AppLockActivity::class.java))
+                        startActivity(
+                            Intent(this@MainActivity, AppLockActivity::class.java).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                            }
+                        )
+                    }
+                    try {
+                        windowManager.removeView(privacyOverlay)
+                    } catch (_: Exception) {
                     }
                 }
             }
@@ -142,13 +188,6 @@ class MainActivity : FragmentActivity() {
             fadeIn.duration = splashExitAnimDurationMs
             fadeIn.doOnEnd {
                 splashScreenView.remove()
-                // TODO use auto style when we implement dark mode
-                enableEdgeToEdge(
-                    navigationBarStyle = SystemBarStyle.light(
-                        scrim = DefaultLightScrim,
-                        darkScrim = DefaultDarkScrim
-                    )
-                )
             }
             fadeIn.start()
         }
@@ -162,6 +201,22 @@ class MainActivity : FragmentActivity() {
     override fun onPause() {
         super.onPause()
         viewModel.onAppToBackground()
+    }
+
+    override fun onUserLeaveHint() {
+        if (viewModel.state.value.isAppLockEnabled) {
+            val params = WindowManager.LayoutParams().apply {
+                type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
+                token = privacyOverlay.applicationWindowToken
+                width = WindowManager.LayoutParams.MATCH_PARENT
+                height = WindowManager.LayoutParams.MATCH_PARENT
+                format = PixelFormat.TRANSLUCENT
+                flags = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            }
+            windowManager.addView(privacyOverlay, params)
+        }
+        super.onUserLeaveHint()
     }
 
     companion object {

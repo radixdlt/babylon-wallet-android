@@ -47,7 +47,8 @@ fun WalletPreferencesScreen(
         onWalletPreferenceItemClick = onWalletPreferenceItemClick,
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
-        onCrashReportingToggled = viewModel::onCrashReportingToggled
+        onCrashReportingToggled = viewModel::onCrashReportingToggled,
+        onToggleAppLock = viewModel::onToggleAppLock
     )
 }
 
@@ -59,6 +60,7 @@ private fun WalletPreferencesContent(
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onCrashReportingToggled: (Boolean) -> Unit,
+    onToggleAppLock: (Boolean) -> Unit,
 ) {
     var crashReportingPromptVisible by remember { mutableStateOf(false) }
     if (crashReportingPromptVisible) {
@@ -77,7 +79,7 @@ private fun WalletPreferencesContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Preferences", // TODO crowdin
+                title = stringResource(id = R.string.preferences_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -140,6 +142,20 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
+                                    is SettingsItem.WalletPreferences.EnableAppLockInBackground -> {
+                                        SwitchSettingsItem(
+                                            modifier = Modifier
+                                                .background(RadixTheme.colors.defaultBackground)
+                                                .fillMaxWidth()
+                                                .padding(all = RadixTheme.dimensions.paddingDefault),
+                                            titleRes = item.descriptionRes(),
+                                            iconResource = item.getIcon(),
+                                            checked = item.enabled,
+                                            onCheckedChange = onToggleAppLock
+                                        )
+                                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                                    }
+
                                     else -> {
                                         DefaultSettingsItem(
                                             title = stringResource(id = item.descriptionRes()),
@@ -170,7 +186,9 @@ fun AppSettingsScreenPreview() {
             walletPreferences = WalletPreferencesUiState.default.settings,
             onWalletPreferenceItemClick = {},
             onDeveloperModeToggled = {},
-            onBackClick = {}
-        ) {}
+            onBackClick = {},
+            onCrashReportingToggled = {},
+            onToggleAppLock = {}
+        )
     }
 }

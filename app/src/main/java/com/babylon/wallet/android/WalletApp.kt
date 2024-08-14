@@ -31,7 +31,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAu
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
-import com.babylon.wallet.android.presentation.dialogs.lock.AppLockActivity
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
@@ -43,13 +42,14 @@ import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTIO
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.FullScreen
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
+import com.babylon.wallet.android.presentation.ui.composables.LockScreenBackground
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.utils.AppEvent
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
-import timber.log.Timber
 
 @Composable
 fun WalletApp(
@@ -82,6 +82,11 @@ fun WalletApp(
 //    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
 //        mainViewModel.checkAppLock()
 //    }
+    if (state.isAppLocked) {
+        FullScreen {
+            LockScreenBackground()
+        }
+    }
     Box(modifier = modifier.fillMaxSize()) {
         NavigationHost(
             modifier = Modifier.fillMaxSize(),
@@ -116,8 +121,8 @@ fun WalletApp(
                     }
 
                     MainEvent.LockApp -> {
-                        Timber.d("Lock WIP: Starting lock screen")
-                        context.startActivity(Intent(context, AppLockActivity::class.java))
+//                        navController.appLockScreen()
+//                        context.startActivity(Intent(context, AppLockActivity::class.java))
                     }
                 }
             }
@@ -221,14 +226,7 @@ fun WalletApp(
                 dismissText = null
             )
         }
-//        if (state.isAppLocked) {
-//            AppLockScreen(mainViewModel::unlockApp)
-//        } else {
-//            SyncStatusBarWithScreenChanges(navController)
-//        }
-        if (state.isAppLocked.not()) {
-            SyncStatusBarWithScreenChanges(navController)
-        }
+        SyncStatusBarWithScreenChanges(navController)
     }
 }
 

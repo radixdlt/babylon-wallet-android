@@ -157,6 +157,7 @@ sealed interface SettingsItem {
         data object Gateways : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
+        data class EnableAppLockInBackground(val enabled: Boolean) : WalletPreferences
 
         @StringRes
         fun descriptionRes(): Int {
@@ -166,6 +167,7 @@ sealed interface SettingsItem {
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.preferences_hiddenEntities_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
+                is EnableAppLockInBackground -> R.string.settings_debugSettings_appLock
             }
         }
 
@@ -177,6 +179,7 @@ sealed interface SettingsItem {
                 is DeveloperMode -> R.string.appSettings_developerMode_subtitle
                 EntityHiding -> R.string.preferences_hiddenEntities_subtitle
                 is CrashReporting -> null
+                is EnableAppLockInBackground -> DSR.ic_backup
             }
         }
 
@@ -187,6 +190,7 @@ sealed interface SettingsItem {
                 EntityHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
+                is EnableAppLockInBackground -> DSR.ic_app_settings
                 else -> null
             }
         }
@@ -199,15 +203,12 @@ sealed interface SettingsItem {
 
         data object InspectCloudBackups : DebugSettingsItem
 
-        data object EnableAppLockInBackground : DebugSettingsItem
-
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
                 InspectCloudBackups -> R.string.settings_debugSettings_inspectCloudBackups
-                EnableAppLockInBackground -> R.string.settings_debugSettings_appLock
             }
         }
 
@@ -217,7 +218,6 @@ sealed interface SettingsItem {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 InspectCloudBackups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
-                EnableAppLockInBackground -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
             }
         }
 
@@ -225,8 +225,7 @@ sealed interface SettingsItem {
             fun values() = setOf(
                 InspectProfile,
                 LinkConnectionStatusIndicator,
-                InspectCloudBackups,
-                EnableAppLockInBackground
+                InspectCloudBackups
             )
         }
     }

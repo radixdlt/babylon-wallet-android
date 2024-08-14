@@ -63,19 +63,6 @@ fun DebugSettingsScreen(
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
                             }
 
-                            SettingsItem.DebugSettingsItem.EnableAppLockInBackground -> {
-                                SwitchSettingsItem(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(all = RadixTheme.dimensions.paddingDefault),
-                                    titleRes = debugSettingsItem.descriptionRes(),
-                                    iconResource = debugSettingsItem.getIcon(),
-                                    checked = state.isAppLockEnabled,
-                                    onCheckedChange = viewModel::onToggleAppLock
-                                )
-                                HorizontalDivider(color = RadixTheme.colors.gray5)
-                            }
-
                             else -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = debugSettingsItem.descriptionRes()),

@@ -38,12 +38,6 @@ class DebugSettingsViewModel @Inject constructor(
         preferencesManager.setLinkConnectionStatusIndicator(isEnabled = isEnabled)
     }
 
-    fun onToggleAppLock(enabled: Boolean) {
-        viewModelScope.launch {
-            preferencesManager.enableAppLock(enabled)
-        }
-    }
-
     data class State(
         val isLinkConnectionStatusIndicatorEnabled: Boolean,
         val isAppLockEnabled: Boolean

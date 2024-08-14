@@ -11,48 +11,38 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AppStateProvider @Inject constructor(
+class AppLockStateProvider @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     @ApplicationScope coroutineScope: CoroutineScope
 ) {
 
     private val _lockState: MutableStateFlow<LockState> = MutableStateFlow(LockState.Locked)
-    val state = combine(getProfileUseCase.state, _lockState) { profileState, lockedState ->
+    val state =
+        combine(getProfileUseCase.state, _lockState, preferencesManager.isAppLockEnabled) { profileState, lockedState, isAppLockEnabled ->
+            when {
+                isAppLockEnabled -> if (profileState is ProfileState.NotInitialised) {
+                    LockState.Unlocked
+                } else {
+                    lockedState
+                }
+
+                else -> LockState.Unlocked
+            }
+        }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
+
+    suspend fun lockApp() {
         val isAppLockEnabled = preferencesManager.isAppLockEnabled.firstOrNull()
-        when {
-            isAppLockEnabled == true -> if (profileState is ProfileState.NotInitialised) {
-                LockState.Unlocked
-            } else {
-                lockedState
-            }
-
-            else -> LockState.Unlocked
+        if (isAppLockEnabled == true) {
+            _lockState.update { LockState.Locked }
         }
-    }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
-
-    val isDevBannerVisible = combine(getProfileUseCase.state, _lockState) { profileState, lockState ->
-        when (profileState) {
-            is ProfileState.Restored -> {
-                lockState != LockState.Locked && !profileState.isCurrentNetworkMainnet()
-            }
-
-            else -> false
-        }
-    }
-
-    fun lockApp() {
-        Timber.d("Lock WIP: Locking app")
-        _lockState.update { LockState.Locked }
     }
 
     fun unlockApp() {
-        Timber.d("Lock WIP: Unlocking app")
         _lockState.update { LockState.Unlocked }
     }
 }

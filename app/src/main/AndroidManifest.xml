@@ -62,6 +62,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:theme="@style/Theme.AppLockScreen"
             android:name=".presentation.dialogs.lock.AppLockActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
@@ -70,7 +71,6 @@
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />
 
-        <!-- If you want to enable android.startup, then merge it. See documentation -->
 <!--        <provider-->
 <!--            android:name="androidx.startup.InitializationProvider"-->
 <!--            android:authorities="${applicationId}.androidx-startup"-->

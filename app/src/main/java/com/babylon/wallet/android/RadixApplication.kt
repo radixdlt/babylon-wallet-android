@@ -36,7 +36,7 @@ class RadixApplication : Application(), Configuration.Provider {
     lateinit var scope: CoroutineScope
 
     @Inject
-    lateinit var appStateProvider: AppStateProvider
+    lateinit var appLockStateProvider: AppLockStateProvider
 
     @Inject
     lateinit var homeCardsRepository: HomeCardsRepository
@@ -54,16 +54,17 @@ class RadixApplication : Application(), Configuration.Provider {
 
         appsFlyerIntegrationManager.init()
         bootstrapHomeCards()
-        ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver(appStateProvider))
+        ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver(appLockStateProvider, scope))
     }
 
-    class AppLifecycleObserver(private val appStateProvider: AppStateProvider) :
+    class AppLifecycleObserver(private val appLockStateProvider: AppLockStateProvider, private val scope: CoroutineScope) :
         DefaultLifecycleObserver {
 
         override fun onPause(owner: LifecycleOwner) {
-            appStateProvider.lockApp()
+            scope.launch {
+                appLockStateProvider.lockApp()
+            }
         }
-
     }
 
     private fun bootstrapHomeCards() {
