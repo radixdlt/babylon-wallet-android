@@ -337,13 +337,14 @@ class TransferViewModel @Inject constructor(
                 val accountDepositResourceRule = accountDepositResourceRulesSet?.find { it.accountAddress == targetAccount.address }
                 targetAccount.updateAssets { assets ->
                     assets.map { asset ->
+                        val canDeposit = accountDepositResourceRule?.canDeposit(asset.resourceAddress) ?: true
                         when (asset) {
                             is SpendingAsset.Fungible -> asset.copy(
-                                canDeposit = accountDepositResourceRule?.canDeposit(asset.resourceAddress) ?: true
+                                canDeposit = canDeposit
                             )
 
                             is SpendingAsset.NFT -> asset.copy(
-                                canDeposit = accountDepositResourceRule?.canDeposit(asset.resourceAddress) ?: true
+                                canDeposit = canDeposit
                             )
                         }
                     }.toPersistentSet()
