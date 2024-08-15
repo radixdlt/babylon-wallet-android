@@ -80,12 +80,6 @@ class MainActivity : FragmentActivity() {
             viewModel.state.value.initialAppState == AppState.Loading
         }
         setSplashExitAnimation(splashScreen)
-        enableEdgeToEdge(
-            navigationBarStyle = SystemBarStyle.light(
-                scrim = DefaultLightScrim,
-                darkScrim = DefaultDarkScrim
-            )
-        )
         super.onCreate(savedInstanceState)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
@@ -211,6 +205,12 @@ class MainActivity : FragmentActivity() {
             fadeIn.duration = splashExitAnimDurationMs
             fadeIn.doOnEnd {
                 splashScreenView.remove()
+                enableEdgeToEdge(
+                    navigationBarStyle = SystemBarStyle.light(
+                        scrim = DefaultLightScrim,
+                        darkScrim = DefaultDarkScrim
+                    )
+                )
             }
             fadeIn.start()
         }
