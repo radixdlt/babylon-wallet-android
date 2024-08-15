@@ -109,7 +109,14 @@ private fun WalletPreferencesContent(
                                     color = RadixTheme.colors.gray2
                                 )
                             }
-
+                            PreferencesUiItem.DisplaySection -> {
+                                Text(
+                                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(id = R.string.preferences_displayPreferences),
+                                    style = RadixTheme.typography.body1Link,
+                                    color = RadixTheme.colors.gray2
+                                )
+                            }
                             is PreferencesUiItem.Preference -> {
                                 when (val item = walletPreferenceItem.item) {
                                     is SettingsItem.WalletPreferences.DeveloperMode -> {
@@ -118,7 +125,7 @@ private fun WalletPreferencesContent(
                                                 .background(RadixTheme.colors.defaultBackground)
                                                 .fillMaxWidth()
                                                 .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.descriptionRes(),
+                                            titleRes = item.titleRes(),
                                             subtitleRes = R.string.appSettings_developerMode_subtitle, // appSettingsItem.subtitleRes(),
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
@@ -132,7 +139,7 @@ private fun WalletPreferencesContent(
                                                 .background(RadixTheme.colors.defaultBackground)
                                                 .fillMaxWidth()
                                                 .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.descriptionRes(),
+                                            titleRes = item.titleRes(),
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
                                             onCheckedChange = { selected ->
@@ -145,13 +152,14 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
-                                    is SettingsItem.WalletPreferences.EnableAppLockInBackground -> {
+                                    is SettingsItem.WalletPreferences.AppLock -> {
                                         SwitchSettingsItem(
                                             modifier = Modifier
                                                 .background(RadixTheme.colors.defaultBackground)
                                                 .fillMaxWidth()
                                                 .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.descriptionRes(),
+                                            titleRes = item.titleRes(),
+                                            subtitleRes = item.subtitleRes(),
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
                                             onCheckedChange = { checked ->
@@ -164,7 +172,7 @@ private fun WalletPreferencesContent(
 
                                     else -> {
                                         DefaultSettingsItem(
-                                            title = stringResource(id = item.descriptionRes()),
+                                            title = stringResource(id = item.titleRes()),
                                             leadingIconRes = item.getIcon(),
                                             subtitle = item.subtitleRes()?.let { stringResource(id = it) },
                                             onClick = {

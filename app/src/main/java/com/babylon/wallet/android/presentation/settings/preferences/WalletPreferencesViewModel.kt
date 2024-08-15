@@ -82,8 +82,8 @@ class WalletPreferencesViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesManager.isAppLockEnabled
                 .collect { isAppLockEnabled ->
-                    _state.updateSetting<SettingsItem.WalletPreferences.EnableAppLockInBackground> {
-                        SettingsItem.WalletPreferences.EnableAppLockInBackground(isAppLockEnabled)
+                    _state.updateSetting<SettingsItem.WalletPreferences.AppLock> {
+                        SettingsItem.WalletPreferences.AppLock(isAppLockEnabled)
                     }
                 }
         }
@@ -120,6 +120,7 @@ class WalletPreferencesViewModel @Inject constructor(
 
 sealed interface PreferencesUiItem {
     data object AdvancedSection : PreferencesUiItem
+    data object DisplaySection : PreferencesUiItem
     data class Preference(val item: SettingsItem.WalletPreferences) : PreferencesUiItem
 }
 
@@ -131,11 +132,12 @@ data class WalletPreferencesUiState(
         val default = WalletPreferencesUiState(
             settings = persistentSetOf(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DepositGuarantees),
+                PreferencesUiItem.DisplaySection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AppLock(false)),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false)),
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EnableAppLockInBackground(false))
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))
             )
         )
     }

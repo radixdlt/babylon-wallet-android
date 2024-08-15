@@ -73,7 +73,7 @@ fun NavGraphBuilder.walletPreferencesScreen(
 
                     is SettingsItem.WalletPreferences.CrashReporting,
                     is SettingsItem.WalletPreferences.DeveloperMode,
-                    is SettingsItem.WalletPreferences.EnableAppLockInBackground -> {
+                    is SettingsItem.WalletPreferences.AppLock -> {
                     }
 
                     SettingsItem.WalletPreferences.EntityHiding -> {

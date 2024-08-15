@@ -101,7 +101,7 @@ private fun SettingsContent(
                                     },
                                     subtitle = stringResource(id = settingsItem.item.subtitleRes()),
                                     leadingIconRes = settingsItem.item.getIcon(),
-                                    title = stringResource(id = settingsItem.item.descriptionRes()),
+                                    title = stringResource(id = settingsItem.item.titleRes()),
                                     warnings = when (val item = settingsItem.item) {
                                         is SettingsItem.TopLevelSettings.SecurityCenter -> {
                                             if (item.securityProblems.isNotEmpty()) {
