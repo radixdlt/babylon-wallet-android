@@ -71,11 +71,6 @@
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />
 
-<!--        <provider-->
-<!--            android:name="androidx.startup.InitializationProvider"-->
-<!--            android:authorities="${applicationId}.androidx-startup"-->
-<!--            tools:node="remove" />-->
-
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
