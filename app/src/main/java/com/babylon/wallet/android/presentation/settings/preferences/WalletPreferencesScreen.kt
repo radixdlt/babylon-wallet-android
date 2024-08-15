@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,6 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsIte
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.utils.setWindowSecure
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
@@ -63,6 +65,7 @@ private fun WalletPreferencesContent(
     onToggleAppLock: (Boolean) -> Unit,
 ) {
     var crashReportingPromptVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     if (crashReportingPromptVisible) {
         BasicPromptAlertDialog(
             finish = { accepted ->
@@ -151,7 +154,10 @@ private fun WalletPreferencesContent(
                                             titleRes = item.descriptionRes(),
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
-                                            onCheckedChange = onToggleAppLock
+                                            onCheckedChange = { checked ->
+                                                onToggleAppLock(checked)
+                                                context.setWindowSecure(checked)
+                                            }
                                         )
                                         HorizontalDivider(color = RadixTheme.colors.gray5)
                                     }

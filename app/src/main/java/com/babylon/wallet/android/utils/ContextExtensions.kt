@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -140,4 +141,14 @@ fun Context.findFragmentActivity(): FragmentActivity? {
         context = context.baseContext
     }
     return null
+}
+
+fun Context.setWindowSecure(enabled: Boolean) {
+    findFragmentActivity()?.window?.apply {
+        if (enabled) {
+            addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 }

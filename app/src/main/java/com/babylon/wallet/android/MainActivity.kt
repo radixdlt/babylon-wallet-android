@@ -3,6 +3,7 @@ package com.babylon.wallet.android
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Bundle
 import android.view.View
@@ -12,6 +13,9 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -91,6 +95,7 @@ class MainActivity : FragmentActivity() {
         }
         setContent {
             RadixWalletTheme {
+                SyncEdgeToEdgeSetupWithSelectedTheme()
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
 
                 CustomCompositionProviders(
@@ -123,6 +128,24 @@ class MainActivity : FragmentActivity() {
             }
         }
         monitorLockState()
+    }
+
+    @Composable
+    private fun SyncEdgeToEdgeSetupWithSelectedTheme() {
+        val isSystemInDarkTheme = isSystemInDarkTheme()
+        DisposableEffect(isSystemInDarkTheme) {
+            enableEdgeToEdge(
+                statusBarStyle = SystemBarStyle.auto(
+                    Color.TRANSPARENT,
+                    Color.TRANSPARENT,
+                ) { isSystemInDarkTheme },
+                navigationBarStyle = SystemBarStyle.light(
+                    scrim = DefaultLightScrim,
+                    darkScrim = DefaultDarkScrim
+                ),
+            )
+            onDispose {}
+        }
     }
 
     private fun setupPrivacyOverlay() {
