@@ -1145,6 +1145,9 @@ Code: %s</string>
   <string name="preferences_developerMode_subtitle">Warning: disables website validity checks</string>
   <string name="preferences_advancedLock_title">Advanced Lock</string>
   <string name="preferences_advancedLock_subtitle">Re-authenticate when switching between apps</string>
+  <string name="preferences_displayPreferences">Display</string>
+  <string name="preferences_hiddenAssets_title">Hidden Assets</string>
+  <string name="preferences_hiddenAssets_subtitle">Manage hidden Tokens, NFTs, and other asset types</string>
   <string name="troubleshooting_title">Troubleshooting</string>
   <string name="troubleshooting_accountRecovery">Account Recovery</string>
   <string name="troubleshooting_accountScan_title">Account Recovery Scan</string>
