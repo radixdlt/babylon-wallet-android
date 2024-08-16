@@ -19,6 +19,7 @@ sealed interface SettingsItem {
             val isBackupNeeded: Boolean = false, // security problem 3
             val isRecoveryNeeded: Boolean = false // security problem 9
         ) : TopLevelSettings
+
         data object ApprovedDapps : TopLevelSettings
 
         data object LinkedConnectors : TopLevelSettings
@@ -153,6 +154,7 @@ sealed interface SettingsItem {
     sealed interface WalletPreferences {
         data object DepositGuarantees : WalletPreferences
         data object EntityHiding : WalletPreferences
+        data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
@@ -164,6 +166,7 @@ sealed interface SettingsItem {
                 Gateways -> R.string.preferences_gateways
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.preferences_hiddenEntities_title
+                AssetsHiding -> R.string.preferences_hiddenAssets_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
             }
         }
@@ -175,6 +178,7 @@ sealed interface SettingsItem {
                 Gateways -> null
                 is DeveloperMode -> R.string.appSettings_developerMode_subtitle
                 EntityHiding -> R.string.preferences_hiddenEntities_subtitle
+                AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
                 is CrashReporting -> null
             }
         }
@@ -183,7 +187,8 @@ sealed interface SettingsItem {
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
                 Gateways -> DSR.ic_gateways
-                EntityHiding -> DSR.ic_entity_hiding
+                EntityHiding,
+                AssetsHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
                 else -> null

@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -31,12 +34,15 @@ import com.babylon.wallet.android.presentation.dialogs.assets.lsu.LSUDialogConte
 import com.babylon.wallet.android.presentation.dialogs.assets.nonfungible.NonFungibleAssetDialogContent
 import com.babylon.wallet.android.presentation.dialogs.assets.pool.PoolUnitDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
 import com.babylon.wallet.android.presentation.ui.composables.assets.Tag
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
+import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import kotlinx.collections.immutable.ImmutableList
 import rdx.works.core.domain.assets.Asset
@@ -58,6 +64,7 @@ fun AssetDialog(
     BottomSheetDialogWrapper(
         modifier = modifier,
         title = state.asset?.displayTitle(),
+        showDragHandle = true,
         onDismiss = onDismiss
     ) {
         val isLoadingBalance = if (state.isFiatBalancesEnabled) {
@@ -72,21 +79,27 @@ fun AssetDialog(
                     args = state.args as AssetDialogArgs.Fungible,
                     token = asset,
                     tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
-                    isLoadingBalance = isLoadingBalance
+                    isLoadingBalance = isLoadingBalance,
+                    canBeHidden = state.canBeHidden,
+                    onHideClick = viewModel::onHideClick
                 )
 
                 is LiquidStakeUnit -> LSUDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     lsu = asset,
                     price = state.assetPrice as? AssetPrice.LSUPrice,
-                    isLoadingBalance = isLoadingBalance
+                    isLoadingBalance = isLoadingBalance,
+                    canBeHidden = state.canBeHidden,
+                    onHideClick = viewModel::onHideClick
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     poolUnit = asset,
                     poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
-                    isLoadingBalance = isLoadingBalance
+                    isLoadingBalance = isLoadingBalance,
+                    canBeHidden = state.canBeHidden,
+                    onHideClick = viewModel::onHideClick
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
@@ -100,7 +113,9 @@ fun AssetDialog(
                         accountContext = state.accountContext,
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
                         isLoadingBalance = isLoadingBalance,
+                        canBeHidden = state.canBeHidden,
                         onClaimClick = viewModel::onClaimClick,
+                        onHideClick = viewModel::onHideClick
                     )
                 }
 
@@ -110,7 +125,8 @@ fun AssetDialog(
                         args = state.args as AssetDialogArgs.Fungible,
                         token = null,
                         tokenPrice = null,
-                        isLoadingBalance = state.isLoadingBalance
+                        isLoadingBalance = state.isLoadingBalance,
+                        canBeHidden = false
                     )
 
                     is AssetDialogArgs.NFT -> NonFungibleAssetDialogContent(
@@ -119,7 +135,8 @@ fun AssetDialog(
                         asset = null,
                         price = null,
                         isNewlyCreated = args.isNewlyCreated,
-                        isLoadingBalance = false // we do not need to pass value here because it's for NFTs
+                        isLoadingBalance = false, // we do not need to pass value here because it's for NFTs
+                        canBeHidden = false
                     )
                 }
             }
@@ -129,6 +146,57 @@ fun AssetDialog(
                 onMessageShown = viewModel::onMessageShown
             )
         }
+    }
+
+    HideAssetSheet(
+        show = state.showHideConfirmation,
+        onHideClick = viewModel::hideAsset,
+        onDismiss = viewModel::onDismissHideConfirmation
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is AssetDialogViewModel.Event.Close -> onDismiss()
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HideAssetSheet(
+    show: Boolean,
+    onHideClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
+    SyncSheetState(
+        sheetState = sheetState,
+        isSheetVisible = show,
+        onSheetClosed = onDismiss
+    )
+
+    if (show) {
+        DefaultModalSheetLayout(
+            wrapContent = true,
+            enableImePadding = true,
+            sheetState = sheetState,
+            sheetContent = {
+                HideResourceSheetContent(
+                    title = stringResource(id = R.string.assetDetails_hideAsset_title),
+                    description = stringResource(id = R.string.assetDetails_hideAsset_message),
+                    positiveButton = stringResource(id = R.string.assetDetails_hideAsset_button),
+                    onPositiveButtonClick = onHideClick,
+                    onClose = onDismiss
+                )
+            },
+            showDragHandle = true,
+            onDismissRequest = onDismiss
+        )
     }
 }
 

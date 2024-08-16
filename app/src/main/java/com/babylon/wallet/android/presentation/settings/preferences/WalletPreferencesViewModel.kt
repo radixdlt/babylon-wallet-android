@@ -106,6 +106,7 @@ data class WalletPreferencesUiState(
             settings = persistentSetOf(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DepositGuarantees),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AssetsHiding),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.dialogs.assets.nonfungible
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,10 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +32,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.assets.common.AssetDialogContainer
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
@@ -60,17 +58,18 @@ fun NonFungibleAssetDialogContent(
     asset: Asset.NonFungible?,
     price: AssetPrice.StakeClaimPrice?,
     isLoadingBalance: Boolean,
+    canBeHidden: Boolean,
     isNewlyCreated: Boolean = false,
     accountContext: Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
+    onHideClick: (() -> Unit)? = null,
     onClaimClick: () -> Unit = {}
 ) {
     val item = asset?.resource?.items?.firstOrNull()
-    Column(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+    AssetDialogContainer(
+        modifier = modifier,
+        canBeHidden = canBeHidden,
+        onHideClick = onHideClick
     ) {
         if (localId != null) {
             if (item?.imageUrl != null) {

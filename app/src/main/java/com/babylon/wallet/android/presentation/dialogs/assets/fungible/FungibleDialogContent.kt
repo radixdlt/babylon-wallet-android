@@ -1,22 +1,16 @@
 package com.babylon.wallet.android.presentation.dialogs.assets.fungible
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +23,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.assets.common.AssetDialogContainer
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
@@ -47,21 +42,17 @@ fun FungibleDialogContent(
     token: Token?,
     tokenPrice: AssetPrice.TokenPrice?,
     args: AssetDialogArgs.Fungible,
-    isLoadingBalance: Boolean
+    isLoadingBalance: Boolean,
+    canBeHidden: Boolean,
+    onHideClick: (() -> Unit)? = null
 ) {
     val resourceAddress = args.resourceAddress
     val isNewlyCreated = args.isNewlyCreated
     val amount = args.fungibleAmountOf(resourceAddress) ?: token?.resource?.ownedAmount
-    Column(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(
-                horizontal = RadixTheme.dimensions.paddingLarge,
-                vertical = RadixTheme.dimensions.paddingSemiLarge
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally
+    AssetDialogContainer(
+        modifier = modifier,
+        canBeHidden = canBeHidden,
+        onHideClick = onHideClick
     ) {
         FungibleIconSection(token = token)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
