@@ -127,7 +127,7 @@ private fun HiddenAssetsContent(
                 }
 
                 assetItems(
-                    items = state.nfts,
+                    items = state.nonFungibles,
                     onUnhideClick = onUnhideClick
                 )
 
@@ -344,7 +344,7 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                         description = null
                     )
                 ),
-                nfts = listOf(
+                nonFungibles = listOf(
                     HiddenAssetsViewModel.State.Asset(
                         address = AssetAddress.NonFungible(NonFungibleGlobalId.sample()),
                         icon = Uri.EMPTY,
@@ -363,13 +363,13 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                         description = null
                     )
                 ),
-                nfts = emptyList(),
+                nonFungibles = emptyList(),
                 poolUnits = emptyList(),
                 unhideAsset = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random())
             ),
             HiddenAssetsViewModel.State(
                 tokens = emptyList(),
-                nfts = emptyList(),
+                nonFungibles = emptyList(),
                 poolUnits = listOf(
                     HiddenAssetsViewModel.State.Asset(
                         address = AssetAddress.PoolUnit(PoolAddress.sampleMainnet.random()),

@@ -95,7 +95,7 @@ class AssetDialogViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         asset = asset,
-                        canBeHidden = !asset.resource.address.isXRD && asset !is StakeClaim
+                        canBeHidden = !asset.resource.address.isXRD && asset !is StakeClaim && asset !is LiquidStakeUnit
                     )
                 }
 
