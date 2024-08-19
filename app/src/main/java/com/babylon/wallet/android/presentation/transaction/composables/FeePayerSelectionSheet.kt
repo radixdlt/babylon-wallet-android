@@ -37,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -282,12 +281,9 @@ private fun FeePayerCard(
                         end = RadixTheme.dimensions.paddingDefault
                     ),
                 text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
-                contentColor = RadixTheme.colors.orange1,
+                contentColor = RadixTheme.colors.red1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
-                textStyle = RadixTheme.typography.body1StandaloneLink.copy(
-                    fontSize = 14.sp
-                ),
-                spacing = RadixTheme.dimensions.paddingXSmall
+                textStyle = RadixTheme.typography.body1Header
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
