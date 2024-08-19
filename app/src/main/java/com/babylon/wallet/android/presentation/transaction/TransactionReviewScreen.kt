@@ -339,6 +339,7 @@ private fun TransactionPreviewContent(
                             fees = state.transactionFees,
                             noFeePayerSelected = state.noFeePayerSelected,
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                            isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
                             isNetworkFeeLoading = state.isNetworkFeeLoading,
                             onCustomizeClick = onCustomizeClick
                         )
@@ -369,6 +370,7 @@ private fun TransactionPreviewContent(
                     sheetState = state.sheetState,
                     transactionFees = state.transactionFees,
                     insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                    isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
                     onCloseBottomSheetClick = onCloseBottomSheetClick,
                     onGuaranteesApplyClick = onGuaranteesApplyClick,
                     onGuaranteeValueChanged = onGuaranteeValueChanged,
@@ -413,6 +415,7 @@ private fun BottomSheetContent(
     sheetState: State.Sheet,
     transactionFees: TransactionFees,
     insufficientBalanceToPayTheFee: Boolean,
+    isSelectedFeePayerInvolvedInTransaction: Boolean,
     onCloseBottomSheetClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
@@ -444,6 +447,7 @@ private fun BottomSheetContent(
                 state = sheetState,
                 transactionFees = transactionFees,
                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
+                isSelectedFeePayerInvolvedInTransaction = isSelectedFeePayerInvolvedInTransaction,
                 onClose = onCloseBottomSheetClick,
                 onChangeFeePayerClick = onChangeFeePayerClick,
                 onSelectFeePayerClick = onSelectFeePayerClick,
