@@ -156,9 +156,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun onWordSelected(index: Int, value: String) {
         seedPhraseInputDelegate.onWordSelected(index, value)
-        viewModelScope.launch {
-            sendEvent(Event.MoveToNextWord)
-        }
     }
 
     fun onPassphraseChanged(value: String) {
@@ -308,7 +305,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data class FinishRestoration(val isMovingToMain: Boolean) : Event
         data object CloseApp : Event
-        data object MoveToNextWord : Event
     }
 }
 
