@@ -10,8 +10,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AssetAddress
-import com.radixdlt.sargon.extensions.asIdentifiable
-import com.radixdlt.sargon.extensions.hiddenAssets
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOn
@@ -21,6 +19,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.keyImageUrl
+import rdx.works.core.sargon.hidden
+import rdx.works.core.sargon.pools
 import rdx.works.profile.domain.ChangeAssetVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -58,7 +58,7 @@ class HiddenAssetsViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.flow
                 .map { profile ->
-                    val hiddenAssetAddresses = profile.appPreferences.assets.asIdentifiable().hiddenAssets
+                    val hiddenAssetAddresses = profile.appPreferences.assets.hidden()
                     val resources = buildResources(hiddenAssetAddresses)
 
                     State(
@@ -92,7 +92,7 @@ class HiddenAssetsViewModel @Inject constructor(
                                 address = AssetAddress.PoolUnit(pool.address),
                                 icon = pool.metadata.keyImageUrl(),
                                 name = pool.name.takeIf { it.isNotBlank() },
-                                description = pool.associatedDApp?.name
+                                description = pool.associatedDApp?.name?.takeIf { it.isNotBlank() }
                             )
                         }
                     )
@@ -114,7 +114,6 @@ class HiddenAssetsViewModel @Inject constructor(
                 else -> null
             }
         }
-        val poolAddresses = addresses.mapNotNull { address -> (address as? AssetAddress.PoolUnit)?.v1 }
 
         val resources = stateRepository.getResources(
             addresses = resourceAddresses.toSet(),
@@ -138,7 +137,7 @@ class HiddenAssetsViewModel @Inject constructor(
                 collection.copy(items = nfts[collection.address].orEmpty())
             },
             pools = stateRepository.getPools(
-                poolAddresses = poolAddresses.toSet()
+                poolAddresses = addresses.pools().toSet()
             ).getOrThrow()
         )
     }

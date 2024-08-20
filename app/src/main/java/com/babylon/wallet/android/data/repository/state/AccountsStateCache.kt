@@ -63,6 +63,9 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.AccountType
 import rdx.works.core.domain.resources.metadata.poolUnit
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.hiddenFungibles
+import rdx.works.core.sargon.hiddenNonFungibles
+import rdx.works.core.sargon.hiddenPools
 import rdx.works.core.toUnitResult
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -268,7 +271,7 @@ class AccountsStateCache @Inject constructor(
         result
     }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = transform { cached ->
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenAssets().transform { cached ->
         val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
             emit(emptyList())
             return@transform
@@ -331,6 +334,20 @@ class AccountsStateCache @Inject constructor(
                 }
             )
         }
+    }
+
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenAssets(): Flow<MutableMap<AccountAddress, AccountCachedData>> = map { cached ->
+        val assetPreferences = profileRepository.profile.first().appPreferences.assets
+        val hiddenPoolAddresses = assetPreferences.hiddenPools().toSet()
+        val hiddenFungibleAddresses = assetPreferences.hiddenFungibles().toSet()
+
+        cached.mapValues { entry ->
+            entry.value.copy(
+                fungibles = entry.value.fungibles.filterNot { it.address in hiddenFungibleAddresses }
+                    .filterNot { it.poolAddress in hiddenPoolAddresses }
+                    .toMutableList()
+            )
+        }.toMutableMap()
     }
 
     private data class AccountCachedData(
