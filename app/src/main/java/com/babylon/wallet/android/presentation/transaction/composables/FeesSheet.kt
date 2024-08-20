@@ -204,8 +204,9 @@ fun FeesSheet(
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
                             text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
-                            contentColor = RadixTheme.colors.orange1,
-                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                            contentColor = RadixTheme.colors.red1,
+                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+                            textStyle = RadixTheme.typography.body1Header
                         )
                     }
                 }

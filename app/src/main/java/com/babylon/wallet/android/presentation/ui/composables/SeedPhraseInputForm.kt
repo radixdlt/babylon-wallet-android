@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -21,11 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -53,9 +49,9 @@ fun SeedPhraseInputForm(
     onPassphraseChanged: (String) -> Unit,
     bip39Passphrase: String,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    showAdvancedMode: Boolean = true
+    showAdvancedMode: Boolean = true,
+    initiallyFocusedIndex: Int? = null
 ) {
-    val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier
     ) {
@@ -72,7 +68,6 @@ fun SeedPhraseInputForm(
                     SeedPhraseWordInput(
                         onWordChanged = onWordChanged,
                         word = word,
-                        focusManager = focusManager,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
@@ -81,7 +76,8 @@ fun SeedPhraseInputForm(
                                 onFocusedWordIndexChanged(word.index)
                             }
                         },
-                        enabled = word.inputDisabled.not()
+                        enabled = word.inputDisabled.not(),
+                        hasInitialFocus = initiallyFocusedIndex == word.index
                     )
                 }
             }
@@ -142,10 +138,10 @@ fun SeedPhraseSuggestions(
 private fun SeedPhraseWordInput(
     onWordChanged: (Int, String) -> Unit,
     word: SeedPhraseWord,
-    focusManager: FocusManager,
     modifier: Modifier = Modifier,
     onFocusChanged: ((FocusState) -> Unit)?,
-    enabled: Boolean
+    enabled: Boolean,
+    hasInitialFocus: Boolean
 ) {
     MnemonicWordTextField(
         modifier = modifier,
@@ -190,7 +186,6 @@ private fun SeedPhraseWordInput(
                 null
             }
         },
-        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
         keyboardOptions = KeyboardOptions(
             imeAction = when {
                 word.lastWord -> {
@@ -207,7 +202,8 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
-        highlightField = false
+        highlightField = false,
+        hasInitialFocus = hasInitialFocus
     )
 }
 

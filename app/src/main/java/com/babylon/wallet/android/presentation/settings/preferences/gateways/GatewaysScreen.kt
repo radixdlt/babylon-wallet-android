@@ -19,13 +19,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
@@ -63,7 +60,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GatewaysScreen(
     viewModel: GatewaysViewModel,
@@ -81,13 +77,6 @@ fun GatewaysScreen(
         onAddGatewayClick = { viewModel.setAddGatewaySheetVisible(true) },
         oneOffEvent = viewModel.oneOffEvent,
         onCreateProfile = onCreateProfile
-    )
-
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    SyncSheetState(
-        sheetState = bottomSheetState,
-        isSheetVisible = state.addGatewayInput != null,
-        onSheetClosed = { viewModel.setAddGatewaySheetVisible(false) }
     )
 
     state.addGatewayInput?.let { input ->
