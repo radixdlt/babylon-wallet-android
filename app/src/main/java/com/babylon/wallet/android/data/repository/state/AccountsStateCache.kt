@@ -120,11 +120,30 @@ class AccountsStateCache @Inject constructor(
             }
         }
         .transform { cachedAccounts ->
+            val hiddenNftIds = profileRepository.profile.first().appPreferences.assets.hiddenNonFungibles()
             val accountsToReturn = accounts.map { account ->
                 cachedAccounts.find { it.address == account.address }?.toAccountWithAssets(
                     account = account,
                     dao = dao
-                ) ?: AccountWithAssets(account = account)
+                )?.let { accountWithAssets ->
+                    accountWithAssets.copy(
+                        assets = accountWithAssets.assets?.copy(
+                            nonFungibles = accountWithAssets.assets.nonFungibles.mapNotNull { nonFungible ->
+                                if (nonFungible.collection.items.isNotEmpty()) {
+                                    val newItems = nonFungible.collection.items.filterNot { it.globalId in hiddenNftIds }
+                                    nonFungible.copy(
+                                        collection = nonFungible.collection.copy(
+                                            items = newItems,
+                                            displayAmount = newItems.size.toLong()
+                                        )
+                                    ).takeIf { newItems.isNotEmpty() }
+                                } else {
+                                    nonFungible
+                                }
+                            }
+                        )
+                    )
+                } ?: AccountWithAssets(account = account)
             }
             emit(accountsToReturn)
 
@@ -271,47 +290,58 @@ class AccountsStateCache @Inject constructor(
         result
     }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenAssets().transform { cached ->
-        val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
-            emit(emptyList())
-            return@transform
-        }
-
-        val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
-        val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
-        val newValidators = runCatching {
-            val validatorItems = api.fetchValidators(
-                allValidatorAddresses - cachedValidators.keys,
-                stateVersion
-            ).validators
-
-            val syncInfo = SyncInfo(InstantGenerator(), stateVersion)
-            validatorItems.map {
-                it.asValidatorEntity(syncInfo)
-            }.onEach { entity ->
-                cachedValidators[entity.address] = entity.asValidatorDetail()
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenAssets()
+        .transform { cached ->
+            val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
+                emit(emptyList())
+                return@transform
             }
-        }.onFailure { cacheErrors.value = it }.getOrNull() ?: return@transform
 
-        if (newValidators.isNotEmpty()) {
-            logger.d("\uD83D\uDCBD Inserting validators")
-            dao.insertValidators(newValidators)
-        }
+            val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
+            val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
+            val newValidators = runCatching {
+                val validatorItems = api.fetchValidators(
+                    allValidatorAddresses - cachedValidators.keys,
+                    stateVersion
+                ).validators
 
-        val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
-        val cachedPools = dao.getCachedPools(allPoolAddresses, stateVersion).toMutableMap()
-        val unknownPools = allPoolAddresses - cachedPools.keys
-        if (unknownPools.isNotEmpty()) {
-            logger.d("\uD83D\uDCBD Inserting pools")
-            val newPools = runCatching {
-                api.fetchPools(unknownPools.toSet(), stateVersion)
-            }.onFailure { error ->
-                cacheErrors.value = error
-            }.getOrNull() ?: return@transform
+                val syncInfo = SyncInfo(InstantGenerator(), stateVersion)
+                validatorItems.map { it.asValidatorEntity(syncInfo) }
+                    .onEach { entity ->
+                        cachedValidators[entity.address] = entity.asValidatorDetail()
+                    }
+            }.onFailure { cacheErrors.value = it }.getOrNull() ?: return@transform
 
-            if (newPools.poolItems.isNotEmpty()) {
-                val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
-                dao.updatePools(pools = join)
+            if (newValidators.isNotEmpty()) {
+                logger.d("\uD83D\uDCBD Inserting validators")
+                dao.insertValidators(newValidators)
+            }
+
+            val allPoolAddresses = cached.map { it.value.poolAddresses() }.flatten().toSet()
+            val cachedPools = dao.getCachedPools(allPoolAddresses, stateVersion).toMutableMap()
+            val unknownPools = allPoolAddresses - cachedPools.keys
+            if (unknownPools.isNotEmpty()) {
+                logger.d("\uD83D\uDCBD Inserting pools")
+                val newPools = runCatching {
+                    api.fetchPools(unknownPools.toSet(), stateVersion)
+                }.onFailure { error ->
+                    cacheErrors.value = error
+                }.getOrNull() ?: return@transform
+
+                if (newPools.poolItems.isNotEmpty()) {
+                    val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                    dao.updatePools(pools = join)
+                } else {
+                    emit(
+                        cached.mapNotNull {
+                            it.value.toAccountAddressWithAssets(
+                                accountAddress = it.key,
+                                pools = cachedPools,
+                                validators = cachedValidators
+                            )
+                        }
+                    )
+                }
             } else {
                 emit(
                     cached.mapNotNull {
@@ -323,20 +353,9 @@ class AccountsStateCache @Inject constructor(
                     }
                 )
             }
-        } else {
-            emit(
-                cached.mapNotNull {
-                    it.value.toAccountAddressWithAssets(
-                        accountAddress = it.key,
-                        pools = cachedPools,
-                        validators = cachedValidators
-                    )
-                }
-            )
         }
-    }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenAssets(): Flow<MutableMap<AccountAddress, AccountCachedData>> = map { cached ->
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenAssets() = map { cached ->
         val assetPreferences = profileRepository.profile.first().appPreferences.assets
         val hiddenPoolAddresses = assetPreferences.hiddenPools().toSet()
         val hiddenFungibleAddresses = assetPreferences.hiddenFungibles().toSet()
@@ -460,26 +479,25 @@ class AccountsStateCache @Inject constructor(
         val assets: Assets?
     ) {
 
-        fun toAccountWithAssets(account: Account, dao: StateDao) = AccountWithAssets(
-            account = account,
-            details = details,
-            assets = details?.stateVersion?.let { stateVersion ->
-                val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.address, stateVersion)
-                        .map { it.toItem() }.sorted()
-                    nonFungible.copy(collection = nonFungible.collection.copy(items = items))
-                }.orEmpty()
-
-                val updatedClaims = assets?.stakeClaims?.map { stakeClaim ->
-                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
-                        .map { it.toItem() }
-                        .sorted()
-                    stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))
-                }.orEmpty()
-
-                assets?.copy(nonFungibles = nonFungibles, stakeClaims = updatedClaims)
-            } ?: assets
-        )
+        fun toAccountWithAssets(account: Account, dao: StateDao): AccountWithAssets {
+            return AccountWithAssets(
+                account = account,
+                details = details,
+                assets = assets?.copy(
+                    nonFungibles = assets.nonFungibles.map { nonFungible ->
+                        val items = dao.getOwnedNfts(account.address, nonFungible.collection.address)
+                            .map { it.toItem() }.sorted()
+                        nonFungible.copy(collection = nonFungible.collection.copy(items = items))
+                    },
+                    stakeClaims = assets.stakeClaims.map { stakeClaim ->
+                        val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress)
+                            .map { it.toItem() }
+                            .sorted()
+                        stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))
+                    }
+                )
+            )
+        }
     }
 
     companion object {

@@ -53,6 +53,7 @@ import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.ownerKeyHashes
 import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.hiddenNonFungibles
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
@@ -145,10 +146,17 @@ class StateRepositoryImpl @Inject constructor(
                 resourceAddress = resource.address,
                 stateVersion = accountStateVersion
             )
+            val hiddenNftIds = profileRepository.profile.first().appPreferences.assets.hiddenNonFungibles()
 
             // All items cached, return the result
             if (cachedNFTItems.size == resource.amount.toInt()) {
-                return@runCatching resource.copy(items = cachedNFTItems.map { it.toItem() }.sorted())
+                val items = cachedNFTItems.map { it.toItem() }
+                    .filterNot { it.globalId in hiddenNftIds }
+                    .sorted()
+                return@runCatching resource.copy(
+                    items = items,
+                    displayAmount = items.size.toLong()
+                )
             }
 
             val vaultAddress = accountResourceJoin?.vaultAddress ?: throw StateRepository.Error.VaultAddressMissing
@@ -171,9 +179,16 @@ class StateRepositoryImpl @Inject constructor(
                 syncInfo = syncInfo
             )
             val currentItems = resource.items
-            val allNewItems = (currentItems + newItems).distinctBy { it.localId }.sorted()
+            val allNewItems = (currentItems + newItems)
+                .filterNot { it.globalId in hiddenNftIds }
+                .distinctBy { it.localId }
+                .sorted()
+            val hiddenNftIdsForResource = hiddenNftIds.filter { it.resourceAddress == resource.address }
 
-            resource.copy(items = allNewItems)
+            resource.copy(
+                items = allNewItems,
+                displayAmount = (resource.amount - hiddenNftIdsForResource.size)
+            )
         }
     }
 

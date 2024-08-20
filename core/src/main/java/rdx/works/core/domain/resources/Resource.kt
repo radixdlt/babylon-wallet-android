@@ -155,6 +155,7 @@ sealed class Resource {
     data class NonFungibleResource(
         override val address: ResourceAddress,
         val amount: Long,
+        val displayAmount: Long,
         private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
@@ -386,6 +387,7 @@ val Resource.NonFungibleResource.Companion.sampleMainnet
         override fun invoke(): Resource.NonFungibleResource = Resource.NonFungibleResource(
             address = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
             amount = 2,
+            displayAmount = 2,
             metadata = listOf(
                 Metadata.Primitive(
                     key = ExplicitMetadataKey.NAME.key,
@@ -409,6 +411,7 @@ val Resource.NonFungibleResource.Companion.sampleMainnet
             Resource.NonFungibleResource(
                 address = this,
                 amount = 1,
+                displayAmount = 1,
                 metadata = listOf(
                     Metadata.Primitive(
                         key = ExplicitMetadataKey.NAME.key,
@@ -429,6 +432,7 @@ val Resource.NonFungibleResource.Companion.sampleMainnet
             Resource.NonFungibleResource(
                 address = this,
                 amount = 1,
+                displayAmount = 1,
                 metadata = listOf(
                     Metadata.Primitive(
                         key = ExplicitMetadataKey.NAME.key,

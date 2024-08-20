@@ -231,9 +231,9 @@ private fun AssetLayout(
                 style = RadixTheme.typography.body1HighImportance
             )
 
-            asset.description?.let {
+            if (asset.hasDescription) {
                 Text(
-                    text = it,
+                    text = asset.description ?: stringResource(id = R.string.dash),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body2Regular
                 )
@@ -323,25 +323,29 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                         address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
                         name = "BTC",
-                        description = null
+                        description = null,
+                        hasDescription = false
                     ),
                     HiddenAssetsViewModel.State.Asset(
                         address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
                         name = "rUSD",
-                        description = null
+                        description = null,
+                        hasDescription = false
                     ),
                     HiddenAssetsViewModel.State.Asset(
                         address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
                         name = "1 Willshire Boulevard",
-                        description = null
+                        description = null,
+                        hasDescription = false
                     ),
                     HiddenAssetsViewModel.State.Asset(
                         address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
                         name = "TOPSHOT",
-                        description = null
+                        description = null,
+                        hasDescription = false
                     )
                 ),
                 nonFungibles = listOf(
@@ -349,7 +353,8 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                         address = AssetAddress.NonFungible(NonFungibleGlobalId.sample()),
                         icon = Uri.EMPTY,
                         name = "Devin Booker - Dunk",
-                        description = "dbooker_dunk_39"
+                        description = "dbooker_dunk_39",
+                        hasDescription = true
                     )
                 ),
                 poolUnits = emptyList()
@@ -360,7 +365,8 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                         address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
                         name = "BTC",
-                        description = null
+                        description = null,
+                        hasDescription = false
                     )
                 ),
                 nonFungibles = emptyList(),
@@ -376,6 +382,7 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                         icon = null,
                         name = "Pool Unit",
                         description = null,
+                        hasDescription = true
                     )
                 )
             ),

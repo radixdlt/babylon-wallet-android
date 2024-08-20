@@ -68,7 +68,8 @@ class HiddenAssetsViewModel @Inject constructor(
                                 address = AssetAddress.Fungible(resource.address),
                                 icon = resource.iconUrl,
                                 name = resource.symbol.ifBlank { resource.name },
-                                description = null
+                                description = null,
+                                hasDescription = false
                             )
                         },
                         nonFungibles = hiddenAssetAddresses.mapNotNull {
@@ -84,7 +85,8 @@ class HiddenAssetsViewModel @Inject constructor(
                                 address = assetAddress,
                                 icon = item?.imageUrl ?: resource.iconUrl,
                                 name = resource.name,
-                                description = item?.name
+                                description = item?.name,
+                                hasDescription = true
                             )
                         },
                         poolUnits = resources.pools.map { pool ->
@@ -92,7 +94,8 @@ class HiddenAssetsViewModel @Inject constructor(
                                 address = AssetAddress.PoolUnit(pool.address),
                                 icon = pool.metadata.keyImageUrl(),
                                 name = pool.name.takeIf { it.isNotBlank() },
-                                description = pool.associatedDApp?.name?.takeIf { it.isNotBlank() }
+                                description = pool.associatedDApp?.name?.takeIf { it.isNotBlank() },
+                                hasDescription = true
                             )
                         }
                     )
@@ -122,7 +125,7 @@ class HiddenAssetsViewModel @Inject constructor(
             withAllMetadata = false
         ).getOrThrow()
 
-        val nfts = resourceAddresses.filterIsInstance<AssetAddress.NonFungible>()
+        val nfts = addresses.filterIsInstance<AssetAddress.NonFungible>()
             .groupBy { it.v1.resourceAddress }
             .mapValues { entry ->
                 stateRepository.getNFTDetails(
@@ -164,7 +167,8 @@ class HiddenAssetsViewModel @Inject constructor(
             val address: AssetAddress,
             val icon: Uri?,
             val name: String?,
-            val description: String?
+            val description: String?,
+            val hasDescription: Boolean
         )
     }
 }
