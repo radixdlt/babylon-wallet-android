@@ -1262,4 +1262,11 @@ Code: %s</string>
   <string name="hiddenEntities_unhide">Unhide</string>
   <string name="hiddenEntities_unhideAccountsConfirmation">Make this Account visible in your wallet again?</string>
   <string name="hiddenEntities_unhidePersonasConfirmation">Make this Persona visible in your wallet again?</string>
+  <string name="hiddenAssets_title">Hidden Assets</string>
+  <string name="hiddenAssets_text">You have hidden the following assets. While hidden, you will not see these in any of your Accounts.</string>
+  <string name="hiddenAssets_fungibles">Tokens</string>
+  <string name="hiddenAssets_nonFungibles">NFTs</string>
+  <string name="hiddenAssets_poolUnits">Pool Units</string>
+  <string name="hiddenAssets_unhide">Unhide</string>
+  <string name="hiddenAssets_unhideConfirmation">Make this asset visible in your Accounts again?</string>
 </resources>
