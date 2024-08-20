@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -24,10 +25,10 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 fun TransferableTokenItemContent(
     modifier: Modifier = Modifier,
     transferable: Transferable,
-    shape: Shape
+    shape: Shape,
+    isHidden: Boolean
 ) {
-    Row(
-        verticalAlignment = CenterVertically,
+    Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
@@ -37,34 +38,39 @@ fun TransferableTokenItemContent(
             .padding(
                 horizontal = RadixTheme.dimensions.paddingDefault,
                 vertical = RadixTheme.dimensions.paddingMedium
-            ),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            )
     ) {
-        when (val resource = transferable.transferable) {
-            is TransferableAsset.Fungible.Token -> {
-                Thumbnail.Fungible(
-                    modifier = Modifier.size(44.dp),
-                    token = resource.resource,
-                )
-            }
+        Row(
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            when (val resource = transferable.transferable) {
+                is TransferableAsset.Fungible.Token -> {
+                    Thumbnail.Fungible(
+                        modifier = Modifier.size(44.dp),
+                        token = resource.resource,
+                    )
+                }
 
-            is TransferableAsset.NonFungible.NFTAssets -> {
-                Thumbnail.NonFungible(
-                    modifier = Modifier.size(44.dp),
-                    collection = resource.resource
-                )
-            }
+                is TransferableAsset.NonFungible.NFTAssets -> {
+                    Thumbnail.NonFungible(
+                        modifier = Modifier.size(44.dp),
+                        collection = resource.resource
+                    )
+                }
 
-            else -> {}
+                else -> {}
+            }
+            Text(
+                modifier = Modifier.weight(1f),
+                text = transferable.transferable.displayTitle(),
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            GuaranteesSection(transferable)
         }
-        Text(
-            modifier = Modifier.weight(1f),
-            text = transferable.transferable.displayTitle(),
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        GuaranteesSection(transferable)
+        TransferableHiddenItemWarning(isHidden = isHidden)
     }
 }

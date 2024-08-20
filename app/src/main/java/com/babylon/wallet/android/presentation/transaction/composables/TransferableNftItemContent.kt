@@ -27,10 +27,10 @@ fun TransferableNftItemContent(
     modifier: Modifier = Modifier,
     shape: Shape,
     asset: TransferableAsset.NonFungible.NFTAssets,
-    nftItem: Resource.NonFungibleResource.Item
+    nftItem: Resource.NonFungibleResource.Item,
+    isHidden: Boolean
 ) {
-    Row(
-        verticalAlignment = CenterVertically,
+    Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .background(
@@ -40,29 +40,34 @@ fun TransferableNftItemContent(
             .padding(
                 horizontal = RadixTheme.dimensions.paddingDefault,
                 vertical = RadixTheme.dimensions.paddingMedium
-            ),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            )
     ) {
-        Thumbnail.NonFungible(
-            modifier = Modifier.size(44.dp),
-            collection = asset.resource
-        )
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-            Text(
-                text = asset.displayTitle(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+        Row(
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Thumbnail.NonFungible(
+                modifier = Modifier.size(44.dp),
+                collection = asset.resource
             )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                Text(
+                    text = asset.displayTitle(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
 
-            Text(
-                text = nftItem.displaySubtitle(),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+                Text(
+                    text = nftItem.displaySubtitle(),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
+        TransferableHiddenItemWarning(isHidden = isHidden)
     }
 }

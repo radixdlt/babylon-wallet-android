@@ -31,16 +31,23 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AssetAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
+import rdx.works.core.sargon.fungibles
+import rdx.works.core.sargon.nonFungibles
+import rdx.works.core.sargon.pools
 
 @Composable
 fun TransactionAccountCard(
     modifier: Modifier = Modifier,
     account: AccountWithTransferableResources,
+    hiddenAssetAddresses: PersistentList<AssetAddress>,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
@@ -64,6 +71,10 @@ fun TransactionAccountCard(
                     },
                     transferable = transferable,
                     shape = shape,
+                    isHidden = androidx.compose.runtime.remember(
+                        asset,
+                        hiddenAssetAddresses
+                    ) { asset.resource.address in hiddenAssetAddresses.fungibles() }
                 )
 
                 is TransferableAsset.NonFungible.NFTAssets -> {
@@ -76,7 +87,11 @@ fun TransactionAccountCard(
                             },
                             asset = asset,
                             shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
-                            nftItem = item
+                            nftItem = item,
+                            isHidden = androidx.compose.runtime.remember(
+                                item,
+                                hiddenAssetAddresses
+                            ) { item.globalId in hiddenAssetAddresses.nonFungibles() }
                         )
                     }
                 }
@@ -84,6 +99,10 @@ fun TransactionAccountCard(
                 is TransferableAsset.Fungible.PoolUnitAsset -> TransferablePoolUnitItemContent(
                     transferable = transferable,
                     shape = shape,
+                    isHidden = androidx.compose.runtime.remember(
+                        asset,
+                        hiddenAssetAddresses
+                    ) { asset.resource.poolAddress in hiddenAssetAddresses.pools() },
                     onClick = onTransferableFungibleClick
                 )
 
@@ -193,6 +212,7 @@ fun TransactionAccountCardPreview() {
                     )
                 )
             ),
+            hiddenAssetAddresses = persistentListOf(),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleClick = { _, _ -> }
         )

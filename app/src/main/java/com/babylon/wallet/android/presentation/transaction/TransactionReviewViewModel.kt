@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AssetAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
@@ -40,14 +42,19 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
+import rdx.works.core.sargon.hidden
+import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -60,6 +67,8 @@ class TransactionReviewViewModel @Inject constructor(
     private val submit: TransactionSubmitDelegate,
     private val getDAppsUseCase: GetDAppsUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val getProfileUseCase: GetProfileUseCase,
+    @DefaultDispatcher private val coroutineDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -72,6 +81,8 @@ class TransactionReviewViewModel @Inject constructor(
     )
 
     init {
+        initState()
+
         analysis(scope = viewModelScope, state = _state)
         guarantees(scope = viewModelScope, state = _state)
         fees(scope = viewModelScope, state = _state)
@@ -80,6 +91,18 @@ class TransactionReviewViewModel @Inject constructor(
 
         observeDeferredRequests()
         processIncomingRequest()
+    }
+
+    private fun initState() {
+        viewModelScope.launch {
+            withContext(coroutineDispatcher) {
+                _state.update {
+                    it.copy(
+                        hiddenAssetAddresses = getProfileUseCase().appPreferences.assets.hidden().toPersistentList()
+                    )
+                }
+            }
+        }
     }
 
     private fun observeDeferredRequests() {
@@ -256,7 +279,8 @@ class TransactionReviewViewModel @Inject constructor(
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val selectedFeePayerInput: SelectFeePayerInput? = null
+        val selectedFeePayerInput: SelectFeePayerInput? = null,
+        val hiddenAssetAddresses: PersistentList<AssetAddress> = persistentListOf()
     ) : UiState {
 
         val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
