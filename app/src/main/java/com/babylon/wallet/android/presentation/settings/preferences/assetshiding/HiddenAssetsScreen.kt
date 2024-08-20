@@ -89,7 +89,7 @@ private fun HiddenAssetsContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = stringResource(R.string.appSettings_assetHiding_title),
+                    title = stringResource(R.string.hiddenAssets_title),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
@@ -106,7 +106,7 @@ private fun HiddenAssetsContent(
         ) {
             item {
                 Text(
-                    text = stringResource(R.string.appSettings_assetHiding_text),
+                    text = stringResource(R.string.hiddenAssets_text),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
                 )
@@ -114,7 +114,7 @@ private fun HiddenAssetsContent(
 
             if (!state.isLoading) {
                 item {
-                    TitleLayout(text = stringResource(id = R.string.appSettings_assetHiding_tokens))
+                    TitleLayout(text = stringResource(id = R.string.hiddenAssets_fungibles))
                 }
 
                 assetItems(
@@ -123,7 +123,7 @@ private fun HiddenAssetsContent(
                 )
 
                 item {
-                    TitleLayout(text = stringResource(id = R.string.appSettings_assetHiding_nfts))
+                    TitleLayout(text = stringResource(id = R.string.hiddenAssets_nonFungibles))
                 }
 
                 assetItems(
@@ -132,7 +132,7 @@ private fun HiddenAssetsContent(
                 )
 
                 item {
-                    TitleLayout(text = stringResource(id = R.string.appSettings_assetHiding_poolUnits))
+                    TitleLayout(text = stringResource(id = R.string.hiddenAssets_poolUnits))
                 }
 
                 assetItems(
@@ -153,7 +153,7 @@ private fun HiddenAssetsContent(
                 },
                 message = {
                     Text(
-                        text = stringResource(id = R.string.appSettings_assetHiding_unhideConfirmationTitle),
+                        text = stringResource(id = R.string.hiddenAssets_unhideConfirmation),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -243,7 +243,7 @@ private fun AssetLayout(
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
 
         RadixSecondaryButton(
-            text = stringResource(id = R.string.appSettings_assetHiding_unhideButton),
+            text = stringResource(id = R.string.hiddenAssets_unhide),
             onClick = { onUnhideClick(asset.address) }
         )
     }
@@ -288,7 +288,7 @@ private fun NoAssets() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = stringResource(id = R.string.appSettings_assetHiding_none),
+            text = stringResource(id = R.string.common_none),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray2
         )
