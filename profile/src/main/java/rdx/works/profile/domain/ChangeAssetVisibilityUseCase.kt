@@ -11,7 +11,6 @@ import kotlinx.coroutines.withContext
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import timber.log.Timber
 import javax.inject.Inject
 
 class ChangeAssetVisibilityUseCase @Inject constructor(
@@ -36,9 +35,7 @@ class ChangeAssetVisibilityUseCase @Inject constructor(
             val profile = profileRepository.profile.first()
             val updatedProfile = profile.copy(
                 appPreferences = profile.appPreferences.copy(
-                    assets = runCatching { operation(profile.appPreferences.assets.asIdentifiable()).asList() }
-                        .onFailure { Timber.w("Failed to update resource preferences. Error: ${it.message}") }
-                        .getOrNull() ?: profile.appPreferences.assets
+                    assets = operation(profile.appPreferences.assets.asIdentifiable()).asList()
                 )
             )
             profileRepository.saveProfile(updatedProfile)
