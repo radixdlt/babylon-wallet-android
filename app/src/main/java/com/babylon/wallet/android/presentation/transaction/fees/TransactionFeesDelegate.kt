@@ -9,7 +9,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 class TransactionFeesDelegate @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     @Suppress("NestedBlockDepth")

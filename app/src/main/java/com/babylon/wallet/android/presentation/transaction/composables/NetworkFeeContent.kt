@@ -8,15 +8,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
+import com.babylon.wallet.android.utils.Constants
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
@@ -48,25 +52,30 @@ fun NetworkFeeContent(
 //                tint = RadixTheme.colors.gray3
 //            )
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                modifier = Modifier
-                    .placeholder(
-                        visible = isNetworkFeeLoading,
-                        color = RadixTheme.colors.defaultText.copy(alpha = 0.2f),
-                        shape = RadixTheme.shapes.roundedRectSmall,
-                        highlight = PlaceholderHighlight.shimmer(
-                            highlightColor = White
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    modifier = Modifier
+                        .placeholder(
+                            visible = isNetworkFeeLoading,
+                            color = RadixTheme.colors.defaultText.copy(alpha = 0.2f),
+                            shape = RadixTheme.shapes.roundedRectSmall,
+                            highlight = PlaceholderHighlight.shimmer(
+                                highlightColor = White
+                            ),
+                            placeholderFadeTransitionSpec = { tween() },
+                            contentFadeTransitionSpec = { tween() }
                         ),
-                        placeholderFadeTransitionSpec = { tween() },
-                        contentFadeTransitionSpec = { tween() }
+                    text = stringResource(
+                        id = R.string.transactionReview_xrdAmount,
+                        fees.transactionFeeToLock.formatted()
                     ),
-                text = stringResource(
-                    id = R.string.transactionReview_xrdAmount,
-                    fees.transactionFeeToLock.formatted()
-                ),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray1
-            )
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray1
+                )
+                fees.transactionFeeTotalUsd?.let { fiatPrice ->
+                    FiatBalanceView(fiatPrice = fiatPrice, decimalPrecision = Constants.FEES_FIAT_VALUE_PRECISION)
+                }
+            }
         }
 
         if (fees.isNetworkCongested) {
@@ -99,7 +108,6 @@ fun NetworkFeeContent(
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
         }
-
         RadixTextButton(
             text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
             enabled = !isNetworkFeeLoading,
@@ -112,11 +120,13 @@ fun NetworkFeeContent(
 @Preview(showBackground = true)
 @Composable
 fun NetworkFeeContentPreview() {
-    NetworkFeeContent(
-        fees = TransactionFees(),
-        noFeePayerSelected = false,
-        insufficientBalanceToPayTheFee = false,
-        isNetworkFeeLoading = false,
-        onCustomizeClick = {}
-    )
+    RadixWalletTheme {
+        NetworkFeeContent(
+            fees = TransactionFees(),
+            noFeePayerSelected = false,
+            insufficientBalanceToPayTheFee = false,
+            isNetworkFeeLoading = false,
+            onCustomizeClick = {}
+        )
+    }
 }

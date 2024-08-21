@@ -18,13 +18,18 @@ import rdx.works.core.domain.assets.SupportedCurrency
 fun FiatBalanceView(
     modifier: Modifier = Modifier,
     fiatPrice: FiatPrice,
-    textStyle: TextStyle = RadixTheme.typography.body2HighImportance
+    textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
+    decimalPrecision: Int? = null
 ) {
     Text(
         modifier = modifier,
         text = if (LocalBalanceVisibility.current) {
             remember(fiatPrice) {
-                fiatPrice.formatted
+                if (decimalPrecision != null) {
+                    fiatPrice.formatted(decimalPrecision)
+                } else {
+                    fiatPrice.defaultFormatted
+                }
             }
         } else {
             remember(fiatPrice) {

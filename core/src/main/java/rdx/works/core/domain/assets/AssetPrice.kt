@@ -8,6 +8,7 @@ import android.os.Build
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
 import rdx.works.core.domain.resources.Resource
@@ -21,26 +22,31 @@ data class FiatPrice(
 
     val isZero = price.isZero
 
-    val formatted: String by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            NumberFormatter.with()
+    val defaultFormatted: String by lazy {
+        formatted()
+    }
+
+    fun formatted(significantDigitsPrecision: Int? = null): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            var formatter = NumberFormatter.with()
                 .unit(Currency.getInstance(currency.name))
                 .locale(Locale.getDefault())
-                .let { localizedNumberFormatter ->
-                    if (price.isZero) {
-                        localizedNumberFormatter.precision(Precision.fixedFraction(NO_PRECISION))
-                    } else {
-                        localizedNumberFormatter
-                    }
-                }
-                .format(price.toDouble())
-                .toString()
+            if (price.isZero) {
+                formatter = formatter.precision(Precision.fixedFraction(NO_PRECISION))
+            } else if (significantDigitsPrecision != null) {
+                formatter = formatter.precision(Precision.fixedSignificantDigits(significantDigitsPrecision))
+            }
+            formatter.format(price.toDouble()).toString()
         } else {
+            val integralPart = price.string.toBigDecimal().toBigInteger()
+            val integralPartLength = if (integralPart.signum() == 0) 0 else integralPart.toString().length
             val javaCurrency = Currency.getInstance(currency.name)
             NumberFormat.getCurrencyInstance().apply {
                 currency = javaCurrency
                 if (price.isZero) {
                     maximumFractionDigits = NO_PRECISION
+                } else if (significantDigitsPrecision != null) {
+                    maximumFractionDigits = (significantDigitsPrecision - integralPartLength).coerceAtLeast(NO_PRECISION)
                 }
             }.format(price.toDouble())
         }

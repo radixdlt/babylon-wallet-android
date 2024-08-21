@@ -1,6 +1,7 @@
 package rdx.works.core.domain
 
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -19,7 +20,7 @@ fun Decimal192.roundedWith(divisibility: Divisibility?) = if (divisibility != nu
 }
 
 // This will later be migrated to Sargon
-fun Decimal192.toDouble() = string.toDouble()
+fun Decimal192.toDouble() = formatted(useGroupingSeparator = false).toDouble()
 
 val Decimal192.Companion.Serializer: KSerializer<Decimal192>
     get() = object : KSerializer<Decimal192> {
