@@ -291,7 +291,7 @@ class TransactionReviewViewModel @Inject constructor(
             selectedFeePayerInput = SelectFeePayerInput(
                 preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
                 candidates = feePayers?.candidates.orEmpty().toPersistentList(),
-                fee = transactionFees.defaultTransactionFee.formatted()
+                fee = transactionFees.transactionFeeToLock.formatted()
             )
         )
 
