@@ -109,7 +109,7 @@ fun MnemonicWordTextField(
                     .focusRequester(focusRequester),
                 value = TextFieldValue(
                     text = value,
-                    selection = TextRange(value.length)
+                    selection = if (enabled) TextRange(value.length) else TextRange.Zero
                 ),
                 onValueChange = { onValueChanged(it.text) },
                 textStyle = textStyle.copy(color = textColor),

@@ -77,6 +77,7 @@ fun RevealSeedPhraseScreen(
                 } else {
                     onBackClick()
                 }
+                viewModel.dismissConfirmSeedPhraseDialog()
             },
             titleText = stringResource(id = R.string.revealSeedPhrase_warningDialog_title),
             messageText = stringResource(id = R.string.revealSeedPhrase_warningDialog_subtitle),

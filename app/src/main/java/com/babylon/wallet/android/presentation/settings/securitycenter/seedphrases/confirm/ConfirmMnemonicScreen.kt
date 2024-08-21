@@ -162,8 +162,7 @@ private fun SeedPhraseView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
             seedPhraseWords = state.seedPhraseState.seedPhraseWords,
-            onWordChanged = onWordChanged,
-            onFocusedWordIndexChanged = {}
+            onWordChanged = onWordChanged
         )
     }
 }
