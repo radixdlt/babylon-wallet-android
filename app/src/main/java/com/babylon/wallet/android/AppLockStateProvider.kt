@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +39,6 @@ class AppLockStateProvider @Inject constructor(
     }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
 
     suspend fun lockApp() {
-        Timber.d("Lock WIP: Lock app, lock paused: ${_state.value.isLockingPaused}")
         if (_state.value.isLockingPaused) return
         val isAppLockEnabled = preferencesManager.isAppLockEnabled.firstOrNull()
         if (isAppLockEnabled == true) {

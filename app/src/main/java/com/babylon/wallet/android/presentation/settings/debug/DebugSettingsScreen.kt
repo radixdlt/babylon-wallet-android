@@ -29,7 +29,8 @@ fun DebugSettingsScreen(
     onBackClick: () -> Unit,
     onItemClick: (SettingsItem.DebugSettingsItem) -> Unit
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val linkConnectionStatusIndicatorState by viewModel.linkConnectionStatusIndicatorState.collectAsStateWithLifecycle()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -57,7 +58,7 @@ fun DebugSettingsScreen(
                                         .padding(all = RadixTheme.dimensions.paddingDefault),
                                     titleRes = debugSettingsItem.titleRes(),
                                     iconResource = debugSettingsItem.getIcon(),
-                                    checked = state.isLinkConnectionStatusIndicatorEnabled,
+                                    checked = linkConnectionStatusIndicatorState.isEnabled,
                                     onCheckedChange = viewModel::onLinkConnectionStatusIndicatorToggled
                                 )
                                 HorizontalDivider(color = RadixTheme.colors.gray5)

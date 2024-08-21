@@ -162,6 +162,7 @@ class MainActivity : FragmentActivity() {
                         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     }
                     if (state.isAppLocked) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                         startActivity(
                             Intent(this@MainActivity, AppLockActivity::class.java).apply {
                                 addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
