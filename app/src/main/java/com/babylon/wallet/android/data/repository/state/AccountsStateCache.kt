@@ -486,7 +486,8 @@ class AccountsStateCache @Inject constructor(
                 assets = assets?.copy(
                     nonFungibles = assets.nonFungibles.map { nonFungible ->
                         val items = dao.getOwnedNfts(account.address, nonFungible.collection.address)
-                            .map { it.toItem() }.sorted()
+                            .map { it.toItem() }
+                            .sorted()
                         nonFungible.copy(collection = nonFungible.collection.copy(items = items))
                     },
                     stakeClaims = assets.stakeClaims.map { stakeClaim ->

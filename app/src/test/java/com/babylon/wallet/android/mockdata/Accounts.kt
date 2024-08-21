@@ -216,6 +216,7 @@ val mockAccountsWithMockAssets = listOf(
                     nonFungibleResource = Resource.NonFungibleResource(
                         address = mockNFTAddressForStakeClaim1,
                         amount = 2L, // number of items
+                        displayAmount = 2L,
                         items = listOf(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = mockNFTAddressForStakeClaim1,
@@ -258,6 +259,7 @@ val mockAccountsWithMockAssets = listOf(
                     nonFungibleResource = Resource.NonFungibleResource(
                         address = mockNFTAddressForStakeClaim2,
                         amount = 1L, // number of items
+                        displayAmount = 1L,
                         items = listOf(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = mockNFTAddressForStakeClaim2,
