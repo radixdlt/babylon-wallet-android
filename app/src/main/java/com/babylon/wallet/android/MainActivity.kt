@@ -221,11 +221,6 @@ class MainActivity : FragmentActivity() {
         viewModel.onAppToForeground()
     }
 
-    override fun onPause() {
-        super.onPause()
-        viewModel.onAppToBackground()
-    }
-
     override fun onUserLeaveHint() {
         if (viewModel.state.value.isAppLockEnabled) {
             val params = WindowManager.LayoutParams().apply {

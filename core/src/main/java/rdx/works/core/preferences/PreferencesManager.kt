@@ -86,13 +86,13 @@ interface PreferencesManager {
 
     suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean)
 
+    suspend fun enableAppLock(enabled: Boolean)
+
     suspend fun clearShowRelinkConnectors()
 
     suspend fun clear(): Preferences
 
     suspend fun markEulaAccepted()
-
-    suspend fun enableAppLock(enabled: Boolean)
 }
 
 @Suppress("TooManyFunctions") // TODO maybe break it into two or more classes
@@ -324,6 +324,12 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun enableAppLock(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_APP_LOCK_ENABLED] = enabled
+        }
+    }
+
     override suspend fun clearShowRelinkConnectors() {
         dataStore.edit { preferences ->
             preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_UPDATE] = false
@@ -336,12 +342,6 @@ class PreferencesManagerImpl @Inject constructor(
     override suspend fun markEulaAccepted() {
         dataStore.edit { preferences ->
             preferences[KEY_EULA_ACCEPTED] = true
-        }
-    }
-
-    override suspend fun enableAppLock(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[KEY_APP_LOCK_ENABLED] = enabled
         }
     }
 

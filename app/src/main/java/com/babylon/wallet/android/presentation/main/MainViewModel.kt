@@ -165,9 +165,8 @@ class MainViewModel @Inject constructor(
 
     private fun observeLockState() {
         viewModelScope.launch {
-            appLockStateProvider.state.collect { lockState ->
+            appLockStateProvider.lockState.collect { lockState ->
                 val isLocked = lockState == LockState.Locked
-                Timber.d("Lock WIP: app isLocked: $isLocked")
                 _state.update { state ->
                     state.copy(isAppLocked = isLocked)
                 }
@@ -378,13 +377,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun onAppToBackground() {
-//        lockJob = appScope.launch {
-//            sendEvent(MainEvent.LockApp)
-//            appStateProvider.lockApp()
-//        }
-    }
-
     private fun startOlympiaErrorCountdown(): Job {
         return viewModelScope.launch {
             while (isActive && state.value.olympiaErrorState?.isCountdownActive == true) {
@@ -409,7 +401,6 @@ class MainViewModel @Inject constructor(
 
 sealed class MainEvent : OneOffEvent {
     data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
-    data object LockApp : MainEvent()
 }
 
 data class MainUiState(

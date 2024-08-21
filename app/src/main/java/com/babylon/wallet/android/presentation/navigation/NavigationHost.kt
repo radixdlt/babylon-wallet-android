@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialo
 import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
-import com.babylon.wallet.android.presentation.dialogs.lock.appLock
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -585,11 +584,6 @@ fun NavigationHost(
                 navController.transactionReview(it) {
                     popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
                 }
-            }
-        )
-        appLock(
-            onUnlock = {
-                navController.popBackStack()
             }
         )
     }

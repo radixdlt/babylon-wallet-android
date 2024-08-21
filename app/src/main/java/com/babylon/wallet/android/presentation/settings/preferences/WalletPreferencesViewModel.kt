@@ -97,7 +97,7 @@ class WalletPreferencesViewModel @Inject constructor(
         preferencesManager.enableCrashReporting(enabled)
     }
 
-    fun onToggleAppLock(enabled: Boolean) {
+    fun onAppLockToggled(enabled: Boolean) {
         viewModelScope.launch {
             preferencesManager.enableAppLock(enabled)
         }

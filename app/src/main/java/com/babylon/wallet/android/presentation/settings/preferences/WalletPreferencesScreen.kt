@@ -50,7 +50,7 @@ fun WalletPreferencesScreen(
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
         onCrashReportingToggled = viewModel::onCrashReportingToggled,
-        onToggleAppLock = viewModel::onToggleAppLock
+        onAppLockToggled = viewModel::onAppLockToggled
     )
 }
 
@@ -62,7 +62,7 @@ private fun WalletPreferencesContent(
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onCrashReportingToggled: (Boolean) -> Unit,
-    onToggleAppLock: (Boolean) -> Unit,
+    onAppLockToggled: (Boolean) -> Unit,
 ) {
     var crashReportingPromptVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -163,7 +163,7 @@ private fun WalletPreferencesContent(
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
                                             onCheckedChange = { checked ->
-                                                onToggleAppLock(checked)
+                                                onAppLockToggled(checked)
                                                 context.setWindowSecure(checked)
                                             }
                                         )
@@ -202,7 +202,7 @@ fun AppSettingsScreenPreview() {
             onDeveloperModeToggled = {},
             onBackClick = {},
             onCrashReportingToggled = {},
-            onToggleAppLock = {}
+            onAppLockToggled = {}
         )
     }
 }

@@ -62,26 +62,6 @@ fun WalletApp(
     val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
-//    val owner = LocalLifecycleOwner.current
-//    DisposableEffect(state.isAppLocked) {
-//        Timber.d("Lock WIP: setting DisposableEffect: isLocked: ${state.isAppLocked}")
-//        val observer = LifecycleEventObserver { _, event ->
-//            if (event == Lifecycle.Event.ON_RESUME) {
-//                if (state.isAppLocked) {
-//                    Timber.d("Lock WIP: Starting lock screen, isLocked: ${state.isAppLocked}")
-//                    context.startActivity(Intent(context, AppLockActivity::class.java))
-//                }
-//            }
-//        }
-//        owner.lifecycle.addObserver(observer)
-//        onDispose {
-//            Timber.d("Lock WIP: disposing")
-//            owner.lifecycle.removeObserver(observer)
-//        }
-//    }
-//    LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
-//        mainViewModel.checkAppLock()
-//    }
     if (state.isAppLocked) {
         FullScreen {
             LockScreenBackground()
@@ -118,11 +98,6 @@ fun WalletApp(
                                 navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                             }
                         }
-                    }
-
-                    MainEvent.LockApp -> {
-//                        navController.appLockScreen()
-//                        context.startActivity(Intent(context, AppLockActivity::class.java))
                     }
                 }
             }

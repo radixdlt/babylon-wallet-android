@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,31 +22,49 @@ class AppLockStateProvider @Inject constructor(
     @ApplicationScope coroutineScope: CoroutineScope
 ) {
 
-    private val _lockState: MutableStateFlow<LockState> = MutableStateFlow(LockState.Locked)
-    val state =
-        combine(getProfileUseCase.state, _lockState, preferencesManager.isAppLockEnabled) { profileState, lockedState, isAppLockEnabled ->
-            when {
-                isAppLockEnabled -> if (profileState is ProfileState.NotInitialised) {
-                    LockState.Unlocked
-                } else {
-                    lockedState
-                }
-
-                else -> LockState.Unlocked
+    private val _state: MutableStateFlow<State> = MutableStateFlow(State())
+    val lockState = combine(
+        getProfileUseCase.state,
+        _state,
+        preferencesManager.isAppLockEnabled
+    ) { profileState, lockedState, isAppLockEnabled ->
+        when {
+            isAppLockEnabled -> if (profileState is ProfileState.NotInitialised) {
+                LockState.Unlocked
+            } else {
+                lockedState.lockState
             }
-        }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
+
+            else -> LockState.Unlocked
+        }
+    }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
 
     suspend fun lockApp() {
+        Timber.d("Lock WIP: Lock app, lock paused: ${_state.value.isLockingPaused}")
+        if (_state.value.isLockingPaused) return
         val isAppLockEnabled = preferencesManager.isAppLockEnabled.firstOrNull()
         if (isAppLockEnabled == true) {
-            _lockState.update { LockState.Locked }
+            _state.update { it.copy(lockState = LockState.Locked) }
         }
     }
 
     fun unlockApp() {
-        _lockState.update { LockState.Unlocked }
+        _state.update { it.copy(lockState = LockState.Unlocked) }
+    }
+
+    fun pauseLocking() {
+        _state.update { it.copy(isLockingPaused = true) }
+    }
+
+    fun resumeLocking() {
+        _state.update { it.copy(isLockingPaused = false) }
     }
 }
+
+data class State(
+    val isLockingPaused: Boolean = false,
+    val lockState: LockState = LockState.Locked
+)
 
 sealed interface LockState {
     data object Locked : LockState
