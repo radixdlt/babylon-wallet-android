@@ -2,9 +2,9 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.NetworkContent
 import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
 import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl

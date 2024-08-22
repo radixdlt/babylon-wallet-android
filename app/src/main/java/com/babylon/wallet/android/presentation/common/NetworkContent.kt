@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain
+package com.babylon.wallet.android.presentation.common
 
 sealed class NetworkContent<out T> {
     data object None : NetworkContent<Nothing>()

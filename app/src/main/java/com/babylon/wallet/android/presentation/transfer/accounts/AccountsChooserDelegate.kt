@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.accounts
 
-import com.babylon.wallet.android.domain.NetworkContent
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
