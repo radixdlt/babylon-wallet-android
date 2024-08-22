@@ -5,8 +5,8 @@ import com.radixdlt.sargon.IdentityAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.core.sargon.hideAccount
-import rdx.works.core.sargon.hidePersona
+import rdx.works.core.sargon.changeAccountVisibility
+import rdx.works.core.sargon.changePersonaVisibility
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -18,18 +18,18 @@ class ChangeEntityVisibilityUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend fun hideAccount(entityAddress: AccountAddress) {
+    suspend fun changeAccountVisibility(entityAddress: AccountAddress, hide: Boolean) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.hideAccount(accountAddress = entityAddress)
+            val updatedProfile = profile.changeAccountVisibility(accountAddress = entityAddress, hide = hide)
             profileRepository.saveProfile(updatedProfile)
         }
     }
 
-    suspend fun hidePersona(entityAddress: IdentityAddress) {
+    suspend fun changePersonaVisibility(entityAddress: IdentityAddress, hide: Boolean) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.hidePersona(identityAddress = entityAddress)
+            val updatedProfile = profile.changePersonaVisibility(identityAddress = entityAddress, isHidden = hide)
             profileRepository.saveProfile(updatedProfile)
         }
     }

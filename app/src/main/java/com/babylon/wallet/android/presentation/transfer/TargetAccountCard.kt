@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -213,28 +215,17 @@ fun TargetAccountCard(
                 }
                 if (targetAccount.isSignatureRequiredForTransfer(resourceAddress = spendingAsset.resourceAddress)) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
-                    Row(
-                        modifier = Modifier
-                            .padding(start = RadixTheme.dimensions.paddingXSmall)
-                            .align(Alignment.Start)
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .align(Alignment.CenterVertically),
-                            painter = painterResource(
-                                id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
-                            ),
-                            contentDescription = null
-                        )
-                        Text(
-                            text = stringResource(id = R.string.assetTransfer_extraSignature_label),
-                            modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
-                            style = RadixTheme.typography.body2Regular,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    SpendingAssetWarning(
+                        text = stringResource(id = R.string.assetTransfer_extraSignature_label),
+                        color = RadixTheme.colors.orange3
+                    )
+                }
+                if (!spendingAsset.canDeposit) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                    SpendingAssetWarning(
+                        text = stringResource(id = R.string.assetTransfer_depositStatus_denied),
+                        color = RadixTheme.colors.red1
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -247,6 +238,34 @@ fun TargetAccountCard(
                 color = RadixTheme.colors.blue2
             )
         }
+    }
+}
+
+@Composable
+fun ColumnScope.SpendingAssetWarning(modifier: Modifier = Modifier, text: String, color: Color) {
+    Row(
+        modifier = modifier
+            .padding(start = RadixTheme.dimensions.paddingXSmall)
+            .align(Alignment.Start)
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(14.dp)
+                .align(Alignment.CenterVertically),
+            painter = painterResource(
+                id = DSR.ic_warning_error
+            ),
+            contentDescription = null,
+            tint = color
+        )
+        Text(
+            text = text,
+            modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
+            style = RadixTheme.typography.body2Regular,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

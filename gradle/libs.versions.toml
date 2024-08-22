@@ -4,6 +4,7 @@ androidx-lifecycle-runtime-ktx = "2.7.0"
 androidx-lifecycle-viewmodel-ktx = "2.7.0"
 lifecycleViewModelCompose = "2.7.0"
 lifecycelRuntimeCompose = "2.7.0"
+lifecycleProcess = "2.8.4"
 compose = "1.6.2"
 composeConstraintLayout = "1.1.0-alpha13"
 composeActivity = "1.8.2"
@@ -154,6 +155,7 @@ googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive",
 workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref = "workManagerRuntimeKtx" }
 androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
 androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
+lifeCycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }

@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.AppLockStateProvider
+import com.babylon.wallet.android.LockState
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -71,6 +73,7 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
+    private val appLockStateProvider: AppLockStateProvider,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -137,24 +140,38 @@ class MainViewModel @Inject constructor(
             combine(
                 getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown,
+                preferencesManager.isAppLockEnabled,
                 cloudBackupErrorStream.errors
-            ) { profileState, isDeviceRootedDialogShown, backupError ->
+            ) { profileState, isDeviceRootedDialogShown, isAppLockEnabled, backupError ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
-                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice
+                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
+                        isAppLockEnabled = isAppLockEnabled
                     )
                 }
             }.collect()
         }
+        observeLockState()
         handleAllIncomingRequests()
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
         processBufferedDeepLinkRequest()
+    }
+
+    private fun observeLockState() {
+        viewModelScope.launch {
+            appLockStateProvider.lockState.collect { lockState ->
+                val isLocked = lockState == LockState.Locked
+                _state.update { state ->
+                    state.copy(isAppLocked = isLocked)
+                }
+            }
+        }
     }
 
     private fun processBufferedDeepLinkRequest() {
@@ -330,6 +347,12 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAppToForeground() {
+        if (!_state.value.isAppLocked) {
+            runForegroundChecks()
+        }
+    }
+
+    private fun runForegroundChecks() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
             val deviceNotSecure = deviceCapabilityHelper.isDeviceSecure().not()
@@ -386,7 +409,9 @@ data class MainUiState(
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState? = null,
     val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
-    val showMobileConnectWarning: Boolean = false
+    val showMobileConnectWarning: Boolean = false,
+    val isAppLocked: Boolean = false,
+    val isAppLockEnabled: Boolean = false
 ) : UiState
 
 data class OlympiaErrorState(
