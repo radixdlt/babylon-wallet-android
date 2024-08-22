@@ -14,6 +14,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import javax.inject.Inject
 
 // TODO translate from network models to domain models
@@ -28,8 +29,8 @@ interface TransactionRepository {
     suspend fun getTransactionPreview(body: TransactionPreviewRequest): Result<TransactionPreviewResponse>
 
     suspend fun getAccountDepositPreValidation(
-        accountAddress: String,
-        resourceAddress: List<String>
+        accountAddress: AccountAddress,
+        resourceAddress: List<ResourceAddress>
     ): Result<AccountDepositResourceRules>
 }
 
@@ -53,14 +54,18 @@ class TransactionRepositoryImpl @Inject constructor(private val transactionApi: 
     }
 
     override suspend fun getAccountDepositPreValidation(
-        accountAddress: String,
-        resourceAddress: List<String>
+        accountAddress: AccountAddress,
+        resourceAddress: List<ResourceAddress>
     ): Result<AccountDepositResourceRules> {
-        return transactionApi.accountDepositPreValidation(AccountDepositPreValidationRequest(accountAddress, resourceAddress)).toResult()
+        return transactionApi.accountDepositPreValidation(
+            AccountDepositPreValidationRequest(
+                accountAddress = accountAddress.string,
+                resourceAddresses = resourceAddress.map { it.string })
+        ).toResult()
             .map { response ->
                 AccountDepositResourceRules(
                     canDepositAll = response.allowsTryDepositBatch,
-                    accountAddress = AccountAddress.init(accountAddress),
+                    accountAddress = accountAddress,
                     resourceRules = response.resourceSpecificBehaviour?.map { behavior ->
                         AccountDepositResourceRules.ResourceDepositRule(
                             resourceAddress = ResourceAddress.init(behavior.resourceAddress),

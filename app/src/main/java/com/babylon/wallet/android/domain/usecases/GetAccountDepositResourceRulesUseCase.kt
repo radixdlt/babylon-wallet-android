@@ -3,6 +3,8 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ResourceAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -14,7 +16,7 @@ class GetAccountDepositResourceRulesUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) {
 
-    suspend operator fun invoke(accountAddressesToResourceAddress: Map<String, Set<String>>): Set<AccountDepositResourceRules> {
+    suspend operator fun invoke(accountAddressesToResourceAddress: Map<AccountAddress, Set<ResourceAddress>>): Set<AccountDepositResourceRules> {
         return withContext(ioDispatcher) {
             accountAddressesToResourceAddress.entries.mapNotNull { entry ->
                 if (entry.value.isEmpty()) {

@@ -221,12 +221,12 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    private suspend fun TransferViewModel.loadAccountDepositResourceRules() {
+    private suspend fun loadAccountDepositResourceRules() {
         val accountAddressesWithResources =
             _state.value.targetAccounts.filterIsInstance<TargetAccount.Other>().mapNotNull { targetAccount ->
-                val address = targetAccount.address?.string ?: return@mapNotNull null
+                val address = targetAccount.address ?: return@mapNotNull null
                 val resourceAddresses = targetAccount.spendingAssets.map {
-                    it.resourceAddressOrGlobalId
+                    it.resourceAddress
                 }.toSet()
                 address to resourceAddresses
             }.filter { it.second.isNotEmpty() }.toMap()
@@ -312,6 +312,9 @@ class TransferViewModel @Inject constructor(
 
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
+
+        val isLoadingAccountDepositResourceRules: Boolean
+            get() = accountDepositResourceRulesSet == null
 
         val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all {
             it.isValidForSubmission

@@ -340,7 +340,8 @@ fun TransferContent(
                     modifier = Modifier
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    enabled = isEnabled
+                    enabled = isEnabled,
+                    isLoading = state.isLoadingAccountDepositResourceRules
                 )
             }
         }
