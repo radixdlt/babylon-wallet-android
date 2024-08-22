@@ -1,8 +1,6 @@
 package rdx.works.core.domain
 
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.hasNetworks
 
 sealed class ProfileState {
@@ -33,10 +31,6 @@ sealed class ProfileState {
     data class Restored(val profile: Profile) : ProfileState() {
         fun hasNetworks(): Boolean {
             return profile.hasNetworks
-        }
-
-        fun isCurrentNetworkMainnet(): Boolean {
-            return profile.currentGateway.network.id == NetworkId.MAINNET
         }
     }
 }
