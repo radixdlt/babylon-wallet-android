@@ -15,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -75,7 +74,11 @@ fun NetworkFeeContent(
                     color = RadixTheme.colors.gray1
                 )
                 fees.transactionFeeTotalUsd?.let { fiatPrice ->
-                    FiatBalanceView(fiatPrice = fiatPrice, decimalPrecision = Constants.FEES_FIAT_VALUE_PRECISION)
+                    FiatBalanceView(
+                        fiatPrice = fiatPrice,
+                        decimalPrecision = Constants.FEES_FIAT_VALUE_PRECISION,
+                        showAlways = true
+                    )
                 }
             }
         }
