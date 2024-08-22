@@ -105,8 +105,8 @@ private fun HiddenEntitiesContent(
             message = {
                 Text(
                     text = when (state.alertState) {
-                        is State.AlertState.ShowUnhideAccount -> "Make this Account visible in your wallet again?" // TODO crowdin
-                        is State.AlertState.ShowUnhidePersona -> "Make this Persona visible in your wallet again?" // TODO crowdin
+                        is State.AlertState.ShowUnhideAccount -> stringResource(id = R.string.hiddenEntities_unhideAccountsConfirmation)
+                        is State.AlertState.ShowUnhidePersona -> stringResource(id = R.string.hiddenEntities_unhidePersonasConfirmation)
                         State.AlertState.None -> stringResource(id = R.string.empty)
                     },
                     style = RadixTheme.typography.body1Header,
@@ -118,7 +118,7 @@ private fun HiddenEntitiesContent(
     }
     Scaffold(modifier = modifier, topBar = {
         RadixCenteredTopAppBar(
-            title = stringResource(R.string.appSettings_entityHiding_title),
+            title = stringResource(R.string.hiddenEntities_title),
             onBackClick = onBackClick,
             windowInsets = WindowInsets.statusBarsAndBanner
         )
@@ -134,7 +134,7 @@ private fun HiddenEntitiesContent(
                 HorizontalDivider(color = RadixTheme.colors.gray5)
                 Text(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(R.string.appSettings_entityHiding_text),
+                    text = stringResource(R.string.hiddenEntities_text),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
@@ -145,7 +145,7 @@ private fun HiddenEntitiesContent(
                         modifier = Modifier.padding(
                             vertical = RadixTheme.dimensions.paddingLarge
                         ),
-                        text = "Personas", // TODO crowdin
+                        text = stringResource(id = R.string.hiddenEntities_personas),
                         style = RadixTheme.typography.secondaryHeader,
                         color = RadixTheme.colors.gray2
                     )
@@ -170,7 +170,7 @@ private fun HiddenEntitiesContent(
                         modifier = Modifier.padding(
                             vertical = RadixTheme.dimensions.paddingLarge
                         ),
-                        text = "Accounts", // TODO crowdin
+                        text = stringResource(id = R.string.hiddenEntities_accounts),
                         style = RadixTheme.typography.secondaryHeader,
                         color = RadixTheme.colors.gray2
                     )
@@ -229,7 +229,7 @@ private fun AccountCard(modifier: Modifier = Modifier, account: Account, onUnhid
             )
         }
         RadixSecondaryButton(
-            text = "Unhide", // TODO crowdin
+            text = stringResource(id = R.string.hiddenAssets_unhide),
             onClick = { onUnhide(account) }
         )
     }
@@ -263,7 +263,7 @@ private fun PersonaCard(modifier: Modifier = Modifier, persona: Persona, onUnhid
             overflow = TextOverflow.Ellipsis
         )
         RadixSecondaryButton(
-            text = "Unhide", // TODO crowdin
+            text = stringResource(id = R.string.hiddenAssets_unhide),
             onClick = { onUnhide(persona) }
         )
     }

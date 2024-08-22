@@ -29,7 +29,7 @@ class ChangeEntityVisibilityUseCase @Inject constructor(
     suspend fun changePersonaVisibility(entityAddress: IdentityAddress, hide: Boolean) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val updatedProfile = profile.changePersonaVisibility(identityAddress = entityAddress, hide = hide)
+            val updatedProfile = profile.changePersonaVisibility(identityAddress = entityAddress, isHidden = hide)
             profileRepository.saveProfile(updatedProfile)
         }
     }

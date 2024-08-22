@@ -325,7 +325,7 @@ fun Profile.addPersona(
     ).withUpdatedContentHint()
 }
 
-fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, hide: Boolean): Profile {
+fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: Boolean): Profile {
     val networkId = currentNetwork?.id ?: return this
     val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
         val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
@@ -342,7 +342,7 @@ fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, hide: Bool
                 network.personas.mapWhen(
                     predicate = { it.address == identityAddress },
                     mutation = { persona ->
-                        val updatedFlags = if (hide) {
+                        val updatedFlags = if (isHidden) {
                             persona.flags + EntityFlag.DELETED_BY_USER
                         } else {
                             persona.flags - EntityFlag.DELETED_BY_USER
