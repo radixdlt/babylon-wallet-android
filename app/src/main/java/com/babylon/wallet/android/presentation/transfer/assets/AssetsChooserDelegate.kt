@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -26,7 +27,7 @@ class AssetsChooserDelegate @Inject constructor(
     private val getFiatValueUseCase: GetFiatValueUseCase,
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
-    private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     /**
@@ -107,7 +108,7 @@ class AssetsChooserDelegate @Inject constructor(
 
             state
                 .replace(chooseAssetState.targetAccount)
-                .copy(sheet = Sheet.None)
+                .copy(sheet = Sheet.None, accountDepositResourceRulesSet = NetworkContent.None)
         }
     }
 

@@ -2,6 +2,9 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
+import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -61,6 +64,7 @@ class TransferViewModel @Inject constructor(
     private val accountsChooserDelegate: AccountsChooserDelegate,
     private val assetsChooserDelegate: AssetsChooserDelegate,
     private val prepareManifestDelegate: PrepareManifestDelegate,
+    private val getAccountDepositResourceRulesUseCase: GetAccountDepositResourceRulesUseCase,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<TransferViewModel.State>(), OneOffEventHandler<TransferViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -211,7 +215,28 @@ class TransferViewModel @Inject constructor(
 
     fun onOwnedAccountSelected(account: Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
 
-    fun onChooseAccountSubmitted() = accountsChooserDelegate.chooseAccountSubmitted()
+    fun onChooseAccountSubmitted() {
+        viewModelScope.launch {
+            accountsChooserDelegate.chooseAccountSubmitted()
+            loadAccountDepositResourceRules()
+        }
+    }
+
+    private suspend fun loadAccountDepositResourceRules() {
+        _state.update { it.copy(accountDepositResourceRulesSet = NetworkContent.Loading) }
+        val accountAddressesWithResources =
+            _state.value.targetAccounts.filterIsInstance<TargetAccount.Other>().mapNotNull { targetAccount ->
+                val address = targetAccount.address ?: return@mapNotNull null
+                val resourceAddresses = targetAccount.spendingAssets.map {
+                    it.resourceAddress
+                }.toSet()
+                address to resourceAddresses
+            }.filter { it.second.isNotEmpty() }.toMap()
+        val rules = getAccountDepositResourceRulesUseCase(accountAddressesWithResources)
+        _state.update { state ->
+            state.copy(accountDepositResourceRulesSet = NetworkContent.Loaded(rules.toPersistentSet())).withUpdatedDepositRules()
+        }
+    }
 
     fun onQRAddressDecoded(address: String) = accountsChooserDelegate.onQRAddressDecoded(address = address)
 
@@ -256,7 +281,12 @@ class TransferViewModel @Inject constructor(
         }
     }
 
-    fun onChooseAssetsSubmitted() = assetsChooserDelegate.onChooseAssetsSubmitted()
+    fun onChooseAssetsSubmitted() {
+        assetsChooserDelegate.onChooseAssetsSubmitted()
+        viewModelScope.launch {
+            loadAccountDepositResourceRules()
+        }
+    }
 
     fun onNextNFTsPageRequest(resource: Resource.NonFungibleResource) = assetsChooserDelegate.onNextNFTsPageRequest(resource)
 
@@ -273,18 +303,26 @@ class TransferViewModel @Inject constructor(
         val sheet: Sheet = Sheet.None,
         val error: UiMessage? = null,
         val maxXrdError: MaxAmountMessage? = null,
-        val transferRequestId: String? = null
+        val transferRequestId: String? = null,
+        val accountDepositResourceRulesSet: NetworkContent<ImmutableSet<AccountDepositResourceRules>> = NetworkContent.None
     ) : UiState {
+
+        private val canDepositToAllTargetAccounts: Boolean
+            get() = accountDepositResourceRulesSet is NetworkContent.Loaded && targetAccounts.all { targetAccount ->
+                accountDepositResourceRulesSet.data.find {
+                    it.accountAddress == targetAccount.address
+                }?.canDepositAll ?: true
+            }
 
         val isSheetVisible: Boolean
             get() = sheet != Sheet.None
 
+        val isLoadingAccountDepositResourceRules: Boolean
+            get() = accountDepositResourceRulesSet is NetworkContent.Loading
+
         val isSubmitEnabled: Boolean = targetAccounts[0] !is TargetAccount.Skeleton && targetAccounts.all {
             it.isValidForSubmission
-        }
-
-        val submittedMessage: String?
-            get() = (messageState as? Message.Added)?.message
+        } && canDepositToAllTargetAccounts
 
         fun addSkeleton(): State = copy(
             targetAccounts = targetAccounts.toMutableList().apply {
@@ -300,6 +338,27 @@ class TransferViewModel @Inject constructor(
                 mutation = { account }
             ).toPersistentList()
         ).withCheckedBalances()
+
+        fun withUpdatedDepositRules(): State {
+            val targetAccounts = targetAccounts.map { targetAccount ->
+                val accountDepositResourceRule = accountDepositResourceRulesSet.data?.find { it.accountAddress == targetAccount.address }
+                targetAccount.updateAssets { assets ->
+                    assets.map { asset ->
+                        val canDeposit = accountDepositResourceRule?.canDeposit(asset.resourceAddress) ?: true
+                        when (asset) {
+                            is SpendingAsset.Fungible -> asset.copy(
+                                canDeposit = canDeposit
+                            )
+
+                            is SpendingAsset.NFT -> asset.copy(
+                                canDeposit = canDeposit
+                            )
+                        }
+                    }.toPersistentSet()
+                }
+            }
+            return copy(targetAccounts = targetAccounts.toPersistentList())
+        }
 
         fun remove(at: TargetAccount): State {
             val targetAccounts = targetAccounts.toMutableList()
@@ -611,11 +670,13 @@ sealed class SpendingAsset {
     abstract val resourceAddress: ResourceAddress
     abstract val resourceAddressOrGlobalId: String
     abstract val isValidForSubmission: Boolean
+    abstract val canDeposit: Boolean
 
     data class Fungible(
         val resource: Resource.FungibleResource,
         val amountString: String = "",
-        val exceedingBalance: Boolean = false
+        val exceedingBalance: Boolean = false,
+        override val canDeposit: Boolean = true
     ) : SpendingAsset() {
         override val resourceAddress: ResourceAddress
             get() = resource.address
@@ -633,7 +694,8 @@ sealed class SpendingAsset {
     data class NFT(
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
-        val exceedingBalance: Boolean = false
+        val exceedingBalance: Boolean = false,
+        override val canDeposit: Boolean = true
     ) : SpendingAsset() {
         override val resourceAddress: ResourceAddress
             get() = resource.address
