@@ -277,9 +277,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onWordSelected(index: Int, value: String) {
         seedPhraseInputDelegate.onWordSelected(index, value)
-        viewModelScope.launch {
-            sendEvent(OlympiaImportEvent.MoveFocusToNextWord)
-        }
     }
 
     fun onPassphraseChanged(value: String) {
@@ -529,7 +526,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
 }
 
 sealed interface OlympiaImportEvent : OneOffEvent {
-    data object MoveFocusToNextWord : OlympiaImportEvent
     data class NextPage(val page: ImportLegacyWalletUiState.Page) : OlympiaImportEvent
     data class PreviousPage(val page: ImportLegacyWalletUiState.Page?) : OlympiaImportEvent
     data object BiometricPromptBeforeFinalImport : OlympiaImportEvent

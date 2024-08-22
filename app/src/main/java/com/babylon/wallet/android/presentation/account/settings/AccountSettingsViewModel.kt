@@ -165,7 +165,7 @@ class AccountSettingsViewModel @Inject constructor(
     fun onHideAccount() {
         viewModelScope.launch {
             val account = state.value.account ?: return@launch
-            changeEntityVisibilityUseCase.hideAccount(account.address)
+            changeEntityVisibilityUseCase.changeAccountVisibility(entityAddress = account.address, hide = true)
             sendEvent(Event.AccountHidden)
         }
     }

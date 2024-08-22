@@ -12,6 +12,8 @@ import rdx.works.core.logNonFatalException
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+private val skippedErrorCodes = listOf(BiometricPrompt.ERROR_USER_CANCELED, BiometricPrompt.ERROR_NEGATIVE_BUTTON)
+
 fun FragmentActivity.activityBiometricAuthenticate(
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit,
 ) {
@@ -29,7 +31,9 @@ fun FragmentActivity.activityBiometricAuthenticate(
         }
 
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-            logNonFatalException(IllegalStateException("Biometric authentication error. Code: $errorCode Message: $errString"))
+            if (errorCode !in skippedErrorCodes) {
+                logNonFatalException(IllegalStateException("Biometric authentication error. Code: $errorCode Message: $errString"))
+            }
             authenticationCallback(BiometricAuthenticationResult.Error)
         }
 
@@ -74,9 +78,11 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    logNonFatalException(
-                        IllegalStateException("Biometric authentication error (suspend). Code: $errorCode Message: $errString")
-                    )
+                    if (errorCode !in skippedErrorCodes) {
+                        logNonFatalException(
+                            IllegalStateException("Biometric authentication error (suspend). Code: $errorCode Message: $errString")
+                        )
+                    }
                     it.resume(false)
                 }
             }

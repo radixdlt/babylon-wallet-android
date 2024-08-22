@@ -79,6 +79,14 @@ class RevealSeedPhraseViewModel @Inject constructor(
         }
     }
 
+    fun dismissConfirmSeedPhraseDialog() {
+        _state.update { state ->
+            state.copy(
+                showConfirmSeedPhraseDialogState = ConfirmSeedPhraseDialogState.None
+            )
+        }
+    }
+
     data class State(
         val mnemonicSize: Int = 0,
         val mnemonicWordsChunked: PersistentList<PersistentList<String>> = persistentListOf(),
