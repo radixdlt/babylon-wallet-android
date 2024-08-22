@@ -11,7 +11,8 @@ data class TransactionFeePayers(
 ) {
     data class FeePayerCandidate(
         val account: Account,
-        val xrdAmount: Decimal192
+        val xrdAmount: Decimal192,
+        val hasEnoughBalance: Boolean
     )
 }
 

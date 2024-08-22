@@ -61,9 +61,6 @@ class AddSingleMnemonicViewModel @Inject constructor(
 
     fun onWordSelected(index: Int, value: String) {
         seedPhraseInputDelegate.onWordSelected(index, value)
-        viewModelScope.launch {
-            sendEvent(Event.MoveToNextWord)
-        }
     }
 
     fun onPassphraseChanged(value: String) {
@@ -122,7 +119,6 @@ class AddSingleMnemonicViewModel @Inject constructor(
     ) : UiState
 
     sealed interface Event : OneOffEvent {
-        data object MoveToNextWord : Event
         data object FactorSourceAdded : Event
         data object MainSeedPhraseCompleted : Event
     }

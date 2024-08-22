@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -42,10 +44,12 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -80,7 +84,8 @@ fun FeePayerSelectionSheet(
                 onSelectButtonClick = {
                     onSelectButtonClick()
                     onDismiss()
-                }
+                },
+                onClose = onDismiss
             )
         },
         showDragHandle = true,
@@ -92,36 +97,53 @@ fun FeePayerSelectionSheet(
 private fun FeePayerSelectionContent(
     input: TransactionReviewViewModel.State.SelectFeePayerInput,
     onPayerSelected: (TransactionFeePayers.FeePayerCandidate) -> Unit,
-    onSelectButtonClick: () -> Unit
+    onSelectButtonClick: () -> Unit,
+    onClose: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            Column {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Box {
+                IconButton(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingXSmall,
+                        top = RadixTheme.dimensions.paddingMedium
+                    ),
+                    onClick = onClose
+                ) {
+                    Icon(
+                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                        tint = RadixTheme.colors.gray1,
+                        contentDescription = null
+                    )
+                }
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
-                    style = RadixTheme.typography.title,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.Center
-                )
+                Column {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                        text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),
+                        style = RadixTheme.typography.title,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.Center
+                    )
 
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                    text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
-                    style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray2,
-                    textAlign = TextAlign.Center
-                )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
+                        text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_subtitle, input.fee),
+                        style = RadixTheme.typography.body1Regular,
+                        color = RadixTheme.colors.gray2,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
             }
         },
         bottomBar = {
@@ -161,7 +183,8 @@ private fun FeePayerCard(
             .padding(
                 horizontal = RadixTheme.dimensions.paddingDefault,
                 vertical = RadixTheme.dimensions.paddingSmall
-            ),
+            )
+            .applyIf(candidate.hasEnoughBalance, Modifier.throttleClickable { onPayerSelected(candidate) }),
         shape = RadixTheme.shapes.roundedRectMedium,
         colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
         elevation = CardDefaults.elevatedCardElevation(
@@ -196,17 +219,15 @@ private fun FeePayerCard(
             )
         }
 
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .throttleClickable {
-                    onPayerSelected(candidate)
-                }
                 .padding(
                     start = RadixTheme.dimensions.paddingDefault,
                     end = RadixTheme.dimensions.paddingSmall
-                )
-                .padding(vertical = RadixTheme.dimensions.paddingDefault),
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -244,8 +265,30 @@ private fun FeePayerCard(
                 onClick = {
                     onPayerSelected(candidate)
                 },
-                size = 18.dp
+                size = 18.dp,
+                enabled = candidate.hasEnoughBalance
             )
+        }
+
+        if (!candidate.hasEnoughBalance) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+
+            InfoLink(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
+                    ),
+                text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
+                contentColor = RadixTheme.colors.red1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+                textStyle = RadixTheme.typography.body1Header
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        } else {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
     }
 }
@@ -256,7 +299,11 @@ private fun FeePayerCard(
 fun FeesPayersSelectionContentPreview() {
     val candidates = remember {
         Account.sampleMainnet.all.map {
-            TransactionFeePayers.FeePayerCandidate(account = it, xrdAmount = Random.nextDouble(10000.0).toDecimal192())
+            TransactionFeePayers.FeePayerCandidate(
+                account = it,
+                xrdAmount = Random.nextDouble(10000.0).toDecimal192(),
+                hasEnoughBalance = true
+            )
         }
     }
     RadixWalletPreviewTheme {
@@ -267,7 +314,8 @@ fun FeesPayersSelectionContentPreview() {
                 fee = "0.234"
             ),
             onPayerSelected = {},
-            onSelectButtonClick = {}
+            onSelectButtonClick = {},
+            onClose = {}
         )
     }
 }
