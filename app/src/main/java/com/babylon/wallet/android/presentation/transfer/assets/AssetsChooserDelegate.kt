@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
+import com.babylon.wallet.android.domain.NetworkContent
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
@@ -107,7 +108,7 @@ class AssetsChooserDelegate @Inject constructor(
 
             state
                 .replace(chooseAssetState.targetAccount)
-                .copy(sheet = Sheet.None, accountDepositResourceRulesSet = null)
+                .copy(sheet = Sheet.None, accountDepositResourceRulesSet = NetworkContent.None)
         }
     }
 
