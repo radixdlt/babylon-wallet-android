@@ -23,7 +23,8 @@ class SearchFeePayersUseCase @Inject constructor(
 
                 TransactionFeePayers.FeePayerCandidate(
                     account = entry.key,
-                    xrdAmount = entry.value
+                    xrdAmount = entry.value,
+                    hasEnoughBalance = entry.value >= lockFee
                 )
             }
             val candidateAddress = manifestData.feePayerCandidates().firstOrNull { address ->

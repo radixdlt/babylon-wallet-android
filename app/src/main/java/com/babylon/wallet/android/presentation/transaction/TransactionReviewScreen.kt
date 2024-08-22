@@ -7,8 +7,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -335,6 +339,7 @@ private fun TransactionPreviewContent(
                             fees = state.transactionFees,
                             noFeePayerSelected = state.noFeePayerSelected,
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                            isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
                             isNetworkFeeLoading = state.isNetworkFeeLoading,
                             onCustomizeClick = onCustomizeClick
                         )
@@ -365,6 +370,7 @@ private fun TransactionPreviewContent(
                     sheetState = state.sheetState,
                     transactionFees = state.transactionFees,
                     insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                    isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
                     onCloseBottomSheetClick = onCloseBottomSheetClick,
                     onGuaranteesApplyClick = onGuaranteesApplyClick,
                     onGuaranteeValueChanged = onGuaranteeValueChanged,
@@ -379,7 +385,8 @@ private fun TransactionPreviewContent(
                 )
             },
             showDragHandle = true,
-            onDismissRequest = onBackClick
+            onDismissRequest = onBackClick,
+            windowInsets = WindowInsets.systemBars.exclude(WindowInsets.navigationBars)
         )
     }
 
@@ -408,6 +415,7 @@ private fun BottomSheetContent(
     sheetState: State.Sheet,
     transactionFees: TransactionFees,
     insufficientBalanceToPayTheFee: Boolean,
+    isSelectedFeePayerInvolvedInTransaction: Boolean,
     onCloseBottomSheetClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
@@ -439,6 +447,7 @@ private fun BottomSheetContent(
                 state = sheetState,
                 transactionFees = transactionFees,
                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
+                isSelectedFeePayerInvolvedInTransaction = isSelectedFeePayerInvolvedInTransaction,
                 onClose = onCloseBottomSheetClick,
                 onChangeFeePayerClick = onChangeFeePayerClick,
                 onSelectFeePayerClick = onSelectFeePayerClick,

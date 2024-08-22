@@ -470,6 +470,7 @@
   <string name="transactionReview_noMnemonicError_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
   <string name="transactionReview_nonConformingManifestWarning_title">Warning</string>
   <string name="transactionReview_nonConformingManifestWarning_message">This is a complex transaction that cannot be summarized - the raw transaction manifest will be shown. Do not submit unless you understand the contents.</string>
+  <string name="transactionReview_hiddenAsset">This asset is hidden and will not be visible in your Account</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
@@ -1137,8 +1138,8 @@ Code: %s</string>
   <string name="preferences_title">Preferences</string>
   <string name="preferences_depositGuarantees_title">Default Deposit Guarantees</string>
   <string name="preferences_depositGuarantees_subtitle">Set your guaranteed minimum for estimated deposits</string>
-  <string name="preferences_hiddenEntities_title">Hidden Accounts and Personas</string>
-  <string name="preferences_hiddenEntities_subtitle">Manage hidden Accounts and Personas</string>
+  <string name="preferences_hiddenEntities_title">Hidden Personas &amp; Accounts</string>
+  <string name="preferences_hiddenEntities_subtitle">Manage hidden Personas and Accounts</string>
   <string name="preferences_advancedPreferences">Advanced Preferences</string>
   <string name="preferences_gateways">Network Gateways</string>
   <string name="preferences_developerMode_title">Developer Mode</string>
@@ -1265,4 +1266,18 @@ Code: %s</string>
   <string name="infoLink_glossary_connectbutton">## √ Connect Button\n\n[dApps](?glossaryAnchor=dapps) built on Radix should always include a button marked **√ Connect**. Start here to connect your [Radix Wallet](?glossaryAnchor=radixwallet) to the dApp.\n\nIn most cases, the √ Connect button will include a menu where you can Connect Now, often asking your Radix Wallet to log in with a Persona. After logging in, that menu should provide a variety of features and information to help you manage your login and sharing with that dApp.</string>
   <string name="infoLink_glossary_dashboard">## Radix Dashboard\n\nThe Radix Dashboard is a [dApp](?glossaryAnchor=dappas) created by the same team as the [Radix Wallet](?glossaryAnchor=radixwallet) to help users interact with the [Radix Network](?glossaryAnchor=radixnetwork) directly.\n\nYou can look up information about things on the Radix Network by entering its address, such as: Accounts, tokens, NFTs, components (smart contracts), and more.\n\nYou can also use the Radix Dashboard’s [network staking](?glossaryAnchor=networkstaking) feature to view the list of current Radix Network validators, stake XRD, and manage your existing network staking.\n\n[Visit the Radix Dashboard at dashboard.radixdlt.com](https://dashboard.radixdlt.com)</string>
   <string name="infoLink_glossary_bridging">## Bridging\n\nBridging is the process of getting assets into and out of the [Radix Network](?glossaryAnchor=radixnetwork). Assets on Radix can be held by your [Radix Wallet](?glossaryAnchor=radixnetwork), and used with [dApps](?glossaryAnchor=dapps) on Radix. There are a variety of dApps that provide bridging in different ways, for different assets.\n\nSometimes bridging involves converting an asset into a different form that can live on Radix. For example, dollars (USD) in your bank account might be bridged into Radix and become xUSDC tokens in your Radix Wallet. Or your Bitcoin (BTC) might be bridged into xwBTC tokens.\n\nSometimes bridging works as a swap, similar to a [DEX](?glossaryAnchor=dex). In this case you might swap one asset outside Radix for a different asset within Radix. Maybe you swap ETH (on the Ethereum network) for XRD tokens (on the Radix Network) at a current market price.</string>
+  <string name="hiddenEntities_title">Hidden Personas &amp; Accounts</string>
+  <string name="hiddenEntities_text">You have hidden the following Personas and Accounts. They remain on the Radix Network, but while hidden, your wallet will treat them as if they don’t exist.</string>
+  <string name="hiddenEntities_personas">Personas</string>
+  <string name="hiddenEntities_accounts">Accounts</string>
+  <string name="hiddenEntities_unhide">Unhide</string>
+  <string name="hiddenEntities_unhideAccountsConfirmation">Make this Account visible in your wallet again?</string>
+  <string name="hiddenEntities_unhidePersonasConfirmation">Make this Persona visible in your wallet again?</string>
+  <string name="hiddenAssets_title">Hidden Assets</string>
+  <string name="hiddenAssets_text">You have hidden the following assets. While hidden, you will not see these in any of your Accounts.</string>
+  <string name="hiddenAssets_fungibles">Tokens</string>
+  <string name="hiddenAssets_nonFungibles">NFTs</string>
+  <string name="hiddenAssets_poolUnits">Pool Units</string>
+  <string name="hiddenAssets_unhide">Unhide</string>
+  <string name="hiddenAssets_unhideConfirmation">Make this asset visible in your Accounts again?</string>
 </resources>
