@@ -96,6 +96,8 @@ interface StateRepository {
 
     suspend fun cacheNewlyCreatedNFTItems(newItems: List<Resource.NonFungibleResource.Item>): Result<Unit>
 
+    suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>): Result<Unit>
+
     suspend fun clearCachedState(): Result<Unit>
 
     sealed class Error(cause: Throwable) : Exception(cause) {
@@ -555,6 +557,12 @@ class StateRepositoryImpl @Inject constructor(
         runCatching {
             val syncedAt = InstantGenerator()
             stateDao.insertNFTs(newItems.map { it.asEntity(syncedAt) })
+        }
+    }
+
+    override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>) = withContext(dispatcher) {
+        runCatching {
+            stateDao.deleteNFTs(items.map { it.asEntity(InstantGenerator()) })
         }
     }
 

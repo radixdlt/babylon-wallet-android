@@ -58,6 +58,7 @@ fun AssetDialog(
     BottomSheetDialogWrapper(
         modifier = modifier,
         title = state.asset?.displayTitle(),
+        showDragHandle = true,
         onDismiss = onDismiss
     ) {
         val isLoadingBalance = if (state.isFiatBalancesEnabled) {
