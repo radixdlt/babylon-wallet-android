@@ -77,7 +77,7 @@ private fun SecurityFactorsContent(
                 val lastItem = securityFactorsSettings.last() == securityFactorsSettingsItem
                 item {
                     DefaultSettingsItem(
-                        title = stringResource(id = securityFactorsSettingsItem.descriptionRes()),
+                        title = stringResource(id = securityFactorsSettingsItem.titleRes()),
                         subtitle = stringResource(id = securityFactorsSettingsItem.subtitleRes()),
                         leadingIconRes = securityFactorsSettingsItem.getIcon(),
                         onClick = {

@@ -56,7 +56,7 @@ fun DebugSettingsScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(all = RadixTheme.dimensions.paddingDefault),
-                                    titleRes = debugSettingsItem.descriptionRes(),
+                                    titleRes = debugSettingsItem.titleRes(),
                                     iconResource = debugSettingsItem.getIcon(),
                                     checked = linkConnectionStatusIndicatorState.isEnabled,
                                     onCheckedChange = viewModel::onLinkConnectionStatusIndicatorToggled
@@ -66,7 +66,7 @@ fun DebugSettingsScreen(
 
                             else -> {
                                 DefaultSettingsItem(
-                                    title = stringResource(id = debugSettingsItem.descriptionRes()),
+                                    title = stringResource(id = debugSettingsItem.titleRes()),
                                     leadingIconRes = debugSettingsItem.getIcon(),
                                     onClick = {
                                         onItemClick(debugSettingsItem)
