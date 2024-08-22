@@ -91,10 +91,10 @@ class AccountViewModel @Inject constructor(
     private var automaticRefreshJob: Job? = null
     private val refreshFlow = MutableSharedFlow<State.RefreshType>()
     private val accountFlow = getProfileUseCase.flow
-        .distinctUntilChanged()
         .mapNotNull { profile ->
             profile.activeAccountsOnCurrentNetwork.find { it.address == args.accountAddress }
         }
+        .distinctUntilChanged()
 
     init {
         observeAccountAssets()

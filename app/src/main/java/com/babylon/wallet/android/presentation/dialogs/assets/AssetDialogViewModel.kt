@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AssetAddress
 import com.radixdlt.sargon.Decimal192
@@ -44,7 +46,8 @@ class AssetDialogViewModel @Inject constructor(
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
-    private val changeAssetVisibilityUseCase: ChangeAssetVisibilityUseCase
+    private val changeAssetVisibilityUseCase: ChangeAssetVisibilityUseCase,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<AssetDialogViewModel.State>(),
     OneOffEventHandler<AssetDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -167,6 +170,7 @@ class AssetDialogViewModel @Inject constructor(
             )
             onDismissHideConfirmation()
             sendEvent(Event.Close)
+            appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
         }
     }
 

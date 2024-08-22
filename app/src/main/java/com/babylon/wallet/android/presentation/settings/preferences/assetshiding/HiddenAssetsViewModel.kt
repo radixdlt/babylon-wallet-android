@@ -9,6 +9,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AssetAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,6 +32,7 @@ class HiddenAssetsViewModel @Inject constructor(
     private val stateRepository: StateRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val changeAssetVisibilityUseCase: ChangeAssetVisibilityUseCase,
+    private val appEventBus: AppEventBus,
     @DefaultDispatcher private val coroutineDispatcher: CoroutineDispatcher
 ) : StateViewModel<HiddenAssetsViewModel.State>(),
     OneOffEventHandler<HiddenAssetsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -47,6 +50,7 @@ class HiddenAssetsViewModel @Inject constructor(
     fun unhide(assetAddress: AssetAddress) {
         viewModelScope.launch {
             changeAssetVisibilityUseCase.unhide(assetAddress)
+            appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
         }
     }
 
