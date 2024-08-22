@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -82,6 +83,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val signTransactionUseCase = mockk<SignTransactionUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
+    private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
 
     private val profileRepository = FakeProfileRepository(profile = testProfile)
     private val testScope = TestScope(context = coroutineRule.dispatcher)
@@ -97,7 +99,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         preferencesManager = preferencesManager,
         exceptionMessageProvider = exceptionMessageProvider,
         savedStateHandle = savedStateHandle,
-        testScope = testScope
+        testScope = testScope,
+        getFiatValueUseCase = getFiatValueUseCase
     )
 
     @Test

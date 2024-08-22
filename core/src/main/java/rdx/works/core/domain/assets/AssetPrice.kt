@@ -13,7 +13,9 @@ import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.toDouble
+import java.math.RoundingMode
 import java.util.Locale
+import kotlin.math.max
 
 data class FiatPrice(
     val price: Decimal192,
@@ -38,17 +40,20 @@ data class FiatPrice(
             }
             formatter.format(price.toDouble()).toString()
         } else {
-            val integralPart = price.string.toBigDecimal().toBigInteger()
-            val integralPartLength = if (integralPart.signum() == 0) 0 else integralPart.toString().length
+            var priceAsBigDecimal = price.string.toBigDecimal()
+            if (significantDigitsPrecision != null) {
+                val newScale = significantDigitsPrecision - priceAsBigDecimal.precision() + priceAsBigDecimal.scale()
+                priceAsBigDecimal = priceAsBigDecimal.setScale(newScale, RoundingMode.HALF_UP)
+            }
             val javaCurrency = Currency.getInstance(currency.name)
             NumberFormat.getCurrencyInstance().apply {
                 currency = javaCurrency
                 if (price.isZero) {
                     maximumFractionDigits = NO_PRECISION
                 } else if (significantDigitsPrecision != null) {
-                    maximumFractionDigits = (significantDigitsPrecision - integralPartLength).coerceAtLeast(NO_PRECISION)
+                    maximumFractionDigits = max(0, priceAsBigDecimal.stripTrailingZeros().scale())
                 }
-            }.format(price.toDouble())
+            }.format(if (significantDigitsPrecision != null) priceAsBigDecimal else price.toDouble())
         }
     }
 
