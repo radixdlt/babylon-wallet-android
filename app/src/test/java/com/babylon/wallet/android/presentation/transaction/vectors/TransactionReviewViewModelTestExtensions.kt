@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCas
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
@@ -104,6 +105,7 @@ internal fun testViewModel(
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
         incomingRequestRepository = incomingRequestRepository,
         submitTransactionUseCase = SubmitTransactionUseCase(transactionRepository = transactionRepository),
+        clearCachedNewlyCreatedEntitiesUseCase = ClearCachedNewlyCreatedEntitiesUseCase(stateRepository = stateRepository),
         appEventBus = appEventBus,
         transactionStatusClient = TransactionStatusClient(
             pollTransactionStatusUseCase = PollTransactionStatusUseCase(transactionRepository = transactionRepository),

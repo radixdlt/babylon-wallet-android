@@ -21,6 +21,7 @@ import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCas
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -106,6 +107,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
+    private val clearCachedNewlyCreatedEntitiesUseCase = mockk<ClearCachedNewlyCreatedEntitiesUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val transactionRepository = mockk<TransactionRepository>()
@@ -222,7 +224,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
-        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId.toString()
+        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
@@ -275,6 +277,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getCurrentGatewayUseCase = getCurrentGatewayUseCase,
                 incomingRequestRepository = incomingRequestRepository,
                 appEventBus = appEventBus,
+                clearCachedNewlyCreatedEntitiesUseCase = clearCachedNewlyCreatedEntitiesUseCase,
                 transactionStatusClient = transactionStatusClient,
                 submitTransactionUseCase = submitTransactionUseCase,
                 applicationScope = TestScope(),
