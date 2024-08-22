@@ -77,7 +77,7 @@ private fun WalletPreferencesContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Preferences", // TODO crowdin
+                title = stringResource(id = R.string.walletSettings_preferences_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
