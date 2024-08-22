@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.NetworkContent
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetAccountDepositResourceRulesUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
@@ -128,6 +129,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
             assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
+            assert(awaitItem().accountDepositResourceRulesSet is NetworkContent.Loaded)
         }
     }
 
@@ -138,6 +140,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
             assertOtherAccountSubmitted(viewModel, AccountAddress.sampleMainnet.random().string)
+            assert(awaitItem().accountDepositResourceRulesSet is NetworkContent.Loaded)
         }
     }
 
@@ -148,7 +151,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
             assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
-
+            assert(awaitItem().accountDepositResourceRulesSet is NetworkContent.Loaded)
             viewModel.addAccountClick()
             val secondSkeleton = awaitItem().targetAccounts[1] as TargetAccount.Skeleton
             assertOpenSheetForSkeleton(viewModel, secondSkeleton)
@@ -163,7 +166,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             val initialSkeletonAccount = viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton
             assertOpenSheetForSkeleton(viewModel, initialSkeletonAccount)
             assertSubmittingOwnedAccount(viewModel, otherAccounts[0])
-
+            assert(awaitItem().accountDepositResourceRulesSet is NetworkContent.Loaded)
             viewModel.deleteAccountClick(
                 from = TargetAccount.Owned(
                     account = otherAccounts[0],
