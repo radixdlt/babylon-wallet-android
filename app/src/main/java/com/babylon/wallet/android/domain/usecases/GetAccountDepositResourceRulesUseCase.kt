@@ -16,7 +16,9 @@ class GetAccountDepositResourceRulesUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) {
 
-    suspend operator fun invoke(accountAddressesToResourceAddress: Map<AccountAddress, Set<ResourceAddress>>): Set<AccountDepositResourceRules> {
+    suspend operator fun invoke(
+        accountAddressesToResourceAddress: Map<AccountAddress, Set<ResourceAddress>>
+    ): Set<AccountDepositResourceRules> {
         return withContext(ioDispatcher) {
             accountAddressesToResourceAddress.entries.mapNotNull { entry ->
                 if (entry.value.isEmpty()) {

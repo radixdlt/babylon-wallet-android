@@ -60,7 +60,8 @@ class TransactionRepositoryImpl @Inject constructor(private val transactionApi: 
         return transactionApi.accountDepositPreValidation(
             AccountDepositPreValidationRequest(
                 accountAddress = accountAddress.string,
-                resourceAddresses = resourceAddress.map { it.string })
+                resourceAddresses = resourceAddress.map { it.string }
+            )
         ).toResult()
             .map { response ->
                 AccountDepositResourceRules(
