@@ -104,6 +104,10 @@
   <string name="assetDetails_behaviors_freezableByAnyone">Anyone can freeze this asset in place.</string>
   <string name="assetDetails_behaviors_nftDataChangeable">Data that is set on these NFTs can be changed.</string>
   <string name="assetDetails_behaviors_nftDataChangeableByAnyone">Anyone can change data that is set on these NFTs.</string>
+  <string name="assetDetails_hideCollectionButton">Hide Collection</string>
+  <string name="assetDetails_hideCollection_title">Hide Collection</string>
+  <string name="assetDetails_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
+  <string name="assetDetails_hideCollection_button">Hide</string>
   <string name="accountSettings_title">Account Settings</string>
   <string name="accountSettings_personalizeHeading">Personalize this Account</string>
   <string name="accountSettings_accountLabel">Account Name</string>
@@ -470,7 +474,8 @@
   <string name="transactionReview_noMnemonicError_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
   <string name="transactionReview_nonConformingManifestWarning_title">Warning</string>
   <string name="transactionReview_nonConformingManifestWarning_message">This is a complex transaction that cannot be summarized - the raw transaction manifest will be shown. Do not submit unless you understand the contents.</string>
-  <string name="transactionReview_hiddenAsset">This asset is hidden and will not be visible in your Account</string>
+  <string name="transactionReview_hiddenAsset_deposit">This asset is hidden and will not be visible in your Account</string>
+  <string name="transactionReview_hiddenAsset_withdraw">This asset is hidden and is not visible in your Account</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
