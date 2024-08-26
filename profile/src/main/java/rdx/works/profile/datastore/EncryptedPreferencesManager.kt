@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
@@ -54,10 +53,6 @@ class EncryptedPreferencesManager @Inject constructor(
         }
         encryptedValue.decrypt(KeySpec.Profile())
     }.flowOn(ioDispatcher)
-
-    val preferencesSize = preferences.data.catchIOException().map { preferences ->
-        preferences.asMap().size
-    }.flowOn(ioDispatcher).distinctUntilChanged()
 
     private val p2pLinksKeySpec by lazy { KeySpec.Cache(P2P_LINKS_CACHE_KEY_ALIAS) }
 

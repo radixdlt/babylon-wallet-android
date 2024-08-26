@@ -11,7 +11,6 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -21,8 +20,6 @@ class MnemonicRepository @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
-
-    val mnemonicDataStoreChanged = encryptedPreferencesManager.preferencesSize.map { true }
 
     /**
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
