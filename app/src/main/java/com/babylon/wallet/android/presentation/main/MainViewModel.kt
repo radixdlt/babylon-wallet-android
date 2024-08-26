@@ -154,10 +154,6 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
-        viewModelScope.launch {
-            mnemonicIntegrityRepository.didMnemonicIntegrityChange.collect {
-            }
-        }
         processBufferedDeepLinkRequest()
     }
 
