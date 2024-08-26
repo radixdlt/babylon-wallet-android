@@ -30,6 +30,5 @@ abstract class MetadataTypedValue {
     @SerialName(value = "type")
     abstract val type: MetadataValueType
 
-
 }
 

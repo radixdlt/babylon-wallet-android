@@ -50,6 +50,7 @@ import kotlinx.serialization.Contextual
  * @param genesisHelper Bech32m-encoded human readable version of the address.
  * @param faucet Bech32m-encoded human readable version of the address.
  * @param poolPackage Bech32m-encoded human readable version of the address.
+ * @param lockerPackage Bech32m-encoded human readable version of the address.
  * @param transactionTracker Bech32m-encoded human readable version of the address.
  */
 @Serializable
@@ -163,6 +164,10 @@ data class NetworkConfigurationResponseWellKnownAddresses (
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "pool_package")
     val poolPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "locker_package")
+    val lockerPackage: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "transaction_tracker")

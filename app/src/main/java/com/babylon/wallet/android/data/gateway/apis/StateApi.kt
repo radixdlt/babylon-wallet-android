@@ -2,6 +2,10 @@ package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.StateAccountAuthorizedDepositorsPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateAccountAuthorizedDepositorsPageResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateAccountLockerPageVaultsRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateAccountLockerPageVaultsResponse
+import com.babylon.wallet.android.data.gateway.generated.models.StateAccountLockersTouchedAtRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateAccountLockersTouchedAtResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateAccountResourcePreferencesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateAccountResourcePreferencesPageResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
@@ -56,6 +60,38 @@ interface StateApi {
     fun accountAuthorizedDepositorsPage(
         @Body stateAccountAuthorizedDepositorsPageRequest: StateAccountAuthorizedDepositorsPageRequest
     ): Call<StateAccountAuthorizedDepositorsPageResponse>
+
+    /**
+     * Get Account Locker Vaults Page
+     * Returns all the resource vaults associated with a given account locker. The returned response is in a paginated format,
+     * ordered by the most recent resource vault creation on the ledger.
+     * Responses:
+     *  - 200: Account Locker vaults (paginated)
+     *  - 4XX: Client-originated request error
+     *
+     * @param stateAccountLockerPageVaultsRequest
+     * @return [StateAccountLockerPageVaultsResponse]
+     */
+    @POST("state/account-locker/page/vaults")
+    fun accountLockerVaultsPage(
+        @Body stateAccountLockerPageVaultsRequest: StateAccountLockerPageVaultsRequest
+    ): Call<StateAccountLockerPageVaultsResponse>
+
+    /**
+     * Get Most Recent Touch of Account Lockers
+     * Returns most recent state version given account locker has been touched. Touch refers to the creation of the account
+     * locker itself as well as any modification to its contents, such as resource claim, airdrop or store.
+     * Responses:
+     *  - 200: Account locker account pair last touch state version
+     *  - 4XX: Client-originated request error
+     *
+     * @param stateAccountLockersTouchedAtRequest
+     * @return [StateAccountLockersTouchedAtResponse]
+     */
+    @POST("state/account-lockers/touched-at")
+    fun accountLockersTouchedAt(
+        @Body stateAccountLockersTouchedAtRequest: StateAccountLockersTouchedAtRequest
+    ): Call<StateAccountLockersTouchedAtResponse>
 
     /**
      * Get Account resource preferences
@@ -181,8 +217,8 @@ interface StateApi {
 
     /**
      * Get KeyValueStore Data
-     * Returns data (value) associated with a given key of a given key-value
-     * store. [Check detailed documentation for explanation](#section/How-to-query-the-content-of-a-key-value-store-inside-a-component)
+     * Returns data (value) associated with a given key of a given key-value store.
+     * [Check detailed documentation for explanation](#section/How-to-query-the-content-of-a-key-value-store-inside-a-component)
      * Responses:
      *  - 200: Non-Fungible ID Data
      *  - 4XX: Client-originated request error

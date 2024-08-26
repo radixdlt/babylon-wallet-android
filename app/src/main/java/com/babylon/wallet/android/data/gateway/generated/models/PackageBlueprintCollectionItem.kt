@@ -44,15 +44,15 @@ data class PackageBlueprintCollectionItem (
     val version: kotlin.String,
 
     /* This type is defined in the Core API as `BlueprintDefinition`. See the Core API documentation for more details.  */
-//    @Contextual @SerialName(value = "definition")
-//    val definition: kotlin.Any,
+    @Contextual @SerialName(value = "definition")
+    val definition: kotlin.Any,
 
     @SerialName(value = "dependant_entities")
     val dependantEntities: kotlin.collections.List<kotlin.String>? = null,
 
     /* This type is defined in the Core API as `AuthConfig`. See the Core API documentation for more details.  */
-//    @Contextual @SerialName(value = "auth_template")
-//    val authTemplate: kotlin.Any? = null,
+    @Contextual @SerialName(value = "auth_template")
+    val authTemplate: kotlin.Any? = null,
 
     @SerialName(value = "auth_template_is_locked")
     val authTemplateIsLocked: kotlin.Boolean? = null,
