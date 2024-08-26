@@ -28,8 +28,6 @@ class AppEventBusImpl @Inject constructor() : AppEventBus {
 
 sealed interface AppEvent {
 
-    data object AppNotSecure : AppEvent
-
     data object RefreshAssetsNeeded : AppEvent
 
     data object RestoredMnemonic : AppEvent

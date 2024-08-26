@@ -47,7 +47,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     @Before
     override fun setUp() = runTest {
         coEvery {
-            deviceCapabilityHelper.isDeviceSecure()
+            deviceCapabilityHelper.isDeviceSecure
         } returns true
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
