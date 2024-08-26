@@ -29,6 +29,8 @@ import kotlinx.serialization.Contextual
  * @param packageRoyaltyVaultBalance if set to `true`, `royalty_vault_balance` for package entities is returned.
  * @param nonFungibleIncludeNfids if set to `true`, first page of non fungible ids are returned for each non fungible resource, with `next_cursor` which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint.
  * @param explicitMetadata allows specifying explicitly metadata properties which should be returned in response.
+ * @param dappTwoWayLinks if set to `true`, on-ledger dApp two-way links (resolved & verified) are returned. See https://docs.radixdlt.com/docs/metadata-for-verification for more details.
+ * @param nativeResourceDetails if set to `true`, additional details for the Network native resources are returned.
  */
 @Serializable
 
@@ -56,7 +58,15 @@ data class StateEntityDetailsOptIns (
 
     /* allows specifying explicitly metadata properties which should be returned in response. */
     @SerialName(value = "explicit_metadata")
-    val explicitMetadata: kotlin.collections.List<kotlin.String>? = null
+    val explicitMetadata: kotlin.collections.List<kotlin.String>? = null,
+
+    /* if set to `true`, on-ledger dApp two-way links (resolved & verified) are returned. See https://docs.radixdlt.com/docs/metadata-for-verification for more details. */
+    @SerialName(value = "dapp_two_way_links")
+    val dappTwoWayLinks: kotlin.Boolean? = false,
+
+    /* if set to `true`, additional details for the Network native resources are returned. */
+    @SerialName(value = "native_resource_details")
+    val nativeResourceDetails: kotlin.Boolean? = false
 
 )
 

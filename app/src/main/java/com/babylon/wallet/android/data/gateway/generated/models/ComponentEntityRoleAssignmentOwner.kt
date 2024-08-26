@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentEntry
+import com.babylon.wallet.android.data.gateway.model.AccessRule
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName

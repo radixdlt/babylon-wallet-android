@@ -26,7 +26,7 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param addresses limited to max 100 items.
+ * @param addresses limited to max 20 items.
  * @param atLedgerState 
  * @param optIns 
  * @param aggregationLevel 
@@ -35,7 +35,7 @@ import kotlinx.serialization.Contextual
 
 data class StateEntityDetailsRequest (
 
-    /* limited to max 100 items. */
+    /* limited to max 20 items. */
     @SerialName(value = "addresses")
     val addresses: kotlin.collections.List<kotlin.String>,
 
