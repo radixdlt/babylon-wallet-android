@@ -48,7 +48,8 @@ import rdx.works.core.sargon.pools
 fun TransactionAccountCard(
     modifier: Modifier = Modifier,
     account: AccountWithTransferableResources,
-    hiddenResourceAddresses: PersistentList<ResourceIdentifier>,
+    hiddenResourceIds: PersistentList<ResourceIdentifier>,
+    hiddenWarning: String,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
@@ -74,8 +75,9 @@ fun TransactionAccountCard(
                     shape = shape,
                     isHidden = remember(
                         asset,
-                        hiddenResourceAddresses
-                    ) { asset.resource.address in hiddenResourceAddresses.fungibles() }
+                        hiddenResourceIds
+                    ) { asset.resource.address in hiddenResourceIds.fungibles() },
+                    hiddenWarning = hiddenWarning
                 )
 
                 is TransferableAsset.NonFungible.NFTAssets -> {
@@ -91,8 +93,9 @@ fun TransactionAccountCard(
                             nftItem = item,
                             isHidden = remember(
                                 item,
-                                hiddenResourceAddresses
-                            ) { item.collectionAddress in hiddenResourceAddresses.nonFungibles() }
+                                hiddenResourceIds
+                            ) { item.collectionAddress in hiddenResourceIds.nonFungibles() },
+                            hiddenWarning = hiddenWarning
                         )
                     }
                 }
@@ -102,8 +105,9 @@ fun TransactionAccountCard(
                     shape = shape,
                     isHidden = remember(
                         asset,
-                        hiddenResourceAddresses
-                    ) { asset.resource.poolAddress in hiddenResourceAddresses.pools() },
+                        hiddenResourceIds
+                    ) { asset.resource.poolAddress in hiddenResourceIds.pools() },
+                    hiddenWarning = hiddenWarning,
                     onClick = onTransferableFungibleClick
                 )
 
@@ -213,7 +217,8 @@ fun TransactionAccountCardPreview() {
                     )
                 )
             ),
-            hiddenResourceAddresses = persistentListOf(),
+            hiddenResourceIds = persistentListOf(),
+            hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleClick = { _, _ -> }
         )

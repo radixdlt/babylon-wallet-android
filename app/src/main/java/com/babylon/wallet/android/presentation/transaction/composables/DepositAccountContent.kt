@@ -96,7 +96,8 @@ fun DepositAccountContent(
                     val lastItem = index == to.size - 1
                     TransactionAccountCard(
                         account = accountEntry,
-                        hiddenResourceAddresses = hiddenResourceIds,
+                        hiddenResourceIds = hiddenResourceIds,
+                        hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset),
                         onTransferableFungibleClick = onTransferableFungibleClick,
                         onTransferableNonFungibleClick = onNonTransferableFungibleClick
                     )

@@ -77,7 +77,8 @@ fun WithdrawAccountContent(
             from.forEachIndexed { index, account ->
                 TransactionAccountCard(
                     account = account,
-                    hiddenResourceAddresses = hiddenResourceIds,
+                    hiddenResourceIds = hiddenResourceIds,
+                    hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
                     onTransferableFungibleClick = onTransferableFungibleClick,
                     onTransferableNonFungibleClick = onNonTransferableFungibleClick
                 )

@@ -54,7 +54,7 @@ fun StakeClaim.displaySubtitle(): String = validator.name.takeIf {
 } ?: stringResource(id = R.string.dash)
 
 @Composable
-fun Resource.NonFungibleResource.displaySubtitle(): String = displayAmount.toString()
+fun Resource.NonFungibleResource.displaySubtitle(): String = amount.toString()
 
 @Composable
 fun Resource.NonFungibleResource.Item.displaySubtitle(): String = remember(this) {

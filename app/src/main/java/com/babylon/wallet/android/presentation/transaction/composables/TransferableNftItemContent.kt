@@ -28,7 +28,8 @@ fun TransferableNftItemContent(
     shape: Shape,
     asset: TransferableAsset.NonFungible.NFTAssets,
     nftItem: Resource.NonFungibleResource.Item,
-    isHidden: Boolean
+    isHidden: Boolean,
+    hiddenWarning: String
 ) {
     Column(
         modifier = modifier
@@ -68,6 +69,9 @@ fun TransferableNftItemContent(
                 )
             }
         }
-        TransferableHiddenItemWarning(isHidden = isHidden)
+        TransferableHiddenItemWarning(
+            isHidden = isHidden,
+            text = hiddenWarning
+        )
     }
 }

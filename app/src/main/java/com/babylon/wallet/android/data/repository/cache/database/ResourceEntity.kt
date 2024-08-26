@@ -68,11 +68,9 @@ data class ResourceEntity(
             }
 
             ResourceEntityType.NON_FUNGIBLE -> {
-                val longAmount = amount?.string?.toLongOrNull() ?: 0L
                 Resource.NonFungibleResource(
                     address = address,
-                    amount = longAmount,
-                    displayAmount = longAmount,
+                    amount = amount?.string?.toLongOrNull() ?: 0L,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     items = emptyList(),
                     currentSupply = supply?.string?.toIntOrNull(),

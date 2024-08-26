@@ -183,7 +183,6 @@ class ResourceTests {
     ): Resource.NonFungibleResource = Resource.NonFungibleResource(
         address = address,
         amount = items.size.toLong(),
-        displayAmount = items.size.toLong(),
         items = items,
         metadata = listOf(
             name?.let { Metadata.Primitive(ExplicitMetadataKey.NAME.key, it, MetadataType.String) }

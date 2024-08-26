@@ -171,13 +171,9 @@ class StateRepositoryImpl @Inject constructor(
                 syncInfo = syncInfo
             )
             val currentItems = resource.items
-            val allNewItems = (currentItems + newItems)
-                .distinctBy { it.localId }
-                .sorted()
+            val allNewItems = (currentItems + newItems).distinctBy { it.localId }.sorted()
 
-            resource.copy(
-                items = allNewItems
-            )
+            resource.copy(items = allNewItems)
         }
     }
 

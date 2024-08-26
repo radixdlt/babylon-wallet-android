@@ -26,7 +26,8 @@ fun TransferableTokenItemContent(
     modifier: Modifier = Modifier,
     transferable: Transferable,
     shape: Shape,
-    isHidden: Boolean
+    isHidden: Boolean,
+    hiddenWarning: String
 ) {
     Column(
         modifier = modifier
@@ -71,6 +72,9 @@ fun TransferableTokenItemContent(
             )
             GuaranteesSection(transferable)
         }
-        TransferableHiddenItemWarning(isHidden = isHidden)
+        TransferableHiddenItemWarning(
+            isHidden = isHidden,
+            text = hiddenWarning
+        )
     }
 }

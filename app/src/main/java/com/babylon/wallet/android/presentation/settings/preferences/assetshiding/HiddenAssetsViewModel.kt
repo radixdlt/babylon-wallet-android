@@ -133,7 +133,7 @@ class HiddenAssetsViewModel @Inject constructor(
             nonFungibles = resources.filterIsInstance<Resource.NonFungibleResource>(),
             pools = stateRepository.getPools(
                 poolAddresses = addresses.pools().toSet()
-            ).getOrNull() ?: emptyList()
+            ).getOrNull().orEmpty()
         )
     }
 

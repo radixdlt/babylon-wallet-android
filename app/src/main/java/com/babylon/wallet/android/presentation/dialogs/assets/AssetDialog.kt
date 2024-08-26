@@ -193,7 +193,7 @@ private fun HideAssetSheet(
                     is AssetDialogViewModel.State.HideConfirmationType.Collection -> Triple(
                         stringResource(id = R.string.assetDetails_hideCollection_title),
                         stringResource(id = R.string.assetDetails_hideCollection_message, type.name),
-                        stringResource(id = R.string.assetDetails_hide_button)
+                        stringResource(id = R.string.assetDetails_hideCollection_button)
                     )
                 }
 

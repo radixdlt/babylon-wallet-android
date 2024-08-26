@@ -74,7 +74,7 @@ fun LazyListScope.nftsTab(
         }
 
         items(
-            count = if (!state.isCollapsed(nonFungible.collection.address.string)) nonFungible.collection.displayAmount.toInt() else 0,
+            count = if (!state.isCollapsed(nonFungible.collection.address.string)) nonFungible.collection.amount.toInt() else 0,
             key = { index -> "${nonFungible.collection.address}$index" },
             contentType = { "nft" }
         ) { index ->
@@ -95,7 +95,7 @@ private fun NFTItem(
             .padding(top = 1.dp)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         itemIndex = index,
-        allItemsSize = collection.displayAmount.toInt(),
+        allItemsSize = collection.amount.toInt(),
         roundTopCorners = false
     ) {
         val nft = collection.items.getOrNull(index)
@@ -131,7 +131,7 @@ private fun NFTHeader(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         isCollapsed = isCollapsed,
-        collapsedItems = collection.resource.displayAmount.toInt()
+        collapsedItems = collection.resource.amount.toInt()
     ) {
         Row(
             modifier = Modifier

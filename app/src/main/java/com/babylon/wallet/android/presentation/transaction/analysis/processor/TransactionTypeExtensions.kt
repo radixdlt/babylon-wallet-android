@@ -225,7 +225,6 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
             resource = Resource.NonFungibleResource(
                 address = resourceAddress,
                 amount = amount,
-                displayAmount = amount,
                 items = items
             ),
             isNewlyCreated = false
@@ -267,7 +266,6 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
                 resource = Resource.NonFungibleResource(
                     address = resourceAddress,
                     amount = amount,
-                    displayAmount = amount,
                     items = items,
                     metadata = metadataItems
                 ),

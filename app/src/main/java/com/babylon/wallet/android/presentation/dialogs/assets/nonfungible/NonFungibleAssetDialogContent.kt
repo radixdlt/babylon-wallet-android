@@ -328,7 +328,7 @@ fun NonFungibleAssetDialogContent(
                     button = {
                         RadixSecondaryButton(
                             modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(id = R.string.assetDetails_hideCollection_button),
+                            text = stringResource(id = R.string.assetDetails_hideCollectionButton),
                             onClick = { onHideClick?.invoke() }
                         )
                     }
