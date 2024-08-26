@@ -82,9 +82,6 @@
   <string name="assetDetails_poolUnitDetails_whatArePoolUnits">What are Pool units?</string>
   <string name="assetDetails_badgeDetails_noBadges">You have no badges</string>
   <string name="assetDetails_badgeDetails_whatAreBadges">What are badges?</string>
-  <string name="assetDetails_hideAsset_title">Hide Asset</string>
-  <string name="assetDetails_hideAsset_message">Hide this asset in your Radix Wallet? You can always unhide it in your account settings.</string>
-  <string name="assetDetails_hideAsset_button">Hide Asset</string>
   <string name="assetDetails_behaviors_simpleAsset">This is a simple asset</string>
   <string name="assetDetails_behaviors_supplyIncreasable">The supply of this asset can be increased.</string>
   <string name="assetDetails_behaviors_supplyDecreasable">The supply of this asset can be decreased.</string>
@@ -104,10 +101,8 @@
   <string name="assetDetails_behaviors_freezableByAnyone">Anyone can freeze this asset in place.</string>
   <string name="assetDetails_behaviors_nftDataChangeable">Data that is set on these NFTs can be changed.</string>
   <string name="assetDetails_behaviors_nftDataChangeableByAnyone">Anyone can change data that is set on these NFTs.</string>
-  <string name="assetDetails_hideCollectionButton">Hide Collection</string>
-  <string name="assetDetails_hideCollection_title">Hide Collection</string>
-  <string name="assetDetails_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
-  <string name="assetDetails_hideCollection_button">Hide</string>
+  <string name="assetDetails_hideAsset">Hide Asset</string>
+  <string name="assetDetails_hideCollection">Hide Collection</string>
   <string name="accountSettings_title">Account Settings</string>
   <string name="accountSettings_personalizeHeading">Personalize this Account</string>
   <string name="accountSettings_accountLabel">Account Name</string>
@@ -1291,4 +1286,13 @@ Code: %s</string>
   <string name="hiddenAssets_poolUnits">Pool Units</string>
   <string name="hiddenAssets_unhide">Unhide</string>
   <string name="hiddenAssets_unhideConfirmation">Make this asset visible in your Accounts again?</string>
+  <string name="confirmation_hideAccount_title">Hide This Account</string>
+  <string name="confirmation_hideAccount_message">Hide this Account in your wallet? You can always unhide it from the main application settings.</string>
+  <string name="confirmation_hideAccount_button">Hide Account</string>
+  <string name="confirmation_hideAsset_title">Hide Asset</string>
+  <string name="confirmation_hideAsset_message">Hide this asset in your Radix Wallet? You can always unhide it in your account settings.</string>
+  <string name="confirmation_hideAsset_button">Hide Asset</string>
+  <string name="confirmation_hideCollection_title">Hide Collection</string>
+  <string name="confirmation_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
+  <string name="confirmation_hideCollection_button">Hide</string>
 </resources>
