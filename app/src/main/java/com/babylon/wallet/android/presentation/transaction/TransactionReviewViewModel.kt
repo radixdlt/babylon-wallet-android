@@ -30,8 +30,8 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.AssetAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
@@ -98,7 +98,7 @@ class TransactionReviewViewModel @Inject constructor(
             withContext(coroutineDispatcher) {
                 _state.update {
                     it.copy(
-                        hiddenAssetAddresses = getProfileUseCase().appPreferences.assets.hidden().toPersistentList()
+                        hiddenResourceIds = getProfileUseCase().appPreferences.resources.hidden().toPersistentList()
                     )
                 }
             }
@@ -280,7 +280,7 @@ class TransactionReviewViewModel @Inject constructor(
         val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val selectedFeePayerInput: SelectFeePayerInput? = null,
-        val hiddenAssetAddresses: PersistentList<AssetAddress> = persistentListOf()
+        val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf()
     ) : UiState {
 
         val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest

@@ -1286,4 +1286,10 @@ Code: %s</string>
   <string name="hiddenAssets_poolUnits">Pool Units</string>
   <string name="hiddenAssets_unhide">Unhide</string>
   <string name="hiddenAssets_unhideConfirmation">Make this asset visible in your Accounts again?</string>
+
+  <string name="transactionReview_hiddenAssetWithdrawing">This asset is hidden and is not visible in your Account</string>
+  <string name="assetDetails_hideCollection_button">Hide Collection</string>
+  <string name="assetDetails_hideCollection_title">Hide Collection</string>
+  <string name="assetDetails_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
+  <string name="assetDetails_hide_button">Hide</string>
 </resources>

@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -38,16 +41,19 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
-import com.radixdlt.sargon.AssetAddress
-import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sampleStokenet
 
 @Composable
 fun HiddenAssetsScreen(
@@ -61,6 +67,7 @@ fun HiddenAssetsScreen(
         modifier = modifier,
         state = state,
         onBackClick = onBackClick,
+        onMessageShown = viewModel::onMessageShown,
         onUnhideClick = viewModel::onUnhideClick,
         unhide = viewModel::unhide,
         cancelUnhide = viewModel::cancelUnhide
@@ -80,10 +87,19 @@ private fun HiddenAssetsContent(
     state: HiddenAssetsViewModel.State,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onUnhideClick: (AssetAddress) -> Unit,
-    unhide: (AssetAddress) -> Unit,
+    onMessageShown: () -> Unit,
+    onUnhideClick: (ResourceIdentifier) -> Unit,
+    unhide: (ResourceIdentifier) -> Unit,
     cancelUnhide: () -> Unit
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = state.message,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -96,7 +112,13 @@ private fun HiddenAssetsContent(
 
                 HorizontalDivider(color = RadixTheme.colors.gray5)
             }
-        }
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+            )
+        },
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -117,7 +139,7 @@ private fun HiddenAssetsContent(
                     TitleLayout(text = stringResource(id = R.string.hiddenAssets_fungibles))
                 }
 
-                assetItems(
+                resourceItems(
                     items = state.tokens,
                     onUnhideClick = onUnhideClick
                 )
@@ -126,7 +148,7 @@ private fun HiddenAssetsContent(
                     TitleLayout(text = stringResource(id = R.string.hiddenAssets_nonFungibles))
                 }
 
-                assetItems(
+                resourceItems(
                     items = state.nonFungibles,
                     onUnhideClick = onUnhideClick
                 )
@@ -135,18 +157,29 @@ private fun HiddenAssetsContent(
                     TitleLayout(text = stringResource(id = R.string.hiddenAssets_poolUnits))
                 }
 
-                assetItems(
+                resourceItems(
                     items = state.poolUnits,
                     onUnhideClick = onUnhideClick
                 )
             }
         }
 
-        if (state.unhideAsset != null) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        }
+
+        if (state.unhideResource != null) {
             BasicPromptAlertDialog(
                 finish = {
                     if (it) {
-                        unhide(state.unhideAsset)
+                        unhide(state.unhideResource)
                     } else {
                         cancelUnhide()
                     }
@@ -164,9 +197,9 @@ private fun HiddenAssetsContent(
     }
 }
 
-private fun LazyListScope.assetItems(
-    items: List<HiddenAssetsViewModel.State.Asset>,
-    onUnhideClick: (AssetAddress) -> Unit
+private fun LazyListScope.resourceItems(
+    items: List<HiddenAssetsViewModel.State.Resource>,
+    onUnhideClick: (ResourceIdentifier) -> Unit
 ) {
     if (items.isEmpty()) {
         item {
@@ -174,8 +207,8 @@ private fun LazyListScope.assetItems(
         }
     } else {
         itemsIndexed(items = items) { index, item ->
-            AssetLayout(
-                asset = item,
+            ResourceLayout(
+                resource = item,
                 onUnhideClick = onUnhideClick
             )
 
@@ -197,9 +230,9 @@ private fun TitleLayout(text: String) {
 }
 
 @Composable
-private fun AssetLayout(
-    asset: HiddenAssetsViewModel.State.Asset,
-    onUnhideClick: (AssetAddress) -> Unit
+private fun ResourceLayout(
+    resource: HiddenAssetsViewModel.State.Resource,
+    onUnhideClick: (ResourceIdentifier) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -217,7 +250,7 @@ private fun AssetLayout(
     ) {
         Thumbnail(
             modifier = Modifier.size(44.dp),
-            asset = asset
+            resource = resource
         )
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
@@ -226,25 +259,25 @@ private fun AssetLayout(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = asset.name ?: stringResource(id = R.string.dash),
+                text = resource.name ?: stringResource(id = R.string.dash),
                 color = RadixTheme.colors.gray1,
                 style = RadixTheme.typography.body1HighImportance
             )
 
-            if (asset.hasDescription) {
-                Text(
-                    text = asset.description ?: stringResource(id = R.string.dash),
-                    color = RadixTheme.colors.gray2,
-                    style = RadixTheme.typography.body2Regular
-                )
-            }
+            ActionableAddressView(
+                address = resource.address,
+                isVisitableInDashboard = true,
+                textStyle = RadixTheme.typography.body1HighImportance,
+                textColor = RadixTheme.colors.gray1,
+                iconColor = RadixTheme.colors.gray2
+            )
         }
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
 
         RadixSecondaryButton(
             text = stringResource(id = R.string.hiddenAssets_unhide),
-            onClick = { onUnhideClick(asset.address) }
+            onClick = { onUnhideClick(resource.identifier) }
         )
     }
 }
@@ -252,24 +285,24 @@ private fun AssetLayout(
 @Composable
 private fun Thumbnail(
     modifier: Modifier,
-    asset: HiddenAssetsViewModel.State.Asset
+    resource: HiddenAssetsViewModel.State.Resource
 ) {
-    when (asset.address) {
-        is AssetAddress.Fungible -> Thumbnail.Fungible(
+    when (resource.identifier) {
+        is ResourceIdentifier.Fungible -> Thumbnail.Fungible(
             modifier = modifier,
             isXrd = false,
-            icon = asset.icon,
-            name = asset.name.orEmpty()
+            icon = resource.icon,
+            name = resource.name.orEmpty()
         )
-        is AssetAddress.NonFungible -> Thumbnail.NFT(
+        is ResourceIdentifier.NonFungible -> Thumbnail.NFT(
             modifier = modifier,
-            image = asset.icon,
-            localId = asset.description
+            image = resource.icon,
+            localId = resource.name
         )
-        is AssetAddress.PoolUnit -> Thumbnail.PoolUnit(
+        is ResourceIdentifier.PoolUnit -> Thumbnail.PoolUnit(
             modifier = modifier,
-            iconUrl = asset.icon,
-            name = asset.name.orEmpty()
+            iconUrl = resource.icon,
+            name = resource.name.orEmpty()
         )
     }
 }
@@ -305,6 +338,7 @@ private fun HiddenAssetsContentPreview(
         HiddenAssetsContent(
             state = state,
             onBackClick = {},
+            onMessageShown = {},
             onUnhideClick = {},
             unhide = {},
             cancelUnhide = {}
@@ -319,70 +353,63 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
         get() = sequenceOf(
             HiddenAssetsViewModel.State(
                 tokens = listOf(
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "BTC",
-                        description = null,
-                        hasDescription = false
+                        name = "BTC"
                     ),
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "rUSD",
-                        description = null,
-                        hasDescription = false
+                        name = "rUSD"
                     ),
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "1 Willshire Boulevard",
-                        description = null,
-                        hasDescription = false
+                        name = "1 Willshire Boulevard"
                     ),
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "TOPSHOT",
-                        description = null,
-                        hasDescription = false
+                        name = "TOPSHOT"
                     )
                 ),
                 nonFungibles = listOf(
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.NonFungible(NonFungibleGlobalId.sample()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.NonFungible(ResourceAddress.sampleStokenet()),
                         icon = Uri.EMPTY,
-                        name = "Devin Booker - Dunk",
-                        description = "dbooker_dunk_39",
-                        hasDescription = true
+                        name = "Devin Booker - Dunk"
                     )
                 ),
                 poolUnits = emptyList()
             ),
             HiddenAssetsViewModel.State(
                 tokens = listOf(
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "BTC",
-                        description = null,
-                        hasDescription = false
+                        name = "BTC"
                     )
                 ),
                 nonFungibles = emptyList(),
                 poolUnits = emptyList(),
-                unhideAsset = AssetAddress.Fungible(ResourceAddress.sampleMainnet.random())
+                unhideResource = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random())
             ),
             HiddenAssetsViewModel.State(
                 tokens = emptyList(),
                 nonFungibles = emptyList(),
                 poolUnits = listOf(
-                    HiddenAssetsViewModel.State.Asset(
-                        address = AssetAddress.PoolUnit(PoolAddress.sampleMainnet.random()),
+                    HiddenAssetsViewModel.State.Resource(
+                        address = Address.Pool(PoolAddress.sampleMainnet.random()),
+                        identifier = ResourceIdentifier.PoolUnit(PoolAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "Pool Unit",
-                        description = null,
-                        hasDescription = true
+                        name = "Pool Unit"
                     )
                 )
             ),

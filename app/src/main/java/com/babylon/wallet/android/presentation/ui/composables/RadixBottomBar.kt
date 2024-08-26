@@ -57,6 +57,7 @@ fun RadixBottomBar(
     button: @Composable ColumnScope.() -> Unit,
     modifier: Modifier = Modifier,
     color: Color = RadixTheme.colors.defaultBackground,
+    dividerColor: Color = RadixTheme.colors.gray5,
     insets: WindowInsets = WindowInsets.navigationBars,
     additionalContent: @Composable ColumnScope.() -> Unit = {}
 ) {
@@ -66,7 +67,7 @@ fun RadixBottomBar(
             .padding(insets.asPaddingValues()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        HorizontalDivider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = dividerColor)
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 

@@ -81,16 +81,14 @@ fun AssetDialog(
                     tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
                     isLoadingBalance = isLoadingBalance,
                     canBeHidden = state.canBeHidden,
-                    onHideClick = viewModel::onHideClick
+                    onHideClick = { viewModel.onHideClick(asset) }
                 )
 
                 is LiquidStakeUnit -> LSUDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     lsu = asset,
                     price = state.assetPrice as? AssetPrice.LSUPrice,
-                    isLoadingBalance = isLoadingBalance,
-                    canBeHidden = state.canBeHidden,
-                    onHideClick = viewModel::onHideClick
+                    isLoadingBalance = isLoadingBalance
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
@@ -99,7 +97,7 @@ fun AssetDialog(
                     poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
                     isLoadingBalance = isLoadingBalance,
                     canBeHidden = state.canBeHidden,
-                    onHideClick = viewModel::onHideClick
+                    onHideClick = { viewModel.onHideClick(asset) }
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
@@ -115,7 +113,7 @@ fun AssetDialog(
                         isLoadingBalance = isLoadingBalance,
                         canBeHidden = state.canBeHidden,
                         onClaimClick = viewModel::onClaimClick,
-                        onHideClick = viewModel::onHideClick
+                        onHideClick = { viewModel.onHideClick(asset) }
                     )
                 }
 
@@ -149,7 +147,7 @@ fun AssetDialog(
     }
 
     HideAssetSheet(
-        show = state.showHideConfirmation,
+        type = state.showHideConfirmation,
         onHideClick = viewModel::hideAsset,
         onDismiss = viewModel::onDismissHideConfirmation
     )
@@ -166,7 +164,7 @@ fun AssetDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HideAssetSheet(
-    show: Boolean,
+    type: AssetDialogViewModel.State.HideConfirmationType?,
     onHideClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -176,20 +174,33 @@ private fun HideAssetSheet(
 
     SyncSheetState(
         sheetState = sheetState,
-        isSheetVisible = show,
+        isSheetVisible = type != null,
         onSheetClosed = onDismiss
     )
 
-    if (show) {
+    if (type != null) {
         DefaultModalSheetLayout(
             wrapContent = true,
             enableImePadding = true,
             sheetState = sheetState,
             sheetContent = {
+                val content = when (type) {
+                    is AssetDialogViewModel.State.HideConfirmationType.Asset -> Triple(
+                        stringResource(id = R.string.assetDetails_hideAsset_title),
+                        stringResource(id = R.string.assetDetails_hideAsset_message),
+                        stringResource(id = R.string.assetDetails_hideAsset_button)
+                    )
+                    is AssetDialogViewModel.State.HideConfirmationType.Collection -> Triple(
+                        stringResource(id = R.string.assetDetails_hideCollection_title),
+                        stringResource(id = R.string.assetDetails_hideCollection_message, type.name),
+                        stringResource(id = R.string.assetDetails_hide_button)
+                    )
+                }
+
                 HideResourceSheetContent(
-                    title = stringResource(id = R.string.assetDetails_hideAsset_title),
-                    description = stringResource(id = R.string.assetDetails_hideAsset_message),
-                    positiveButton = stringResource(id = R.string.assetDetails_hideAsset_button),
+                    title = content.first,
+                    description = content.second,
+                    positiveButton = content.third,
                     onPositiveButtonClick = onHideClick,
                     onClose = onDismiss
                 )

@@ -120,30 +120,11 @@ class AccountsStateCache @Inject constructor(
             }
         }
         .transform { cachedAccounts ->
-            val hiddenNftIds = profileRepository.profile.first().appPreferences.assets.hiddenNonFungibles()
             val accountsToReturn = accounts.map { account ->
                 cachedAccounts.find { it.address == account.address }?.toAccountWithAssets(
                     account = account,
                     dao = dao
-                )?.let { accountWithAssets ->
-                    accountWithAssets.copy(
-                        assets = accountWithAssets.assets?.copy(
-                            nonFungibles = accountWithAssets.assets.nonFungibles.mapNotNull { nonFungible ->
-                                if (nonFungible.collection.items.isNotEmpty()) {
-                                    val newItems = nonFungible.collection.items.filterNot { it.globalId in hiddenNftIds }
-                                    nonFungible.copy(
-                                        collection = nonFungible.collection.copy(
-                                            items = newItems,
-                                            displayAmount = newItems.size.toLong()
-                                        )
-                                    ).takeIf { newItems.isNotEmpty() }
-                                } else {
-                                    nonFungible
-                                }
-                            }
-                        )
-                    )
-                } ?: AccountWithAssets(account = account)
+                ) ?: AccountWithAssets(account = account)
             }
             emit(accountsToReturn)
 
@@ -291,7 +272,7 @@ class AccountsStateCache @Inject constructor(
     }
 
     @Suppress("LongMethod", "MaxLineLength")
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenAssets().transform { cached ->
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenResources().transform { cached ->
         val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
             emit(emptyList())
             return@transform
@@ -356,15 +337,18 @@ class AccountsStateCache @Inject constructor(
         }
     }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenAssets() = map { cached ->
-        val assetPreferences = profileRepository.profile.first().appPreferences.assets
-        val hiddenPoolAddresses = assetPreferences.hiddenPools().toSet()
-        val hiddenFungibleAddresses = assetPreferences.hiddenFungibles().toSet()
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenResources() = map { cached ->
+        val resourcePreferences = profileRepository.profile.first().appPreferences.resources
+        val hiddenPoolAddresses = resourcePreferences.hiddenPools().toSet()
+        val hiddenFungibleAddresses = resourcePreferences.hiddenFungibles().toSet()
+        val hiddenNonFungibleAddresses = resourcePreferences.hiddenNonFungibles().toSet()
 
         cached.mapValues { entry ->
             entry.value.copy(
                 fungibles = entry.value.fungibles.filterNot { it.address in hiddenFungibleAddresses }
                     .filterNot { it.poolAddress in hiddenPoolAddresses }
+                    .toMutableList(),
+                nonFungibles = entry.value.nonFungibles.filterNot { it.address in hiddenNonFungibleAddresses }
                     .toMutableList()
             )
         }.toMutableMap()
@@ -483,20 +467,22 @@ class AccountsStateCache @Inject constructor(
         fun toAccountWithAssets(account: Account, dao: StateDao) = AccountWithAssets(
             account = account,
             details = details,
-            assets = assets?.copy(
-                nonFungibles = assets.nonFungibles.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.address)
-                        .map { it.toItem() }
-                        .sorted()
+            assets = details?.stateVersion?.let { stateVersion ->
+                val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
+                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.address, stateVersion)
+                        .map { it.toItem() }.sorted()
                     nonFungible.copy(collection = nonFungible.collection.copy(items = items))
-                },
-                stakeClaims = assets.stakeClaims.map { stakeClaim ->
-                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress)
+                }.orEmpty()
+
+                val updatedClaims = assets?.stakeClaims?.map { stakeClaim ->
+                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
                         .map { it.toItem() }
                         .sorted()
                     stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))
-                }
-            )
+                }.orEmpty()
+
+                assets?.copy(nonFungibles = nonFungibles, stakeClaims = updatedClaims)
+            } ?: assets
         )
     }
 

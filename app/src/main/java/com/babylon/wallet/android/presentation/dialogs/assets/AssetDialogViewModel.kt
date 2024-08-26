@@ -16,9 +16,9 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AssetAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.isXRD
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +32,7 @@ import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
-import rdx.works.profile.domain.ChangeAssetVisibilityUseCase
+import rdx.works.profile.domain.ChangeResourceVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -46,7 +46,7 @@ class AssetDialogViewModel @Inject constructor(
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
-    private val changeAssetVisibilityUseCase: ChangeAssetVisibilityUseCase,
+    private val changeResourceVisibilityUseCase: ChangeResourceVisibilityUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<AssetDialogViewModel.State>(),
     OneOffEventHandler<AssetDialogViewModel.Event> by OneOffEventHandlerImpl() {
@@ -149,22 +149,27 @@ class AssetDialogViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onHideClick() {
-        _state.update { it.copy(showHideConfirmation = true) }
+    fun onHideClick(asset: Asset) {
+        _state.update {
+            it.copy(
+                showHideConfirmation = if (asset is Asset.NonFungible) {
+                    State.HideConfirmationType.Collection(
+                        name = asset.resource.name
+                    )
+                } else {
+                    State.HideConfirmationType.Asset
+                }
+            )
+        }
     }
 
     fun hideAsset() {
         viewModelScope.launch {
-            changeAssetVisibilityUseCase.hide(
+            changeResourceVisibilityUseCase.hide(
                 when (val asset = state.value.asset) {
-                    is Token -> AssetAddress.Fungible(asset.resource.address)
-                    is NonFungibleCollection -> AssetAddress.NonFungible(
-                        NonFungibleGlobalId(
-                            resourceAddress = asset.resource.address,
-                            nonFungibleLocalId = (args as? AssetDialogArgs.NFT)?.localId ?: return@launch
-                        )
-                    )
-                    is PoolUnit -> AssetAddress.PoolUnit(asset.pool?.address ?: return@launch)
+                    is Token -> ResourceIdentifier.Fungible(asset.resource.address)
+                    is NonFungibleCollection -> ResourceIdentifier.NonFungible(asset.resource.address)
+                    is PoolUnit -> ResourceIdentifier.PoolUnit(asset.pool?.address ?: return@launch)
                     else -> return@launch
                 }
             )
@@ -175,7 +180,7 @@ class AssetDialogViewModel @Inject constructor(
     }
 
     fun onDismissHideConfirmation() {
-        _state.update { it.copy(showHideConfirmation = false) }
+        _state.update { it.copy(showHideConfirmation = null) }
     }
 
     @Suppress("ComplexCondition")
@@ -211,7 +216,7 @@ class AssetDialogViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
         val accountContext: Account? = null,
         val canBeHidden: Boolean = false,
-        val showHideConfirmation: Boolean = false
+        val showHideConfirmation: HideConfirmationType? = null
     ) : UiState {
 
         val isLoadingBalance = args.underAccountAddress != null && assetPrice == null
@@ -255,6 +260,15 @@ class AssetDialogViewModel @Inject constructor(
             companion object {
                 private const val EPOCH_TIME_MINUTES = 5
             }
+        }
+
+        sealed interface HideConfirmationType {
+
+            data object Asset : HideConfirmationType
+
+            data class Collection(
+                val name: String
+            ) : HideConfirmationType
         }
     }
 

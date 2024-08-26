@@ -8,12 +8,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.AssetAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ResourceIdentifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -23,7 +26,7 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.keyImageUrl
 import rdx.works.core.sargon.hidden
 import rdx.works.core.sargon.pools
-import rdx.works.profile.domain.ChangeAssetVisibilityUseCase
+import rdx.works.profile.domain.ChangeResourceVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -31,7 +34,7 @@ import javax.inject.Inject
 class HiddenAssetsViewModel @Inject constructor(
     private val stateRepository: StateRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val changeAssetVisibilityUseCase: ChangeAssetVisibilityUseCase,
+    private val changeResourceVisibilityUseCase: ChangeResourceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     @DefaultDispatcher private val coroutineDispatcher: CoroutineDispatcher
 ) : StateViewModel<HiddenAssetsViewModel.State>(),
@@ -43,66 +46,62 @@ class HiddenAssetsViewModel @Inject constructor(
         observeHiddenAssets()
     }
 
-    fun onUnhideClick(assetAddress: AssetAddress) {
-        _state.update { it.copy(unhideAsset = assetAddress) }
+    fun onMessageShown() {
+        _state.update { it.copy(message = null) }
     }
 
-    fun unhide(assetAddress: AssetAddress) {
+    fun onUnhideClick(assetAddress: ResourceIdentifier) {
+        _state.update { it.copy(unhideResource = assetAddress) }
+    }
+
+    fun unhide(assetAddress: ResourceIdentifier) {
         viewModelScope.launch {
-            changeAssetVisibilityUseCase.unhide(assetAddress)
+            changeResourceVisibilityUseCase.unhide(assetAddress)
             appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
         }
     }
 
     fun cancelUnhide() {
-        _state.update { it.copy(unhideAsset = null) }
+        _state.update { it.copy(unhideResource = null) }
     }
 
     private fun observeHiddenAssets() {
         viewModelScope.launch {
             getProfileUseCase.flow
                 .map { profile ->
-                    val hiddenAssetAddresses = profile.appPreferences.assets.hidden()
-                    val resources = buildResources(hiddenAssetAddresses)
+                    val hiddenResourceAddresses = profile.appPreferences.resources.hidden()
+                    val resources = buildResources(hiddenResourceAddresses)
 
                     State(
                         isLoading = false,
                         tokens = resources.fungibles.map { resource ->
-                            State.Asset(
-                                address = AssetAddress.Fungible(resource.address),
+                            State.Resource(
+                                address = Address.Resource(resource.address),
+                                identifier = ResourceIdentifier.Fungible(resource.address),
                                 icon = resource.iconUrl,
-                                name = resource.symbol.ifBlank { resource.name },
-                                description = null,
-                                hasDescription = false
+                                name = resource.symbol.ifBlank { resource.name }
                             )
                         },
-                        nonFungibles = hiddenAssetAddresses.mapNotNull {
-                            val assetAddress = it as? AssetAddress.NonFungible ?: return@mapNotNull null
-                            val resource = resources.nonFungibles.firstOrNull { resource ->
-                                resource.address == assetAddress.v1.resourceAddress
-                            } ?: return@mapNotNull null
-                            val item = resource.items.firstOrNull { item ->
-                                item.localId == assetAddress.v1.nonFungibleLocalId
-                            }
-
-                            State.Asset(
-                                address = assetAddress,
-                                icon = item?.imageUrl ?: resource.iconUrl,
-                                name = resource.name,
-                                description = item?.name,
-                                hasDescription = true
+                        nonFungibles = resources.nonFungibles.map { resource ->
+                            State.Resource(
+                                address = Address.Resource(resource.address),
+                                identifier = ResourceIdentifier.NonFungible(resource.address),
+                                icon = resource.iconUrl,
+                                name = resource.name
                             )
                         },
                         poolUnits = resources.pools.map { pool ->
-                            State.Asset(
-                                address = AssetAddress.PoolUnit(pool.address),
+                            State.Resource(
+                                address = Address.Pool(pool.address),
+                                identifier = ResourceIdentifier.PoolUnit(pool.address),
                                 icon = pool.metadata.keyImageUrl(),
-                                name = pool.name.takeIf { it.isNotBlank() },
-                                description = pool.associatedDApp?.name?.takeIf { it.isNotBlank() },
-                                hasDescription = true
+                                name = pool.name.takeIf { it.isNotBlank() }
                             )
                         }
                     )
+                }
+                .catch { throwable ->
+                    _state.update { it.copy(message = UiMessage.ErrorMessage(throwable)) }
                 }
                 .flowOn(coroutineDispatcher)
                 .collect {
@@ -112,12 +111,12 @@ class HiddenAssetsViewModel @Inject constructor(
     }
 
     private suspend fun buildResources(
-        addresses: List<AssetAddress>
+        addresses: List<ResourceIdentifier>
     ): Resources {
         val resourceAddresses = addresses.mapNotNull { address ->
             when (address) {
-                is AssetAddress.Fungible -> address.v1
-                is AssetAddress.NonFungible -> address.v1.resourceAddress
+                is ResourceIdentifier.Fungible -> address.v1
+                is ResourceIdentifier.NonFungible -> address.v1
                 else -> null
             }
         }
@@ -129,23 +128,12 @@ class HiddenAssetsViewModel @Inject constructor(
             withAllMetadata = false
         ).getOrThrow()
 
-        val nfts = addresses.filterIsInstance<AssetAddress.NonFungible>()
-            .groupBy { it.v1.resourceAddress }
-            .mapValues { entry ->
-                stateRepository.getNFTDetails(
-                    resourceAddress = entry.key,
-                    localIds = entry.value.map { it.v1.nonFungibleLocalId }.toSet()
-                ).getOrThrow()
-            }
-
         return Resources(
             fungibles = resources.filterIsInstance<Resource.FungibleResource>(),
-            nonFungibles = resources.filterIsInstance<Resource.NonFungibleResource>().map { collection ->
-                collection.copy(items = nfts[collection.address].orEmpty())
-            },
+            nonFungibles = resources.filterIsInstance<Resource.NonFungibleResource>(),
             pools = stateRepository.getPools(
                 poolAddresses = addresses.pools().toSet()
-            ).getOrThrow()
+            ).getOrNull() ?: emptyList()
         )
     }
 
@@ -161,18 +149,18 @@ class HiddenAssetsViewModel @Inject constructor(
 
     data class State(
         val isLoading: Boolean = false,
-        val tokens: List<Asset> = emptyList(),
-        val nonFungibles: List<Asset> = emptyList(),
-        val poolUnits: List<Asset> = emptyList(),
-        val unhideAsset: AssetAddress? = null
+        val tokens: List<Resource> = emptyList(),
+        val nonFungibles: List<Resource> = emptyList(),
+        val poolUnits: List<Resource> = emptyList(),
+        val unhideResource: ResourceIdentifier? = null,
+        val message: UiMessage? = null
     ) : UiState {
 
-        data class Asset(
-            val address: AssetAddress,
+        data class Resource(
+            val address: Address,
+            val identifier: ResourceIdentifier,
             val icon: Uri?,
-            val name: String?,
-            val description: String?,
-            val hasDescription: Boolean
+            val name: String?
         )
     }
 }

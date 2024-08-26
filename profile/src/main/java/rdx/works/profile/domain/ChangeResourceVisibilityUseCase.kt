@@ -1,10 +1,10 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.AssetAddress
-import com.radixdlt.sargon.extensions.AssetPreferences
+import com.radixdlt.sargon.ResourceIdentifier
+import com.radixdlt.sargon.extensions.ResourceAppPreferences
 import com.radixdlt.sargon.extensions.asIdentifiable
-import com.radixdlt.sargon.extensions.hideAsset
-import com.radixdlt.sargon.extensions.unhideAsset
+import com.radixdlt.sargon.extensions.hideResource
+import com.radixdlt.sargon.extensions.unhideResource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -13,29 +13,29 @@ import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
-class ChangeAssetVisibilityUseCase @Inject constructor(
+class ChangeResourceVisibilityUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend fun hide(assetAddress: AssetAddress) {
-        return updateAssetPreferences { assetPreferences ->
-            assetPreferences.hideAsset(assetAddress)
+    suspend fun hide(resourceIdentifier: ResourceIdentifier) {
+        return updateAssetPreferences { resourcePreferences ->
+            resourcePreferences.hideResource(resourceIdentifier)
         }
     }
 
-    suspend fun unhide(assetAddress: AssetAddress) {
-        return updateAssetPreferences { assetPreferences ->
-            assetPreferences.unhideAsset(assetAddress)
+    suspend fun unhide(resourceIdentifier: ResourceIdentifier) {
+        return updateAssetPreferences { resourcePreferences ->
+            resourcePreferences.unhideResource(resourceIdentifier)
         }
     }
 
-    private suspend fun updateAssetPreferences(operation: (AssetPreferences) -> AssetPreferences) {
+    private suspend fun updateAssetPreferences(operation: (ResourceAppPreferences) -> ResourceAppPreferences) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
             val updatedProfile = profile.copy(
                 appPreferences = profile.appPreferences.copy(
-                    assets = operation(profile.appPreferences.assets.asIdentifiable()).asList()
+                    resources = operation(profile.appPreferences.resources.asIdentifiable()).asList()
                 )
             )
             profileRepository.saveProfile(updatedProfile)

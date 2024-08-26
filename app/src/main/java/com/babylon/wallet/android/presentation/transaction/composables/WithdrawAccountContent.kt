@@ -26,7 +26,7 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
-import com.radixdlt.sargon.AssetAddress
+import com.radixdlt.sargon.ResourceIdentifier
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import rdx.works.core.domain.resources.Resource
@@ -35,7 +35,7 @@ import rdx.works.core.domain.resources.Resource
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
     from: ImmutableList<AccountWithTransferableResources>,
-    hiddenAssetAddresses: PersistentList<AssetAddress>,
+    hiddenResourceIds: PersistentList<ResourceIdentifier>,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {
@@ -77,7 +77,7 @@ fun WithdrawAccountContent(
             from.forEachIndexed { index, account ->
                 TransactionAccountCard(
                     account = account,
-                    hiddenAssetAddresses = hiddenAssetAddresses,
+                    hiddenResourceAddresses = hiddenResourceIds,
                     onTransferableFungibleClick = onTransferableFungibleClick,
                     onTransferableNonFungibleClick = onNonTransferableFungibleClick
                 )

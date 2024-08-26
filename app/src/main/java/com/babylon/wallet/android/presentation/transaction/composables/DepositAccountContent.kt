@@ -37,7 +37,7 @@ import com.babylon.wallet.android.presentation.transaction.model.AccountWithTran
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AssetAddress
+import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
@@ -50,7 +50,7 @@ import rdx.works.core.domain.resources.Resource
 fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
-    hiddenAssetAddresses: PersistentList<AssetAddress>,
+    hiddenResourceIds: PersistentList<ResourceIdentifier>,
     promptForGuarantees: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
@@ -96,7 +96,7 @@ fun DepositAccountContent(
                     val lastItem = index == to.size - 1
                     TransactionAccountCard(
                         account = accountEntry,
-                        hiddenAssetAddresses = hiddenAssetAddresses,
+                        hiddenResourceAddresses = hiddenResourceIds,
                         onTransferableFungibleClick = onTransferableFungibleClick,
                         onTransferableNonFungibleClick = onNonTransferableFungibleClick
                     )
@@ -161,7 +161,7 @@ fun DepositAccountPreview() {
                     resources = emptyList()
                 )
             ).toPersistentList(),
-            hiddenAssetAddresses = persistentListOf(),
+            hiddenResourceIds = persistentListOf(),
             promptForGuarantees = {},
             onTransferableFungibleClick = { },
             onNonTransferableFungibleClick = { _, _ -> }

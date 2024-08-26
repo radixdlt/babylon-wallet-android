@@ -28,6 +28,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
 fun HideResourceSheetContent(
@@ -82,7 +83,9 @@ fun HideResourceSheetContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = description,
+            text = description.formattedSpans(
+                RadixTheme.typography.body1Header.toSpanStyle()
+            ),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
