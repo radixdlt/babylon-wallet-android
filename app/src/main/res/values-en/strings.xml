@@ -26,6 +26,7 @@
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
+  <string name="account_nfts_itemsCount">%d in this collection</string>
   <string name="account_staking">Staking</string>
   <string name="account_staking_lsuResourceHeader">Radix Network XRD Stake Summary</string>
   <string name="account_staking_stakedValidators">STAKED VALIDATORS (%d)</string>
@@ -1283,9 +1284,11 @@ Code: %s</string>
   <string name="hiddenAssets_text">You have hidden the following assets. While hidden, you will not see these in any of your Accounts.</string>
   <string name="hiddenAssets_fungibles">Tokens</string>
   <string name="hiddenAssets_nonFungibles">NFTs</string>
+  <string name="hiddenAssets_nonFungibles_count">%d in this collection</string>
   <string name="hiddenAssets_poolUnits">Pool Units</string>
   <string name="hiddenAssets_unhide">Unhide</string>
-  <string name="hiddenAssets_unhideConfirmation">Make this asset visible in your Accounts again?</string>
+  <string name="hiddenAssets_unhideConfirmation_asset">Make this asset visible in your Accounts again?</string>
+  <string name="hiddenAssets_unhideConfirmation_collection">Make this collection visible in your Accounts again?</string>
   <string name="confirmation_hideAccount_title">Hide This Account</string>
   <string name="confirmation_hideAccount_message">Hide this Account in your wallet? You can always unhide it from the main application settings.</string>
   <string name="confirmation_hideAccount_button">Hide Account</string>
