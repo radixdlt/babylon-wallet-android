@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -60,7 +59,6 @@ fun WalletApp(
     val context = LocalContext.current
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberNavController()
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
     if (state.isAppLocked) {
         FullScreen {
@@ -115,11 +113,6 @@ fun WalletApp(
         }
 
         LaunchedEffect(Unit) {
-            mainViewModel.appNotSecureEvent.collect {
-                showNotSecuredDialog = true
-            }
-        }
-        LaunchedEffect(Unit) {
             mainViewModel.secureFolderWarning.collect {
                 showSecureFolderWarning = true
             }
@@ -142,13 +135,12 @@ fun WalletApp(
             onHighPriorityScreen = mainViewModel::onHighPriorityScreen
         )
         mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
-        if (showNotSecuredDialog) {
+        if (state.showDeviceNotSecureDialog) {
             NotSecureAlertDialog(finish = {
                 if (it) {
                     val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
                     ContextCompat.startActivity(context, intent, null)
                 }
-                showNotSecuredDialog = false
                 onCloseApp()
             })
         }

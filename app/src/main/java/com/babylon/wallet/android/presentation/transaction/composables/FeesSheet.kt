@@ -296,7 +296,7 @@ fun FeesSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    .padding(bottom = RadixTheme.dimensions.paddingXXXLarge),
                 horizontalArrangement = Arrangement.Center
             ) {
                 when (state.feesMode) {
