@@ -273,8 +273,7 @@ private fun ResourceLayout(
                 address = resource.address,
                 isVisitableInDashboard = true,
                 textStyle = RadixTheme.typography.body2Regular,
-                textColor = RadixTheme.colors.gray2,
-                iconColor = RadixTheme.colors.gray3
+                textColor = RadixTheme.colors.gray2
             )
         }
 
