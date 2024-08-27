@@ -1,6 +1,7 @@
 package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.extensions.asGeneral
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
@@ -22,7 +23,7 @@ class MnemonicIntegrityRepository @Inject constructor(
 ) {
 
     private val _didMnemonicIntegrityChange = MutableStateFlow(false)
-    val didMnemonicIntegrityChange = _didMnemonicIntegrityChange.asSharedFlow()
+    val didMnemonicIntegrityChange: Flow<Boolean> = _didMnemonicIntegrityChange.asSharedFlow()
 
     suspend fun checkIntegrity() {
         if (getProfileUseCase.isInitialized().not()) return
