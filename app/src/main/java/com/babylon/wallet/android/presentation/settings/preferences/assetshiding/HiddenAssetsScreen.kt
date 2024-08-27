@@ -44,10 +44,8 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceIdentifier
@@ -186,7 +184,12 @@ private fun HiddenAssetsContent(
                 },
                 message = {
                     Text(
-                        text = stringResource(id = R.string.hiddenAssets_unhideConfirmation),
+                        text = stringResource(
+                            id = when (state.unhideResource) {
+                                is ResourceIdentifier.NonFungible -> R.string.hiddenAssets_unhideConfirmation_collection
+                                else -> R.string.hiddenAssets_unhideConfirmation_asset
+                            }
+                        ),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1
                     )
@@ -264,13 +267,19 @@ private fun ResourceLayout(
                 style = RadixTheme.typography.body1HighImportance
             )
 
-            ActionableAddressView(
-                address = resource.address,
-                isVisitableInDashboard = true,
-                textStyle = RadixTheme.typography.body1HighImportance,
-                textColor = RadixTheme.colors.gray1,
-                iconColor = RadixTheme.colors.gray2
-            )
+            resource.details?.let { details ->
+                Text(
+                    text = when (details) {
+                        is HiddenAssetsViewModel.State.Resource.Details.NFT -> stringResource(
+                            id = R.string.hiddenAssets_nonFungibles_count,
+                            details.itemCount
+                        )
+                        is HiddenAssetsViewModel.State.Resource.Details.PoolUnit -> details.dAppName ?: stringResource(id = R.string.dash)
+                    },
+                    color = RadixTheme.colors.gray2,
+                    style = RadixTheme.typography.body2Regular
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
@@ -354,36 +363,38 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
             HiddenAssetsViewModel.State(
                 tokens = listOf(
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "BTC"
+                        name = "BTC",
+                        details = null
                     ),
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "rUSD"
+                        name = "rUSD",
+                        details = null
                     ),
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "1 Willshire Boulevard"
+                        name = "1 Willshire Boulevard",
+                        details = null
                     ),
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "TOPSHOT"
+                        name = "TOPSHOT",
+                        details = null
                     )
                 ),
                 nonFungibles = listOf(
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.NonFungible(ResourceAddress.sampleStokenet()),
                         icon = Uri.EMPTY,
-                        name = "Devin Booker - Dunk"
+                        name = "Devin Booker - Dunk",
+                        details = HiddenAssetsViewModel.State.Resource.Details.NFT(
+                            itemCount = 3
+                        )
                     )
                 ),
                 poolUnits = emptyList()
@@ -391,10 +402,10 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
             HiddenAssetsViewModel.State(
                 tokens = listOf(
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Resource(ResourceAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.Fungible(ResourceAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "BTC"
+                        name = "BTC",
+                        details = null
                     )
                 ),
                 nonFungibles = emptyList(),
@@ -406,10 +417,12 @@ class HiddenAssetsPreviewProvider : PreviewParameterProvider<HiddenAssetsViewMod
                 nonFungibles = emptyList(),
                 poolUnits = listOf(
                     HiddenAssetsViewModel.State.Resource(
-                        address = Address.Pool(PoolAddress.sampleMainnet.random()),
                         identifier = ResourceIdentifier.PoolUnit(PoolAddress.sampleMainnet.random()),
                         icon = null,
-                        name = "Pool Unit"
+                        name = "Pool Unit",
+                        details = HiddenAssetsViewModel.State.Resource.Details.PoolUnit(
+                            dAppName = "RadaSwap"
+                        )
                     )
                 )
             ),

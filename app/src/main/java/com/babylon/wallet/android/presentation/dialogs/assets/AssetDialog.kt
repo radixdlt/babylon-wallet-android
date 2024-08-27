@@ -186,14 +186,14 @@ private fun HideAssetSheet(
             sheetContent = {
                 val content = when (type) {
                     is AssetDialogViewModel.State.HideConfirmationType.Asset -> Triple(
-                        stringResource(id = R.string.assetDetails_hideAsset_title),
-                        stringResource(id = R.string.assetDetails_hideAsset_message),
-                        stringResource(id = R.string.assetDetails_hideAsset_button)
+                        stringResource(id = R.string.confirmation_hideAsset_title),
+                        stringResource(id = R.string.confirmation_hideAsset_message),
+                        stringResource(id = R.string.confirmation_hideAsset_button)
                     )
                     is AssetDialogViewModel.State.HideConfirmationType.Collection -> Triple(
-                        stringResource(id = R.string.assetDetails_hideCollection_title),
-                        stringResource(id = R.string.assetDetails_hideCollection_message, type.name),
-                        stringResource(id = R.string.assetDetails_hideCollection_button)
+                        stringResource(id = R.string.confirmation_hideCollection_title),
+                        stringResource(id = R.string.confirmation_hideCollection_message, type.name),
+                        stringResource(id = R.string.confirmation_hideCollection_button)
                     )
                 }
 

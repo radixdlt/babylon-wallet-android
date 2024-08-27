@@ -252,7 +252,7 @@ fun PoolUnitDialogContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.assetDetails_hideAsset_button),
+                        text = stringResource(id = R.string.assetDetails_hideAsset),
                         onClick = onHideClick
                     )
                 }

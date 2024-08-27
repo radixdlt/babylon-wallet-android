@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetPoolsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -12,7 +14,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ResourceIdentifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,7 +33,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HiddenAssetsViewModel @Inject constructor(
-    private val stateRepository: StateRepository,
+    private val getResourcesUseCase: GetResourcesUseCase,
+    private val getPoolsUseCase: GetPoolsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val changeResourceVisibilityUseCase: ChangeResourceVisibilityUseCase,
     private val appEventBus: AppEventBus,
@@ -76,26 +78,30 @@ class HiddenAssetsViewModel @Inject constructor(
                         isLoading = false,
                         tokens = resources.fungibles.map { resource ->
                             State.Resource(
-                                address = Address.Resource(resource.address),
                                 identifier = ResourceIdentifier.Fungible(resource.address),
                                 icon = resource.iconUrl,
-                                name = resource.symbol.ifBlank { resource.name }
+                                name = resource.symbol.ifBlank { resource.name },
+                                details = null
                             )
                         },
                         nonFungibles = resources.nonFungibles.map { resource ->
                             State.Resource(
-                                address = Address.Resource(resource.address),
                                 identifier = ResourceIdentifier.NonFungible(resource.address),
                                 icon = resource.iconUrl,
-                                name = resource.name
+                                name = resource.name,
+                                details = State.Resource.Details.NFT(
+                                    itemCount = resource.amount
+                                )
                             )
                         },
                         poolUnits = resources.pools.map { pool ->
                             State.Resource(
-                                address = Address.Pool(pool.address),
                                 identifier = ResourceIdentifier.PoolUnit(pool.address),
                                 icon = pool.metadata.keyImageUrl(),
-                                name = pool.name.takeIf { it.isNotBlank() }
+                                name = pool.name.takeIf { it.isNotBlank() },
+                                details = State.Resource.Details.PoolUnit(
+                                    dAppName = pool.associatedDApp?.name
+                                )
                             )
                         }
                     )
@@ -121,17 +127,15 @@ class HiddenAssetsViewModel @Inject constructor(
             }
         }
 
-        val resources = stateRepository.getResources(
+        val resources = getResourcesUseCase(
             addresses = resourceAddresses.toSet(),
-            underAccountAddress = null,
-            withDetails = true,
-            withAllMetadata = false
+            withDetails = true
         ).getOrThrow()
 
         return Resources(
             fungibles = resources.filterIsInstance<Resource.FungibleResource>(),
             nonFungibles = resources.filterIsInstance<Resource.NonFungibleResource>(),
-            pools = stateRepository.getPools(
+            pools = getPoolsUseCase(
                 poolAddresses = addresses.pools().toSet()
             ).getOrNull().orEmpty()
         )
@@ -157,10 +161,22 @@ class HiddenAssetsViewModel @Inject constructor(
     ) : UiState {
 
         data class Resource(
-            val address: Address,
             val identifier: ResourceIdentifier,
             val icon: Uri?,
-            val name: String?
-        )
+            val name: String?,
+            val details: Details?
+        ) {
+
+            sealed interface Details {
+
+                data class NFT(
+                    val itemCount: Long
+                ) : Details
+
+                data class PoolUnit(
+                    val dAppName: String?
+                ) : Details
+            }
+        }
     }
 }

@@ -253,6 +253,14 @@ interface StateDao {
 
     @Query(
         """
+        SELECT * FROM AccountResourceJoin
+        WHERE resource_address = :resourceAddress
+    """
+    )
+    fun getAccountResourceJoin(resourceAddress: ResourceAddress): AccountResourceJoin?
+
+    @Query(
+        """
         SELECT * FROM NFTEntity
         WHERE address = :resourceAddress AND local_id = :localId and synced >= :minValidity
     """

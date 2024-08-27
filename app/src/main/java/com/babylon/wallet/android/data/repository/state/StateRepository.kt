@@ -354,7 +354,7 @@ class StateRepositoryImpl @Inject constructor(
             addressesWithResourceEntities.values.filterNotNull().map { resourceEntity ->
                 val amount = underAccountAddress?.let { accountAddress ->
                     stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address, accountAddress = accountAddress)?.amount
-                }
+                } ?: stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address)?.amount
 
                 val nextMetadataCursor = resourceEntity.metadata?.nextCursor
                 if (withAllMetadata && nextMetadataCursor != null) {

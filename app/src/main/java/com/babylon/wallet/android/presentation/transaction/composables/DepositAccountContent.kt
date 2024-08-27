@@ -97,7 +97,7 @@ fun DepositAccountContent(
                     TransactionAccountCard(
                         account = accountEntry,
                         hiddenResourceIds = hiddenResourceIds,
-                        hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset),
+                        hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset_deposit),
                         onTransferableFungibleClick = onTransferableFungibleClick,
                         onTransferableNonFungibleClick = onNonTransferableFungibleClick
                     )
