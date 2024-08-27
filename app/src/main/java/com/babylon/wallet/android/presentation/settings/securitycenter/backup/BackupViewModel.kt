@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.backup
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -34,6 +35,7 @@ class BackupViewModel @Inject constructor(
     private val googleSignInManager: GoogleSignInManager,
     private val checkCloudBackupFileAvailabilityUseCase: CheckCloudBackupFileAvailabilityUseCase,
     private val getProfileUseCase: GetProfileUseCase,
+    private val appLockStateProvider: AppLockStateProvider,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(),
     CanSignInToGoogle,
@@ -52,6 +54,7 @@ class BackupViewModel @Inject constructor(
     override fun signInManager(): GoogleSignInManager = googleSignInManager
 
     override fun onSignInResult(result: Result<GoogleAccount>) {
+        appLockStateProvider.resumeLocking()
         viewModelScope.launch {
             result
                 .onSuccess {
@@ -80,6 +83,7 @@ class BackupViewModel @Inject constructor(
         if (isChecked) {
             Timber.tag("CloudBackup").d("Cloud backup authorization is in progress...")
             _state.update { it.copy(isCloudAuthorizationInProgress = true) }
+            appLockStateProvider.pauseLocking()
             sendEvent(Event.SignInToGoogle)
         } else {
             _state.update { it.copy(isCloudAuthorizationInProgress = true) }

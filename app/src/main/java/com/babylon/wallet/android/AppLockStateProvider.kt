@@ -22,6 +22,7 @@ class AppLockStateProvider @Inject constructor(
 ) {
 
     private val _state: MutableStateFlow<State> = MutableStateFlow(State())
+
     val lockState = combine(
         getProfileUseCase.state,
         _state,
@@ -36,6 +37,10 @@ class AppLockStateProvider @Inject constructor(
 
             else -> LockState.Unlocked
         }
+    }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
+
+    val shouldShowPrivacyOverlay = combine(_state, preferencesManager.isAppLockEnabled) { state, isEnabled ->
+        isEnabled && !state.isLockingPaused
     }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
 
     suspend fun lockApp() {

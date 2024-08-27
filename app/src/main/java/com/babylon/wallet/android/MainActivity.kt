@@ -158,7 +158,7 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.state.collect { state ->
-                    if (state.isAppLockEnabled) {
+                    if (state.shouldShowPrivacyOverlay) {
                         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     }
                     if (state.isAppLocked) {
@@ -223,7 +223,7 @@ class MainActivity : FragmentActivity() {
     }
 
     override fun onUserLeaveHint() {
-        if (viewModel.state.value.isAppLockEnabled) {
+        if (viewModel.state.value.shouldShowPrivacyOverlay) {
             val params = WindowManager.LayoutParams().apply {
                 type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
                 token = privacyOverlay.applicationWindowToken

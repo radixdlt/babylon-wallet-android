@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -38,14 +39,15 @@ import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 class RestoreFromBackupViewModel @Inject constructor(
     private val fetchBackedUpProfilesMetadataFromCloud: FetchBackedUpProfilesMetadataFromCloud,
     private val downloadBackedUpProfileFromCloud: DownloadBackedUpProfileFromCloud,
     private val getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
     private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase,
     private val googleSignInManager: GoogleSignInManager,
-    private val hostInfoRepository: HostInfoRepository
+    private val hostInfoRepository: HostInfoRepository,
+    private val appLockStateProvider: AppLockStateProvider
 ) : StateViewModel<RestoreFromBackupViewModel.State>(),
     CanSignInToGoogle,
     OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -95,17 +97,17 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     fun onLoginToGoogleClick() = viewModelScope.launch {
         _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
-
+        appLockStateProvider.pauseLocking()
         sendEvent(Event.SignInToGoogle)
     }
 
     override fun signInManager(): GoogleSignInManager = googleSignInManager
 
     override fun onSignInResult(result: Result<GoogleAccount>) {
+        appLockStateProvider.resumeLocking()
         _state.update { state ->
             state.copy(isAccessToGoogleDriveInProgress = false)
         }
-
         viewModelScope.launch {
             result.onSuccess { googleAccount ->
                 _state.update { it.copy(backupEmail = googleAccount.email) }

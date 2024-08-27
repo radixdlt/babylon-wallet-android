@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.cloudbackup
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException.CloudBackupException
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -29,6 +30,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
     private val googleSignInManager: GoogleSignInManager,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
+    private val appLockStateProvider: AppLockStateProvider,
     @ApplicationScope private val appScope: CoroutineScope
 ) : StateViewModel<ConnectCloudBackupViewModel.State>(),
     CanSignInToGoogle,
@@ -63,6 +65,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
                     Timber.tag("CloudBackup").w(exception)
                 }
             }
+            appLockStateProvider.resumeLocking()
         }
     }
 
@@ -74,7 +77,7 @@ class ConnectCloudBackupViewModel @Inject constructor(
         }
 
         checkIfExistingWalletAndRevokeAccessToDeprecatedCloud()
-
+        appLockStateProvider.pauseLocking()
         sendEvent(Event.SignInToGoogle)
     }
 
