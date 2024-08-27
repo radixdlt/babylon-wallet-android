@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Compa
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
+import com.babylon.wallet.android.data.repository.cache.database.ResourceEntityType
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.dAppsCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
@@ -352,10 +353,7 @@ class StateRepositoryImpl @Inject constructor(
             }
 
             addressesWithResourceEntities.values.filterNotNull().map { resourceEntity ->
-                val amount = underAccountAddress?.let { accountAddress ->
-                    stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address, accountAddress = accountAddress)?.amount
-                } ?: stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address)?.amount
-
+                val amount = getResourceAmount(resourceEntity, underAccountAddress)
                 val nextMetadataCursor = resourceEntity.metadata?.nextCursor
                 if (withAllMetadata && nextMetadataCursor != null) {
                     val remainingMetadata = runCatching {
@@ -566,5 +564,20 @@ class StateRepositoryImpl @Inject constructor(
         return stateDao.getAccountStateVersions().filter {
             it.address.networkId == currentNetworkId
         }.maxByOrNull { it.stateVersion }?.stateVersion
+    }
+
+    private fun getResourceAmount(resourceEntity: ResourceEntity, accountAddress: AccountAddress?): Decimal192? {
+        return if (accountAddress != null) {
+            stateDao.getAccountResourceJoin(
+                resourceAddress = resourceEntity.address,
+                accountAddress = accountAddress
+            )?.amount
+        } else {
+            // Querying the amount only for non-fungibles,
+            // because they can't belong to more than 1 account at the same time,
+            // so we get the accurate amount of items for the resource regardless of the account it belongs to
+            stateDao.getAccountResourceJoin(resourceAddress = resourceEntity.address)?.amount
+                ?.takeIf { resourceEntity.type == ResourceEntityType.NON_FUNGIBLE }
+        }
     }
 }

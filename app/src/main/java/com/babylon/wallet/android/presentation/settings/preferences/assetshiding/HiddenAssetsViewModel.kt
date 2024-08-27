@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.preferences.assetshidin
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolsUseCase
