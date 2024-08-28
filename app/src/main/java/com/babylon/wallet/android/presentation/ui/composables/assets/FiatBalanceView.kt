@@ -20,11 +20,11 @@ fun FiatBalanceView(
     fiatPrice: FiatPrice,
     textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
     decimalPrecision: Int? = null,
-    showAlways: Boolean = false,
+    isFee: Boolean = false,
 ) {
     Text(
         modifier = modifier,
-        text = if (LocalBalanceVisibility.current || showAlways) {
+        text = if (LocalBalanceVisibility.current || isFee) {
             remember(fiatPrice) {
                 if (decimalPrecision != null) {
                     fiatPrice.formatted(decimalPrecision)

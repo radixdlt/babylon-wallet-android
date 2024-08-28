@@ -77,7 +77,7 @@ fun NetworkFeeContent(
                     FiatBalanceView(
                         fiatPrice = fiatPrice,
                         decimalPrecision = Constants.FEES_FIAT_VALUE_PRECISION,
-                        showAlways = true
+                        isFee = true
                     )
                 }
             }
