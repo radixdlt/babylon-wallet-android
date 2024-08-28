@@ -95,12 +95,7 @@ class AssetDialogViewModel @Inject constructor(
                     }
                 }
             }.mapCatching { asset ->
-                _state.update {
-                    it.copy(
-                        asset = asset,
-                        canBeHidden = !asset.resource.address.isXRD && asset !is StakeClaim && asset !is LiquidStakeUnit
-                    )
-                }
+                _state.update { it.copy(asset = asset) }
 
                 args.underAccountAddress?.let { accountAddress ->
                     val account = getProfileUseCase().activeAccountOnCurrentNetwork(accountAddress)
@@ -173,9 +168,9 @@ class AssetDialogViewModel @Inject constructor(
                     else -> return@launch
                 }
             )
+            appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
             onDismissHideConfirmation()
             sendEvent(Event.Close)
-            appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
         }
     }
 
@@ -215,7 +210,6 @@ class AssetDialogViewModel @Inject constructor(
         val assetPrice: AssetPrice? = null,
         val uiMessage: UiMessage? = null,
         val accountContext: Account? = null,
-        val canBeHidden: Boolean = false,
         val showHideConfirmation: HideConfirmationType? = null
     ) : UiState {
 
@@ -240,6 +234,10 @@ class AssetDialogViewModel @Inject constructor(
                     )
                 }
             }
+
+        val canBeHidden: Boolean = asset != null &&
+            !asset.resource.address.isXRD &&
+            asset !is StakeClaim && asset !is LiquidStakeUnit
 
         sealed class ClaimState {
             abstract val amount: Decimal192

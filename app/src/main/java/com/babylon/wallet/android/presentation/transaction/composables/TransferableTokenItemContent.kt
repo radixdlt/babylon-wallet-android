@@ -27,7 +27,7 @@ fun TransferableTokenItemContent(
     transferable: Transferable,
     shape: Shape,
     isHidden: Boolean,
-    hiddenWarning: String
+    hiddenResourceWarning: String
 ) {
     Column(
         modifier = modifier
@@ -74,7 +74,7 @@ fun TransferableTokenItemContent(
         }
         TransferableHiddenItemWarning(
             isHidden = isHidden,
-            text = hiddenWarning
+            text = hiddenResourceWarning
         )
     }
 }

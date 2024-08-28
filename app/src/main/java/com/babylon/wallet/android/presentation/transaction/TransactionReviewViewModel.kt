@@ -81,7 +81,7 @@ class TransactionReviewViewModel @Inject constructor(
     )
 
     init {
-        initState()
+        initHiddenResources()
 
         analysis(scope = viewModelScope, state = _state)
         guarantees(scope = viewModelScope, state = _state)
@@ -93,7 +93,7 @@ class TransactionReviewViewModel @Inject constructor(
         processIncomingRequest()
     }
 
-    private fun initState() {
+    private fun initHiddenResources() {
         viewModelScope.launch {
             withContext(coroutineDispatcher) {
                 _state.update {

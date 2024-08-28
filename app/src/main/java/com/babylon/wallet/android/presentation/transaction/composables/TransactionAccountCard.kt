@@ -49,7 +49,7 @@ fun TransactionAccountCard(
     modifier: Modifier = Modifier,
     account: AccountWithTransferableResources,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
-    hiddenWarning: String,
+    hiddenResourceWarning: String,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
@@ -77,7 +77,7 @@ fun TransactionAccountCard(
                         asset,
                         hiddenResourceIds
                     ) { asset.resource.address in hiddenResourceIds.fungibles() },
-                    hiddenWarning = hiddenWarning
+                    hiddenResourceWarning = hiddenResourceWarning
                 )
 
                 is TransferableAsset.NonFungible.NFTAssets -> {
@@ -95,7 +95,7 @@ fun TransactionAccountCard(
                                 item,
                                 hiddenResourceIds
                             ) { item.collectionAddress in hiddenResourceIds.nonFungibles() },
-                            hiddenWarning = hiddenWarning
+                            hiddenResourceWarning = hiddenResourceWarning
                         )
                     }
                 }
@@ -107,7 +107,7 @@ fun TransactionAccountCard(
                         asset,
                         hiddenResourceIds
                     ) { asset.resource.poolAddress in hiddenResourceIds.pools() },
-                    hiddenWarning = hiddenWarning,
+                    hiddenResourceWarning = hiddenResourceWarning,
                     onClick = onTransferableFungibleClick
                 )
 
@@ -218,7 +218,7 @@ fun TransactionAccountCardPreview() {
                 )
             ),
             hiddenResourceIds = persistentListOf(),
-            hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleClick = { _, _ -> }
         )

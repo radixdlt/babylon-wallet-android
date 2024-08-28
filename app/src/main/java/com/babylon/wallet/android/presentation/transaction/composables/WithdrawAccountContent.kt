@@ -78,7 +78,7 @@ fun WithdrawAccountContent(
                 TransactionAccountCard(
                     account = account,
                     hiddenResourceIds = hiddenResourceIds,
-                    hiddenWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+                    hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
                     onTransferableFungibleClick = onTransferableFungibleClick,
                     onTransferableNonFungibleClick = onNonTransferableFungibleClick
                 )
