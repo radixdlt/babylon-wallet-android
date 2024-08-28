@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -22,6 +23,7 @@ import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.secureRandom
 import com.radixdlt.sargon.extensions.value
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.then
 import timber.log.Timber
@@ -33,7 +35,8 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase,
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val getFiatValueUseCase: GetFiatValueUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
@@ -43,6 +46,17 @@ class TransactionAnalysisDelegate @Inject constructor(
             logger.v(it.instructions)
         }
         startAnalysis(manifestData)
+        fetchXrdPrice()
+    }
+
+    private fun fetchXrdPrice() {
+        viewModelScope.launch {
+            getFiatValueUseCase.forXrd().onSuccess { fiatPrice ->
+                _state.update { state ->
+                    state.copy(transactionFees = state.transactionFees.copy(xrdFiatPrice = fiatPrice))
+                }
+            }
+        }
     }
 
     private suspend fun startAnalysis(manifestData: TransactionManifestData) {

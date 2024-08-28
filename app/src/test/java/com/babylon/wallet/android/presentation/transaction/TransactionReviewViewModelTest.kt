@@ -20,6 +20,7 @@ import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
@@ -83,6 +84,8 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.changeDefaultDepositGuarantee
@@ -118,6 +121,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
+    private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val previewTypeAnalyzer = PreviewTypeAnalyzer(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
@@ -256,6 +260,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
+        coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
     }
 
     override fun initVM(): TransactionReviewViewModel {
@@ -265,7 +270,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
-                transactionRepository = transactionRepository
+                transactionRepository = transactionRepository,
+                getFiatValueUseCase = getFiatValueUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(

@@ -8,11 +8,14 @@ import android.os.Build
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.toDouble
+import java.math.RoundingMode
 import java.util.Locale
+import kotlin.math.max
 
 data class FiatPrice(
     val price: Decimal192,
@@ -21,28 +24,36 @@ data class FiatPrice(
 
     val isZero = price.isZero
 
-    val formatted: String by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            NumberFormatter.with()
+    val defaultFormatted: String by lazy {
+        formatted()
+    }
+
+    fun formatted(significantDigitsPrecision: Int? = null): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            var formatter = NumberFormatter.with()
                 .unit(Currency.getInstance(currency.name))
                 .locale(Locale.getDefault())
-                .let { localizedNumberFormatter ->
-                    if (price.isZero) {
-                        localizedNumberFormatter.precision(Precision.fixedFraction(NO_PRECISION))
-                    } else {
-                        localizedNumberFormatter
-                    }
-                }
-                .format(price.toDouble())
-                .toString()
+            if (price.isZero) {
+                formatter = formatter.precision(Precision.fixedFraction(NO_PRECISION))
+            } else if (significantDigitsPrecision != null) {
+                formatter = formatter.precision(Precision.fixedSignificantDigits(significantDigitsPrecision))
+            }
+            formatter.format(price.toDouble()).toString()
         } else {
+            var priceAsBigDecimal = price.string.toBigDecimal()
+            if (significantDigitsPrecision != null) {
+                val newScale = significantDigitsPrecision - priceAsBigDecimal.precision() + priceAsBigDecimal.scale()
+                priceAsBigDecimal = priceAsBigDecimal.setScale(newScale, RoundingMode.HALF_UP)
+            }
             val javaCurrency = Currency.getInstance(currency.name)
             NumberFormat.getCurrencyInstance().apply {
                 currency = javaCurrency
                 if (price.isZero) {
                     maximumFractionDigits = NO_PRECISION
+                } else if (significantDigitsPrecision != null) {
+                    maximumFractionDigits = max(0, priceAsBigDecimal.stripTrailingZeros().scale())
                 }
-            }.format(price.toDouble())
+            }.format(if (significantDigitsPrecision != null) priceAsBigDecimal else price.toDouble())
         }
     }
 

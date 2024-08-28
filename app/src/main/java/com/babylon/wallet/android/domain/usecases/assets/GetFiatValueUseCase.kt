@@ -22,13 +22,30 @@ import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.then
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import javax.inject.Inject
 
 class GetFiatValueUseCase @Inject constructor(
     @Mainnet private val mainnetFiatPriceRepository: FiatPriceRepository,
     @Testnet private val testnetFiatPriceRepository: FiatPriceRepository,
-    private val stateRepository: StateRepository
+    private val stateRepository: StateRepository,
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase
 ) {
+
+    suspend fun forXrd(currency: SupportedCurrency = SupportedCurrency.USD, isRefreshing: Boolean = false): Result<FiatPrice?> {
+        return runCatching {
+            val networkId = getCurrentGatewayUseCase.invoke().network.id
+            val xrdAddress = XrdResource.address(networkId = getCurrentGatewayUseCase.invoke().network.id)
+            getFiatPrices(
+                networkId = networkId,
+                addresses = setOf(PriceRequestAddress.Regular(xrdAddress)),
+                currency = currency,
+                isRefreshing = isRefreshing
+            ).mapCatching { prices ->
+                prices[xrdAddress]
+            }.getOrNull()
+        }
+    }
 
     suspend fun forAccount(
         accountWithAssets: AccountWithAssets,
