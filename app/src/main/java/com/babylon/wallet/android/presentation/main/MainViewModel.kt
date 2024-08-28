@@ -49,8 +49,8 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
+import rdx.works.profile.data.repository.MnemonicIntegrityRepository
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
-import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -68,7 +68,7 @@ class MainViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
-    private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val mnemonicIntegrityRepository: MnemonicIntegrityRepository,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
@@ -358,7 +358,7 @@ class MainViewModel @Inject constructor(
 
     private fun runForegroundChecks() {
         viewModelScope.launch {
-            checkMnemonicIntegrityUseCase()
+            mnemonicIntegrityRepository.checkIntegrity()
             if (_state.value.isDeviceSecure) {
                 val checkResult = checkEntitiesCreatedWithOlympiaUseCase()
                 if (checkResult.isAnyEntityCreatedWithOlympia) {

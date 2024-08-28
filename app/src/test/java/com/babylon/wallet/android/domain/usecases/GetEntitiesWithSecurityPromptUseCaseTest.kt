@@ -9,6 +9,7 @@ import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +25,7 @@ import org.junit.Test
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.sargon.changeGateway
+import rdx.works.profile.data.repository.MnemonicIntegrityRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
@@ -37,12 +39,16 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
     private val mnemonicRepositoryMock = mockk<MnemonicRepository>()
     private val getBackupStateUseCaseMock = mockk<GetBackupStateUseCase>()
+    private val mnemonicIntegrityRepository = mockk<MnemonicIntegrityRepository>().apply {
+        every { didMnemonicIntegrityChange } returns flowOf(false)
+    }
 
     private val getEntitiesWithSecurityPromptUseCase = GetEntitiesWithSecurityPromptUseCase(
         getProfileUseCase = GetProfileUseCase(profileRepository = FakeProfileRepository(profile)),
         preferencesManager = FakePreferenceManager(),
         mnemonicRepository = mnemonicRepositoryMock,
-        getBackupStateUseCase = getBackupStateUseCaseMock
+        getBackupStateUseCase = getBackupStateUseCaseMock,
+        mnemonicIntegrityRepository = mnemonicIntegrityRepository
     )
 
     @Test
