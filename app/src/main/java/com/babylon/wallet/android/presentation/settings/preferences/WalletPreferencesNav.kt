@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.preferences.assetshiding.hiddenAssetsScreen
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
@@ -35,6 +36,9 @@ fun NavGraphBuilder.preferencesNavGraph(
         walletPreferencesScreen(navController)
         settingsGateway(navController)
         hiddenEntitiesScreen(onBackClick = {
+            navController.popBackStack()
+        })
+        hiddenAssetsScreen(onBackClick = {
             navController.popBackStack()
         })
         depositGuaranteesScreen(
@@ -79,7 +83,9 @@ fun NavGraphBuilder.walletPreferencesScreen(
                     SettingsItem.WalletPreferences.EntityHiding -> {
                         navController.hiddenEntitiesScreen()
                     }
-
+                    SettingsItem.WalletPreferences.AssetsHiding -> {
+                        navController.hiddenAssetsScreen()
+                    }
                     SettingsItem.WalletPreferences.DepositGuarantees -> {
                         navController.depositGuaranteesScreen()
                     }

@@ -36,6 +36,8 @@ fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
     transferable: Transferable,
     shape: Shape,
+    isHidden: Boolean,
+    hiddenResourceWarning: String,
     onClick: (poolUnit: TransferableAsset.Fungible.PoolUnitAsset) -> Unit
 ) {
     val transferablePoolUnit = transferable.transferable as TransferableAsset.Fungible.PoolUnitAsset
@@ -130,5 +132,9 @@ fun TransferablePoolUnitItemContent(
                 }
             }
         }
+        TransferableHiddenItemWarning(
+            isHidden = isHidden,
+            text = hiddenResourceWarning
+        )
     }
 }

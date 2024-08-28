@@ -154,6 +154,7 @@ sealed interface SettingsItem {
     sealed interface WalletPreferences {
         data object DepositGuarantees : WalletPreferences
         data object EntityHiding : WalletPreferences
+        data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
@@ -166,6 +167,7 @@ sealed interface SettingsItem {
                 Gateways -> R.string.preferences_gateways
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.preferences_hiddenEntities_title
+                AssetsHiding -> R.string.preferences_hiddenAssets_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
                 is AppLock -> R.string.preferences_advancedLock_title
             }
@@ -178,6 +180,7 @@ sealed interface SettingsItem {
                 Gateways -> null
                 is DeveloperMode -> R.string.appSettings_developerMode_subtitle
                 EntityHiding -> R.string.preferences_hiddenEntities_subtitle
+                AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
                 is CrashReporting -> null
                 is AppLock -> R.string.preferences_advancedLock_subtitle
             }
@@ -187,7 +190,8 @@ sealed interface SettingsItem {
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
                 Gateways -> DSR.ic_gateways
-                EntityHiding -> DSR.ic_entity_hiding
+                EntityHiding,
+                AssetsHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
                 is AppLock -> DSR.ic_lock

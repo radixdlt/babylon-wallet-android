@@ -134,6 +134,7 @@ data class WalletPreferencesUiState(
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DepositGuarantees),
                 PreferencesUiItem.DisplaySection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AssetsHiding),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AppLock(false)),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),

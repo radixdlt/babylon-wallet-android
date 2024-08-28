@@ -7,27 +7,37 @@ import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.ResourceOrNonFungible
+import com.radixdlt.sargon.extensions.isXRD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.profile.domain.ChangeResourceVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class AssetDialogViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -35,8 +45,11 @@ class AssetDialogViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
-    private val getFiatValueUseCase: GetFiatValueUseCase
-) : StateViewModel<AssetDialogViewModel.State>() {
+    private val getFiatValueUseCase: GetFiatValueUseCase,
+    private val changeResourceVisibilityUseCase: ChangeResourceVisibilityUseCase,
+    private val appEventBus: AppEventBus
+) : StateViewModel<AssetDialogViewModel.State>(),
+    OneOffEventHandler<AssetDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AssetDialogArgs.from(savedStateHandle)
 
@@ -131,6 +144,40 @@ class AssetDialogViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    fun onHideClick(asset: Asset) {
+        _state.update {
+            it.copy(
+                showHideConfirmation = if (asset is Asset.NonFungible) {
+                    State.HideConfirmationType.Collection(
+                        name = asset.resource.name
+                    )
+                } else {
+                    State.HideConfirmationType.Asset
+                }
+            )
+        }
+    }
+
+    fun hideAsset() {
+        viewModelScope.launch {
+            changeResourceVisibilityUseCase.hide(
+                when (val asset = state.value.asset) {
+                    is Token -> ResourceIdentifier.Fungible(asset.resource.address)
+                    is NonFungibleCollection -> ResourceIdentifier.NonFungible(asset.resource.address)
+                    is PoolUnit -> ResourceIdentifier.PoolUnit(asset.pool?.address ?: return@launch)
+                    else -> return@launch
+                }
+            )
+            appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
+            onDismissHideConfirmation()
+            sendEvent(Event.Close)
+        }
+    }
+
+    fun onDismissHideConfirmation() {
+        _state.update { it.copy(showHideConfirmation = null) }
+    }
+
     @Suppress("ComplexCondition")
     fun onClaimClick() {
         val state = _state.value
@@ -163,6 +210,7 @@ class AssetDialogViewModel @Inject constructor(
         val assetPrice: AssetPrice? = null,
         val uiMessage: UiMessage? = null,
         val accountContext: Account? = null,
+        val showHideConfirmation: HideConfirmationType? = null
     ) : UiState {
 
         val isLoadingBalance = args.underAccountAddress != null && assetPrice == null
@@ -187,6 +235,10 @@ class AssetDialogViewModel @Inject constructor(
                 }
             }
 
+        val canBeHidden: Boolean = asset != null &&
+            !asset.resource.address.isXRD &&
+            asset !is StakeClaim && asset !is LiquidStakeUnit
+
         sealed class ClaimState {
             abstract val amount: Decimal192
 
@@ -207,5 +259,19 @@ class AssetDialogViewModel @Inject constructor(
                 private const val EPOCH_TIME_MINUTES = 5
             }
         }
+
+        sealed interface HideConfirmationType {
+
+            data object Asset : HideConfirmationType
+
+            data class Collection(
+                val name: String
+            ) : HideConfirmationType
+        }
+    }
+
+    sealed interface Event : OneOffEvent {
+
+        data object Close : Event
     }
 }

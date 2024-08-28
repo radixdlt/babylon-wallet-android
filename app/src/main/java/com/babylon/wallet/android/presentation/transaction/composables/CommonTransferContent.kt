@@ -42,6 +42,7 @@ fun CommonTransferContent(
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = previewType.from.toPersistentList(),
+                hiddenResourceIds = state.hiddenResourceIds,
                 onTransferableFungibleClick = onTransferableFungibleClick,
                 onNonTransferableFungibleClick = onNonTransferableFungibleClick
             )
@@ -61,6 +62,7 @@ fun CommonTransferContent(
                         )
                         .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                     to = previewType.to.toPersistentList(),
+                    hiddenResourceIds = state.hiddenResourceIds,
                     promptForGuarantees = onPromptForGuarantees,
                     onTransferableFungibleClick = onTransferableFungibleClick,
                     onNonTransferableFungibleClick = onNonTransferableFungibleClick
