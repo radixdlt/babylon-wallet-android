@@ -125,7 +125,7 @@ object RadixRadioButtonDefaults {
             selectedColor = RadixTheme.colors.white,
             unselectedColor = RadixTheme.colors.white,
             disabledSelectedColor = RadixTheme.colors.gray3,
-            disabledUnselectedColor = RadixTheme.colors.gray3
+            disabledUnselectedColor = RadixTheme.colors.gray4
         )
     ): RadixRadioButtonColors = RadixRadioButtonColors(
         dotColors = dotColors,
@@ -151,7 +151,7 @@ object RadixRadioButtonDefaults {
             selectedColor = RadixTheme.colors.gray1,
             unselectedColor = RadixTheme.colors.gray2,
             disabledSelectedColor = RadixTheme.colors.gray3,
-            disabledUnselectedColor = RadixTheme.colors.gray3
+            disabledUnselectedColor = RadixTheme.colors.gray4
         )
     ): RadixRadioButtonColors = RadixRadioButtonColors(
         dotColors = dotColors,

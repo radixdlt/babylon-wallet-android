@@ -70,8 +70,12 @@ fun NavGraphBuilder.walletPreferencesScreen(
                     SettingsItem.WalletPreferences.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
+
                     is SettingsItem.WalletPreferences.CrashReporting,
-                    is SettingsItem.WalletPreferences.DeveloperMode -> {}
+                    is SettingsItem.WalletPreferences.DeveloperMode,
+                    is SettingsItem.WalletPreferences.AppLock -> {
+                    }
+
                     SettingsItem.WalletPreferences.EntityHiding -> {
                         navController.hiddenEntitiesScreen()
                     }

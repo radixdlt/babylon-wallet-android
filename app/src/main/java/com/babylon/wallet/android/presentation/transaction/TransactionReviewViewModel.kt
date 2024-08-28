@@ -291,7 +291,7 @@ class TransactionReviewViewModel @Inject constructor(
             selectedFeePayerInput = SelectFeePayerInput(
                 preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
                 candidates = feePayers?.candidates.orEmpty().toPersistentList(),
-                fee = transactionFees.defaultTransactionFee.formatted()
+                fee = transactionFees.transactionFeeToLock.formatted()
             )
         )
 
@@ -331,6 +331,9 @@ class TransactionReviewViewModel @Inject constructor(
 
         val noFeePayerSelected: Boolean
             get() = feePayers?.selectedAccountAddress == null
+
+        val isSelectedFeePayerInvolvedInTransaction: Boolean
+            get() = request?.transactionManifestData?.feePayerCandidates()?.contains(feePayers?.selectedAccountAddress) ?: false
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {

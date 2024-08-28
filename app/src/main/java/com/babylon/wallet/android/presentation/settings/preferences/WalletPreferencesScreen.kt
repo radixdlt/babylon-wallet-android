@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,6 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsIte
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.utils.setWindowSecure
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
@@ -47,7 +49,8 @@ fun WalletPreferencesScreen(
         onWalletPreferenceItemClick = onWalletPreferenceItemClick,
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
-        onCrashReportingToggled = viewModel::onCrashReportingToggled
+        onCrashReportingToggled = viewModel::onCrashReportingToggled,
+        onAppLockToggled = viewModel::onAppLockToggled
     )
 }
 
@@ -59,8 +62,10 @@ private fun WalletPreferencesContent(
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onCrashReportingToggled: (Boolean) -> Unit,
+    onAppLockToggled: (Boolean) -> Unit,
 ) {
     var crashReportingPromptVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     if (crashReportingPromptVisible) {
         BasicPromptAlertDialog(
             finish = { accepted ->
@@ -77,7 +82,7 @@ private fun WalletPreferencesContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Preferences", // TODO crowdin
+                title = stringResource(id = R.string.preferences_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -104,7 +109,14 @@ private fun WalletPreferencesContent(
                                     color = RadixTheme.colors.gray2
                                 )
                             }
-
+                            PreferencesUiItem.DisplaySection -> {
+                                Text(
+                                    modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
+                                    text = stringResource(id = R.string.preferences_displayPreferences),
+                                    style = RadixTheme.typography.body1Link,
+                                    color = RadixTheme.colors.gray2
+                                )
+                            }
                             is PreferencesUiItem.Preference -> {
                                 when (val item = walletPreferenceItem.item) {
                                     is SettingsItem.WalletPreferences.DeveloperMode -> {
@@ -113,7 +125,7 @@ private fun WalletPreferencesContent(
                                                 .background(RadixTheme.colors.defaultBackground)
                                                 .fillMaxWidth()
                                                 .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.descriptionRes(),
+                                            titleRes = item.titleRes(),
                                             subtitleRes = R.string.appSettings_developerMode_subtitle, // appSettingsItem.subtitleRes(),
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
@@ -127,7 +139,7 @@ private fun WalletPreferencesContent(
                                                 .background(RadixTheme.colors.defaultBackground)
                                                 .fillMaxWidth()
                                                 .padding(all = RadixTheme.dimensions.paddingDefault),
-                                            titleRes = item.descriptionRes(),
+                                            titleRes = item.titleRes(),
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
                                             onCheckedChange = { selected ->
@@ -140,9 +152,27 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
+                                    is SettingsItem.WalletPreferences.AppLock -> {
+                                        SwitchSettingsItem(
+                                            modifier = Modifier
+                                                .background(RadixTheme.colors.defaultBackground)
+                                                .fillMaxWidth()
+                                                .padding(all = RadixTheme.dimensions.paddingDefault),
+                                            titleRes = item.titleRes(),
+                                            subtitleRes = item.subtitleRes(),
+                                            iconResource = item.getIcon(),
+                                            checked = item.enabled,
+                                            onCheckedChange = { checked ->
+                                                onAppLockToggled(checked)
+                                                context.setWindowSecure(checked)
+                                            }
+                                        )
+                                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                                    }
+
                                     else -> {
                                         DefaultSettingsItem(
-                                            title = stringResource(id = item.descriptionRes()),
+                                            title = stringResource(id = item.titleRes()),
                                             leadingIconRes = item.getIcon(),
                                             subtitle = item.subtitleRes()?.let { stringResource(id = it) },
                                             onClick = {
@@ -170,7 +200,9 @@ fun AppSettingsScreenPreview() {
             walletPreferences = WalletPreferencesUiState.default.settings,
             onWalletPreferenceItemClick = {},
             onDeveloperModeToggled = {},
-            onBackClick = {}
-        ) {}
+            onBackClick = {},
+            onCrashReportingToggled = {},
+            onAppLockToggled = {}
+        )
     }
 }

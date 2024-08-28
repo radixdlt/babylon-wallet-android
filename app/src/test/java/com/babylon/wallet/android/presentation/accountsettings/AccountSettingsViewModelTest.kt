@@ -71,7 +71,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         coEvery { getProfileUseCase() } returns sampleProfile
         every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress.string
-        coEvery { changeEntityVisibilityUseCase.hideAccount(any()) } just Runs
+        coEvery { changeEntityVisibilityUseCase.changeAccountVisibility(any(), any()) } just Runs
         coEvery { eventBus.sendEvent(any()) } just Runs
     }
 
@@ -81,7 +81,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         advanceUntilIdle()
         vm.onHideAccount()
         advanceUntilIdle()
-        coVerify(exactly = 1) { changeEntityVisibilityUseCase.hideAccount(any()) }
+        coVerify(exactly = 1) { changeEntityVisibilityUseCase.changeAccountVisibility(any(), any()) }
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
             assert(item is Event.AccountHidden)

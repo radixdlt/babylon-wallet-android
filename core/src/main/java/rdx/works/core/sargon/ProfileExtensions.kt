@@ -325,7 +325,7 @@ fun Profile.addPersona(
     ).withUpdatedContentHint()
 }
 
-fun Profile.hidePersona(identityAddress: IdentityAddress): Profile {
+fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: Boolean): Profile {
     val networkId = currentNetwork?.id ?: return this
     val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
         val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
@@ -342,7 +342,12 @@ fun Profile.hidePersona(identityAddress: IdentityAddress): Profile {
                 network.personas.mapWhen(
                     predicate = { it.address == identityAddress },
                     mutation = { persona ->
-                        persona.copy(flags = persona.flags.asIdentifiable().append(EntityFlag.DELETED_BY_USER).asList())
+                        val updatedFlags = if (isHidden) {
+                            persona.flags + EntityFlag.DELETED_BY_USER
+                        } else {
+                            persona.flags - EntityFlag.DELETED_BY_USER
+                        }
+                        persona.copy(flags = EntityFlags(updatedFlags).asList())
                     }
                 )
             ).asList(),
@@ -354,7 +359,7 @@ fun Profile.hidePersona(identityAddress: IdentityAddress): Profile {
     return copy(networks = ProfileNetworks(updatedNetworks).asList()).withUpdatedContentHint()
 }
 
-fun Profile.hideAccount(accountAddress: AccountAddress): Profile {
+fun Profile.changeAccountVisibility(accountAddress: AccountAddress, hide: Boolean): Profile {
     val networkId = currentNetwork?.id ?: return this
     val updatedNetworks = networks.mapWhen(predicate = { it.id == networkId }, mutation = { network ->
         val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
@@ -381,7 +386,12 @@ fun Profile.hideAccount(accountAddress: AccountAddress): Profile {
         val updatedAccounts = network.accounts.mapWhen(
             predicate = { it.address == accountAddress },
             mutation = { account ->
-                account.copy(flags = EntityFlags(account.flags + EntityFlag.DELETED_BY_USER).asList())
+                val updatedFlags = if (hide) {
+                    account.flags + EntityFlag.DELETED_BY_USER
+                } else {
+                    account.flags - EntityFlag.DELETED_BY_USER
+                }
+                account.copy(flags = EntityFlags(updatedFlags).asList())
             }
         )
         network.copy(
@@ -517,15 +527,19 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     is FactorSource.Ledger -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+
                     is FactorSource.ArculusCard -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+
                     is FactorSource.OffDeviceMnemonic -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+
                     is FactorSource.SecurityQuestions -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+
                     is FactorSource.TrustedContact -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()

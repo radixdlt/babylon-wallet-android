@@ -9,14 +9,19 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.model.Browser
-import okhttp3.HttpUrl
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.components.ActivityComponent
 import timber.log.Timber
 
 val backupSettingsScreenIntent: Intent
@@ -27,12 +32,35 @@ val backupSettingsScreenIntent: Intent
         )
     }
 
+@EntryPoint
+@InstallIn(ActivityComponent::class)
+interface BiometricAuthenticationEntryPoint {
+    fun provideAppLockStateProvider(): AppLockStateProvider
+}
+
 fun Context.biometricAuthenticate(
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit
 ) {
     findFragmentActivity()?.let { activity ->
+        val appLockStateProvider = EntryPointAccessors.fromActivity(
+            activity = activity,
+            entryPoint = BiometricAuthenticationEntryPoint::class.java
+        ).provideAppLockStateProvider()
+        // It appear that below Android 11 BiometricPrompt uses new activity
+        // for biometric authentication when there is no fingerprint registered
+        // so we pause app locking to avoid double biometric prompt when we have advanced lock feature on
+        // and we ask for biometrics from a Wallet, eg. when user wants to create account/sign transaction, app is moved to background
+        // and advanced lock is applied
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            appLockStateProvider.pauseLocking()
+        }
         activity.activityBiometricAuthenticate(
             authenticationCallback = { biometricAuthenticationResult ->
+                if (biometricAuthenticationResult.biometricsComplete()) {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                        appLockStateProvider.resumeLocking()
+                    }
+                }
                 authenticationCallback(biometricAuthenticationResult)
             }
         )
@@ -41,10 +69,21 @@ fun Context.biometricAuthenticate(
 
 suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boolean = false): Boolean {
     if (allowIfDeviceIsNotSecure) return true
-    return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
+    val fragmentActivity = findFragmentActivity() ?: return false
+    val appLockStateProvider = EntryPointAccessors.fromActivity(
+        activity = fragmentActivity,
+        entryPoint = BiometricAuthenticationEntryPoint::class.java
+    ).provideAppLockStateProvider()
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        appLockStateProvider.pauseLocking()
+    }
+    val result = fragmentActivity.biometricAuthenticateSuspend()
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+        appLockStateProvider.resumeLocking()
+    }
+    return result
 }
 
-fun Context.openUrl(url: HttpUrl, browser: Browser? = null) = openUrl(url.toString(), browser)
 fun Context.openUrl(url: String, browser: Browser? = null) = openUrl(url.toUri(), browser)
 
 fun Context.copyToClipboard(
@@ -140,4 +179,14 @@ fun Context.findFragmentActivity(): FragmentActivity? {
         context = context.baseContext
     }
     return null
+}
+
+fun Context.setWindowSecure(enabled: Boolean) {
+    findFragmentActivity()?.window?.apply {
+        if (enabled) {
+            addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
 }
