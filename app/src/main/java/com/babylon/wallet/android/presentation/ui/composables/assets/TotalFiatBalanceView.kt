@@ -98,7 +98,7 @@ private fun TotalBalanceContent(
     val isPriceVisible = LocalBalanceVisibility.current
     val formatted = if (isPriceVisible) {
         remember(fiatPrice, currency) {
-            fiatPrice?.formatted ?: currency.errorBalance
+            fiatPrice?.defaultFormatted ?: currency.errorBalance
         }
     } else {
         remember(currency) {

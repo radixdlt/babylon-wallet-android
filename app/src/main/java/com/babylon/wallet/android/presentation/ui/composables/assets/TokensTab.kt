@@ -246,8 +246,8 @@ internal val previewAssetViewData = AssetsViewData(
     nonFungibleCollections = listOf(
         NonFungibleCollection(
             Resource.NonFungibleResource(
-                ResourceAddress.sampleMainnet(),
-                3L,
+                address = ResourceAddress.sampleMainnet(),
+                amount = 3L,
                 items = listOf(
                     Resource.NonFungibleResource.Item(
                         collectionAddress = ResourceAddress.sampleMainnet(),

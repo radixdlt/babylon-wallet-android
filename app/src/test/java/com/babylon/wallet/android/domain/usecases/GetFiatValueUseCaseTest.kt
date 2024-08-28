@@ -5,11 +5,14 @@ import com.babylon.wallet.android.fakes.FiatPriceRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.extensions.floor
+import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
+import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -18,8 +21,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import rdx.works.core.domain.assets.Asset
+import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
 class GetFiatValueUseCaseTest {
 
@@ -27,11 +32,24 @@ class GetFiatValueUseCaseTest {
     private val testScope = TestScope(testDispatcher)
 
     private val tokenPriceRepositoryFake = FiatPriceRepositoryFake()
+    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getFiatValueUseCase = GetFiatValueUseCase(
         mainnetFiatPriceRepository = tokenPriceRepositoryFake,
         testnetFiatPriceRepository = mockk(),
-        stateRepository = StateRepositoryFake()
+        stateRepository = StateRepositoryFake(),
+        getCurrentGatewayUseCase = getCurrentGatewayUseCase
     )
+
+    @Before
+    fun setUp() {
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.mainnet
+    }
+
+    @Test
+    fun `assert that XRD token price is fetched`() = testScope.runTest {
+        val xrdPrice = getFiatValueUseCase.forXrd().getOrThrow()
+        assertEquals(FiatPriceRepositoryFake.mockResourceXRDPrice, xrdPrice?.price)
+    }
 
     @Test
     fun `assert that all the tokens of the given accounts have their prices`() = testScope.runTest {

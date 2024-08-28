@@ -8,6 +8,7 @@ object Constants {
     const val DEFAULT_ACCOUNT_NAME = "Unnamed"
     const val MAX_ITEMS_PER_ENTITY_DETAILS_REQUEST = 20
     const val WALLET_INTERACTION_VERSION = 2L
+    const val FEES_FIAT_VALUE_PRECISION = 3
 
     const val RADIX_SUPPORT_EMAIL_ADDRESS = "hello@radixdlt.com"
     const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"

@@ -123,20 +123,6 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(PROFILE_PREFERENCES_KEY, snapshotSerialized, KeySpec.Profile())
     }
 
-    suspend fun putDappLinks(dappLinksSerialized: String) {
-        putString(DAPP_LINKS_KEY, dappLinksSerialized, KeySpec.Profile()) // TODO encrypt with mnemonic key
-    }
-
-    suspend fun getDappLinks() = preferences.data.catchIOException().map { preferences ->
-        val dappLinksEncrypted = preferences[stringPreferencesKey(DAPP_LINKS_KEY)]
-
-        if (dappLinksEncrypted.isNullOrEmpty()) {
-            null
-        } else {
-            dappLinksEncrypted.decrypt(KeySpec.Profile()) // TODO decrypt with mnemonic key
-        }
-    }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
-
     suspend fun getProfileSnapshotFromCloudBackup() = preferences.data.catchIOException().map { preferences ->
         val snapshotEncrypted = preferences[stringPreferencesKey(RESTORED_PROFILE_CLOUD_PREFERENCES_KEY)]
 
@@ -220,7 +206,6 @@ class EncryptedPreferencesManager @Inject constructor(
         const val DATA_STORE_NAME = "rdx_encrypted_datastore"
         const val PERMANENT_DATA_STORE_NAME = "rdx_permanent_datastore"
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
-        private const val DAPP_LINKS_KEY = "dapp_links_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
         private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"

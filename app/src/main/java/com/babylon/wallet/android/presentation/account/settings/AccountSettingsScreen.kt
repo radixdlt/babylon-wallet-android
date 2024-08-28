@@ -1,20 +1,16 @@
 package com.babylon.wallet.android.presentation.account.settings
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,13 +27,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -49,6 +43,7 @@ import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
@@ -374,68 +369,14 @@ private fun HideAccountSheet(
     onHideAccountClick: () -> Unit,
     onClose: () -> Unit
 ) {
-    BottomSheet(
+    HideResourceSheetContent(
         modifier = modifier,
+        title = stringResource(id = R.string.accountSettings_hideThisAccount),
+        description = stringResource(id = R.string.accountSettings_hideAccount_message),
+        positiveButton = stringResource(id = R.string.accountSettings_hideAccount_button),
+        onPositiveButtonClick = onHideAccountClick,
         onClose = onClose
-    ) {
-        Image(
-            modifier = Modifier
-                .size(51.dp)
-                .align(Alignment.CenterHorizontally),
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_show),
-            contentDescription = null
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = stringResource(id = R.string.accountSettings_hideThisAccount),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-            text = stringResource(id = R.string.accountSettings_hideAccount_message),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = RadixTheme.dimensions.paddingSemiLarge,
-                    end = RadixTheme.dimensions.paddingSemiLarge,
-                    bottom = RadixTheme.dimensions.paddingXXLarge
-                )
-        ) {
-            RadixSecondaryButton(
-                modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.common_cancel),
-                onClick = onClose
-            )
-
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-
-            RadixPrimaryButton(
-                modifier = Modifier.weight(1.5f),
-                text = stringResource(id = R.string.accountSettings_hideAccount_button),
-                onClick = onHideAccountClick
-            )
-        }
-    }
+    )
 }
 
 @Composable

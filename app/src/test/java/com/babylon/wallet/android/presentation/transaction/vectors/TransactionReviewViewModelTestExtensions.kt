@@ -11,9 +11,10 @@ import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCa
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -34,7 +35,10 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
@@ -42,6 +46,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal fun testViewModel(
     transactionRepository: TransactionRepository,
     incomingRequestRepository: IncomingRequestRepository,
@@ -52,8 +57,11 @@ internal fun testViewModel(
     appEventBus: AppEventBus,
     preferencesManager: PreferencesManager,
     exceptionMessageProvider: ExceptionMessageProvider,
+    getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle,
-    testScope: TestScope
+    testDispatcher: CoroutineDispatcher,
+    testScope: TestScope,
+    getFiatValueUseCase: GetFiatValueUseCase
 ) = TransactionReviewViewModel(
     analysis = TransactionAnalysisDelegate(
         previewTypeAnalyzer = PreviewTypeAnalyzer(
@@ -94,7 +102,8 @@ internal fun testViewModel(
         cacheNewlyCreatedEntitiesUseCase = CacheNewlyCreatedEntitiesUseCase(stateRepository),
         resolveNotaryAndSignersUseCase = ResolveNotaryAndSignersUseCase(GetProfileUseCase(profileRepository)),
         searchFeePayersUseCase = SearchFeePayersUseCase(GetProfileUseCase(profileRepository), stateRepository),
-        transactionRepository = transactionRepository
+        transactionRepository = transactionRepository,
+        getFiatValueUseCase = getFiatValueUseCase
     ),
     guarantees = TransactionGuaranteesDelegate(),
     fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository)),
@@ -117,7 +126,9 @@ internal fun testViewModel(
     getDAppsUseCase = GetDAppsUseCase(stateRepository),
     incomingRequestRepository = incomingRequestRepository,
     savedStateHandle = savedStateHandle,
-    appEventBus = appEventBus
+    appEventBus = appEventBus,
+    getProfileUseCase = getProfileUseCase,
+    coroutineDispatcher = testDispatcher
 )
 
 internal fun sampleManifest(

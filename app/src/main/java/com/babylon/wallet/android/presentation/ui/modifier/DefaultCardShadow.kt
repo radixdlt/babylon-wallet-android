@@ -6,10 +6,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 fun Modifier.defaultCardShadow(
-    elevation: Dp,
+    elevation: Dp = 2.dp,
     shape: Shape? = null,
     color: Color? = null
 ) = composed {

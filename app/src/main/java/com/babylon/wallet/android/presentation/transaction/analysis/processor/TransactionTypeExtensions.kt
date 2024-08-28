@@ -219,11 +219,12 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
                 localId = localId
             )
         }
+        val amount = items.size.toLong()
 
         TransferableAsset.NonFungible.NFTAssets(
             resource = Resource.NonFungibleResource(
                 address = resourceAddress,
-                amount = items.size.toLong(),
+                amount = amount,
                 items = items
             ),
             isNewlyCreated = false
@@ -259,11 +260,12 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
                     localId = localId
                 )
             }
+            val amount = items.size.toLong()
 
             TransferableAsset.NonFungible.NFTAssets(
                 resource = Resource.NonFungibleResource(
                     address = resourceAddress,
-                    amount = items.size.toLong(),
+                    amount = amount,
                     items = items,
                     metadata = metadataItems
                 ),

@@ -14,6 +14,7 @@ import com.radixdlt.sargon.extensions.parseFromTextField
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.assets.FiatPrice
 
 data class TransactionFees(
     private val nonContingentFeeLock: Decimal192 = 0.toDecimal192(),
@@ -27,6 +28,7 @@ data class TransactionFees(
     private val signersCount: Int = 0,
     private val feePaddingAmount: String? = null,
     private val tipPercentage: String? = null,
+    private val xrdFiatPrice: FiatPrice? = null,
     val isNetworkCongested: Boolean = false
 ) {
 
@@ -129,6 +131,9 @@ data class TransactionFees(
             royalties -
             nonContingentFeeLock
 
+    val transactionFeeTotalUsd: FiatPrice?
+        get() = xrdFiatPrice?.let { FiatPrice(transactionFeeToLock * it.price, it.currency) }
+
     /**
      * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION
      */
@@ -154,6 +159,11 @@ data class TransactionFees(
 
     val tipPercentageForTransaction: UShort
         get() = tipPercentageNumber ?: TransactionConfig.TIP_PERCENTAGE
+
+    sealed interface XrdFiatPriceState {
+        data object Loading : XrdFiatPriceState
+        data class Success(val xrdFiatPrice: FiatPrice?) : XrdFiatPriceState
+    }
 
     companion object {
         private val PERCENT_15 = 0.15.toDecimal192()

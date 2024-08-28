@@ -63,6 +63,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample
@@ -91,14 +92,28 @@ object Thumbnail {
         modifier: Modifier = Modifier,
         token: Resource.FungibleResource,
     ) {
+        Fungible(
+            modifier = modifier,
+            isXrd = token.isXrd,
+            icon = token.iconUrl,
+            name = token.name
+        )
+    }
+
+    @Composable
+    fun Fungible(
+        modifier: Modifier = Modifier,
+        isXrd: Boolean,
+        icon: Uri?,
+        name: String
+    ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
 
-        val imageType = remember(token, viewSize) {
+        val imageType = remember(isXrd, icon, viewSize) {
             val size = viewSize
-            if (token.isXrd) {
+            if (isXrd) {
                 ImageType.InternalRes(drawableRes = R.drawable.ic_xrd_token)
             } else if (size != null) {
-                val icon = token.iconUrl
                 if (icon != null) {
                     ImageType.External(
                         uri = icon,
@@ -117,7 +132,7 @@ object Thumbnail {
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token,
             shape = CircleShape,
-            contentDescription = token.name
+            contentDescription = name
         )
     }
 
@@ -160,7 +175,25 @@ object Thumbnail {
         cornerRadius: Dp = NFTCornerRadius,
         maxAspectRatio: Float = NFTAspectRatio
     ) {
-        val image = nft.imageUrl
+        NFT(
+            modifier = modifier,
+            image = nft.imageUrl,
+            localId = nft.localId.formatted(),
+            cropped = cropped,
+            cornerRadius = cornerRadius,
+            maxAspectRatio = maxAspectRatio
+        )
+    }
+
+    @Composable
+    fun NFT(
+        modifier: Modifier = Modifier,
+        image: Uri?,
+        localId: String?,
+        cropped: Boolean = true, // When false the NFT will appear in full height
+        cornerRadius: Dp = NFTCornerRadius,
+        maxAspectRatio: Float = NFTAspectRatio
+    ) {
         if (image != null) {
             val context = LocalContext.current
             val request = remember(image) {
@@ -180,7 +213,7 @@ object Thumbnail {
             SubcomposeAsyncImage(
                 modifier = modifier,
                 model = request,
-                contentDescription = nft.localId.formatted(),
+                contentDescription = localId,
                 onState = { painterState = it }
             ) {
                 Image(
@@ -304,13 +337,26 @@ object Thumbnail {
         modifier: Modifier = Modifier,
         liquidStakeUnit: LiquidStakeUnit?
     ) {
+        LSU(
+            modifier = modifier,
+            iconUrl = liquidStakeUnit?.fungibleResource?.iconUrl,
+            name = liquidStakeUnit?.fungibleResource?.name
+        )
+    }
+
+    @Composable
+    fun LSU(
+        modifier: Modifier = Modifier,
+        iconUrl: Uri?,
+        name: String?
+    ) {
         Custom(
             modifier = modifier,
-            imageType = liquidStakeUnit?.fungibleResource?.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            imageType = iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = DSR.ic_lsu,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
-            contentDescription = liquidStakeUnit?.fungibleResource?.name.orEmpty()
+            contentDescription = name.orEmpty()
         )
     }
 
@@ -319,13 +365,26 @@ object Thumbnail {
         modifier: Modifier = Modifier,
         poolUnit: PoolUnit
     ) {
+        PoolUnit(
+            modifier = modifier,
+            iconUrl = poolUnit.stake.iconUrl,
+            name = poolUnit.stake.name
+        )
+    }
+
+    @Composable
+    fun PoolUnit(
+        modifier: Modifier = Modifier,
+        iconUrl: Uri?,
+        name: String
+    ) {
         Custom(
             modifier = modifier,
-            imageType = poolUnit.stake.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            imageType = iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = CircleShape,
-            contentDescription = poolUnit.stake.name
+            contentDescription = name
         )
     }
 
