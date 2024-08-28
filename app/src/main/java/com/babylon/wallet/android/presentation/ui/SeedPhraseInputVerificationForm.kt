@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -14,11 +13,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -37,10 +32,8 @@ import kotlinx.collections.immutable.ImmutableList
 fun SeedPhraseInputVerificationForm(
     modifier: Modifier = Modifier,
     seedPhraseWords: ImmutableList<SeedPhraseWord>,
-    onWordChanged: (Int, String) -> Unit,
-    onFocusedWordIndexChanged: (Int) -> Unit
+    onWordChanged: (Int, String) -> Unit
 ) {
-    val focusManager = LocalFocusManager.current
     val firstFocusedIndex by remember(seedPhraseWords) {
         mutableIntStateOf(seedPhraseWords.indexOfFirst { it.state == SeedPhraseWord.State.Empty })
     }
@@ -49,7 +42,7 @@ fun SeedPhraseInputVerificationForm(
     ) {
         seedPhraseWords.chunked(3).forEachIndexed { index, wordsChunk ->
             Row(
-                Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
@@ -58,15 +51,7 @@ fun SeedPhraseInputVerificationForm(
                     SeedPhraseWordInput(
                         onWordChanged = onWordChanged,
                         word = word,
-                        focusManager = focusManager,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        onFocusChanged = {
-                            if (it.hasFocus) {
-                                onFocusedWordIndexChanged(word.index)
-                            }
-                        },
+                        modifier = Modifier.weight(1f),
                         enabled = word.inputDisabled.not(),
                         initiallyFocused = firstFocusedIndex == wordIndex
                     )
@@ -80,9 +65,7 @@ fun SeedPhraseInputVerificationForm(
 private fun SeedPhraseWordInput(
     onWordChanged: (Int, String) -> Unit,
     word: SeedPhraseWord,
-    focusManager: FocusManager,
     modifier: Modifier = Modifier,
-    onFocusChanged: ((FocusState) -> Unit)?,
     enabled: Boolean,
     initiallyFocused: Boolean
 ) {
@@ -114,7 +97,6 @@ private fun SeedPhraseWordInput(
                 null
             }
         },
-        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
         keyboardOptions = KeyboardOptions(
             imeAction = when {
                 word.lastWord -> {
@@ -125,7 +107,6 @@ private fun SeedPhraseWordInput(
                 }
             }
         ),
-        onFocusChanged = onFocusChanged,
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
@@ -143,7 +124,6 @@ fun SeedPhraseInputVerificationFormPreview() {
         SeedPhraseInputVerificationForm(
             seedPhraseWords = MockUiProvider.seedPhraseWords,
             onWordChanged = { _, _ -> },
-            onFocusedWordIndexChanged = { },
             modifier = Modifier
         )
     }

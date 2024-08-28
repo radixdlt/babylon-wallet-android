@@ -59,7 +59,7 @@ fun NavGraphBuilder.confirmSeedPhrase(
             }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
             ExitTransition.None
@@ -68,7 +68,7 @@ fun NavGraphBuilder.confirmSeedPhrase(
             EnterTransition.None
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
         ConfirmMnemonicScreen(

@@ -104,7 +104,9 @@ suspend fun FragmentActivity.biometricAuthenticateSuspend(): Boolean {
 }
 
 enum class BiometricAuthenticationResult {
-    Succeeded, Error, Failed
+    Succeeded, Error, Failed;
+
+    fun biometricsComplete(): Boolean = this == Succeeded || this == Error
 }
 
 private val ALLOWED_AUTHENTICATORS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

@@ -3,13 +3,13 @@ package com.babylon.wallet.android
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -41,7 +41,9 @@ import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTIO
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.FullScreen
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
+import com.babylon.wallet.android.presentation.ui.composables.LockScreenBackground
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.presentation.walletclaimed.navigateToClaimedByAnotherDevice
 import com.babylon.wallet.android.utils.AppEvent
@@ -57,142 +59,141 @@ fun WalletApp(
     val context = LocalContext.current
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberNavController()
-    var showNotSecuredDialog by remember { mutableStateOf(false) }
     var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
-    NavigationHost(
-        modifier = modifier.fillMaxSize(),
-        startDestination = MAIN_ROUTE,
-        navController = navController,
-        mainUiState = mainViewModel.state,
-        onCloseApp = onCloseApp
-    )
-    LaunchedEffect(Unit) {
-        mainViewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is MainEvent.IncomingRequestEvent -> {
-                    if (event.request.needVerification) {
-                        navController.mobileConnect(event.request.interactionId)
-                        return@collect
-                    }
-                    when (val incomingRequest = event.request) {
-                        is IncomingMessage.IncomingRequest.TransactionRequest -> {
-                            navController.transactionReview(
-                                requestId = incomingRequest.interactionId
-                            )
+    if (state.isAppLocked) {
+        FullScreen {
+            LockScreenBackground()
+        }
+    }
+    Box(modifier = modifier.fillMaxSize()) {
+        NavigationHost(
+            modifier = Modifier.fillMaxSize(),
+            startDestination = MAIN_ROUTE,
+            navController = navController,
+            mainUiState = mainViewModel.state,
+            onCloseApp = onCloseApp
+        )
+        LaunchedEffect(Unit) {
+            mainViewModel.oneOffEvent.collect { event ->
+                when (event) {
+                    is MainEvent.IncomingRequestEvent -> {
+                        if (event.request.needVerification) {
+                            navController.mobileConnect(event.request.interactionId)
+                            return@collect
                         }
+                        when (val incomingRequest = event.request) {
+                            is IncomingMessage.IncomingRequest.TransactionRequest -> {
+                                navController.transactionReview(
+                                    requestId = incomingRequest.interactionId
+                                )
+                            }
 
-                        is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
-                            navController.dAppLoginAuthorized(incomingRequest.interactionId)
-                        }
+                            is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
+                                navController.dAppLoginAuthorized(incomingRequest.interactionId)
+                            }
 
-                        is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
-                            navController.dAppLoginUnauthorized(incomingRequest.interactionId)
+                            is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
+                                navController.dAppLoginUnauthorized(incomingRequest.interactionId)
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    SyncStatusBarWithScreenChanges(navController)
-
-    LaunchedEffect(
-        state.claimedByAnotherDeviceError,
-        state.showDeviceRootedWarning
-    ) {
-        val claimedByAnotherDeviceError = state.claimedByAnotherDeviceError
-        if (claimedByAnotherDeviceError != null) {
-            navController.navigateToClaimedByAnotherDevice(claimedByAnotherDeviceError)
-        } else if (state.showDeviceRootedWarning) {
-            navController.navigate(ROUTE_ROOT_DETECTION)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        mainViewModel.appNotSecureEvent.collect {
-            showNotSecuredDialog = true
-        }
-    }
-    LaunchedEffect(Unit) {
-        mainViewModel.secureFolderWarning.collect {
-            showSecureFolderWarning = true
-        }
-    }
-    HandleAccessFactorSourcesEvents(
-        navController = navController,
-        accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
-    )
-    HandleStatusEvents(
-        navController = navController,
-        statusEvents = mainViewModel.statusEvents
-    )
-    HandleAddressDetailsEvents(
-        navController = navController,
-        addressDetailsEvents = mainViewModel.addressDetailsEvents
-    )
-    ObserveHighPriorityScreens(
-        navController = navController,
-        onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
-        onHighPriorityScreen = mainViewModel::onHighPriorityScreen
-    )
-    mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
-    if (showNotSecuredDialog) {
-        NotSecureAlertDialog(finish = {
-            if (it) {
-                val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
-                ContextCompat.startActivity(context, intent, null)
+        LaunchedEffect(
+            state.claimedByAnotherDeviceError,
+            state.showDeviceRootedWarning
+        ) {
+            val claimedByAnotherDeviceError = state.claimedByAnotherDeviceError
+            if (claimedByAnotherDeviceError != null) {
+                navController.navigateToClaimedByAnotherDevice(claimedByAnotherDeviceError)
+            } else if (state.showDeviceRootedWarning) {
+                navController.navigate(ROUTE_ROOT_DETECTION)
             }
-            showNotSecuredDialog = false
-            onCloseApp()
-        })
-    }
-    if (showSecureFolderWarning) {
-        BasicPromptAlertDialog(
-            finish = {
-                showSecureFolderWarning = false
-            },
-            message = {
-                Text(text = stringResource(id = R.string.homePage_secureFolder_warning))
-            },
-            dismissText = null
+        }
+
+        LaunchedEffect(Unit) {
+            mainViewModel.secureFolderWarning.collect {
+                showSecureFolderWarning = true
+            }
+        }
+        HandleAccessFactorSourcesEvents(
+            navController = navController,
+            accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
         )
-    }
-    val olympiaErrorState = state.olympiaErrorState
-    if (olympiaErrorState != null) {
-        BackHandler {}
-        BDFSErrorDialog(
-            finish = {
-                if (!olympiaErrorState.isCountdownActive) {
-                    mainViewModel.clearOlympiaError()
+        HandleStatusEvents(
+            navController = navController,
+            statusEvents = mainViewModel.statusEvents
+        )
+        HandleAddressDetailsEvents(
+            navController = navController,
+            addressDetailsEvents = mainViewModel.addressDetailsEvents
+        )
+        ObserveHighPriorityScreens(
+            navController = navController,
+            onLowPriorityScreen = mainViewModel::onLowPriorityScreen,
+            onHighPriorityScreen = mainViewModel::onHighPriorityScreen
+        )
+        mainViewModel.observeP2PLinks.collectAsStateWithLifecycle(null)
+        if (state.showDeviceNotSecureDialog) {
+            NotSecureAlertDialog(finish = {
+                if (it) {
+                    val intent = Intent(Settings.ACTION_SECURITY_SETTINGS)
+                    ContextCompat.startActivity(context, intent, null)
                 }
-            },
-            title = stringResource(id = R.string.homePage_profileOlympiaError_title),
-            message = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-            state = olympiaErrorState
-        )
-    }
-    state.dappRequestFailure?.let {
-        BasicPromptAlertDialog(
-            finish = {
-                mainViewModel.onInvalidRequestMessageShown()
-            },
-            titleText = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-            messageText = it.userFriendlyMessage(),
-            confirmText = stringResource(
-                id = R.string.common_ok
-            ),
-            dismissText = null
-        )
-    }
-    if (state.showMobileConnectWarning) {
-        BasicPromptAlertDialog(
-            finish = {
-                mainViewModel.onMobileConnectWarningShown()
-            },
-            titleText = stringResource(id = R.string.mobileConnect_noProfileDialog_title),
-            messageText = stringResource(id = R.string.mobileConnect_noProfileDialog_subtitle),
-            confirmText = stringResource(id = R.string.common_ok),
-            dismissText = null
-        )
+                onCloseApp()
+            })
+        }
+        if (showSecureFolderWarning) {
+            BasicPromptAlertDialog(
+                finish = {
+                    showSecureFolderWarning = false
+                },
+                message = {
+                    Text(text = stringResource(id = R.string.homePage_secureFolder_warning))
+                },
+                dismissText = null
+            )
+        }
+        val olympiaErrorState = state.olympiaErrorState
+        if (olympiaErrorState != null) {
+            BackHandler {}
+            BDFSErrorDialog(
+                finish = {
+                    if (!olympiaErrorState.isCountdownActive) {
+                        mainViewModel.clearOlympiaError()
+                    }
+                },
+                title = stringResource(id = R.string.homePage_profileOlympiaError_title),
+                message = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
+                state = olympiaErrorState
+            )
+        }
+        state.dappRequestFailure?.let {
+            BasicPromptAlertDialog(
+                finish = {
+                    mainViewModel.onInvalidRequestMessageShown()
+                },
+                titleText = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
+                messageText = it.userFriendlyMessage(),
+                confirmText = stringResource(
+                    id = R.string.common_ok
+                ),
+                dismissText = null
+            )
+        }
+        if (state.showMobileConnectWarning) {
+            BasicPromptAlertDialog(
+                finish = {
+                    mainViewModel.onMobileConnectWarningShown()
+                },
+                titleText = stringResource(id = R.string.mobileConnect_noProfileDialog_title),
+                messageText = stringResource(id = R.string.mobileConnect_noProfileDialog_subtitle),
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = null
+            )
+        }
+        SyncStatusBarWithScreenChanges(navController)
     }
 }
 
@@ -205,7 +206,10 @@ private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
         // Each screen composable can override the darkIcons parameter (such as AccountScreen), since
         // their invocation comes later.
         navController.currentBackStackEntryFlow.collect {
-            systemUiController.setStatusBarColor(color = Color.Transparent, darkIcons = !devBannerState.isVisible)
+            systemUiController.setStatusBarColor(
+                color = Color.Transparent,
+                darkIcons = !devBannerState.isVisible
+            )
         }
     }
 }

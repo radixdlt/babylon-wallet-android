@@ -54,6 +54,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.resourceAddress
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -61,7 +62,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
@@ -74,7 +77,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.sargon.formatted
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -410,17 +412,20 @@ private fun DepositorItem(
                 color = RadixTheme.colors.gray1
             )
 
-            val subtitle = remember(depositor.depositorAddress) {
-                depositor.depositorAddress?.formatted()
+            val address = remember(depositor.depositorAddress) {
+                depositor.depositorAddress?.resourceAddress?.let {
+                    Address.Resource(it)
+                }
             }
 
-            Text(
-                text = subtitle.orEmpty(),
-                textAlign = TextAlign.Start,
-                maxLines = 1,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
-            )
+            address?.let {
+                ActionableAddressView(
+                    address = it,
+                    isVisitableInDashboard = true,
+                    textStyle = RadixTheme.typography.body2Regular,
+                    textColor = RadixTheme.colors.gray2
+                )
+            }
         }
 
         IconButton(onClick = {

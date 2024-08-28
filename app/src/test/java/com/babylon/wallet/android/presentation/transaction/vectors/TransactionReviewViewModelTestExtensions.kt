@@ -35,7 +35,10 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
@@ -43,6 +46,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal fun testViewModel(
     transactionRepository: TransactionRepository,
     incomingRequestRepository: IncomingRequestRepository,
@@ -53,7 +57,9 @@ internal fun testViewModel(
     appEventBus: AppEventBus,
     preferencesManager: PreferencesManager,
     exceptionMessageProvider: ExceptionMessageProvider,
+    getProfileUseCase: GetProfileUseCase,
     savedStateHandle: SavedStateHandle,
+    testDispatcher: CoroutineDispatcher,
     testScope: TestScope,
     getFiatValueUseCase: GetFiatValueUseCase
 ) = TransactionReviewViewModel(
@@ -120,7 +126,9 @@ internal fun testViewModel(
     getDAppsUseCase = GetDAppsUseCase(stateRepository),
     incomingRequestRepository = incomingRequestRepository,
     savedStateHandle = savedStateHandle,
-    appEventBus = appEventBus
+    appEventBus = appEventBus,
+    getProfileUseCase = getProfileUseCase,
+    coroutineDispatcher = testDispatcher
 )
 
 internal fun sampleManifest(

@@ -50,6 +50,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
+import rdx.works.profile.domain.GetProfileUseCase
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -88,6 +89,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val profileRepository = FakeProfileRepository(profile = testProfile)
     private val testScope = TestScope(context = coroutineRule.dispatcher)
 
+    private val getProfileUseCase = GetProfileUseCase(profileRepository)
+
     override fun initVM(): TransactionReviewViewModel = testViewModel(
         transactionRepository = transactionRepository,
         incomingRequestRepository = incomingRequestRepository,
@@ -100,6 +103,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         exceptionMessageProvider = exceptionMessageProvider,
         savedStateHandle = savedStateHandle,
         testScope = testScope,
+        getProfileUseCase = getProfileUseCase,
+        testDispatcher = coroutineRule.dispatcher,
         getFiatValueUseCase = getFiatValueUseCase
     )
 

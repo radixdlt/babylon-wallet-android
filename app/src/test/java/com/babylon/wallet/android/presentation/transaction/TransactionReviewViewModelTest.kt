@@ -73,6 +73,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -156,6 +157,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
+    private val coroutineDispatcher = UnconfinedTestDispatcher()
     private val sampleIntentHash = IntentHash.sample()
     private val notarizationResult = NotarizationResult(
         intentHash = sampleIntentHash,
@@ -223,10 +225,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getDAppsUseCase(dApp.dAppAddress, false)
         } returns Result.success(dApp)
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
-        every { deviceCapabilityHelper.isDeviceSecure() } returns true
+        every { deviceCapabilityHelper.isDeviceSecure } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
-        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId.toString()
+        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
@@ -289,7 +291,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
             getDAppsUseCase = getDAppsUseCase,
-            appEventBus = appEventBus
+            appEventBus = appEventBus,
+            getProfileUseCase = getProfileUseCase,
+            coroutineDispatcher = coroutineDispatcher
         )
     }
 

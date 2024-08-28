@@ -91,7 +91,7 @@ private fun TroubleshootingSettingsContent(
                                 val context = LocalContext.current
                                 val item = troubleshootingItem.item
                                 DefaultSettingsItem(
-                                    title = stringResource(id = item.descriptionRes()),
+                                    title = stringResource(id = item.titleRes()),
                                     leadingIconRes = item.getIcon(),
                                     subtitle = stringResource(id = item.subtitleRes()),
                                     onClick = {

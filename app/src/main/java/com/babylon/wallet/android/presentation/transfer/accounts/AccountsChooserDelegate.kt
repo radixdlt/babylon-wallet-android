@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.accounts
 
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
@@ -13,7 +14,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAcceptKnownDepositRule
@@ -95,7 +95,7 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
-    fun chooseAccountSubmitted() {
+    suspend fun chooseAccountSubmitted() {
         val sheetState = _state.value.sheet as? ChooseAccounts ?: return
 
         if (!sheetState.isChooseButtonEnabled) return
@@ -108,43 +108,42 @@ class AccountsChooserDelegate @Inject constructor(
             )
         }
 
-        viewModelScope.launch {
-            _state.update { state ->
-                val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
-                val selectedAccount = if (ownedAccount != null) {
-                    // if the target owned account has accept known rule then we need to fetch its known resources
-                    // in order to later check if a an extra signature is required
-                    val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule
+        _state.update { state ->
+            val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
+            val selectedAccount = if (ownedAccount != null) {
+                // if the target owned account has accept known rule then we need to fetch its known resources
+                // in order to later check if a an extra signature is required
+                val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule
 
-                    TargetAccount.Owned(
-                        account = ownedAccount,
-                        accountAssetsAddresses = if (areTargetAccountResourcesRequired) {
-                            fetchKnownResourcesOfOwnedAccount(
-                                ownedAccount = ownedAccount
-                            )
-                        } else {
-                            emptyList()
-                        },
-                        id = sheetState.selectedAccount.id,
-                        spendingAssets = sheetState.selectedAccount.spendingAssets
-                    )
-                } else {
-                    sheetState.selectedAccount
-                }
-
-                val targetAccounts = state.targetAccounts.map { targetAccount ->
-                    if (targetAccount.id == selectedAccount.id) {
-                        selectedAccount
+                TargetAccount.Owned(
+                    account = ownedAccount,
+                    accountAssetsAddresses = if (areTargetAccountResourcesRequired) {
+                        fetchKnownResourcesOfOwnedAccount(
+                            ownedAccount = ownedAccount
+                        )
                     } else {
-                        targetAccount
-                    }
-                }
-
-                state.copy(
-                    targetAccounts = targetAccounts.toPersistentList(),
-                    sheet = TransferViewModel.State.Sheet.None,
+                        emptyList()
+                    },
+                    id = sheetState.selectedAccount.id,
+                    spendingAssets = sheetState.selectedAccount.spendingAssets
                 )
+            } else {
+                sheetState.selectedAccount
             }
+
+            val targetAccounts = state.targetAccounts.map { targetAccount ->
+                if (targetAccount.id == selectedAccount.id) {
+                    selectedAccount
+                } else {
+                    targetAccount
+                }
+            }
+
+            state.copy(
+                targetAccounts = targetAccounts.toPersistentList(),
+                sheet = TransferViewModel.State.Sheet.None,
+                accountDepositResourceRulesSet = NetworkContent.None
+            )
         }
     }
 

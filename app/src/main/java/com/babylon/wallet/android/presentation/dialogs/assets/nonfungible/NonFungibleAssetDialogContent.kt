@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.MetadataView
 import com.babylon.wallet.android.presentation.dialogs.assets.AssetDialogViewModel
@@ -36,6 +37,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
@@ -63,6 +65,8 @@ fun NonFungibleAssetDialogContent(
     isNewlyCreated: Boolean = false,
     accountContext: Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
+    canBeHidden: Boolean,
+    onHideClick: (() -> Unit)? = null,
     onClaimClick: () -> Unit = {}
 ) {
     val item = asset?.resource?.items?.firstOrNull()
@@ -197,7 +201,16 @@ fun NonFungibleAssetDialogContent(
                 color = RadixTheme.colors.gray4
             )
         }
-        GrayBackgroundWrapper(contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingXXLarge)) {
+
+        GrayBackgroundWrapper(
+            contentPadding = PaddingValues(
+                bottom = if (canBeHidden) {
+                    0.dp
+                } else {
+                    RadixTheme.dimensions.paddingXXLarge
+                }
+            )
+        ) {
             if (asset?.resource != null) {
                 Thumbnail.NonFungible(
                     modifier = Modifier
@@ -299,6 +312,27 @@ fun NonFungibleAssetDialogContent(
                         resource = resource
                     )
                 }
+            }
+
+            if (canBeHidden) {
+                Spacer(modifier = Modifier.weight(1f))
+
+                RadixBottomBar(
+                    modifier = Modifier.padding(
+                        top = RadixTheme.dimensions.paddingLarge,
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
+                    ),
+                    color = RadixTheme.colors.gray5,
+                    dividerColor = RadixTheme.colors.gray4,
+                    button = {
+                        RadixSecondaryButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(id = R.string.assetDetails_hideCollection),
+                            onClick = { onHideClick?.invoke() }
+                        )
+                    }
+                )
             }
         }
     }

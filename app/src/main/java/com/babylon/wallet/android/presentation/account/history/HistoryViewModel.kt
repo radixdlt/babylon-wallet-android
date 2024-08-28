@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.assets.GetAccountHistoryUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateAccountFirstTransactionDateUseCase
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -161,7 +162,7 @@ class HistoryViewModel @Inject constructor(
             )
         }
         // if filters are computed after history loaded, we need to highlight current month
-        if (_state.value.content is State.Content.Loaded) {
+        if (_state.value.content is NetworkContent.Loaded) {
             _state.value.firstVisibleIndex?.let { index ->
                 _state.value.historyItems?.getOrNull(index)?.dateTime?.let { selectDate(it) }
             } ?: _state.value.historyItems?.firstOrNull()?.dateTime?.let { selectDate(it) }
@@ -173,7 +174,7 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun onRefresh() {
-        _state.update { it.copy(isRefreshing = true, content = State.Content.Loading) }
+        _state.update { it.copy(isRefreshing = true, content = NetworkContent.Loading) }
         if (_state.value.isGenesisTxInstantLoaded) {
             loadHistory()
         } else {
@@ -196,7 +197,7 @@ class HistoryViewModel @Inject constructor(
             Timber.d("History: Filters are the same, skipping load")
             return
         }
-        _state.update { it.copy(shouldShowFiltersSheet = false, content = State.Content.Loading) }
+        _state.update { it.copy(shouldShowFiltersSheet = false, content = NetworkContent.Loading) }
         loadHistory()
     }
 
@@ -400,11 +401,13 @@ class HistoryViewModel @Inject constructor(
             }
             it.copy(
                 content = if (historyItems.isEmpty()) {
-                    State.Content.Empty
+                    NetworkContent.Empty
                 } else {
-                    State.Content.Loaded(
-                        historyData = historyData,
-                        historyItems = historyItems.toPersistentList(),
+                    NetworkContent.Loaded(
+                        State.HistoryData(
+                            transactionHistoryData = historyData,
+                            historyItems = historyItems.toPersistentList()
+                        )
                     )
                 },
                 loadMoreState = if (resetLoadingMoreState) null else it.loadMoreState,
@@ -426,7 +429,7 @@ internal sealed interface HistoryEvent : OneOffEvent {
 
 data class State(
     val accountWithAssets: AccountWithAssets? = null,
-    val content: Content = Content.Loading,
+    val content: NetworkContent<HistoryData> = NetworkContent.Loading,
     val uiMessage: UiMessage? = null,
     val shouldShowFiltersSheet: Boolean = false,
     val filters: HistoryFilters = HistoryFilters(),
@@ -439,7 +442,7 @@ data class State(
 
     val historyData
         get() = when (content) {
-            is Content.Loaded -> content.historyData
+            is NetworkContent.Loaded -> content.data.transactionHistoryData
             else -> null
         }
 
@@ -447,20 +450,20 @@ data class State(
         get() = accountWithAssets?.details?.firstTransactionDate != null
 
     val shouldShowFiltersButton: Boolean
-        get() = content is Content.Loaded || filters.isAnyFilterSet
+        get() = content is NetworkContent.Loaded || filters.isAnyFilterSet
 
     val shouldEnableUserInteraction: Boolean
-        get() = content !is Content.Loading && loadMoreState == null
+        get() = content !is NetworkContent.Loading && loadMoreState == null
 
     val historyItems
         get() = when (content) {
-            is Content.Loaded -> content.historyItems
+            is NetworkContent.Loaded -> content.data.historyItems
             else -> null
         }
 
     private val currentFilters: HistoryFilters?
         get() = when (content) {
-            is Content.Loaded -> content.historyData.filters
+            is NetworkContent.Loaded -> content.data.transactionHistoryData.filters
             else -> null
         }
 
@@ -476,10 +479,10 @@ data class State(
         get() = accountWithAssets?.assets?.nonFungibles?.map { it.collection }.orEmpty()
 
     val canLoadMoreUp: Boolean
-        get() = content is Content.Loaded && loadMoreState == null && content.historyData.prevCursorId != null
+        get() = content is NetworkContent.Loaded && loadMoreState == null && content.data.transactionHistoryData.prevCursorId != null
 
     val canLoadMoreDown: Boolean
-        get() = content is Content.Loaded && loadMoreState == null && content.historyData.nextCursorId != null
+        get() = content is NetworkContent.Loaded && loadMoreState == null && content.data.transactionHistoryData.nextCursorId != null
 
     val canLoadMore: Boolean
         get() = canLoadMoreUp || canLoadMoreDown
@@ -487,14 +490,10 @@ data class State(
     val filtersChanged: Boolean
         get() = filters != currentFilters
 
-    sealed class Content {
-        data object Loading : Content()
-        data object Empty : Content()
-        data class Loaded(
-            val historyData: TransactionHistoryData,
-            val historyItems: ImmutableList<HistoryItem>
-        ) : Content()
-    }
+    data class HistoryData(
+        val transactionHistoryData: TransactionHistoryData,
+        val historyItems: ImmutableList<HistoryItem>
+    )
 
     enum class LoadingMoreState {
         Up, Down, NewRange
