@@ -72,12 +72,13 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sampleRandom
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -529,13 +530,20 @@ private fun AssetItem(
                 color = RadixTheme.colors.gray1
             )
 
-            Text(
-                text = asset.assetException?.address?.formatted().orEmpty(),
-                textAlign = TextAlign.Start,
-                maxLines = 1,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
-            )
+            val address = remember(asset.assetException) {
+                asset.assetException?.address?.let {
+                    Address.Resource(it)
+                }
+            }
+
+            address?.let {
+                ActionableAddressView(
+                    address = it,
+                    isVisitableInDashboard = true,
+                    textStyle = RadixTheme.typography.body2Regular,
+                    textColor = RadixTheme.colors.gray2
+                )
+            }
         }
         IconButton(
             onClick = {

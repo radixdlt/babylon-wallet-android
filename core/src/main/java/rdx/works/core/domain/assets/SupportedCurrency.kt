@@ -20,7 +20,7 @@ enum class SupportedCurrency(val code: String) {
             return FiatPrice(
                 price = 1.0.toDecimal192(),
                 currency = this
-            ).formatted.replace("[^$symbolEscaped]+".toRegex(), hiddenPriceCharacters)
+            ).defaultFormatted.replace("[^$symbolEscaped]+".toRegex(), hiddenPriceCharacters)
         }
 
     val errorBalance: String
@@ -31,7 +31,7 @@ enum class SupportedCurrency(val code: String) {
             return FiatPrice(
                 price = 1.0.toDecimal192(),
                 currency = this
-            ).formatted.replace("[^$symbolEscaped]+".toRegex(), errorPriceCharacter)
+            ).defaultFormatted.replace("[^$symbolEscaped]+".toRegex(), errorPriceCharacter)
         }
 
     companion object {

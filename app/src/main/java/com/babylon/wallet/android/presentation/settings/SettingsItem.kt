@@ -19,6 +19,7 @@ sealed interface SettingsItem {
             val isBackupNeeded: Boolean = false, // security problem 3
             val isRecoveryNeeded: Boolean = false // security problem 9
         ) : TopLevelSettings
+
         data object ApprovedDapps : TopLevelSettings
 
         data object LinkedConnectors : TopLevelSettings
@@ -28,7 +29,7 @@ sealed interface SettingsItem {
         data object DebugSettings : TopLevelSettings
 
         @StringRes
-        fun descriptionRes(): Int {
+        fun titleRes(): Int {
             return when (this) {
                 ApprovedDapps -> R.string.walletSettings_dapps_title
                 is Personas -> R.string.walletSettings_personas_title
@@ -80,7 +81,7 @@ sealed interface SettingsItem {
         data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem
 
         @StringRes
-        fun descriptionRes(): Int {
+        fun titleRes(): Int {
             return when (this) {
                 is SeedPhrases -> R.string.securityFactors_seedPhrases_title
                 is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_title
@@ -117,7 +118,7 @@ sealed interface SettingsItem {
         data object FactoryReset : Troubleshooting
 
         @StringRes
-        fun descriptionRes(): Int {
+        fun titleRes(): Int {
             return when (this) {
                 ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_title
                 AccountRecovery -> R.string.troubleshooting_accountScan_title
@@ -153,18 +154,22 @@ sealed interface SettingsItem {
     sealed interface WalletPreferences {
         data object DepositGuarantees : WalletPreferences
         data object EntityHiding : WalletPreferences
+        data object AssetsHiding : WalletPreferences
         data object Gateways : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
+        data class AppLock(val enabled: Boolean) : WalletPreferences
 
         @StringRes
-        fun descriptionRes(): Int {
+        fun titleRes(): Int {
             return when (this) {
                 DepositGuarantees -> R.string.preferences_depositGuarantees_title
                 Gateways -> R.string.preferences_gateways
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.preferences_hiddenEntities_title
+                AssetsHiding -> R.string.preferences_hiddenAssets_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
+                is AppLock -> R.string.preferences_advancedLock_title
             }
         }
 
@@ -175,7 +180,9 @@ sealed interface SettingsItem {
                 Gateways -> null
                 is DeveloperMode -> R.string.appSettings_developerMode_subtitle
                 EntityHiding -> R.string.preferences_hiddenEntities_subtitle
+                AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
                 is CrashReporting -> null
+                is AppLock -> R.string.preferences_advancedLock_subtitle
             }
         }
 
@@ -183,9 +190,11 @@ sealed interface SettingsItem {
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
                 Gateways -> DSR.ic_gateways
-                EntityHiding -> DSR.ic_entity_hiding
+                EntityHiding,
+                AssetsHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
+                is AppLock -> DSR.ic_lock
                 else -> null
             }
         }
@@ -199,7 +208,7 @@ sealed interface SettingsItem {
         data object InspectCloudBackups : DebugSettingsItem
 
         @StringRes
-        fun descriptionRes(): Int {
+        fun titleRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title

@@ -2,15 +2,20 @@ package com.babylon.wallet.android.presentation.transaction.fees
 
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.isZero
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 class TransactionFeesDelegate @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+
+    private var searchFeePayersJob: Job? = null
 
     @Suppress("NestedBlockDepth")
     suspend fun onCustomizeClick() {
@@ -49,12 +54,31 @@ class TransactionFeesDelegate @Inject constructor(
 
     fun onFeePaddingAmountChanged(feePaddingAmount: String) {
         val transactionFees = _state.value.transactionFees
+        val newTransactionFees = transactionFees.copy(
+            feePaddingAmount = feePaddingAmount
+        )
         _state.update { state ->
             state.copy(
-                transactionFees = transactionFees.copy(
-                    feePaddingAmount = feePaddingAmount
-                )
+                transactionFees = newTransactionFees
             )
+        }
+
+        searchFeePayersJob?.cancel()
+        searchFeePayersJob = viewModelScope.launch {
+            val feePayers = _state.value.feePayers ?: return@launch
+            val newFeePayers = feePayers.copy(
+                candidates = feePayers.candidates.map {
+                    it.copy(
+                        hasEnoughBalance = it.xrdAmount >= newTransactionFees.transactionFeeToLock
+                    )
+                }
+            )
+
+            _state.update { state ->
+                state.copy(
+                    feePayers = newFeePayers
+                )
+            }
         }
     }
 

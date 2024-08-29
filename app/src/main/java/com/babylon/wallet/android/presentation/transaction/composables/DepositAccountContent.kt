@@ -37,9 +37,12 @@ import com.babylon.wallet.android.presentation.transaction.model.AccountWithTran
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.Resource
 
@@ -47,6 +50,7 @@ import rdx.works.core.domain.resources.Resource
 fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
+    hiddenResourceIds: PersistentList<ResourceIdentifier>,
     promptForGuarantees: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
@@ -92,6 +96,8 @@ fun DepositAccountContent(
                     val lastItem = index == to.size - 1
                     TransactionAccountCard(
                         account = accountEntry,
+                        hiddenResourceIds = hiddenResourceIds,
+                        hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_deposit),
                         onTransferableFungibleClick = onTransferableFungibleClick,
                         onTransferableNonFungibleClick = onNonTransferableFungibleClick
                     )
@@ -156,6 +162,7 @@ fun DepositAccountPreview() {
                     resources = emptyList()
                 )
             ).toPersistentList(),
+            hiddenResourceIds = persistentListOf(),
             promptForGuarantees = {},
             onTransferableFungibleClick = { },
             onNonTransferableFungibleClick = { _, _ -> }

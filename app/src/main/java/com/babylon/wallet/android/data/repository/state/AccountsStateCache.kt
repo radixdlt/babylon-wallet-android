@@ -63,6 +63,9 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.AccountType
 import rdx.works.core.domain.resources.metadata.poolUnit
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.hiddenFungibles
+import rdx.works.core.sargon.hiddenNonFungibles
+import rdx.works.core.sargon.hiddenPools
 import rdx.works.core.toUnitResult
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -268,7 +271,8 @@ class AccountsStateCache @Inject constructor(
         result
     }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = transform { cached ->
+    @Suppress("LongMethod", "MaxLineLength")
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenResources().transform { cached ->
         val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
             emit(emptyList())
             return@transform
@@ -331,6 +335,23 @@ class AccountsStateCache @Inject constructor(
                 }
             )
         }
+    }
+
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenResources() = map { cached ->
+        val resourcePreferences = profileRepository.profile.first().appPreferences.resources
+        val hiddenPoolAddresses = resourcePreferences.hiddenPools().toSet()
+        val hiddenFungibleAddresses = resourcePreferences.hiddenFungibles().toSet()
+        val hiddenNonFungibleAddresses = resourcePreferences.hiddenNonFungibles().toSet()
+
+        cached.mapValues { entry ->
+            entry.value.copy(
+                fungibles = entry.value.fungibles.filterNot { it.address in hiddenFungibleAddresses }
+                    .filterNot { it.poolAddress in hiddenPoolAddresses }
+                    .toMutableList(),
+                nonFungibles = entry.value.nonFungibles.filterNot { it.address in hiddenNonFungibleAddresses }
+                    .toMutableList()
+            )
+        }.toMutableMap()
     }
 
     private data class AccountCachedData(

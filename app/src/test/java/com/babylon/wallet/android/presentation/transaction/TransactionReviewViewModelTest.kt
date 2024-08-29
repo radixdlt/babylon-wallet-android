@@ -19,10 +19,11 @@ import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCa
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
@@ -73,6 +74,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -83,6 +85,8 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.changeDefaultDepositGuarantee
@@ -119,6 +123,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
+    private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val previewTypeAnalyzer = PreviewTypeAnalyzer(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
@@ -154,6 +159,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
+    private val coroutineDispatcher = UnconfinedTestDispatcher()
     private val sampleIntentHash = IntentHash.sample()
     private val notarizationResult = NotarizationResult(
         intentHash = sampleIntentHash,
@@ -221,7 +227,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getDAppsUseCase(dApp.dAppAddress, false)
         } returns Result.success(dApp)
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
-        every { deviceCapabilityHelper.isDeviceSecure() } returns true
+        every { deviceCapabilityHelper.isDeviceSecure } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
@@ -256,6 +262,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
+        coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
     }
 
     override fun initVM(): TransactionReviewViewModel {
@@ -265,7 +272,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
-                transactionRepository = transactionRepository
+                transactionRepository = transactionRepository,
+                getFiatValueUseCase = getFiatValueUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
@@ -286,7 +294,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
             getDAppsUseCase = getDAppsUseCase,
-            appEventBus = appEventBus
+            appEventBus = appEventBus,
+            getProfileUseCase = getProfileUseCase,
+            coroutineDispatcher = coroutineDispatcher
         )
     }
 

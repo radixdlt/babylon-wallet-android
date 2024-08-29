@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.main
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.AppLockStateProvider
+import com.babylon.wallet.android.LockState
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -47,8 +49,8 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
+import rdx.works.profile.data.repository.MnemonicIntegrityRepository
 import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
-import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -66,11 +68,12 @@ class MainViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
-    private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
+    private val mnemonicIntegrityRepository: MnemonicIntegrityRepository,
     private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
+    private val appLockStateProvider: AppLockStateProvider,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -129,7 +132,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    val appNotSecureEvent = appEventBus.events.filterIsInstance<AppEvent.AppNotSecure>()
     val secureFolderWarning = appEventBus.events.filterIsInstance<AppEvent.SecureFolderWarning>()
 
     init {
@@ -137,24 +139,39 @@ class MainViewModel @Inject constructor(
             combine(
                 getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown,
+                preferencesManager.isAppLockEnabled,
                 cloudBackupErrorStream.errors
-            ) { profileState, isDeviceRootedDialogShown, backupError ->
+            ) { profileState, isDeviceRootedDialogShown, isAppLockEnabled, backupError ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
-                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice
+                        claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
+                        isAppLockEnabled = isAppLockEnabled,
+                        isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
                     )
                 }
             }.collect()
         }
+        observeLockState()
         handleAllIncomingRequests()
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
         }
         processBufferedDeepLinkRequest()
+    }
+
+    private fun observeLockState() {
+        viewModelScope.launch {
+            appLockStateProvider.lockState.collect { lockState ->
+                val isLocked = lockState == LockState.Locked
+                _state.update { state ->
+                    state.copy(isAppLocked = isLocked)
+                }
+            }
+        }
     }
 
     private fun processBufferedDeepLinkRequest() {
@@ -168,7 +185,7 @@ class MainViewModel @Inject constructor(
     }
 
     override fun initialState(): MainUiState {
-        return MainUiState()
+        return MainUiState(isDeviceSecure = deviceCapabilityHelper.isDeviceSecure)
     }
 
     fun onHighPriorityScreen() = viewModelScope.launch {
@@ -330,12 +347,19 @@ class MainViewModel @Inject constructor(
     }
 
     fun onAppToForeground() {
+        val isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
+        _state.update { state ->
+            state.copy(isDeviceSecure = isDeviceSecure)
+        }
+        if (!_state.value.isAppLocked) {
+            runForegroundChecks()
+        }
+    }
+
+    private fun runForegroundChecks() {
         viewModelScope.launch {
-            checkMnemonicIntegrityUseCase()
-            val deviceNotSecure = deviceCapabilityHelper.isDeviceSecure().not()
-            if (deviceNotSecure) {
-                appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
-            } else {
+            mnemonicIntegrityRepository.checkIntegrity()
+            if (_state.value.isDeviceSecure) {
                 val checkResult = checkEntitiesCreatedWithOlympiaUseCase()
                 if (checkResult.isAnyEntityCreatedWithOlympia) {
                     _state.update { state ->
@@ -386,8 +410,14 @@ data class MainUiState(
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState? = null,
     val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
-    val showMobileConnectWarning: Boolean = false
-) : UiState
+    val showMobileConnectWarning: Boolean = false,
+    val isAppLocked: Boolean = false,
+    val isAppLockEnabled: Boolean = false,
+    val isDeviceSecure: Boolean
+) : UiState {
+    val showDeviceNotSecureDialog: Boolean
+        get() = !isDeviceSecure && !isAppLockEnabled
+}
 
 data class OlympiaErrorState(
     val secondsLeft: Int = 30,

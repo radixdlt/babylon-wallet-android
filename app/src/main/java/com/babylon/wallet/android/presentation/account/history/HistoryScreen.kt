@@ -77,6 +77,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.account.composable.FiltersDialog
 import com.babylon.wallet.android.presentation.account.composable.FiltersStrip
 import com.babylon.wallet.android.presentation.account.composable.TransactionHistoryItem
+import com.babylon.wallet.android.presentation.common.NetworkContent
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -301,15 +302,15 @@ fun HistoryContent(
                         userScrollEnabled = state.loadMoreState != State.LoadingMoreState.NewRange
                     ) {
                         when (val content = state.content) {
-                            State.Content.Empty -> {
+                            NetworkContent.Empty -> {
                                 item {
                                     EmptyContent()
                                 }
                             }
 
-                            is State.Content.Loaded -> {
-                                val firstTxItemIndex = content.historyItems.indexOfFirst { it is HistoryItem.Transaction }
-                                content.historyItems.forEachIndexed { index, historyItem ->
+                            is NetworkContent.Loaded -> {
+                                val firstTxItemIndex = content.data.historyItems.indexOfFirst { it is HistoryItem.Transaction }
+                                content.data.historyItems.forEachIndexed { index, historyItem ->
                                     when (historyItem) {
                                         is HistoryItem.Date -> {
                                             stickyHeader(key = historyItem.key) {
@@ -354,13 +355,15 @@ fun HistoryContent(
                                 }
                             }
 
-                            State.Content.Loading -> {
+                            NetworkContent.Loading -> {
                                 repeat(4) {
                                     item(key = "loader$it") {
                                         LoadingItemPlaceholder(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium))
                                     }
                                 }
                             }
+
+                            NetworkContent.None -> {}
                         }
                         if (state.loadMoreState == State.LoadingMoreState.Down) {
                             item(key = "loaderDown") {
@@ -653,7 +656,7 @@ fun HistoryContentPreview() {
                 accountWithAssets = AccountWithAssets(
                     Account.sampleMainnet()
                 ),
-                content = State.Content.Loading,
+                content = NetworkContent.Loading,
             ),
             onTimeFilterSelected = {},
             onShowFilters = {},
