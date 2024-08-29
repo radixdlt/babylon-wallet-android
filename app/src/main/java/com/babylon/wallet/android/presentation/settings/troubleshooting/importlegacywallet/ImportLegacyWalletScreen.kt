@@ -76,7 +76,6 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScr
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -813,11 +812,9 @@ private fun VerifyWithYourSeedPhrasePage(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            InfoLink(
+            WarningText(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning),
-                contentColor = RadixTheme.colors.orange1,
-                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                text = AnnotatedString(stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning))
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             SeedPhraseInputForm(

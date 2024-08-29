@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,9 +34,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.FactorSourceId
 import kotlinx.collections.immutable.ImmutableList
@@ -121,11 +122,10 @@ private fun RevealSeedPhraseContent(
                 contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
             ) {
                 item {
-                    InfoLink(
+                    WarningText(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.revealSeedPhrase_warning),
-                        contentColor = RadixTheme.colors.orange1,
-                        iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                        text = AnnotatedString(stringResource(R.string.revealSeedPhrase_warning)),
+                        contentColor = RadixTheme.colors.orange1
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }

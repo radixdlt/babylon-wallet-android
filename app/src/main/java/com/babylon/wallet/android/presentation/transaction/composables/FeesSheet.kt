@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -33,7 +34,7 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -200,29 +201,26 @@ fun FeesSheet(
                     )
 
                     if (insufficientBalanceToPayTheFee) {
-                        InfoLink(
+                        WarningText(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(
                                     horizontal = RadixTheme.dimensions.paddingLarge,
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
-                            text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
+                            text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance)),
                             contentColor = RadixTheme.colors.red1,
-                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
                             textStyle = RadixTheme.typography.body1Header
                         )
                     } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
-                        InfoLink(
+                        WarningText(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(
                                     horizontal = RadixTheme.dimensions.paddingLarge,
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
-                            text = stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount),
-                            contentColor = RadixTheme.colors.orange1,
-                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+                            text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
                             textStyle = RadixTheme.typography.body1Header
                         )
                     }
