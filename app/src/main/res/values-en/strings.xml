@@ -251,6 +251,9 @@
   <string name="authorizedDapps_dAppDetails_personasHeading">Here are the Personas that you have used to login to this dApp.</string>
   <string name="authorizedDapps_dAppDetails_noPersonasHeading">No Personas have been used to login to this dApp.</string>
   <string name="authorizedDapps_dAppDetails_forgetDapp">Forget this dApp</string>
+  <string name="authorizedDapps_dAppDetails_depositsTitle">Show direct deposits to claim</string>
+  <string name="authorizedDapps_dAppDetails_depositsVisible">Available deposits from this dApp will be shown on the recipient Accounts</string>
+  <string name="authorizedDapps_dAppDetails_depositsHidden">Available deposits from this dApp will not be shown</string>
   <string name="authorizedDapps_personaDetails_personaHidden">Persona Hidden</string>
   <string name="authorizedDapps_personaDetails_editAvatarButtonTitle">Edit Avatar</string>
   <string name="authorizedDapps_personaDetails_personaLabelHeading">Persona Label</string>
