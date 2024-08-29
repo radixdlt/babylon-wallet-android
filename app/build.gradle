@@ -291,6 +291,9 @@ dependencies {
     }
     // Needed for unit tests to run with Sargon
     testRuntimeOnly libs.sargonDesktop
+
+    implementation 'com.mikepenz:multiplatform-markdown-renderer-m3:0.25.0'
+//    implementation 'com.mikepenz:multiplatform-markdown-renderer-android:0.25.0'
 }
 
 jacoco {
