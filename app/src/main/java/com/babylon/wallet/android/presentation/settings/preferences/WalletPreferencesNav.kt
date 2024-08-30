@@ -120,15 +120,18 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
     ) {
         GatewaysScreen(
             viewModel = hiltViewModel(),
-            onBackClick = {
-                navController.popBackStack()
-            },
             onCreateProfile = { url, networkId ->
                 navController.createAccountScreen(
                     CreateAccountRequestSource.Gateways,
                     url,
                     networkId
                 )
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
+            onBackClick = {
+                navController.popBackStack()
             }
         )
     }
