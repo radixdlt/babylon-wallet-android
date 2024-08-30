@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.preferences.assetshiding.hiddenAssetsScreen
@@ -42,6 +43,9 @@ fun NavGraphBuilder.preferencesNavGraph(
             navController.popBackStack()
         })
         depositGuaranteesScreen(
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
             onBackClick = {
                 navController.popBackStack()
             }
