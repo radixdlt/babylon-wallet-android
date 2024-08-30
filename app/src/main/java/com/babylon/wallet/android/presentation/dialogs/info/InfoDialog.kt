@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -23,6 +24,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -30,8 +33,13 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.InfoViewModel.Companion.GLOSSARY_ANCHOR
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.mikepenz.markdown.compose.components.MarkdownComponent
+import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
+import org.intellij.markdown.MarkdownTokenTypes
+import org.intellij.markdown.ast.findChildOfType
 
 typealias DSR = com.babylon.wallet.android.designsystem.R.drawable
 
@@ -97,12 +105,34 @@ private fun InfoDialogContent(
                 }
             }
         ) {
+            val customHeading2: MarkdownComponent = {
+                val content = it.content
+                it.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let {
+                    val styledText = buildAnnotatedString {
+                        pushStyle(RadixTheme.typography.title.toSpanStyle().copy(color = RadixTheme.colors.gray1))
+                        buildMarkdownAnnotatedString(content, it)
+                        pop()
+                    }
+                    Text(
+                        styledText,
+                        modifier = Modifier.fillMaxSize().padding(bottom = RadixTheme.dimensions.paddingDefault),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
             Markdown(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(),
-                typography = markdownTypography(h2 = RadixTheme.typography.title),
-                content = markdownContent ?: stringResource(id = R.string.empty)
+                typography = markdownTypography(
+                    text = RadixTheme.typography.body1Regular,
+                    h2 = RadixTheme.typography.title
+                ),
+                content = markdownContent ?: stringResource(id = R.string.empty),
+                components = markdownComponents(
+                    heading2 = customHeading2
+                )
             )
         }
     }
