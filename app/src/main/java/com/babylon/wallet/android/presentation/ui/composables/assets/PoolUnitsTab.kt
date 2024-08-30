@@ -25,6 +25,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
@@ -45,13 +46,15 @@ import rdx.works.core.domain.resources.Resource
 fun LazyListScope.poolUnitsTab(
     assetsViewData: AssetsViewData,
     isLoadingBalance: Boolean,
-    action: AssetsViewAction
+    action: AssetsViewAction,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     if (assetsViewData.isPoolUnitsEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = AssetsTab.PoolUnits
+                tab = AssetsTab.PoolUnits,
+                onInfoClick = onInfoClick
             )
         }
     }
@@ -240,7 +243,8 @@ fun PoolUnitTabPreview() {
                     onFungibleClick = {},
                     onPoolUnitClick = {},
                     onNonFungibleItemClick = { _, _ -> }
-                )
+                ),
+                onInfoClick = {}
             )
         }
     }

@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 @Composable
 fun AssetsTabs(
@@ -80,5 +81,12 @@ enum class AssetsTab {
     Tokens,
     Nfts,
     Staking,
-    PoolUnits
+    PoolUnits;
+
+    fun toInfoTag(): GlossaryItem = when (this) {
+        Tokens -> GlossaryItem.tokens
+        Nfts -> GlossaryItem.nfts
+        Staking -> GlossaryItem.networkstaking
+        PoolUnits -> GlossaryItem.poolunits
+    }
 }
