@@ -36,7 +36,9 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.findChildOfType
@@ -115,7 +117,7 @@ private fun InfoDialogContent(
                     }
                     Text(
                         styledText,
-                        modifier = Modifier.fillMaxSize().padding(bottom = RadixTheme.dimensions.paddingDefault),
+                        modifier = Modifier.fillMaxSize(),
                         textAlign = TextAlign.Center
                     )
                 }
@@ -125,9 +127,16 @@ private fun InfoDialogContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(),
+                colors = markdownColor(
+                    linkText = RadixTheme.colors.blue2
+                ),
                 typography = markdownTypography(
-                    text = RadixTheme.typography.body1Regular,
-                    h2 = RadixTheme.typography.title
+                    h2 = RadixTheme.typography.title,
+                    paragraph = RadixTheme.typography.body1Regular,
+
+                ),
+                padding = markdownPadding(
+                    block = RadixTheme.dimensions.paddingSmall,
                 ),
                 content = markdownContent ?: stringResource(id = R.string.empty),
                 components = markdownComponents(
