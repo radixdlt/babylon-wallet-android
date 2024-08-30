@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -30,6 +31,8 @@ import com.babylon.wallet.android.presentation.dialogs.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -38,10 +41,23 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
 
 @Composable
 fun FungibleDialogContent(
@@ -51,6 +67,7 @@ fun FungibleDialogContent(
     args: AssetDialogArgs.Fungible,
     isLoadingBalance: Boolean,
     canBeHidden: Boolean,
+    onInfoClick: (GlossaryItem) -> Unit,
     onHideClick: (() -> Unit)? = null
 ) {
     val resourceAddress = args.resourceAddress
@@ -178,7 +195,8 @@ fun FungibleDialogContent(
                 BehavioursSection(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
                     isXRD = token?.resource?.isXrd ?: false,
-                    behaviours = token?.resource?.behaviours
+                    behaviours = token?.resource?.behaviours,
+                    onInfoClick = onInfoClick
                 )
 
                 TagsSection(
@@ -229,6 +247,48 @@ private fun FungibleIconSection(
                     visible = true,
                     shape = CircleShape
                 )
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = false)
+@Composable
+private fun InfoPreview() {
+    RadixWalletPreviewTheme {
+        FungibleDialogContent(
+            token = Token(
+                resource = Resource.FungibleResource(
+                    address = ResourceAddress.xrd(NetworkId.MAINNET),
+                    ownedAmount = 666.toDecimal192(),
+                    currentSupply = Decimal192.sample.invoke(),
+                    assetBehaviours = setOf(AssetBehaviour.SUPPLY_INCREASABLE, AssetBehaviour.SUPPLY_FLEXIBLE),
+                    metadata = listOf(
+                        Metadata.Collection(
+                            key = ExplicitMetadataKey.TAGS.key,
+                            values = listOf(),
+                        )
+                    )
+                ),
+            ),
+            tokenPrice = AssetPrice.TokenPrice(
+                asset = Token(
+                    resource = Resource.FungibleResource(
+                        address = ResourceAddress.xrd(NetworkId.MAINNET),
+                        ownedAmount = 666.toDecimal192(),
+                    ),
+                ),
+                price = FiatPrice(price = 999.toDecimal192(), currency = SupportedCurrency.USD)
+            ),
+            args = AssetDialogArgs.Fungible(
+                resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
+                isNewlyCreated = false,
+                underAccountAddress = null,
+                amounts = mapOf(ResourceAddress.sampleMainnet.xrd.toString() to Decimal192.sample.invoke())
+            ),
+            isLoadingBalance = false,
+            canBeHidden = true,
+            onInfoClick = {}
         )
     }
 }

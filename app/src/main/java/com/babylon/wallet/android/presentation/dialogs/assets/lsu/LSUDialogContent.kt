@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
@@ -58,7 +59,8 @@ fun LSUDialogContent(
     lsu: LiquidStakeUnit?,
     price: AssetPrice.LSUPrice?,
     args: AssetDialogArgs.Fungible,
-    isLoadingBalance: Boolean
+    isLoadingBalance: Boolean,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val resourceAddress = args.resourceAddress
     val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
@@ -223,7 +225,8 @@ fun LSUDialogContent(
 
         BehavioursSection(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            behaviours = lsu?.fungibleResource?.behaviours
+            behaviours = lsu?.fungibleResource?.behaviours,
+            onInfoClick = onInfoClick
         )
 
         TagsSection(
