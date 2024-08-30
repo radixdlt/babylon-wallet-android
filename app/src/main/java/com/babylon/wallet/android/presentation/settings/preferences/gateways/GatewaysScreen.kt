@@ -153,7 +153,7 @@ private fun GatewaysContent(
                             horizontal = RadixTheme.dimensions.paddingDefault,
                             vertical = RadixTheme.dimensions.paddingMedium
                         ),
-                        text = stringResource(id = R.string.transactionReview_guarantees_howDoGuaranteesWork),
+                        text = stringResource(id = R.string.gateways_whatIsAGateway),
                         onClick = {
                             onInfoClick(GlossaryItem.gateways)
                         }
