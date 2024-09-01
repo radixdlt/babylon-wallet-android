@@ -24,7 +24,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,10 +40,18 @@ import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
+import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownPadding
+import com.mikepenz.markdown.utils.MARKDOWN_TAG_URL
 import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
+import org.intellij.markdown.MarkdownElementTypes.INLINE_LINK
+import org.intellij.markdown.MarkdownElementTypes.LINK_DESTINATION
+import org.intellij.markdown.MarkdownElementTypes.LINK_LABEL
+import org.intellij.markdown.MarkdownElementTypes.LINK_TEXT
 import org.intellij.markdown.MarkdownTokenTypes
+import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.findChildOfType
+import org.intellij.markdown.ast.getTextInNode
 
 typealias DSR = com.babylon.wallet.android.designsystem.R.drawable
 
@@ -78,6 +88,48 @@ private fun InfoDialogContent(
 ) {
     val context = LocalContext.current
 
+    val customHeading2: MarkdownComponent = {
+        val content = it.content
+        it.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let {
+            val styledText = buildAnnotatedString {
+                pushStyle(RadixTheme.typography.title.toSpanStyle().copy(color = RadixTheme.colors.gray1))
+                buildMarkdownAnnotatedString(content, it)
+                pop()
+            }
+            Text(
+                styledText,
+                modifier = Modifier.fillMaxSize(),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
+    val linkAnnotator = markdownAnnotator { content, child ->
+        if (child.type == INLINE_LINK) {
+            val linkText = child.findChildOfType(LINK_TEXT)?.children?.innerList()?.firstOrNull()
+            val destination = child.findChildOfType(LINK_DESTINATION)
+                ?.getTextInNode(content)
+                ?.toString()
+            val linkLabel = child.findChildOfType(LINK_LABEL)
+                ?.getTextInNode(content)?.toString()
+            val annotation = destination ?: linkLabel
+            if (annotation != null) pushStringAnnotation(MARKDOWN_TAG_URL, annotation)
+
+            pushStyle(
+                SpanStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Blue
+                )
+            )
+
+            append(linkText?.getTextInNode(content).toString())
+            pop()
+            true // return true to consume this ASTNode child
+        } else {
+            false
+        }
+    }
+
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -107,45 +159,34 @@ private fun InfoDialogContent(
                 }
             }
         ) {
-            val customHeading2: MarkdownComponent = {
-                val content = it.content
-                it.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let {
-                    val styledText = buildAnnotatedString {
-                        pushStyle(RadixTheme.typography.title.toSpanStyle().copy(color = RadixTheme.colors.gray1))
-                        buildMarkdownAnnotatedString(content, it)
-                        pop()
-                    }
-                    Text(
-                        styledText,
-                        modifier = Modifier.fillMaxSize(),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
             Markdown(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(),
-                colors = markdownColor(
-                    linkText = RadixTheme.colors.blue2
-                ),
                 typography = markdownTypography(
                     h2 = RadixTheme.typography.title,
                     paragraph = RadixTheme.typography.body1Regular,
 
                 ),
+                colors = markdownColor(
+                    linkText = RadixTheme.colors.blue2
+                ),
                 padding = markdownPadding(
                     block = RadixTheme.dimensions.paddingSmall,
                 ),
-                content = markdownContent ?: stringResource(id = R.string.empty),
                 components = markdownComponents(
                     heading2 = customHeading2
-                )
+                ),
+                annotator = linkAnnotator,
+                content = markdownContent ?: stringResource(id = R.string.empty),
             )
         }
     }
 }
+
+// Helper function to drop the first and last element
+// in order to not render the brackets of a link
+internal fun List<ASTNode>.innerList(): List<ASTNode> = this.subList(1, this.size - 1)
 
 @Composable
 private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
