@@ -117,7 +117,7 @@ private fun InfoDialogContent(
             pushStyle(
                 SpanStyle(
                     fontWeight = FontWeight.Bold,
-                    color = Color.Blue
+                    color = Color(0xFF052CC0) // RadixTheme.colors.blue2
                 )
             )
 
