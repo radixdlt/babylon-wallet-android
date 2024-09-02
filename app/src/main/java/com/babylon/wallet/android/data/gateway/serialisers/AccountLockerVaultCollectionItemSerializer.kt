@@ -19,7 +19,7 @@ object AccountLockerVaultCollectionItemSerializer : JsonContentPolymorphicSerial
         return when (element.jsonObject["type"]?.jsonPrimitive?.content) {
             AccountLockerVaultCollectionItemType.Fungible.value -> AccountLockerVaultCollectionItemFungible.serializer()
             AccountLockerVaultCollectionItemType.NonFungible.value -> AccountLockerVaultCollectionItemNonFungible.serializer()
-            else -> error("")
+            else -> error("AccountLockerVaultCollectionItemType not found.")
         }
     }
 }

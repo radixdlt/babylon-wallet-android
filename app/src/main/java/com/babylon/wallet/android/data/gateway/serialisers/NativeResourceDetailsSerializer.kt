@@ -48,7 +48,7 @@ object NativeResourceDetailsSerializer : JsonContentPolymorphicSerializer<Native
             NativeResourceKind.TwoResourcePoolUnit.value -> NativeResourceTwoResourcePoolUnitValue.serializer()
             NativeResourceKind.MultiResourcePoolUnit.value -> NativeResourceMultiResourcePoolUnitValue.serializer()
             NativeResourceKind.AccessControllerRecoveryBadge.value -> NativeResourceAccessControllerRecoveryBadgeValue.serializer()
-            else -> error("")
+            else -> error("NativeResourceKind not found.")
         }
     }
 }
