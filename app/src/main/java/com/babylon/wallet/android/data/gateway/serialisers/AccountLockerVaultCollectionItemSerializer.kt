@@ -16,10 +16,10 @@ object AccountLockerVaultCollectionItemSerializer : JsonContentPolymorphicSerial
     override fun selectDeserializer(
         element: JsonElement
     ): DeserializationStrategy<AccountLockerVaultCollectionItem> {
-        return when (element.jsonObject["type"]?.jsonPrimitive?.content) {
+        return when (val type = element.jsonObject["type"]?.jsonPrimitive?.content) {
             AccountLockerVaultCollectionItemType.Fungible.value -> AccountLockerVaultCollectionItemFungible.serializer()
             AccountLockerVaultCollectionItemType.NonFungible.value -> AccountLockerVaultCollectionItemNonFungible.serializer()
-            else -> error("AccountLockerVaultCollectionItemType not found.")
+            else -> error("$type is not supported as an AccountLockerVaultCollectionItemType")
         }
     }
 }

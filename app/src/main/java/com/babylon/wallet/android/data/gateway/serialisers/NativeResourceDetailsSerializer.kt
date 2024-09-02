@@ -31,7 +31,7 @@ object NativeResourceDetailsSerializer : JsonContentPolymorphicSerializer<Native
     override fun selectDeserializer(
         element: JsonElement
     ): DeserializationStrategy<NativeResourceDetails> {
-        return when (element.jsonObject["kind"]?.jsonPrimitive?.content) {
+        return when (val kind = element.jsonObject["kind"]?.jsonPrimitive?.content) {
             NativeResourceKind.Xrd.value -> NativeResourceXrdValue.serializer()
             NativeResourceKind.PackageOwnerBadge.value -> NativeResourcePackageOwnerBadgeValue.serializer()
             NativeResourceKind.AccountOwnerBadge.value -> NativeResourceAccountOwnerBadgeValue.serializer()
@@ -48,7 +48,7 @@ object NativeResourceDetailsSerializer : JsonContentPolymorphicSerializer<Native
             NativeResourceKind.TwoResourcePoolUnit.value -> NativeResourceTwoResourcePoolUnitValue.serializer()
             NativeResourceKind.MultiResourcePoolUnit.value -> NativeResourceMultiResourcePoolUnitValue.serializer()
             NativeResourceKind.AccessControllerRecoveryBadge.value -> NativeResourceAccessControllerRecoveryBadgeValue.serializer()
-            else -> error("NativeResourceKind not found.")
+            else -> error("$kind is not supported as an AccountLockerVaultCollectionItemType.")
         }
     }
 }
