@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.renameAccountDisplayName
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.core.di.DefaultDispatcher
 import javax.inject.Inject
 
 class RenameAccountDisplayNameUseCase @Inject constructor(

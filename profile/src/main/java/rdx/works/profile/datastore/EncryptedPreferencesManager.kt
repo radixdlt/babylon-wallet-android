@@ -22,7 +22,7 @@ import rdx.works.core.encrypt
 import rdx.works.core.logNonFatalException
 import rdx.works.profile.di.PermanentDataStore
 import rdx.works.profile.di.ProfileDataStore
-import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.core.di.IoDispatcher
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 import javax.inject.Singleton

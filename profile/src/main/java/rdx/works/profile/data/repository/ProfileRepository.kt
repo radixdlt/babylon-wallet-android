@@ -25,8 +25,8 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
-import rdx.works.profile.di.coroutines.ApplicationScope
-import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.core.di.ApplicationScope
+import rdx.works.core.di.IoDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 

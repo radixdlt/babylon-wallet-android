@@ -27,7 +27,7 @@ import rdx.works.core.sargon.babylon
 import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.core.di.DefaultDispatcher
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(

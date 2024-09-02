@@ -26,7 +26,7 @@ import rdx.works.profile.BuildConfig
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.cloudbackup.model.GoogleAccount
-import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.core.di.IoDispatcher
 import timber.log.Timber
 import java.util.logging.Level
 import java.util.logging.Logger

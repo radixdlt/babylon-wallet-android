@@ -6,7 +6,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.changeBalanceVisibility
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.core.di.IoDispatcher
 import javax.inject.Inject
 
 class ChangeBalanceVisibilityUseCase @Inject constructor(

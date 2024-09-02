@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.addAuthSigningFactorInstanceForEntity
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.updateProfile
-import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.core.di.DefaultDispatcher
 import javax.inject.Inject
 
 class AddAuthSigningFactorInstanceUseCase @Inject constructor(

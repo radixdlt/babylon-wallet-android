@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.datastore.EncryptedPreferencesManager
-import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.core.di.IoDispatcher
 import javax.inject.Inject
 
 interface P2PLinksRepository {

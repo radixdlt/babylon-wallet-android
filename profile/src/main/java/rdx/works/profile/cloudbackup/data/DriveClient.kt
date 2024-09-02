@@ -16,7 +16,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.HostInfoRepository
-import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.core.di.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.toCloudBackupProperties

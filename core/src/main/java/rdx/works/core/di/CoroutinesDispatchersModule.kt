@@ -1,4 +1,4 @@
-package rdx.works.profile.di.coroutines
+package rdx.works.core.di
 
 import dagger.Module
 import dagger.Provides

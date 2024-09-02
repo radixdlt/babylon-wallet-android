@@ -30,7 +30,7 @@ import rdx.works.profile.cloudbackup.domain.CheckBackupStatusUseCase
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.domain.ExecuteBackupUseCase
 import rdx.works.profile.cloudbackup.model.BackupServiceException
-import rdx.works.profile.di.coroutines.ApplicationScope
+import rdx.works.core.di.ApplicationScope
 import timber.log.Timber
 import java.time.Duration
 import java.time.temporal.ChronoUnit
