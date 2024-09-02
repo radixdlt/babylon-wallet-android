@@ -36,8 +36,8 @@ data class EventsItem (
     val name: kotlin.String,
 
     /* This type is defined in the Core API as `EventEmitterIdentifier`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "emitter")
-    val emitter: kotlin.Any,
+//    @Contextual @SerialName(value = "emitter")
+//    val emitter: kotlin.Any,
 
     @SerialName(value = "data")
     val `data`: ProgrammaticScryptoSborValue

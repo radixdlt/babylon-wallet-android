@@ -44,31 +44,31 @@ data class TransactionReceipt (
     val status: TransactionStatus? = null,
 
     /* This type is defined in the Core API as `FeeSummary`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "fee_summary")
-    val feeSummary: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "fee_summary")
+//    val feeSummary: kotlin.Any? = null,
 
-    @Contextual @SerialName(value = "costing_parameters")
-    val costingParameters: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "costing_parameters")
+//    val costingParameters: kotlin.Any? = null,
 
     /* This type is defined in the Core API as `FeeDestination`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "fee_destination")
-    val feeDestination: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "fee_destination")
+//    val feeDestination: kotlin.Any? = null,
 
     /* This type is defined in the Core API as `FeeSource`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "fee_source")
-    val feeSource: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "fee_source")
+//    val feeSource: kotlin.Any? = null,
 
     /* This type is defined in the Core API as `StateUpdates`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "state_updates")
-    val stateUpdates: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "state_updates")
+//    val stateUpdates: kotlin.Any? = null,
 
     /* Information (number and active validator list) about new epoch if occured. This type is defined in the Core API as `NextEpoch`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "next_epoch")
-    val nextEpoch: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "next_epoch")
+//    val nextEpoch: kotlin.Any? = null,
 
     /* The manifest line-by-line engine return data (only present if `status` is `CommittedSuccess`). This type is defined in the Core API as `SborData`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "output")
-    val output: kotlin.Any? = null,
+//    @Contextual @SerialName(value = "output")
+//    val output: kotlin.Any? = null,
 
     /* Events emitted by a transaction. */
     @SerialName(value = "events")
