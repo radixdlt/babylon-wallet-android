@@ -185,7 +185,10 @@ private fun InfoDialogContent(
 
 // Helper function to drop the first and last element
 // in order to not render the brackets of a link
-internal fun List<ASTNode>.innerList(): List<ASTNode> = this.subList(1, this.size - 1)
+internal fun List<ASTNode>.innerList(): List<ASTNode> {
+    if (this.size <= 1 ) return emptyList()
+    return this.subList(1, this.size - 1)
+}
 
 @Composable
 private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
