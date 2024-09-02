@@ -80,8 +80,8 @@ data class TransactionPreviewRequest (
     val notaryIsSignatory: kotlin.Boolean? = null,
 
     /* An optional transaction message. Only affects the costing. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details.  */
-    @Contextual @SerialName(value = "message")
-    val message: kotlin.Any? = null
+//    @Contextual @SerialName(value = "message")
+//    val message: kotlin.Any? = null
 
 )
 
