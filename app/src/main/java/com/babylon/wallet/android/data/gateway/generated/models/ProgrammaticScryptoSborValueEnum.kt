@@ -40,7 +40,7 @@ data class ProgrammaticScryptoSborValueEnum (
     override val kind: ProgrammaticScryptoSborValueKind,
 
     @SerialName(value = "variant_id")
-    val variantId: kotlin.Int,
+    val variantId: kotlin.String,
 
     @SerialName(value = "fields")
     val fields: kotlin.collections.List<ProgrammaticScryptoSborValue>,

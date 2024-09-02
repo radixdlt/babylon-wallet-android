@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data
 
 import com.babylon.wallet.android.data.gateway.extensions.assetBehaviours
-import com.babylon.wallet.android.data.gateway.generated.models.AccessRule
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentEntry
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentEntryAssignment
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentOwner
@@ -9,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityR
 import com.babylon.wallet.android.data.gateway.generated.models.ObjectModuleId
 import com.babylon.wallet.android.data.gateway.generated.models.RoleAssignmentResolution
 import com.babylon.wallet.android.data.gateway.generated.models.RoleKey
+import com.babylon.wallet.android.data.gateway.model.AccessRule
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

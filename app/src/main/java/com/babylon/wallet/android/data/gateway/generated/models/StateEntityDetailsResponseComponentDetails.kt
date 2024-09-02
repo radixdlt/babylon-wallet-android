@@ -16,6 +16,12 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.coreapi.ComponentEntityState
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.ComponentRoyaltyConfig
+import com.babylon.wallet.android.data.gateway.generated.models.NativeResourceDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+import com.babylon.wallet.android.data.gateway.generated.models.TwoWayLinkedDappOnLedgerDetails
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -32,6 +38,9 @@ import kotlinx.serialization.Contextual
  * @param roleAssignments 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  * @param royaltyConfig 
+ * @param twoWayLinkedDappAddress Bech32m-encoded human readable version of the address.
+ * @param twoWayLinkedDappDetails 
+ * @param nativeResourceDetails 
  */
 @Serializable
 
@@ -62,7 +71,13 @@ data class StateEntityDetailsResponseComponentDetails (
     val royaltyVaultBalance: kotlin.String? = null,
 
     @SerialName(value = "royalty_config")
-    val royaltyConfig: ComponentRoyaltyConfig? = null
+    val royaltyConfig: ComponentRoyaltyConfig? = null,
+
+    @SerialName(value = "two_way_linked_dapp_details")
+    val twoWayLinkedDappDetails: TwoWayLinkedDappOnLedgerDetails? = null,
+
+    @SerialName(value = "native_resource_details")
+    val nativeResourceDetails: NativeResourceDetails? = null
 
 ) : StateEntityDetailsResponseItemDetails()
 

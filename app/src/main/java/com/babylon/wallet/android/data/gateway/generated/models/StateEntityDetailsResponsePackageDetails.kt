@@ -39,6 +39,7 @@ import kotlinx.serialization.Contextual
  * @param blueprints 
  * @param schemas 
  * @param roleAssignments 
+ * @param twoWayLinkedDappAddress Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
@@ -72,7 +73,11 @@ data class StateEntityDetailsResponsePackageDetails (
     val schemas: EntitySchemaCollection? = null,
 
     @SerialName(value = "role_assignments")
-    val roleAssignments: ComponentEntityRoleAssignments? = null
+    val roleAssignments: ComponentEntityRoleAssignments? = null,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "two_way_linked_dapp_address")
+    val twoWayLinkedDappAddress: kotlin.String? = null
 
 ) : StateEntityDetailsResponseItemDetails()
 

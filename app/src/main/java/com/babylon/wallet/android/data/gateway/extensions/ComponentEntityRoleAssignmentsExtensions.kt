@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.data.gateway.extensions
 
-import com.babylon.wallet.android.data.gateway.generated.models.AccessRule
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentEntry
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignmentOwner
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
 import com.babylon.wallet.android.data.gateway.generated.models.RoleAssignmentResolution
+import com.babylon.wallet.android.data.gateway.model.AccessRule
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetBehaviours
 

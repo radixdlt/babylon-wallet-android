@@ -22,7 +22,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Provide either `key_hex` or `key_json`. If both are provided, `key_hex` is used and `key_json` is ignored.
  *
  * @param keyHex Hex-encoded binary blob.
  * @param keyJson 

@@ -16,9 +16,11 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.ComponentEntityRoleAssignments
+import com.babylon.wallet.android.data.gateway.generated.models.NativeResourceDetails
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleIdType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
+import com.babylon.wallet.android.data.gateway.generated.models.TwoWayLinkedDappsCollection
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -33,6 +35,9 @@ import kotlinx.serialization.Contextual
  * @param totalSupply String-encoded decimal representing the amount of a related fungible resource.
  * @param totalMinted String-encoded decimal representing the amount of a related fungible resource.
  * @param totalBurned String-encoded decimal representing the amount of a related fungible resource.
+ * @param nonFungibleDataMutableFields 
+ * @param twoWayLinkedDapps 
+ * @param nativeResourceDetails 
  */
 @Serializable
 
@@ -57,7 +62,16 @@ data class StateEntityDetailsResponseNonFungibleResourceDetails (
 
     /* String-encoded decimal representing the amount of a related fungible resource. */
     @SerialName(value = "total_burned")
-    val totalBurned: kotlin.String
+    val totalBurned: kotlin.String,
+
+    @SerialName(value = "non_fungible_data_mutable_fields")
+    val nonFungibleDataMutableFields: kotlin.collections.List<kotlin.String>,
+
+    @SerialName(value = "two_way_linked_dapps")
+    val twoWayLinkedDapps: TwoWayLinkedDappsCollection? = null,
+
+    @SerialName(value = "native_resource_details")
+    val nativeResourceDetails: NativeResourceDetails? = null
 
 ) : StateEntityDetailsResponseItemDetails()
 

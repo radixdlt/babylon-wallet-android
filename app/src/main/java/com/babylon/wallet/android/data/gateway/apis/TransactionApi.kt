@@ -61,9 +61,8 @@ interface TransactionApi {
 
     /**
      * Preview Transaction
-     * Previews transaction against the network.
-     * This endpoint is effectively a proxy towards the Core API &#x60;/v0/transaction/preview&#x60; endpoint.
-     * See the Core API documentation for more details.
+     * Previews transaction against the network. This endpoint is effectively a proxy towards the
+     * Core API &#x60;/v0/transaction/preview&#x60; endpoint. See the Core API documentation for more details.
      * Responses:
      *  - 200: Successful Preview
      *  - 4XX: Client-originated request error
