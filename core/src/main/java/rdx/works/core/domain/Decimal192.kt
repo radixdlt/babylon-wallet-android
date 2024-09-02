@@ -1,7 +1,6 @@
 package rdx.works.core.domain
 
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
