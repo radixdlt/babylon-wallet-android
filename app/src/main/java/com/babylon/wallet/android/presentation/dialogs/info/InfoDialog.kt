@@ -88,12 +88,11 @@ private fun InfoDialogContent(
 ) {
     val context = LocalContext.current
 
-    val customHeading2: MarkdownComponent = {
-        val content = it.content
-        it.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let {
+    val customHeading2: MarkdownComponent = { markdownComponentModel ->
+        markdownComponentModel.node.findChildOfType(MarkdownTokenTypes.ATX_CONTENT)?.let { markDownNode ->
             val styledText = buildAnnotatedString {
                 pushStyle(RadixTheme.typography.title.toSpanStyle().copy(color = RadixTheme.colors.gray1))
-                buildMarkdownAnnotatedString(content, it)
+                buildMarkdownAnnotatedString(markdownComponentModel.content, markDownNode)
                 pop()
             }
             Text(
