@@ -98,4 +98,8 @@ open class StateRepositoryFake : StateRepository {
         return Result.success(Unit)
     }
 
+    override suspend fun clearCachedNewlyCreatedNFTItems(items: List<Resource.NonFungibleResource.Item>): Result<Unit> {
+        return Result.success(Unit)
+    }
+
 }

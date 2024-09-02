@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
+import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -45,6 +46,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val submitTransactionUseCase: SubmitTransactionUseCase,
+    private val clearCachedNewlyCreatedEntitiesUseCase: ClearCachedNewlyCreatedEntitiesUseCase,
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
     private val exceptionMessageProvider: ExceptionMessageProvider,
@@ -157,6 +159,10 @@ class TransactionSubmitDelegate @Inject constructor(
                     request = transactionRequest,
                     txId = notarization.intentHash.bech32EncodedTxId
                 )
+            }
+            val previewType = _state.value.previewType
+            if (previewType is PreviewType.Transfer) {
+                clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTItemsForExistingResources)
             }
         }.onFailure { throwable ->
             throwable.asRadixWalletException()?.let { radixWalletException ->
