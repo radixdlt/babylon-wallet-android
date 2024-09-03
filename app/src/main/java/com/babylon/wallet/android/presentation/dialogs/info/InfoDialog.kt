@@ -106,6 +106,7 @@ private fun InfoDialogContent(
         }
     }
 
+    val linkColor = RadixTheme.colors.blue2
     val linkAnnotator = markdownAnnotator { content, child ->
         if (child.type == INLINE_LINK) {
             val linkText = child.findChildOfType(LINK_TEXT)?.children?.innerList()?.firstOrNull()
@@ -120,7 +121,7 @@ private fun InfoDialogContent(
             pushStyle(
                 SpanStyle(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF052CC0) // RadixTheme.colors.blue2
+                    color = linkColor
                 )
             )
 
