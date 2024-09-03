@@ -132,7 +132,7 @@ private fun InfoDialogContent(
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
-            .fillMaxHeight(0.5f)
+            .fillMaxHeight(0.9f)
             .verticalScroll(scrollState)
             .padding(horizontal = RadixTheme.dimensions.paddingLarge)
             .padding(top = RadixTheme.dimensions.paddingSmall)
