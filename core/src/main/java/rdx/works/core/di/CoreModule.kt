@@ -17,7 +17,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import rdx.works.core.BuildConfig
 import rdx.works.core.storage.FileRepository
 import rdx.works.core.storage.FileRepositoryImpl
 import javax.inject.Singleton
@@ -101,7 +100,6 @@ object CoreProvider {
         @HostInfoPreferences hostInfoPreferences: DataStore<Preferences>,
     ): Bios = Bios.from(
         context = context,
-        enableLogging = BuildConfig.DEBUG,
         httpClient = httpClient,
         biometricsHandler = biometricsHandler,
         encryptedPreferencesDataStore = encryptedPreferences,

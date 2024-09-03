@@ -82,6 +82,19 @@ class ProfileRepositoryImpl @Inject constructor(
                     profileStateFlow.update { state }
                 }
         }
+
+        applicationScope.launch {
+            profileStateFlow
+                .filterIsInstance<ProfileState.Restored>()
+                .map { it.profile }
+                .collect { state ->
+                    if (state.canBackupToCloud) {
+                        cloudBackupSyncExecutor.requestCloudBackup()
+                    } else {
+                        encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
+                    }
+                }
+        }
     }
 
     override val profileState = profileStateFlow
@@ -114,12 +127,6 @@ class ProfileRepositoryImpl @Inject constructor(
 
         withContext(ioDispatcher) {
             sargonOs.setProfile(profileToSave)
-
-            if (profileToSave.canBackupToCloud) {
-                cloudBackupSyncExecutor.requestCloudBackup()
-            } else {
-                encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-            }
         }
     }
 
