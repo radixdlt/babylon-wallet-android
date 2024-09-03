@@ -21,12 +21,13 @@ class InspectGoogleBackupsViewModel @Inject constructor(
     private val hostInfoRepository: HostInfoRepository
 ) : StateViewModel<InspectGoogleBackupsViewModel.State>() {
 
-    override fun initialState(): State = State(isLoading = true, deviceId = hostInfoRepository.getHostId().id)
+    override fun initialState(): State = State(isLoading = true)
 
     init {
         viewModelScope.launch {
             val email = googleSignInManager.getSignedInGoogleAccount()?.email
-            _state.update { it.copy(accountEmail = email) }
+            val hostId = hostInfoRepository.getHostId().getOrNull()
+            _state.update { it.copy(accountEmail = email, deviceId = hostId?.id) }
 
             if (email != null) {
                 fetchFiles()
@@ -57,7 +58,7 @@ class InspectGoogleBackupsViewModel @Inject constructor(
     data class State(
         val isLoading: Boolean,
         val accountEmail: String? = null,
-        val deviceId: UUID,
+        val deviceId: UUID? = null,
         val files: List<CloudBackupFileEntity> = emptyList(),
         val uiMessage: UiMessage? = null
     ) : UiState

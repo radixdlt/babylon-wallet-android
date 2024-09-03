@@ -28,7 +28,9 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Result<FactorSourceId.Hash> {
-        val hostInfo = hostInfoRepository.getHostInfo()
+        val hostInfo = hostInfoRepository.getHostInfo().getOrElse {
+            return Result.failure(it)
+        }
         val olympiaFactorSource = FactorSource.Device.olympia(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             hostInfo = hostInfo

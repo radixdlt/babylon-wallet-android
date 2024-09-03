@@ -8,21 +8,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.retryWhen
 import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
+import rdx.works.core.di.EncryptedPreferences
+import rdx.works.core.di.IoDispatcher
+import rdx.works.core.di.PermanentEncryptedPreferences
 import rdx.works.core.encrypt
 import rdx.works.core.logNonFatalException
-import rdx.works.profile.di.PermanentDataStore
-import rdx.works.profile.di.ProfileDataStore
-import rdx.works.core.di.IoDispatcher
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,29 +28,10 @@ import javax.inject.Singleton
 @Suppress("TooManyFunctions")
 @Singleton
 class EncryptedPreferencesManager @Inject constructor(
-    @ProfileDataStore private val preferences: DataStore<Preferences>,
-    @PermanentDataStore private val permanentPreferences: DataStore<Preferences>,
+    @EncryptedPreferences private val preferences: DataStore<Preferences>,
+    @PermanentEncryptedPreferences private val permanentPreferences: DataStore<Preferences>,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
-
-    val encryptedProfile = preferences.data.retryWhen { cause, attempt ->
-        // It seem that some users are experiencing IOException which results in empty preferences returned.
-        // We retry to read preferences if IOException occurred, before we go to catchIOException() handler
-        // Until we have crash reporting in place, we can try this.
-        if (cause is IOException && attempt < RETRY_COUNT) {
-            delay(RETRY_DELAY)
-            true
-        } else {
-            false
-        }
-    }.catchIOException().map { preferences ->
-        val preferencesKey = stringPreferencesKey(PROFILE_PREFERENCES_KEY)
-        val encryptedValue = preferences[preferencesKey]
-        if (encryptedValue.isNullOrEmpty()) {
-            return@map null
-        }
-        encryptedValue.decrypt(KeySpec.Profile())
-    }.flowOn(ioDispatcher)
 
     private val p2pLinksKeySpec by lazy { KeySpec.Cache(P2P_LINKS_CACHE_KEY_ALIAS) }
 
@@ -117,10 +96,6 @@ class EncryptedPreferencesManager @Inject constructor(
         preferences.edit {
             it.remove(stringPreferencesKey(key))
         }
-    }
-
-    suspend fun putProfileSnapshot(snapshotSerialized: String) {
-        putString(PROFILE_PREFERENCES_KEY, snapshotSerialized, KeySpec.Profile())
     }
 
     suspend fun getProfileSnapshotFromCloudBackup() = preferences.data.catchIOException().map { preferences ->
@@ -203,15 +178,10 @@ class EncryptedPreferencesManager @Inject constructor(
     }
 
     companion object {
-        const val DATA_STORE_NAME = "rdx_encrypted_datastore"
-        const val PERMANENT_DATA_STORE_NAME = "rdx_permanent_datastore"
-        private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
         private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
         private const val P2P_LINKS_WALLET_PK_PREFERENCES_KEY = "p2p_links_wallet_pk_key"
         private const val P2P_LINKS_CACHE_KEY_ALIAS = "p2pLinksCacheKey"
-        private const val RETRY_COUNT = 3L
-        private const val RETRY_DELAY = 1500L
     }
 }

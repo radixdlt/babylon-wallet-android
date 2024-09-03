@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.domain.DeleteNotInitializedProfileDataUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
@@ -53,7 +52,6 @@ class CreateAccountViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
-    private val deleteNotInitializedProfileDataUseCase: DeleteNotInitializedProfileDataUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
@@ -184,9 +182,6 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     fun onBackClick() = viewModelScope.launch {
-        if (!getProfileUseCase.isInitialized()) {
-            deleteNotInitializedProfileDataUseCase()
-        }
         sendEvent(CreateAccountEvent.Dismiss)
     }
 

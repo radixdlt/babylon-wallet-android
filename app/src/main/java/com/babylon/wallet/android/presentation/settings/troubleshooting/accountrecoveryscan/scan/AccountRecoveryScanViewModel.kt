@@ -77,7 +77,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
             if (factorSource == null) {
                 givenTempMnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase()
                 givenTempMnemonic?.let { mnemonic ->
-                    val hostInfo = hostInfoRepository.getHostInfo()
+                    val hostInfo = hostInfoRepository.getHostInfo().getOrThrow()
                     val mainBabylonDeviceFactorSource = FactorSource.Device.babylon(
                         mnemonicWithPassphrase = mnemonic,
                         hostInfo = hostInfo,

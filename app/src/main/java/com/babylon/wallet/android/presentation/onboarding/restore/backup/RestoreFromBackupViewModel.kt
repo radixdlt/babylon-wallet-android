@@ -217,13 +217,13 @@ class RestoreFromBackupViewModel @Inject constructor(
             }
             .getOrNull()
 
-        val hostId = hostInfoRepository.getHostId()
+        val hostId = hostInfoRepository.getHostId().getOrNull()
         if (availableCloudBackedUpProfiles?.isNotEmpty() == true) {
             val restoringProfiles = availableCloudBackedUpProfiles.map { fileEntity ->
                 Selectable<State.RestoringProfile>(
                     data = State.RestoringProfile.GoogleDrive(
                         entity = fileEntity,
-                        isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == hostId.id
+                        isBackedUpByTheSameDevice = fileEntity.header.lastUsedOnDevice.id == hostId?.id
                     )
                 )
             }
@@ -236,7 +236,7 @@ class RestoreFromBackupViewModel @Inject constructor(
                     val restoringProfile = Selectable<State.RestoringProfile>(
                         data = State.RestoringProfile.DeprecatedCloudBackup(
                             header = profile.header,
-                            isBackedUpByTheSameDevice = profile.header.lastUsedOnDevice.id == hostId.id
+                            isBackedUpByTheSameDevice = profile.header.lastUsedOnDevice.id == hostId?.id
                         )
                     )
                     _state.update {

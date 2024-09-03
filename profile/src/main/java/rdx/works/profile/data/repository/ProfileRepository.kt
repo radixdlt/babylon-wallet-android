@@ -2,10 +2,9 @@ package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.checkIfProfileJsonContainsLegacyP2PLinks
 import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.fromJson
-import com.radixdlt.sargon.extensions.toJson
+import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -19,14 +18,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.ProfileState
-import rdx.works.core.logNonFatalException
-import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.canBackupToCloud
-import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
-import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.core.di.ApplicationScope
 import rdx.works.core.di.IoDispatcher
+import rdx.works.core.domain.ProfileState
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.canBackupToCloud
+import rdx.works.core.sargon.os.SargonOsManager
+import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
+import rdx.works.profile.datastore.EncryptedPreferencesManager
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,8 +36,6 @@ interface ProfileRepository {
     val inMemoryProfileOrNull: Profile?
 
     suspend fun saveProfile(profile: Profile)
-
-    suspend fun clearProfileDataOnly()
 
     suspend fun clearAllWalletData()
 
@@ -62,32 +59,30 @@ class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
     private val cloudBackupSyncExecutor: CloudBackupSyncExecutor,
+    private val sargonOsManager: SargonOsManager,
     private val hostInfoRepository: HostInfoRepository,
+    private val profileStateChangeDriver: AndroidProfileStateChangeDriver,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
 
+    private val profileStateFlow: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.NotInitialised)
+
     init {
         applicationScope.launch {
-            val snapshotResult = encryptedPreferencesManager.encryptedProfile.firstOrNull()
-
-            if (snapshotResult == null) {
-                profileStateFlow.update { ProfileState.None }
-            } else {
-                snapshotResult
-                    .onFailure { exception ->
-                        logNonFatalException(exception)
-                        profileStateFlow.update { ProfileState.Incompatible(cause = exception) }
+            profileStateChangeDriver
+                .profileState
+                .map { state ->
+                    when (state) {
+                        is com.radixdlt.sargon.ProfileState.None -> ProfileState.None
+                        is com.radixdlt.sargon.ProfileState.Incompatible -> ProfileState.Incompatible(cause = state.v1)
+                        is com.radixdlt.sargon.ProfileState.Loaded -> ProfileState.Restored(profile = state.v1)
                     }
-                    .onSuccess { snapshot ->
-                        ensureP2PLinkMigrationAcknowledged(snapshot)
-                        profileStateFlow.update { deriveProfileState(snapshot) }
-                    }
-            }
+                }.collect { state ->
+                    profileStateFlow.update { state }
+                }
         }
     }
-
-    private val profileStateFlow: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.NotInitialised)
 
     override val profileState = profileStateFlow
         .filterNot { it is ProfileState.NotInitialised }
@@ -99,45 +94,41 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
     override suspend fun saveProfile(profile: Profile) {
-        val hostId = hostInfoRepository.getHostId()
-        val hostInfo = hostInfoRepository.getHostInfo()
+        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return
+        val hostId = hostInfoRepository.getHostId().getOrNull() ?: return
+        val hostInfo = hostInfoRepository.getHostInfo().getOrNull() ?: return
+
         val profileToSave = profile.copy(
             header = profile.header.copy(
                 lastModified = TimestampGenerator(),
                 // In general this would be unnecessary. Meaning that a new user will generate a device id and store it in profile
                 // or restore from backup, generated a new device id and claim the profile. In both situations the device info should
                 // have the correct up-to-date device id.
-                // The problem lies to existing users: Those who updated to version 1.6.0. In this version the android app introduced
-                // the concept of device id, which is stored in preferences. These users need to silently update their lastUsedOnDevice
-                // to have the current information about the device id. Profiles prior to this, which were generated by the android app
-                // had device id == profile id
+                // The problem lies to existing users: Those who updated from a version prior to 1.6.0. In later versions the android app
+                // introduced the concept of device id, which is stored in preferences. These users need to silently update their
+                // lastUsedOnDevice  to have the current information about the device id. Profiles prior to this, which were generated by
+                // the android app had device id == profile id
                 lastUsedOnDevice = DeviceInfo.from(hostId, hostInfo)
             )
         )
+
         withContext(ioDispatcher) {
-            val profileContent = profileToSave.toJson()
-            // Store profile
-            encryptedPreferencesManager.putProfileSnapshot(profileContent)
+            sargonOs.setProfile(profileToSave)
 
             if (profileToSave.canBackupToCloud) {
                 cloudBackupSyncExecutor.requestCloudBackup()
             } else {
                 encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
             }
-
-            // Update the flow and notify Backup Manager that it needs to backup
-            profileStateFlow.update { ProfileState.Restored(profileToSave) }
         }
     }
 
     override suspend fun clearAllWalletData() {
-        preferencesManager.clear()
-        clearProfileDataOnly()
-    }
+        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return
 
-    override suspend fun clearProfileDataOnly() {
-        encryptedPreferencesManager.clear()
-        profileStateFlow.update { ProfileState.None }
+        preferencesManager.clear()
+
+        sargonOs.deleteWallet()
     }
 
     @Suppress("SwallowedException")
@@ -152,15 +143,4 @@ class ProfileRepositoryImpl @Inject constructor(
             ProfileState.Incompatible(cause = it)
         }
     )
-
-    private suspend fun ensureP2PLinkMigrationAcknowledged(profileJson: String) {
-        val isP2PLinkMigrationCheckPerformed = preferencesManager.showRelinkConnectorsAfterUpdate.firstOrNull() != null
-        if (isP2PLinkMigrationCheckPerformed) {
-            return
-        }
-
-        preferencesManager.setShowRelinkConnectorsAfterUpdate(
-            show = Profile.checkIfProfileJsonContainsLegacyP2PLinks(profileJson)
-        )
-    }
 }

@@ -35,7 +35,9 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     suspend operator fun invoke(): Result<Profile> {
         val profile = profileRepository.profile.first()
         if (profile.mainBabylonFactorSource != null) return Result.success(profile)
-        val hostInfo = hostInfoRepository.getHostInfo()
+        val hostInfo = hostInfoRepository.getHostInfo().getOrElse {
+            return Result.failure(it)
+        }
         return mnemonicRepository.createNew().fold(onSuccess = { mnemonic ->
             val deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonic,
@@ -56,7 +58,9 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
 
     suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Result<Unit> {
         val profile = profileRepository.profile.first()
-        val hostInfo = hostInfoRepository.getHostInfo()
+        val hostInfo = hostInfoRepository.getHostInfo().getOrElse {
+            return Result.failure(it)
+        }
         val deviceFactorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonic,
             hostInfo = hostInfo,

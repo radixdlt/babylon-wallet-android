@@ -1,5 +1,6 @@
 package rdx.works.core.sargon.os
 
+import android.util.Log
 import com.radixdlt.sargon.Bios
 import com.radixdlt.sargon.SargonOs
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
@@ -24,15 +25,15 @@ class SargonOsManager @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    private val _sargonState = MutableStateFlow<SargonOsState>(SargonOsState.Idle)
+    private val sargonState = MutableStateFlow<SargonOsState>(SargonOsState.Idle)
 
-    private val sargonOs: Flow<SargonOs> = _sargonState.filterIsInstance<SargonOsState.Booted>().map { it.os }
+    val sargonOs: Flow<SargonOs> = sargonState.filterIsInstance<SargonOsState.Booted>().map { it.os }
 
     init {
         applicationScope.launch {
             withContext(defaultDispatcher) {
                 val os = SargonOs.boot(bios)
-                _sargonState.update { SargonOsState.Booted(os) }
+                sargonState.update { SargonOsState.Booted(os) }
             }
         }
     }

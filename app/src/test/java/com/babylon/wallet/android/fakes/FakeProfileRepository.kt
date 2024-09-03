@@ -22,10 +22,6 @@ class FakeProfileRepository(
         profileState.update { ProfileState.Restored(profile) }
     }
 
-    override suspend fun clearProfileDataOnly() {
-        profileState.update { ProfileState.None }
-    }
-
     override suspend fun clearAllWalletData() {
         profileState.update { ProfileState.None }
     }

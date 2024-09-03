@@ -39,8 +39,12 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
         val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)
             ?.changeGatewayToNetworkId(NetworkId.MAINNET) ?: return Result.failure(RuntimeException("No restoring profile available"))
 
-        val hostId = hostInfoRepository.getHostId()
-        val hostInfo = hostInfoRepository.getHostInfo()
+        val hostId = hostInfoRepository.getHostId().getOrElse {
+            return Result.failure(it)
+        }
+        val hostInfo = hostInfoRepository.getHostInfo().getOrElse {
+            return Result.failure(it)
+        }
         val profileWithRestoredHeader = profile.claim(deviceInfo = DeviceInfo.from(hostId, hostInfo))
 
         return if (mainSeedPhraseSkipped) {

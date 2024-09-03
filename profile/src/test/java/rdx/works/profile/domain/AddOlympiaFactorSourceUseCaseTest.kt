@@ -66,8 +66,8 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         coEvery { mnemonicRepository.mnemonicExist(any()) } returns false
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } returns Result.success(Unit)
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
-        coEvery { hostInfoRepository.getHostId() } returns hostId
-        coEvery { hostInfoRepository.getHostInfo() } returns hostInfo
+        coEvery { hostInfoRepository.getHostId() } returns Result.success(HostId.sample())
+        coEvery { hostInfoRepository.getHostInfo() } returns Result.success(HostInfo.sample.other())
 
         usecase(olympiaMnemonic)
         assertEquals(2, profileRepository.inMemoryProfileOrNull?.factorSources?.size)

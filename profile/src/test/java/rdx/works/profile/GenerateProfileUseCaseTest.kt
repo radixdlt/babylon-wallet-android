@@ -31,8 +31,8 @@ class GenerateProfileUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val fakeHostInfoRepository = mockk<HostInfoRepository>().apply {
-        every { getHostId() } returns HostId.sample()
-        every { getHostInfo() } returns HostInfo.sample.other()
+        coEvery { getHostId() } returns Result.success(HostId.sample())
+        coEvery { getHostInfo() } returns Result.success(HostInfo.sample.other())
     }
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val preferencesManager = mockk<PreferencesManager>()

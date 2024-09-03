@@ -17,6 +17,9 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
+import rdx.works.core.di.DynamicGatewayHttpClient
+import rdx.works.core.di.GatewayHttpClient
+import rdx.works.core.di.ShortTimeoutDynamicGatewayHttpClient
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.default
 import rdx.works.peerdroid.data.PeerdroidConnector

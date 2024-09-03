@@ -14,6 +14,7 @@ import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +22,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
+import rdx.works.core.di.GatewayHttpClient
+import rdx.works.core.di.NonEncryptedPreferences
 import javax.inject.Singleton
 
 @Module
@@ -42,6 +45,7 @@ object ApplicationModule {
 
     @Provides
     @Singleton
+    @NonEncryptedPreferences
     fun provideDataStore(
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
@@ -83,7 +87,7 @@ object ApplicationModule {
     @Singleton
     fun provideHomeCardsManager(
         @GatewayHttpClient httpClient: OkHttpClient,
-        dataStore: DataStore<Preferences>,
+        @NonEncryptedPreferences dataStore: DataStore<Preferences>,
         observer: HomeCardsObserverWrapper,
     ): HomeCardsManager = HomeCardsManager.init(
         okHttpClient = httpClient,
@@ -94,5 +98,13 @@ object ApplicationModule {
         networkId = NetworkId.MAINNET,
         dataStore = dataStore,
         observer = observer
+    )
+
+    @Provides
+    @Singleton
+    fun provideBiometricsHandler(
+        @ApplicationContext context: Context
+    ) = BiometricsHandler(
+        biometricsSystemDialogTitle = context.getString(com.babylon.wallet.android.R.string.biometrics_prompt_title)
     )
 }

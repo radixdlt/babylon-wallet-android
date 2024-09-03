@@ -39,8 +39,8 @@ class GenerateProfileUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
-        val hostId = hostInfoRepository.getHostId()
-        val hostInfo = hostInfoRepository.getHostInfo()
+        val hostId = hostInfoRepository.getHostId().getOrThrow()
+        val hostInfo = hostInfoRepository.getHostInfo().getOrThrow()
         val creatingDevice = DeviceInfo.from(hostId, hostInfo)
 
         val date = TimestampGenerator()
@@ -59,7 +59,7 @@ class GenerateProfileUseCase @Inject constructor(
 
         val bdfs = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
-            hostInfo = hostInfoRepository.getHostInfo(),
+            hostInfo = hostInfo,
             createdAt = date,
             isMain = true
         )
@@ -85,8 +85,8 @@ class GenerateProfileUseCase @Inject constructor(
             when (val state = profileRepository.profileState.first()) {
                 is ProfileState.Restored -> state.profile
                 else -> withContext(defaultDispatcher) {
-                    val hostId = hostInfoRepository.getHostId()
-                    val hostInfo = hostInfoRepository.getHostInfo()
+                    val hostId = hostInfoRepository.getHostId().getOrThrow()
+                    val hostInfo = hostInfoRepository.getHostInfo().getOrThrow()
                     val creatingDevice = DeviceInfo.from(hostId, hostInfo)
 
                     val header = Header(
