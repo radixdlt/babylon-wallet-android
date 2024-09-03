@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +45,7 @@ import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownPadding
 import com.mikepenz.markdown.utils.MARKDOWN_TAG_URL
 import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
+import kotlinx.coroutines.launch
 import org.intellij.markdown.MarkdownElementTypes.INLINE_LINK
 import org.intellij.markdown.MarkdownElementTypes.LINK_DESTINATION
 import org.intellij.markdown.MarkdownElementTypes.LINK_LABEL
@@ -70,7 +72,7 @@ fun InfoDialog(
         onDismiss = onDismiss
     ) {
         InfoDialogContent(
-            scrollState = ScrollState(initial = 0),
+            scrollState = rememberScrollState(),
             markdownContent = glossaryItem?.resolveTextFromGlossaryItem(),
             drawableRes = glossaryItem?.resolveIconFromGlossaryItem(),
             onGlossaryItemClick = viewModel::onGlossaryItemClick,
@@ -86,6 +88,7 @@ private fun InfoDialogContent(
     @DrawableRes drawableRes: Int?,
     onGlossaryItemClick: (String) -> Unit,
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
     val customHeading2: MarkdownComponent = { markdownComponentModel ->
@@ -152,6 +155,10 @@ private fun InfoDialogContent(
                 override fun openUri(uri: String) {
                     if (uri.contains(GLOSSARY_ANCHOR)) {
                         onGlossaryItemClick(uri.drop(GLOSSARY_ANCHOR.length))
+                        coroutineScope.launch {
+                            // dialog updated with new glossary item therefore scroll to top
+                            scrollState.animateScrollTo(0)
+                        }
                     } else {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
                     }
@@ -186,7 +193,7 @@ private fun InfoDialogContent(
 // Helper function to drop the first and last element
 // in order to not render the brackets of a link
 internal fun List<ASTNode>.innerList(): List<ASTNode> {
-    if (this.size <= 1 ) return emptyList()
+    if (this.size <= 1) return emptyList()
     return this.subList(1, this.size - 1)
 }
 
