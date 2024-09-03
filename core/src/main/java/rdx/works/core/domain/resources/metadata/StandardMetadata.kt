@@ -5,6 +5,7 @@ package rdx.works.core.domain.resources.metadata
 import android.net.Uri
 import androidx.core.net.toUri
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
@@ -139,3 +140,8 @@ fun List<Metadata>.ownerKeyHashes(): PublicKeyHashes? = findCollection(
         lastUpdatedAtStateVersion = keys.firstOrNull()?.lastUpdatedAtStateVersion ?: 0L
     )
 }
+
+fun List<Metadata>.lockerAddress(): LockerAddress? = findPrimitive(
+    key = ExplicitMetadataKey.ACCOUNT_LOCKER,
+    type = MetadataType.Address
+)?.value?.let { runCatching { LockerAddress.init(it) }.getOrNull() }

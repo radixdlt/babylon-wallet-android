@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCo
 import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn.ImplicitMetadataState
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -225,5 +226,16 @@ class StateDatabaseConverters {
     @TypeConverter
     fun divisibilityToInt(divisibility: Divisibility?): Int? {
         return divisibility?.value?.toInt()
+    }
+
+    // LockerAddress
+    @TypeConverter
+    fun stringToLockerAddress(lockerAddress: String?): LockerAddress? {
+        return lockerAddress?.let { LockerAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun lockerAddressToString(lockerAddress: LockerAddress?): String? {
+        return lockerAddress?.string
     }
 }

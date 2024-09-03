@@ -17,14 +17,14 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
-fun ApplySecuritySettingsLabel(
+fun AccountPromptLabel(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     text: String,
     labelColor: Color = RadixTheme.colors.white,
     contentColor: Color = RadixTheme.colors.white
 ) {
-    SecurityPromptLabel(
+    PromptLabel(
         modifier = modifier
             .background(labelColor.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectSmall)
             .clip(RadixTheme.shapes.roundedRectSmall)
@@ -57,9 +57,9 @@ fun SecurityPromptType.toText() = when (this) {
 
 @Composable
 @Preview(showBackground = false)
-private fun SecurityPromptLabelPreview() {
+private fun AccountPromptLabelPreview() {
     RadixWalletPreviewTheme {
-        ApplySecuritySettingsLabel(
+        AccountPromptLabel(
             modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
             onClick = {},
             text = "Recovery required"

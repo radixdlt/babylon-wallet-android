@@ -20,7 +20,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
-fun SecurityPromptLabel(
+fun PromptLabel(
     text: String,
     modifier: Modifier = Modifier,
     textColor: Color = RadixTheme.colors.orange3,
@@ -57,9 +57,9 @@ fun SecurityPromptLabel(
 
 @Composable
 @Preview(showBackground = true)
-private fun SecurityPromptLabelPreview() {
+private fun AccountPromptLabelPreview() {
     RadixWalletPreviewTheme {
-        SecurityPromptLabel(
+        PromptLabel(
             text = "Problem with Configuration Backup"
         )
     }

@@ -203,7 +203,7 @@ fun DefaultSettingsItem(
                 ) {
                     Spacer(modifier = Modifier)
                     warnings.forEach { warning ->
-                        SecurityPromptLabel(
+                        PromptLabel(
                             text = warning
                         )
                     }

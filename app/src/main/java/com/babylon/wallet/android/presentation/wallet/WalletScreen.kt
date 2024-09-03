@@ -100,6 +100,7 @@ fun WalletScreen(
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
+        onDepositPromptClick = viewModel::onDepositPromptClick,
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose
     )
@@ -174,6 +175,7 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onDepositPromptClick: (WalletViewModel.State.AccountUiItem, WalletViewModel.State.AccountUiItem.DepositPrompt) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -235,6 +237,7 @@ private fun WalletContent(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
+                onDepositPromptClick = onDepositPromptClick,
                 onCardClick = onCardClick,
                 onCardCloseClick = onCardCloseClick
             )
@@ -261,6 +264,7 @@ private fun WalletAccountList(
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onDepositPromptClick: (WalletViewModel.State.AccountUiItem, WalletViewModel.State.AccountUiItem.DepositPrompt) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -315,7 +319,8 @@ private fun WalletAccountList(
                         onAccountClick(accountWithAssets.account)
                     },
                 accountWithAssets = accountWithAssets,
-                onApplySecuritySettingsClick = onApplySecuritySettingsClick
+                onApplySecuritySettingsClick = onApplySecuritySettingsClick,
+                onDepositPromptClick = onDepositPromptClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -347,6 +352,7 @@ private fun WalletContentPreview(
             onRefresh = { },
             onMessageShown = {},
             onApplySecuritySettingsClick = {},
+            onDepositPromptClick = { _, _ -> },
             onCardClick = {},
             onCardCloseClick = {}
         )

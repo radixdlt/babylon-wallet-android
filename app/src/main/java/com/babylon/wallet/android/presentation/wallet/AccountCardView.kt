@@ -17,6 +17,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,7 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
@@ -41,6 +42,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
+import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -50,7 +52,8 @@ import rdx.works.core.domain.assets.SupportedCurrency
 fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: AccountUiItem,
-    onApplySecuritySettingsClick: () -> Unit
+    onApplySecuritySettingsClick: () -> Unit,
+    onDepositPromptClick: (AccountUiItem, AccountUiItem.DepositPrompt) -> Unit
 ) {
     ConstraintLayout(
         modifier
@@ -216,10 +219,27 @@ fun AccountCardView(
             }
         ) {
             accountWithAssets.securityPrompts?.forEach { securityPromptType ->
-                ApplySecuritySettingsLabel(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
+                AccountPromptLabel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = RadixTheme.dimensions.paddingMedium),
                     onClick = onApplySecuritySettingsClick,
                     text = securityPromptType.toText()
+                )
+            }
+
+            accountWithAssets.depositPrompts.forEach { depositPrompt ->
+                AccountPromptLabel(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                    onClick = { onDepositPromptClick(accountWithAssets, depositPrompt) },
+                    text = stringResource(
+                        id = R.string.homePage_accountLockerClaim,
+                        depositPrompt.dAppName.ifEmpty {
+                            stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                        }
+                    )
                 )
             }
         }
@@ -285,11 +305,13 @@ fun AccountCardPreview() {
                     fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
                     securityPrompts = null,
+                    depositPrompts = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
-                onApplySecuritySettingsClick = {}
+                onApplySecuritySettingsClick = {},
+                onDepositPromptClick = { _, _ -> }
             )
         }
     }
@@ -315,12 +337,14 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
-                    securityPrompts = listOf(SecurityPromptType.RECOVERY_REQUIRED),
+                    securityPrompts = persistentListOf(SecurityPromptType.RECOVERY_REQUIRED),
+                    depositPrompts = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false
                 ),
-                onApplySecuritySettingsClick = {}
+                onApplySecuritySettingsClick = {},
+                onDepositPromptClick = { _, _ -> }
             )
         }
     }
@@ -346,16 +370,18 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     ),
                     fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
-                    securityPrompts = listOf(
+                    securityPrompts = persistentListOf(
                         SecurityPromptType.CONFIGURATION_BACKUP_PROBLEM,
                         SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
                         SecurityPromptType.RECOVERY_REQUIRED
                     ),
+                    depositPrompts = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
-                onApplySecuritySettingsClick = {}
+                onApplySecuritySettingsClick = {},
+                onDepositPromptClick = { _, _ -> }
             )
         }
     }
@@ -382,12 +408,14 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         ),
                         fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                         tag = AccountTag.DAPP_DEFINITION,
-                        securityPrompts = listOf(SecurityPromptType.WALLET_NOT_RECOVERABLE),
+                        securityPrompts = persistentListOf(SecurityPromptType.WALLET_NOT_RECOVERABLE),
+                        depositPrompts = persistentListOf(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
                     ),
-                    onApplySecuritySettingsClick = {}
+                    onApplySecuritySettingsClick = {},
+                    onDepositPromptClick = { _, _ -> }
                 )
             }
         }
@@ -409,12 +437,14 @@ fun AccountCardEmptyPreview() {
                         assets = Assets(),
                         fiatTotalValue = null,
                         tag = AccountTag.DAPP_DEFINITION,
-                        securityPrompts = emptyList(),
+                        securityPrompts = persistentListOf(),
+                        depositPrompts = persistentListOf(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
                     ),
-                    onApplySecuritySettingsClick = {}
+                    onApplySecuritySettingsClick = {},
+                    onDepositPromptClick = { _, _ -> }
                 )
             }
         }
@@ -440,11 +470,13 @@ fun AccountCardLoadingPreview() {
                     fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
                     securityPrompts = null,
+                    depositPrompts = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true
                 ),
-                onApplySecuritySettingsClick = {}
+                onApplySecuritySettingsClick = {},
+                onDepositPromptClick = { _, _ -> }
             )
         }
     }

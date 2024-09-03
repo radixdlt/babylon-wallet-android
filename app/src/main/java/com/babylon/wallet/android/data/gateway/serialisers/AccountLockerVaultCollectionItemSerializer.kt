@@ -10,16 +10,18 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-object AccountLockerVaultCollectionItemSerializer : JsonContentPolymorphicSerializer<AccountLockerVaultCollectionItem>(
-    AccountLockerVaultCollectionItem::class
-) {
+object AccountLockerVaultCollectionItemSerializer :
+    JsonContentPolymorphicSerializer<AccountLockerVaultCollectionItem>(
+        AccountLockerVaultCollectionItem::class
+    ) {
+
     override fun selectDeserializer(
         element: JsonElement
     ): DeserializationStrategy<AccountLockerVaultCollectionItem> {
-        return when (element.jsonObject["type"]?.jsonPrimitive?.content) {
+        return when (val type = element.jsonObject["type"]?.jsonPrimitive?.content) {
             AccountLockerVaultCollectionItemType.Fungible.value -> AccountLockerVaultCollectionItemFungible.serializer()
             AccountLockerVaultCollectionItemType.NonFungible.value -> AccountLockerVaultCollectionItemNonFungible.serializer()
-            else -> error("")
+            else -> error("Not supported type: $type")
         }
     }
 }

@@ -59,7 +59,7 @@ import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -423,7 +423,7 @@ private fun AccountHeader(
             ) {
                 Column {
                     state.securityPrompts?.forEach { securityPromptType ->
-                        ApplySecuritySettingsLabel(
+                        AccountPromptLabel(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 48.dp)
