@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCas
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
+import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
@@ -38,7 +39,6 @@ import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
@@ -46,7 +46,6 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal fun testViewModel(
     transactionRepository: TransactionRepository,
     incomingRequestRepository: IncomingRequestRepository,
@@ -113,6 +112,7 @@ internal fun testViewModel(
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
         incomingRequestRepository = incomingRequestRepository,
         submitTransactionUseCase = SubmitTransactionUseCase(transactionRepository = transactionRepository),
+        clearCachedNewlyCreatedEntitiesUseCase = ClearCachedNewlyCreatedEntitiesUseCase(stateRepository = stateRepository),
         appEventBus = appEventBus,
         transactionStatusClient = TransactionStatusClient(
             pollTransactionStatusUseCase = PollTransactionStatusUseCase(transactionRepository = transactionRepository),
