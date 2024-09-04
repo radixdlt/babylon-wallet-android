@@ -45,7 +45,9 @@ import com.babylon.wallet.android.presentation.ui.composables.LockScreenBackgrou
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import rdx.works.core.logNonFatalException
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
+import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -171,7 +173,9 @@ class MainActivity : FragmentActivity() {
                     }
                     try {
                         windowManager.removeView(privacyOverlay)
-                    } catch (_: Exception) {
+                    } catch (exception: Exception) {
+                        Timber.e("Failed to remove privacy overlay with exception: ${exception.message}")
+                        logNonFatalException(exception)
                     }
                 }
             }
@@ -222,6 +226,7 @@ class MainActivity : FragmentActivity() {
         viewModel.onAppToForeground()
     }
 
+    // Called as part of the activity lifecycle when an activity is about to go into the background as the result of user choice.
     override fun onUserLeaveHint() {
         if (viewModel.state.value.shouldShowPrivacyOverlay) {
             val params = WindowManager.LayoutParams().apply {
