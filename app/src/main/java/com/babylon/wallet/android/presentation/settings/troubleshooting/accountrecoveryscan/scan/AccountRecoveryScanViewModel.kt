@@ -35,7 +35,7 @@ import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
-import rdx.works.profile.domain.GenerateProfileUseCase
+import rdx.works.profile.domain.DeriveProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
@@ -46,7 +46,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val generateProfileUseCase: GenerateProfileUseCase,
+    private val deriveProfileUseCase: DeriveProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
@@ -214,7 +214,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                generateProfileUseCase.derived(
+                deriveProfileUseCase(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
                     accounts = Accounts(accounts)

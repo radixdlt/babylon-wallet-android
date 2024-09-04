@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
+import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
@@ -62,6 +63,10 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint
 
+    // Automatic biometric handler that requests for biometrics when mnemonics are accessed from sargon os
+    @Inject
+    lateinit var biometricsHandler: BiometricsHandler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
@@ -70,7 +75,7 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
 
         super.onCreate(savedInstanceState)
-
+        biometricsHandler.register(this)
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         intent.data?.let {

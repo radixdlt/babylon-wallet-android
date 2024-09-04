@@ -46,7 +46,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 
 @Composable
@@ -98,13 +97,6 @@ fun CreateAccountScreen(
                 )
                 is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
                 is CreateAccountEvent.Dismiss -> onBackClick()
-                is CreateAccountEvent.RequestBiometricAuthForFirstAccount -> {
-                    val isAuthenticated = context.biometricAuthenticateSuspend()
-                    viewModel.handleNewProfileCreation(
-                        isAuthenticated = isAuthenticated,
-                        isWithLedger = event.isWithLedger
-                    )
-                }
             }
         }
     }

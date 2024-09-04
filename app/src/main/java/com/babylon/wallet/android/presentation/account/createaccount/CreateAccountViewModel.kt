@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
+import androidx.biometric.BiometricPrompt
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
@@ -24,23 +25,25 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.os.driver.BiometricsFailure
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.domain.GenerateProfileUseCase
+import rdx.works.core.sargon.os.SargonOsManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,13 +53,12 @@ class CreateAccountViewModel @Inject constructor(
     private val createAccountUseCase: CreateAccountUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val getProfileUseCase: GetProfileUseCase,
-    private val mnemonicRepository: MnemonicRepository,
-    private val generateProfileUseCase: GenerateProfileUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val appEventBus: AppEventBus,
-    private val homeCardsRepository: HomeCardsRepository
+    private val homeCardsRepository: HomeCardsRepository,
+    private val sargonOsManager: SargonOsManager
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -79,41 +81,27 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean) {
         viewModelScope.launch {
-            if (state.value.isFirstAccount) { // if first time then we need authentication in order to create BDFS
-                sendEvent(CreateAccountEvent.RequestBiometricAuthForFirstAccount(isWithLedger = isWithLedger))
-                return@launch
-            }
-
-            accessFactorSourceForAccountCreation(
-                isFirstAccount = false,
-                isWithLedger = isWithLedger
-            )
-        }
-    }
-
-    fun handleNewProfileCreation(
-        isAuthenticated: Boolean,
-        isWithLedger: Boolean
-    ) {
-        viewModelScope.launch {
-            if (isAuthenticated) {
-                if (!getProfileUseCase.isInitialized()) {
-                    mnemonicRepository.createNew().mapCatching { newMnemonic ->
-                        generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
-                        // Since we choose to create a new profile, this is the time
-                        // we discard the data copied from the cloud backup, since they represent
-                        // a previous instance.
-                        discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
-                    }.onSuccess {
-                        accessFactorSourceForAccountCreation(
-                            isFirstAccount = true,
-                            isWithLedger = isWithLedger
-                        )
-                    }.onFailure { throwable ->
-                        handleAccountCreationError(throwable)
-                        return@launch
-                    }
+            if (state.value.isFirstAccount) {
+                val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return@launch
+                runCatching {
+                    sargonOs.newWallet()
+                }.onFailure { profileCreationError ->
+                    Timber.w(profileCreationError) // TODO check that
+                }.onSuccess {
+                    // Since we choose to create a new profile, this is the time
+                    // we discard the data copied from the cloud backup, since they represent
+                    // a previous instance.
+                    discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
+                    accessFactorSourceForAccountCreation(
+                        isFirstAccount = true,
+                        isWithLedger = isWithLedger
+                    )
                 }
+            } else {
+                accessFactorSourceForAccountCreation(
+                    isFirstAccount = false,
+                    isWithLedger = isWithLedger
+                )
             }
         }
     }
@@ -258,8 +246,6 @@ internal sealed interface CreateAccountEvent : OneOffEvent {
         val accountId: AccountAddress,
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
-
-    data class RequestBiometricAuthForFirstAccount(val isWithLedger: Boolean) : CreateAccountEvent
 
     data object AddLedgerDevice : CreateAccountEvent
     data object Dismiss : CreateAccountEvent
