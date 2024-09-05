@@ -2,6 +2,8 @@ package com.babylon.wallet.android.fakes
 
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
+import com.radixdlt.sargon.AuthorizedDappPreferences
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
@@ -51,7 +53,10 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             ),
                             sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    ).asList()
+                    ).asList(),
+                    preferences = AuthorizedDappPreferences(
+                        deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+                    )
                 )
                 savedDApp
             }
@@ -75,7 +80,10 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             ),
                             sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    ).asList()
+                    ).asList(),
+                    preferences = AuthorizedDappPreferences(
+                        deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+                    )
                 )
             },
             with(DApp.sampleMainnet.other()) {
@@ -93,7 +101,10 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             ),
                             sharedPersonaData = SharedPersonaData(name = null, emailAddresses = null, phoneNumbers = null)
                         )
-                    ).asList()
+                    ).asList(),
+                    preferences = AuthorizedDappPreferences(
+                        deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+                    )
                 )
             }
         ))

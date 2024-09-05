@@ -106,7 +106,8 @@ class GenerateProfileUseCase @Inject constructor(
                         id = networkId,
                         accounts = accounts.asList(),
                         personas = emptyList(),
-                        authorizedDapps = emptyList()
+                        authorizedDapps = emptyList(),
+                        resourcePreferences = emptyList()
                     )
 
                     val profile = Profile(

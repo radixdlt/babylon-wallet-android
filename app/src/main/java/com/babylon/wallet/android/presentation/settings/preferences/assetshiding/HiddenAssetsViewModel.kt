@@ -15,6 +15,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ResourceIdentifier
+import com.radixdlt.sargon.extensions.hiddenResources
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.catch
@@ -25,7 +26,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.keyImageUrl
-import rdx.works.core.sargon.hidden
+import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.core.sargon.pools
 import rdx.works.profile.domain.ChangeResourceVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -71,7 +72,7 @@ class HiddenAssetsViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.flow
                 .map { profile ->
-                    val hiddenResourceAddresses = profile.appPreferences.resources.hidden()
+                    val hiddenResourceAddresses = profile.getResourcePreferences().hiddenResources
                     val resources = buildResources(hiddenResourceAddresses)
 
                     State(
