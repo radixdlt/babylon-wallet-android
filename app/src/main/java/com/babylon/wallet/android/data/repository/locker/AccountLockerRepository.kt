@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 interface AccountLockerRepository {
 
-    suspend fun getAvailableAccountLockerClaims(
+    suspend fun getAvailableAccountLockerDeposits(
         accountAddress: AccountAddress,
         lockerAddresses: Set<LockerAddress>
     ): Result<Set<LockerAddress>>
@@ -34,7 +34,7 @@ class AccountLockerRepositoryImpl @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : AccountLockerRepository {
 
-    override suspend fun getAvailableAccountLockerClaims(
+    override suspend fun getAvailableAccountLockerDeposits(
         accountAddress: AccountAddress,
         lockerAddresses: Set<LockerAddress>
     ): Result<Set<LockerAddress>> {

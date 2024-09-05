@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ fun PromptLabel(
     text: String,
     modifier: Modifier = Modifier,
     textColor: Color = RadixTheme.colors.orange3,
+    textStyle: TextStyle = RadixTheme.typography.body2HighImportance,
     @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
     iconTint: Color = RadixTheme.colors.orange3,
     iconSize: Dp = 24.dp,
@@ -43,7 +45,7 @@ fun PromptLabel(
 
         Text(
             text = text,
-            style = RadixTheme.typography.body2HighImportance,
+            style = textStyle,
             color = textColor
         )
 

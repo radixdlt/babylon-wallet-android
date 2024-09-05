@@ -249,7 +249,7 @@ class WalletViewModel @Inject constructor(
 
     private fun observeAccountLockers() {
         viewModelScope.launch {
-            accountLockersObserver.claimsByAccount()
+            accountLockersObserver.depositsByAccount()
                 .onEach { accountWithLockerClaims ->
                     _state.update {
                         it.copy(

@@ -38,13 +38,13 @@ class AccountLockersObserver @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    private val claimsByAccount = MutableSharedFlow<Map<AccountAddress, List<AccountLockerDeposit>>>(1)
+    private val depositsByAccount = MutableSharedFlow<Map<AccountAddress, List<AccountLockerDeposit>>>(1)
 
     init {
         startObserving()
     }
 
-    fun claimsByAccount() = claimsByAccount.asSharedFlow()
+    fun depositsByAccount(): Flow<Map<AccountAddress, List<AccountLockerDeposit>>> = depositsByAccount.asSharedFlow()
 
     private fun startObserving() {
         appScope.launch {
@@ -53,28 +53,28 @@ class AccountLockersObserver @Inject constructor(
                     .distinctUntilChanged(),
                 ticker()
             ) { authorizedDApps, _ ->
-                checkClaims(authorizedDApps)
+                checkDeposits(authorizedDApps)
             }
-                .onEach { claimsByAccount.emit(it) }
+                .onEach { depositsByAccount.emit(it) }
                 .catch { Timber.w(it) }
                 .flowOn(defaultDispatcher)
                 .collect()
         }
     }
 
-    private suspend fun checkClaims(
+    private suspend fun checkDeposits(
         authorizedDApps: List<AuthorizedDapp>
     ): Map<AccountAddress, List<AccountLockerDeposit>> {
         val dAppsWithAccountLockers = getDAppWithAccountLockers(authorizedDApps)
         val lockersPerUserAccount = getLockersPerUserAccount(dAppsWithAccountLockers, authorizedDApps)
 
         return lockersPerUserAccount.mapValues { entry ->
-            val availableClaims = accountLockerRepository.getAvailableAccountLockerClaims(
+            val availableDeposits = accountLockerRepository.getAvailableAccountLockerDeposits(
                 accountAddress = entry.key,
                 lockerAddresses = entry.value.mapNotNull { it.lockerAddress }.toSet()
             ).getOrNull().orEmpty()
 
-            entry.value.filter { it.lockerAddress in availableClaims }
+            entry.value.filter { it.lockerAddress in availableDeposits }
                 .mapNotNull { dAppWithClaimableItems ->
                     AccountLockerDeposit(
                         dAppName = dAppWithClaimableItems.name.orEmpty(),

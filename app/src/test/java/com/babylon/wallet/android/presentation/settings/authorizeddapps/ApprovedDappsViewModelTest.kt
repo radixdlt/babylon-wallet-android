@@ -15,6 +15,8 @@ import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.SelectedSheetState
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
+import com.radixdlt.sargon.AuthorizedDappPreferences
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
@@ -79,7 +81,10 @@ internal class ApprovedDappsViewModelTest : StateViewModelTest<DappDetailViewMod
                     ids = listOf(profile.currentNetwork!!.accounts.first().address)
                 )
             )
-        ).asList()
+        ).asList(),
+        preferences = AuthorizedDappPreferences(
+            deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+        )
     )
     private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
         this.savedDApp = authorizedDapp

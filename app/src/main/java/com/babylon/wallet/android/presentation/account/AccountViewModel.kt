@@ -26,7 +26,6 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
-import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State
 import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
@@ -221,7 +220,7 @@ class AccountViewModel @Inject constructor(
 
     private fun observeAccountLockers() {
         viewModelScope.launch {
-            accountLockersObserver.claimsByAccount()
+            accountLockersObserver.depositsByAccount()
                 .onEach { accountWithLockerClaims ->
                     _state.update {
                         it.copy(
