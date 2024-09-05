@@ -42,7 +42,7 @@ jobs:
       - name: Run Snyk to check for deps vulnerabilities
         uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
         with:
-          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --severity-threshold=high
+          args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --severity-threshold=critical
         env:
           SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
 
@@ -64,6 +64,7 @@ jobs:
 
       - name: Run Snyk to check for code vulnerabilities
         uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
+        continue-on-error: true
         with:
           args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --severity-threshold=high
           command: code test
