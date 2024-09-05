@@ -6,6 +6,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DerivationPathScheme
@@ -626,3 +627,31 @@ private fun Profile.withUpdatedContentHint() = copy(
         )
     )
 )
+
+fun Profile.changeDAppLockersVisibility(dApp: AuthorizedDapp, isVisible: Boolean): Profile {
+    val updatedNetwork = networks.mapWhen(
+        predicate = { it.id == dApp.networkId },
+        mutation = { network ->
+            val authorizedDapps = network.authorizedDapps.asIdentifiable()
+            val updatedDApps = authorizedDapps.asList().mapWhen(
+                predicate = { it.dappDefinitionAddress == dApp.dappDefinitionAddress },
+                mutation = {
+                    dApp.copy(
+                        preferences = dApp.preferences.copy(
+                            deposits = if (isVisible) {
+                                AuthorizedDappPreferenceDeposits.VISIBLE
+                            } else {
+                                AuthorizedDappPreferenceDeposits.HIDDEN
+                            }
+                        )
+                    )
+                }
+            )
+            network.copy(
+                authorizedDapps = updatedDApps
+            )
+        }
+    )
+
+    return copy(networks = ProfileNetworks(updatedNetwork).asList())
+}

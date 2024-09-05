@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
@@ -49,8 +51,7 @@ class AccountLockersObserver @Inject constructor(
     private fun startObserving() {
         appScope.launch {
             combine(
-                dAppConnectionRepository.getAuthorizedDApps()
-                    .distinctUntilChanged(),
+                observeAuthorizedDApps(),
                 ticker()
             ) { authorizedDApps, _ ->
                 checkDeposits(authorizedDApps)
@@ -113,6 +114,16 @@ class AccountLockersObserver @Inject constructor(
         }
 
         return dAppsWithLockerPerUserAccount
+    }
+
+    private fun observeAuthorizedDApps(): Flow<List<AuthorizedDapp>> {
+        return dAppConnectionRepository.getAuthorizedDApps()
+            .distinctUntilChanged()
+            .map { dApps ->
+                dApps.filter { dApp ->
+                    dApp.preferences.deposits == AuthorizedDappPreferenceDeposits.VISIBLE
+                }
+            }
     }
 
     private fun ticker(): Flow<Unit> {

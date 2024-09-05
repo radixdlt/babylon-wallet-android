@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -40,10 +41,12 @@ fun DappDetails(
     isValidatingWebsite: Boolean,
     validatedWebsite: String?,
     personaList: ImmutableList<Persona>,
+    isShowLockerDepositsChecked: Boolean,
     onPersonaClick: ((Persona) -> Unit)?,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
-    onDeleteDapp: () -> Unit
+    onDeleteDapp: () -> Unit,
+    onShowLockerDepositsCheckedChange: (Boolean) -> Unit
 ) {
     Column(modifier = modifier) {
         LazyColumn(
@@ -193,7 +196,30 @@ fun DappDetails(
                     }
                 }
                 item {
-                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+
+                    SwitchSettingsItem(
+                        modifier = Modifier
+                            .background(RadixTheme.colors.defaultBackground)
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingDefault),
+                        titleRes = R.string.authorizedDapps_dAppDetails_depositsTitle,
+                        subtitleRes = R.string.authorizedDapps_dAppDetails_depositsHidden,
+                        icon = null,
+                        subtitleTextColor = RadixTheme.colors.gray2,
+                        checked = isShowLockerDepositsChecked,
+                        onCheckedChange = onShowLockerDepositsCheckedChange
+                    )
+
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+
+                    HorizontalDivider(
+                        color = RadixTheme.colors.gray4,
+                        modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
+                    )
+
+                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+
                     WarningButton(
                         modifier = Modifier
                             .padding(horizontal = dimensions.paddingDefault),

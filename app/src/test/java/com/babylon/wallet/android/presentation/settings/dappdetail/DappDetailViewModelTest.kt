@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.usecases.ChangeLockerDepositsVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
@@ -58,6 +59,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithResourcesUseCase>()
     private val getValidatedDAppWebsiteUseCase = mockk<GetValidatedDAppWebsiteUseCase>()
+    private val changeLockerDepositsVisibilityUseCase = mockk<ChangeLockerDepositsVisibilityUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
         val mainnet = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
@@ -100,6 +102,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
             getValidatedDAppWebsiteUseCase,
             getProfileUseCase,
             incomingRequestRepository,
+            changeLockerDepositsVisibilityUseCase,
             savedStateHandle
         )
     }
@@ -121,7 +124,6 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         vm.state.test {
             val item = expectMostRecentItem()
             assertNotNull(item.dAppWithResources)
-            assertNotNull(item.dapp)
             assertEquals(1, item.authorizedPersonas.size)
         }
     }

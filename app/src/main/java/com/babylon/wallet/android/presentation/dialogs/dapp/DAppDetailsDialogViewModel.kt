@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dialogs.dapp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.usecases.ChangeLockerDepositsVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -12,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -31,11 +33,14 @@ class DAppDetailsDialogViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
+    private val changeLockerDepositsVisibilityUseCase: ChangeLockerDepositsVisibilityUseCase,
     getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase,
     getValidatedDAppWebsiteUseCase: GetValidatedDAppWebsiteUseCase
 ) : StateViewModel<DAppDetailsDialogViewModel.State>(), OneOffEventHandler<DAppDetailsDialogViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = DAppDetailsDialogArgs(savedStateHandle)
+    private lateinit var authorizedDapp: AuthorizedDapp
+
     override fun initialState(): State = State(
         dAppDefinitionAddress = args.dAppDefinitionAddress
     )
@@ -71,21 +76,31 @@ class DAppDetailsDialogViewModel @Inject constructor(
 
     private fun observeDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.getAuthorizedDAppFlow(args.dAppDefinitionAddress).filterNotNull().collect { authorizedDapp ->
-                val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
-                    getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
+            dAppConnectionRepository.getAuthorizedDAppFlow(args.dAppDefinitionAddress)
+                .filterNotNull()
+                .collect { authorizedDapp ->
+                    this@DAppDetailsDialogViewModel.authorizedDapp = authorizedDapp
+                    val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
+                        getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
+                    }
+                    _state.update { state ->
+                        state.copy(
+                            authorizedPersonas = personas.toPersistentList(),
+                        )
+                    }
                 }
-                _state.update { state ->
-                    state.copy(
-                        authorizedPersonas = personas.toPersistentList(),
-                    )
-                }
-            }
         }
     }
 
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
+    }
+
+    fun onShowLockerDepositsCheckedChange(isChecked: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(isShowLockerDepositsChecked = isChecked) }
+            changeLockerDepositsVisibilityUseCase(authorizedDapp, isChecked)
+        }
     }
 
     data class State(
@@ -94,7 +109,8 @@ class DAppDetailsDialogViewModel @Inject constructor(
         val validatedWebsite: String? = null,
         val isWebsiteValidating: Boolean = false,
         val authorizedPersonas: ImmutableList<Persona> = persistentListOf(),
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val isShowLockerDepositsChecked: Boolean = false
     ) : UiState
 
     sealed interface Event : OneOffEvent {

@@ -120,7 +120,8 @@ fun DappDetailScreen(
         onDeleteDapp = viewModel::onDeleteDapp,
         onEditPersona = viewModel::onEditPersona,
         onEditAccountSharing = viewModel::onEditAccountSharing,
-        hidePersonaBottomSheet = viewModel::hidePersonaBottomSheet
+        hidePersonaBottomSheet = viewModel::hidePersonaBottomSheet,
+        onShowLockerDepositsCheckedChange = viewModel::onShowLockerDepositsCheckedChange
     )
 }
 
@@ -138,7 +139,8 @@ private fun DappDetailContent(
     onDeleteDapp: () -> Unit,
     onEditPersona: () -> Unit,
     onEditAccountSharing: () -> Unit,
-    hidePersonaBottomSheet: () -> Unit
+    hidePersonaBottomSheet: () -> Unit,
+    onShowLockerDepositsCheckedChange: (Boolean) -> Unit
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
     val bottomSheetState =
@@ -210,6 +212,7 @@ private fun DappDetailContent(
                 isValidatingWebsite = state.isValidatingWebsite,
                 validatedWebsite = state.validatedWebsite,
                 personaList = state.authorizedPersonas,
+                isShowLockerDepositsChecked = state.isShowLockerDepositsChecked,
                 onPersonaClick = { persona ->
                     onPersonaClick(persona)
                     scope.launch {
@@ -224,7 +227,8 @@ private fun DappDetailContent(
                 },
                 onDeleteDapp = {
                     showDeleteDappPrompt = true
-                }
+                },
+                onShowLockerDepositsCheckedChange = onShowLockerDepositsCheckedChange
             )
 
             if (state.loading) {
@@ -584,7 +588,8 @@ private fun DappDetailContentPreview(
             onDeleteDapp = {},
             onEditPersona = {},
             onEditAccountSharing = {},
-            hidePersonaBottomSheet = {}
+            hidePersonaBottomSheet = {},
+            onShowLockerDepositsCheckedChange = {}
         )
     }
 }

@@ -59,7 +59,7 @@ class AccountLockerRepositoryImpl @Inject constructor(
 
                 val claimableLockerAddresses = refreshedStates.mapNotNull { refreshedState ->
                     val cachedState = cachedStates.find { it.isSame(refreshedState) }
-                    if (cachedState != null && cachedState == refreshedState) {
+                    if (cachedState != null && cachedState.lastTouchedAtStateVersion == refreshedState.lastTouchedAtStateVersion) {
                         val cachedVaultItems = accountLockerDao.getVaultItems(
                             accountAddress = cachedState.accountAddress,
                             lockerAddress = cachedState.lockerAddress
