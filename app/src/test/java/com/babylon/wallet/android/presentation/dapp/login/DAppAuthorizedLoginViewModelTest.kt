@@ -18,6 +18,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
+import com.radixdlt.sargon.AuthorizedDappPreferences
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
@@ -72,7 +74,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
                             networkId = NetworkId.MAINNET,
                             dappDefinitionAddress = AccountAddress.sampleMainnet(),
                             displayName = "1",
-                            referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas().asList()
+                            referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas().asList(),
+                            preferences = AuthorizedDappPreferences(
+                                deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+                            )
                         )
                     ).asList()
                 )

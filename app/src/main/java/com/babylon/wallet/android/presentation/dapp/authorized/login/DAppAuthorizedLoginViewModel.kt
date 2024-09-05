@@ -32,6 +32,8 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
+import com.radixdlt.sargon.AuthorizedDappPreferences
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IdentityAddress
@@ -567,7 +569,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                                 phoneNumbers = null
                             )
                         )
-                    ).asList()
+                    ).asList(),
+                    preferences = AuthorizedDappPreferences(
+                        deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+                    )
                 )
             }
         } else {

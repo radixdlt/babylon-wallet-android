@@ -7,6 +7,8 @@ import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
+import com.radixdlt.sargon.AuthorizedDappPreferences
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
@@ -69,7 +71,10 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
                                         ids = listOf(mainnet.accounts.first().address)
                                     )
                                 )
-                            ).asList()
+                            ).asList(),
+                            preferences = AuthorizedDappPreferences(
+                                deposits = AuthorizedDappPreferenceDeposits.VISIBLE
+                            )
                         )
                     ).asList()
                 )
