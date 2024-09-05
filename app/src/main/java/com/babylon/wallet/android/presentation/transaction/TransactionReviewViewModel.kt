@@ -359,7 +359,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isSelectedFeePayerInvolvedInTransaction: Boolean
             get() = runCatching {
                 request?.transactionManifestData?.feePayerCandidates()?.contains(feePayers?.selectedAccountAddress)
-            }?.getOrNull() ?: false
+            }.getOrNull() ?: false
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {
