@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
@@ -16,6 +17,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
+import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -24,6 +26,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State
 import com.babylon.wallet.android.utils.AppEvent.RefreshAssetsNeeded
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
@@ -32,12 +35,16 @@ import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -81,6 +88,7 @@ class AccountViewModel @Inject constructor(
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
+    private val accountLockersObserver: AccountLockersObserver,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountViewModel.State>(), OneOffEventHandler<AccountViewModel.Event> by OneOffEventHandlerImpl() {
@@ -100,6 +108,7 @@ class AccountViewModel @Inject constructor(
         observeAccountAssets()
         observeGlobalAppEvents()
         observeSecurityPrompt()
+        observeAccountLockers()
     }
 
     private fun observeAccountAssets() {
@@ -207,6 +216,23 @@ class AccountViewModel @Inject constructor(
                     state.copy(securityPrompts = securityPrompts)
                 }
             }
+        }
+    }
+
+    private fun observeAccountLockers() {
+        viewModelScope.launch {
+            accountLockersObserver.claimsByAccount()
+                .onEach { accountWithLockerClaims ->
+                    _state.update {
+                        it.copy(
+                            deposits = accountWithLockerClaims[args.accountAddress]
+                                .orEmpty()
+                                .toPersistentList()
+                        )
+                    }
+                }
+                .flowOn(defaultDispatcher)
+                .collect()
         }
     }
 
@@ -329,6 +355,11 @@ class AccountViewModel @Inject constructor(
         _state.update { it.copy(assetsViewState = it.assetsViewState.onCollectionToggle(collectionId)) }
     }
 
+    fun onLockerDepositClick(deposit: AccountLockerDeposit) {
+        Timber.d("Deposit prompt clicked for locker: ${deposit.lockerAddress}")
+        // TODO("Not implemented yet")
+    }
+
     private fun onLatestEpochRequest() = viewModelScope.launch {
         getNetworkInfoUseCase().onSuccess { info ->
             _state.update { it.copy(epoch = info.epoch) }
@@ -361,6 +392,7 @@ class AccountViewModel @Inject constructor(
         val refreshType: RefreshType = RefreshType.None,
         val pendingStakeUnits: Boolean = false,
         val securityPrompts: List<SecurityPromptType>? = null,
+        val deposits: PersistentList<AccountLockerDeposit> = persistentListOf(),
         val assetsViewState: AssetsViewState = AssetsViewState.init(),
         val epoch: Long? = null,
         val uiMessage: UiMessage? = null

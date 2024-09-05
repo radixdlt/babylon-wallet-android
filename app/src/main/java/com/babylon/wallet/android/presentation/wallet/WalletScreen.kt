@@ -44,6 +44,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.HomeCardsCarousel
@@ -100,7 +101,7 @@ fun WalletScreen(
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
-        onDepositPromptClick = viewModel::onDepositPromptClick,
+        onLockerDepositClick = viewModel::onDepositClick,
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose
     )
@@ -175,7 +176,7 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
-    onDepositPromptClick: (WalletViewModel.State.AccountUiItem, WalletViewModel.State.AccountUiItem.DepositPrompt) -> Unit,
+    onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -237,7 +238,7 @@ private fun WalletContent(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
-                onDepositPromptClick = onDepositPromptClick,
+                onLockerDepositClick = onLockerDepositClick,
                 onCardClick = onCardClick,
                 onCardCloseClick = onCardCloseClick
             )
@@ -264,7 +265,7 @@ private fun WalletAccountList(
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
-    onDepositPromptClick: (WalletViewModel.State.AccountUiItem, WalletViewModel.State.AccountUiItem.DepositPrompt) -> Unit,
+    onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -320,7 +321,7 @@ private fun WalletAccountList(
                     },
                 accountWithAssets = accountWithAssets,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
-                onDepositPromptClick = onDepositPromptClick
+                onLockerDepositClick = onLockerDepositClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -352,7 +353,7 @@ private fun WalletContentPreview(
             onRefresh = { },
             onMessageShown = {},
             onApplySecuritySettingsClick = {},
-            onDepositPromptClick = { _, _ -> },
+            onLockerDepositClick = { _, _ -> },
             onCardClick = {},
             onCardCloseClick = {}
         )

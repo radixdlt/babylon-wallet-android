@@ -26,6 +26,7 @@ import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
+import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -53,7 +54,7 @@ fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: AccountUiItem,
     onApplySecuritySettingsClick: () -> Unit,
-    onDepositPromptClick: (AccountUiItem, AccountUiItem.DepositPrompt) -> Unit
+    onLockerDepositClick: (AccountUiItem, AccountLockerDeposit) -> Unit
 ) {
     ConstraintLayout(
         modifier
@@ -228,18 +229,19 @@ fun AccountCardView(
                 )
             }
 
-            accountWithAssets.depositPrompts.forEach { depositPrompt ->
+            accountWithAssets.deposits.forEach { deposit ->
                 AccountPromptLabel(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = RadixTheme.dimensions.paddingMedium),
-                    onClick = { onDepositPromptClick(accountWithAssets, depositPrompt) },
+                    onClick = { onLockerDepositClick(accountWithAssets, deposit) },
                     text = stringResource(
                         id = R.string.homePage_accountLockerClaim,
-                        depositPrompt.dAppName.ifEmpty {
+                        deposit.dAppName.ifEmpty {
                             stringResource(id = R.string.dAppRequest_metadata_unknownName)
                         }
-                    )
+                    ),
+                    iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_notifications
                 )
             }
         }
@@ -305,13 +307,13 @@ fun AccountCardPreview() {
                     fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
                     securityPrompts = null,
-                    depositPrompts = persistentListOf(),
+                    deposits = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
                 onApplySecuritySettingsClick = {},
-                onDepositPromptClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> }
             )
         }
     }
@@ -338,13 +340,13 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
                     securityPrompts = persistentListOf(SecurityPromptType.RECOVERY_REQUIRED),
-                    depositPrompts = persistentListOf(),
+                    deposits = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false
                 ),
                 onApplySecuritySettingsClick = {},
-                onDepositPromptClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> }
             )
         }
     }
@@ -375,13 +377,13 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                         SecurityPromptType.WRITE_DOWN_SEED_PHRASE,
                         SecurityPromptType.RECOVERY_REQUIRED
                     ),
-                    depositPrompts = persistentListOf(),
+                    deposits = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
                 onApplySecuritySettingsClick = {},
-                onDepositPromptClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> }
             )
         }
     }
@@ -409,13 +411,13 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                         tag = AccountTag.DAPP_DEFINITION,
                         securityPrompts = persistentListOf(SecurityPromptType.WALLET_NOT_RECOVERABLE),
-                        depositPrompts = persistentListOf(),
+                        deposits = persistentListOf(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
                     ),
                     onApplySecuritySettingsClick = {},
-                    onDepositPromptClick = { _, _ -> }
+                    onLockerDepositClick = { _, _ -> }
                 )
             }
         }
@@ -438,13 +440,13 @@ fun AccountCardEmptyPreview() {
                         fiatTotalValue = null,
                         tag = AccountTag.DAPP_DEFINITION,
                         securityPrompts = persistentListOf(),
-                        depositPrompts = persistentListOf(),
+                        deposits = persistentListOf(),
                         isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
                     ),
                     onApplySecuritySettingsClick = {},
-                    onDepositPromptClick = { _, _ -> }
+                    onLockerDepositClick = { _, _ -> }
                 )
             }
         }
@@ -470,13 +472,13 @@ fun AccountCardLoadingPreview() {
                     fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
                     tag = AccountTag.DAPP_DEFINITION,
                     securityPrompts = null,
-                    depositPrompts = persistentListOf(),
+                    deposits = persistentListOf(),
                     isFiatBalanceVisible = true,
                     isLoadingAssets = true,
                     isLoadingBalance = true
                 ),
                 onApplySecuritySettingsClick = {},
-                onDepositPromptClick = { _, _ -> }
+                onLockerDepositClick = { _, _ -> }
             )
         }
     }

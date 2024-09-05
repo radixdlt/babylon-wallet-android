@@ -54,6 +54,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
@@ -127,6 +128,7 @@ fun AccountScreen(
         onFungibleItemClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
+        onLockerDepositClick = viewModel::onLockerDepositClick,
         onPoolUnitClick = viewModel::onPoolUnitClicked,
         onLSUUnitClicked = viewModel::onLSUUnitClicked,
         onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
@@ -153,6 +155,7 @@ private fun AccountScreenContent(
     onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onLockerDepositClick: (AccountLockerDeposit) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -233,6 +236,7 @@ private fun AccountScreenContent(
                 onTransferClick = onTransferClick,
                 onHistoryClick = onHistoryClick,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
+                onLockerDepositClick = onLockerDepositClick,
                 onPoolUnitClick = {
                     onPoolUnitClick(it)
                 },
@@ -272,6 +276,7 @@ fun AssetsContent(
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onLockerDepositClick: (AccountLockerDeposit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
@@ -308,7 +313,8 @@ fun AssetsContent(
                     onShowHideBalanceToggle = onShowHideBalanceToggle,
                     onHistoryClick = onHistoryClick,
                     onTransferClick = onTransferClick,
-                    onApplySecuritySettingsClick = onApplySecuritySettingsClick
+                    onApplySecuritySettingsClick = onApplySecuritySettingsClick,
+                    onLockerDepositClick = onLockerDepositClick
                 )
             }
 
@@ -345,6 +351,7 @@ private fun AccountHeader(
     onHistoryClick: (AccountAddress) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onLockerDepositClick: (AccountLockerDeposit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box {
@@ -432,6 +439,23 @@ private fun AccountHeader(
                                 onApplySecuritySettingsClick()
                             },
                             text = securityPromptType.toText()
+                        )
+                    }
+
+                    state.deposits.forEach { deposit ->
+                        AccountPromptLabel(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                                .padding(bottom = RadixTheme.dimensions.paddingSmall),
+                            onClick = { onLockerDepositClick(deposit) },
+                            text = stringResource(
+                                id = R.string.homePage_accountLockerClaim,
+                                deposit.dAppName.ifEmpty {
+                                    stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                                }
+                            ),
+                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_notifications
                         )
                     }
                 }
@@ -526,6 +550,7 @@ fun AccountContentPreview() {
             onFungibleItemClicked = {},
             onNonFungibleItemClicked = { _, _ -> },
             onApplySecuritySettingsClick = {},
+            onLockerDepositClick = {},
             onPoolUnitClick = {},
             onLSUUnitClicked = {},
             onNextNFTsPageRequest = {},
@@ -558,6 +583,7 @@ fun AccountContentWithFiatBalancesDisabledPreview() {
             onFungibleItemClicked = {},
             onNonFungibleItemClicked = { _, _ -> },
             onApplySecuritySettingsClick = {},
+            onLockerDepositClick = {},
             onPoolUnitClick = {},
             onLSUUnitClicked = {},
             onNextNFTsPageRequest = {},
