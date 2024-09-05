@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -218,6 +219,9 @@ interface StateDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertNFTs(nfts: List<NFTEntity>)
+
+    @Delete
+    fun deleteNFTs(nfts: List<NFTEntity>)
 
     @Transaction
     fun insertAccountNFTsJoin(
