@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.radixdlt.sargon.os.storage.KeySpec
+import com.radixdlt.sargon.os.storage.decrypt
+import com.radixdlt.sargon.os.storage.encrypt
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -14,12 +17,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import rdx.works.core.KeySpec
-import rdx.works.core.decrypt
 import rdx.works.core.di.EncryptedPreferences
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.di.PermanentEncryptedPreferences
-import rdx.works.core.encrypt
 import rdx.works.core.logNonFatalException
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
@@ -74,7 +74,7 @@ class EncryptedPreferencesManager @Inject constructor(
 
     private suspend fun putString(key: String, newValue: String, keySpec: KeySpec): Result<Unit> {
         val preferencesKey = stringPreferencesKey(key)
-        return newValue.encrypt(withKey = keySpec).mapCatching { encryptedValue ->
+        return newValue.encrypt(keySpec = keySpec).mapCatching { encryptedValue ->
             preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
@@ -85,7 +85,7 @@ class EncryptedPreferencesManager @Inject constructor(
     private suspend fun putString(prefs: DataStore<Preferences>, key: String, newValue: String?, keySpec: KeySpec) {
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
-            val encryptedValue = newValueNotNull.encrypt(withKey = keySpec).getOrThrow()
+            val encryptedValue = newValueNotNull.encrypt(keySpec = keySpec).getOrThrow()
             prefs.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }

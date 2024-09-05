@@ -1,28 +1,13 @@
 package rdx.works.core
 
-import java.security.KeyStore
+import com.radixdlt.sargon.os.storage.KeySpec
 import javax.inject.Inject
 
 class KeystoreManager @Inject constructor() {
 
-    fun removeKeys(): Result<Unit> {
-        return runCatching {
-            val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
-            keyStore.deleteEntry(KEY_ALIAS_MNEMONIC)
-            keyStore.deleteEntry(KEY_ALIAS_PROFILE)
-        }
+    fun removeKeys(): Result<Unit> = KeySpec.Mnemonic().delete().then {
+        KeySpec.Profile().delete()
     }
 
-    fun removeMnemonicEncryptionKey(): Result<Unit> {
-        return runCatching {
-            val keyStore = KeyStore.getInstance(PROVIDER).apply { load(null) }
-            keyStore.deleteEntry(KEY_ALIAS_MNEMONIC)
-        }
-    }
-
-    companion object {
-        const val PROVIDER = "AndroidKeyStore"
-        const val KEY_ALIAS_PROFILE = "EncryptedProfileAlias"
-        const val KEY_ALIAS_MNEMONIC = "EncryptedMnemonicAlias"
-    }
+    fun removeMnemonicEncryptionKey(): Result<Unit> = KeySpec.Mnemonic().delete()
 }

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.account.createaccount
 
-import androidx.biometric.BiometricPrompt
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
@@ -25,7 +24,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.os.driver.BiometricsFailure
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job

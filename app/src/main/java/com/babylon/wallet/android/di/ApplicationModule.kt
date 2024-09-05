@@ -6,8 +6,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.babylon.wallet.android.data.repository.cache.CacheClient
-import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
 import com.radixdlt.sargon.HomeCardsManager
@@ -20,7 +18,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import rdx.works.core.di.GatewayHttpClient
 import rdx.works.core.di.NonEncryptedPreferences
@@ -50,15 +47,6 @@ object ApplicationModule {
         @ApplicationContext context: Context
     ): DataStore<Preferences> {
         return context.userDataStore
-    }
-
-    @Provides
-    @Singleton
-    fun provideCacheClient(
-        @ApplicationContext applicationContext: Context,
-        jsonSerializer: Json,
-    ): CacheClient {
-        return EncryptedDiskCacheClient(applicationContext, jsonSerializer)
     }
 
     @Provides
