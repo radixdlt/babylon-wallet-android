@@ -37,7 +37,9 @@ import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.extensions.ResourceAppPreferences
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
@@ -171,7 +173,8 @@ fun Profile.addAccounts(
                 id = network.id,
                 accounts = Accounts(network.accounts + accounts).asList(),
                 authorizedDapps = network.authorizedDapps,
-                personas = network.personas
+                personas = network.personas,
+                resourcePreferences = network.resourcePreferences
             )
         }
     } else {
@@ -179,7 +182,8 @@ fun Profile.addAccounts(
             id = onNetwork,
             accounts = Accounts(accounts).asList(),
             authorizedDapps = AuthorizedDapps().asList(),
-            personas = Personas().asList()
+            personas = Personas().asList(),
+            resourcePreferences = emptyList()
         )
     }
     val updatedProfile = copy(networks = ProfileNetworks(newNetworks).asList())
@@ -244,7 +248,8 @@ fun Profile.addNetworkIfDoesNotExist(
                 id = onNetwork,
                 accounts = Accounts().asList(),
                 authorizedDapps = AuthorizedDapps().asList(),
-                personas = Personas().asList()
+                personas = Personas().asList(),
+                resourcePreferences = emptyList()
             )
         ).asList()
     ).withUpdatedContentHint()
@@ -618,15 +623,23 @@ fun Profile.deleteAuthorizedDApp(
     return copy(networks = ProfileNetworks(updatedNetwork).asList())
 }
 
-private fun Profile.withUpdatedContentHint() = copy(
-    header = header.copy(
-        contentHint = ContentHint(
-            numberOfNetworks = networks.size.toUShort(),
-            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.notHiddenAccounts().size }.toUShort(),
-            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.notHiddenPersonas().size }.toUShort()
-        )
+fun Profile.getResourcePreferences(): ResourceAppPreferences {
+    val networkId = currentNetwork?.id ?: return ResourceAppPreferences()
+    return networks.asIdentifiable().getBy(networkId)?.resourcePreferences.orEmpty().asIdentifiable()
+}
+
+fun Profile.updateResourcePreferences(preferences: ResourceAppPreferences): Profile {
+    val networkId = currentNetwork?.id ?: return this
+    val updatedNetworks = networks.mapWhen(
+        predicate = { it.id == networkId },
+        mutation = { network ->
+            network.copy(
+                resourcePreferences = preferences.asList()
+            )
+        }
     )
-)
+    return copy(networks = ProfileNetworks(updatedNetworks).asList())
+}
 
 fun Profile.changeDAppLockersVisibility(dApp: AuthorizedDapp, isVisible: Boolean): Profile {
     val updatedNetwork = networks.mapWhen(
@@ -655,3 +668,13 @@ fun Profile.changeDAppLockersVisibility(dApp: AuthorizedDapp, isVisible: Boolean
 
     return copy(networks = ProfileNetworks(updatedNetwork).asList())
 }
+
+private fun Profile.withUpdatedContentHint() = copy(
+    header = header.copy(
+        contentHint = ContentHint(
+            numberOfNetworks = networks.size.toUShort(),
+            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.notHiddenAccounts().size }.toUShort(),
+            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.notHiddenPersonas().size }.toUShort()
+        )
+    )
+)

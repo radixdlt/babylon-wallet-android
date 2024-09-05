@@ -63,6 +63,7 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.AccountType
 import rdx.works.core.domain.resources.metadata.poolUnit
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.hiddenFungibles
 import rdx.works.core.sargon.hiddenNonFungibles
 import rdx.works.core.sargon.hiddenPools
@@ -338,7 +339,8 @@ class AccountsStateCache @Inject constructor(
     }
 
     private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenResources() = map { cached ->
-        val resourcePreferences = profileRepository.profile.first().appPreferences.resources
+        val resourcePreferences = profileRepository.profile.first().currentNetwork?.resourcePreferences
+            ?: return@map cached
         val hiddenPoolAddresses = resourcePreferences.hiddenPools().toSet()
         val hiddenFungibleAddresses = resourcePreferences.hiddenFungibles().toSet()
         val hiddenNonFungibleAddresses = resourcePreferences.hiddenNonFungibles().toSet()

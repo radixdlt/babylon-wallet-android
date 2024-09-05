@@ -35,6 +35,7 @@ import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
@@ -53,7 +54,7 @@ import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
-import rdx.works.core.sargon.hidden
+import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -98,7 +99,8 @@ class TransactionReviewViewModel @Inject constructor(
             withContext(coroutineDispatcher) {
                 _state.update {
                     it.copy(
-                        hiddenResourceIds = getProfileUseCase().appPreferences.resources.hidden().toPersistentList()
+                        hiddenResourceIds = getProfileUseCase().getResourcePreferences().hiddenResources
+                            .toPersistentList()
                     )
                 }
             }
