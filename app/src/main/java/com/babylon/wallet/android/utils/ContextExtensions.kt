@@ -46,11 +46,9 @@ fun Context.biometricAuthenticate(
             activity = activity,
             entryPoint = BiometricAuthenticationEntryPoint::class.java
         ).provideAppLockStateProvider()
-        // It appear that below Android 11 BiometricPrompt uses new activity
-        // for biometric authentication when there is no fingerprint registered
-        // so we pause app locking to avoid double biometric prompt when we have advanced lock feature on
-        // and we ask for biometrics from a Wallet, eg. when user wants to create account/sign transaction, app is moved to background
-        // and advanced lock is applied
+        // It appear that below Android 11 Lock Screen uses new activity when there is no fingerprint registered (e.g. PIN).
+        // So we pause app locking to avoid double biometric prompt when advanced lock on and we ask for biometrics from a Wallet,
+        // eg. when user wants to create account/sign transaction, app is moved to background and advanced lock is applied
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             appLockStateProvider.pauseLocking()
         }
@@ -67,8 +65,7 @@ fun Context.biometricAuthenticate(
     }
 }
 
-suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boolean = false): Boolean {
-    if (allowIfDeviceIsNotSecure) return true
+suspend fun Context.biometricAuthenticateSuspend(): Boolean {
     val fragmentActivity = findFragmentActivity() ?: return false
     val appLockStateProvider = EntryPointAccessors.fromActivity(
         activity = fragmentActivity,
