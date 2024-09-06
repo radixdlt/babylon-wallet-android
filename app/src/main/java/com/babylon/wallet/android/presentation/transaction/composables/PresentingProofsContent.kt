@@ -2,8 +2,10 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,15 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.extensions.formatted
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 
@@ -31,6 +38,7 @@ import rdx.works.core.domain.resources.Resource
 fun PresentingProofsContent(
     badges: ImmutableList<Badge>,
     modifier: Modifier = Modifier,
+    onInfoClick: (GlossaryItem) -> Unit,
     onClick: (Badge) -> Unit
 ) {
     if (badges.isNotEmpty()) {
@@ -38,10 +46,13 @@ fun PresentingProofsContent(
             modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)
         ) {
             Row(
-                modifier = Modifier.padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingSmall
-                )
+                modifier = Modifier
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    )
+                    .height(intrinsicSize = IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
             ) {
                 Text(
                     text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),
@@ -49,13 +60,16 @@ fun PresentingProofsContent(
                     color = RadixTheme.colors.gray2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                // TODO later
-//                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-//                Icon(
-//                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
-//                    contentDescription = null,
-//                    tint = RadixTheme.colors.gray3
-//                )
+                InfoButton(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .height(1.dp),
+                    text = stringResource(R.string.empty),
+                    color = RadixTheme.colors.gray3,
+                    onClick = {
+                        onInfoClick(GlossaryItem.badges)
+                    }
+                )
             }
 
             badges.forEach { badge ->
@@ -110,5 +124,17 @@ fun PresentingProofsContent(
                 color = RadixTheme.colors.gray4
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun PresentingProofsPreview() {
+    RadixWalletPreviewTheme {
+        PresentingProofsContent(
+            badges = persistentListOf(),
+            onInfoClick = {},
+            onClick = {}
+        )
     }
 }
