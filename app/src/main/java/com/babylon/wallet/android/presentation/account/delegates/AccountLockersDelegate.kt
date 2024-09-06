@@ -10,6 +10,7 @@ import com.radixdlt.sargon.LockerAddress
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class AccountLockersDelegate @Inject constructor(
                         )
                     }
                 }
+                .flowOn(defaultDispatcher)
                 .collect()
         }
     }

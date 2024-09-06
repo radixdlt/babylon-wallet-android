@@ -8,16 +8,14 @@ import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.data.repository.locker.AccountLockerRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
-import com.babylon.wallet.android.presentation.wallet.locker.AccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asIdentifiable
@@ -96,7 +94,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         HomeCardsDelegate(
             homeCardsRepository
         ),
-        AccountLockersDelegate(
+        WalletAccountLockersDelegate(
             accountLockersObserver,
             accountLockersRepository,
             testDispatcher

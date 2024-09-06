@@ -10,6 +10,7 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,27 +41,24 @@ class AccountLockersObserver @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
+    private var monitoringJob: Job? = null
     private val depositsByAccount = MutableSharedFlow<Map<AccountAddress, List<AccountLockerDeposit>>>(1)
-
-    init {
-        startObserving()
-    }
 
     fun depositsByAccount(): Flow<Map<AccountAddress, List<AccountLockerDeposit>>> = depositsByAccount.asSharedFlow()
 
-    private fun startObserving() {
-        appScope.launch {
-            combine(
-                observeAuthorizedDApps(),
-                ticker()
-            ) { authorizedDApps, _ ->
-                checkDeposits(authorizedDApps)
-            }
+    fun startMonitoring() {
+        monitoringJob?.cancel()
+        monitoringJob = appScope.launch {
+            combine(observeAuthorizedDApps(), ticker()) { authorizedDApps, _ -> checkDeposits(authorizedDApps) }
                 .onEach { depositsByAccount.emit(it) }
                 .catch { Timber.w(it) }
                 .flowOn(defaultDispatcher)
                 .collect()
         }
+    }
+
+    fun stopMonitoring() {
+        monitoringJob?.cancel()
     }
 
     private suspend fun checkDeposits(

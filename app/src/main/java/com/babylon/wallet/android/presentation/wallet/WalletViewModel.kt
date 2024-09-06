@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
-import com.babylon.wallet.android.presentation.wallet.locker.AccountLockersDelegate
+import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
@@ -88,7 +88,7 @@ class WalletViewModel @Inject constructor(
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
-    private val accountLockersDelegate: AccountLockersDelegate
+    private val accountLockersDelegate: WalletAccountLockersDelegate
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null

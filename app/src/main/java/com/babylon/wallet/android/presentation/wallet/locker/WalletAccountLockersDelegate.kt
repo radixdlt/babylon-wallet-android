@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class AccountLockersDelegate @Inject constructor(
+class WalletAccountLockersDelegate @Inject constructor(
     private val accountLockersObserver: AccountLockersObserver,
     private val accountLockersRepository: AccountLockerRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
@@ -46,7 +46,7 @@ class AccountLockersDelegate @Inject constructor(
         }
     }
 
-    fun observeAccountLockers() {
+    private fun observeAccountLockers() {
         viewModelScope.launch {
             accountLockersObserver.depositsByAccount()
                 .onEach { accountWithLockerClaims ->
