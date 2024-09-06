@@ -5,9 +5,12 @@ import javax.inject.Inject
 
 class KeystoreManager @Inject constructor() {
 
-    fun removeKeys(): Result<Unit> = KeySpec.Mnemonic().delete().then {
-        KeySpec.Profile().delete()
-    }
+    fun removeKeys(): Result<Unit> = KeySpec.remove(
+        listOf(
+            KeySpec.Mnemonic(),
+            KeySpec.Profile()
+        )
+    )
 
-    fun removeMnemonicEncryptionKey(): Result<Unit> = KeySpec.Mnemonic().delete()
+    fun removeMnemonicEncryptionKey(): Result<Unit> = KeySpec.remove(listOf(KeySpec.Mnemonic()))
 }

@@ -14,7 +14,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MnemonicIntegrityRepository @Inject constructor(
+class CheckKeystoreIntegrityUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val keystoreManager: KeystoreManager
@@ -23,8 +23,12 @@ class MnemonicIntegrityRepository @Inject constructor(
     private val _didMnemonicIntegrityChange = MutableStateFlow(false)
     val didMnemonicIntegrityChange: Flow<Boolean> = _didMnemonicIntegrityChange.asSharedFlow()
 
-    suspend fun checkIntegrity() {
-        if (getProfileUseCase.isInitialized().not()) return
+    suspend operator fun invoke() {
+        if (getProfileUseCase.isInitialized().not()) {
+            keystoreManager.removeKeys()
+            return
+        }
+
         val deviceFactorSources = getProfileUseCase().deviceFactorSources
         if (deviceFactorSources.isEmpty()) return
         // try to encrypt random string
