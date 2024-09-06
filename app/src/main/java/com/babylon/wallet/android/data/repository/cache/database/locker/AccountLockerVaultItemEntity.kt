@@ -7,11 +7,13 @@ import com.babylon.wallet.android.data.gateway.generated.models.AccountLockerVau
 import com.babylon.wallet.android.data.gateway.generated.models.AccountLockerVaultCollectionItemNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.AccountLockerVaultCollectionItemType
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AccountLockerClaimableResource
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.SargonException
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toDecimal192
 
@@ -35,6 +37,21 @@ data class AccountLockerVaultItemEntity(
     val totalCount: Long
 ) {
 
+    @Throws(SargonException::class)
+    fun into(): AccountLockerClaimableResource {
+        return if (isFungible) {
+            AccountLockerClaimableResource.Fungible(
+                resourceAddress = resourceAddress,
+                amount = amount
+            )
+        } else {
+            AccountLockerClaimableResource.NonFungible(
+                resourceAddress = resourceAddress,
+                numberOfItems = totalCount.toULong()
+            )
+        }
+    }
+
     companion object {
 
         @Throws(SargonException::class)
@@ -44,26 +61,31 @@ data class AccountLockerVaultItemEntity(
             lockerAddress: LockerAddress
         ): AccountLockerVaultItemEntity? {
             return when (item) {
-                is AccountLockerVaultCollectionItemFungible -> AccountLockerVaultItemEntity(
-                    lockerAddress = lockerAddress,
-                    accountAddress = accountAddress,
-                    resourceAddress = ResourceAddress.init(item.resourceAddress),
-                    vaultAddress = VaultAddress.init(item.vaultAddress),
-                    lastUpdatedAtStateVersion = item.lastUpdatedAtStateVersion,
-                    isFungible = item.type == AccountLockerVaultCollectionItemType.Fungible,
-                    amount = item.amount.toDecimal192(),
-                    totalCount = 0
-                )
-                is AccountLockerVaultCollectionItemNonFungible -> AccountLockerVaultItemEntity(
-                    lockerAddress = lockerAddress,
-                    accountAddress = accountAddress,
-                    resourceAddress = ResourceAddress.init(item.resourceAddress),
-                    vaultAddress = VaultAddress.init(item.vaultAddress),
-                    lastUpdatedAtStateVersion = item.lastUpdatedAtStateVersion,
-                    isFungible = item.type == AccountLockerVaultCollectionItemType.Fungible,
-                    amount = 0.toDecimal192(),
-                    totalCount = item.totalCount
-                )
+                is AccountLockerVaultCollectionItemFungible -> {
+                    val amount = item.amount.toDecimal192()
+                    AccountLockerVaultItemEntity(
+                        lockerAddress = lockerAddress,
+                        accountAddress = accountAddress,
+                        resourceAddress = ResourceAddress.init(item.resourceAddress),
+                        vaultAddress = VaultAddress.init(item.vaultAddress),
+                        lastUpdatedAtStateVersion = item.lastUpdatedAtStateVersion,
+                        isFungible = item.type == AccountLockerVaultCollectionItemType.Fungible,
+                        amount = amount,
+                        totalCount = 0
+                    ).takeIf { amount > 0.toDecimal192() }
+                }
+                is AccountLockerVaultCollectionItemNonFungible -> {
+                    AccountLockerVaultItemEntity(
+                        lockerAddress = lockerAddress,
+                        accountAddress = accountAddress,
+                        resourceAddress = ResourceAddress.init(item.resourceAddress),
+                        vaultAddress = VaultAddress.init(item.vaultAddress),
+                        lastUpdatedAtStateVersion = item.lastUpdatedAtStateVersion,
+                        isFungible = item.type == AccountLockerVaultCollectionItemType.Fungible,
+                        amount = 0.toDecimal192(),
+                        totalCount = item.totalCount
+                    ).takeIf { item.totalCount > 0 }
+                }
                 else -> null
             }
         }

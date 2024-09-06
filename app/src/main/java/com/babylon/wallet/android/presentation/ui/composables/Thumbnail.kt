@@ -63,7 +63,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample

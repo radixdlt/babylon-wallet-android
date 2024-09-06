@@ -5,6 +5,7 @@ import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
+import com.babylon.wallet.android.data.repository.locker.AccountLockerRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
@@ -14,6 +15,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
+import com.babylon.wallet.android.presentation.wallet.locker.AccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
@@ -33,6 +35,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import org.mockito.kotlin.mock
 import rdx.works.core.InstantGenerator
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.assets.Assets
@@ -67,6 +70,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val p2PLinksRepository = mockk<P2PLinksRepository>()
     private val homeCardsRepository = mockk<HomeCardsRepository>()
     private val accountLockersObserver = mockk<AccountLockersObserver>()
+    private val accountLockersRepository = mock<AccountLockerRepository>()
 
     private val sampleProfile = Profile.sample()
     private val sampleXrdResource = Resource.FungibleResource(
@@ -92,7 +96,11 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         HomeCardsDelegate(
             homeCardsRepository
         ),
-        accountLockersObserver
+        AccountLockersDelegate(
+            accountLockersObserver,
+            accountLockersRepository,
+            testDispatcher
+        )
     )
 
     override fun setUp() {

@@ -183,7 +183,7 @@ fun Profile.addAccounts(
             accounts = Accounts(accounts).asList(),
             authorizedDapps = AuthorizedDapps().asList(),
             personas = Personas().asList(),
-            resourcePreferences = emptyList()
+            resourcePreferences = ResourceAppPreferences().asList()
         )
     }
     val updatedProfile = copy(networks = ProfileNetworks(newNetworks).asList())
@@ -249,7 +249,7 @@ fun Profile.addNetworkIfDoesNotExist(
                 accounts = Accounts().asList(),
                 authorizedDapps = AuthorizedDapps().asList(),
                 personas = Personas().asList(),
-                resourcePreferences = emptyList()
+                resourcePreferences = ResourceAppPreferences().asList()
             )
         ).asList()
     ).withUpdatedContentHint()

@@ -14,7 +14,6 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
-import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -22,6 +21,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
+import com.babylon.wallet.android.presentation.wallet.locker.AccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
@@ -88,7 +88,7 @@ class WalletViewModel @Inject constructor(
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     private val homeCards: HomeCardsDelegate,
-    private val accountLockersObserver: AccountLockersObserver
+    private val accountLockersDelegate: AccountLockersDelegate
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null
@@ -111,13 +111,13 @@ class WalletViewModel @Inject constructor(
             }
         }
         observePrompts()
-        observeAccountLockers()
         observeWalletAssets()
         observeGlobalAppEvents()
         observeNpsSurveyState()
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
         homeCards(scope = viewModelScope, state = _state)
+        accountLockersDelegate(scope = viewModelScope, state = _state)
     }
 
     fun processBufferedDeepLinkRequest() {
@@ -247,21 +247,6 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun observeAccountLockers() {
-        viewModelScope.launch {
-            accountLockersObserver.depositsByAccount()
-                .onEach { accountWithLockerClaims ->
-                    _state.update {
-                        it.copy(
-                            accountsWithLockerDeposits = accountWithLockerClaims
-                        )
-                    }
-                }
-                .flowOn(defaultDispatcher)
-                .collect()
-        }
-    }
-
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.collect { event ->
@@ -335,9 +320,11 @@ class WalletViewModel @Inject constructor(
         homeCards.dismissCard(card)
     }
 
-    fun onDepositClick(account: State.AccountUiItem, deposit: AccountLockerDeposit) {
-        Timber.d("Deposit clicked for account: ${account.account.address} and locker: ${deposit.lockerAddress}")
-        // TODO("Not implemented yet")
+    fun onLockerDepositClick(
+        account: State.AccountUiItem,
+        deposit: AccountLockerDeposit
+    ) {
+        accountLockersDelegate.onLockerDepositClick(account.account.address, deposit.lockerAddress)
     }
 
     @Suppress("MagicNumber")

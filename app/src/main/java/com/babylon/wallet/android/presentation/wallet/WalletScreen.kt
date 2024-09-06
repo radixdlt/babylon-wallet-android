@@ -101,7 +101,7 @@ fun WalletScreen(
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
-        onLockerDepositClick = viewModel::onDepositClick,
+        onLockerDepositClick = viewModel::onLockerDepositClick,
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose
     )

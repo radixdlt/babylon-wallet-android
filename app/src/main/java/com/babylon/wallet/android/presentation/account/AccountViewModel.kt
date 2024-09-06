@@ -17,7 +17,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
-import com.babylon.wallet.android.domain.utils.AccountLockersObserver
+import com.babylon.wallet.android.presentation.account.delegates.AccountLockersDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -36,7 +36,6 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -87,8 +86,8 @@ class AccountViewModel @Inject constructor(
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
-    private val accountLockersObserver: AccountLockersObserver,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+    private val accountLockersDelegate: AccountLockersDelegate,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountViewModel.State>(), OneOffEventHandler<AccountViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -107,7 +106,8 @@ class AccountViewModel @Inject constructor(
         observeAccountAssets()
         observeGlobalAppEvents()
         observeSecurityPrompt()
-        observeAccountLockers()
+        accountLockersDelegate(scope = viewModelScope, state = _state)
+        accountLockersDelegate.observeAccountLockers(args.accountAddress)
     }
 
     private fun observeAccountAssets() {
@@ -215,23 +215,6 @@ class AccountViewModel @Inject constructor(
                     state.copy(securityPrompts = securityPrompts)
                 }
             }
-        }
-    }
-
-    private fun observeAccountLockers() {
-        viewModelScope.launch {
-            accountLockersObserver.depositsByAccount()
-                .onEach { accountWithLockerClaims ->
-                    _state.update {
-                        it.copy(
-                            deposits = accountWithLockerClaims[args.accountAddress]
-                                .orEmpty()
-                                .toPersistentList()
-                        )
-                    }
-                }
-                .flowOn(defaultDispatcher)
-                .collect()
         }
     }
 
@@ -355,8 +338,7 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onLockerDepositClick(deposit: AccountLockerDeposit) {
-        Timber.d("Deposit prompt clicked for locker: ${deposit.lockerAddress}")
-        // TODO("Not implemented yet")
+        accountLockersDelegate.onLockerDepositClick(args.accountAddress, deposit.lockerAddress)
     }
 
     private fun onLatestEpochRequest() = viewModelScope.launch {

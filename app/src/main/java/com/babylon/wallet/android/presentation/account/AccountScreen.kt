@@ -181,7 +181,8 @@ private fun AccountScreenContent(
     )
 
     Box(
-        modifier = modifier.pullRefresh(pullToRefreshState)
+        modifier = modifier
+            .pullRefresh(pullToRefreshState)
     ) {
         Scaffold(
             modifier = Modifier.background(gradient),
