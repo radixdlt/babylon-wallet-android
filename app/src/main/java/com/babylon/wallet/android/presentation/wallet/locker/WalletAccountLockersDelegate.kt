@@ -46,6 +46,10 @@ class WalletAccountLockersDelegate @Inject constructor(
         }
     }
 
+    fun onRefresh() {
+        accountLockersObserver.startMonitoring()
+    }
+
     private fun observeAccountLockers() {
         viewModelScope.launch {
             accountLockersObserver.depositsByAccount()

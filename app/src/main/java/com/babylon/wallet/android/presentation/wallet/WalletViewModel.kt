@@ -197,7 +197,7 @@ class WalletViewModel @Inject constructor(
     private fun observeWalletAssets() {
         combine(
             accountsFlow,
-            refreshFlow
+            refreshFlow.onEach { accountLockersDelegate.onRefresh() }
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
