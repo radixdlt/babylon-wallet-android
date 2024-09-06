@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -20,6 +21,7 @@ fun InfoButton(
     modifier: Modifier = Modifier,
     text: String,
     color: Color = RadixTheme.colors.blue2,
+    textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
     onClick: () -> Unit
 ) {
     Row(
@@ -34,7 +36,7 @@ fun InfoButton(
         )
         Text(
             text = text,
-            style = RadixTheme.typography.body1StandaloneLink,
+            style = textStyle,
             color = color
         )
     }

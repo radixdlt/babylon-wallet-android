@@ -31,6 +31,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.ui.composables.linkedconnector.LinkedConnectorMessageScreen
@@ -47,6 +48,7 @@ fun AddLinkConnectorScreen(
     onQrCodeScanned: (String) -> Unit,
     onQrCodeScanFailure: (Throwable) -> Unit,
     onConnectorDisplayNameChanged: (String) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit,
     onErrorDismiss: () -> Unit
@@ -65,6 +67,7 @@ fun AddLinkConnectorScreen(
         onQrCodeScanned = onQrCodeScanned,
         onQrCodeScanFailure = onQrCodeScanFailure,
         onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+        onInfoClick = onInfoClick,
         onContinueClick = onContinueClick,
         onCloseClick = onCloseClick,
         onErrorDismiss = onErrorDismiss
@@ -79,6 +82,7 @@ private fun AddLinkConnectorContent(
     onQrCodeScanned: (String) -> Unit,
     onQrCodeScanFailure: (Throwable) -> Unit,
     onConnectorDisplayNameChanged: (String) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit,
     onErrorDismiss: () -> Unit
@@ -103,7 +107,8 @@ private fun AddLinkConnectorContent(
                         ScanQrCode(
                             isCameraOn = state.content.isCameraOn,
                             onQrCodeScanned = onQrCodeScanned,
-                            onQrCodeScanFailure = onQrCodeScanFailure
+                            onQrCodeScanFailure = onQrCodeScanFailure,
+                            onInfoClick = onInfoClick
                         )
                     }
                 }
@@ -165,7 +170,8 @@ private fun ScanQrCode(
     modifier: Modifier = Modifier,
     isCameraOn: Boolean,
     onQrCodeScanned: (String) -> Unit,
-    onQrCodeScanFailure: (Throwable) -> Unit
+    onQrCodeScanFailure: (Throwable) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -219,11 +225,21 @@ private fun ScanQrCode(
         NumberedValuesList(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingDefault),
             values = persistentListOf(
                 stringResource(id = R.string.scanQR_connectorExtension_disclosureItem1),
                 stringResource(id = R.string.scanQR_connectorExtension_disclosureItem2)
             )
+        )
+
+        InfoButton(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge,),
+            textStyle = RadixTheme.typography.body2Link,
+            text = stringResource(id = R.string.scanQR_connectorExtension_radixConnectLearMore),
+            onClick = {
+                onInfoClick(GlossaryItem.radixconnect)
+            }
         )
     }
 }
@@ -334,6 +350,7 @@ private fun AddLinkConnectorPreview(
             onQrCodeScanned = {},
             onQrCodeScanFailure = {},
             onConnectorDisplayNameChanged = {},
+            onInfoClick = {},
             onContinueClick = {},
             onCloseClick = {},
             onErrorDismiss = {}

@@ -45,9 +45,14 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.infoDialog(glossaryItem)
             }
         )
-        linkedConnectorsScreen(onBackClick = {
-            navController.popBackStack()
-        })
+        linkedConnectorsScreen(
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
         dAppDetailScreen(
             onBackClick = {
                 navController.popBackStack()

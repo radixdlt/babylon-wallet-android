@@ -325,6 +325,9 @@ fun NavigationHost(
                     factorSourceId = factorSourceId,
                     isOlympia = isOlympia
                 )
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
             }
         )
         createAccountConfirmationScreen(
