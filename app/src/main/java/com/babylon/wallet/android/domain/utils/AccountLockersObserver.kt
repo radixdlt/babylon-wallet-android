@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.domain.utils
 
-import com.babylon.wallet.android.data.repository.locker.AccountLockerRepository
+import com.babylon.wallet.android.data.repository.locker.AccountLockersRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
@@ -36,7 +36,7 @@ import kotlin.time.toDuration
 class AccountLockersObserver @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val accountLockerRepository: AccountLockerRepository,
+    private val accountLockersRepository: AccountLockersRepository,
     @ApplicationScope private val appScope: CoroutineScope,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -68,7 +68,7 @@ class AccountLockersObserver @Inject constructor(
         val lockersPerUserAccount = getLockersPerUserAccount(dAppsWithAccountLockers, authorizedDApps)
 
         return lockersPerUserAccount.mapValues { entry ->
-            val availableDeposits = accountLockerRepository.getAvailableAccountLockerDeposits(
+            val availableDeposits = accountLockersRepository.getAvailableAccountLockerDeposits(
                 accountAddress = entry.key,
                 lockerAddresses = entry.value.mapNotNull { it.lockerAddress }.toSet()
             ).getOrNull().orEmpty()

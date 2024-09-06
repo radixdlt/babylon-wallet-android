@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.account.delegates
 
-import com.babylon.wallet.android.data.repository.locker.AccountLockerRepository
+import com.babylon.wallet.android.data.repository.locker.AccountLockersRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.presentation.account.AccountViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 class AccountLockersDelegate @Inject constructor(
     private val accountLockersObserver: AccountLockersObserver,
-    private val accountLockersRepository: AccountLockerRepository,
+    private val accountLockersRepository: AccountLockersRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
 ) : ViewModelDelegate<AccountViewModel.State>() {
 

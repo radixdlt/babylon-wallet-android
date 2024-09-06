@@ -26,7 +26,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.domain.TransactionManifestData
 import javax.inject.Inject
 
-interface AccountLockerRepository {
+interface AccountLockersRepository {
 
     suspend fun getAvailableAccountLockerDeposits(
         accountAddress: AccountAddress,
@@ -39,13 +39,13 @@ interface AccountLockerRepository {
     )
 }
 
-class AccountLockerRepositoryImpl @Inject constructor(
+class AccountLockersRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val accountLockerDao: AccountLockerDao,
     private val incomingRequestRepository: IncomingRequestRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
-) : AccountLockerRepository {
+) : AccountLockersRepository {
 
     override suspend fun getAvailableAccountLockerDeposits(
         accountAddress: AccountAddress,
