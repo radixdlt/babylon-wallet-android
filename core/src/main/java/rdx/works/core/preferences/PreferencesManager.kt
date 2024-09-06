@@ -87,7 +87,7 @@ interface PreferencesManager {
 
     suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean)
 
-    suspend fun enableAppLock(enabled: Boolean)
+    suspend fun enableAdvancedLock(enabled: Boolean)
 
     suspend fun clearShowRelinkConnectors()
 
@@ -326,7 +326,7 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun enableAppLock(enabled: Boolean) {
+    override suspend fun enableAdvancedLock(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_APP_LOCK_ENABLED] = enabled
         }

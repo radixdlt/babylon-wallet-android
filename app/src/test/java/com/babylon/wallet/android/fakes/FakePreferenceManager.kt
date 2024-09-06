@@ -156,7 +156,7 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
-    override suspend fun enableAppLock(enabled: Boolean) {
+    override suspend fun enableAdvancedLock(enabled: Boolean) {
         TODO("Not yet implemented")
     }
 
