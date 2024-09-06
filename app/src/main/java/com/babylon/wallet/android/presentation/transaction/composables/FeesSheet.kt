@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,11 +30,13 @@ import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -54,7 +57,8 @@ fun FeesSheet(
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit
+    onViewAdvancedModeClick: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize()
@@ -110,6 +114,18 @@ fun FeesSheet(
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                InfoButton(
+                    text = stringResource(id = R.string.customizeNetworkFees_howDoFeesWork),
+                    onClick = {
+                        onInfoClick(GlossaryItem.transactionfee)
+                    }
+                )
+            }
 
             HorizontalDivider(
                 Modifier
@@ -213,16 +229,28 @@ fun FeesSheet(
                             textStyle = RadixTheme.typography.body1Header
                         )
                     } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
-                        WarningText(
+                        Row(
                             modifier = Modifier
-                                .fillMaxWidth()
                                 .padding(
                                     horizontal = RadixTheme.dimensions.paddingLarge,
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
-                            text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
-                            textStyle = RadixTheme.typography.body1Header
-                        )
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                        ) {
+                            WarningText(
+                                modifier = Modifier.weight(1f),
+                                text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
+                                textStyle = RadixTheme.typography.body1Header
+                            )
+                            InfoButton(
+                                text = stringResource(R.string.empty),
+                                color = RadixTheme.colors.gray3,
+                                onClick = {
+                                    onInfoClick(GlossaryItem.payingaccount)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -823,7 +851,8 @@ private fun FeesSheetEmptyPreview() {
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
-            onViewAdvancedModeClick = {}
+            onViewAdvancedModeClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -849,7 +878,8 @@ private fun FeesSheetNotEnoughXRDPreview() {
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
-            onViewAdvancedModeClick = {}
+            onViewAdvancedModeClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -875,7 +905,8 @@ private fun FeesSheetAccountNotInvolvedPreview() {
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
-            onViewAdvancedModeClick = {}
+            onViewAdvancedModeClick = {},
+            onInfoClick = {}
         )
     }
 }

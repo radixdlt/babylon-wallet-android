@@ -317,6 +317,7 @@ private fun TransactionPreviewContent(
 
                         PresentingProofsContent(
                             badges = state.previewType.badges.toPersistentList(),
+                            onInfoClick = onInfoClick,
                             onClick = { badge ->
                                 when (val resource = badge.resource) {
                                     is Resource.FungibleResource -> onTransferableFungibleClick(
@@ -386,7 +387,8 @@ private fun TransactionPreviewContent(
                     onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                     onTipPercentageChanged = onTipPercentageChanged,
                     onViewDefaultModeClick = onViewDefaultModeClick,
-                    onViewAdvancedModeClick = onViewAdvancedModeClick
+                    onViewAdvancedModeClick = onViewAdvancedModeClick,
+                    onInfoClick = onInfoClick
                 )
             },
             showDragHandle = true,
@@ -431,7 +433,8 @@ private fun BottomSheetContent(
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit
+    onViewAdvancedModeClick: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     when (sheetState) {
         is State.Sheet.CustomizeGuarantees -> {
@@ -459,7 +462,8 @@ private fun BottomSheetContent(
                 onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                 onTipPercentageChanged = onTipPercentageChanged,
                 onViewDefaultModeClick = onViewDefaultModeClick,
-                onViewAdvancedModeClick = onViewAdvancedModeClick
+                onViewAdvancedModeClick = onViewAdvancedModeClick,
+                onInfoClick = onInfoClick
             )
         }
 

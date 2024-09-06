@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -127,13 +128,24 @@ fun NetworkFeeContent(
                 textStyle = RadixTheme.typography.body1Header
             )
         } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
-            WarningText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingSmall),
-                text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
-                textStyle = RadixTheme.typography.body1Header
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = RadixTheme.dimensions.paddingSmall),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                WarningText(
+                    modifier = Modifier.weight(1f),
+                    text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
+                    textStyle = RadixTheme.typography.body1Header
+                )
+                InfoButton(
+                    text = stringResource(R.string.empty),
+                    color = RadixTheme.colors.gray3,
+                    onClick = {
+                        onInfoClick(GlossaryItem.payingaccount)
+                    }
+                )
+            }
         }
 
         RadixTextButton(
