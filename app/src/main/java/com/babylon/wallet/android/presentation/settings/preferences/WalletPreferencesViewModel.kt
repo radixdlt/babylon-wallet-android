@@ -80,7 +80,7 @@ class WalletPreferencesViewModel @Inject constructor(
 
     private fun observeAppLockSetting() {
         viewModelScope.launch {
-            preferencesManager.isAppLockEnabled
+            preferencesManager.isAdvancedLockEnabled
                 .collect { isAppLockEnabled ->
                     _state.updateSetting<SettingsItem.WalletPreferences.AppLock> {
                         SettingsItem.WalletPreferences.AppLock(isAppLockEnabled)
@@ -97,9 +97,9 @@ class WalletPreferencesViewModel @Inject constructor(
         preferencesManager.enableCrashReporting(enabled)
     }
 
-    fun onAppLockToggled(enabled: Boolean) {
+    fun onAdvancedLockToggled(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.enableAppLock(enabled)
+            preferencesManager.enableAdvancedLock(enabled)
         }
     }
 

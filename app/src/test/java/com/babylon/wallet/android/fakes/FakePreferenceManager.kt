@@ -49,7 +49,7 @@ class FakePreferenceManager : PreferencesManager {
         get() = TODO("Not yet implemented")
     override val isEulaAccepted: Flow<Boolean>
         get() = TODO("Not yet implemented")
-    override val isAppLockEnabled: Flow<Boolean>
+    override val isAdvancedLockEnabled: Flow<Boolean>
         get() = TODO("Not yet implemented")
 
     override suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent) {
@@ -156,7 +156,7 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
-    override suspend fun enableAppLock(enabled: Boolean) {
+    override suspend fun enableAdvancedLock(enabled: Boolean) {
         TODO("Not yet implemented")
     }
 

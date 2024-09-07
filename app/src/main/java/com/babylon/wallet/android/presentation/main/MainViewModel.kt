@@ -139,9 +139,9 @@ class MainViewModel @Inject constructor(
             combine(
                 getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown,
-                preferencesManager.isAppLockEnabled,
+                preferencesManager.isAdvancedLockEnabled,
                 cloudBackupErrorStream.errors
-            ) { profileState, isDeviceRootedDialogShown, isAppLockEnabled, backupError ->
+            ) { profileState, isDeviceRootedDialogShown, isAdvancedLockEnabled, backupError ->
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
@@ -149,7 +149,7 @@ class MainViewModel @Inject constructor(
                         ),
                         showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown,
                         claimedByAnotherDeviceError = backupError as? ClaimedByAnotherDevice,
-                        isAppLockEnabled = isAppLockEnabled,
+                        isAdvancedLockEnabled = isAdvancedLockEnabled,
                         isDeviceSecure = deviceCapabilityHelper.isDeviceSecure
                     )
                 }
@@ -411,12 +411,12 @@ data class MainUiState(
     val olympiaErrorState: OlympiaErrorState? = null,
     val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
     val showMobileConnectWarning: Boolean = false,
+    val isAdvancedLockEnabled: Boolean = false,
     val isAppLocked: Boolean = false,
-    val isAppLockEnabled: Boolean = false,
     val isDeviceSecure: Boolean
 ) : UiState {
     val showDeviceNotSecureDialog: Boolean
-        get() = !isDeviceSecure && !isAppLockEnabled
+        get() = !isDeviceSecure && !isAdvancedLockEnabled
 }
 
 data class OlympiaErrorState(

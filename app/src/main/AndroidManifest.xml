@@ -63,7 +63,7 @@
         </activity>
         <activity
             android:theme="@style/Theme.AppLockScreen"
-            android:name=".presentation.dialogs.lock.AppLockActivity"
+            android:name=".presentation.lockscreen.AppLockActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
 

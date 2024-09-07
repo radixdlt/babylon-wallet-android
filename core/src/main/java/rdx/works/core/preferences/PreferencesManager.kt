@@ -45,11 +45,12 @@ interface PreferencesManager {
     val showRelinkConnectorsAfterUpdate: Flow<Boolean?>
     val showRelinkConnectorsAfterProfileRestore: Flow<Boolean>
     val isEulaAccepted: Flow<Boolean>
-    val isAppLockEnabled: Flow<Boolean>
+    val isAdvancedLockEnabled: Flow<Boolean>
 
     suspend fun updateLastCloudBackupEvent(lastCloudBackupEvent: LastCloudBackupEvent)
 
     suspend fun removeLastCloudBackupEvent()
+
     suspend fun updateLastManualBackupInstant(lastManualBackupInstant: Instant)
 
     suspend fun isUsingDeprecatedCloudBackup(): Boolean
@@ -86,7 +87,7 @@ interface PreferencesManager {
 
     suspend fun setShowRelinkConnectorsAfterProfileRestore(show: Boolean)
 
-    suspend fun enableAppLock(enabled: Boolean)
+    suspend fun enableAdvancedLock(enabled: Boolean)
 
     suspend fun clearShowRelinkConnectors()
 
@@ -132,7 +133,8 @@ class PreferencesManagerImpl @Inject constructor(
         .map { preferences ->
             preferences[KEY_SHOW_RELINK_CONNECTORS_AFTER_PROFILE_RESTORE] ?: false
         }
-    override val isAppLockEnabled: Flow<Boolean>
+
+    override val isAdvancedLockEnabled: Flow<Boolean>
         get() = dataStore.data
             .map { preferences ->
                 preferences[KEY_APP_LOCK_ENABLED] ?: BuildConfig.APP_LOCK_ENABLED
@@ -324,7 +326,7 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun enableAppLock(enabled: Boolean) {
+    override suspend fun enableAdvancedLock(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_APP_LOCK_ENABLED] = enabled
         }

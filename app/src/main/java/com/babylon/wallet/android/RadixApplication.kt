@@ -62,10 +62,11 @@ class RadixApplication : Application(), Configuration.Provider {
         private val scope: CoroutineScope
     ) : DefaultLifecycleObserver {
 
-        override fun onPause(owner: LifecycleOwner) {
+        override fun onStop(owner: LifecycleOwner) {
             scope.launch {
                 appLockStateProvider.lockApp()
             }
+            super.onStop(owner)
         }
     }
 

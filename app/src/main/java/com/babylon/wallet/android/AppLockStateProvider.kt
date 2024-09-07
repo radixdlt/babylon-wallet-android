@@ -25,7 +25,7 @@ class AppLockStateProvider @Inject constructor(
     val lockState = combine(
         getProfileUseCase.state,
         _state,
-        preferencesManager.isAppLockEnabled
+        preferencesManager.isAdvancedLockEnabled
     ) { profileState, lockedState, isAppLockEnabled ->
         when {
             isAppLockEnabled -> if (profileState is ProfileState.NotInitialised) {
@@ -40,7 +40,7 @@ class AppLockStateProvider @Inject constructor(
 
     suspend fun lockApp() {
         if (_state.value.isLockingPaused) return
-        val isAppLockEnabled = preferencesManager.isAppLockEnabled.firstOrNull()
+        val isAppLockEnabled = preferencesManager.isAdvancedLockEnabled.firstOrNull()
         if (isAppLockEnabled == true) {
             _state.update { it.copy(lockState = LockState.Locked) }
         }
