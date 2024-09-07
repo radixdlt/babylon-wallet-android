@@ -260,6 +260,9 @@ dependencies {
     // apache commons validator
     implementation libs.apacheCommonsValidator
 
+    // markdown library
+    implementation libs.markdown
+
     // Peerdroid
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')

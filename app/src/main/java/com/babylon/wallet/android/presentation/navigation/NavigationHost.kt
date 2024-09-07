@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialo
 import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -273,6 +274,9 @@ fun NavigationHost(
             },
             onHistoryClick = { accountAddress ->
                 navController.history(accountAddress)
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
             }
         )
         derivePublicKeyDialog(
@@ -321,6 +325,9 @@ fun NavigationHost(
                     factorSourceId = factorSourceId,
                     isOlympia = isOlympia
                 )
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
             }
         )
         createAccountConfirmationScreen(
@@ -332,14 +339,22 @@ fun NavigationHost(
             }
         )
         createPersonaScreen(
+            onContinueClick = { createPersonaRequestSource ->
+                navController.createPersonaConfirmationScreen(createPersonaRequestSource)
+            },
             onBackClick = { navController.navigateUp() },
-            onContinueClick = { navController.createPersonaConfirmationScreen(it) }
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            }
         )
         personaInfoScreen(
-            onBackClick = { navController.navigateUp() },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
             onContinueClick = { requestSource ->
                 navController.createPersonaScreen(requestSource)
-            }
+            },
+            onBackClick = { navController.navigateUp() }
         )
         personasScreen(
             onBackClick = { navController.navigateUp() },
@@ -355,6 +370,9 @@ fun NavigationHost(
             },
             onNavigateToSecurityCenter = {
                 navController.securityCenter()
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
             }
         )
         personaDetailScreen(
@@ -413,6 +431,9 @@ fun NavigationHost(
             },
             onDAppClick = { dApp ->
                 navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress)
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
             }
         )
         transferScreen(
@@ -525,6 +546,14 @@ fun NavigationHost(
             }
         )
         assetDialog(
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        infoDialog(
             onDismiss = {
                 navController.popBackStack()
             }

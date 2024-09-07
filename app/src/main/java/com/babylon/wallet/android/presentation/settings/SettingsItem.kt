@@ -182,7 +182,7 @@ sealed interface SettingsItem {
                 EntityHiding -> R.string.preferences_hiddenEntities_subtitle
                 AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
                 is CrashReporting -> null
-                is AppLock -> R.string.preferences_advancedLock_subtitle
+                is AppLock -> R.string.preferences_advancedLockAndroid_subtitle
             }
         }
 

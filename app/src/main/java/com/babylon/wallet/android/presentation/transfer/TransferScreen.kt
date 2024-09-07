@@ -389,7 +389,8 @@ fun TransferContent(
                         onNextNFtsPageRequest = onNextNFTsPageRequest,
                         onStakesRequest = onStakesRequest,
                         onUiMessageShown = onUiMessageShown,
-                        onChooseAssetsSubmitted = onChooseAssetsSubmitted
+                        onChooseAssetsSubmitted = onChooseAssetsSubmitted,
+                        onInfoClick = {}
                     )
                 }
 

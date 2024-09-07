@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.PoolResourcesValues
@@ -54,6 +55,7 @@ fun PoolUnitDialogContent(
     poolUnitPrice: AssetPrice.PoolUnitPrice?,
     isLoadingBalance: Boolean,
     canBeHidden: Boolean,
+    onInfoClick: (GlossaryItem) -> Unit,
     onHideClick: () -> Unit
 ) {
     val resourceAddress = args.resourceAddress
@@ -229,7 +231,8 @@ fun PoolUnitDialogContent(
 
             BehavioursSection(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                behaviours = poolUnit?.resource?.behaviours
+                behaviours = poolUnit?.resource?.behaviours,
+                onInfoClick = onInfoClick
             )
 
             TagsSection(

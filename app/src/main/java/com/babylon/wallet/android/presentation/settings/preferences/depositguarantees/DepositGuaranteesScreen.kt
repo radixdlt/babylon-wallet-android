@@ -33,6 +33,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.replaceDoublePercent
@@ -41,6 +43,7 @@ import com.babylon.wallet.android.utils.replaceDoublePercent
 fun DepositGuaranteesScreen(
     modifier: Modifier = Modifier,
     viewModel: DepositGuaranteesViewModel,
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -51,6 +54,7 @@ fun DepositGuaranteesScreen(
         onDepositGuaranteeChanged = viewModel::onDepositGuaranteeChanged,
         onDepositGuaranteeIncreased = viewModel::onDepositGuaranteeIncreased,
         onDepositGuaranteeDecreased = viewModel::onDepositGuaranteeDecreased,
+        onInfoClick = onInfoClick,
         onBackClick = onBackClick
     )
 }
@@ -62,6 +66,7 @@ fun DepositGuaranteesContent(
     onDepositGuaranteeChanged: (String) -> Unit,
     onDepositGuaranteeIncreased: () -> Unit,
     onDepositGuaranteeDecreased: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
@@ -77,25 +82,25 @@ fun DepositGuaranteesContent(
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
-            Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            HorizontalDivider(color = RadixTheme.colors.gray4)
+            Column(modifier) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.accountSecuritySettings_depositGuarantees_text),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-
-//                InfoLink( // TODO Uncomment when showing Infolinks
-//                    text = stringResource(R.string.transactionReview_guarantees_howDoGuaranteesWork),
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-//                )
-//                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-
+                InfoButton(
+                    modifier = Modifier.padding(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingLarge
+                    ),
+                    text = stringResource(id = R.string.transactionReview_guarantees_howDoGuaranteesWork),
+                    onClick = {
+                        onInfoClick(GlossaryItem.guarantees)
+                    }
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -182,6 +187,7 @@ fun DepositGuaranteesContentPreview() {
             onDepositGuaranteeChanged = {},
             onDepositGuaranteeIncreased = {},
             onDepositGuaranteeDecreased = {},
+            onInfoClick = {},
             onBackClick = {},
         )
     }
