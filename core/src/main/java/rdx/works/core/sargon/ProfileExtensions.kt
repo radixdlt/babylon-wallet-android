@@ -116,6 +116,9 @@ val Profile.ledgerFactorSources: List<FactorSource.Ledger>
 
 fun Profile.factorSourceById(id: FactorSourceId) = factorSources.asIdentifiable().getBy(id)
 
+val Profile.isAdvancedLockEnabled: Boolean
+    get() = appPreferences.security.isAdvancedLockEnabled
+
 private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() {
         val activeAccountsOnCurrentNetwork = activeAccountsOnCurrentNetwork
@@ -490,6 +493,14 @@ fun Profile.updateCloudSyncEnabled(isEnabled: Boolean) = copy(
     appPreferences = appPreferences.copy(
         security = appPreferences.security.copy(
             isCloudProfileSyncEnabled = isEnabled
+        )
+    )
+)
+
+fun Profile.updateAdvancedLockEnabled(isEnabled: Boolean) = copy(
+    appPreferences = appPreferences.copy(
+        security = appPreferences.security.copy(
+            isAdvancedLockEnabled = isEnabled
         )
     )
 )
