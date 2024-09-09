@@ -39,7 +39,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.mikepenz.markdown.compose.components.MarkdownComponent
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.m3.markdownColor
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.markdownAnnotator
 import com.mikepenz.markdown.model.markdownPadding
@@ -172,11 +171,8 @@ private fun InfoDialogContent(
                     .padding(),
                 typography = markdownTypography(
                     h2 = RadixTheme.typography.title,
-                    paragraph = RadixTheme.typography.body1Regular,
+                    paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.gray1),
 
-                ),
-                colors = markdownColor(
-                    linkText = RadixTheme.colors.blue2
                 ),
                 padding = markdownPadding(
                     block = RadixTheme.dimensions.paddingSmall,

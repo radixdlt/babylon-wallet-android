@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.main
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
-import com.babylon.wallet.android.LockState
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
@@ -37,6 +36,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
 import rdx.works.profile.data.repository.MnemonicIntegrityRepository
@@ -139,9 +140,15 @@ class MainViewModel @Inject constructor(
             combine(
                 getProfileUseCase.state,
                 preferencesManager.isDeviceRootedDialogShown,
-                preferencesManager.isAdvancedLockEnabled,
                 cloudBackupErrorStream.errors
-            ) { profileState, isDeviceRootedDialogShown, isAdvancedLockEnabled, backupError ->
+            ) { profileState, isDeviceRootedDialogShown, backupError ->
+                // we can collect the getProfileUseCase.flow ONLY if the ProfileState is Restored
+                val isAdvancedLockEnabled = if (profileState is ProfileState.Restored) {
+                    getProfileUseCase.flow.first().isAdvancedLockEnabled
+                } else {
+                    false
+                }
+
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
@@ -166,7 +173,7 @@ class MainViewModel @Inject constructor(
     private fun observeLockState() {
         viewModelScope.launch {
             appLockStateProvider.lockState.collect { lockState ->
-                val isLocked = lockState == LockState.Locked
+                val isLocked = lockState == AppLockStateProvider.LockState.Locked
                 _state.update { state ->
                     state.copy(isAppLocked = isLocked)
                 }

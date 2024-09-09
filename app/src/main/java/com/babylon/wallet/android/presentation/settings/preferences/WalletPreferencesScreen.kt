@@ -50,7 +50,7 @@ fun WalletPreferencesScreen(
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
         onCrashReportingToggled = viewModel::onCrashReportingToggled,
-        onAdavanceLockToggled = viewModel::onAdvancedLockToggled
+        onAdvancedLockToggled = viewModel::onAdvancedLockToggled
     )
 }
 
@@ -62,7 +62,7 @@ private fun WalletPreferencesContent(
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onCrashReportingToggled: (Boolean) -> Unit,
-    onAdavanceLockToggled: (Boolean) -> Unit,
+    onAdvancedLockToggled: (Boolean) -> Unit,
 ) {
     var crashReportingPromptVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -152,7 +152,7 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
-                                    is SettingsItem.WalletPreferences.AppLock -> {
+                                    is SettingsItem.WalletPreferences.AdvancedLock -> {
                                         SwitchSettingsItem(
                                             modifier = Modifier
                                                 .background(RadixTheme.colors.defaultBackground)
@@ -163,7 +163,7 @@ private fun WalletPreferencesContent(
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
                                             onCheckedChange = { checked ->
-                                                onAdavanceLockToggled(checked)
+                                                onAdvancedLockToggled(checked)
                                                 context.setWindowSecure(checked)
                                             }
                                         )
@@ -202,7 +202,7 @@ fun AppSettingsScreenPreview() {
             onDeveloperModeToggled = {},
             onBackClick = {},
             onCrashReportingToggled = {},
-            onAdavanceLockToggled = {}
+            onAdvancedLockToggled = {}
         )
     }
 }
