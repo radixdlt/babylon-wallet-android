@@ -8,7 +8,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import rdx.works.profile.domain.ProfileException
 
 data class TransactionErrorMessage(
-    private val error: Throwable?
+    val error: Throwable?
 ) {
 
     private val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
@@ -20,7 +20,8 @@ data class TransactionErrorMessage(
         get() = isNoMnemonicErrorVisible ||
             error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
             error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction ||
-            error is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent
+            error is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ||
+            error is RadixWalletException.DappRequestException.PreviewError
 
     val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
 
