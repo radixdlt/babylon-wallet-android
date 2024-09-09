@@ -158,7 +158,7 @@ sealed interface SettingsItem {
         data object Gateways : WalletPreferences
         data class DeveloperMode(val enabled: Boolean) : WalletPreferences
         data class CrashReporting(val enabled: Boolean) : WalletPreferences
-        data class AppLock(val enabled: Boolean) : WalletPreferences
+        data class AdvancedLock(val enabled: Boolean) : WalletPreferences
 
         @StringRes
         fun titleRes(): Int {
@@ -169,7 +169,7 @@ sealed interface SettingsItem {
                 EntityHiding -> R.string.preferences_hiddenEntities_title
                 AssetsHiding -> R.string.preferences_hiddenAssets_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
-                is AppLock -> R.string.preferences_advancedLock_title
+                is AdvancedLock -> R.string.preferences_advancedLock_title
             }
         }
 
@@ -182,7 +182,7 @@ sealed interface SettingsItem {
                 EntityHiding -> R.string.preferences_hiddenEntities_subtitle
                 AssetsHiding -> R.string.preferences_hiddenAssets_subtitle
                 is CrashReporting -> null
-                is AppLock -> R.string.preferences_advancedLockAndroid_subtitle
+                is AdvancedLock -> R.string.preferences_advancedLockAndroid_subtitle
             }
         }
 
@@ -194,7 +194,7 @@ sealed interface SettingsItem {
                 AssetsHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
                 is DeveloperMode -> DSR.ic_developer_mode
-                is AppLock -> DSR.ic_lock
+                is AdvancedLock -> DSR.ic_lock
                 else -> null
             }
         }

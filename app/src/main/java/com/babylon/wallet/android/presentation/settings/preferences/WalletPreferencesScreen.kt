@@ -152,7 +152,7 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
-                                    is SettingsItem.WalletPreferences.AppLock -> {
+                                    is SettingsItem.WalletPreferences.AdvancedLock -> {
                                         SwitchSettingsItem(
                                             modifier = Modifier
                                                 .background(RadixTheme.colors.defaultBackground)
