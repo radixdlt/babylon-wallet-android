@@ -126,7 +126,9 @@ fun ChooseAssetsSheet(
                     onTabClick = onTabClick,
                     onCollectionClick = onCollectionClick,
                 ),
-                onInfoClick = onInfoClick
+                onInfoClick = {
+                    onInfoClick(state.assetsViewState.selectedTab.toInfoTag())
+                }
             )
         }
     }
