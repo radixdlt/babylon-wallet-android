@@ -7,10 +7,12 @@ class KeystoreManager @Inject constructor() {
 
     fun removeKeys(): Result<Unit> = KeySpec.remove(
         listOf(
-            KeySpec.Mnemonic(),
-            KeySpec.Profile()
+            KeySpec.Profile(),
+            KeySpec.Mnemonic()
         )
     )
 
-    fun removeMnemonicEncryptionKey(): Result<Unit> = KeySpec.remove(listOf(KeySpec.Mnemonic()))
+    fun regenerateMnemonicEncryptionKey(): Result<Unit> {
+        return KeySpec.Mnemonic().generateSecretKey().toUnitResult()
+    }
 }

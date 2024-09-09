@@ -75,7 +75,8 @@ class DeriveProfileUseCase @Inject constructor(
                     id = networkId,
                     accounts = accounts.asList(),
                     personas = emptyList(),
-                    authorizedDapps = emptyList()
+                    authorizedDapps = emptyList(),
+                    resourcePreferences = listOf()
                 )
 
                 val profile = Profile(
