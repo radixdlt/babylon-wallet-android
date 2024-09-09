@@ -280,7 +280,7 @@ sealed interface ActionableAddress {
             is com.radixdlt.sargon.Address.Resource -> "resource"
             is com.radixdlt.sargon.Address.Validator -> "component"
             is com.radixdlt.sargon.Address.Vault -> null
-            is com.radixdlt.sargon.Address.Locker -> null
+            is com.radixdlt.sargon.Address.Locker -> "component"
         }?.let { prefix ->
             "${address.networkId.dashboardUrl()}/$prefix/${address.string.encodeUtf8()}"
         }

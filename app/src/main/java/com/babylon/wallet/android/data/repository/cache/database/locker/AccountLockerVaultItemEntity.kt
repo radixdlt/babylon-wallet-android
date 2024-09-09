@@ -17,7 +17,7 @@ import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toDecimal192
 
-@Entity(primaryKeys = ["locker_address", "account_address", "resource_address", "amount", "total_count"])
+@Entity(primaryKeys = ["locker_address", "account_address", "resource_address"])
 data class AccountLockerVaultItemEntity(
     @ColumnInfo(name = "locker_address")
     val lockerAddress: LockerAddress,

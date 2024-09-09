@@ -174,6 +174,9 @@ fun AccountCardView(
         val assetsPresent = remember(accountWithAssets.isLoadingAssets, accountWithAssets.assets) {
             !accountWithAssets.isLoadingAssets && accountWithAssets.assets?.tokens?.isNotEmpty() == true
         }
+        val promptsPresent = remember(accountWithAssets.securityPrompts, accountWithAssets.deposits) {
+            accountWithAssets.securityPrompts != null || accountWithAssets.deposits.isNotEmpty()
+        }
 
         Spacer(
             modifier = Modifier.constrainAs(spacer) {
@@ -183,7 +186,7 @@ fun AccountCardView(
                     top = addressLabel.bottom,
                     bottom = assetsContainer.top,
                 )
-                height = Dimension.value(if (assetsPresent || accountWithAssets.securityPrompts != null) 32.dp else 0.dp)
+                height = Dimension.value(if (assetsPresent || promptsPresent) 32.dp else 0.dp)
             }
         )
 
@@ -192,8 +195,8 @@ fun AccountCardView(
                 start = parent.start,
                 end = parent.end,
                 top = spacer.bottom,
-                bottom = if (accountWithAssets.securityPrompts != null) promptsContainer.top else parent.bottom,
-                bottomMargin = if (accountWithAssets.securityPrompts != null) 18.dp else 0.dp
+                bottom = if (promptsPresent) promptsContainer.top else parent.bottom,
+                bottomMargin = if (promptsPresent) 18.dp else 0.dp
             )
             width = Dimension.fillToConstraints
         }

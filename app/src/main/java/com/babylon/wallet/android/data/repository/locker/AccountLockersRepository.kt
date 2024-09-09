@@ -11,7 +11,6 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerTouchedAtEntity
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerVaultItemEntity
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.LockerAddress
@@ -43,8 +42,7 @@ class AccountLockersRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val accountLockerDao: AccountLockerDao,
     private val incomingRequestRepository: IncomingRequestRepository,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : AccountLockersRepository {
 
     override suspend fun getAvailableAccountLockerDeposits(
@@ -115,7 +113,7 @@ class AccountLockersRepositoryImpl @Inject constructor(
         accountAddress: AccountAddress,
         lockerAddress: LockerAddress
     ) {
-        withContext(defaultDispatcher) {
+        withContext(ioDispatcher) {
             runCatching {
                 val cachedVaultItems = accountLockerDao.getVaultItems(
                     accountAddress = accountAddress,

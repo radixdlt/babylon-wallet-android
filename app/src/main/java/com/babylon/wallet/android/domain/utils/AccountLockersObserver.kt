@@ -29,8 +29,7 @@ import rdx.works.profile.data.repository.DAppConnectionRepository
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 class AccountLockersObserver @Inject constructor(
@@ -128,7 +127,7 @@ class AccountLockersObserver @Inject constructor(
         return flow {
             while (true) {
                 emit(Unit)
-                delay(5.toDuration(DurationUnit.MINUTES).inWholeMilliseconds)
+                delay(5.minutes.inWholeMilliseconds)
             }
         }
     }
