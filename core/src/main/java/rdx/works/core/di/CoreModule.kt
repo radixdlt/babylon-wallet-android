@@ -81,11 +81,11 @@ object CoreProvider {
 
     @Provides
     @Singleton
-    fun provideEventBusDriver(): AndroidEventBusDriver = AndroidEventBusDriver()
+    fun provideEventBusDriver(): AndroidEventBusDriver = AndroidEventBusDriver
 
     @Provides
     @Singleton
-    fun provideProfileStateChangeDriver(): AndroidProfileStateChangeDriver = AndroidProfileStateChangeDriver()
+    fun provideProfileStateChangeDriver(): AndroidProfileStateChangeDriver = AndroidProfileStateChangeDriver
 
     @Provides
     @Singleton

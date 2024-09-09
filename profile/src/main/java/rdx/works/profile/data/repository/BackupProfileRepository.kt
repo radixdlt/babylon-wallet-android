@@ -2,12 +2,12 @@ package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ProfileFileContents
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.analyzeContentsOfFile
 import com.radixdlt.sargon.extensions.fromEncryptedJson
 import com.radixdlt.sargon.extensions.toEncryptedJson
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.core.domain.ProfileState
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
@@ -37,7 +37,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
     ): Result<Unit> = when (backupType) {
         is BackupType.Cloud, BackupType.DeprecatedCloud -> {
             Timber.tag("CloudBackup").d("Save temporary restoring profile from $backupType")
-            if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Restored) {
+            if (profileRepository.deriveProfileState(snapshotSerialised) is ProfileState.Loaded) {
                 encryptedPreferencesManager.putProfileSnapshotFromCloudBackup(snapshotSerialised)
                 Result.success(Unit)
             } else {
@@ -84,8 +84,8 @@ class BackupProfileRepositoryImpl @Inject constructor(
         }
         is BackupType.File -> encryptedPreferencesManager.getProfileSnapshotFromFileBackup()
     }?.let { snapshot ->
-        profileRepository.deriveProfileState(snapshot) as? ProfileState.Restored
-    }?.profile
+        profileRepository.deriveProfileState(snapshot) as? ProfileState.Loaded
+    }?.v1
 
     override suspend fun discardTemporaryRestoringSnapshot(backupType: BackupType) = when (backupType) {
         is BackupType.Cloud -> {

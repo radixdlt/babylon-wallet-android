@@ -18,10 +18,12 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -84,7 +86,18 @@ class CreateAccountViewModel @Inject constructor(
                 runCatching {
                     sargonOs.newWallet()
                 }.onFailure { profileCreationError ->
-                    Timber.w(profileCreationError) // TODO check that
+                    Timber.w(profileCreationError)
+                    if (profileCreationError is CommonException.SecureStorageAccessException) {
+                        if (!profileCreationError.errorKind.isManualCancellation()) {
+                            _state.update {
+                                it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
+                            }
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
+                        }
+                    }
                 }.onSuccess {
                     // Since we choose to create a new profile, this is the time
                     // we discard the data copied from the cloud backup, since they represent

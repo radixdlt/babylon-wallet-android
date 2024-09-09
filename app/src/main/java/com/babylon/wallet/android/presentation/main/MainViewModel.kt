@@ -22,8 +22,10 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.RadixConnectPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,9 +46,9 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.hasNetworks
 import rdx.works.core.sargon.isAdvancedLockEnabled
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.model.BackupServiceException.ClaimedByAnotherDevice
@@ -93,7 +95,7 @@ class MainViewModel @Inject constructor(
              * even if the profile has not yet been restored
              */
             when (profileState) {
-                is ProfileState.Restored -> p2PLinksRepository.observeP2PLinks()
+                is ProfileState.Loaded -> p2PLinksRepository.observeP2PLinks()
                 else -> p2PLinksRepository.observeP2PLinks().drop(1)
             }
         }
@@ -125,8 +127,8 @@ class MainViewModel @Inject constructor(
 
     val isDevBannerVisible = getProfileUseCase.state.map { profileState ->
         when (profileState) {
-            is ProfileState.Restored -> {
-                profileState.profile.currentGateway.network.id != NetworkId.MAINNET
+            is ProfileState.Loaded -> {
+                profileState.v1.currentGateway.network.id != NetworkId.MAINNET
             }
 
             else -> false
@@ -142,8 +144,8 @@ class MainViewModel @Inject constructor(
                 preferencesManager.isDeviceRootedDialogShown,
                 cloudBackupErrorStream.errors
             ) { profileState, isDeviceRootedDialogShown, backupError ->
-                val isAdvancedLockEnabled = if (profileState is ProfileState.Restored) {
-                    profileState.profile.isAdvancedLockEnabled
+                val isAdvancedLockEnabled = if (profileState is ProfileState.Loaded) {
+                    profileState.v1.isAdvancedLockEnabled
                 } else {
                     false
                 }
@@ -441,22 +443,22 @@ data class OlympiaErrorState(
 sealed interface AppState {
     data object OnBoarding : AppState
     data object Wallet : AppState
-    data class IncompatibleProfile(val cause: Throwable) : AppState
+    data class IncompatibleProfile(val cause: CommonException) : AppState
     data object Loading : AppState
 
     companion object {
         fun from(
-            profileState: ProfileState
+            profileState: ProfileState?
         ) = when (profileState) {
-            is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.cause)
-            is ProfileState.Restored -> if (profileState.hasNetworks()) {
+            is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.v1)
+            is ProfileState.Loaded -> if (profileState.v1.hasNetworks) {
                 Wallet
             } else {
                 OnBoarding
             }
 
             is ProfileState.None -> OnBoarding
-            is ProfileState.NotInitialised -> OnBoarding
+            null -> OnBoarding
         }
     }
 }

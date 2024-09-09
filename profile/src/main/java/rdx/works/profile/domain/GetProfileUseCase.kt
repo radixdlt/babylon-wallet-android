@@ -1,13 +1,14 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.ProfileState
+import rdx.works.core.sargon.hasNetworks
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -38,10 +39,6 @@ class GetProfileUseCase @Inject constructor(
      */
     suspend fun isInitialized(): Boolean = profileRepository.profileState
         .firstOrNull()?.let { state ->
-            isInitialized(state)
+            state is ProfileState.Loaded && state.v1.hasNetworks
         } == true
-
-    private fun isInitialized(state: ProfileState): Boolean {
-        return state is ProfileState.Restored && state.hasNetworks()
-    }
 }

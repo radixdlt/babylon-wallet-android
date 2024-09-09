@@ -1,26 +1,24 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.di.ApplicationScope
 import rdx.works.core.di.IoDispatcher
-import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
 import rdx.works.core.sargon.os.SargonOsManager
@@ -31,7 +29,7 @@ import javax.inject.Inject
 
 interface ProfileRepository {
 
-    val profileState: Flow<ProfileState>
+    val profileState: Flow<ProfileState?>
 
     val inMemoryProfileOrNull: Profile?
 
@@ -51,8 +49,8 @@ suspend fun ProfileRepository.updateProfile(updateAction: suspend (Profile) -> P
 
 val ProfileRepository.profile: Flow<Profile>
     get() = profileState
-        .filterIsInstance<ProfileState.Restored>()
-        .map { it.profile }
+        .filterIsInstance<ProfileState.Loaded>()
+        .map { it.v1 }
 
 @Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
@@ -66,27 +64,10 @@ class ProfileRepositoryImpl @Inject constructor(
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
 
-    private val profileStateFlow: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.NotInitialised)
-
     init {
         applicationScope.launch {
             profileStateChangeDriver
-                .profileState
-                .map { state ->
-                    when (state) {
-                        is com.radixdlt.sargon.ProfileState.None -> ProfileState.None
-                        is com.radixdlt.sargon.ProfileState.Incompatible -> ProfileState.Incompatible(cause = state.v1)
-                        is com.radixdlt.sargon.ProfileState.Loaded -> ProfileState.Restored(profile = state.v1)
-                    }
-                }.collect { state ->
-                    profileStateFlow.update { state }
-                }
-        }
-
-        applicationScope.launch {
-            profileStateFlow
-                .filterIsInstance<ProfileState.Restored>()
-                .map { it.profile }
+                .profile
                 .collect { state ->
                     if (state.canBackupToCloud) {
                         cloudBackupSyncExecutor.requestCloudBackup()
@@ -97,12 +78,11 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override val profileState = profileStateFlow
-        .filterNot { it is ProfileState.NotInitialised }
+    override val profileState = profileStateChangeDriver.profileState
 
     override val inMemoryProfileOrNull: Profile?
-        get() = when (val state = profileStateFlow.value) {
-            is ProfileState.Restored -> state.profile
+        get() = when (val state = profileStateChangeDriver.profileState.value) {
+            is ProfileState.Loaded -> state.v1
             else -> null
         }
 
@@ -143,11 +123,11 @@ class ProfileRepositoryImpl @Inject constructor(
         Profile.fromJson(content)
     }.fold(
         onSuccess = {
-            ProfileState.Restored(it)
+            ProfileState.Loaded(it)
         },
         onFailure = {
             Timber.w(it)
-            ProfileState.Incompatible(cause = it)
+            ProfileState.Incompatible(it as CommonException)
         }
     )
 }
