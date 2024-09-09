@@ -140,6 +140,8 @@ class MainActivity : FragmentActivity() {
                 viewModel.state.collect { state ->
                     if (state.isAdvancedLockEnabled) {
                         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     }
                     if (state.isAppLocked) {
                         startActivity(
