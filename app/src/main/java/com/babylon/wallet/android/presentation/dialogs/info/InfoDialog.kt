@@ -172,11 +172,8 @@ private fun InfoDialogContent(
                     .padding(),
                 typography = markdownTypography(
                     h2 = RadixTheme.typography.title,
-                    paragraph = RadixTheme.typography.body1Regular,
+                    paragraph = RadixTheme.typography.body1Regular.copy(color = RadixTheme.colors.gray1),
 
-                ),
-                colors = markdownColor(
-                    linkText = RadixTheme.colors.blue2
                 ),
                 padding = markdownPadding(
                     block = RadixTheme.dimensions.paddingSmall,
