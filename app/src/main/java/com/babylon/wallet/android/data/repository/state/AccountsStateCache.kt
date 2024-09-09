@@ -273,7 +273,7 @@ class AccountsStateCache @Inject constructor(
     }
 
     @Suppress("LongMethod", "MaxLineLength")
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = filterHiddenResources().transform { cached ->
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets() = transform { cached ->
         val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
             emit(emptyList())
             return@transform
@@ -316,7 +316,7 @@ class AccountsStateCache @Inject constructor(
                 dao.updatePools(pools = join)
             } else {
                 emit(
-                    cached.mapNotNull {
+                    filterHiddenResources(cached).mapNotNull {
                         it.value.toAccountAddressWithAssets(
                             accountAddress = it.key,
                             pools = cachedPools,
@@ -327,7 +327,7 @@ class AccountsStateCache @Inject constructor(
             }
         } else {
             emit(
-                cached.mapNotNull {
+                filterHiddenResources(cached).mapNotNull {
                     it.value.toAccountAddressWithAssets(
                         accountAddress = it.key,
                         pools = cachedPools,
@@ -338,14 +338,16 @@ class AccountsStateCache @Inject constructor(
         }
     }
 
-    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.filterHiddenResources() = map { cached ->
+    private suspend fun filterHiddenResources(
+        cached: Map<AccountAddress, AccountCachedData>
+    ): Map<AccountAddress, AccountCachedData> {
         val resourcePreferences = profileRepository.profile.first().currentNetwork?.resourcePreferences
-            ?: return@map cached
+            ?: return cached
         val hiddenPoolAddresses = resourcePreferences.hiddenPools().toSet()
         val hiddenFungibleAddresses = resourcePreferences.hiddenFungibles().toSet()
         val hiddenNonFungibleAddresses = resourcePreferences.hiddenNonFungibles().toSet()
 
-        cached.mapValues { entry ->
+        return cached.mapValues { entry ->
             entry.value.copy(
                 fungibles = entry.value.fungibles.filterNot { it.address in hiddenFungibleAddresses }
                     .filterNot { it.poolAddress in hiddenPoolAddresses }
@@ -353,7 +355,7 @@ class AccountsStateCache @Inject constructor(
                 nonFungibles = entry.value.nonFungibles.filterNot { it.address in hiddenNonFungibleAddresses }
                     .toMutableList()
             )
-        }.toMutableMap()
+        }
     }
 
     private data class AccountCachedData(

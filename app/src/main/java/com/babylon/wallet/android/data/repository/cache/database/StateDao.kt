@@ -62,8 +62,6 @@ interface StateDao {
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
     fun updatePools(pools: List<PoolWithResourcesJoinResult>) {
-        insertPoolDetails(pools.map { it.pool })
-
         val poolUnitResources = pools.map { pool ->
             pool.poolUnitResource
         }
@@ -73,6 +71,8 @@ interface StateDao {
             pool.resources.map { it.second }
         }.flatten()
         insertOrIgnoreResources(resourcesInvolvedInPools)
+
+        insertPoolDetails(pools.map { it.pool })
 
         val poolResourcesJoin = pools.map { poolResource -> poolResource.resources.map { it.first } }.flatten()
         insertPoolResources(poolResourcesJoin)
