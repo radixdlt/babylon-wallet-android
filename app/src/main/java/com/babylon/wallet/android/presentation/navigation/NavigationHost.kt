@@ -454,6 +454,9 @@ fun NavigationHost(
                         underAccountAddress = null // Marking as null hides claim button when the nft is a claim
                     )
                 }
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
             }
         )
         accountSettings(
