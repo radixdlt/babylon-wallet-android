@@ -89,7 +89,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val profileRepository = FakeProfileRepository(profile = testProfile)
     private val testScope = TestScope(context = coroutineRule.dispatcher)
 
-    private val getProfileUseCase = GetProfileUseCase(profileRepository)
+    private val getProfileUseCase = GetProfileUseCase(profileRepository, coroutineRule.dispatcher)
 
     override fun initVM(): TransactionReviewViewModel = testViewModel(
         transactionRepository = transactionRepository,

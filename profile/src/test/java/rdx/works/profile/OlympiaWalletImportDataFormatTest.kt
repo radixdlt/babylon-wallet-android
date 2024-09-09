@@ -8,6 +8,8 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeBase64
@@ -25,8 +27,11 @@ internal class OlympiaWalletExportFormatTest {
 
     private lateinit var testVectors: List<TestVector>
 
+    private val testDispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+
     private val profileRepository = FakeProfileRepository(Profile.sample())
-    private val getProfileUseCase = GetProfileUseCase(profileRepository)
+    private val getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher)
 
     private val parser = OlympiaWalletDataParser(getProfileUseCase)
 
@@ -37,7 +42,7 @@ internal class OlympiaWalletExportFormatTest {
     }
 
     @Test
-    fun `run tests for test vector`() = runTest {
+    fun `run tests for test vector`() = testScope.runTest {
         testVectors.forEach { testVector ->
             val parsedOlympiaAccountData = parser.parseOlympiaWalletAccountData(testVector.payloads)
             assertNotNull(parsedOlympiaAccountData)
@@ -54,7 +59,7 @@ internal class OlympiaWalletExportFormatTest {
     }
 
     @Test
-    fun `incomplete payload parsing return null`() = runTest {
+    fun `incomplete payload parsing return null`() = testScope.runTest {
         val parsedData = parser.parseOlympiaWalletAccountData(testVectors[1].payloads.subList(0, 1))
         assertNull(parsedData)
     }
