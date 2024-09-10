@@ -142,7 +142,6 @@ class MainViewModel @Inject constructor(
                 preferencesManager.isDeviceRootedDialogShown,
                 cloudBackupErrorStream.errors
             ) { profileState, isDeviceRootedDialogShown, backupError ->
-                // we can collect the getProfileUseCase flow ONLY if the ProfileState is Restored
                 val isAdvancedLockEnabled = if (profileState is ProfileState.Restored) {
                     profileState.profile.isAdvancedLockEnabled
                 } else {
