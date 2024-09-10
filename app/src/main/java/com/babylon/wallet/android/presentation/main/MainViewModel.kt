@@ -34,9 +34,9 @@ import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -142,9 +142,9 @@ class MainViewModel @Inject constructor(
                 preferencesManager.isDeviceRootedDialogShown,
                 cloudBackupErrorStream.errors
             ) { profileState, isDeviceRootedDialogShown, backupError ->
-                // we can collect the getProfileUseCase.flow ONLY if the ProfileState is Restored
+                // we can collect the getProfileUseCase flow ONLY if the ProfileState is Restored
                 val isAdvancedLockEnabled = if (profileState is ProfileState.Restored) {
-                    getProfileUseCase.flow.first().isAdvancedLockEnabled
+                    getProfileUseCase().isAdvancedLockEnabled
                 } else {
                     false
                 }
@@ -162,7 +162,7 @@ class MainViewModel @Inject constructor(
                 }
             }.collect()
         }
-        observeLockState()
+        observeAppLockState()
         handleAllIncomingRequests()
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
@@ -170,14 +170,18 @@ class MainViewModel @Inject constructor(
         processBufferedDeepLinkRequest()
     }
 
-    private fun observeLockState() {
+    private fun observeAppLockState() {
         viewModelScope.launch {
-            appLockStateProvider.lockState.collect { lockState ->
-                val isLocked = lockState == AppLockStateProvider.LockState.Locked
-                _state.update { state ->
-                    state.copy(isAppLocked = isLocked)
+            appLockStateProvider.lockState
+                .map { lockState ->
+                    lockState == AppLockStateProvider.LockState.Locked
                 }
-            }
+                .distinctUntilChanged()
+                .collect { isAppLocked ->
+                    _state.update { state ->
+                        state.copy(isAppLocked = isAppLocked)
+                    }
+                }
         }
     }
 
