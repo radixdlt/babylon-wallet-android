@@ -5,14 +5,13 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.mapError
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.os.SargonOsManager
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
@@ -32,8 +31,7 @@ class DeriveProfileUseCase @Inject constructor(
     ): Result<Unit> = when (profileRepository.profileState.first()) {
         is ProfileState.Loaded -> Result.success(Unit)
         else -> withContext(defaultDispatcher) {
-            val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?:
-                return@withContext Result.failure(RuntimeException("Sargon os not booted"))
+            val sargonOs = sargonOsManager.sargonOs
 
             mnemonicRepository.saveMnemonic(
                 deviceFactorSource.value.id.asGeneral(),

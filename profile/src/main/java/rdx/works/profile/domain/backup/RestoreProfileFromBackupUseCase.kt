@@ -1,9 +1,8 @@
 package rdx.works.profile.domain.backup
 
 import com.radixdlt.sargon.NetworkId
-import kotlinx.coroutines.flow.firstOrNull
+import com.radixdlt.sargon.os.SargonOsManager
 import rdx.works.core.sargon.changeGatewayToNetworkId
-import rdx.works.core.sargon.os.SargonOsManager
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.data.repository.BackupProfileRepository
 import javax.inject.Inject
@@ -18,7 +17,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
         backupType: BackupType,
         mainSeedPhraseSkipped: Boolean
     ): Result<Unit> {
-        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return Result.failure(RuntimeException("Sargon os not booted"))
+        val sargonOs = sargonOsManager.sargonOs
 
         // always restore backup on mainnet
         val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)

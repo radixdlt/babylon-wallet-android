@@ -6,6 +6,7 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.radixdlt.sargon.Bios
+import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidEventBusDriver
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import com.radixdlt.sargon.os.driver.BiometricsHandler
@@ -16,6 +17,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import rdx.works.core.storage.FileRepository
 import rdx.works.core.storage.FileRepositoryImpl
@@ -109,4 +112,15 @@ object CoreProvider {
         profileStateChangeDriver = profileStateChangeDriver
     )
 
+    @Provides
+    @Singleton
+    fun provideSargonOsManager(
+        bios: Bios,
+        @ApplicationScope applicationScope: CoroutineScope,
+        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+    ): SargonOsManager = SargonOsManager.factory(
+        bios = bios,
+        applicationScope = applicationScope,
+        defaultDispatcher = defaultDispatcher
+    )
 }

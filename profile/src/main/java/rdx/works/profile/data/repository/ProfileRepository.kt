@@ -6,6 +6,7 @@ import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +22,6 @@ import rdx.works.core.di.ApplicationScope
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
-import rdx.works.core.sargon.os.SargonOsManager
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import timber.log.Timber
@@ -87,7 +87,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
 
     override suspend fun saveProfile(profile: Profile) {
-        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return
+        val sargonOs = sargonOsManager.sargonOs
         val hostId = hostInfoRepository.getHostId().getOrNull() ?: return
         val hostInfo = hostInfoRepository.getHostInfo().getOrNull() ?: return
 
@@ -111,7 +111,7 @@ class ProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearAllWalletData() {
-        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return
+        val sargonOs = sargonOsManager.sargonOs
 
         preferencesManager.clear()
 

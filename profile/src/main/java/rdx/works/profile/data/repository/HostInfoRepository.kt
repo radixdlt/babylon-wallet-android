@@ -2,8 +2,7 @@ package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.HostId
 import com.radixdlt.sargon.HostInfo
-import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.core.sargon.os.SargonOsManager
+import com.radixdlt.sargon.os.SargonOsManager
 import javax.inject.Inject
 
 interface HostInfoRepository {
@@ -18,13 +17,13 @@ class HostInfoRepositoryImpl @Inject constructor(
 ) : HostInfoRepository {
 
     override suspend fun getHostId(): Result<HostId> {
-        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return Result.failure(RuntimeException("Sargon os is not booted"))
+        val sargonOs = sargonOsManager.sargonOs
 
         return runCatching { sargonOs.resolveHostId() }
     }
 
     override suspend fun getHostInfo(): Result<HostInfo> {
-        val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return Result.failure(RuntimeException("Sargon os is not booted"))
+        val sargonOs = sargonOsManager.sargonOs
 
         return Result.success(sargonOs.resolveHostInfo())
     }

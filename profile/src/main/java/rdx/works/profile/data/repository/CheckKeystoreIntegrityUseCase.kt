@@ -25,7 +25,7 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
 
     suspend operator fun invoke() {
         if (getProfileUseCase.isInitialized().not()) {
-            keystoreManager.resetKeySpecs()
+            keystoreManager.resetMnemonicKeySpec()
             return
         }
 

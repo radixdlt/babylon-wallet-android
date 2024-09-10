@@ -26,6 +26,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -36,7 +37,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
-import rdx.works.core.sargon.os.SargonOsManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
@@ -82,7 +82,7 @@ class CreateAccountViewModel @Inject constructor(
     fun onAccountCreateClick(isWithLedger: Boolean) {
         viewModelScope.launch {
             if (state.value.isFirstAccount) {
-                val sargonOs = sargonOsManager.sargonOs.firstOrNull() ?: return@launch
+                val sargonOs = sargonOsManager.sargonOs
                 runCatching {
                     sargonOs.newWallet()
                 }.onFailure { profileCreationError ->
