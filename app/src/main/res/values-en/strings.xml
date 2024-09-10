@@ -982,6 +982,7 @@ Code: %s</string>
   <string name="accountSecuritySettings_depositGuarantees_title">Default Deposit Guarantees</string>
   <string name="accountSecuritySettings_depositGuarantees_subtitle">Set your default guaranteed minimum for estimated deposits</string>
   <string name="accountSecuritySettings_depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.\n\nYou can always change the guarantee from this default in each transaction.</string>
+  <string name="accountSecuritySettings_depositGuarantees_howGuaranteesWork">How guarantees work</string>
   <string name="accountSecuritySettings_accountRecoveryScan_title">Account Recovery Scan</string>
   <string name="accountSecuritySettings_accountRecoveryScan_subtitle">Using seed phrase or Ledger device</string>
   <string name="accountSecuritySettings_backups_title">Backups</string>
