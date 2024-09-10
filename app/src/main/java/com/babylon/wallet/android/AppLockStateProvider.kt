@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.ProfileState
@@ -25,17 +25,18 @@ class AppLockStateProvider @Inject constructor(
 
     val lockState = combine(
         getProfileUseCase.state,
-        _state,
-        getProfileUseCase.flow.map { it.isAdvancedLockEnabled }
-    ) { profileState, lockedState, isAdvancedLockEnabled ->
-        when {
-            isAdvancedLockEnabled -> if (profileState is ProfileState.NotInitialised) {
-                LockState.Unlocked
-            } else {
-                lockedState.lockState
-            }
+        _state
+    ) { profileState, lockedState ->
 
-            else -> LockState.Unlocked
+        if (profileState is ProfileState.NotInitialised) {
+            LockState.Unlocked
+        } else {
+            lockedState.lockState
+        }
+    }.onStart { // this will execute ONLY when you launch the wallet to make the state aware of the isAdvancedLockEnabled
+        val isAdvancedLockEnabled = getProfileUseCase().isAdvancedLockEnabled
+        _state.update {
+            it.copy(lockState = if (isAdvancedLockEnabled) LockState.Locked else LockState.Unlocked)
         }
     }.shareIn(scope = coroutineScope, started = SharingStarted.WhileSubscribed())
 
