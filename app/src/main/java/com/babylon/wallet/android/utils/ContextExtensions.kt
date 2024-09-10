@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.babylon.wallet.android.utils
 
 import android.content.ActivityNotFoundException
@@ -23,14 +25,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.components.ActivityComponent
 import timber.log.Timber
-
-val backupSettingsScreenIntent: Intent
-    get() = Intent().apply {
-        component = ComponentName(
-            "com.google.android.gms",
-            "com.google.android.gms.backup.component.BackupSettingsActivity"
-        )
-    }
 
 @EntryPoint
 @InstallIn(ActivityComponent::class)
