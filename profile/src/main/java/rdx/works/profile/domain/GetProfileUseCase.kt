@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.IoDispatcher
 import rdx.works.core.sargon.hasNetworks
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(
