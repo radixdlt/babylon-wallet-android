@@ -5,14 +5,13 @@ import javax.inject.Inject
 
 class KeystoreManager @Inject constructor() {
 
-    fun removeKeys(): Result<Unit> = KeySpec.remove(
+    fun resetKeySpecs(): Result<Unit> = KeySpec.reset(
         listOf(
             KeySpec.Profile(),
             KeySpec.Mnemonic()
         )
     )
 
-    fun regenerateMnemonicEncryptionKey(): Result<Unit> {
-        return KeySpec.Mnemonic().generateSecretKey().toUnitResult()
-    }
+    fun resetMnemonicKeySpec(): Result<Unit> = KeySpec.reset(listOf(KeySpec.Mnemonic()))
+
 }

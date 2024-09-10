@@ -25,7 +25,7 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
 
     suspend operator fun invoke() {
         if (getProfileUseCase.isInitialized().not()) {
-            keystoreManager.removeKeys()
+            keystoreManager.resetKeySpecs()
             return
         }
 
@@ -39,7 +39,7 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
                 mnemonicRepository.deleteMnemonic(deviceFactorSource.value.id.asGeneral())
             }
             // just for safety, removing key, although it seem that Android system delete it so it is always null
-            keystoreManager.regenerateMnemonicEncryptionKey().onFailure {
+            keystoreManager.resetMnemonicKeySpec().onFailure {
                 Timber.d(it, "Failed to regenerate encryption key")
             }
             _didMnemonicIntegrityChange.update { true }

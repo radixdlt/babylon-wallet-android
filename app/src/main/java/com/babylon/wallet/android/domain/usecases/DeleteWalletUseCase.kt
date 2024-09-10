@@ -24,7 +24,7 @@ class DeleteWalletUseCase @Inject constructor(
         stateRepository.clearCachedState()
         homeCardsRepository.walletReset()
         profileRepository.clearAllWalletData()
-        keystoreManager.removeKeys().onFailure {
+        keystoreManager.resetKeySpecs().onFailure {
             Timber.d(it, "Failed to delete encryption keys")
         }
     }
