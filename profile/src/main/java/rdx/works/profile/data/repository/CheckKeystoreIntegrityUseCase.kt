@@ -24,12 +24,14 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
     val didMnemonicIntegrityChange: Flow<Boolean> = _didMnemonicIntegrityChange.asSharedFlow()
 
     suspend operator fun invoke() {
-        if (getProfileUseCase.isInitialized().not()) {
+        val profile = getProfileUseCase.finishedOnboardingProfile()
+
+        if (profile == null) {
             keystoreManager.resetMnemonicKeySpec()
             return
         }
 
-        val deviceFactorSources = getProfileUseCase().deviceFactorSources
+        val deviceFactorSources = profile.deviceFactorSources
         if (deviceFactorSources.isEmpty()) return
         // try to encrypt random string
         val keyInvalid = KeySpec.Mnemonic().checkIfPermanentlyInvalidated()

@@ -96,7 +96,7 @@ class MainViewModel @Inject constructor(
              */
             when (profileState) {
                 is ProfileState.Loaded -> p2PLinksRepository.observeP2PLinks()
-                else -> p2PLinksRepository.observeP2PLinks().drop(1)
+                else -> p2PLinksRepository.observeP2PLinks().drop(1) // TODO why that?
             }
         }
         .map { p2pLinks ->
@@ -448,7 +448,7 @@ sealed interface AppState {
 
     companion object {
         fun from(
-            profileState: ProfileState?
+            profileState: ProfileState
         ) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile(cause = profileState.v1)
             is ProfileState.Loaded -> if (profileState.v1.hasNetworks) {
@@ -458,7 +458,6 @@ sealed interface AppState {
             }
 
             is ProfileState.None -> OnBoarding
-            null -> OnBoarding
         }
     }
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.sargon.hasNetworks
@@ -29,16 +30,15 @@ class GetProfileUseCase @Inject constructor(
     }
 
     /**
-     * Checks the validity of the profile. A profile might have been temporarily generated, but might contain no accounts.
-     * This is considered as a profile that is not properly initialized, as a correct profile should have at least one account,
-     * meaning at least one network.
+     * Checks the validity of the profile. A profile might have been temporarily generated, but might contain no networks.
+     * This is considered as a profile that is not properly initialized, as a correct profile should have at least one network.
      *
      * This method is crucial for backing up the profile, since we don't want to sync profile to Drive when profile is
      * not initialized yet. For example, when user adds a ledger to create an account in onboarding flow.
-     *
      */
-    suspend fun isInitialized(): Boolean = profileRepository.profileState
-        .firstOrNull()?.let { state ->
-            state is ProfileState.Loaded && state.v1.hasNetworks
-        } == true
+    suspend fun finishedOnboardingProfile(): Profile? = profileRepository.profileState
+        .map { state ->
+            (state as? ProfileState.Loaded)?.v1?.takeIf { it.hasNetworks }
+        }
+        .firstOrNull()
 }

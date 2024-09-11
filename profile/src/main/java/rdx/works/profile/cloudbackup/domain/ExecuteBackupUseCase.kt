@@ -24,7 +24,7 @@ class ExecuteBackupUseCase @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val profileState = profileRepository.profileState.filterNotNull().first()
+        val profileState = profileRepository.profileState.first()
         val profile = (profileState as? ProfileState.Loaded)?.v1
 
         return if (profile != null) {

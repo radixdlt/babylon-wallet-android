@@ -16,7 +16,7 @@ class ProcessDeepLinkUseCase @Inject constructor(
 
     suspend operator fun invoke(deepLink: String): Result<DeepLinkProcessingResult> {
         return runCatching {
-            val profileInitialized = getProfileUseCase.isInitialized()
+            val profileFinishedOnboarding = getProfileUseCase.finishedOnboardingProfile() != null
             val sessionRequest = radixConnectMobile.handleDeepLink(deepLink)
             val request = sessionRequest.interaction.toDomainModel(
                 remoteEntityId = IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(
@@ -24,7 +24,7 @@ class ProcessDeepLinkUseCase @Inject constructor(
                     originVerificationUrl = if (sessionRequest.originRequiresValidation) sessionRequest.origin else null
                 )
             ).getOrThrow()
-            if (!profileInitialized) {
+            if (!profileFinishedOnboarding) {
                 incomingRequestRepository.setBufferedRequest(request)
                 return Result.success(DeepLinkProcessingResult.Buffered)
             }

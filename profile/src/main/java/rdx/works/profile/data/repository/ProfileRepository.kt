@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -28,7 +29,7 @@ import javax.inject.Inject
 
 interface ProfileRepository {
 
-    val profileState: Flow<ProfileState?>
+    val profileState: Flow<ProfileState>
 
     val inMemoryProfileOrNull: Profile?
 
@@ -77,7 +78,10 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override val profileState = profileStateChangeDriver.profileState
+    override val profileState = profileStateChangeDriver
+        .profileState
+        // Waits until the profile state is evaluated
+        .filterNotNull()
 
     override val inMemoryProfileOrNull: Profile?
         get() = when (val state = profileStateChangeDriver.profileState.value) {
