@@ -7,6 +7,7 @@ import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.from
@@ -14,7 +15,6 @@ import rdx.works.core.sargon.initOlympia
 import rdx.works.core.sargon.nextAppearanceId
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.core.di.DefaultDispatcher
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import javax.inject.Inject
 

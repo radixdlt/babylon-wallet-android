@@ -9,6 +9,7 @@ import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.IoDispatcher
 import rdx.works.core.domain.cloudbackup.GoogleDriveFileId
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import rdx.works.core.mapError
@@ -16,7 +17,6 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.HostInfoRepository
-import rdx.works.core.di.IoDispatcher
 import rdx.works.profile.domain.backup.CloudBackupFile
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import rdx.works.profile.domain.backup.toCloudBackupProperties

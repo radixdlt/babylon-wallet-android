@@ -33,7 +33,6 @@ interface CoreBindings {
     fun bindFileRepository(
         fileRepositoryImpl: FileRepositoryImpl
     ): FileRepository
-
 }
 
 @Module
@@ -90,6 +89,7 @@ object CoreProvider {
     @Singleton
     fun provideProfileStateChangeDriver(): AndroidProfileStateChangeDriver = AndroidProfileStateChangeDriver
 
+    @Suppress("LongParameterList")
     @Provides
     @Singleton
     fun provideBios(

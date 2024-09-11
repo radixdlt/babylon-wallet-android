@@ -25,12 +25,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import rdx.works.core.di.ApplicationScope
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.cloudbackup.domain.CheckBackupStatusUseCase
 import rdx.works.profile.cloudbackup.domain.CloudBackupErrorStream
 import rdx.works.profile.cloudbackup.domain.ExecuteBackupUseCase
 import rdx.works.profile.cloudbackup.model.BackupServiceException
-import rdx.works.core.di.ApplicationScope
 import timber.log.Timber
 import java.time.Duration
 import java.time.temporal.ChronoUnit

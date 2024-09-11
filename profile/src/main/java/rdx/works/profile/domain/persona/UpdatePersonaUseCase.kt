@@ -4,12 +4,12 @@ import com.radixdlt.sargon.Persona
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.sargon.fieldIds
 import rdx.works.core.sargon.updatePersona
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.core.di.DefaultDispatcher
 import javax.inject.Inject
 
 class UpdatePersonaUseCase @Inject constructor(

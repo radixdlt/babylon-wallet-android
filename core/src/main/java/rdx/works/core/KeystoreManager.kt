@@ -13,5 +13,4 @@ class KeystoreManager @Inject constructor() {
     )
 
     fun resetMnemonicKeySpec(): Result<Unit> = KeySpec.reset(listOf(KeySpec.Mnemonic()))
-
 }
