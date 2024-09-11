@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -34,7 +34,7 @@ fun TransferTypeContent(
     preview: PreviewType.Transfer.GeneralTransfer,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<ComponentAddress>) -> Unit,
+    onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {

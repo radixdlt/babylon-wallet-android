@@ -35,7 +35,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.presentation.ui.composables.displayName
-import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
@@ -44,9 +44,9 @@ import rdx.works.core.domain.DApp
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<Pair<ComponentAddress, DApp?>>,
+    connectedDApps: ImmutableList<Pair<ManifestEncounteredComponentAddress, DApp?>>,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<ComponentAddress>) -> Unit,
+    onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -138,8 +138,8 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            ComponentAddress.sampleMainnet() to DApp.sampleMainnet(),
-            ComponentAddress.sampleMainnet.other() to null
+            ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet(),
+            ManifestEncounteredComponentAddress.sampleMainnet.other() to null
         ),
         onDAppClick = {},
         onUnknownComponentsClick = {}

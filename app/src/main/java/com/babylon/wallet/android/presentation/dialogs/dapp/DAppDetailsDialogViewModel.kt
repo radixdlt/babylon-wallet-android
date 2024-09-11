@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -86,6 +87,7 @@ class DAppDetailsDialogViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             authorizedPersonas = personas.toPersistentList(),
+                            isShowLockerDepositsChecked = authorizedDapp.preferences.deposits == AuthorizedDappPreferenceDeposits.VISIBLE
                         )
                     }
                 }
