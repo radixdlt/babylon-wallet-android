@@ -211,7 +211,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         withdrawals = mapOf(),
         addressesOfAccountsRequiringAuth = listOf(),
         addressesOfIdentitiesRequiringAuth = listOf(),
-        encounteredComponentAddresses = listOf(),
+        encounteredAddresses = listOf(),
         newEntities = NewEntities(
             metadata = mapOf()
         ),

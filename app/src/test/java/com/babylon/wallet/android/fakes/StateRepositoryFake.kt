@@ -6,6 +6,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -86,7 +87,7 @@ open class StateRepositoryFake : StateRepository {
         )
     }
 
-    override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> =
+    override suspend fun getDAppDefinitions(componentAddresses: List<ManifestEncounteredComponentAddress>): Result<Map<ManifestEncounteredComponentAddress, AccountAddress?>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> =

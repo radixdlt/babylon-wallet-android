@@ -43,7 +43,7 @@ class FeesResolverTest {
         withdrawals = mapOf(),
         addressesOfAccountsRequiringAuth = listOf(),
         addressesOfIdentitiesRequiringAuth = listOf(),
-        encounteredComponentAddresses = listOf(),
+        encounteredAddresses = listOf(),
         newEntities = NewEntities(
             metadata = mapOf()
         ),
