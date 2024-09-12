@@ -58,7 +58,6 @@ googleApiClient = "2.3.0"
 googleApiServicesDrive = "v3-rev20240123-2.0.0"
 workManagerRuntimeKtx = "2.9.0"
 androidXHiltWorker = "1.2.0"
-
 androidApplicationPlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
 kotlinAndroidPlugin = "1.9.22"
@@ -71,6 +70,7 @@ firebaseCrashlyticsPlugin = "3.0.2"
 hiltPlugin = "2.51.1"
 sonarqubePlugin = "5.0.0.4638"
 kspPlugin = "1.9.22-1.0.17"
+markdown = "0.25.0"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -156,6 +156,7 @@ workManagerRuntimeKtx = { module = "androidx.work:work-runtime-ktx", version.ref
 androidXHiltWorker= { module = "androidx.hilt:hilt-work", version.ref = "androidXHiltWorker" }
 androidXHiltCompiler= { module = "androidx.hilt:hilt-compiler", version.ref = "androidXHiltWorker" }
 lifeCycleProcess = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleProcess" }
+markdown = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdown" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }

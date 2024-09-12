@@ -6,8 +6,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 
 @Composable
 fun TransferableHiddenItemWarning(
@@ -20,11 +21,9 @@ fun TransferableHiddenItemWarning(
             modifier = modifier
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-            InfoLink(
+            WarningText(
                 modifier = Modifier.fillMaxWidth(),
-                text = text,
-                contentColor = RadixTheme.colors.orange1,
-                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+                text = AnnotatedString(text),
                 textStyle = RadixTheme.typography.body1Header
             )
         }

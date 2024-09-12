@@ -12,6 +12,8 @@ import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
@@ -22,8 +24,11 @@ import kotlin.test.Test
 
 internal class AddOlympiaFactorSourceUseCaseTest {
 
+    private val testDispatcher = StandardTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
+
     private val profileRepository = FakeProfileRepository()
-    private val getProfileUseCase = GetProfileUseCase(profileRepository)
+    private val getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher)
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val hostInfoRepository = mockk<HostInfoRepository>()
     private val preferencesManager = mockk<PreferencesManager>()
@@ -37,7 +42,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
     )
 
     @Test
-    fun `new factor source is added to a profile, if it does not already exist`() = runTest {
+    fun `new factor source is added to a profile, if it does not already exist`() = testScope.runTest {
         val olympiaMnemonic = MnemonicWithPassphrase.init(
             phrase = "noodle question hungry sail type offer grocery clay nation hello mixture forum"
         )

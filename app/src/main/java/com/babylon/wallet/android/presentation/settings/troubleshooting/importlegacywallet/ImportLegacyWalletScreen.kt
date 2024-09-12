@@ -63,6 +63,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
@@ -76,7 +77,6 @@ import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScr
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -117,6 +117,7 @@ import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 fun ImportLegacyWalletScreen(
     viewModel: ImportLegacyWalletViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
+    onInfoClick: (GlossaryItem) -> Unit,
     onCloseScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -184,7 +185,8 @@ fun ImportLegacyWalletScreen(
         onWordSelected = viewModel::onWordSelected,
         importAllAccounts = viewModel::onImportAllAccounts,
         onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onErrorDismiss,
-        seedPhraseInputState = state.seedPhraseInputState
+        seedPhraseInputState = state.seedPhraseInputState,
+        onInfoClick = onInfoClick
     )
 }
 
@@ -228,7 +230,8 @@ private fun ImportLegacyWalletContent(
     onWordSelected: (Int, String) -> Unit,
     importAllAccounts: () -> Unit,
     onInvalidConnectionPasswordShown: () -> Unit,
-    seedPhraseInputState: SeedPhraseInputDelegate.State
+    seedPhraseInputState: SeedPhraseInputDelegate.State,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val pagerState = rememberPagerState(0) { pages.size }
@@ -411,6 +414,7 @@ private fun ImportLegacyWalletContent(
                 onQrCodeScanned = onLinkConnectorQrCodeScanned,
                 onQrCodeScanFailure = onLinkConnectorQrCodeScanFailure,
                 onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
+                onInfoClick = onInfoClick,
                 onContinueClick = onNewConnectorContinueClick,
                 onCloseClick = onNewConnectorCloseClick,
                 onErrorDismiss = onInvalidConnectionPasswordShown
@@ -813,11 +817,9 @@ private fun VerifyWithYourSeedPhrasePage(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            InfoLink(
+            WarningText(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning),
-                contentColor = RadixTheme.colors.orange1,
-                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                text = AnnotatedString(stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning))
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             SeedPhraseInputForm(

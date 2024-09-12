@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 private const val ROUTE = "deposit_guarantees_route"
 
@@ -17,6 +18,7 @@ fun NavController.depositGuaranteesScreen() {
 }
 
 fun NavGraphBuilder.depositGuaranteesScreen(
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -36,6 +38,7 @@ fun NavGraphBuilder.depositGuaranteesScreen(
     ) {
         DepositGuaranteesScreen(
             viewModel = hiltViewModel(),
+            onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )
     }

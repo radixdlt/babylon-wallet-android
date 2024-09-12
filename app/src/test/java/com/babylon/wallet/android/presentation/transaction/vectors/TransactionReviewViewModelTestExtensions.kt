@@ -37,7 +37,6 @@ import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
@@ -66,46 +65,46 @@ internal fun testViewModel(
         previewTypeAnalyzer = PreviewTypeAnalyzer(
             generalTransferProcessor = GeneralTransferProcessor(
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository),
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveComponentAddressesUseCase = ResolveComponentAddressesUseCase(stateRepository)
             ),
             transferProcessor = TransferProcessor(
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository)
             ),
             poolRedemptionProcessor = PoolRedemptionProcessor(
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository)
             ),
             poolContributionProcessor = PoolContributionProcessor(
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository),
-                getProfileUseCase = GetProfileUseCase(profileRepository)
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher)
             ),
             accountDepositSettingsProcessor = AccountDepositSettingsProcessor(
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository),
             ),
             validatorClaimProcessor = ValidatorClaimProcessor(
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository)
             ),
             validatorUnstakeProcessor = ValidatorUnstakeProcessor(
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository)
             ),
             validatorStakeProcessor = ValidatorStakeProcessor(
-                getProfileUseCase = GetProfileUseCase(profileRepository),
+                getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository)
             )
         ),
         cacheNewlyCreatedEntitiesUseCase = CacheNewlyCreatedEntitiesUseCase(stateRepository),
-        resolveNotaryAndSignersUseCase = ResolveNotaryAndSignersUseCase(GetProfileUseCase(profileRepository)),
-        searchFeePayersUseCase = SearchFeePayersUseCase(GetProfileUseCase(profileRepository), stateRepository),
+        resolveNotaryAndSignersUseCase = ResolveNotaryAndSignersUseCase(GetProfileUseCase(profileRepository, testDispatcher)),
+        searchFeePayersUseCase = SearchFeePayersUseCase(GetProfileUseCase(profileRepository, testDispatcher), stateRepository),
         transactionRepository = transactionRepository,
         getFiatValueUseCase = getFiatValueUseCase
     ),
     guarantees = TransactionGuaranteesDelegate(),
-    fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository)),
+    fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher)),
     submit = TransactionSubmitDelegate(
         signTransactionUseCase = signTransactionUseCase,
         respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,

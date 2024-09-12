@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 private const val ROUTE = "import_legacy_wallet_route"
@@ -18,6 +19,7 @@ fun NavController.importLegacyWalletScreen() {
 }
 
 fun NavGraphBuilder.importLegacyWalletScreen(
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     markAsHighPriority(ROUTE)
@@ -39,6 +41,7 @@ fun NavGraphBuilder.importLegacyWalletScreen(
         ImportLegacyWalletScreen(
             viewModel = hiltViewModel(),
             addLinkConnectorViewModel = hiltViewModel(),
+            onInfoClick = onInfoClick,
             onCloseScreen = onBackClick
         )
     }

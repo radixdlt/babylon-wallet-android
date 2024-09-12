@@ -44,7 +44,10 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
     }
 
     private val getEntitiesWithSecurityPromptUseCase = GetEntitiesWithSecurityPromptUseCase(
-        getProfileUseCase = GetProfileUseCase(profileRepository = FakeProfileRepository(profile)),
+        getProfileUseCase = GetProfileUseCase(
+            profileRepository = FakeProfileRepository(profile),
+            dispatcher = coroutineRule.dispatcher
+        ),
         preferencesManager = FakePreferenceManager(),
         mnemonicRepository = mnemonicRepositoryMock,
         getBackupStateUseCase = getBackupStateUseCaseMock,

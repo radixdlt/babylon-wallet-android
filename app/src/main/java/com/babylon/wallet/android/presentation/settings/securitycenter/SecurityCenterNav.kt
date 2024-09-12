@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsRequestSource
@@ -97,6 +98,9 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it) }
         )
         ledgerHardwareWalletsScreen(
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
             onBackClick = {
                 navController.navigateUp()
             }
