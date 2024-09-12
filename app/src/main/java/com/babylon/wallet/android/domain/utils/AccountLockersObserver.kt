@@ -41,15 +41,14 @@ class AccountLockersObserver @Inject constructor(
 ) {
 
     private var monitoringJob: Job? = null
-    private val depositsByAccount = MutableSharedFlow<Map<AccountAddress, List<AccountLockerDeposit>>>(1)
-
-    fun depositsByAccount(): Flow<Map<AccountAddress, List<AccountLockerDeposit>>> = depositsByAccount.asSharedFlow()
+    private val _depositsByAccount = MutableSharedFlow<Map<AccountAddress, List<AccountLockerDeposit>>>(1)
+    val depositsByAccount: Flow<Map<AccountAddress, List<AccountLockerDeposit>>> = _depositsByAccount.asSharedFlow()
 
     fun startMonitoring() {
         monitoringJob?.cancel()
         monitoringJob = appScope.launch {
             combine(observeAuthorizedDApps(), ticker()) { authorizedDApps, _ -> checkDeposits(authorizedDApps) }
-                .onEach { depositsByAccount.emit(it) }
+                .onEach { _depositsByAccount.emit(it) }
                 .catch { Timber.w(it) }
                 .flowOn(defaultDispatcher)
                 .collect()

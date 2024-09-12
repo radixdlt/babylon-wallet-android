@@ -119,7 +119,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         every { npsSurveyStateObserver.npsSurveyState } returns flowOf(NPSSurveyState.InActive)
         coEvery { p2PLinksRepository.showRelinkConnectors() } returns flowOf(false)
         every { homeCardsRepository.observeHomeCards() } returns flowOf(emptyList())
-        every { accountLockersObserver.depositsByAccount() } returns flowOf(emptyMap())
+        every { accountLockersObserver.depositsByAccount } returns flowOf(emptyMap())
     }
 
     @Test

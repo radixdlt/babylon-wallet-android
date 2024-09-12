@@ -65,7 +65,7 @@ class ApprovedDappsViewModel @Inject constructor(
     private fun observeAccountLockerDeposits(dApps: List<DApp>) {
         accountLockerDepositsJob?.cancel()
         accountLockerDepositsJob = viewModelScope.launch {
-            accountLockersObserver.depositsByAccount()
+            accountLockersObserver.depositsByAccount
                 .map { it.values.flatten() }
                 .collect { deposits ->
                     _state.update {

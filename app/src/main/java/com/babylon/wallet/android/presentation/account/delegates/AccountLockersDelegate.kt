@@ -25,7 +25,7 @@ class AccountLockersDelegate @Inject constructor(
 
     fun observeAccountLockers(accountAddress: AccountAddress) {
         viewModelScope.launch {
-            accountLockersObserver.depositsByAccount()
+            accountLockersObserver.depositsByAccount
                 .onEach { accountWithLockerClaims ->
                     _state.update {
                         it.copy(

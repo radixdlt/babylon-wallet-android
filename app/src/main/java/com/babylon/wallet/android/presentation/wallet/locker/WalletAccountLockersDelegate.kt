@@ -52,7 +52,7 @@ class WalletAccountLockersDelegate @Inject constructor(
 
     private fun observeAccountLockers() {
         viewModelScope.launch {
-            accountLockersObserver.depositsByAccount()
+            accountLockersObserver.depositsByAccount
                 .onEach { accountWithLockerClaims ->
                     _state.update {
                         it.copy(
