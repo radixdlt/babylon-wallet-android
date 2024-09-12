@@ -15,9 +15,10 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.core.TimestampGenerator
 import rdx.works.core.di.ApplicationScope
 import rdx.works.core.di.IoDispatcher
 import rdx.works.core.preferences.PreferencesManager
@@ -66,10 +67,18 @@ class ProfileRepositoryImpl @Inject constructor(
 
     init {
         applicationScope.launch {
+            // Observe profile state changes that need to be backed up
             profileStateChangeDriver
-                .profile
-                .collect { state ->
-                    if (state.canBackupToCloud) {
+                .profileState
+                .runningFold(
+                    initial = ProfileStateChange.initial(),
+                    operation = { history, profileState ->
+                        history.updateChanges(profileState)
+                    }
+                )
+                .mapNotNull { it.updatedProfileForBackup() }
+                .collect { profile ->
+                    if (profile.canBackupToCloud) {
                         cloudBackupSyncExecutor.requestCloudBackup()
                     } else {
                         encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
@@ -96,7 +105,6 @@ class ProfileRepositoryImpl @Inject constructor(
 
         val profileToSave = profile.copy(
             header = profile.header.copy(
-                lastModified = TimestampGenerator(),
                 // In general this would be unnecessary. Meaning that a new user will generate a device id and store it in profile
                 // or restore from backup, generated a new device id and claim the profile. In both situations the device info should
                 // have the correct up-to-date device id.
@@ -133,4 +141,55 @@ class ProfileRepositoryImpl @Inject constructor(
             ProfileState.Incompatible(it as CommonException)
         }
     )
+
+    private data class ProfileStateChange(
+        private val oldProfileState: ProfileState?,
+        private val newProfileState: ProfileState?
+    ) {
+        fun updateChanges(
+            newState: ProfileState?
+        ): ProfileStateChange = copy(
+            oldProfileState = newProfileState,
+            newProfileState = newState
+        )
+
+        /**
+         * Returns a [Profile] which seems to have been updated.
+         * Examples of a scenario like this
+         * - The previous profile was [ProfileState.None] and the new is [ProfileState.Loaded].
+         *   Usually when the user creates a new profile or imports one.
+         * - The previous state was [ProfileState.Loaded] and the new is [ProfileState.Loaded],
+         *   but the profiles inside are different.
+         *
+         * Might return null if the user
+         * - has no profile,
+         * - the latest [ProfileState.Loaded] profile is the same as the previous one
+         * - the profile was just loaded after sargon boot. Meaning that it went from null => [ProfileState.Loaded]
+         */
+        fun updatedProfileForBackup(): Profile? {
+            if (oldProfileState == null) {
+                // This means that the sargon is not yet booted,
+                // In this case, even if the newProfileState has a value of Loaded,
+                // it is a profile that already exists and has been backed up. No need to backup again
+                return null
+            }
+
+            val oldProfile = (oldProfileState as? ProfileState.Loaded)?.v1
+            if (newProfileState is ProfileState.Loaded) {
+                val newProfile = newProfileState.v1
+                if (oldProfile != newProfile) {
+                    return newProfile
+                }
+            }
+
+            return null
+        }
+
+        companion object {
+            fun initial() = ProfileStateChange(
+                oldProfileState = null,
+                newProfileState = null
+            )
+        }
+    }
 }
