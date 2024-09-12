@@ -68,9 +68,7 @@
   <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
   <string name="assetDetails_tokenDetails_noTokens">You have no Tokens</string>
-  <string name="assetDetails_tokenDetails_whatAreTokens">What are Tokens?</string>
   <string name="assetDetails_NFTDetails_noNfts">You have no NFTs</string>
-  <string name="assetDetails_NFTDetails_whatAreNfts">What are NFTs?</string>
   <string name="assetDetails_NFTDetails_id">ID</string>
   <string name="assetDetails_NFTDetails_name">Name</string>
   <string name="assetDetails_NFTDetails_description">Description</string>
@@ -79,12 +77,8 @@
   <string name="assetDetails_NFTDetails_nftPlural">%d NFTs</string>
   <string name="assetDetails_NFTDetails_ownedOfTotal">%d NFTs of total supply %d</string>
   <string name="assetDetails_stakingDetails_noStakes">You have no Stakes</string>
-  <string name="assetDetails_stakingDetails_whatIsStaking">What is Staking?</string>
   <string name="assetDetails_poolUnitDetails_noPoolUnits">You have no Pool units</string>
-  <string name="assetDetails_poolUnitDetails_whatArePoolUnits">What are Pool units?</string>
   <string name="assetDetails_badgeDetails_noBadges">You have no badges</string>
-  <string name="assetDetails_badgeDetails_whatAreBadges">What are badges?</string>
-  <string name="assetDetails_behaviors_whatAreBehaviors">What are behaviors?</string>
   <string name="assetDetails_behaviors_simpleAsset">This is a simple asset</string>
   <string name="assetDetails_behaviors_supplyIncreasable">The supply of this asset can be increased.</string>
   <string name="assetDetails_behaviors_supplyDecreasable">The supply of this asset can be decreased.</string>
@@ -226,9 +220,13 @@
   <string name="linkedConnectors_relinkConnectors_afterUpdateMessage">Radix Connector now supports linking multiple phones with one browser.\n\nTo support this feature, we\'ve had to disconnect your existing links – **please re-link your Connector(s).**</string>
   <string name="linkedConnectors_relinkConnectors_afterProfileRestoreMessage">Any Connectors you had linked to this wallet using a different phone have been disconnected\n\n**Please re-link your Connector(s) to use with this phone.**</string>
   <string name="linkedConnectors_relinkConnectors_laterButton">Later</string>
+  <string name="linkedConnectors_renameConnector_title">Rename Connector</string>
+  <string name="linkedConnectors_renameConnector_subtitle">Enter a new name for this Linked Connector</string>
+  <string name="linkedConnectors_renameConnector_update">Update</string>
+  <string name="linkedConnectors_renameConnector_errorEmpty">Linked Connector name required</string>
+  <string name="linkedConnectors_renameConnector_successHud">Updated</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
-  <string name="gateways_whatIsAGateway">What is a Gateway?</string>
   <string name="gateways_rcNetGateway">RCnet Gateway</string>
   <string name="gateways_addNewGatewayButtonTitle">Add New Gateway</string>
   <string name="gateways_addNewGateway_title">Add New Gateway</string>
@@ -242,7 +240,6 @@
   <string name="gateways_removeGatewayAlert_message">You will no longer be able to connect to this gateway.</string>
   <string name="authorizedDapps_title">Approved dApps</string>
   <string name="authorizedDapps_subtitle">These are the dApps that you have logged into using the Radix Wallet.</string>
-  <string name="authorizedDapps_whatIsDapp">What is a dApp?</string>
   <string name="authorizedDapps_pendingDeposit">A deposit from this dApp is available. Go to your Accounts to view and claim.</string>
   <string name="authorizedDapps_dAppDetails_dAppDefinition">dApp Definition</string>
   <string name="authorizedDapps_dAppDetails_missingDescription">Missing description</string>
@@ -300,7 +297,6 @@
   <string name="editPersona_closeConfirmationDialog_message">Are you sure you want to discard changes to this Persona?</string>
   <string name="personas_title">Personas</string>
   <string name="personas_subtitle">Here are all of your current Personas in your Radix Wallet.</string>
-  <string name="personas_whatIsPersona">What is a Persona?</string>
   <string name="personas_createNewPersona">Create a New Persona</string>
   <string name="personas_writeSeedPhrase">Write down main seed phrase</string>
   <string name="createAccount_completion_explanation">Your Account lives on the Radix Network and you can access it any time in your Radix Wallet.</string>
@@ -334,7 +330,6 @@
   <string name="createPersona_introduction_title">Create a Persona</string>
   <string name="createPersona_introduction_subtitle1">A Persona is an identity that you own and control. You can have as many as you like.</string>
   <string name="createPersona_introduction_subtitle2">Personas are used to login to dApps on Radix. dApps may request access to personal information associated with your Persona, like your name or email address.</string>
-  <string name="createPersona_introduction_learnAboutPersonas">Learn about Personas</string>
   <string name="createPersona_introduction_continue">Continue</string>
   <string name="createPersona_nameNewPersona_subtitle">What would you like to call your Persona?</string>
   <string name="createPersona_nameNewPersona_placeholder">e.g. My Main Persona</string>
@@ -449,7 +444,6 @@
   <string name="transactionReview_guarantees_title">Customize Guarantees</string>
   <string name="transactionReview_guarantees_subtitle">Protect yourself by setting guaranteed minimums for estimated deposits</string>
   <string name="transactionReview_guarantees_applyButtonText">Apply</string>
-  <string name="transactionReview_guarantees_howDoGuaranteesWork">How do guarantees work?</string>
   <string name="transactionReview_guarantees_setGuaranteedMinimum">Set guaranteed minimum %%</string>
   <string name="transactionReview_prepareForSigning_navigationTitle">Preparing Transaction</string>
   <string name="transactionReview_prepareForSigning_body">Preparing transaction for signing</string>
@@ -942,7 +936,6 @@ Code: %s</string>
   <string name="customizeNetworkFees_tipFieldInfo">(%% of Execution + Finalization Fees)</string>
   <string name="customizeNetworkFees_warning_selectFeePayer">Please select a fee payer for the transaction fee</string>
   <string name="customizeNetworkFees_warning_insufficientBalance">Not enough XRD for transaction fee</string>
-  <string name="customizeNetworkFees_howDoFeesWork">How do fees work</string>
   <string name="accountRecoveryScan_inProgress_headerTitle">Scanning in progress</string>
   <string name="accountRecoveryScan_inProgress_headerSubtitle">Scanning for Accounts that have been included in at least one transaction, using:</string>
   <string name="accountRecoveryScan_inProgress_factorSourceBabylonSeedPhrase">**Babylon Seed Phrase**</string>
@@ -1253,7 +1246,6 @@ Code: %s</string>
   <string name="scanQR_connectorExtension_disclosureTitle">Don\'t have the Radix Connector browser extension?</string>
   <string name="scanQR_connectorExtension_disclosureItem1">Go to **wallet.radixdlt.com** in your desktop browser.</string>
   <string name="scanQR_connectorExtension_disclosureItem2">Follow the instructions there to install the Radix Connector.</string>
-  <string name="scanQR_connectorExtension_radixConnectLearMore">Learn more about Radix Connect</string>
   <string name="scanQR_account_instructions">Scan a QR code of a Radix Account address from another wallet or an exchange.</string>
   <string name="scanQR_importOlympia_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="infoLink_glossary_tokens">## Token\n\nToken is the general term for any kind of web3 asset that you can hold in a crypto wallet.\n\nTokens can represent many things, like dollars and euros, shares of companies, cryptocurrencies, or imaginary currencies in games. One special kind of token on Radix is [XRD](?glossaryAnchor=xrd).\n\n---\n\nThe [Radix Network](?glossaryAnchor=radixnetwork) has special features specifically to make the creation and use of tokens on Radix safe and predictable, and the [Radix Wallet](?glossaryAnchor=radixwallet) can automatically provide useful information about the tokens you hold in your [Accounts](?glossaryAnchor=accounts).\n\nUsually “token” is used specifically to refer to assets that are all alike. For example, one XRD token is exactly the same as any other XRD token. Assets where each token has a unique identity have a special term: [a non-fungible token or NFT](?glossaryAnchor=nfts).\n\n[Learn more about tokens](https://learn.radixdlt.com/article/what-is-a-token) ↗\n\n[Find out why tokens on Radix are better than other crypto networks](https://www.radixdlt.com/blog/its-10pm-do-you-know-where-your-tokens-are) ↗</string>
