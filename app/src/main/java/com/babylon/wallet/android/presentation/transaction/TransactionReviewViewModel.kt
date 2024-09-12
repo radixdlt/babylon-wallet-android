@@ -257,6 +257,9 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun dismissTerminalErrorDialog() {
+        (state.value.error?.error as? RadixWalletException.DappRequestException)?.let { exception ->
+            viewModelScope.launch { submit.onDismiss(exception) }
+        }
         _state.update { it.copy(error = null) }
     }
 

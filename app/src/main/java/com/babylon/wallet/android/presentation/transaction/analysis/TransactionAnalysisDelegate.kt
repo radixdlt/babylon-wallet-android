@@ -129,7 +129,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     if (isFailureDueToDepositRules) {
                         Result.failure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
                     } else {
-                        Result.failure(Throwable(preview.receipt.errorMessage))
+                        Result.failure(RadixWalletException.DappRequestException.PreviewError(Throwable(preview.receipt.errorMessage)))
                     }
                 } else {
                     Result.success(preview)

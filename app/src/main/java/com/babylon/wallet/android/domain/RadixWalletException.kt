@@ -56,6 +56,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
         data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
             DappRequestException(cause = cause)
+        data class PreviewError(override val cause: Throwable?) : DappRequestException()
 
         data class WrongNetwork(
             val currentNetworkId: NetworkId,
@@ -78,6 +79,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 RejectedByUser -> DappWalletInteractionErrorType.REJECTED_BY_USER
                 UnacceptableManifest -> DappWalletInteractionErrorType.INVALID_REQUEST
                 is WrongNetwork -> DappWalletInteractionErrorType.WRONG_NETWORK
+                is PreviewError -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
             }
     }
 
@@ -296,6 +298,7 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically -> context.getString(
             R.string.common_somethingWentWrong
         )
+        is RadixWalletException.DappRequestException.PreviewError -> context.getString(R.string.error_transactionFailure_reviewFailure)
     }
 }
 
