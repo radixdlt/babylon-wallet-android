@@ -26,15 +26,16 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param manifest A text-representation of a transaction manifest
- * @param startEpochInclusive An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid
- * @param endEpochExclusive An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid
- * @param tipPercentage An integer between `0` and `65535`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee.
- * @param nonce A decimal-string-encoded integer between `0` and `2^32 - 1`, used to ensure the transaction intent is unique.
+ * @param startEpochInclusive An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid. If omitted, the current epoch will be used (taking into account the `at_ledger_state`, if specified). 
+ * @param endEpochExclusive An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid. If omitted, a maximum epoch (relative to the `start_epoch_inclusive`) will be used. 
+ * @param tipPercentage An integer between `0` and `65535`, giving the validator tip as a percentage amount. A value of `1` corresponds to a 1% fee. 
+ * @param nonce An integer between `0` and `2^32 - 1`, chosen to allow a unique intent to be created (to enable submitting an otherwise identical/duplicate intent). 
  * @param signerPublicKeys A list of public keys to be used as transaction signers
  * @param flags 
- * @param blobsHex An array of hex-encoded blob data (optional)
+ * @param blobsHex An array of hex-encoded blob data, if referenced by the manifest.
  * @param notaryPublicKey 
- * @param notaryIsSignatory Whether the notary should count as a signatory (optional, default false)
+ * @param notaryIsSignatory Whether the notary should count as a signatory (defaults to `false`).
+ * @param message An optional transaction message. Only affects the costing. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details. 
  */
 @Serializable
 
@@ -44,19 +45,19 @@ data class TransactionPreviewRequest (
     @SerialName(value = "manifest")
     val manifest: kotlin.String,
 
-    /* An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid */
+    /* An integer between `0` and `10^10`, marking the epoch at which the transaction starts being valid. If omitted, the current epoch will be used (taking into account the `at_ledger_state`, if specified).  */
     @SerialName(value = "start_epoch_inclusive")
     val startEpochInclusive: kotlin.Long,
 
-    /* An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid */
+    /* An integer between `0` and `10^10`, marking the epoch at which the transaction is no longer valid. If omitted, a maximum epoch (relative to the `start_epoch_inclusive`) will be used.  */
     @SerialName(value = "end_epoch_exclusive")
     val endEpochExclusive: kotlin.Long,
 
-    /* An integer between `0` and `65535`, giving the validator tip as a percentage amount. A value of `1` corresponds to 1% of the fee. */
+    /* An integer between `0` and `65535`, giving the validator tip as a percentage amount. A value of `1` corresponds to a 1% fee.  */
     @SerialName(value = "tip_percentage")
     val tipPercentage: kotlin.Int,
 
-    /* A decimal-string-encoded integer between `0` and `2^32 - 1`, used to ensure the transaction intent is unique. */
+    /* An integer between `0` and `2^32 - 1`, chosen to allow a unique intent to be created (to enable submitting an otherwise identical/duplicate intent).  */
     @SerialName(value = "nonce")
     val nonce: kotlin.Long,
 
@@ -67,16 +68,20 @@ data class TransactionPreviewRequest (
     @SerialName(value = "flags")
     val flags: TransactionPreviewRequestFlags,
 
-    /* An array of hex-encoded blob data (optional) */
+    /* An array of hex-encoded blob data, if referenced by the manifest. */
     @SerialName(value = "blobs_hex")
     val blobsHex: kotlin.collections.List<kotlin.String>? = null,
 
     @SerialName(value = "notary_public_key")
     val notaryPublicKey: PublicKey? = null,
 
-    /* Whether the notary should count as a signatory (optional, default false) */
+    /* Whether the notary should count as a signatory (defaults to `false`). */
     @SerialName(value = "notary_is_signatory")
-    val notaryIsSignatory: kotlin.Boolean? = null
+    val notaryIsSignatory: kotlin.Boolean? = null,
+
+    /* An optional transaction message. Only affects the costing. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details.  */
+//    @Contextual @SerialName(value = "message")
+//    val message: kotlin.Any? = null
 
 )
 

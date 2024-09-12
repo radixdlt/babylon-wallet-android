@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.RoleAssignmentResolution
+import com.babylon.wallet.android.data.gateway.model.AccessRule
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -28,6 +29,7 @@ import kotlinx.serialization.Contextual
  * @param explicitRule This type is defined in the Core API as `AccessRule`. See the Core API documentation for more details. 
  */
 @Serializable
+
 data class ComponentEntityRoleAssignmentEntryAssignment (
 
     @Contextual @SerialName(value = "resolution")
@@ -38,23 +40,5 @@ data class ComponentEntityRoleAssignmentEntryAssignment (
     val explicitRule: AccessRule? = null
 
 )
-
-@Serializable
-data class AccessRule(
-    @SerialName("type") val type: Type
-) {
-    @Serializable
-    enum class Type {
-        @SerialName("DenyAll")
-        DenyAll,
-
-        @SerialName("AllowAll")
-        AllowAll,
-
-        @SerialName("Protected")
-        Protected
-    }
-}
-
 
 

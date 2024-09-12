@@ -15,11 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.coreapi.CostingParameters
-import com.babylon.wallet.android.data.gateway.coreapi.FeeSummary
+import com.babylon.wallet.android.data.gateway.generated.models.EventsItem
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
@@ -39,16 +40,15 @@ import kotlinx.serialization.SerialName
 
 data class TransactionReceipt (
 
-    /* The status of the transaction. */
-    @SerialName(value = "status")
+    @Contextual @SerialName(value = "status")
     val status: TransactionStatus? = null,
 
     /* This type is defined in the Core API as `FeeSummary`. See the Core API documentation for more details.  */
-    @SerialName(value = "fee_summary")
-    val feeSummary: FeeSummary? = null,
+//    @Contextual @SerialName(value = "fee_summary")
+//    val feeSummary: kotlin.Any? = null,
 
-    @SerialName(value = "costing_parameters")
-    val costingParameters: CostingParameters? = null,
+//    @Contextual @SerialName(value = "costing_parameters")
+//    val costingParameters: kotlin.Any? = null,
 
     /* This type is defined in the Core API as `FeeDestination`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "fee_destination")

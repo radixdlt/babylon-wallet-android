@@ -26,7 +26,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param kind 
- * @param `value` 
+ * @param `value` Bech32m-encoded human readable version of the address.
  * @param typeName The name of the type of this value. This is only output when a schema is present and the type has a name. This property is ignored when the value is used as an input to the API. 
  * @param fieldName The name of the field which hosts this value. This property is only included if this value is a child of a `Tuple` or `Enum` with named fields. This property is ignored when the value is used as an input to the API. 
  */
@@ -37,6 +37,7 @@ data class ProgrammaticScryptoSborValueReference (
     @Contextual @SerialName(value = "kind")
     override val kind: ProgrammaticScryptoSborValueKind,
 
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "value")
     val `value`: kotlin.String,
 

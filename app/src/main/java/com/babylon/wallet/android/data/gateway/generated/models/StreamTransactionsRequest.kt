@@ -32,15 +32,16 @@ import kotlinx.serialization.Contextual
  * @param cursor This cursor allows forward pagination, by providing the cursor from the previous request.
  * @param limitPerPage The page size requested.
  * @param kindFilter Limit returned transactions by their kind. Defaults to `user`.
- * @param manifestAccountsWithdrawnFromFilter 
- * @param manifestAccountsDepositedIntoFilter 
- * @param manifestBadgesPresentedFilter 
- * @param manifestResourcesFilter 
- * @param affectedGlobalEntitiesFilter 
- * @param eventsFilter 
- * @param accountsWithManifestOwnerMethodCalls 
- * @param accountsWithoutManifestOwnerMethodCalls 
+ * @param manifestAccountsWithdrawnFromFilter Allows specifying an array of account addresses. If specified, the response will contain only transactions with a manifest containing withdrawals from the given accounts.
+ * @param manifestAccountsDepositedIntoFilter Similar to `manifest_accounts_withdrawn_from_filter`, but will return only transactions with a manifest containing deposits to the given accounts.
+ * @param manifestBadgesPresentedFilter Allows specifying array of badge resource addresses. If specified, the response will contain only transactions where the given badges were presented.
+ * @param manifestResourcesFilter Allows specifying array of resource addresses. If specified, the response will contain only transactions containing the given resources in the manifest (regardless of their usage).
+ * @param affectedGlobalEntitiesFilter Allows specifying an array of global addresses. If specified, the response will contain transactions that affected all of the given global entities. A global entity is marked as \"affected\" by a transaction if any of its state (or its descendents' state) was modified as a result of the transaction. For performance reasons consensus manager and transaction tracker are excluded from that filter.
+ * @param eventsFilter Filters the transaction stream to transactions which emitted at least one event matching each filter (each filter can be satisfied by a different event). Currently *only* deposit and withdrawal events emitted by an internal vault entity are tracked. For the purpose of filtering, the emitter address is replaced by the global ancestor of the emitter, for example, the top-level account / component which contains the vault which emitted the event.
+ * @param accountsWithManifestOwnerMethodCalls Allows specifying an array of account addresses. If specified, the response will contain only transactions that, for all specified accounts, contain manifest method calls to that account which require the owner role. See the [account docs](https://docs.radixdlt.com/docs/account) for more information.
+ * @param accountsWithoutManifestOwnerMethodCalls Allows specifying an array of account addresses. If specified, the response will contain only transactions that, for all specified accounts, do NOT contain manifest method calls to that account which require owner role. See the [account docs](https://docs.radixdlt.com/docs/account) for more information.
  * @param manifestClassFilter 
+ * @param eventGlobalEmittersFilter Allows specifying an array of global addresses. If specified, the response will contain transactions in which all entities emitted events. If an event was published by an internal entity, it is going to be indexed as it is a global ancestor. For performance reasons events published by consensus manager and native XRD resource are excluded from that filter.
  * @param order Configures the order of returned result set. Defaults to `desc`.
  * @param optIns 
  */
@@ -66,32 +67,44 @@ data class StreamTransactionsRequest (
     @SerialName(value = "kind_filter")
     val kindFilter: StreamTransactionsRequest.KindFilter? = null,
 
+    /* Allows specifying an array of account addresses. If specified, the response will contain only transactions with a manifest containing withdrawals from the given accounts. */
     @SerialName(value = "manifest_accounts_withdrawn_from_filter")
     val manifestAccountsWithdrawnFromFilter: kotlin.collections.List<kotlin.String>? = null,
 
+    /* Similar to `manifest_accounts_withdrawn_from_filter`, but will return only transactions with a manifest containing deposits to the given accounts. */
     @SerialName(value = "manifest_accounts_deposited_into_filter")
     val manifestAccountsDepositedIntoFilter: kotlin.collections.List<kotlin.String>? = null,
 
+    /* Allows specifying array of badge resource addresses. If specified, the response will contain only transactions where the given badges were presented. */
     @SerialName(value = "manifest_badges_presented_filter")
     val manifestBadgesPresentedFilter: kotlin.collections.List<kotlin.String>? = null,
 
+    /* Allows specifying array of resource addresses. If specified, the response will contain only transactions containing the given resources in the manifest (regardless of their usage). */
     @SerialName(value = "manifest_resources_filter")
     val manifestResourcesFilter: kotlin.collections.List<kotlin.String>? = null,
 
+    /* Allows specifying an array of global addresses. If specified, the response will contain transactions that affected all of the given global entities. A global entity is marked as \"affected\" by a transaction if any of its state (or its descendents' state) was modified as a result of the transaction. For performance reasons consensus manager and transaction tracker are excluded from that filter. */
     @SerialName(value = "affected_global_entities_filter")
     val affectedGlobalEntitiesFilter: kotlin.collections.List<kotlin.String>? = null,
 
+    /* Filters the transaction stream to transactions which emitted at least one event matching each filter (each filter can be satisfied by a different event). Currently *only* deposit and withdrawal events emitted by an internal vault entity are tracked. For the purpose of filtering, the emitter address is replaced by the global ancestor of the emitter, for example, the top-level account / component which contains the vault which emitted the event. */
     @SerialName(value = "events_filter")
     val eventsFilter: kotlin.collections.List<StreamTransactionsRequestEventFilterItem>? = null,
 
+    /* Allows specifying an array of account addresses. If specified, the response will contain only transactions that, for all specified accounts, contain manifest method calls to that account which require the owner role. See the [account docs](https://docs.radixdlt.com/docs/account) for more information. */
     @SerialName(value = "accounts_with_manifest_owner_method_calls")
     val accountsWithManifestOwnerMethodCalls: kotlin.collections.List<kotlin.String>? = null,
 
+    /* Allows specifying an array of account addresses. If specified, the response will contain only transactions that, for all specified accounts, do NOT contain manifest method calls to that account which require owner role. See the [account docs](https://docs.radixdlt.com/docs/account) for more information. */
     @SerialName(value = "accounts_without_manifest_owner_method_calls")
     val accountsWithoutManifestOwnerMethodCalls: kotlin.collections.List<kotlin.String>? = null,
 
     @SerialName(value = "manifest_class_filter")
     val manifestClassFilter: StreamTransactionsRequestAllOfManifestClassFilter? = null,
+
+    /* Allows specifying an array of global addresses. If specified, the response will contain transactions in which all entities emitted events. If an event was published by an internal entity, it is going to be indexed as it is a global ancestor. For performance reasons events published by consensus manager and native XRD resource are excluded from that filter. */
+    @SerialName(value = "event_global_emitters_filter")
+    val eventGlobalEmittersFilter: kotlin.collections.List<kotlin.String>? = null,
 
     /* Configures the order of returned result set. Defaults to `desc`. */
     @SerialName(value = "order")
