@@ -33,7 +33,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
-import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
@@ -123,11 +122,9 @@ private fun SeedPhraseContent(
                             color = RadixTheme.colors.gray2
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        InfoLink(
+                        WarningText(
                             modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(R.string.displayMnemonics_seedPhraseSecurityInfo),
-                            contentColor = RadixTheme.colors.orange1,
-                            iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+                            text = AnnotatedString(stringResource(R.string.displayMnemonics_seedPhraseSecurityInfo))
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }

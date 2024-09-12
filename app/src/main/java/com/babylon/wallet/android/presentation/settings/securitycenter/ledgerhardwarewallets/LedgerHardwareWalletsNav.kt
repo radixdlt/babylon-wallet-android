@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 private const val ROUTE = "ledger_hardware_wallets_route"
 
@@ -17,6 +18,7 @@ fun NavController.ledgerHardwareWalletsScreen() {
 }
 
 fun NavGraphBuilder.ledgerHardwareWalletsScreen(
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -38,6 +40,7 @@ fun NavGraphBuilder.ledgerHardwareWalletsScreen(
             viewModel = hiltViewModel(),
             addLedgerDeviceViewModel = hiltViewModel(),
             addLinkConnectorViewModel = hiltViewModel(),
+            onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )
     }

@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.preferences.assetshiding.hiddenAssetsScreen
@@ -42,6 +43,9 @@ fun NavGraphBuilder.preferencesNavGraph(
             navController.popBackStack()
         })
         depositGuaranteesScreen(
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
             onBackClick = {
                 navController.popBackStack()
             }
@@ -77,7 +81,7 @@ fun NavGraphBuilder.walletPreferencesScreen(
 
                     is SettingsItem.WalletPreferences.CrashReporting,
                     is SettingsItem.WalletPreferences.DeveloperMode,
-                    is SettingsItem.WalletPreferences.AppLock -> {
+                    is SettingsItem.WalletPreferences.AdvancedLock -> {
                     }
 
                     SettingsItem.WalletPreferences.EntityHiding -> {
@@ -116,15 +120,18 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
     ) {
         GatewaysScreen(
             viewModel = hiltViewModel(),
-            onBackClick = {
-                navController.popBackStack()
-            },
             onCreateProfile = { url, networkId ->
                 navController.createAccountScreen(
                     CreateAccountRequestSource.Gateways,
                     url,
                     networkId
                 )
+            },
+            onInfoClick = { glossaryItem ->
+                navController.infoDialog(glossaryItem)
+            },
+            onBackClick = {
+                navController.popBackStack()
             }
         )
     }

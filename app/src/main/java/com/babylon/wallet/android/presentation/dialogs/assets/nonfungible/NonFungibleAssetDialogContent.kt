@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -66,6 +67,7 @@ fun NonFungibleAssetDialogContent(
     accountContext: Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
     canBeHidden: Boolean,
+    onInfoClick: (GlossaryItem) -> Unit = {},
     onHideClick: (() -> Unit)? = null,
     onClaimClick: () -> Unit = {}
 ) {
@@ -298,7 +300,8 @@ fun NonFungibleAssetDialogContent(
 
                 BehavioursSection(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                    behaviours = asset?.resource?.behaviours
+                    behaviours = asset?.resource?.behaviours,
+                    onInfoClick = onInfoClick
                 )
 
                 TagsSection(

@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import com.radixdlt.sargon.NonFungibleGlobalId
@@ -32,12 +33,12 @@ import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
-@Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
     assetsViewData: AssetsViewData?,
     isLoadingBalance: Boolean,
     state: AssetsViewState,
-    action: AssetsViewAction
+    action: AssetsViewAction,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     item {
         AssetsTabs(
@@ -53,26 +54,30 @@ fun LazyListScope.assetsView(
             AssetsTab.Tokens -> tokensTab(
                 assetsViewData = assetsViewData,
                 isLoadingBalance = isLoadingBalance,
-                action = action
+                action = action,
+                onInfoClick = onInfoClick
             )
 
             AssetsTab.Nfts -> nftsTab(
                 assetsViewData = assetsViewData,
                 state = state,
-                action = action
+                action = action,
+                onInfoClick = onInfoClick
             )
 
             AssetsTab.Staking -> stakingTab(
                 assetsViewData = assetsViewData,
                 isLoadingBalance = isLoadingBalance,
                 state = state,
-                action = action
+                action = action,
+                onInfoClick = onInfoClick
             )
 
             AssetsTab.PoolUnits -> poolUnitsTab(
                 assetsViewData = assetsViewData,
                 isLoadingBalance = isLoadingBalance,
-                action = action
+                action = action,
+                onInfoClick = onInfoClick
             )
         }
     }
@@ -183,7 +188,8 @@ fun AssetsViewWithLoadingAssets() {
                     onStakesRequest = {},
                     onCollectionClick = {},
                     onTabClick = {}
-                )
+                ),
+                onInfoClick = {}
             )
         }
     }
@@ -208,7 +214,8 @@ fun AssetsViewWithEmptyAssets() {
                     onStakesRequest = {},
                     onCollectionClick = {},
                     onTabClick = {}
-                )
+                ),
+                onInfoClick = {}
             )
         }
     }
@@ -266,7 +273,8 @@ fun AssetsViewWithAssets() {
                     onCollectionClick = {
                         state = state.onCollectionToggle(it)
                     }
-                )
+                ),
+                onInfoClick = {}
             )
         }
     }

@@ -58,6 +58,7 @@ import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
@@ -96,7 +97,8 @@ fun AccountScreen(
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Account) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
-    onNavigateToSecurityCenter: () -> Unit
+    onNavigateToSecurityCenter: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -136,7 +138,8 @@ fun AccountScreen(
         onClaimClick = viewModel::onClaimClick,
         onTabClick = viewModel::onTabSelected,
         onCollectionClick = viewModel::onCollectionToggle,
-        onHistoryClick = onHistoryClick
+        onHistoryClick = onHistoryClick,
+        onInfoClick = onInfoClick
     )
 }
 
@@ -161,7 +164,8 @@ private fun AccountScreenContent(
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
     onClaimClick: (List<StakeClaim>) -> Unit,
-    onHistoryClick: (AccountAddress) -> Unit
+    onHistoryClick: (AccountAddress) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val gradient = (state.accountWithAssets?.account?.appearanceId ?: AppearanceId(0u)).gradient()
 
@@ -249,6 +253,7 @@ private fun AccountScreenContent(
                 onClaimClick = onClaimClick,
                 onTabClick = onTabClick,
                 onCollectionClick = onCollectionClick,
+                onInfoClick = onInfoClick
             )
         }
 
@@ -281,7 +286,8 @@ fun AssetsContent(
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
-    onClaimClick: (List<StakeClaim>) -> Unit
+    onClaimClick: (List<StakeClaim>) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -337,7 +343,8 @@ fun AssetsContent(
                     onClaimClick = onClaimClick,
                     onCollectionClick = onCollectionClick,
                     onTabClick = onTabClick
-                )
+                ),
+                onInfoClick = onInfoClick
             )
         }
     }
@@ -556,8 +563,10 @@ fun AccountContentPreview() {
             onLSUUnitClicked = {},
             onNextNFTsPageRequest = {},
             onStakesRequest = {},
-            onClaimClick = {}
-        ) {}
+            onClaimClick = {},
+            onHistoryClick = { _ -> },
+            onInfoClick = {}
+        )
     }
 }
 
@@ -589,7 +598,9 @@ fun AccountContentWithFiatBalancesDisabledPreview() {
             onLSUUnitClicked = {},
             onNextNFTsPageRequest = {},
             onStakesRequest = {},
-            onClaimClick = {}
-        ) {}
+            onClaimClick = {},
+            onHistoryClick = { _ -> },
+            onInfoClick = {}
+        )
     }
 }

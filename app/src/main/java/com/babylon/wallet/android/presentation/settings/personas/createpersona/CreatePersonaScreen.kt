@@ -46,10 +46,12 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -67,25 +69,27 @@ import rdx.works.core.sargon.PersonaDataField
 
 @Composable
 fun CreatePersonaScreen(
-    viewModel: CreatePersonaViewModel,
-    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: CreatePersonaViewModel,
+    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit = {},
+    onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     CreatePersonaContent(
+        modifier = modifier,
         state = state,
         onPersonaNameChange = viewModel::onDisplayNameChanged,
         onPersonaCreateClick = viewModel::onPersonaCreateClick,
-        onBackClick = onBackClick,
-        modifier = modifier,
         onSelectionChanged = viewModel::onSelectionChanged,
         onAddFields = viewModel::onAddFields,
         onDeleteField = viewModel::onDeleteField,
         onValueChanged = viewModel::onFieldValueChanged,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
         onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
-        onMessageShown = viewModel::onMessageShown
+        onMessageShown = viewModel::onMessageShown,
+        onInfoClick = onInfoClick,
+        onBackClick = onBackClick,
     )
 
     LaunchedEffect(state.shouldNavigateToCompletion) {
@@ -104,18 +108,19 @@ fun CreatePersonaScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePersonaContent(
+    modifier: Modifier,
     state: CreatePersonaViewModel.CreatePersonaUiState,
     onPersonaNameChange: (String) -> Unit,
     onPersonaCreateClick: () -> Unit,
-    onBackClick: () -> Unit,
-    modifier: Modifier,
     onSelectionChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onAddFields: () -> Unit,
     onDeleteField: (PersonaDataEntryId) -> Unit,
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onAddFieldSheetVisible: (Boolean) -> Unit,
-    onMessageShown: () -> Unit
+    onMessageShown: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit,
+    onBackClick: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val snackBarHostState = remember { SnackbarHostState() }
@@ -173,7 +178,8 @@ fun CreatePersonaContent(
                     bottomSheetState.show()
                 }
             },
-            onFieldFocusChanged = onFieldFocusChanged
+            onFieldFocusChanged = onFieldFocusChanged,
+            onInfoClick = onInfoClick
         )
     }
 
@@ -215,15 +221,16 @@ fun CreatePersonaContent(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CreatePersonaContentList(
-    onPersonaNameChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     personaName: PersonaDisplayNameFieldWrapper,
     currentFields: ImmutableList<PersonaFieldWrapper>,
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onDeleteField: (PersonaDataEntryId) -> Unit,
     addButtonEnabled: Boolean,
-    modifier: Modifier = Modifier,
+    onPersonaNameChange: (String) -> Unit,
     onAddFieldClick: () -> Unit,
-    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit
+    onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -240,13 +247,17 @@ private fun CreatePersonaContentList(
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-//            Spacer(modifier = Modifier.height(dimensions.paddingSmall))
-//            InfoLink(
-//                stringResource(R.string.createPersona_introduction_learnAboutPersonas),
-//                modifier = Modifier
-//                    .padding(horizontal = dimensions.paddingDefault)
-//            )
-            Spacer(modifier = Modifier.height(30.dp))
+            InfoButton(
+                modifier = Modifier.padding(
+                    horizontal = dimensions.paddingDefault,
+                    vertical = dimensions.paddingDefault
+                ),
+                text = stringResource(id = R.string.createPersona_introduction_learnAboutPersonas),
+                onClick = {
+                    onInfoClick(GlossaryItem.personas)
+                }
+            )
+            Spacer(modifier = Modifier.height(dimensions.paddingSemiLarge))
             Thumbnail.Persona(
                 modifier = Modifier.size(90.dp),
                 persona = null
@@ -301,10 +312,7 @@ private fun CreatePersonaContentList(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-            HorizontalDivider(
-                color = RadixTheme.colors.gray4,
-                modifier = Modifier.padding(bottom = dimensions.paddingXXXLarge)
-            )
+            Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
         }
         itemsIndexed(currentFields, key = { _, field -> field.id }) { index, field ->
             val spacerHeight = if (currentFields.lastIndex == index) {
@@ -370,7 +378,8 @@ fun CreateAccountContentPreview() {
             onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
             onAddFieldSheetVisible = {},
-            onMessageShown = {}
+            onMessageShown = {},
+            onInfoClick = {}
         )
     }
 }

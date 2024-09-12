@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Icon
@@ -10,34 +11,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
-fun InfoLink(
-    text: String,
+fun InfoButton(
     modifier: Modifier = Modifier,
-    contentColor: Color = RadixTheme.colors.blue1,
+    text: String,
+    color: Color = RadixTheme.colors.blue2,
     textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline,
-    spacing: Dp = RadixTheme.dimensions.paddingSmall
+    onClick: () -> Unit
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier.clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(spacing)
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
         Icon(
-            painter = painterResource(
-                id = iconRes
-            ),
+            painter = painterResource(id = R.drawable.ic_info_outline),
             contentDescription = null,
-            tint = contentColor
+            tint = color,
         )
         Text(
             text = text,
             style = textStyle,
-            color = contentColor
+            color = color
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InfoButtonPreview() {
+    RadixWalletPreviewTheme {
+        InfoButton(text = "click here to see the info") {
+        }
     }
 }

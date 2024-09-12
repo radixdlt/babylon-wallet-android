@@ -35,6 +35,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -61,13 +62,15 @@ fun LazyListScope.stakingTab(
     assetsViewData: AssetsViewData,
     isLoadingBalance: Boolean,
     state: AssetsViewState,
-    action: AssetsViewAction
+    action: AssetsViewAction,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     if (assetsViewData.isValidatorWithStakesEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = AssetsTab.Staking
+                tab = AssetsTab.Staking,
+                onInfoClick = onInfoClick
             )
         }
     } else {
@@ -807,7 +810,8 @@ fun StakingTabPreview() {
                     onFungibleClick = {},
                     onPoolUnitClick = {},
                     onNonFungibleItemClick = { _, _ -> }
-                )
+                ),
+                onInfoClick = {}
             )
         }
     }

@@ -11,6 +11,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 @VisibleForTesting
 internal const val ARG_SHOW_ADD_LINK_CONNECTOR_SCREEN = "arg_show_add_link_connector_screen"
@@ -39,6 +40,7 @@ fun NavController.linkedConnectorsScreen(
 }
 
 fun NavGraphBuilder.linkedConnectorsScreen(
+    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     composable(
@@ -62,6 +64,7 @@ fun NavGraphBuilder.linkedConnectorsScreen(
         LinkedConnectorsScreen(
             viewModel = hiltViewModel(),
             addLinkConnectorViewModel = hiltViewModel(),
+            onInfoClick = onInfoClick,
             onBackClick = onBackClick
         )
     }

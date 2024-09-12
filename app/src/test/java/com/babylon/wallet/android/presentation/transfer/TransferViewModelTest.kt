@@ -68,7 +68,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assets = null
     )
 
-    private val getProfileUseCase = GetProfileUseCase(FakeProfileRepository(profile))
+    private val getProfileUseCase = GetProfileUseCase(FakeProfileRepository(profile), coroutineRule.dispatcher)
 
     override fun initVM(): TransferViewModel {
         return TransferViewModel(

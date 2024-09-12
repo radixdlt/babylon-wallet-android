@@ -32,7 +32,8 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsIte
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.utils.setWindowSecure
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
@@ -43,6 +44,7 @@ fun WalletPreferencesScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     WalletPreferencesContent(
         modifier = modifier.fillMaxSize(),
         walletPreferences = state.settings,
@@ -50,7 +52,7 @@ fun WalletPreferencesScreen(
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
         onCrashReportingToggled = viewModel::onCrashReportingToggled,
-        onAppLockToggled = viewModel::onAppLockToggled
+        onAdvancedLockToggled = viewModel::onAdvancedLockToggled
     )
 }
 
@@ -62,10 +64,11 @@ private fun WalletPreferencesContent(
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onCrashReportingToggled: (Boolean) -> Unit,
-    onAppLockToggled: (Boolean) -> Unit,
+    onAdvancedLockToggled: (Boolean) -> Unit,
 ) {
-    var crashReportingPromptVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    var crashReportingPromptVisible by remember { mutableStateOf(false) }
     if (crashReportingPromptVisible) {
         BasicPromptAlertDialog(
             finish = { accepted ->
@@ -152,7 +155,7 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
-                                    is SettingsItem.WalletPreferences.AppLock -> {
+                                    is SettingsItem.WalletPreferences.AdvancedLock -> {
                                         SwitchSettingsItem(
                                             modifier = Modifier
                                                 .background(RadixTheme.colors.defaultBackground)
@@ -163,8 +166,11 @@ private fun WalletPreferencesContent(
                                             iconResource = item.getIcon(),
                                             checked = item.enabled,
                                             onCheckedChange = { checked ->
-                                                onAppLockToggled(checked)
-                                                context.setWindowSecure(checked)
+                                                context.biometricAuthenticate { result ->
+                                                    if (result == BiometricAuthenticationResult.Succeeded) {
+                                                        onAdvancedLockToggled(checked)
+                                                    } // else do nothing
+                                                }
                                             }
                                         )
                                         HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -202,7 +208,7 @@ fun AppSettingsScreenPreview() {
             onDeveloperModeToggled = {},
             onBackClick = {},
             onCrashReportingToggled = {},
-            onAppLockToggled = {}
+            onAdvancedLockToggled = {}
         )
     }
 }
