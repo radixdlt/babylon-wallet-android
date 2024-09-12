@@ -205,11 +205,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
     fun onContinueClick(biometricAuthenticationProvider: suspend () -> Boolean) {
         viewModelScope.launch {
             if (givenTempMnemonic != null) { // account scan from onboarding with a given main babylon seed phrase
-                val authenticated = biometricAuthenticationProvider()
-                if (authenticated.not()) {
-                    _state.update { it.copy(isScanningNetwork = false) }
-                    return@launch
-                }
                 _state.update { it.copy(isScanningNetwork = true) }
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
