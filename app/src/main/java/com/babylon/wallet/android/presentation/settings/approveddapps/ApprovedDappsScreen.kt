@@ -111,7 +111,7 @@ private fun ApprovedDAppsContent(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingMedium
                     ),
-                    text = stringResource(id = R.string.authorizedDapps_whatIsDapp),
+                    text = stringResource(id = R.string.infoLink_title_dapps),
                     onClick = {
                         onInfoClick(GlossaryItem.dapps)
                     }

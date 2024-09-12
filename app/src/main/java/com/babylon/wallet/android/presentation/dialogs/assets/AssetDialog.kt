@@ -361,7 +361,7 @@ fun BehavioursSection(
                         top = RadixTheme.dimensions.paddingDefault,
                         bottom = RadixTheme.dimensions.paddingSmall
                     ),
-                text = stringResource(id = R.string.assetDetails_behaviors_whatAreBehaviors),
+                text = stringResource(id = R.string.infoLink_title_behaviors),
                 onClick = {
                     onInfoClick(GlossaryItem.behaviors)
                 }

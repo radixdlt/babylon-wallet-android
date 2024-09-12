@@ -236,7 +236,7 @@ private fun ScanQrCode(
         InfoButton(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge,),
             textStyle = RadixTheme.typography.body2Link,
-            text = stringResource(id = R.string.scanQR_connectorExtension_radixConnectLearMore),
+            text = stringResource(id = R.string.infoLink_title_radixconnect),
             onClick = {
                 onInfoClick(GlossaryItem.radixconnect)
             }

@@ -105,7 +105,7 @@ private fun CreatePersonaInfoContent(
                     horizontal = dimensions.paddingDefault,
                     vertical = dimensions.paddingDefault
                 ),
-                text = stringResource(id = R.string.createPersona_introduction_learnAboutPersonas),
+                text = stringResource(id = R.string.infoLink_title_personasLearnAbout),
                 onClick = {
                     onInfoClick(GlossaryItem.personas)
                 }

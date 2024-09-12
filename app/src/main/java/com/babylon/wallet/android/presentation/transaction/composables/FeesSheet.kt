@@ -120,7 +120,7 @@ fun FeesSheet(
                 contentAlignment = Alignment.Center,
             ) {
                 InfoButton(
-                    text = stringResource(id = R.string.customizeNetworkFees_howDoFeesWork),
+                    text = stringResource(id = R.string.infoLink_title_transactionfee),
                     onClick = {
                         onInfoClick(GlossaryItem.transactionfee)
                     }

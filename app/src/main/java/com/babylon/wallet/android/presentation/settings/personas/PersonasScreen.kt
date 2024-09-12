@@ -115,7 +115,7 @@ fun PersonasContent(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingMedium
                 ),
-                text = stringResource(id = R.string.personas_whatIsPersona),
+                text = stringResource(id = R.string.infoLink_title_personas),
                 onClick = {
                     onInfoClick(GlossaryItem.personas)
                 }

@@ -70,8 +70,8 @@ private fun AssetsTab.toEmptyTitleRes() = when (this) {
 @Suppress("UnusedPrivateMember") // it will be used soon
 @StringRes
 private fun AssetsTab.toEmptyInfoRes() = when (this) {
-    AssetsTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
-    AssetsTab.Nfts -> R.string.assetDetails_NFTDetails_whatAreNfts
-    AssetsTab.Staking -> R.string.assetDetails_stakingDetails_whatIsStaking
-    AssetsTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_whatArePoolUnits
+    AssetsTab.Tokens -> R.string.infoLink_title_tokens
+    AssetsTab.Nfts -> R.string.infoLink_title_nfts
+    AssetsTab.Staking -> R.string.infoLink_title_networkstaking
+    AssetsTab.PoolUnits -> R.string.infoLink_title_poolunits
 }

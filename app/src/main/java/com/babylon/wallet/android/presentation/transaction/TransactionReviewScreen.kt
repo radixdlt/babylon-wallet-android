@@ -446,7 +446,8 @@ private fun BottomSheetContent(
                 onApplyClick = onGuaranteesApplyClick,
                 onGuaranteeValueChanged = onGuaranteeValueChanged,
                 onGuaranteeValueIncreased = onGuaranteeValueIncreased,
-                onGuaranteeValueDecreased = onGuaranteeValueDecreased
+                onGuaranteeValueDecreased = onGuaranteeValueDecreased,
+                onInfoClick = onInfoClick
             )
         }
 
