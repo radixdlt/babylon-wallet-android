@@ -37,7 +37,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
@@ -60,8 +59,7 @@ fun TransferScreen(
     modifier: Modifier = Modifier,
     viewModel: TransferViewModel,
     onBackClick: () -> Unit,
-    onShowAssetDetails: (SpendingAsset, Account) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onShowAssetDetails: (SpendingAsset, Account) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -103,8 +101,7 @@ fun TransferScreen(
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
         onNextNFTsPageRequest = viewModel::onNextNFTsPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
-        onTransferSubmit = viewModel::onTransferSubmit,
-        onInfoClick = onInfoClick
+        onTransferSubmit = viewModel::onTransferSubmit
     )
 }
 
@@ -139,8 +136,7 @@ fun TransferContent(
     onStakesRequest: () -> Unit,
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit,
-    onTransferSubmit: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onTransferSubmit: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     state.maxXrdError?.let { error ->
@@ -393,8 +389,7 @@ fun TransferContent(
                         onNextNFtsPageRequest = onNextNFTsPageRequest,
                         onStakesRequest = onStakesRequest,
                         onUiMessageShown = onUiMessageShown,
-                        onChooseAssetsSubmitted = onChooseAssetsSubmitted,
-                        onInfoClick = onInfoClick
+                        onChooseAssetsSubmitted = onChooseAssetsSubmitted
                     )
                 }
 
@@ -441,8 +436,7 @@ fun TransferContentPreview() {
             onChooseAssetsSubmitted = {},
             onNextNFTsPageRequest = {},
             onStakesRequest = {},
-            onTransferSubmit = {},
-            onInfoClick = {}
+            onTransferSubmit = {}
         )
     }
 }

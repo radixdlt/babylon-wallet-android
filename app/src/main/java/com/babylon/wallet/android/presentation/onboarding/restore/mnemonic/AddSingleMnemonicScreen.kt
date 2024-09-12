@@ -43,6 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -229,11 +230,12 @@ private fun SeedPhraseView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        WarningText(
+        InfoLink(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = AnnotatedString(stringResource(R.string.enterSeedPhrase_warning)),
+            text = stringResource(R.string.enterSeedPhrase_warning),
+            contentColor = RadixTheme.colors.orange1,
             iconRes = DSR.ic_warning_error
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

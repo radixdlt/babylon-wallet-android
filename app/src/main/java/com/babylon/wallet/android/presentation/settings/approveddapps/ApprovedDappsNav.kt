@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.AccountAddress
 
 const val ROUTE_APPROVED_DAPPS = "settings_approved_dapps"
@@ -19,9 +18,8 @@ fun NavController.approvedDAppsScreen() {
 }
 
 fun NavGraphBuilder.approvedDAppsScreen(
-    onDAppClick: (AccountAddress) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onDAppClick: (AccountAddress) -> Unit
 ) {
     composable(
         route = ROUTE_APPROVED_DAPPS,
@@ -40,9 +38,8 @@ fun NavGraphBuilder.approvedDAppsScreen(
     ) {
         ApprovedDAppsScreen(
             viewModel = hiltViewModel(),
-            onDAppClick = onDAppClick,
-            onInfoClick = onInfoClick,
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            onDAppClick = onDAppClick
         )
     }
 }

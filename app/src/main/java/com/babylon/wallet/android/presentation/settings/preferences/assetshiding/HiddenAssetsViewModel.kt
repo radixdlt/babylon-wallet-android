@@ -30,7 +30,6 @@ import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.core.sargon.pools
 import rdx.works.profile.domain.ChangeResourceVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -105,7 +104,6 @@ class HiddenAssetsViewModel @Inject constructor(
                     )
                 }
                 .catch { throwable ->
-                    Timber.w(throwable)
                     _state.update { it.copy(message = UiMessage.ErrorMessage(throwable)) }
                 }
                 .flowOn(coroutineDispatcher)
@@ -136,7 +134,7 @@ class HiddenAssetsViewModel @Inject constructor(
             nonFungibles = resources.filterIsInstance<Resource.NonFungibleResource>(),
             pools = getPoolsUseCase(
                 poolAddresses = addresses.pools().toSet()
-            ).getOrThrow()
+            ).getOrNull().orEmpty()
         )
     }
 

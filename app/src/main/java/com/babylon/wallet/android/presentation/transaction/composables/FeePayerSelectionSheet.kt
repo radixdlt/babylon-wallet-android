@@ -34,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,10 +44,10 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButtonDefaults
-import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -274,15 +273,16 @@ private fun FeePayerCard(
         if (!candidate.hasEnoughBalance) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
 
-            WarningText(
+            InfoLink(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
                         start = RadixTheme.dimensions.paddingDefault,
                         end = RadixTheme.dimensions.paddingDefault
                     ),
-                text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance)),
+                text = stringResource(id = R.string.transactionReview_feePayerValidation_insufficientBalance),
                 contentColor = RadixTheme.colors.red1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
                 textStyle = RadixTheme.typography.body1Header
             )
 

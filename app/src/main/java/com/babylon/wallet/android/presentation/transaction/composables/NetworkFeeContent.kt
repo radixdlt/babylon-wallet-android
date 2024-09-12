@@ -1,33 +1,24 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.White
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
-import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.utils.Constants
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -43,32 +34,24 @@ fun NetworkFeeContent(
     isSelectedFeePayerInvolvedInTransaction: Boolean,
     isNetworkFeeLoading: Boolean,
     modifier: Modifier = Modifier,
-    onCustomizeClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onCustomizeClick: () -> Unit
 ) {
     Column(
         modifier = modifier.padding(top = RadixTheme.dimensions.paddingDefault)
     ) {
         Row {
-            Row(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Min)) {
-                Text(
-                    modifier = Modifier.fillMaxHeight(),
-                    text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
-                    style = RadixTheme.typography.body1Link,
-                    color = RadixTheme.colors.gray2
-                )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
-                InfoButton(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .height(1.dp),
-                    text = stringResource(id = R.string.empty),
-                    color = RadixTheme.colors.gray3,
-                    onClick = {
-                        onInfoClick(GlossaryItem.transactionfee)
-                    }
-                )
-            }
+            Text(
+                text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
+                style = RadixTheme.typography.body1Link,
+                color = RadixTheme.colors.gray2
+            )
+            // TODO later
+//            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+//            Icon(
+//                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_info_outline),
+//                contentDescription = null,
+//                tint = RadixTheme.colors.gray3
+//            )
             Spacer(modifier = Modifier.weight(1f))
             Column(horizontalAlignment = Alignment.End) {
                 Text(
@@ -111,43 +94,34 @@ fun NetworkFeeContent(
 
         if (noFeePayerSelected) {
             if (!isNetworkFeeLoading) {
-                WarningText(
+                InfoLink(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = RadixTheme.dimensions.paddingSmall),
-                    text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_feePayerRequired)),
+                    text = stringResource(id = R.string.transactionReview_feePayerValidation_feePayerRequired),
+                    contentColor = RadixTheme.colors.orange1,
+                    iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                 )
             }
         } else if (insufficientBalanceToPayTheFee) {
-            WarningText(
+            InfoLink(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = RadixTheme.dimensions.paddingSmall),
-                text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
+                text = stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance),
                 contentColor = RadixTheme.colors.red1,
-                textStyle = RadixTheme.typography.body1Header
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             )
         } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-            ) {
-                WarningText(
-                    modifier = Modifier.weight(1f),
-                    text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
-                    textStyle = RadixTheme.typography.body1Header
-                )
-                InfoButton(
-                    text = stringResource(R.string.empty),
-                    color = RadixTheme.colors.gray3,
-                    onClick = {
-                        onInfoClick(GlossaryItem.payingaccount)
-                    }
-                )
-            }
+            InfoLink(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = RadixTheme.dimensions.paddingSmall),
+                text = stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount),
+                contentColor = RadixTheme.colors.orange1,
+                iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
+            )
         }
-
         RadixTextButton(
             text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
             enabled = !isNetworkFeeLoading,
@@ -167,8 +141,7 @@ fun NetworkFeeContentLoadingPreview() {
             insufficientBalanceToPayTheFee = false,
             isSelectedFeePayerInvolvedInTransaction = true,
             isNetworkFeeLoading = true,
-            onCustomizeClick = {},
-            onInfoClick = {}
+            onCustomizeClick = {}
         )
     }
 }
@@ -183,8 +156,7 @@ fun NetworkFeeContentWithoutInvolvedAccountPreview() {
             insufficientBalanceToPayTheFee = false,
             isSelectedFeePayerInvolvedInTransaction = false,
             isNetworkFeeLoading = false,
-            onCustomizeClick = {},
-            onInfoClick = {}
+            onCustomizeClick = {}
         )
     }
 }
@@ -199,8 +171,7 @@ fun NetworkFeeContentNoFeePayerPreview() {
             insufficientBalanceToPayTheFee = false,
             isSelectedFeePayerInvolvedInTransaction = false,
             isNetworkFeeLoading = false,
-            onCustomizeClick = {},
-            onInfoClick = {}
+            onCustomizeClick = {}
         )
     }
 }
@@ -215,8 +186,7 @@ fun NetworkFeeContentInsufficientBalancePreview() {
             insufficientBalanceToPayTheFee = true,
             isSelectedFeePayerInvolvedInTransaction = true,
             isNetworkFeeLoading = false,
-            onCustomizeClick = {},
-            onInfoClick = {}
+            onCustomizeClick = {}
         )
     }
 }
@@ -231,8 +201,7 @@ fun NetworkFeeContentInsufficientBalanceWithoutInvolvedAccountPreview() {
             insufficientBalanceToPayTheFee = true,
             isSelectedFeePayerInvolvedInTransaction = false,
             isNetworkFeeLoading = false,
-            onCustomizeClick = {},
-            onInfoClick = {}
+            onCustomizeClick = {}
         )
     }
 }

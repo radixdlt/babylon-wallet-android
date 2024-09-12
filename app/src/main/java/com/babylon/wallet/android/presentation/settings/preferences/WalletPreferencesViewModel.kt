@@ -18,7 +18,6 @@ import rdx.works.core.enableCrashlytics
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.security.UpdateAdvancedLockUseCase
 import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import javax.inject.Inject
 
@@ -26,8 +25,7 @@ import javax.inject.Inject
 class WalletPreferencesViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase,
-    private val updateAdvancedLockUseCase: UpdateAdvancedLockUseCase
+    private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
 ) : StateViewModel<WalletPreferencesUiState>() {
 
     override fun initialState(): WalletPreferencesUiState = WalletPreferencesUiState.default
@@ -38,7 +36,7 @@ class WalletPreferencesViewModel @Inject constructor(
 
     private fun readSettings() {
         observeDevModeSetting()
-        observeAdvancedLockSetting()
+        observeAppLockSetting()
         if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
                 val updateCrashReportingPreference = PreferencesUiItem.Preference(
@@ -80,20 +78,15 @@ class WalletPreferencesViewModel @Inject constructor(
         }
     }
 
-    private fun observeAdvancedLockSetting() {
+    private fun observeAppLockSetting() {
         viewModelScope.launch {
-            getProfileUseCase.flow
-                .map { it.appPreferences.security.isAdvancedLockEnabled }
-                .collect { isAdvancedLockEnabled ->
-                    _state.updateSetting<SettingsItem.WalletPreferences.AdvancedLock> {
-                        SettingsItem.WalletPreferences.AdvancedLock(isAdvancedLockEnabled)
+            preferencesManager.isAppLockEnabled
+                .collect { isAppLockEnabled ->
+                    _state.updateSetting<SettingsItem.WalletPreferences.AppLock> {
+                        SettingsItem.WalletPreferences.AppLock(isAppLockEnabled)
                     }
                 }
         }
-    }
-
-    fun onAdvancedLockToggled(enabled: Boolean) = viewModelScope.launch {
-        updateAdvancedLockUseCase(enabled)
     }
 
     fun onDeveloperModeToggled(enabled: Boolean) = viewModelScope.launch {
@@ -102,6 +95,12 @@ class WalletPreferencesViewModel @Inject constructor(
 
     fun onCrashReportingToggled(enabled: Boolean) = viewModelScope.launch {
         preferencesManager.enableCrashReporting(enabled)
+    }
+
+    fun onAppLockToggled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.enableAppLock(enabled)
+        }
     }
 
     private inline fun <reified S : SettingsItem.WalletPreferences> MutableStateFlow<WalletPreferencesUiState>.updateSetting(
@@ -136,7 +135,7 @@ data class WalletPreferencesUiState(
                 PreferencesUiItem.DisplaySection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AssetsHiding),
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AdvancedLock(false)),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.AppLock(false)),
                 PreferencesUiItem.AdvancedSection,
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
                 PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))

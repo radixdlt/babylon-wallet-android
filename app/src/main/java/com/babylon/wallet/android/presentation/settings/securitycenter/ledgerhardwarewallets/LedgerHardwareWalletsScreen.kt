@@ -35,7 +35,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
@@ -60,7 +59,6 @@ fun LedgerHardwareWalletsScreen(
     viewModel: LedgerHardwareWalletsViewModel,
     addLedgerDeviceViewModel: AddLedgerDeviceViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -155,7 +153,6 @@ fun LedgerHardwareWalletsScreen(
                     onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                     onQrCodeScanFailure = addLinkConnectorViewModel::onQrCodeScanFailure,
                     onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-                    onInfoClick = onInfoClick,
                     onContinueClick = addLinkConnectorViewModel::onContinueClick,
                     onCloseClick = addLinkConnectorViewModel::onCloseClick,
                     onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss

@@ -39,7 +39,7 @@ class ChooseAccountsViewModelTest {
             .changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
             .unHideAllEntities() // Default profile sample has hidden entities.
     )
-    private val getProfileUseCase = GetProfileUseCase(profileRepository, coroutineRule.dispatcher)
+    private val getProfileUseCase = GetProfileUseCase(profileRepository)
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl(AppEventBusImpl())
 

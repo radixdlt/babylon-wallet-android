@@ -8,7 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -120,7 +119,6 @@ sealed interface AssetDialogArgs {
 }
 
 fun NavGraphBuilder.assetDialog(
-    onInfoClick: (GlossaryItem) -> Unit,
     onDismiss: () -> Unit
 ) {
     dialog(
@@ -160,7 +158,6 @@ fun NavGraphBuilder.assetDialog(
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         AssetDialog(
-            onInfoClick = onInfoClick,
             onDismiss = onDismiss
         )
     }

@@ -55,10 +55,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val profileRepository = FakeProfileRepository()
-    private val getProfileUseCase = GetProfileUseCase(
-        profileRepository = profileRepository,
-        dispatcher = coroutineRule.dispatcher
-    )
+    private val getProfileUseCase = GetProfileUseCase(profileRepository = profileRepository)
     private val verifyAddressOnLedgerUseCase = mockk<VerifyAddressOnLedgerUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
     private val getPoolsUseCase = mockk<GetPoolsUseCase>()
@@ -459,7 +456,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
     @Test
     fun `test full address section for ruid based global id`() {
         val rawAddress = "resource_tdx_2_1nth7zjtujhvmzfpyn9rvu9nexzmye554q6uv7xcchhalsa53r4zqfe:" +
-            "{bce508b789ed38e4-9a8552cb3142fdc5-3491317d130e6483-46df034d5ffbd210}"
+                "{bce508b789ed38e4-9a8552cb3142fdc5-3491317d130e6483-46df034d5ffbd210}"
         val globalId = NonFungibleGlobalId.init(rawAddress)
 
         val actionableAddress = ActionableAddress.GlobalId(address = globalId, isVisitableInDashboard = true, isOnlyLocalIdVisible = true)

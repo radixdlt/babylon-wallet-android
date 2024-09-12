@@ -11,7 +11,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.radixdlt.sargon.FactorSourceId
 
@@ -39,8 +38,7 @@ fun NavController.chooseLedger(
 fun NavGraphBuilder.chooseLedger(
     onBackClick: () -> Unit,
     onFinish: () -> Unit,
-    onStartRecovery: (FactorSourceId.Hash, Boolean) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onStartRecovery: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     markAsHighPriority(ROUTE_CHOOSE_LEDGER)
     composable(
@@ -70,8 +68,7 @@ fun NavGraphBuilder.chooseLedger(
             addLinkConnectorViewModel = hiltViewModel(),
             onBackClick = onBackClick,
             goBackToCreateAccount = onFinish,
-            onStartRecovery = onStartRecovery,
-            onInfoClick = onInfoClick
+            onStartRecovery = onStartRecovery
         )
     }
 }

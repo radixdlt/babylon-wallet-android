@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
@@ -57,15 +56,13 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 fun LazyListScope.tokensTab(
     assetsViewData: AssetsViewData,
     isLoadingBalance: Boolean,
-    action: AssetsViewAction,
-    onInfoClick: (GlossaryItem) -> Unit
+    action: AssetsViewAction
 ) {
     if (assetsViewData.isTokensEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = AssetsTab.Tokens,
-                onInfoClick = onInfoClick
+                tab = AssetsTab.Tokens
             )
         }
     }
@@ -349,8 +346,7 @@ private fun TokensTabPreview() {
                     onStakesRequest = {},
                     onCollectionClick = {},
                     onTabClick = {}
-                ),
-                onInfoClick = {}
+                )
             )
         }
     }

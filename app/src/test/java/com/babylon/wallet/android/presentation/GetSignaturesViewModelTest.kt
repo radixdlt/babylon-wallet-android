@@ -62,10 +62,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
             accessFactorSourcesIOHandler = accessFactorSourcesProxyFake,
             signWithDeviceFactorSourceUseCase = signWithDeviceFactorSourceUseCaseMock,
             signWithLedgerFactorSourceUseCase = signWithLedgerFactorSourceUseCaseMock,
-            getProfileUseCase = GetProfileUseCase(
-                profileRepository = FakeProfileRepository(sampleProfile),
-                dispatcher = coroutineRule.dispatcher
-            ),
+            getProfileUseCase = GetProfileUseCase(profileRepository = FakeProfileRepository(sampleProfile)),
             defaultDispatcher = StandardTestDispatcher()
         )
     }
@@ -138,7 +135,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         val signatureFromLedger = SignatureWithPublicKey.sample.invoke()
         val signatureFromDevice = SignatureWithPublicKey.sample.other()
 
-        backgroundScope.launch(Dispatchers.Default) { // TransactionReviewScreen needs to access factor sources to get signatures
+        backgroundScope.launch(Dispatchers.Default)   { // TransactionReviewScreen needs to access factor sources to get signatures
             val result = accessFactorSourcesProxyFake.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,
@@ -176,7 +173,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
     // caller = the WalletSignatureGatherer of the SignTransactionUseCase -> TransactionSubmitDelegate -> TransactionReviewViewModel
     @Test
     fun `given ledger and device factor sources to sign, when one of the factor source sign fails, then end signing process and return failure`() = runTest {
-        backgroundScope.launch(Dispatchers.Default) { // TransactionReviewScreen needs to access factor sources to get signatures
+        backgroundScope.launch(Dispatchers.Default)  { // TransactionReviewScreen needs to access factor sources to get signatures
             val result = accessFactorSourcesProxyFake.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,

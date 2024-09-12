@@ -27,8 +27,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -43,31 +41,28 @@ import rdx.works.core.domain.DApp
 
 @Composable
 fun ApprovedDAppsScreen(
-    modifier: Modifier = Modifier,
     viewModel: ApprovedDappsViewModel,
+    onBackClick: () -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onBackClick: () -> Unit
+    modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ApprovedDAppsContent(
         modifier = modifier,
+        onBackClick = onBackClick,
         state = state,
-        onMessageShown = viewModel::onMessageShown,
         onDAppClick = onDAppClick,
-        onInfoClick = onInfoClick,
-        onBackClick = onBackClick
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
 @Composable
 private fun ApprovedDAppsContent(
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: AuthorizedDappsUiState,
     onDAppClick: (AccountAddress) -> Unit,
-    onMessageShown: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onBackClick: () -> Unit
+    onMessageShown: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -91,39 +86,31 @@ private fun ApprovedDAppsContent(
                 hostState = snackBarHostState
             )
         },
-        containerColor = RadixTheme.colors.gray5
+        containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             Column {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 Text(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingMedium
-                    ),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(R.string.authorizedDapps_subtitle),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
-                InfoButton(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingMedium
-                    ),
-                    text = stringResource(id = R.string.authorizedDapps_whatIsDapp),
-                    onClick = {
-                        onInfoClick(GlossaryItem.dapps)
-                    }
-                )
                 LazyColumn(
                     contentPadding = PaddingValues(
                         horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingLarge
+                        vertical = RadixTheme.dimensions.paddingXXLarge
                     ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()
                 ) {
+                    item {
+                        // TODO enable it when we have the link
+//                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
+//                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    }
                     items(state.dApps) { item ->
                         DappCard(
                             modifier = Modifier.throttleClickable {
@@ -173,8 +160,7 @@ fun ApprovedDAppsContentPreview() {
                 }.toImmutableList()
             ),
             onDAppClick = {},
-            onMessageShown = {},
-            onInfoClick = {}
+            onMessageShown = {}
         )
     }
 }

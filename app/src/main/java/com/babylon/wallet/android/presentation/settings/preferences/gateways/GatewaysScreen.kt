@@ -46,10 +46,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -64,23 +62,21 @@ import kotlinx.coroutines.flow.flow
 
 @Composable
 fun GatewaysScreen(
-    modifier: Modifier = Modifier,
     viewModel: GatewaysViewModel,
-    onCreateProfile: (Url, NetworkId) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
     onBackClick: () -> Unit,
+    onCreateProfile: (Url, NetworkId) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     GatewaysContent(
         modifier = modifier,
         state = state,
+        onBackClick = onBackClick,
         onDeleteGateway = viewModel::onDeleteGateway,
         onGatewayClick = viewModel::onGatewayClick,
         onAddGatewayClick = { viewModel.setAddGatewaySheetVisible(true) },
         oneOffEvent = viewModel.oneOffEvent,
-        onCreateProfile = onCreateProfile,
-        onInfoClick = onInfoClick,
-        onBackClick = onBackClick
+        onCreateProfile = onCreateProfile
     )
 
     state.addGatewayInput?.let { input ->
@@ -97,13 +93,12 @@ fun GatewaysScreen(
 private fun GatewaysContent(
     modifier: Modifier = Modifier,
     state: GatewaysViewModel.State,
+    onBackClick: () -> Unit,
     onDeleteGateway: (GatewaysViewModel.State.GatewayUiItem) -> Unit,
     onGatewayClick: (Gateway) -> Unit,
     onAddGatewayClick: () -> Unit,
     oneOffEvent: Flow<GatewaysViewModel.Event>,
     onCreateProfile: (Url, NetworkId) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onBackClick: () -> Unit
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect {
@@ -131,33 +126,28 @@ private fun GatewaysContent(
                 .fillMaxSize(),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+            HorizontalDivider(color = RadixTheme.colors.gray5)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = RadixTheme.colors.gray5)
+                    .background(color = RadixTheme.colors.gray5),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
-                        modifier = Modifier.padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingMedium
-                        ),
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.gateways_subtitle),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
                     )
-                    InfoButton(
-                        modifier = Modifier.padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingMedium
-                        ),
-                        text = stringResource(id = R.string.gateways_whatIsAGateway),
-                        onClick = {
-                            onInfoClick(GlossaryItem.gateways)
-                        }
-                    )
+//                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+//                    InfoLink( // TODO enable it when we have a link
+//                        stringResource(R.string.gateways_whatIsAGateway),
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+//                    )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                 }
                 itemsIndexed(state.gatewayList) { index, gateway ->
@@ -198,7 +188,7 @@ private fun GatewaysContent(
                     )
                 }
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixSecondaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -395,13 +385,12 @@ private fun GatewaysScreenPreview() {
                     )
                 )
             ),
+            onBackClick = {},
             onAddGatewayClick = {},
             onDeleteGateway = {},
             onGatewayClick = {},
             oneOffEvent = flow { },
-            onCreateProfile = { _, _ -> },
-            onInfoClick = {},
-            onBackClick = {},
+            onCreateProfile = { _, _ -> }
         )
     }
 }

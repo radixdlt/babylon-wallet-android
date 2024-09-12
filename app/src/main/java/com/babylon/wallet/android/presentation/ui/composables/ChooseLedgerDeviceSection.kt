@@ -133,7 +133,7 @@ fun ChooseLedgerDeviceSection(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                     RadixSecondaryButton(
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(0.7f)
                             .imePadding(),
                         onClick = onAddLedgerDeviceClick,
                         text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger)

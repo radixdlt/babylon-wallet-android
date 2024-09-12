@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialo
 import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
-import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -274,9 +273,6 @@ fun NavigationHost(
             },
             onHistoryClick = { accountAddress ->
                 navController.history(accountAddress)
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         derivePublicKeyDialog(
@@ -325,9 +321,6 @@ fun NavigationHost(
                     factorSourceId = factorSourceId,
                     isOlympia = isOlympia
                 )
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         createAccountConfirmationScreen(
@@ -339,22 +332,14 @@ fun NavigationHost(
             }
         )
         createPersonaScreen(
-            onContinueClick = { createPersonaRequestSource ->
-                navController.createPersonaConfirmationScreen(createPersonaRequestSource)
-            },
             onBackClick = { navController.navigateUp() },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            }
+            onContinueClick = { navController.createPersonaConfirmationScreen(it) }
         )
         personaInfoScreen(
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            },
+            onBackClick = { navController.navigateUp() },
             onContinueClick = { requestSource ->
                 navController.createPersonaScreen(requestSource)
-            },
-            onBackClick = { navController.navigateUp() }
+            }
         )
         personasScreen(
             onBackClick = { navController.navigateUp() },
@@ -370,9 +355,6 @@ fun NavigationHost(
             },
             onNavigateToSecurityCenter = {
                 navController.securityCenter()
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         personaDetailScreen(
@@ -431,9 +413,6 @@ fun NavigationHost(
             },
             onDAppClick = { dApp ->
                 navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress)
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         transferScreen(
@@ -454,9 +433,6 @@ fun NavigationHost(
                         underAccountAddress = null // Marking as null hides claim button when the nft is a claim
                     )
                 }
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
         accountSettings(
@@ -549,14 +525,6 @@ fun NavigationHost(
             }
         )
         assetDialog(
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            },
-            onDismiss = {
-                navController.popBackStack()
-            }
-        )
-        infoDialog(
             onDismiss = {
                 navController.popBackStack()
             }

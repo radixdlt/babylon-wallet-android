@@ -15,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
@@ -40,8 +39,7 @@ fun ChooseAssetsSheet(
     onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
     onUiMessageShown: () -> Unit,
-    onChooseAssetsSubmitted: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onChooseAssetsSubmitted: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -125,10 +123,7 @@ fun ChooseAssetsSheet(
                     onStakesRequest = onStakesRequest,
                     onTabClick = onTabClick,
                     onCollectionClick = onCollectionClick,
-                ),
-                onInfoClick = {
-                    onInfoClick(state.assetsViewState.selectedTab.toInfoTag())
-                }
+                )
             )
         }
     }
@@ -149,8 +144,7 @@ fun ChooseAssetsSheetPreview() {
             onNextNFtsPageRequest = {},
             onStakesRequest = {},
             onUiMessageShown = {},
-            onChooseAssetsSubmitted = {},
-            onInfoClick = {}
+            onChooseAssetsSubmitted = {}
         )
     }
 }

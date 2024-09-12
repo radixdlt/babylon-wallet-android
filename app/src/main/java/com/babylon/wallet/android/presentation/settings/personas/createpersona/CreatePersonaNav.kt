@@ -11,7 +11,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.radixdlt.sargon.IdentityAddress
@@ -60,9 +59,8 @@ fun NavController.popPersonaCreation() {
 }
 
 fun NavGraphBuilder.personaInfoScreen(
-    onInfoClick: (GlossaryItem) -> Unit,
-    onContinueClick: (CreatePersonaRequestSource) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onContinueClick: (CreatePersonaRequestSource) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_INFO,
@@ -86,19 +84,17 @@ fun NavGraphBuilder.personaInfoScreen(
     ) {
         val requestSource = it.getCreatePersonaRequestSource()
         CreatePersonaInfoScreen(
-            onInfoClick = onInfoClick,
+            onBackClick = onBackClick,
             onContinueClick = {
                 onContinueClick(requestSource)
-            },
-            onBackClick = onBackClick
+            }
         )
     }
 }
 
 fun NavGraphBuilder.createPersonaScreen(
-    onContinueClick: (CreatePersonaRequestSource) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onContinueClick: (CreatePersonaRequestSource) -> Unit
 ) {
     markAsHighPriority(ROUTE_CREATE_PERSONA)
     composable(
@@ -124,11 +120,10 @@ fun NavGraphBuilder.createPersonaScreen(
         val requestSource = it.getCreatePersonaRequestSource()
         CreatePersonaScreen(
             viewModel = hiltViewModel(),
+            onBackClick = onBackClick,
             onContinueClick = {
                 onContinueClick(requestSource)
-            },
-            onBackClick = onBackClick,
-            onInfoClick = onInfoClick
+            }
         )
     }
 }
@@ -137,8 +132,7 @@ fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onPersonaClick: (IdentityAddress) -> Unit,
-    onNavigateToSecurityCenter: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     composable(
         route = ROUTE_PERSONAS,
@@ -160,8 +154,7 @@ fun NavGraphBuilder.personasScreen(
             onBackClick = onBackClick,
             createNewPersona = onCreatePersona,
             onPersonaClick = onPersonaClick,
-            onNavigateToSecurityCenter = onNavigateToSecurityCenter,
-            onInfoClick = onInfoClick
+            onNavigateToSecurityCenter = onNavigateToSecurityCenter
         )
     }
 }

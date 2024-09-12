@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
-import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -73,9 +72,6 @@ fun NavGraphBuilder.troubleshootingNavGraph(
             }
         )
         importLegacyWalletScreen(
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            },
             onBackClick = {
                 navController.popBackStack()
             }

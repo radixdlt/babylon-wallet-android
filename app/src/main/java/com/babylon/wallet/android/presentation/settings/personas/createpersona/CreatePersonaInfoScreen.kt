@@ -22,38 +22,31 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
 @Composable
 fun CreatePersonaInfoScreen(
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onInfoClick: (GlossaryItem) -> Unit,
     onContinueClick: () -> Unit,
-    onBackClick: () -> Unit
 ) {
     CreatePersonaInfoContent(
-        modifier = modifier,
-        onInfoClick = onInfoClick,
-        onContinueClick = onContinueClick,
         onBackClick = onBackClick,
+        modifier = modifier,
+        onContinueClick = onContinueClick
     )
 }
 
 @Composable
 private fun CreatePersonaInfoContent(
+    onBackClick: () -> Unit,
     modifier: Modifier,
-    onInfoClick: (GlossaryItem) -> Unit,
-    onContinueClick: () -> Unit,
-    onBackClick: () -> Unit
+    onContinueClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -76,8 +69,8 @@ private fun CreatePersonaInfoContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    horizontal = dimensions.paddingLarge,
-                    vertical = dimensions.paddingDefault
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingDefault
                 )
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
@@ -96,30 +89,25 @@ private fun CreatePersonaInfoContent(
             )
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = stringResource(id = R.string.createPersona_introduction_title),
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-            InfoButton(
-                modifier = Modifier.padding(
-                    horizontal = dimensions.paddingDefault,
-                    vertical = dimensions.paddingDefault
-                ),
-                text = stringResource(id = R.string.createPersona_introduction_learnAboutPersonas),
-                onClick = {
-                    onInfoClick(GlossaryItem.personas)
-                }
-            )
-            Spacer(modifier = Modifier.height(dimensions.paddingDefault))
+//            Spacer(modifier = Modifier.height(22.dp))
+//            InfoLink(
+//                stringResource(com.babylon.wallet.android.R.string.createPersona_introduction_learnAboutPersonas),
+//                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+//            )
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = stringResource(id = R.string.createPersona_introduction_subtitle1),
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_subtitle1),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(40.dp))
             Text(
-                text = stringResource(id = R.string.createPersona_introduction_subtitle2),
+                text = stringResource(id = com.babylon.wallet.android.R.string.createPersona_introduction_subtitle2),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -135,8 +123,7 @@ fun CreatePersonaInfoContentPreview() {
         CreatePersonaInfoContent(
             onBackClick = {},
             modifier = Modifier,
-            onContinueClick = {},
-            onInfoClick = {}
+            onContinueClick = {}
         )
     }
 }

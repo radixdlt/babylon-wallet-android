@@ -21,8 +21,6 @@ import com.radixdlt.sargon.extensions.perAssetTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -32,23 +30,18 @@ import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
+import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {
 
-    private val testDispatcher = StandardTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
-
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val account1 = profile.activeAccountsOnCurrentNetwork[0]
-    private val profileUseCase = GetProfileUseCase(
-        profileRepository = FakeProfileRepository(profile),
-        dispatcher = testDispatcher
-    )
+    private val profileUseCase = GetProfileUseCase(profileRepository = FakeProfileRepository(profile))
     private var useCase = createUseCase()
 
     @Test
     fun `when account with enough xrd exists, returns the selected fee payer`() =
-        testScope.runTest {
+        runTest {
             val manifestData = manifestDataWithAddress(account1)
 
             val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
@@ -66,7 +59,7 @@ class SearchFeePayersUseCaseTest {
 
     @Test
     fun `when account with not enough xrd exists, returns null fee payer and hasEnoughBalance false`() =
-        testScope.runTest {
+        runTest {
             val manifestData = manifestDataWithAddress(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.1)
@@ -85,7 +78,7 @@ class SearchFeePayersUseCaseTest {
 
     @Test
     fun `when account with xrd does not exist, returns null fee payer and no candidates`() =
-        testScope.runTest {
+        runTest {
             val manifestData = manifestDataWithAddress(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.0)

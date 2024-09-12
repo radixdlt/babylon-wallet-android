@@ -1,31 +1,22 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.Profile
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
 import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.IoDispatcher
 import javax.inject.Inject
 
-class GetProfileUseCase @Inject constructor(
-    private val profileRepository: ProfileRepository,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
-) {
+class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
 
     val flow: Flow<Profile>
-        get() = profileRepository.profile.flowOn(dispatcher)
+        get() = profileRepository.profile
 
-    val state = profileRepository.profileState.flowOn(dispatcher)
+    val state = profileRepository.profileState
 
-    suspend operator fun invoke() = withContext(dispatcher) {
-        flow.first()
-    }
+    suspend operator fun invoke() = flow.first()
 
     /**
      * Checks the validity of the profile. A profile might have been temporarily generated, but might contain no accounts.

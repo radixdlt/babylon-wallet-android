@@ -13,7 +13,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Resource
@@ -37,8 +36,7 @@ fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
     onTransferableFungibleClick: (TransferableAsset.Fungible) -> Unit,
     onTransferableNonFungibleClick: (TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
-    onDAppClick: (DApp) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onDAppClick: (DApp) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSACTION_REVIEW)
     composable(
@@ -64,8 +62,7 @@ fun NavGraphBuilder.transactionReviewScreen(
             onDismiss = onBackClick,
             onTransferableFungibleClick = onTransferableFungibleClick,
             onTransferableNonFungibleClick = onTransferableNonFungibleClick,
-            onDAppClick = onDAppClick,
-            onInfoClick = onInfoClick
+            onDAppClick = onDAppClick
         )
     }
 }

@@ -29,9 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -52,8 +50,7 @@ fun PersonasScreen(
     onBackClick: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
     onPersonaClick: (IdentityAddress) -> Unit,
-    onNavigateToSecurityCenter: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -69,8 +66,7 @@ fun PersonasScreen(
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
         onPersonaClick = onPersonaClick,
-        onNavigateToSecurityCenter = onNavigateToSecurityCenter,
-        onInfoClick = onInfoClick
+        onNavigateToSecurityCenter = onNavigateToSecurityCenter
     )
 }
 
@@ -81,8 +77,7 @@ fun PersonasContent(
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
     onPersonaClick: (IdentityAddress) -> Unit,
-    onNavigateToSecurityCenter: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onNavigateToSecurityCenter: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -100,7 +95,6 @@ fun PersonasContent(
             horizontalAlignment = Alignment.Start
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Text(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
@@ -110,24 +104,20 @@ fun PersonasContent(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-            InfoButton(
-                modifier = Modifier.padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingMedium
-                ),
-                text = stringResource(id = R.string.personas_whatIsPersona),
-                onClick = {
-                    onInfoClick(GlossaryItem.personas)
-                }
-            )
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(
                     horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
+                    vertical = RadixTheme.dimensions.paddingXXLarge
                 ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+//                item {
+//                InfoLink( // TODO enable it when we have a link
+//                    stringResource(R.string.personas_whatIsPersona),
+//                    modifier = Modifier.fillMaxWidth()
+//                )
+//                }
                 itemsIndexed(items = state.personas) { _, personaItem ->
                     PersonaCard(
                         modifier = Modifier
@@ -168,9 +158,7 @@ fun PersonasScreenPreview() {
             onBackClick = {},
             createNewPersona = {},
             onPersonaClick = {},
-            onNavigateToSecurityCenter = {},
-            onInfoClick = {}
-        )
+        ) {}
     }
 }
 
@@ -197,9 +185,7 @@ fun PersonasScreenWithSecurityPromptsPreview() {
             onBackClick = {},
             createNewPersona = {},
             onPersonaClick = {},
-            onNavigateToSecurityCenter = {},
-            onInfoClick = {}
-        )
+        ) {}
     }
 }
 
@@ -212,9 +198,7 @@ fun PersonasScreenEmptyPreview() {
             modifier = Modifier,
             onBackClick = {},
             createNewPersona = {},
-            onPersonaClick = {},
-            onNavigateToSecurityCenter = {},
-            onInfoClick = {}
-        )
+            onPersonaClick = {}
+        ) {}
     }
 }

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -47,15 +46,13 @@ import rdx.works.core.domain.resources.Resource
 fun LazyListScope.nftsTab(
     assetsViewData: AssetsViewData,
     state: AssetsViewState,
-    action: AssetsViewAction,
-    onInfoClick: (GlossaryItem) -> Unit
+    action: AssetsViewAction
 ) {
     if (assetsViewData.isNonFungibleCollectionsEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = AssetsTab.Nfts,
-                onInfoClick = onInfoClick
+                tab = AssetsTab.Nfts
             )
         }
     }
@@ -297,8 +294,7 @@ fun NFTCItemCollapsedPreview() {
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onClaimClick = {}
-                ),
-                onInfoClick = {}
+                )
             )
         }
     }
@@ -323,8 +319,7 @@ fun NFTItemExpandedPreview() {
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onClaimClick = {}
-                ),
-                onInfoClick = {}
+                )
             )
         }
     }

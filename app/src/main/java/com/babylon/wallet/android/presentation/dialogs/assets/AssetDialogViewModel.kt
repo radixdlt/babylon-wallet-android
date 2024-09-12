@@ -20,7 +20,6 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.ResourceOrNonFungible
-import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.isXRD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -33,7 +32,6 @@ import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
-import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.profile.domain.ChangeResourceVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -97,12 +95,7 @@ class AssetDialogViewModel @Inject constructor(
                     }
                 }
             }.mapCatching { asset ->
-                _state.update {
-                    it.copy(
-                        asset = asset,
-                        canBeHidden = canBeHidden(asset)
-                    )
-                }
+                _state.update { it.copy(asset = asset) }
 
                 args.underAccountAddress?.let { accountAddress ->
                     val account = getProfileUseCase().activeAccountOnCurrentNetwork(accountAddress)
@@ -209,25 +202,6 @@ class AssetDialogViewModel @Inject constructor(
         }
     }
 
-    private suspend fun canBeHidden(asset: Asset): Boolean {
-        return !asset.resource.address.isXRD &&
-            asset !is StakeClaim &&
-            asset !is LiquidStakeUnit &&
-            !isAlreadyHidden(asset)
-    }
-
-    private suspend fun isAlreadyHidden(asset: Asset): Boolean {
-        val hiddenResources = getProfileUseCase().getResourcePreferences().hiddenResources
-        val hiddenAddresses = hiddenResources.map {
-            when (it) {
-                is ResourceIdentifier.Fungible -> it.v1
-                is ResourceIdentifier.NonFungible -> it.v1
-                is ResourceIdentifier.PoolUnit -> it.v1
-            }
-        }
-        return asset.resource.address in hiddenAddresses
-    }
-
     data class State(
         val args: AssetDialogArgs,
         val asset: Asset? = null,
@@ -236,8 +210,7 @@ class AssetDialogViewModel @Inject constructor(
         val assetPrice: AssetPrice? = null,
         val uiMessage: UiMessage? = null,
         val accountContext: Account? = null,
-        val showHideConfirmation: HideConfirmationType? = null,
-        val canBeHidden: Boolean = false
+        val showHideConfirmation: HideConfirmationType? = null
     ) : UiState {
 
         val isLoadingBalance = args.underAccountAddress != null && assetPrice == null
@@ -261,6 +234,10 @@ class AssetDialogViewModel @Inject constructor(
                     )
                 }
             }
+
+        val canBeHidden: Boolean = asset != null &&
+            !asset.resource.address.isXRD &&
+            asset !is StakeClaim && asset !is LiquidStakeUnit
 
         sealed class ClaimState {
             abstract val amount: Decimal192

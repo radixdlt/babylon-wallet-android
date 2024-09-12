@@ -36,7 +36,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
@@ -80,8 +79,7 @@ fun TransactionReviewScreen(
     onDismiss: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
-    onDAppClick: (DApp) -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -121,8 +119,7 @@ fun TransactionReviewScreen(
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
         dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog,
-        onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning,
-        onInfoClick = onInfoClick
+        onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning
     )
 }
 
@@ -157,8 +154,7 @@ private fun TransactionPreviewContent(
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
     dismissTransactionErrorDialog: () -> Unit,
-    onAcknowledgeRawTransactionWarning: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onAcknowledgeRawTransactionWarning: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -318,7 +314,6 @@ private fun TransactionPreviewContent(
 
                         PresentingProofsContent(
                             badges = state.previewType.badges.toPersistentList(),
-                            onInfoClick = onInfoClick,
                             onClick = { badge ->
                                 when (val resource = badge.resource) {
                                     is Resource.FungibleResource -> onTransferableFungibleClick(
@@ -347,8 +342,7 @@ private fun TransactionPreviewContent(
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
                             isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
                             isNetworkFeeLoading = state.isNetworkFeeLoading,
-                            onCustomizeClick = onCustomizeClick,
-                            onInfoClick = onInfoClick
+                            onCustomizeClick = onCustomizeClick
                         )
                         SlideToSignButton(
                             modifier = Modifier
@@ -388,8 +382,7 @@ private fun TransactionPreviewContent(
                     onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                     onTipPercentageChanged = onTipPercentageChanged,
                     onViewDefaultModeClick = onViewDefaultModeClick,
-                    onViewAdvancedModeClick = onViewAdvancedModeClick,
-                    onInfoClick = onInfoClick
+                    onViewAdvancedModeClick = onViewAdvancedModeClick
                 )
             },
             showDragHandle = true,
@@ -434,8 +427,7 @@ private fun BottomSheetContent(
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit,
-    onInfoClick: (GlossaryItem) -> Unit
+    onViewAdvancedModeClick: () -> Unit
 ) {
     when (sheetState) {
         is State.Sheet.CustomizeGuarantees -> {
@@ -463,8 +455,7 @@ private fun BottomSheetContent(
                 onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                 onTipPercentageChanged = onTipPercentageChanged,
                 onViewDefaultModeClick = onViewDefaultModeClick,
-                onViewAdvancedModeClick = onViewAdvancedModeClick,
-                onInfoClick = onInfoClick
+                onViewAdvancedModeClick = onViewAdvancedModeClick
             )
         }
 
@@ -527,8 +518,7 @@ fun TransactionPreviewContentPreview() {
             onViewAdvancedModeClick = {},
             dismissTransactionErrorDialog = {},
             onAcknowledgeRawTransactionWarning = {},
-            onFeePayerSelectionDismiss = {},
-            onInfoClick = {}
+            onFeePayerSelectionDismiss = {}
         )
     }
 }

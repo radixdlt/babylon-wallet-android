@@ -3,27 +3,19 @@ package com.babylon.wallet.android.presentation.ui.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 
 @Composable
 fun WarningText(
     modifier: Modifier = Modifier,
     text: AnnotatedString,
-    textStyle: TextStyle = RadixTheme.typography.body1StandaloneLink,
-    contentColor: Color = RadixTheme.colors.orange1,
-    iconRes: Int = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error,
+    contentColor: Color = RadixTheme.colors.red1
 ) {
     Row(
         modifier = modifier,
@@ -32,23 +24,15 @@ fun WarningText(
     ) {
         Icon(
             painter = painterResource(
-                id = iconRes
+                id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
             ),
             contentDescription = null,
             tint = contentColor
         )
-        Text(
+        androidx.compose.material3.Text(
             text = text,
-            style = textStyle,
+            style = RadixTheme.typography.body1StandaloneLink,
             color = contentColor
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WarningTextPreview() {
-    RadixWalletPreviewTheme {
-        WarningText(text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure)))
     }
 }

@@ -22,7 +22,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceViewModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ShowLinkConnectorPromptState
@@ -47,14 +46,13 @@ import rdx.works.core.sargon.sample
 
 @Composable
 fun ChooseLedgerScreen(
-    modifier: Modifier = Modifier,
     viewModel: ChooseLedgerViewModel,
     addLedgerDeviceViewModel: AddLedgerDeviceViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
-    onInfoClick: (GlossaryItem) -> Unit,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
     goBackToCreateAccount: () -> Unit,
-    onStartRecovery: (FactorSourceId.Hash, Boolean) -> Unit,
-    onBackClick: () -> Unit
+    onStartRecovery: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLedgerDeviceState by addLedgerDeviceViewModel.state.collectAsStateWithLifecycle()
@@ -139,7 +137,6 @@ fun ChooseLedgerScreen(
                 onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                 onQrCodeScanFailure = addLinkConnectorViewModel::onQrCodeScanFailure,
                 onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-                onInfoClick = onInfoClick,
                 onContinueClick = addLinkConnectorViewModel::onContinueClick,
                 onCloseClick = addLinkConnectorViewModel::onCloseClick,
                 onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss

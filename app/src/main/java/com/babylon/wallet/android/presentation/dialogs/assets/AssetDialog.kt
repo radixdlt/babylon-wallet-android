@@ -33,11 +33,9 @@ import com.babylon.wallet.android.presentation.dialogs.assets.fungible.FungibleD
 import com.babylon.wallet.android.presentation.dialogs.assets.lsu.LSUDialogContent
 import com.babylon.wallet.android.presentation.dialogs.assets.nonfungible.NonFungibleAssetDialogContent
 import com.babylon.wallet.android.presentation.dialogs.assets.pool.PoolUnitDialogContent
-import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.HideResourceSheetContent
-import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
@@ -60,7 +58,6 @@ import rdx.works.core.domain.resources.Tag
 fun AssetDialog(
     modifier: Modifier = Modifier,
     viewModel: AssetDialogViewModel = hiltViewModel(),
-    onInfoClick: (GlossaryItem) -> Unit,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -84,7 +81,6 @@ fun AssetDialog(
                     tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
                     isLoadingBalance = isLoadingBalance,
                     canBeHidden = state.canBeHidden,
-                    onInfoClick = onInfoClick,
                     onHideClick = { viewModel.onHideClick(asset) }
                 )
 
@@ -92,8 +88,7 @@ fun AssetDialog(
                     args = state.args as AssetDialogArgs.Fungible,
                     lsu = asset,
                     price = state.assetPrice as? AssetPrice.LSUPrice,
-                    isLoadingBalance = isLoadingBalance,
-                    onInfoClick = onInfoClick
+                    isLoadingBalance = isLoadingBalance
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
@@ -102,7 +97,6 @@ fun AssetDialog(
                     poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
                     isLoadingBalance = isLoadingBalance,
                     canBeHidden = state.canBeHidden,
-                    onInfoClick = onInfoClick,
                     onHideClick = { viewModel.onHideClick(asset) }
                 )
                 // Includes NFTs and stake claims
@@ -118,7 +112,6 @@ fun AssetDialog(
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
                         isLoadingBalance = isLoadingBalance,
                         canBeHidden = state.canBeHidden,
-                        onInfoClick = onInfoClick,
                         onClaimClick = viewModel::onClaimClick,
                         onHideClick = { viewModel.onHideClick(asset) }
                     )
@@ -131,8 +124,7 @@ fun AssetDialog(
                         token = null,
                         tokenPrice = null,
                         isLoadingBalance = state.isLoadingBalance,
-                        canBeHidden = false,
-                        onInfoClick = onInfoClick
+                        canBeHidden = false
                     )
 
                     is AssetDialogArgs.NFT -> NonFungibleAssetDialogContent(
@@ -315,8 +307,7 @@ fun NonStandardMetadataSection(
 fun BehavioursSection(
     modifier: Modifier = Modifier,
     behaviours: AssetBehaviours?,
-    isXRD: Boolean = false,
-    onInfoClick: (GlossaryItem) -> Unit
+    isXRD: Boolean = false
 ) {
     Column(modifier = modifier) {
         if (behaviours == null || behaviours.isNotEmpty()) {
@@ -354,18 +345,6 @@ fun BehavioursSection(
                     name = behaviour.name(isXRD)
                 )
             }
-            InfoButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingSmall
-                    ),
-                text = stringResource(id = R.string.assetDetails_behaviors_whatAreBehaviors),
-                onClick = {
-                    onInfoClick(GlossaryItem.behaviors)
-                }
-            )
         }
     }
 }

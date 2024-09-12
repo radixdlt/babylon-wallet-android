@@ -68,10 +68,12 @@ class RadixApplication : Application(), Configuration.Provider {
             accountLockersObserver.startMonitoring()
         }
 
+        override fun onPause(owner: LifecycleOwner) {
+            super.onPause(owner)
+            scope.launch { appLockStateProvider.lockApp() }
+        }
+
         override fun onStop(owner: LifecycleOwner) {
-            scope.launch {
-                appLockStateProvider.lockApp()
-            }
             super.onStop(owner)
             accountLockersObserver.stopMonitoring()
         }

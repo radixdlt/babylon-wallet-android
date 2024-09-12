@@ -11,7 +11,6 @@ import androidx.navigation.navigation
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
-import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
@@ -26,6 +25,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securityC
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
 
+@Suppress("LongMethod")
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController,
 ) {
@@ -40,19 +40,11 @@ fun NavGraphBuilder.settingsNavGraph(
             },
             onDAppClick = { dAppDefinitionAddress ->
                 navController.dAppDetailScreen(dAppDefinitionAddress)
-            },
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
             }
         )
-        linkedConnectorsScreen(
-            onInfoClick = { glossaryItem ->
-                navController.infoDialog(glossaryItem)
-            },
-            onBackClick = {
-                navController.popBackStack()
-            }
-        )
+        linkedConnectorsScreen(onBackClick = {
+            navController.popBackStack()
+        })
         dAppDetailScreen(
             onBackClick = {
                 navController.popBackStack()

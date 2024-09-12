@@ -76,8 +76,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 50
-        versionName "1.9.0"
+        versionCode 49
+        versionName "1.8.3"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
@@ -259,9 +259,6 @@ dependencies {
 
     // apache commons validator
     implementation libs.apacheCommonsValidator
-
-    // markdown library
-    implementation libs.markdown
 
     // Peerdroid
     implementation project(path: ':peerdroid')
