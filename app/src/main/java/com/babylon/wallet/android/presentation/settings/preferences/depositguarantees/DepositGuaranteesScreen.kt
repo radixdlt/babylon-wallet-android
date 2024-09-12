@@ -96,7 +96,7 @@ fun DepositGuaranteesContent(
                         horizontal = RadixTheme.dimensions.paddingDefault,
                         vertical = RadixTheme.dimensions.paddingLarge
                     ),
-                    text = stringResource(id = R.string.transactionReview_guarantees_howDoGuaranteesWork),
+                    text = stringResource(id = R.string.infoLink_title_guarantees),
                     onClick = {
                         onInfoClick(GlossaryItem.guarantees)
                     }
