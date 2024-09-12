@@ -30,7 +30,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
@@ -359,7 +359,9 @@ class TransactionReviewViewModel @Inject constructor(
             get() = feePayers?.selectedAccountAddress == null
 
         val isSelectedFeePayerInvolvedInTransaction: Boolean
-            get() = request?.transactionManifestData?.feePayerCandidates()?.contains(feePayers?.selectedAccountAddress) ?: false
+            get() = runCatching {
+                request?.transactionManifestData?.feePayerCandidates()?.contains(feePayers?.selectedAccountAddress)
+            }.getOrNull() ?: false
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {
@@ -540,7 +542,7 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             override val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList(),
+            val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
             override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
         ) : Transfer
     }

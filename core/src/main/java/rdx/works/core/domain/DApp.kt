@@ -2,6 +2,7 @@ package rdx.works.core.domain
 
 import android.net.Uri
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.Sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -18,6 +19,7 @@ import rdx.works.core.domain.resources.metadata.name
 
 data class DApp(
     val dAppAddress: AccountAddress,
+    val lockerAddress: LockerAddress? = null,
     val metadata: List<Metadata> = listOf()
 ) {
 

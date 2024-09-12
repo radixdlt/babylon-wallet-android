@@ -26,8 +26,8 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -90,7 +90,9 @@ interface StateRepository {
 
     suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>>
 
-    suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>>
+    suspend fun getDAppDefinitions(
+        componentAddresses: List<ManifestEncounteredComponentAddress>
+    ): Result<Map<ManifestEncounteredComponentAddress, AccountAddress?>>
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
@@ -526,15 +528,17 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> =
+    override suspend fun getDAppDefinitions(
+        componentAddresses: List<ManifestEncounteredComponentAddress>
+    ): Result<Map<ManifestEncounteredComponentAddress, AccountAddress?>> =
         runCatching {
-            val result = mutableMapOf<ComponentAddress, AccountAddress?>()
+            val result = mutableMapOf<ManifestEncounteredComponentAddress, AccountAddress?>()
             stateApi.paginateDetails(
                 addresses = componentAddresses.map { it.string }.toSet(),
                 metadataKeys = ExplicitMetadataKey.forDApps
             ) { page ->
                 page.items.map { item ->
-                    val componentAddress = ComponentAddress.init(item.address)
+                    val componentAddress = ManifestEncounteredComponentAddress.init(item.address)
                     val dAppDefinitionAddress = item.explicitMetadata?.toMetadata()?.dAppDefinition()?.let { AccountAddress.init(it) }
 
                     result[componentAddress] = dAppDefinitionAddress

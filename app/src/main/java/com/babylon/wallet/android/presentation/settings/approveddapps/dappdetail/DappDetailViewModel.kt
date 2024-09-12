@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.usecases.ChangeLockerDepositsVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -19,6 +20,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
@@ -42,7 +44,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 @HiltViewModel
 class DappDetailViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
@@ -50,6 +52,7 @@ class DappDetailViewModel @Inject constructor(
     private val getValidatedDAppWebsiteUseCase: GetValidatedDAppWebsiteUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val changeLockerDepositsVisibilityUseCase: ChangeLockerDepositsVisibilityUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<DappDetailUiState>(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
@@ -100,7 +103,7 @@ class DappDetailViewModel @Inject constructor(
                 }
                 _state.update { state ->
                     state.copy(
-                        dapp = authorizedDapp,
+                        isShowLockerDepositsChecked = dapp.preferences.deposits == AuthorizedDappPreferenceDeposits.VISIBLE,
                         authorizedPersonas = personas.toPersistentList(),
                     )
                 }
@@ -239,6 +242,13 @@ class DappDetailViewModel @Inject constructor(
     fun hidePersonaBottomSheet() {
         _state.update { it.copy(selectedSheetState = null) }
     }
+
+    fun onShowLockerDepositsCheckedChange(isChecked: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(isShowLockerDepositsChecked = isChecked) }
+            changeLockerDepositsVisibilityUseCase(authorizedDapp, isChecked)
+        }
+    }
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
@@ -252,13 +262,13 @@ sealed interface DappDetailEvent : OneOffEvent {
 
 data class DappDetailUiState(
     val loading: Boolean = true,
-    val dapp: AuthorizedDapp? = null,
     val dAppWithResources: DAppWithResources? = null,
     val isValidatingWebsite: Boolean = false,
     val validatedWebsite: String? = null,
     val authorizedPersonas: ImmutableList<Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
-    val selectedSheetState: SelectedSheetState? = null
+    val selectedSheetState: SelectedSheetState? = null,
+    val isShowLockerDepositsChecked: Boolean = false
 ) : UiState {
 
     val isBottomSheetVisible: Boolean

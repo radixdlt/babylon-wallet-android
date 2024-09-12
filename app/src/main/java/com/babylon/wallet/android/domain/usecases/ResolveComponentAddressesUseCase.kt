@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.DApp
 import rdx.works.core.then
@@ -19,8 +19,8 @@ class ResolveComponentAddressesUseCase @Inject constructor(
      * - check if componentAddress is within claimed_entities metadata of dAppDefinitionAddress metadata
      */
     suspend fun invoke(
-        componentAddress: ComponentAddress
-    ): Result<Pair<ComponentAddress, DApp?>> = stateRepository.getDAppDefinitions(
+        componentAddress: ManifestEncounteredComponentAddress
+    ): Result<Pair<ManifestEncounteredComponentAddress, DApp?>> = stateRepository.getDAppDefinitions(
         componentAddresses = listOf(componentAddress)
     ).then { componentsWithDAppDefinitions ->
         val dAppDefinitionAddress = componentsWithDAppDefinitions[componentAddress]

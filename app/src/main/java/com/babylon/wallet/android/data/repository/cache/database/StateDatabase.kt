@@ -5,6 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerDao
+import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerTouchedAtEntity
+import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerVaultItemEntity
 
 @Database(
     entities = [
@@ -18,9 +21,11 @@ import androidx.room.TypeConverters
         PoolResourceJoin::class,
         DAppEntity::class,
         PoolDAppJoin::class,
-        TokenPriceEntity::class
+        TokenPriceEntity::class,
+        AccountLockerTouchedAtEntity::class,
+        AccountLockerVaultItemEntity::class
     ],
-    version = StateDatabase.VERSION_9
+    version = StateDatabase.VERSION_10
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -28,6 +33,8 @@ abstract class StateDatabase : RoomDatabase() {
     abstract fun stateDao(): StateDao
 
     abstract fun tokenPriceDao(): TokenPriceDao
+
+    abstract fun accountLockerDao(): AccountLockerDao
 
     companion object {
         @Deprecated("Initial schema version")
@@ -54,8 +61,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Replace BigDecimal with Decimal192")
         const val VERSION_8 = 8
 
-        // Added next cursor to metadata column and locked flag
+        @Deprecated("Added next cursor to metadata column and locked flag")
         const val VERSION_9 = 9
+
+        // Add account locker logic
+        const val VERSION_10 = 10
 
         private const val NAME = "STATE_DATABASE"
 

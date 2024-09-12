@@ -37,8 +37,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
@@ -351,7 +351,7 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
 
             val securityPromptColor = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
 
-            SecurityPromptLabel(
+            PromptLabel(
                 modifier = Modifier.fillMaxWidth(),
                 text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)

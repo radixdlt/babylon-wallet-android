@@ -62,6 +62,7 @@ import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetSta
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.orZero
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -274,7 +275,7 @@ private fun TransactionPreviewContent(
                                     onPromptForGuarantees = promptForGuarantees,
                                     onDAppClick = onDAppClick,
                                     onUnknownComponentsClick = { componentAddresses ->
-                                        onUnknownAddressesClick(componentAddresses.map { Address.Component(it) }.toPersistentList())
+                                        onUnknownAddressesClick(componentAddresses.map { it.asGeneral() }.toPersistentList())
                                     },
                                     onTransferableFungibleClick = onTransferableFungibleClick,
                                     onNonTransferableFungibleClick = onTransferableNonFungibleClick

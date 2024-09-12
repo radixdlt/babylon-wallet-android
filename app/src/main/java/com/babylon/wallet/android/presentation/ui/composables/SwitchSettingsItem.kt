@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,6 +35,7 @@ fun SwitchSettingsItem(
     onCheckedChange: (Boolean) -> Unit,
     icon: @Composable (() -> Unit)? = null,
     @StringRes subtitleRes: Int? = null,
+    subtitleTextColor: Color = RadixTheme.colors.gray1,
     isLoading: Boolean = false
 ) {
     Row(
@@ -41,11 +43,13 @@ fun SwitchSettingsItem(
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        Box(
-            modifier = Modifier.size(32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            icon?.invoke()
+        icon?.let {
+            Box(
+                modifier = Modifier.size(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                it()
+            }
         }
         Column(Modifier.weight(1f)) {
             Text(
@@ -54,10 +58,11 @@ fun SwitchSettingsItem(
                 color = RadixTheme.colors.gray1
             )
             subtitleRes?.let {
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(id = subtitleRes),
                     style = RadixTheme.typography.body1Regular,
-                    color = RadixTheme.colors.gray1
+                    color = subtitleTextColor
                 )
             }
         }

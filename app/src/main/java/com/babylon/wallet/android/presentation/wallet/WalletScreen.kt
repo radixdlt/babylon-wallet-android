@@ -44,6 +44,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.HomeCardsCarousel
@@ -100,6 +101,7 @@ fun WalletScreen(
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
         onApplySecuritySettingsClick = viewModel::onApplySecuritySettingsClick,
+        onLockerDepositClick = viewModel::onLockerDepositClick,
         onCardClick = viewModel::onCardClick,
         onCardCloseClick = viewModel::onCardClose
     )
@@ -174,6 +176,7 @@ private fun WalletContent(
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -235,6 +238,7 @@ private fun WalletContent(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettingsClick = onApplySecuritySettingsClick,
+                onLockerDepositClick = onLockerDepositClick,
                 onCardClick = onCardClick,
                 onCardCloseClick = onCardCloseClick
             )
@@ -261,6 +265,7 @@ private fun WalletAccountList(
     onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onApplySecuritySettingsClick: () -> Unit,
+    onLockerDepositClick: (WalletViewModel.State.AccountUiItem, AccountLockerDeposit) -> Unit,
     onCardClick: (HomeCard) -> Unit,
     onCardCloseClick: (HomeCard) -> Unit
 ) {
@@ -315,7 +320,8 @@ private fun WalletAccountList(
                         onAccountClick(accountWithAssets.account)
                     },
                 accountWithAssets = accountWithAssets,
-                onApplySecuritySettingsClick = onApplySecuritySettingsClick
+                onApplySecuritySettingsClick = onApplySecuritySettingsClick,
+                onLockerDepositClick = onLockerDepositClick
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
@@ -347,6 +353,7 @@ private fun WalletContentPreview(
             onRefresh = { },
             onMessageShown = {},
             onApplySecuritySettingsClick = {},
+            onLockerDepositClick = { _, _ -> },
             onCardClick = {},
             onCardCloseClick = {}
         )

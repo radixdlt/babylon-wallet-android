@@ -8,6 +8,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.utils.AccountLockersObserver
 import com.babylon.wallet.android.utils.AppsFlyerIntegrationManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
@@ -41,6 +42,9 @@ class RadixApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var homeCardsRepository: HomeCardsRepository
 
+    @Inject
+    lateinit var accountLockersObserver: AccountLockersObserver
+
     override val workManagerConfiguration: Configuration =
         Configuration.Builder()
             .setWorkerFactory(EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory())
@@ -54,19 +58,22 @@ class RadixApplication : Application(), Configuration.Provider {
 
         appsFlyerIntegrationManager.init()
         bootstrapHomeCards()
-        ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver(appLockStateProvider, scope))
+        ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleObserver())
     }
 
-    class AppLifecycleObserver(
-        private val appLockStateProvider: AppLockStateProvider,
-        private val scope: CoroutineScope
-    ) : DefaultLifecycleObserver {
+    inner class AppLifecycleObserver : DefaultLifecycleObserver {
+
+        override fun onStart(owner: LifecycleOwner) {
+            super.onStart(owner)
+            accountLockersObserver.startMonitoring()
+        }
 
         override fun onStop(owner: LifecycleOwner) {
             scope.launch {
                 appLockStateProvider.lockApp()
             }
             super.onStop(owner)
+            accountLockersObserver.stopMonitoring()
         }
     }
 

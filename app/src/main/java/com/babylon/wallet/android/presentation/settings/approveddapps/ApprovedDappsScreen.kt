@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
+import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -122,12 +124,23 @@ private fun ApprovedDAppsContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(state.dApps) { dApp ->
+                    items(state.dApps) { item ->
                         DappCard(
                             modifier = Modifier.throttleClickable {
-                                onDAppClick(dApp.dAppAddress)
+                                onDAppClick(item.dApp.dAppAddress)
                             },
-                            dApp = dApp
+                            dApp = item.dApp,
+                            bottomContent = if (item.hasDeposits) {
+                                {
+                                    PromptLabel(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        text = stringResource(id = R.string.authorizedDapps_pendingDeposit),
+                                        textStyle = RadixTheme.typography.body1HighImportance
+                                    )
+                                }
+                            } else {
+                                null
+                            }
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     }
@@ -152,7 +165,12 @@ fun ApprovedDAppsContentPreview() {
         ApprovedDAppsContent(
             onBackClick = {},
             state = AuthorizedDappsUiState(
-                dApps = DApp.sampleMainnet.all.toImmutableList()
+                dApps = DApp.sampleMainnet.all.map {
+                    AuthorizedDappsUiState.DAppUiItem(
+                        dApp = it,
+                        hasDeposits = false
+                    )
+                }.toImmutableList()
             ),
             onDAppClick = {},
             onMessageShown = {},

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -17,14 +19,15 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
-fun ApplySecuritySettingsLabel(
+fun AccountPromptLabel(
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     text: String,
     labelColor: Color = RadixTheme.colors.white,
-    contentColor: Color = RadixTheme.colors.white
+    contentColor: Color = RadixTheme.colors.white,
+    @DrawableRes iconRes: Int = R.drawable.ic_warning_error,
 ) {
-    SecurityPromptLabel(
+    PromptLabel(
         modifier = modifier
             .background(labelColor.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectSmall)
             .clip(RadixTheme.shapes.roundedRectSmall)
@@ -37,6 +40,7 @@ fun ApplySecuritySettingsLabel(
             .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingSmall),
         text = text,
         textColor = labelColor,
+        iconRes = iconRes,
         iconTint = contentColor,
         iconSize = 14.dp
     )
@@ -57,9 +61,9 @@ fun SecurityPromptType.toText() = when (this) {
 
 @Composable
 @Preview(showBackground = false)
-private fun SecurityPromptLabelPreview() {
+private fun AccountPromptLabelPreview() {
     RadixWalletPreviewTheme {
-        ApplySecuritySettingsLabel(
+        AccountPromptLabel(
             modifier = Modifier.fillMaxWidth().padding(bottom = RadixTheme.dimensions.paddingMedium),
             onClick = {},
             text = "Recovery required"

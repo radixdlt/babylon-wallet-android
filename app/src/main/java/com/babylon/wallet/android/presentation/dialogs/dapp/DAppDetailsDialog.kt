@@ -43,7 +43,8 @@ fun DAppDetailsDialog(
         onFungibleClick = onFungibleClick,
         onNonFungibleClick = onNonFungibleClick,
         onDismiss = onDismiss,
-        onDeleteDapp = viewModel::onDeleteDapp
+        onDeleteDapp = viewModel::onDeleteDapp,
+        onShowLockerDepositsCheckedChange = viewModel::onShowLockerDepositsCheckedChange
     )
 }
 
@@ -55,7 +56,8 @@ private fun DAppDetailsDialogContent(
     onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
     onMessageShown: () -> Unit,
     onDismiss: () -> Unit,
-    onDeleteDapp: () -> Unit
+    onDeleteDapp: () -> Unit,
+    onShowLockerDepositsCheckedChange: (Boolean) -> Unit
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
     if (showDeleteDappPrompt) {
@@ -86,6 +88,7 @@ private fun DAppDetailsDialogContent(
     BottomSheetDialogWrapper(
         modifier = modifier,
         title = state.dAppWithResources?.dApp.displayName(),
+        showDragHandle = true,
         onDismiss = onDismiss
     ) {
         Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
@@ -95,12 +98,14 @@ private fun DAppDetailsDialogContent(
                 isValidatingWebsite = state.isWebsiteValidating,
                 validatedWebsite = state.validatedWebsite,
                 personaList = state.authorizedPersonas,
+                isShowLockerDepositsChecked = state.isShowLockerDepositsChecked,
                 onFungibleTokenClick = onFungibleClick,
                 onNonFungibleClick = onNonFungibleClick,
                 onDeleteDapp = {
                     showDeleteDappPrompt = true
                 },
-                onPersonaClick = null
+                onPersonaClick = null,
+                onShowLockerDepositsCheckedChange = onShowLockerDepositsCheckedChange
             )
 
             SnackbarUiMessageHandler(

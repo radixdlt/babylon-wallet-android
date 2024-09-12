@@ -40,7 +40,7 @@ class GeneralTransferProcessor @Inject constructor(
     }
 
     private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
-        encounteredComponentAddresses
+        encounteredAddresses
             .map { address ->
                 async { resolveComponentAddressesUseCase.invoke(address) }
             }

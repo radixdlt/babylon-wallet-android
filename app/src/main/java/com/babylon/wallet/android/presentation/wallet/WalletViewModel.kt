@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.accountPrompts
@@ -20,6 +21,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.wallet.cards.HomeCardsDelegate
+import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLockersDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
@@ -32,6 +34,7 @@ import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,7 +87,8 @@ class WalletViewModel @Inject constructor(
     private val p2PLinksRepository: P2PLinksRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
-    private val homeCards: HomeCardsDelegate
+    private val homeCards: HomeCardsDelegate,
+    private val accountLockersDelegate: WalletAccountLockersDelegate
 ) : StateViewModel<WalletViewModel.State>(), OneOffEventHandler<WalletViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var automaticRefreshJob: Job? = null
@@ -113,6 +117,7 @@ class WalletViewModel @Inject constructor(
         observeShowRelinkConnectors()
         checkForOldBackupSystemToMigrate()
         homeCards(scope = viewModelScope, state = _state)
+        accountLockersDelegate(scope = viewModelScope, state = _state)
     }
 
     fun processBufferedDeepLinkRequest() {
@@ -192,7 +197,7 @@ class WalletViewModel @Inject constructor(
     private fun observeWalletAssets() {
         combine(
             accountsFlow,
-            refreshFlow
+            refreshFlow.onEach { accountLockersDelegate.onRefresh() }
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
@@ -299,9 +304,11 @@ class WalletViewModel @Inject constructor(
                 HomeCard.Connector -> {
                     sendEvent(Event.NavigateToLinkConnector)
                 }
+
                 HomeCard.StartRadQuest -> {
                     sendEvent(Event.OpenUrl(RAD_QUEST_URL))
                 }
+
                 else -> {}
             }
             // Currently all the cards should be dismissed on tap
@@ -311,6 +318,13 @@ class WalletViewModel @Inject constructor(
 
     fun onCardClose(card: HomeCard) {
         homeCards.dismissCard(card)
+    }
+
+    fun onLockerDepositClick(
+        account: State.AccountUiItem,
+        deposit: AccountLockerDeposit
+    ) {
+        accountLockersDelegate.onLockerDepositClick(account.account.address, deposit.lockerAddress)
     }
 
     @Suppress("MagicNumber")
@@ -345,6 +359,7 @@ class WalletViewModel @Inject constructor(
         val refreshType: RefreshType = RefreshType.None,
         private val accountsWithAssets: List<AccountWithAssets>? = null,
         private val accountsWithSecurityPrompts: Map<AccountAddress, Set<SecurityPromptType>> = emptyMap(),
+        private val accountsWithLockerDeposits: Map<AccountAddress, List<AccountLockerDeposit>> = emptyMap(),
         val prices: PricesState = PricesState.None,
         val uiMessage: UiMessage? = null,
         val cards: ImmutableList<HomeCard> = emptyList<HomeCard>().toPersistentList()
@@ -361,7 +376,8 @@ class WalletViewModel @Inject constructor(
             AccountUiItem(
                 account = account,
                 assets = accountWithAssets.assets,
-                securityPrompts = accountsWithSecurityPrompts[account.address]?.toList(),
+                securityPrompts = accountsWithSecurityPrompts[account.address]?.toPersistentList(),
+                deposits = accountsWithLockerDeposits[account.address].orEmpty().toPersistentList(),
                 tag = when {
                     !accountWithAssets.isDappDefinitionAccountType && !account.isOlympia && !account.isLedgerAccount -> null
                     accountWithAssets.isDappDefinitionAccountType -> AccountTag.DAPP_DEFINITION
@@ -450,7 +466,8 @@ class WalletViewModel @Inject constructor(
             val assets: Assets?,
             val fiatTotalValue: FiatPrice?,
             val tag: AccountTag?,
-            val securityPrompts: List<SecurityPromptType>?,
+            val securityPrompts: PersistentList<SecurityPromptType>?,
+            val deposits: PersistentList<AccountLockerDeposit>,
             val isFiatBalanceVisible: Boolean,
             val isLoadingAssets: Boolean,
             val isLoadingBalance: Boolean

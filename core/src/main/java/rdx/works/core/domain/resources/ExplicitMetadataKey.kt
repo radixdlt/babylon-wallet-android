@@ -27,7 +27,8 @@ enum class ExplicitMetadataKey(val key: String) {
     POOL_UNIT("pool_unit"),
     CLAIM_NFT("claim_nft"),
     OWNER_KEYS("owner_keys"),
-    OWNER_BADGE("owner_badge");
+    OWNER_BADGE("owner_badge"),
+    ACCOUNT_LOCKER("account_locker");
 
     companion object {
         val forAssets: Set<ExplicitMetadataKey> = setOf(
@@ -66,7 +67,8 @@ enum class ExplicitMetadataKey(val key: String) {
             DAPP_DEFINITIONS,
             CLAIMED_WEBSITES,
             CLAIMED_ENTITIES,
-            ICON_URL
+            ICON_URL,
+            ACCOUNT_LOCKER
         )
     }
 }

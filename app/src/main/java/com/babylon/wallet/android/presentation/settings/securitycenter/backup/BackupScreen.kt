@@ -71,9 +71,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SecurityPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
@@ -542,7 +542,7 @@ private fun BackupStatusSection(
     ) {
         val statusColor = if (backupState.isCloudBackupNotUpdated) RadixTheme.colors.orange3 else RadixTheme.colors.green1
 
-        SecurityPromptLabel(
+        PromptLabel(
             modifier = Modifier.fillMaxWidth(),
             text = title,
             textColor = statusColor,

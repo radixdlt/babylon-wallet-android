@@ -3,6 +3,7 @@
 package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.generated.models.AccountLockerVaultCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItem
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
@@ -11,6 +12,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelec
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollection
 import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResourcesCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
+import com.babylon.wallet.android.data.gateway.generated.models.StateAccountLockerPageVaultsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
@@ -28,6 +30,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.toResult
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -423,6 +426,31 @@ suspend fun StateApi.paginateNonFungibles(
             )
         ).toResult().getOrThrow()
 
+        onPage(pageResponse.items)
+        nextCursor = pageResponse.nextCursor
+    }
+}
+
+suspend fun StateApi.paginateAccountLockerVaultItems(
+    lockerAddress: LockerAddress,
+    accountAddress: AccountAddress,
+    onPage: (items: List<AccountLockerVaultCollectionItem>) -> Unit
+) {
+    val firstPage = accountLockerVaultsPage(
+        StateAccountLockerPageVaultsRequest(
+            lockerAddress = lockerAddress.string,
+            accountAddress = accountAddress.string
+        )
+    ).toResult().getOrThrow()
+    onPage(firstPage.items)
+    var nextCursor: String? = firstPage.nextCursor
+    while (nextCursor != null) {
+        val pageResponse = accountLockerVaultsPage(
+            StateAccountLockerPageVaultsRequest(
+                lockerAddress = lockerAddress.string,
+                accountAddress = accountAddress.string
+            )
+        ).toResult().getOrThrow()
         onPage(pageResponse.items)
         nextCursor = pageResponse.nextCursor
     }
