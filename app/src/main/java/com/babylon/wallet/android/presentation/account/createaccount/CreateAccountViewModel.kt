@@ -85,13 +85,14 @@ class CreateAccountViewModel @Inject constructor(
                 runCatching {
                     sargonOs.newWallet()
                 }.onFailure { profileCreationError ->
-                    Timber.w(profileCreationError)
                     if (profileCreationError is CommonException.SecureStorageAccessException) {
                         if (!profileCreationError.errorKind.isManualCancellation()) {
                             _state.update {
                                 it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
                             }
                         }
+                    } else if (profileCreationError is CommonException.SecureStorageWriteException) {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     } else {
                         _state.update {
                             it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))

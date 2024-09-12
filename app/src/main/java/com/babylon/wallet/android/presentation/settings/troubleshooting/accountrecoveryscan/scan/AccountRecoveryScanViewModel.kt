@@ -17,6 +17,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.Accounts
@@ -216,7 +217,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 ).onSuccess {
                     sendEvent(Event.RecoverComplete)
                 }.onFailure { error ->
-                    if (error is ProfileException.SecureStorageAccess) {
+                    if (error is CommonException.SecureStorageWriteException) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     } else {
                         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
