@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.linkedconnectors
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,9 +10,14 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,18 +31,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.LinkedConnectorsUiState.ConnectorUiItem
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.PublicKeyHash
@@ -90,9 +104,19 @@ fun LinkedConnectorsScreen(
             isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress,
             activeLinkedConnectorsList = state.activeConnectors,
             onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
+            onRenameConnectorClick = { viewModel.setRenameConnectorSheetVisible(true, it) },
             onDeleteConnectorClick = viewModel::onDeleteConnectorClick,
             onBackClick = onBackClick
         )
+
+        state.renameLinkConnectorItem?.let {
+            RenameActiveLinkedConnectorSheet(
+                input = it,
+                onNewNameChange = viewModel::onNewConnectorNameChanged,
+                onUpdateNameClick = viewModel::onUpdateConnectorNameClick,
+                onDismiss = { viewModel.setRenameConnectorSheetVisible(false) }
+            )
+        }
     }
 }
 
@@ -100,9 +124,10 @@ fun LinkedConnectorsScreen(
 private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
     isAddingNewLinkConnectorInProgress: Boolean,
-    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
+    activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
+    onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
+    onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -118,15 +143,16 @@ private fun LinkedConnectorsContent(
         var connectionLinkToDelete by remember { mutableStateOf<PublicKeyHash?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.gray4)
 
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize().background(color = RadixTheme.colors.gray5)) {
                 ActiveLinkedConnectorDetails(
+                    modifier = Modifier.fillMaxWidth(),
                     activeLinkedConnectorsList = activeLinkedConnectorsList,
                     onLinkNewConnectorClick = onLinkNewConnectorClick,
+                    onRenameConnectorClick = onRenameConnectorClick,
                     onDeleteConnectorClick = { connectionLinkToDelete = it },
-                    isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
-                    modifier = Modifier.fillMaxWidth()
+                    isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress
                 )
 
                 if (connectionLinkToDelete != null) {
@@ -162,9 +188,10 @@ private fun LinkedConnectorsContent(
 
 @Composable
 private fun ActiveLinkedConnectorDetails(
-    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
+    activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
+    onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
+    onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -175,9 +202,9 @@ private fun ActiveLinkedConnectorDetails(
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray2
         )
-        HorizontalDivider(color = RadixTheme.colors.gray5)
         ActiveLinkedConnectorsListContent(
             activeLinkedConnectorsList = activeLinkedConnectorsList,
+            onRenameConnectorClick = onRenameConnectorClick,
             onDeleteConnectorClick = onDeleteConnectorClick,
             isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
             onLinkNewConnectorClick = onLinkNewConnectorClick
@@ -188,24 +215,37 @@ private fun ActiveLinkedConnectorDetails(
 @Composable
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
-    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
-    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
+    activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
+    onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
+    onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
-        items(
-            items = activeLinkedConnectorsList,
-            itemContent = { item ->
-                ActiveLinkedConnectorContent(
-                    activeLinkedConnector = item,
-                    onDeleteConnectorClick = onDeleteConnectorClick
+        itemsIndexed(activeLinkedConnectorsList) { index, activeLinkedConnector ->
+            ActiveLinkedConnectorContent(
+                activeLinkedConnector = activeLinkedConnector,
+                onRenameConnectorClick = onRenameConnectorClick,
+                onDeleteConnectorClick = onDeleteConnectorClick
+            )
+            if (remember(activeLinkedConnectorsList.size) { index < activeLinkedConnectorsList.size - 1 }) {
+                HorizontalDivider(
+                    color = RadixTheme.colors.gray4,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 )
             }
-        )
+        }
+        item {
+            HorizontalDivider(
+                color = RadixTheme.colors.gray4,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         item {
             Column {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -228,48 +268,104 @@ private fun ActiveLinkedConnectorsListContent(
 
 @Composable
 private fun ActiveLinkedConnectorContent(
-    activeLinkedConnector: LinkedConnectorsUiState.ConnectorUiItem,
+    activeLinkedConnector: ConnectorUiItem,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: (PublicKeyHash) -> Unit,
+    onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
+    onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.background(color = RadixTheme.colors.white)) {
         Row(
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 modifier = Modifier.weight(1f),
                 text = activeLinkedConnector.name,
                 style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
+                color = RadixTheme.colors.gray2,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+            IconButton(
+                onClick = { onRenameConnectorClick(activeLinkedConnector) }
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_account_label),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray1
+                )
+            }
             IconButton(onClick = {
                 onDeleteConnectorClick(activeLinkedConnector.id)
             }) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_delete_24),
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_delete_outline),
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
             }
         }
-        HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
-    RadixWalletTheme {
-        LinkedConnectorsContent(
-            activeLinkedConnectorsList = persistentListOf(),
-            onLinkNewConnectorClick = {},
-            isAddingNewLinkConnectorInProgress = false,
-            onBackClick = {},
-            onDeleteConnectorClick = {}
+private fun RenameActiveLinkedConnectorSheet(
+    input: LinkedConnectorsUiState.RenameConnectorInput,
+    onNewNameChange: (String) -> Unit,
+    onUpdateNameClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val inputFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        inputFocusRequester.requestFocus()
+    }
+
+    BottomSheetDialogWrapper(
+        addScrim = true,
+        showDragHandle = true,
+        onDismiss = onDismiss
+    ) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.linkedConnectors_renameConnector_title),
+                style = RadixTheme.typography.title,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.linkedConnectors_renameConnector_subtitle),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            RadixTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                    .focusRequester(focusRequester = inputFocusRequester),
+                onValueChanged = onNewNameChange,
+                value = input.name,
+                singleLine = true,
+                hintColor = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        }
+
+        RadixBottomBar(
+            onClick = onUpdateNameClick,
+            text = stringResource(R.string.accountSettings_renameAccount_button),
+            insets = WindowInsets.navigationBars.union(WindowInsets.ime),
+            enabled = input.isNameValid
         )
     }
 }
@@ -282,11 +378,11 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = listOf(
-                LinkedConnectorsUiState.ConnectorUiItem(
+                ConnectorUiItem(
                     id = PublicKeyHash.sample.invoke(),
                     name = "chrome connection"
                 ),
-                LinkedConnectorsUiState.ConnectorUiItem(
+                ConnectorUiItem(
                     id = PublicKeyHash.sample.other(),
                     name = "firefox connection"
                 )
@@ -294,6 +390,22 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
             onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},
+            onRenameConnectorClick = {},
+            onDeleteConnectorClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
+    RadixWalletTheme {
+        LinkedConnectorsContent(
+            activeLinkedConnectorsList = persistentListOf(),
+            onLinkNewConnectorClick = {},
+            isAddingNewLinkConnectorInProgress = false,
+            onBackClick = {},
+            onRenameConnectorClick = {},
             onDeleteConnectorClick = {}
         )
     }
