@@ -41,7 +41,8 @@ class LinkedConnectorsViewModel @Inject constructor(
                                     id = link.id,
                                     name = link.displayName
                                 )
-                            }.toPersistentList()
+                            }.toPersistentList(),
+                            renameLinkConnectorItem = null
                         )
                     }
                 }
@@ -56,15 +57,49 @@ class LinkedConnectorsViewModel @Inject constructor(
 
     fun onLinkNewConnectorClick() {
         _state.update {
-            it.copy(
-                showAddLinkConnectorScreen = true
-            )
+            it.copy(showAddLinkConnectorScreen = true)
         }
     }
 
     fun onNewConnectorCloseClick() {
         _state.update {
             it.copy(showAddLinkConnectorScreen = false)
+        }
+    }
+
+    fun setRenameConnectorSheetVisible(
+        isVisible: Boolean,
+        connectorUiItem: LinkedConnectorsUiState.ConnectorUiItem? = null
+    ) {
+        _state.update {
+            it.setRenameConnectorSheetVisible(isVisible, connectorUiItem)
+        }
+    }
+
+    fun onNewConnectorNameChanged(newName: String) {
+        _state.update { state ->
+            state.copy(
+                renameLinkConnectorItem = state.renameLinkConnectorItem?.copy(
+                    name = newName,
+                    isNameValid = newName.isNotEmpty()
+                )
+            )
+        }
+    }
+
+    fun onUpdateConnectorNameClick() {
+        viewModelScope.launch {
+            val p2pLinkToRename = p2pLinksRepository.getP2PLinks().asList().find { p2pLink ->
+                p2pLink.id == state.value.renameLinkConnectorItem?.id
+            }
+            p2pLinkToRename?.let {
+                val newConnectorName = state.value.renameLinkConnectorItem?.name
+                newConnectorName?.let {
+                    p2pLinkToRename.displayName = newConnectorName
+                }
+                p2pLinksRepository.addOrUpdateP2PLink(p2pLinkToRename)
+            }
+            setRenameConnectorSheetVisible(isVisible = false, connectorUiItem = null)
         }
     }
 }
@@ -76,11 +111,28 @@ internal sealed interface Event : OneOffEvent {
 data class LinkedConnectorsUiState(
     val activeConnectors: ImmutableList<ConnectorUiItem> = persistentListOf(),
     val showAddLinkConnectorScreen: Boolean = false,
-    val triggerCameraPermissionPrompt: Boolean = false
+    val triggerCameraPermissionPrompt: Boolean = false,
+    val renameLinkConnectorItem: RenameConnectorInput? = null
 ) : UiState {
+
+    fun setRenameConnectorSheetVisible(
+        isVisible: Boolean,
+        connectorUiItem: ConnectorUiItem? = null
+    ) = copy(
+        renameLinkConnectorItem = RenameConnectorInput(
+            id = connectorUiItem?.id,
+            name = connectorUiItem?.name.orEmpty()
+        ).takeIf { isVisible }
+    )
 
     data class ConnectorUiItem(
         val id: PublicKeyHash,
         val name: String
+    )
+
+    data class RenameConnectorInput(
+        val id: PublicKeyHash? = null,
+        val name: String = "",
+        val isNameValid: Boolean = false
     )
 }
