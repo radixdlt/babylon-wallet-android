@@ -199,9 +199,9 @@ private fun ActiveLinkedConnectorDetails(
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
             text = stringResource(R.string.linkedConnectors_subtitle),
-            style = RadixTheme.typography.body2Regular,
+            style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray2
         )
         ActiveLinkedConnectorsListContent(
@@ -285,8 +285,8 @@ private fun ActiveLinkedConnectorContent(
             Text(
                 modifier = Modifier.weight(1f),
                 text = activeLinkedConnector.name,
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2,
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
