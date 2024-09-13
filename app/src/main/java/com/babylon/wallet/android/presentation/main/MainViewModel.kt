@@ -96,7 +96,7 @@ class MainViewModel @Inject constructor(
              */
             when (profileState) {
                 is ProfileState.Loaded -> p2PLinksRepository.observeP2PLinks()
-                else -> p2PLinksRepository.observeP2PLinks().drop(1) // TODO why that?
+                else -> p2PLinksRepository.observeP2PLinks().drop(1)
             }
         }
         .map { p2pLinks ->
