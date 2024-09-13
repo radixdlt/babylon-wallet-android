@@ -197,7 +197,7 @@ class WalletViewModel @Inject constructor(
     private fun observeWalletAssets() {
         combine(
             accountsFlow,
-            refreshFlow.onEach { accountLockersDelegate.onRefresh() }
+            refreshFlow
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
@@ -280,6 +280,7 @@ class WalletViewModel @Inject constructor(
 
     fun onRefresh() {
         loadAssets(refreshType = RefreshType.Manual(overrideCache = true, showRefreshIndicator = true))
+        accountLockersDelegate.onRefresh()
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
