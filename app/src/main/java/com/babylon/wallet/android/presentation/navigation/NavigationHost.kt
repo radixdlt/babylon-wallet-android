@@ -430,7 +430,10 @@ fun NavigationHost(
                 )
             },
             onDAppClick = { dApp ->
-                navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress)
+                navController.dAppDetailsDialog(
+                    dAppDefinitionAddress = dApp.dAppAddress,
+                    isReadOnly = true
+                )
             },
             onInfoClick = { glossaryItem ->
                 navController.infoDialog(glossaryItem)

@@ -213,6 +213,7 @@ private fun DappDetailContent(
                 validatedWebsite = state.validatedWebsite,
                 personaList = state.authorizedPersonas,
                 isShowLockerDepositsChecked = state.isShowLockerDepositsChecked,
+                isReadOnly = false,
                 onPersonaClick = { persona ->
                     onPersonaClick(persona)
                     scope.launch {

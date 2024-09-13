@@ -43,7 +43,8 @@ class DAppDetailsDialogViewModel @Inject constructor(
     private lateinit var authorizedDapp: AuthorizedDapp
 
     override fun initialState(): State = State(
-        dAppDefinitionAddress = args.dAppDefinitionAddress
+        dAppDefinitionAddress = args.dAppDefinitionAddress,
+        isReadOnly = args.isReadOnly
     )
 
     init {
@@ -112,7 +113,8 @@ class DAppDetailsDialogViewModel @Inject constructor(
         val isWebsiteValidating: Boolean = false,
         val authorizedPersonas: ImmutableList<Persona> = persistentListOf(),
         val uiMessage: UiMessage? = null,
-        val isShowLockerDepositsChecked: Boolean = false
+        val isShowLockerDepositsChecked: Boolean = false,
+        val isReadOnly: Boolean = false
     ) : UiState
 
     sealed interface Event : OneOffEvent {

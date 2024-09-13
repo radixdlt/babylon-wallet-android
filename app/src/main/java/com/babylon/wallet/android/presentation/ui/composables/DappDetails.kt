@@ -42,6 +42,7 @@ fun DappDetails(
     validatedWebsite: String?,
     personaList: ImmutableList<Persona>,
     isShowLockerDepositsChecked: Boolean,
+    isReadOnly: Boolean,
     onPersonaClick: ((Persona) -> Unit)?,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
@@ -195,37 +196,39 @@ fun DappDetails(
                         Spacer(modifier = Modifier.height(spacerHeight))
                     }
                 }
-                item {
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                if (!isReadOnly) {
+                    item {
+                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
-                    SwitchSettingsItem(
-                        modifier = Modifier
-                            .background(RadixTheme.colors.defaultBackground)
-                            .fillMaxWidth()
-                            .padding(horizontal = dimensions.paddingDefault),
-                        titleRes = R.string.authorizedDapps_dAppDetails_depositsTitle,
-                        subtitleRes = R.string.authorizedDapps_dAppDetails_depositsHidden,
-                        icon = null,
-                        subtitleTextColor = RadixTheme.colors.gray2,
-                        checked = isShowLockerDepositsChecked,
-                        onCheckedChange = onShowLockerDepositsCheckedChange
-                    )
+                        SwitchSettingsItem(
+                            modifier = Modifier
+                                .background(RadixTheme.colors.defaultBackground)
+                                .fillMaxWidth()
+                                .padding(horizontal = dimensions.paddingDefault),
+                            titleRes = R.string.authorizedDapps_dAppDetails_depositsTitle,
+                            subtitleRes = R.string.authorizedDapps_dAppDetails_depositsHidden,
+                            icon = null,
+                            subtitleTextColor = RadixTheme.colors.gray2,
+                            checked = isShowLockerDepositsChecked,
+                            onCheckedChange = onShowLockerDepositsCheckedChange
+                        )
 
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
-                    HorizontalDivider(
-                        color = RadixTheme.colors.gray4,
-                        modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
-                    )
+                        HorizontalDivider(
+                            color = RadixTheme.colors.gray4,
+                            modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
+                        )
 
-                    Spacer(modifier = Modifier.height(dimensions.paddingLarge))
+                        Spacer(modifier = Modifier.height(dimensions.paddingLarge))
 
-                    WarningButton(
-                        modifier = Modifier
-                            .padding(horizontal = dimensions.paddingDefault),
-                        text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
-                        onClick = onDeleteDapp
-                    )
+                        WarningButton(
+                            modifier = Modifier
+                                .padding(horizontal = dimensions.paddingDefault),
+                            text = stringResource(R.string.authorizedDapps_dAppDetails_forgetDapp),
+                            onClick = onDeleteDapp
+                        )
+                    }
                 }
             }
         }
