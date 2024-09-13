@@ -89,7 +89,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         }.onSuccess { feePayers ->
             _state.update { it.copy(isNetworkFeeLoading = false, feePayers = feePayers) }
         }.onFailure { error ->
-            reportFailure(error)
+            reportFailure(RadixWalletException.DappRequestException.PreviewError(error))
         }
     }
 
@@ -135,7 +135,9 @@ class TransactionAnalysisDelegate @Inject constructor(
                     Result.success(preview)
                 }
             },
-            onFailure = { Result.failure(it) }
+            onFailure = {
+                Result.failure(RadixWalletException.DappRequestException.PreviewError(it))
+            }
         )
     }
 
