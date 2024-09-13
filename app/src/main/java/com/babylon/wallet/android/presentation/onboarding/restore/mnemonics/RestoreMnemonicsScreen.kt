@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -83,6 +84,8 @@ fun RestoreMnemonicsScreen(
     LaunchedEffect(Unit) {
         viewModel.biometricAuthProvider = { context.biometricAuthenticateSuspend() }
     }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     RestoreMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
@@ -97,6 +100,7 @@ fun RestoreMnemonicsScreen(
                 }
 
                 else -> {
+                    keyboardController?.hide()
                     viewModel.onSubmit()
                 }
             }

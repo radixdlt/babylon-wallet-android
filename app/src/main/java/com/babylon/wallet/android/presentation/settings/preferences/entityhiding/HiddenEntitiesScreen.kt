@@ -128,7 +128,11 @@ private fun HiddenEntitiesContent(
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5)
                 .padding(padding),
-            contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
+            contentPadding = PaddingValues(
+                start = RadixTheme.dimensions.paddingDefault,
+                end = RadixTheme.dimensions.paddingDefault,
+                bottom = RadixTheme.dimensions.paddingDefault
+            )
         ) {
             item {
                 HorizontalDivider(color = RadixTheme.colors.gray5)

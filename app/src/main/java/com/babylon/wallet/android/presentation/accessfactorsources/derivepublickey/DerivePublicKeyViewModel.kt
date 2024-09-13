@@ -63,17 +63,11 @@ class DerivePublicKeyViewModel @Inject constructor(
                 }
 
                 is FactorSource.Device -> {
-                    _state.update { uiState ->
-                        uiState.copy(
-                            contentType = when (input.entityKind) {
-                                EntityKind.ACCOUNT -> ContentType.ForDeviceAccount
-                                EntityKind.PERSONA -> ContentType.ForPersona
-                            }
-                        )
-                    }
                     if (input.isBiometricsProvided) {
+                        // No need to show any UI, just derive the public key and complete the flow
                         biometricAuthenticationCompleted()
                     } else {
+                        initDeviceFactorSourceUiState()
                         sendEvent(Event.RequestBiometricPrompt)
                     }
                 }
@@ -92,6 +86,17 @@ class DerivePublicKeyViewModel @Inject constructor(
         }
     }
 
+    private fun initDeviceFactorSourceUiState() {
+        _state.update { uiState ->
+            uiState.copy(
+                contentType = when (input.entityKind) {
+                    EntityKind.ACCOUNT -> ContentType.ForDeviceAccount
+                    EntityKind.PERSONA -> ContentType.ForPersona
+                }
+            )
+        }
+    }
+
     private suspend fun DerivePublicKeyViewModel.handleFailure(e: Throwable) {
         when (e) {
             is ProfileException -> {
@@ -100,6 +105,11 @@ class DerivePublicKeyViewModel @Inject constructor(
             }
 
             else -> {
+                // If an error is encountered while the content is not shown,
+                // show the content to give the user the possibility to retry
+                if (state.value.contentType == null) {
+                    initDeviceFactorSourceUiState()
+                }
             }
         }
     }
@@ -118,6 +128,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                         sendEvent(Event.AccessingFactorSourceCompleted)
                     }
                 }
+                else -> {}
             }
         }
     }
@@ -196,7 +207,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     data class DerivePublicKeyUiState(
-        val contentType: ContentType = ContentType.ForDeviceAccount
+        val contentType: ContentType? = null
     ) : UiState {
 
         sealed interface ContentType {
