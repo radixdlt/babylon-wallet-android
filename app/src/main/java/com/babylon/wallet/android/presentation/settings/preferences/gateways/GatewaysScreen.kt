@@ -151,14 +151,14 @@ private fun GatewaysContent(
                     InfoButton(
                         modifier = Modifier.padding(
                             horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingMedium
+                            vertical = RadixTheme.dimensions.paddingDefault
                         ),
                         text = stringResource(id = R.string.infoLink_title_gateways),
                         onClick = {
                             onInfoClick(GlossaryItem.gateways)
                         }
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 }
                 itemsIndexed(state.gatewayList) { index, gateway ->
                     Column(
