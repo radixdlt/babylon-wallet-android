@@ -100,8 +100,8 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun saveProfile(profile: Profile) {
         val sargonOs = sargonOsManager.sargonOs
-        val hostId = hostInfoRepository.getHostId().getOrNull() ?: return
-        val hostInfo = hostInfoRepository.getHostInfo().getOrNull() ?: return
+        val hostId = hostInfoRepository.getHostId()
+        val hostInfo = hostInfoRepository.getHostInfo()
 
         val profileToSave = profile.copy(
             header = profile.header.copy(

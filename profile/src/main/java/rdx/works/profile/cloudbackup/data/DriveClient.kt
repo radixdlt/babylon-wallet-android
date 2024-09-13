@@ -141,7 +141,7 @@ class DriveClientImpl @Inject constructor(
                 .setFields(getFields)
                 .execute().let { file -> CloudBackupFileEntity(file) }
         }.mapCatching { entity ->
-            if (entity.header.lastUsedOnDevice.id != hostInfoRepository.getHostId().getOrNull()?.id) {
+            if (entity.header.lastUsedOnDevice.id != hostInfoRepository.getHostId().id) {
                 throw BackupServiceException.ClaimedByAnotherDevice(entity)
             } else {
                 entity

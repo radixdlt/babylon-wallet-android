@@ -26,8 +26,8 @@ class InspectGoogleBackupsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val email = googleSignInManager.getSignedInGoogleAccount()?.email
-            val hostId = hostInfoRepository.getHostId().getOrNull()
-            _state.update { it.copy(accountEmail = email, deviceId = hostId?.id) }
+            val hostId = hostInfoRepository.getHostId()
+            _state.update { it.copy(accountEmail = email, deviceId = hostId.id) }
 
             if (email != null) {
                 fetchFiles()

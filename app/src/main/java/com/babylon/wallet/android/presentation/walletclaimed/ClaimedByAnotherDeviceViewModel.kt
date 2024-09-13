@@ -43,8 +43,8 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
 
     fun onTransferWalletBackClick() = viewModelScope.launch {
         val currentProfile = profileRepository.profile.firstOrNull() ?: return@launch
-        val hostId = hostInfoRepository.getHostId().getOrNull() ?: return@launch
-        val hostInfo = hostInfoRepository.getHostInfo().getOrNull() ?: return@launch
+        val hostId = hostInfoRepository.getHostId()
+        val hostInfo = hostInfoRepository.getHostInfo()
 
         _state.update { it.copy(isReclaiming = true) }
         val claimingProfile = currentProfile.claim(deviceInfo = DeviceInfo.from(hostId, hostInfo))

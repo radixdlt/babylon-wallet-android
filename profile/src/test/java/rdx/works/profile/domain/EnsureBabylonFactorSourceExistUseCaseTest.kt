@@ -68,8 +68,8 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
     fun `babylon factor source is added to profile if it does not exist`() = runTest {
         profileRepository.saveProfile(profileWithoutMain)
         coEvery { preferenceManager.markFactorSourceBackedUp(any()) } just Runs
-        coEvery { hostInfoRepository.getHostId() } returns Result.success(hostId)
-        coEvery { hostInfoRepository.getHostInfo() } returns Result.success(hostInfo)
+        coEvery { hostInfoRepository.getHostId() } returns hostId
+        coEvery { hostInfoRepository.getHostInfo() } returns hostInfo
         coEvery { mnemonicRepository.createNew() } returns Result.success(mnemonic)
 
         val profile = ensureBabylonFactorSourceExistUseCase().getOrThrow()
