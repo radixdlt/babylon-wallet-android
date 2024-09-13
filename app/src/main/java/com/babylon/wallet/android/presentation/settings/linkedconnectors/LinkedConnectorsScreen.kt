@@ -359,6 +359,11 @@ private fun RenameActiveLinkedConnectorSheet(
                 keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
                 value = input.name,
                 singleLine = true,
+                error = if (input.isNameEmpty) {
+                    stringResource(R.string.linkedConnectors_renameConnector_errorEmpty)
+                } else {
+                    null
+                },
                 hintColor = RadixTheme.colors.gray2
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
@@ -368,7 +373,7 @@ private fun RenameActiveLinkedConnectorSheet(
             onClick = onUpdateNameClick,
             text = stringResource(R.string.accountSettings_renameAccount_button),
             insets = WindowInsets.navigationBars.union(WindowInsets.ime),
-            enabled = input.isNameValid
+            enabled = input.isNameEmpty.not()
         )
     }
 }
@@ -395,6 +400,42 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
             onBackClick = {},
             onRenameConnectorClick = {},
             onDeleteConnectorClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun RenameActiveLinkedConnectorSheetPreview() {
+    RadixWalletTheme {
+        RenameActiveLinkedConnectorSheet(
+            input = LinkedConnectorsUiState.RenameConnectorInput(
+                id = PublicKeyHash.sample(),
+                name = "name",
+                isNameEmpty = false
+            ),
+            onNewNameChange = {},
+            onUpdateNameClick = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun RenameActiveLinkedConnectorSheetEmptyPreview() {
+    RadixWalletTheme {
+        RenameActiveLinkedConnectorSheet(
+            input = LinkedConnectorsUiState.RenameConnectorInput(
+                id = PublicKeyHash.sample(),
+                name = "",
+                isNameEmpty = true
+            ),
+            onNewNameChange = {},
+            onUpdateNameClick = {},
+            onDismiss = {}
         )
     }
 }

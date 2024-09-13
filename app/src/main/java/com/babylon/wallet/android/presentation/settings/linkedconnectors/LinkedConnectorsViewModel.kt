@@ -81,7 +81,7 @@ class LinkedConnectorsViewModel @Inject constructor(
             state.copy(
                 renameLinkConnectorItem = state.renameLinkConnectorItem?.copy(
                     name = newName,
-                    isNameValid = newName.isNotEmpty()
+                    isNameEmpty = newName.isEmpty()
                 )
             )
         }
@@ -133,6 +133,6 @@ data class LinkedConnectorsUiState(
     data class RenameConnectorInput(
         val id: PublicKeyHash? = null,
         val name: String = "",
-        val isNameValid: Boolean = false
+        val isNameEmpty: Boolean = false
     )
 }

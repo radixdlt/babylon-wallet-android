@@ -85,7 +85,8 @@ fun RadixTextField(
                         RadixTheme.colors.gray1,
                         LocalTextSelectionColors.current.backgroundColor
                     ),
-                    unfocusedContainerColor = RadixTheme.colors.gray5
+                    unfocusedContainerColor = RadixTheme.colors.gray5,
+                    errorContainerColor = RadixTheme.colors.gray5
                 ),
                 placeholder = {
                     hint?.let {
