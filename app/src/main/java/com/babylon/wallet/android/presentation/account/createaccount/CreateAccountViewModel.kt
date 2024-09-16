@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
+import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -22,6 +23,7 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
@@ -32,6 +34,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.currentGateway
@@ -42,7 +45,6 @@ import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,6 +54,7 @@ class CreateAccountViewModel @Inject constructor(
     private val createAccountUseCase: CreateAccountUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val getProfileUseCase: GetProfileUseCase,
+    private val deleteWalletUseCase: DeleteWalletUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
@@ -80,47 +83,51 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onAccountCreateClick(isWithLedger: Boolean) {
         viewModelScope.launch {
-            if (state.value.isFirstAccount) {
-                val sargonOs = sargonOsManager.sargonOs
-                runCatching {
-                    sargonOs.newWallet()
-                }.onFailure { profileCreationError ->
-                    if (profileCreationError is CommonException.SecureStorageAccessException) {
-                        if (!profileCreationError.errorKind.isManualCancellation()) {
-                            _state.update {
-                                it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
-                            }
-                        }
-                    } else if (profileCreationError is CommonException.SecureStorageWriteException) {
-                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                    } else {
-                        _state.update {
-                            it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
-                        }
-                    }
-                }.onSuccess {
+            if (shouldCreateWallet()) {
+                createWallet().onSuccess {
                     // Since we choose to create a new profile, this is the time
                     // we discard the data copied from the cloud backup, since they represent
                     // a previous instance.
                     discardTemporaryRestoredFileForBackupUseCase(BackupType.DeprecatedCloud)
                     accessFactorSourceForAccountCreation(
-                        isFirstAccount = true,
-                        isWithLedger = isWithLedger
+                        isWithLedger = isWithLedger,
+                        walletJustCreated = true
                     )
                 }
             } else {
                 accessFactorSourceForAccountCreation(
-                    isFirstAccount = false,
-                    isWithLedger = isWithLedger
+                    isWithLedger = isWithLedger,
+                    walletJustCreated = false
                 )
+            }
+        }
+    }
+
+    private suspend fun createWallet(): Result<Unit> {
+        val sargonOs = sargonOsManager.sargonOs
+        return runCatching {
+            sargonOs.newWallet()
+        }.onFailure { profileCreationError ->
+            if (profileCreationError is CommonException.SecureStorageAccessException) {
+                if (!profileCreationError.errorKind.isManualCancellation()) {
+                    _state.update {
+                        it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
+                    }
+                }
+            } else if (profileCreationError is CommonException.SecureStorageWriteException) {
+                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+            } else {
+                _state.update {
+                    it.copy(uiMessage = UiMessage.ErrorMessage(profileCreationError))
+                }
             }
         }
     }
 
     // when called the access factor source bottom sheet dialog is presented
     private fun accessFactorSourceForAccountCreation(
-        isFirstAccount: Boolean,
-        isWithLedger: Boolean
+        isWithLedger: Boolean,
+        walletJustCreated: Boolean
     ) {
         accessFactorSourcesJob?.cancel()
         accessFactorSourcesJob = viewModelScope.launch {
@@ -139,7 +146,7 @@ class CreateAccountViewModel @Inject constructor(
                     entityKind = EntityKind.ACCOUNT,
                     forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
                     factorSource = selectedFactorSource,
-                    isBiometricsProvided = isFirstAccount
+                    isBiometricsProvided = walletJustCreated
                 )
             ).mapCatching {
                 val factorSourceId = when (selectedFactorSource) {
@@ -219,6 +226,18 @@ class CreateAccountViewModel @Inject constructor(
                 requestSource = args.requestSource
             )
         )
+    }
+
+    private suspend fun shouldCreateWallet(): Boolean {
+        // If profile with networks exists, then no need to create a new one.
+        if (getProfileUseCase.finishedOnboardingProfile() != null) {
+            return false
+        }
+
+        // Delete the instance of the old one, since it might have been an ephemeral profile
+        // created during onboarding while creating an account with ledger, but user killed the app in the meantime.
+        deleteWalletUseCase()
+        return true
     }
 
     private suspend fun checkAndHandleFirstTimeAccountCreationExtras() {

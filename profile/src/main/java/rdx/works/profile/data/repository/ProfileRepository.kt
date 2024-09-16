@@ -19,10 +19,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import rdx.works.core.KeystoreManager
 import rdx.works.core.di.ApplicationScope
 import rdx.works.core.di.IoDispatcher
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.canBackupToCloud
+import rdx.works.core.then
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import timber.log.Timber
@@ -36,7 +37,7 @@ interface ProfileRepository {
 
     suspend fun saveProfile(profile: Profile)
 
-    suspend fun clearAllWalletData()
+    suspend fun deleteWallet()
 
     fun deriveProfileState(content: String): ProfileState
 }
@@ -56,7 +57,7 @@ val ProfileRepository.profile: Flow<Profile>
 @Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val preferencesManager: PreferencesManager,
+    private val keystoreManager: KeystoreManager,
     private val cloudBackupSyncExecutor: CloudBackupSyncExecutor,
     private val sargonOsManager: SargonOsManager,
     private val hostInfoRepository: HostInfoRepository,
@@ -121,12 +122,18 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun clearAllWalletData() {
+    override suspend fun deleteWallet() {
         val sargonOs = sargonOsManager.sargonOs
 
-        preferencesManager.clear()
-
-        sargonOs.deleteWallet()
+        runCatching {
+            sargonOs.deleteWallet()
+        }.onFailure {
+            Timber.w(it, "Failed to delete wallet")
+        }.then {
+            keystoreManager.resetKeySpecs().onFailure {
+                Timber.w(it, "Failed to reset encryption keys")
+            }
+        }
     }
 
     @Suppress("SwallowedException")

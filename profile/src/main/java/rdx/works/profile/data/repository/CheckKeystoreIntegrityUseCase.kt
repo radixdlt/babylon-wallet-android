@@ -24,12 +24,7 @@ class CheckKeystoreIntegrityUseCase @Inject constructor(
     val didMnemonicIntegrityChange: Flow<Boolean> = _didMnemonicIntegrityChange.asSharedFlow()
 
     suspend operator fun invoke() {
-        val profile = getProfileUseCase.finishedOnboardingProfile()
-
-        if (profile == null) {
-            keystoreManager.resetMnemonicKeySpec()
-            return
-        }
+        val profile = getProfileUseCase.finishedOnboardingProfile() ?: return
 
         val deviceFactorSources = profile.deviceFactorSources
         if (deviceFactorSources.isEmpty()) return

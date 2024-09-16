@@ -23,7 +23,7 @@ class FakeProfileRepository(
         profileState.update { ProfileState.Loaded(profile) }
     }
 
-    override suspend fun clearAllWalletData() {
+    override suspend fun deleteWallet() {
         profileState.update { ProfileState.None }
     }
 
