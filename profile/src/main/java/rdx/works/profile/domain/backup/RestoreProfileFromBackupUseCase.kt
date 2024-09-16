@@ -2,6 +2,7 @@ package rdx.works.profile.domain.backup
 
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.os.SargonOsManager
+import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.profile.cloudbackup.domain.CheckMigrationToNewBackupSystemUseCase
 import rdx.works.profile.data.repository.BackupProfileRepository
@@ -10,7 +11,8 @@ import javax.inject.Inject
 class RestoreProfileFromBackupUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository,
     private val checkMigrationToNewBackupSystemUseCase: CheckMigrationToNewBackupSystemUseCase,
-    private val sargonOsManager: SargonOsManager
+    private val sargonOsManager: SargonOsManager,
+    private val keystoreManager: KeystoreManager
 ) {
 
     suspend operator fun invoke(
@@ -22,6 +24,8 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
         // always restore backup on mainnet
         val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)
             ?.changeGatewayToNetworkId(NetworkId.MAINNET) ?: return Result.failure(RuntimeException("No restoring profile available"))
+
+        keystoreManager.resetKeySpecs()
 
         return runCatching {
             sargonOs.importWallet(

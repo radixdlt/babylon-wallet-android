@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
@@ -58,7 +59,8 @@ class CreateAccountViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val appEventBus: AppEventBus,
     private val homeCardsRepository: HomeCardsRepository,
-    private val sargonOsManager: SargonOsManager
+    private val sargonOsManager: SargonOsManager,
+    private val keystoreManager: KeystoreManager
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
 
@@ -103,6 +105,8 @@ class CreateAccountViewModel @Inject constructor(
 
     private suspend fun createWallet(): Result<Unit> {
         val sargonOs = sargonOsManager.sargonOs
+        keystoreManager.resetKeySpecs()
+
         return runCatching {
             sargonOs.newWallet()
         }.onFailure { profileCreationError ->
