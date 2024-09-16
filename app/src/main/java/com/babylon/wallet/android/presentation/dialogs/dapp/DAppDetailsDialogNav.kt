@@ -15,18 +15,22 @@ import rdx.works.core.domain.resources.Resource
 
 private const val ROUTE = "dApp_details_dialog"
 private const val ARG_DAPP_DEFINITION_ADDRESS = "dApp_definition_address"
+private const val ARG_READ_ONLY = "read_only"
 
 fun NavController.dAppDetailsDialog(
-    dAppDefinitionAddress: AccountAddress
+    dAppDefinitionAddress: AccountAddress,
+    isReadOnly: Boolean = false
 ) {
-    navigate(route = "$ROUTE/${dAppDefinitionAddress.string}")
+    navigate(route = "$ROUTE/${dAppDefinitionAddress.string}/$isReadOnly")
 }
 
 internal class DAppDetailsDialogArgs(
-    val dAppDefinitionAddress: AccountAddress
+    val dAppDefinitionAddress: AccountAddress,
+    val isReadOnly: Boolean
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        dAppDefinitionAddress = AccountAddress.init(requireNotNull(savedStateHandle[ARG_DAPP_DEFINITION_ADDRESS]))
+        dAppDefinitionAddress = AccountAddress.init(requireNotNull(savedStateHandle[ARG_DAPP_DEFINITION_ADDRESS])),
+        isReadOnly = savedStateHandle[ARG_READ_ONLY] ?: false
     )
 }
 
@@ -36,10 +40,13 @@ fun NavGraphBuilder.dAppDetailsDialog(
     onDismiss: () -> Unit
 ) {
     dialog(
-        route = "$ROUTE/{$ARG_DAPP_DEFINITION_ADDRESS}",
+        route = "$ROUTE/{$ARG_DAPP_DEFINITION_ADDRESS}/{$ARG_READ_ONLY}",
         arguments = listOf(
             navArgument(ARG_DAPP_DEFINITION_ADDRESS) {
                 type = NavType.StringType
+            },
+            navArgument(ARG_READ_ONLY) {
+                type = NavType.BoolType
             }
         ),
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)

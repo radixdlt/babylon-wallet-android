@@ -99,6 +99,7 @@ private fun DAppDetailsDialogContent(
                 validatedWebsite = state.validatedWebsite,
                 personaList = state.authorizedPersonas,
                 isShowLockerDepositsChecked = state.isShowLockerDepositsChecked,
+                isReadOnly = state.isReadOnly,
                 onFungibleTokenClick = onFungibleClick,
                 onNonFungibleClick = onNonFungibleClick,
                 onDeleteDapp = {
