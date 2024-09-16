@@ -100,7 +100,12 @@ class LinkedConnectorsViewModel @Inject constructor(
                 p2pLinksRepository.addOrUpdateP2PLink(p2pLinkToRename)
             }
             setRenameConnectorSheetVisible(isVisible = false, connectorUiItem = null)
+            _state.update { state -> state.copy(isLinkConnectorNameUpdated = true) }
         }
+    }
+
+    fun onSnackbarMessageShown() {
+        _state.update { state -> state.copy(isLinkConnectorNameUpdated = false) }
     }
 }
 
@@ -112,6 +117,7 @@ data class LinkedConnectorsUiState(
     val activeConnectors: ImmutableList<ConnectorUiItem> = persistentListOf(),
     val showAddLinkConnectorScreen: Boolean = false,
     val triggerCameraPermissionPrompt: Boolean = false,
+    val isLinkConnectorNameUpdated: Boolean = false,
     val renameLinkConnectorItem: RenameConnectorInput? = null
 ) : UiState {
 

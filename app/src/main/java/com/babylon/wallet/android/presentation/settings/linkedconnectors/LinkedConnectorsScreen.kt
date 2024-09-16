@@ -23,6 +23,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,6 +56,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -105,6 +108,8 @@ fun LinkedConnectorsScreen(
             modifier = modifier,
             isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress,
             activeLinkedConnectorsList = state.activeConnectors,
+            isLinkConnectorNameUpdated = state.isLinkConnectorNameUpdated,
+            onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
             onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
             onRenameConnectorClick = { viewModel.setRenameConnectorSheetVisible(true, it) },
             onDeleteConnectorClick = viewModel::onDeleteConnectorClick,
@@ -127,11 +132,25 @@ private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
     isAddingNewLinkConnectorInProgress: Boolean,
     activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
+    isLinkConnectorNameUpdated: Boolean,
+    onSnackbarMessageShown: () -> Unit,
     onLinkNewConnectorClick: () -> Unit,
     onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
     onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
     onBackClick: () -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val message = stringResource(R.string.linkedConnectors_renameConnector_successHud)
+    LaunchedEffect(isLinkConnectorNameUpdated) {
+        if (isLinkConnectorNameUpdated) {
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            onSnackbarMessageShown()
+        }
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -139,6 +158,12 @@ private fun LinkedConnectorsContent(
                 title = stringResource(R.string.linkedConnectors_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
+            )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackbarHostState
             )
         }
     ) { padding ->
@@ -378,8 +403,10 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
                     name = "firefox connection"
                 )
             ).toPersistentList(),
-            onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
+            isLinkConnectorNameUpdated = false,
+            onSnackbarMessageShown = {},
+            onLinkNewConnectorClick = {},
             onBackClick = {},
             onRenameConnectorClick = {},
             onDeleteConnectorClick = {}
@@ -429,8 +456,10 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = persistentListOf(),
-            onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
+            isLinkConnectorNameUpdated = false,
+            onLinkNewConnectorClick = {},
+            onSnackbarMessageShown = {},
             onBackClick = {},
             onRenameConnectorClick = {},
             onDeleteConnectorClick = {}
