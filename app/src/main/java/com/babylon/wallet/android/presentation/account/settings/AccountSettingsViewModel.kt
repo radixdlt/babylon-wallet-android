@@ -166,6 +166,7 @@ class AccountSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val account = state.value.account ?: return@launch
             changeEntityVisibilityUseCase.changeAccountVisibility(entityAddress = account.address, hide = true)
+            setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.None)
             sendEvent(Event.AccountHidden)
         }
     }

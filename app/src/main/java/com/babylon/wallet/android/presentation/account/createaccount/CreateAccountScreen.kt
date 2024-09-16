@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
@@ -135,6 +136,7 @@ fun CreateAccountContent(
         snackbarHostState = snackBarHostState,
         onMessageShown = onUiMessageShown
     )
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Scaffold(
         modifier = modifier,
@@ -148,7 +150,10 @@ fun CreateAccountContent(
         },
         bottomBar = {
             RadixBottomBar(
-                onClick = { onAccountCreateClick(isWithLedger) },
+                onClick = {
+                    keyboardController?.hide()
+                    onAccountCreateClick(isWithLedger)
+                },
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 enabled = buttonEnabled,
                 insets = if (isKeyboardVisible()) WindowInsets.ime else WindowInsets.navigationBars

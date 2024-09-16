@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,10 +22,12 @@ class FactoryResetViewModel @Inject constructor(
     private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase
 ) : StateViewModel<FactoryResetViewModel.State>(), OneOffEventHandler<FactoryResetViewModel.Event> by OneOffEventHandlerImpl() {
 
+    private var securityProblemsJob: Job? = null
+
     override fun initialState(): State = State()
 
     init {
-        viewModelScope.launch {
+        securityProblemsJob = viewModelScope.launch {
             getSecurityProblemsUseCase().collect { problems ->
                 _state.update { state ->
                     state.copy(
@@ -43,6 +46,7 @@ class FactoryResetViewModel @Inject constructor(
         _state.update { it.copy(deleteWalletDialogVisible = false) }
 
         viewModelScope.launch {
+            securityProblemsJob?.cancel()
             deleteWalletUseCase()
             sendEvent(Event.ProfileDeleted)
         }

@@ -73,12 +73,14 @@ fun DerivePublicKeyDialog(
         }
     }
 
-    DerivePublicKeyBottomSheetContent(
-        modifier = modifier,
-        contentType = state.contentType,
-        onDismiss = viewModel::onUserDismiss,
-        onRetryClick = viewModel::onRetryClick
-    )
+    state.contentType?.let { contentType ->
+        DerivePublicKeyBottomSheetContent(
+            modifier = modifier,
+            contentType = contentType,
+            onDismiss = viewModel::onUserDismiss,
+            onRetryClick = viewModel::onRetryClick
+        )
+    }
 }
 
 @Composable
