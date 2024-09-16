@@ -151,6 +151,7 @@ private fun LinkedConnectorsContent(
             onSnackbarMessageShown()
         }
     }
+
     Scaffold(
         modifier = modifier,
         topBar = {

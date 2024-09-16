@@ -98,9 +98,9 @@ class LinkedConnectorsViewModel @Inject constructor(
                     p2pLinkToRename.displayName = newConnectorName
                 }
                 p2pLinksRepository.addOrUpdateP2PLink(p2pLinkToRename)
+                _state.update { state -> state.copy(isLinkConnectorNameUpdated = true) }
             }
             setRenameConnectorSheetVisible(isVisible = false, connectorUiItem = null)
-            _state.update { state -> state.copy(isLinkConnectorNameUpdated = true) }
         }
     }
 
