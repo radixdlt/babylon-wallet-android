@@ -148,7 +148,7 @@ private fun LinkedConnectorsContent(
             HorizontalDivider(color = RadixTheme.colors.gray4)
 
             Box(modifier = Modifier.fillMaxSize().background(color = RadixTheme.colors.gray5)) {
-                ActiveLinkedConnectorDetails(
+                ActiveLinkedConnectorsListContent(
                     modifier = Modifier.fillMaxWidth(),
                     activeLinkedConnectorsList = activeLinkedConnectorsList,
                     onLinkNewConnectorClick = onLinkNewConnectorClick,
@@ -189,32 +189,6 @@ private fun LinkedConnectorsContent(
 }
 
 @Composable
-private fun ActiveLinkedConnectorDetails(
-    activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
-    onLinkNewConnectorClick: () -> Unit,
-    onRenameConnectorClick: (connectorUiItem: ConnectorUiItem) -> Unit,
-    onDeleteConnectorClick: (id: PublicKeyHash) -> Unit,
-    isAddingNewLinkConnectorInProgress: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(R.string.linkedConnectors_subtitle),
-            style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray2
-        )
-        ActiveLinkedConnectorsListContent(
-            activeLinkedConnectorsList = activeLinkedConnectorsList,
-            onRenameConnectorClick = onRenameConnectorClick,
-            onDeleteConnectorClick = onDeleteConnectorClick,
-            isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
-            onLinkNewConnectorClick = onLinkNewConnectorClick
-        )
-    }
-}
-
-@Composable
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
     activeLinkedConnectorsList: ImmutableList<ConnectorUiItem>,
@@ -224,6 +198,14 @@ private fun ActiveLinkedConnectorsListContent(
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
+        item {
+            Text(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                text = stringResource(R.string.linkedConnectors_subtitle),
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray2
+            )
+        }
         itemsIndexed(activeLinkedConnectorsList) { index, activeLinkedConnector ->
             ActiveLinkedConnectorContent(
                 activeLinkedConnector = activeLinkedConnector,
@@ -251,7 +233,8 @@ private fun ActiveLinkedConnectorsListContent(
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                        .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
                     onClick = onLinkNewConnectorClick,
                     leadingContent = {
