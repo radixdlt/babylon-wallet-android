@@ -129,6 +129,7 @@ class AccountSettingsViewModel @Inject constructor(
                     accountToRename = it,
                     newDisplayName = DisplayName(newAccountName)
                 )
+                _state.update { state -> state.copy(isAccountNameUpdated = true) }
             } ?: Timber.d("Couldn't find account to rename the display name!")
         }
     }
@@ -169,6 +170,10 @@ class AccountSettingsViewModel @Inject constructor(
             sendEvent(Event.AccountHidden)
         }
     }
+
+    fun onSnackbarMessageShown() {
+        _state.update { state -> state.copy(isAccountNameUpdated = false) }
+    }
 }
 
 sealed interface Event : OneOffEvent {
@@ -184,6 +189,7 @@ data class AccountPreferenceUiState(
     val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
     val error: UiMessage? = null,
     val faucetState: FaucetState = FaucetState.Unavailable,
+    val isAccountNameUpdated: Boolean = false,
     val isFreeXRDLoading: Boolean = false
 ) : UiState {
 
