@@ -19,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -120,7 +121,9 @@ fun AccountSettingsScreen(
                 viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.HideAccount)
                 bottomSheetState.show()
             }
-        }
+        },
+        isAccountNameUpdated = state.isAccountNameUpdated,
+        onSnackbarMessageShown = viewModel::onSnackbarMessageShown
     )
 
     if (state.isBottomSheetVisible) {
@@ -173,14 +176,29 @@ private fun AccountSettingsContent(
     onGetFreeXrdClick: () -> Unit,
     faucetState: FaucetState,
     isXrdLoading: Boolean,
-    onHideAccount: () -> Unit
+    onHideAccount: () -> Unit,
+    isAccountNameUpdated: Boolean,
+    onSnackbarMessageShown: () -> Unit,
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
         message = error,
-        snackbarHostState = snackBarHostState,
+        snackbarHostState = snackbarHostState,
         onMessageShown = onMessageShown
     )
+
+    val accountUpdatedText = stringResource(R.string.accountSettings_updatedAccountHUDMessage)
+    LaunchedEffect(isAccountNameUpdated) {
+        if (isAccountNameUpdated) {
+            snackbarHostState.showSnackbar(
+                message = accountUpdatedText,
+                duration = SnackbarDuration.Short,
+                withDismissAction = true
+            )
+            onSnackbarMessageShown()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -193,7 +211,7 @@ private fun AccountSettingsContent(
         snackbarHost = {
             RadixSnackbarHost(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
+                hostState = snackbarHostState
             )
         },
         containerColor = RadixTheme.colors.gray5
@@ -430,7 +448,9 @@ fun AccountSettingsPreview() {
             onGetFreeXrdClick = {},
             faucetState = FaucetState.Available(isEnabled = true),
             isXrdLoading = false,
-            onHideAccount = {}
+            onHideAccount = {},
+            isAccountNameUpdated = false,
+            onSnackbarMessageShown = {}
         )
     }
 }
