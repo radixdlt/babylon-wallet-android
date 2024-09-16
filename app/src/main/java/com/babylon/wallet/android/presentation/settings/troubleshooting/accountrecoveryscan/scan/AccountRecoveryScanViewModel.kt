@@ -203,7 +203,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     }
 
     @Suppress("UnsafeCallOnNullableType")
-    fun onContinueClick(biometricAuthenticationProvider: suspend () -> Boolean) {
+    fun onContinueClick() {
         viewModelScope.launch {
             if (givenTempMnemonic != null) { // account scan from onboarding with a given main babylon seed phrase
                 _state.update { it.copy(isScanningNetwork = true) }

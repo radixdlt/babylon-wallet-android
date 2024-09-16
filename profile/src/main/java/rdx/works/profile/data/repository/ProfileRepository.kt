@@ -130,8 +130,8 @@ class ProfileRepositoryImpl @Inject constructor(
         }.onFailure {
             Timber.w(it, "Failed to delete wallet")
         }.then {
-            keystoreManager.resetKeySpecs().onFailure {
-                Timber.w(it, "Failed to reset encryption keys")
+            keystoreManager.resetKeySpecs().onFailure { error ->
+                Timber.w(error, "Failed to reset encryption keys")
             }
         }
     }

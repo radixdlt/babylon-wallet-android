@@ -23,7 +23,6 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.isManualCancellation
 import com.radixdlt.sargon.extensions.kind
@@ -34,7 +33,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.currentGateway

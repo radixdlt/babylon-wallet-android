@@ -9,6 +9,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 class DeleteWalletUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val profileRepository: ProfileRepository,

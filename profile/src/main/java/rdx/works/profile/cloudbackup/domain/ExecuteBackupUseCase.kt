@@ -7,7 +7,6 @@ import androidx.work.WorkerParameters
 import com.radixdlt.sargon.ProfileState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.cloudbackup.data.DriveClient
 import rdx.works.profile.cloudbackup.model.BackupServiceException

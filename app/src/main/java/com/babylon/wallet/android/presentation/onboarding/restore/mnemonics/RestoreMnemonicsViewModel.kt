@@ -39,7 +39,6 @@ import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseC
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions", "LongParameterList")

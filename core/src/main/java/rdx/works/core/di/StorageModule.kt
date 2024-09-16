@@ -57,5 +57,4 @@ object StorageModule {
     fun hostInfoPreferences(
         @ApplicationContext context: Context
     ) = context.hostInfoPreferences
-
 }
