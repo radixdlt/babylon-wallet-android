@@ -873,7 +873,7 @@ Code: %s</string>
   <string name="encryptProfileBackup_confirmPasswordField_error">Passwords do not match</string>
   <string name="recoverProfileBackup_header_title">Restore Wallet From Backup</string>
   <string name="recoverProfileBackup_header_subtitle">Select a backup to restore your Radix Wallet. You will be asked to enter your seed phrase(s) to recover control of your Accounts and Personas.</string>
-  <string name="androidRecoverProfileBackup_choose_title">Choose a backup</string>
+  <string name="androidRecoverProfileBackup_choose_title">Choose a backup from Google Drive</string>
   <string name="iOSRecoverProfileBackup_choose_title">Choose a backup on iCloud</string>
   <string name="iOSRecoverProfileBackup_noBackupsAvailable">No wallet backups available on current iCloud account</string>
   <string name="iOSRecoverProfileBackup_notLoggedInToICloud">Not logged in to iCloud</string>
@@ -889,6 +889,13 @@ Code: %s</string>
   <string name="recoverProfileBackup_passwordWrong">The password is wrong</string>
   <string name="recoverProfileBackup_backupNotAvailable">Backup not available?</string>
   <string name="recoverProfileBackup_otherRestoreOptionsButton">Other Restore Options</string>
+  <string name="recoverProfileBackup_choose_iOS">Choose a backup on iCloud</string>
+  <string name="recoverProfileBackup_noBackupsAvailable_iOS">No wallet backups available on current iCloud account</string>
+  <string name="recoverProfileBackup_notLoggedIn_iOS">Not logged in to iCloud</string>
+  <string name="recoverProfileBackup_networkUnavailable">Network unavailable</string>
+  <string name="recoverProfileBackup_couldNotLoadBackups">Could not load backups</string>
+  <string name="recoverProfileBackup_updateSystemSetings">Update in System Settings</string>
+  <string name="recoverProfileBackup_thisDevice">This Device</string>
   <string name="recoverSeedPhrase_header_titleMain">Main Seed Phrase Required</string>
   <string name="recoverSeedPhrase_header_titleNoMainSeedPhrase">No Main Seed Phrase?</string>
   <string name="recoverSeedPhrase_header_titleOther">Seed Phrase Required</string>
