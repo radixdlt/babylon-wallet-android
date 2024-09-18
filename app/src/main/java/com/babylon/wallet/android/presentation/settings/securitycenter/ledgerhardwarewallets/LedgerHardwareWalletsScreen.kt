@@ -168,9 +168,9 @@ fun LedgerHardwareWalletsScreen(
 @Composable
 private fun LedgerHardwareWalletsContent(
     ledgerDevices: ImmutableList<FactorSource.Ledger>,
-    onAddLedgerDeviceClick: () -> Unit,
-    onBackClick: () -> Unit,
     isNewLinkedConnectorConnected: Boolean,
+    onAddLedgerDeviceClick: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -184,67 +184,52 @@ private fun LedgerHardwareWalletsContent(
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
-            LedgerDeviceDetails(
-                modifier = Modifier.fillMaxWidth(),
-                ledgerFactorSources = ledgerDevices,
-                onAddLedgerDeviceClick = onAddLedgerDeviceClick,
-                isNewLinkedConnectorConnected = isNewLinkedConnectorConnected
-            )
-        }
-    }
-}
-
-@Composable
-private fun LedgerDeviceDetails(
-    modifier: Modifier = Modifier,
-    ledgerFactorSources: ImmutableList<FactorSource.Ledger>,
-    onAddLedgerDeviceClick: () -> Unit,
-    isNewLinkedConnectorConnected: Boolean
-) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray2
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-        if (ledgerFactorSources.isNotEmpty()) {
-            LedgerDevicesListContent(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                ledgerDevices = ledgerFactorSources,
-                onAddLedgerDeviceClick = onAddLedgerDeviceClick,
-                isNewLinkedConnectorConnected = isNewLinkedConnectorConnected
-            )
-        } else {
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectSmall)
-                    .padding(RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            RadixSecondaryButton(
-                text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
-                onClick = onAddLedgerDeviceClick,
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .imePadding(),
-                isLoading = isNewLinkedConnectorConnected.not(),
-                enabled = isNewLinkedConnectorConnected,
-                throttleClicks = true
-            )
+        Column(
+            modifier = Modifier.padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HorizontalDivider(color = RadixTheme.colors.gray4)
+            if (ledgerDevices.isNotEmpty()) {
+                LedgerDevicesListContent(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    ledgerDevices = ledgerDevices,
+                    isNewLinkedConnectorConnected = isNewLinkedConnectorConnected,
+                    onAddLedgerDeviceClick = onAddLedgerDeviceClick,
+                )
+            } else {
+                Text(
+                    modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectSmall)
+                        .padding(RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(id = R.string.ledgerHardwareDevices_subtitleNoLedgers),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                RadixSecondaryButton(
+                    text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
+                    onClick = onAddLedgerDeviceClick,
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .imePadding(),
+                    isLoading = isNewLinkedConnectorConnected.not(),
+                    enabled = isNewLinkedConnectorConnected,
+                    throttleClicks = true
+                )
+            }
         }
     }
 }
@@ -253,14 +238,23 @@ private fun LedgerDeviceDetails(
 private fun LedgerDevicesListContent(
     modifier: Modifier = Modifier,
     ledgerDevices: ImmutableList<FactorSource.Ledger>,
+    isNewLinkedConnectorConnected: Boolean,
     onAddLedgerDeviceClick: () -> Unit,
-    isNewLinkedConnectorConnected: Boolean
 ) {
     LazyColumn(
         modifier,
         contentPadding = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        item {
+            Text(
+                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.ledgerHardwareDevices_subtitleAllLedgers),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        }
         items(
             items = ledgerDevices,
             key = { factorSource: FactorSource.Ledger ->
@@ -284,7 +278,7 @@ private fun LedgerDevicesListContent(
             RadixSecondaryButton(
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
-                    .padding(bottom = RadixTheme.dimensions.paddingMedium),
+                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
                 onClick = onAddLedgerDeviceClick,
                 throttleClicks = true,
@@ -295,19 +289,6 @@ private fun LedgerDevicesListContent(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LedgerHardwareWalletsScreenEmptyPreview() {
-    RadixWalletTheme {
-        LedgerHardwareWalletsContent(
-            ledgerDevices = persistentListOf(),
-            onAddLedgerDeviceClick = {},
-            onBackClick = {},
-            isNewLinkedConnectorConnected = true
-        )
-    }
-}
-
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
@@ -315,6 +296,19 @@ fun LedgerHardwareWalletsScreenPreview() {
     RadixWalletTheme {
         LedgerHardwareWalletsContent(
             ledgerDevices = FactorSource.Ledger.sample.all.toPersistentList(),
+            onAddLedgerDeviceClick = {},
+            onBackClick = {},
+            isNewLinkedConnectorConnected = true
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LedgerHardwareWalletsScreenEmptyPreview() {
+    RadixWalletTheme {
+        LedgerHardwareWalletsContent(
+            ledgerDevices = persistentListOf(),
             onAddLedgerDeviceClick = {},
             onBackClick = {},
             isNewLinkedConnectorConnected = true
