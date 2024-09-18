@@ -58,11 +58,14 @@ private fun TroubleshootingSettingsContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.troubleshooting_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.troubleshooting_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
@@ -70,7 +73,6 @@ private fun TroubleshootingSettingsContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 settings.forEach { troubleshootingItem ->
                     item {

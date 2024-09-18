@@ -96,7 +96,7 @@ private fun WalletPreferencesContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.Start
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.gray4)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
