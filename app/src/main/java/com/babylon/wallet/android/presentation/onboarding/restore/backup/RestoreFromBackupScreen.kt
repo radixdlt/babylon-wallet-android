@@ -53,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -260,7 +261,8 @@ private fun RestoreFromBackupContent(
                     RadixTextButton(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault),
+                            .padding(RadixTheme.dimensions.paddingDefault)
+                            .padding(bottom = RadixTheme.dimensions.paddingMedium),
                         text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
                         onClick = onRestoreFromFileClick
                     )
@@ -446,10 +448,11 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
-        RadixTextButton(
+        RadixSecondaryButton(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
+                .padding(top = RadixTheme.dimensions.paddingDefault),
             text = stringResource(id = R.string.recoverProfileBackup_otherRestoreOptionsButton),
             onClick = onOtherRestoreOptionsClick
         )
@@ -558,17 +561,10 @@ private fun Timestamp.displayable() = remember(this) {
 @UsesSampleValues
 @Preview
 @Composable
-fun RestoreFromBackupWithMultipleCloudBackupsPreview() {
+fun RestoreFromBackupNotLoggedInPreview() {
     RadixWalletTheme {
         RestoreFromBackupContent(
-            state = RestoreFromBackupViewModel.State(
-                backupEmail = "email",
-                restoringProfiles = CloudBackupFileEntity.sample.all.map {
-                    Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
-                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(it, false)
-                    )
-                }.toPersistentList()
-            ),
+            state = RestoreFromBackupViewModel.State(),
             onBackClick = {},
             onLoginToGoogleClick = {},
             onRestoreFromFileClick = {},
@@ -586,10 +582,17 @@ fun RestoreFromBackupWithMultipleCloudBackupsPreview() {
 @UsesSampleValues
 @Preview
 @Composable
-fun RestoreFromBackupNotLoggedInPreview() {
+fun RestoreFromBackupWithMultipleCloudBackupsPreview() {
     RadixWalletTheme {
         RestoreFromBackupContent(
-            state = RestoreFromBackupViewModel.State(),
+            state = RestoreFromBackupViewModel.State(
+                backupEmail = "email",
+                restoringProfiles = CloudBackupFileEntity.sample.all.map {
+                    Selectable<RestoreFromBackupViewModel.State.RestoringProfile>(
+                        data = RestoreFromBackupViewModel.State.RestoringProfile.GoogleDrive(it, false)
+                    )
+                }.toPersistentList()
+            ),
             onBackClick = {},
             onLoginToGoogleClick = {},
             onRestoreFromFileClick = {},
