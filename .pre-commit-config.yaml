@@ -1,0 +1,25 @@
+# This is the config for using `pre-commit` on this repository.
+#
+# See https://pre-commit.com for more information
+---
+default_install_hook_types: [pre-push]
+default_stages: [pre-push]
+repos:
+  - repo: https://github.com/phylum-dev/phylum-ci
+    rev: 6df8dcf41d482787490dfe9dc69cb753bcf16a99  # frozen: v0.49.0
+    hooks:
+      - id: phylum
+        stages: [pre-push]
+        # Optional: Specify the dependency file pattern for your repository
+        files: |
+            (?x)^(
+                gradle/libs.versions.toml
+            )$
+        # Optional: Specify additional arguments to be passed to `phylum-ci`
+        args:
+          - -vv
+          - --depfile=gradle/libs.versions.toml
+          - --audit
+          - --force-analysis
+          - --all-deps
+        verbose: true

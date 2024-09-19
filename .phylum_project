@@ -1,0 +1,7 @@
+id: 7d09edfc-1ff4-4f88-9389-5da831913983
+name: babylon-wallet-android
+created_at: 2024-06-03T13:06:05.511629+02:00
+group_name: Wallet
+depfiles:
+  - path: ./gradle/libs.versions.toml
+    type: toml
