@@ -23,6 +23,24 @@ jobs:
       - name: Cancel Previous Runs
         uses: RDXWorks-actions/cancel-workflow-action@main
 
+  phylum-analyze:
+    if: ${{ github.event.pull_request }}
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/phylum-analyze.yml@main
+    permissions:
+      id-token: write
+      pull-requests: write
+      contents: read
+      deployments: write
+    secrets:
+      phylum_api_key: ${{ secrets.PHYLUM_API_KEY }}
+    with:
+      phylum_pr_number: ${{ github.event.number }}
+      phylum_pr_name: ${{ github.head_ref }}
+      phylum_group_name: Wallet
+      phylum_project_id: 7d09edfc-1ff4-4f88-9389-5da831913983
+      github_repository: ${{ github.repository }}
+      add_report_comment_to_pull_request: true
+
   snyk_scan_deps_licences:
     name: "Snyk deps/licenses"
     runs-on: ubuntu-latest
