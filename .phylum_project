@@ -4,4 +4,4 @@ created_at: 2024-06-03T13:06:05.511629+02:00
 group_name: Wallet
 depfiles:
   - path: ./gradle/libs.versions.toml
-    type: pip
+    type: gradle

@@ -13,7 +13,7 @@ repos:
         # Optional: Specify the dependency file pattern for your repository
         files: |
             (?x)^(
-                gradle/libs.versions.toml
+                ./gradle/libs.versions.toml
             )$
         # Optional: Specify additional arguments to be passed to `phylum-ci`
         args:
