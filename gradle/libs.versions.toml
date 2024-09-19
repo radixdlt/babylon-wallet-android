@@ -171,3 +171,4 @@ firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqubePlugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "kspPlugin" }
+
