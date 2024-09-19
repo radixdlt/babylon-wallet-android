@@ -381,7 +381,7 @@ private fun RestoredProfileListItem(
                     text = stringResource(
                         id = R.string.recoverProfileBackup_backupFrom,
                         if (restoringProfile.isBackedUpByTheSameDevice) {
-                            stringResource(id = R.string.iOSProfileBackup_thisDevice)
+                            stringResource(id = R.string.recoverProfileBackup_thisDevice)
                         } else {
                             restoringProfile.deviceDescription
                         }
