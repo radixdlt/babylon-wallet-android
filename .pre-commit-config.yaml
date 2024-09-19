@@ -13,12 +13,12 @@ repos:
         # Optional: Specify the dependency file pattern for your repository
         files: |
             (?x)^(
-                ./gradle/libs.versions.toml
+                ./Gemfile.lock
             )$
         # Optional: Specify additional arguments to be passed to `phylum-ci`
         args:
           - -vv
-          - --depfile=gradle/libs.versions.toml
+          - --depfile=Gemfile.lock
           - --audit
           - --force-analysis
           - --all-deps
