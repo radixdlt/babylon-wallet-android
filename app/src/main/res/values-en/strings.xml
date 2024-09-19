@@ -854,7 +854,6 @@ Code: %s</string>
   <string name="iOSProfileBackup_importBackupWallet">Import From Backup</string>
   <string name="iOSProfileBackup_cloudBackupWallet">Available backups:</string>
   <string name="iOSProfileBackup_useICloudBackup">Use iCloud Backup Data</string>
-  <string name="iOSProfileBackup_thisDevice">This Device</string>
   <string name="iOSProfileBackup_creatingDevice">Backup created by: %s</string>
   <string name="iOSProfileBackup_creationDateLabel">Creation date: %s</string>
   <string name="iOSProfileBackup_lastUsedOnDeviceLabel">Last used on device: %s</string>
@@ -874,11 +873,6 @@ Code: %s</string>
   <string name="recoverProfileBackup_header_title">Restore Wallet From Backup</string>
   <string name="recoverProfileBackup_header_subtitle">Select a backup to restore your Radix Wallet. You will be asked to enter your seed phrase(s) to recover control of your Accounts and Personas.</string>
   <string name="androidRecoverProfileBackup_choose_title">Choose a backup from Google Drive</string>
-  <string name="iOSRecoverProfileBackup_choose_title">Choose a backup on iCloud</string>
-  <string name="iOSRecoverProfileBackup_noBackupsAvailable">No wallet backups available on current iCloud account</string>
-  <string name="iOSRecoverProfileBackup_notLoggedInToICloud">Not logged in to iCloud</string>
-  <string name="iOSRecoverProfileBackup_networkUnavailable">Network unavailable</string>
-  <string name="iOSRecoverProfileBackup_couldNotLoadBackups">Could not load backups</string>
   <string name="androidRecoverProfileBackup_noBackupsAvailable">No wallet backups available</string>
   <string name="recoverProfileBackup_backupFrom">**Backup from:** %s</string>
   <string name="recoverProfileBackup_lastModified">**Last modified:** %s</string>
@@ -894,7 +888,6 @@ Code: %s</string>
   <string name="recoverProfileBackup_notLoggedIn_iOS">Not logged in to iCloud</string>
   <string name="recoverProfileBackup_networkUnavailable">Network unavailable</string>
   <string name="recoverProfileBackup_couldNotLoadBackups">Could not load backups</string>
-  <string name="recoverProfileBackup_updateSystemSetings">Update in System Settings</string>
   <string name="recoverProfileBackup_thisDevice">This Device</string>
   <string name="recoverSeedPhrase_header_titleMain">Main Seed Phrase Required</string>
   <string name="recoverSeedPhrase_header_titleNoMainSeedPhrase">No Main Seed Phrase?</string>
