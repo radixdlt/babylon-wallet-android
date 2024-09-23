@@ -96,11 +96,14 @@ private fun SeedPhraseContent(
 ) {
     Scaffold(
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.displayMnemonics_seedPhrases),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.displayMnemonics_seedPhrases),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
@@ -108,7 +111,6 @@ private fun SeedPhraseContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = modifier

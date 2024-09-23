@@ -116,13 +116,20 @@ private fun HiddenEntitiesContent(
             confirmText = stringResource(id = R.string.common_confirm)
         )
     }
-    Scaffold(modifier = modifier, topBar = {
-        RadixCenteredTopAppBar(
-            title = stringResource(R.string.hiddenEntities_title),
-            onBackClick = onBackClick,
-            windowInsets = WindowInsets.statusBarsAndBanner
-        )
-    }) { padding ->
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(R.string.hiddenEntities_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
+        }
+    ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -135,7 +142,6 @@ private fun HiddenEntitiesContent(
             )
         ) {
             item {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
                 Text(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingDefault),
                     text = stringResource(R.string.hiddenEntities_text),

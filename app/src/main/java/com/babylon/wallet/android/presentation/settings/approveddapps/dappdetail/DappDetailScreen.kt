@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail
 
 import androidx.activity.compose.BackHandler
@@ -197,7 +195,7 @@ private fun DappDetailContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         }
     ) { padding ->

@@ -1,8 +1,4 @@
-@file:Suppress("CyclomaticComplexMethod", "TooManyFunctions")
-@file:OptIn(
-    ExperimentalPermissionsApi::class,
-    ExperimentalFoundationApi::class
-)
+@file:Suppress("TooManyFunctions")
 
 package com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet
 
@@ -447,6 +443,7 @@ private fun seedPhraseSuggestionsVisible(wordAutocompleteCandidates: ImmutableLi
     return wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,

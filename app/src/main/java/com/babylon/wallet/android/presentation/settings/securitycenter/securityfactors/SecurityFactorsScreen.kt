@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -52,11 +53,14 @@ private fun SecurityFactorsContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.securityFactors_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.securityFactors_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->

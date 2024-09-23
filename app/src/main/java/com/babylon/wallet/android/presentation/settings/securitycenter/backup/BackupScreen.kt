@@ -190,11 +190,14 @@ private fun BackupScreenContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.configurationBackup_title),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.configurationBackup_title),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         },
         snackbarHost = {
             RadixSnackbarHost(
