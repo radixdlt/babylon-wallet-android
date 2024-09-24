@@ -20,6 +20,8 @@ import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.json.JsonClassDiscriminator
+import kotlinx.serialization.json.JsonElement
 
 /**
  * 
@@ -28,6 +30,11 @@ import kotlinx.serialization.Contextual
  * @param receipt This type is defined in the Core API as `TransactionReceipt`. See the Core API documentation for more details. 
  * @param resourceChanges 
  * @param logs 
+ * @param radixEngineToolkitReceipt An optional field which is only provided if the `request_radix_engine_toolkit_receipt` flag
+ * is set to true when requesting a transaction preview from the API.
+ * This receipt is primarily intended for use with the toolkit and may contain information that is already available in
+ * the receipt provided in the `receipt` field of this response. A typical client of this API is not expected to use this receipt.
+ * The primary clients this receipt is intended for is the Radix wallet or any client that needs to perform execution summaries on their transactions.
  */
 @Serializable
 
@@ -45,7 +52,14 @@ data class TransactionPreviewResponse (
 //    val resourceChanges: kotlin.collections.List<@Contextual kotlin.Any>,
 
     @SerialName(value = "logs")
-    val logs: kotlin.collections.List<TransactionPreviewResponseLogsInner>
+    val logs: kotlin.collections.List<TransactionPreviewResponseLogsInner>,
+
+    /* An optional field which is only provided if the `request_radix_engine_toolkit_receipt` flag is set to true when
+    requesting a transaction preview from the API. This receipt is primarily intended for use with the toolkit and
+    may contain information that is already available in the receipt provided in the `receipt` field of this response.
+    A typical client of this API is not expected to use this receipt. The primary clients this receipt is intended for
+    is the Radix wallet or any client that needs to perform execution summaries on their transactions.  */
+    @Contextual @SerialName(value = "radix_engine_toolkit_receipt")
+    val radixEngineToolkitReceipt: JsonElement? = null
 
 )
-

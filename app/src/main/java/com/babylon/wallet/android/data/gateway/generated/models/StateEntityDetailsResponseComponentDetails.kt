@@ -73,6 +73,10 @@ data class StateEntityDetailsResponseComponentDetails (
     @SerialName(value = "royalty_config")
     val royaltyConfig: ComponentRoyaltyConfig? = null,
 
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "two_way_linked_dapp_address")
+    val twoWayLinkedDappAddress: kotlin.String? = null,
+
     @SerialName(value = "two_way_linked_dapp_details")
     val twoWayLinkedDappDetails: TwoWayLinkedDappOnLedgerDetails? = null,
 
