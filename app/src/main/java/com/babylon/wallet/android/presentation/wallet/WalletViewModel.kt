@@ -126,6 +126,8 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    fun refreshAccountLockers() = accountLockersDelegate.onRefresh()
+
     override fun initialState() = State()
 
     fun onStart() {
@@ -280,7 +282,7 @@ class WalletViewModel @Inject constructor(
 
     fun onRefresh() {
         loadAssets(refreshType = RefreshType.Manual(overrideCache = true, showRefreshIndicator = true))
-        accountLockersDelegate.onRefresh()
+        refreshAccountLockers()
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
