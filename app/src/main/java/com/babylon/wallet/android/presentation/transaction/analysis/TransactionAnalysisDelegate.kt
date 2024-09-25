@@ -21,7 +21,6 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.secureRandom
-import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.extensions.value
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -78,7 +77,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 requireNotNull(radixEngineToolkitReceipt) { throw IllegalArgumentException("radixEngineToolkitReceipt must not be null") }
                 logger.v(radixEngineToolkitReceipt.toString())
                 manifestData
-                    .executionSummary(radixEngineToolkitReceipt = radixEngineToolkitReceipt.toString().encodeToByteArray().toBagOfBytes())
+                    .executionSummary(radixEngineToolkitReceipt = radixEngineToolkitReceipt.toString())
                     .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }
