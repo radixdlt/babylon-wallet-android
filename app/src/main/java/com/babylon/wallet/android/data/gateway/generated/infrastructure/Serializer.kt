@@ -41,7 +41,6 @@ object Serializer {
     val kotlinxSerializationJson: Json by lazy {
         Json {
             serializersModule = kotlinxSerializationAdapters
-//            encodeDefaults = true
             ignoreUnknownKeys = true
             isLenient = true
         }
