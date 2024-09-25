@@ -57,7 +57,9 @@ data class TransactionManifestData(
     }
 
     // Currently the only method that exposes RET
-    fun executionSummary(encodedReceipt: BagOfBytes): ExecutionSummary = manifestSargon.executionSummary(encodedReceipt)
+    fun executionSummary(
+        radixEngineToolkitReceipt: String
+    ): ExecutionSummary = manifestSargon.executionSummary(radixEngineToolkitReceipt)
 
     sealed interface TransactionMessage {
 

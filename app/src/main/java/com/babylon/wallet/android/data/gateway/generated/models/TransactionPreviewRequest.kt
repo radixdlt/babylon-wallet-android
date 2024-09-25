@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKey
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 
 import kotlinx.serialization.Serializable
@@ -32,6 +33,7 @@ import kotlinx.serialization.Contextual
  * @param nonce An integer between `0` and `2^32 - 1`, chosen to allow a unique intent to be created (to enable submitting an otherwise identical/duplicate intent). 
  * @param signerPublicKeys A list of public keys to be used as transaction signers
  * @param flags 
+ * @param optIns 
  * @param blobsHex An array of hex-encoded blob data, if referenced by the manifest.
  * @param notaryPublicKey 
  * @param notaryIsSignatory Whether the notary should count as a signatory (defaults to `false`).
@@ -67,6 +69,9 @@ data class TransactionPreviewRequest (
 
     @SerialName(value = "flags")
     val flags: TransactionPreviewRequestFlags,
+
+    @SerialName(value = "opt_ins")
+    val optIns: TransactionPreviewOptIns? = null,
 
     /* An array of hex-encoded blob data, if referenced by the manifest. */
     @SerialName(value = "blobs_hex")

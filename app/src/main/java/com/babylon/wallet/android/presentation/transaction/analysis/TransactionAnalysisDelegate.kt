@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.data.gateway.extensions.asGatewayPublicKey
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
@@ -19,7 +20,6 @@ import com.babylon.wallet.android.presentation.transaction.model.TransactionErro
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.secureRandom
 import com.radixdlt.sargon.extensions.value
 import kotlinx.coroutines.flow.update
@@ -73,9 +73,11 @@ class TransactionAnalysisDelegate @Inject constructor(
                 manifestData = manifestData,
                 notaryAndSigners = notaryAndSigners
             ).mapCatching { preview ->
-                logger.v(preview.encodedReceipt)
+                val radixEngineToolkitReceipt = preview.radixEngineToolkitReceipt
+                requireNotNull(radixEngineToolkitReceipt) { throw IllegalArgumentException("radixEngineToolkitReceipt must not be null") }
+                logger.v(radixEngineToolkitReceipt.toString())
                 manifestData
-                    .executionSummary(encodedReceipt = preview.encodedReceipt.hexToBagOfBytes())
+                    .executionSummary(radixEngineToolkitReceipt = radixEngineToolkitReceipt.toString())
                     .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }
@@ -115,6 +117,9 @@ class TransactionAnalysisDelegate @Inject constructor(
                     useFreeCredit = true,
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
+                ),
+                optIns = TransactionPreviewOptIns(
+                    radixEngineToolkitReceipt = true // must be true
                 ),
                 blobsHex = manifestData.blobs.map { it.hex },
                 notaryPublicKey = notaryAndSigners.notaryPublicKeyNew().asGatewayPublicKey(),
