@@ -9,6 +9,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toUrl
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -17,7 +18,6 @@ import kotlinx.coroutines.test.runTest
 import rdx.works.core.sargon.addGateway
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.toUrl
 import rdx.works.profile.FakeProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.repository.updateProfile

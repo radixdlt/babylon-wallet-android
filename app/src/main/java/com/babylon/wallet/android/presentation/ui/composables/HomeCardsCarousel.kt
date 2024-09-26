@@ -58,9 +58,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.HomeCard
+import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.sargon.toUrl
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
