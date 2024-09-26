@@ -112,6 +112,7 @@ fun WalletScreen(
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
         viewModel.processBufferedDeepLinkRequest()
+        viewModel.refreshAccountLockers()
     }
 
     LaunchedEffect(Unit) {
