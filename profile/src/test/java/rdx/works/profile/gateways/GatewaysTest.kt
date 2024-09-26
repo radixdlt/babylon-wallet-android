@@ -9,8 +9,8 @@ import com.radixdlt.sargon.extensions.default
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toUrl
 import org.junit.Test
-import rdx.works.core.sargon.toUrl
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 

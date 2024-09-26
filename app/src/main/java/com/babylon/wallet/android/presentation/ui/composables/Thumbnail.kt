@@ -63,8 +63,11 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.intoImageUrl
+import com.radixdlt.sargon.extensions.toUrl
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
@@ -80,7 +83,6 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
 import rdx.works.core.domain.resources.sampleMainnet
-import rdx.works.core.toEncodedString
 import kotlin.math.absoluteValue
 
 @Suppress("TooManyFunctions")
@@ -199,7 +201,7 @@ object Thumbnail {
                 val imageType = ImageType.External(image, ThumbnailRequestSize.LARGE)
 
                 ImageRequest.Builder(context)
-                    .data(imageType.cloudFlareUri)
+                    .data(imageType.cloudFlareUrl)
                     .error(R.drawable.ic_broken_image)
                     .applyCorrectDecoderBasedOnMimeType()
                     // Needed for cloudflare
@@ -432,7 +434,7 @@ object Thumbnail {
     ) {
         val context = LocalContext.current
         val data: Any? = when (imageType) {
-            is ImageType.External -> remember(imageType) { imageType.cloudFlareUri }
+            is ImageType.External -> remember(imageType) { imageType.cloudFlareUrl }
             is ImageType.InternalRes -> imageType.drawableRes
             else -> null
         }
@@ -490,10 +492,15 @@ object Thumbnail {
             private val uri: Uri,
             private val size: ThumbnailRequestSize
         ) : ImageType {
-            val cloudFlareUri: Uri
-                get() = Uri.parse(
-                    "${BuildConfig.IMAGE_HOST_BASE_URL}/?imageOrigin=${uri.toEncodedString()}&imageSize=${size.toSizeString()}"
+            val cloudFlareUrl: Url
+                get() = uri.intoImageUrl(
+                    imageServiceUrl = imageServiceUrl,
+                    size = size.toSize()
                 )
+
+            companion object {
+                private val imageServiceUrl = BuildConfig.IMAGE_HOST_BASE_URL.toUrl()
+            }
         }
 
         data class InternalRes(@DrawableRes val drawableRes: Int) : ImageType
@@ -526,9 +533,7 @@ object Thumbnail {
 enum class ThumbnailRequestSize(val size: Int) {
     SMALL(112), MEDIUM(256), LARGE(512);
 
-    fun toSizeString(): String {
-        return "${size}x$size"
-    }
+    fun toSize(): android.util.Size = android.util.Size(size, size)
 
     companion object {
         fun closest(from: IntSize): ThumbnailRequestSize = values().minByOrNull { (from.width - it.size).absoluteValue } ?: MEDIUM
