@@ -166,7 +166,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                             )
                         )
                     }.onFailure {
-                        response = Result.failure(it)
+                        response = Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it))
                     }
                     response
                 }
