@@ -136,9 +136,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleRequestError(exception: Throwable) {
-        if (exception is RadixWalletException.DappRequestException.RejectedByUser) {
-            return // user rejected/cancelled signing, do not close the request screen
-        }
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
             when (exception.cause) {
@@ -150,7 +147,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     _state.update { it.copy(isNoMnemonicErrorVisible = true) }
                 }
 
-                is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
+                is RadixWalletException.LedgerCommunicationException,
+                is RadixWalletException.SignatureCancelled,
+                is RadixWalletException.DappRequestException.RejectedByUser -> {}
 
                 else -> {
                     respondToIncomingRequestUseCase.respondWithFailure(
@@ -160,10 +159,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     )
                     _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
                 }
-            }
-        } else {
-            if (exception is ProfileException.NoMnemonic) {
-                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
             }
         }
     }
