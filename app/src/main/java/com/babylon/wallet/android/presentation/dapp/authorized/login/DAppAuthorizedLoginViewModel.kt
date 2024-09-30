@@ -264,7 +264,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     _state.update { it.copy(isNoMnemonicErrorVisible = true) }
                 }
 
-                is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
+                is RadixWalletException.LedgerCommunicationException,
+                is RadixWalletException.SignatureCancelled,
+                is RadixWalletException.DappRequestException.RejectedByUser -> {}
 
                 else -> {
                     respondToIncomingRequestUseCase.respondWithFailure(

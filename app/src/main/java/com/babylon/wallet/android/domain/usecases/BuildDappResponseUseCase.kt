@@ -305,7 +305,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
             ).onSuccess { result ->
                 entitiesWithSignatures = result.signersWithSignatures
             }.onFailure { error ->
-                return Result.failure(error)
+                return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(error))
             }
         }
 
