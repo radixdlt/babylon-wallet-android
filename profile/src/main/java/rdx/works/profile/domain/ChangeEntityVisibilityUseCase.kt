@@ -5,12 +5,12 @@ import com.radixdlt.sargon.IdentityAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.sargon.changeAccountVisibility
 import rdx.works.core.sargon.changePersonaVisibility
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class ChangeEntityVisibilityUseCase @Inject constructor(

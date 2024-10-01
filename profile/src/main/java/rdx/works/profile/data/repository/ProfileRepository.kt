@@ -1,32 +1,31 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.checkIfProfileJsonContainsLegacyP2PLinks
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.fromJson
-import com.radixdlt.sargon.extensions.toJson
+import com.radixdlt.sargon.os.SargonOsManager
+import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.core.TimestampGenerator
-import rdx.works.core.domain.ProfileState
-import rdx.works.core.logNonFatalException
-import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.KeystoreManager
+import rdx.works.core.di.ApplicationScope
+import rdx.works.core.di.IoDispatcher
 import rdx.works.core.sargon.canBackupToCloud
+import rdx.works.core.then
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
 import rdx.works.profile.datastore.EncryptedPreferencesManager
-import rdx.works.profile.di.coroutines.ApplicationScope
-import rdx.works.profile.di.coroutines.IoDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -38,9 +37,7 @@ interface ProfileRepository {
 
     suspend fun saveProfile(profile: Profile)
 
-    suspend fun clearProfileDataOnly()
-
-    suspend fun clearAllWalletData()
+    suspend fun deleteWallet()
 
     fun deriveProfileState(content: String): ProfileState
 }
@@ -54,90 +51,89 @@ suspend fun ProfileRepository.updateProfile(updateAction: suspend (Profile) -> P
 
 val ProfileRepository.profile: Flow<Profile>
     get() = profileState
-        .filterIsInstance<ProfileState.Restored>()
-        .map { it.profile }
+        .filterIsInstance<ProfileState.Loaded>()
+        .map { it.v1 }
 
 @Suppress("LongParameterList")
 class ProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
-    private val preferencesManager: PreferencesManager,
+    private val keystoreManager: KeystoreManager,
     private val cloudBackupSyncExecutor: CloudBackupSyncExecutor,
+    private val sargonOsManager: SargonOsManager,
     private val hostInfoRepository: HostInfoRepository,
+    private val profileStateChangeDriver: AndroidProfileStateChangeDriver,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope applicationScope: CoroutineScope
 ) : ProfileRepository {
 
     init {
         applicationScope.launch {
-            val snapshotResult = encryptedPreferencesManager.encryptedProfile.firstOrNull()
-
-            if (snapshotResult == null) {
-                profileStateFlow.update { ProfileState.None }
-            } else {
-                snapshotResult
-                    .onFailure { exception ->
-                        logNonFatalException(exception)
-                        profileStateFlow.update { ProfileState.Incompatible(cause = exception) }
+            // Observe profile state changes that need to be backed up
+            profileStateChangeDriver
+                .profileState
+                .runningFold(
+                    initial = ProfileStateChange.initial(),
+                    operation = { history, profileState ->
+                        history.updateChanges(profileState)
                     }
-                    .onSuccess { snapshot ->
-                        ensureP2PLinkMigrationAcknowledged(snapshot)
-                        profileStateFlow.update { deriveProfileState(snapshot) }
+                )
+                .mapNotNull { it.updatedProfileForBackup() }
+                .collect { profile ->
+                    if (profile.canBackupToCloud) {
+                        cloudBackupSyncExecutor.requestCloudBackup()
+                    } else {
+                        encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
                     }
-            }
+                }
         }
     }
 
-    private val profileStateFlow: MutableStateFlow<ProfileState> = MutableStateFlow(ProfileState.NotInitialised)
-
-    override val profileState = profileStateFlow
-        .filterNot { it is ProfileState.NotInitialised }
+    override val profileState = profileStateChangeDriver
+        .profileState
+        // Waits until the profile state is evaluated
+        .filterNotNull()
 
     override val inMemoryProfileOrNull: Profile?
-        get() = when (val state = profileStateFlow.value) {
-            is ProfileState.Restored -> state.profile
+        get() = when (val state = profileStateChangeDriver.profileState.value) {
+            is ProfileState.Loaded -> state.v1
             else -> null
         }
 
     override suspend fun saveProfile(profile: Profile) {
+        val sargonOs = sargonOsManager.sargonOs
         val hostId = hostInfoRepository.getHostId()
         val hostInfo = hostInfoRepository.getHostInfo()
+
         val profileToSave = profile.copy(
             header = profile.header.copy(
-                lastModified = TimestampGenerator(),
                 // In general this would be unnecessary. Meaning that a new user will generate a device id and store it in profile
                 // or restore from backup, generated a new device id and claim the profile. In both situations the device info should
                 // have the correct up-to-date device id.
-                // The problem lies to existing users: Those who updated to version 1.6.0. In this version the android app introduced
-                // the concept of device id, which is stored in preferences. These users need to silently update their lastUsedOnDevice
-                // to have the current information about the device id. Profiles prior to this, which were generated by the android app
-                // had device id == profile id
+                // The problem lies to existing users: Those who updated from a version prior to 1.6.0. In later versions the android app
+                // introduced the concept of device id, which is stored in preferences. These users need to silently update their
+                // lastUsedOnDevice  to have the current information about the device id. Profiles prior to this, which were generated by
+                // the android app had device id == profile id
                 lastUsedOnDevice = DeviceInfo.from(hostId, hostInfo)
             )
         )
+
         withContext(ioDispatcher) {
-            val profileContent = profileToSave.toJson()
-            // Store profile
-            encryptedPreferencesManager.putProfileSnapshot(profileContent)
-
-            if (profileToSave.canBackupToCloud) {
-                cloudBackupSyncExecutor.requestCloudBackup()
-            } else {
-                encryptedPreferencesManager.clearProfileSnapshotFromCloudBackup()
-            }
-
-            // Update the flow and notify Backup Manager that it needs to backup
-            profileStateFlow.update { ProfileState.Restored(profileToSave) }
+            sargonOs.setProfile(profileToSave)
         }
     }
 
-    override suspend fun clearAllWalletData() {
-        preferencesManager.clear()
-        clearProfileDataOnly()
-    }
+    override suspend fun deleteWallet() {
+        val sargonOs = sargonOsManager.sargonOs
 
-    override suspend fun clearProfileDataOnly() {
-        encryptedPreferencesManager.clear()
-        profileStateFlow.update { ProfileState.None }
+        runCatching {
+            sargonOs.deleteWallet()
+        }.onFailure {
+            Timber.w(it, "Failed to delete wallet")
+        }.then {
+            keystoreManager.resetKeySpecs().onFailure { error ->
+                Timber.w(error, "Failed to reset encryption keys")
+            }
+        }
     }
 
     @Suppress("SwallowedException")
@@ -145,22 +141,62 @@ class ProfileRepositoryImpl @Inject constructor(
         Profile.fromJson(content)
     }.fold(
         onSuccess = {
-            ProfileState.Restored(it)
+            ProfileState.Loaded(it)
         },
         onFailure = {
             Timber.w(it)
-            ProfileState.Incompatible(cause = it)
+            ProfileState.Incompatible(it as CommonException)
         }
     )
 
-    private suspend fun ensureP2PLinkMigrationAcknowledged(profileJson: String) {
-        val isP2PLinkMigrationCheckPerformed = preferencesManager.showRelinkConnectorsAfterUpdate.firstOrNull() != null
-        if (isP2PLinkMigrationCheckPerformed) {
-            return
+    private data class ProfileStateChange(
+        private val oldProfileState: ProfileState?,
+        private val newProfileState: ProfileState?
+    ) {
+        fun updateChanges(
+            newState: ProfileState?
+        ): ProfileStateChange = copy(
+            oldProfileState = newProfileState,
+            newProfileState = newState
+        )
+
+        /**
+         * Returns a [Profile] which seems to have been updated.
+         * Examples of a scenario like this
+         * - The previous profile was [ProfileState.None] and the new is [ProfileState.Loaded].
+         *   Usually when the user creates a new profile or imports one.
+         * - The previous state was [ProfileState.Loaded] and the new is [ProfileState.Loaded],
+         *   but the profiles inside are different.
+         *
+         * Might return null if the user
+         * - has no profile,
+         * - the latest [ProfileState.Loaded] profile is the same as the previous one
+         * - the profile was just loaded after sargon boot. Meaning that it went from null => [ProfileState.Loaded]
+         */
+        fun updatedProfileForBackup(): Profile? {
+            if (oldProfileState == null) {
+                // This means that the sargon is not yet booted,
+                // In this case, even if the newProfileState has a value of Loaded,
+                // it is a profile that already exists and has been backed up. No need to backup again
+                return null
+            }
+
+            val oldProfile = (oldProfileState as? ProfileState.Loaded)?.v1
+            if (newProfileState is ProfileState.Loaded) {
+                val newProfile = newProfileState.v1
+                if (oldProfile != newProfile) {
+                    return newProfile
+                }
+            }
+
+            return null
         }
 
-        preferencesManager.setShowRelinkConnectorsAfterUpdate(
-            show = Profile.checkIfProfileJsonContainsLegacyP2PLinks(profileJson)
-        )
+        companion object {
+            fun initial() = ProfileStateChange(
+                oldProfileState = null,
+                newProfileState = null
+            )
+        }
     }
 }

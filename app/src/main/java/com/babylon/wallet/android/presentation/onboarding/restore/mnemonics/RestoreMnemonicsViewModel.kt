@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.NetworkId
@@ -38,7 +39,6 @@ import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseC
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions", "LongParameterList")
@@ -225,12 +225,18 @@ class RestoreMnemonicsViewModel @Inject constructor(
                             }
                             onRestorationComplete()
                         }.onFailure {
-                            Timber.w(it)
-                            _state.update { state ->
-                                state.copy(
-                                    isPrimaryButtonLoading = false,
-                                    uiMessage = UiMessage.ErrorMessage(it)
-                                )
+                            if (it is CommonException.SecureStorageWriteException) {
+                                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                                _state.update { state ->
+                                    state.copy(isPrimaryButtonLoading = false)
+                                }
+                            } else {
+                                _state.update { state ->
+                                    state.copy(
+                                        isPrimaryButtonLoading = false,
+                                        uiMessage = UiMessage.ErrorMessage(it)
+                                    )
+                                }
                             }
                         }
                 } ?: run {

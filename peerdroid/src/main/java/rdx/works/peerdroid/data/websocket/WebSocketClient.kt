@@ -3,6 +3,8 @@ package rdx.works.peerdroid.data.websocket
 import android.content.Context
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.os.storage.decrypt
+import com.radixdlt.sargon.os.storage.encrypt
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -26,8 +28,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
-import rdx.works.core.decrypt
-import rdx.works.core.encrypt
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.BuildConfig
@@ -131,7 +131,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ) {
         val offerJson = json.encodeToString(offerPayload)
         val encryptedOffer = offerJson.toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
+            encryptionKey = encryptionKey
         )
         val rpcMessage = RpcMessage.Offer(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
@@ -148,7 +148,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ) {
         val answerJson = json.encodeToString(answerPayload)
         val encryptedAnswer = answerJson.toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
+            encryptionKey = encryptionKey
         )
         val rpcMessage: RpcMessage = RpcMessage.Answer(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
@@ -165,7 +165,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ) {
         val iceCandidatePayload = iceCandidateData.toJsonPayload()
         val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
+            encryptionKey = encryptionKey
         )
         val rpcMessage: RpcMessage = RpcMessage.IceCandidate(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
@@ -238,7 +238,7 @@ internal class WebSocketClient(applicationContext: Context) {
         remoteClientId: String
     ): SignalingServerMessage.RemoteData.Offer {
         val message = offerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+            encryptionKey = encryptionKey
         ).getOrThrow()
         val offer = json.decodeFromString<RpcMessage.OfferPayload>(String(message, StandardCharsets.UTF_8))
 
@@ -256,7 +256,7 @@ internal class WebSocketClient(applicationContext: Context) {
         remoteClientId: String
     ): SignalingServerMessage.RemoteData.Answer {
         val message = answerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+            encryptionKey = encryptionKey
         ).getOrThrow()
         val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
@@ -273,7 +273,7 @@ internal class WebSocketClient(applicationContext: Context) {
         remoteClientId: String
     ): SignalingServerMessage.RemoteData.IceCandidate {
         val message = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+            encryptionKey = encryptionKey
         ).getOrThrow()
         val iceCandidate = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)

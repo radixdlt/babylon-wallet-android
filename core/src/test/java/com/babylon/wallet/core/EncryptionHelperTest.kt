@@ -1,10 +1,10 @@
 package com.babylon.wallet.core
 
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.os.storage.decrypt
+import com.radixdlt.sargon.os.storage.encrypt
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.core.decrypt
-import rdx.works.core.encrypt
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import java.nio.ByteBuffer
@@ -29,7 +29,7 @@ class EncryptionHelperTest {
         val encryptionKeyByteArray = encryptionKeyData.array()
 
         val actualDecryptedMessage = encryptedMessageInHex.hexToBagOfBytes().toByteArray().decrypt(
-            withEncryptionKey = encryptionKeyByteArray
+            encryptionKey = encryptionKeyByteArray
         )
 
         Assert.assertEquals(expectedDecryptedMessage, String(actualDecryptedMessage.getOrThrow(), UTF_8))
@@ -41,11 +41,11 @@ class EncryptionHelperTest {
         val encryptionKeyByteArray = encryptionKeyData.array()
 
         val encryptedMessage1 = expectedDecryptedMessage.toByteArray().encrypt(
-            withEncryptionKey = encryptionKeyByteArray
+            encryptionKey = encryptionKeyByteArray
         )
 
         val encryptedMessage2 = expectedDecryptedMessage.toByteArray().encrypt(
-            withEncryptionKey = encryptionKeyByteArray
+            encryptionKey = encryptionKeyByteArray
         )
 
         Assert.assertNotEquals(encryptedMessage1, encryptedMessage2)

@@ -14,6 +14,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
+import rdx.works.core.di.DynamicGatewayHttpClient
+import rdx.works.core.di.GatewayHttpClient
+import rdx.works.core.di.ShortTimeoutDynamicGatewayHttpClient
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.default
 import rdx.works.profile.data.repository.ProfileRepository
@@ -28,29 +31,6 @@ import javax.inject.Singleton
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class JsonConverterFactory
-
-/**
- * An [OkHttpClient] that can dynamically change the base url of the network,
- * even if the [Retrofit] builder has already created the api class,
- * based on the current gateway
- */
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class DynamicGatewayHttpClient
-
-/**
- * Same as [DynamicGatewayHttpClient] but with shorter timeout
- */
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class ShortTimeoutDynamicGatewayHttpClient
-
-/**
- * A simple [OkHttpClient] **without** dynamic change of the base url.
- */
-@Retention(AnnotationRetention.BINARY)
-@Qualifier
-annotation class GatewayHttpClient
 
 private const val HEADER_RDX_CLIENT_NAME = "RDX-Client-Name"
 private const val HEADER_RDX_CLIENT_VERSION = "RDX-Client-Version"

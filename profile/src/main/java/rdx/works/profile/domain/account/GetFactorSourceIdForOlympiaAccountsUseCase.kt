@@ -7,10 +7,10 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.validate
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import javax.inject.Inject

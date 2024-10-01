@@ -36,7 +36,6 @@ import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,7 +73,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     init {
         reDerivePublicKeyJob = viewModelScope.launch {
-            profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.flow.firstOrNull() else null
+            profile = getProfileUseCase.finishedOnboardingProfile()
 
             input = accessFactorSourcesIOHandler.getInput() as ToReDeriveAccounts
             nextDerivationPathOffset = input.nextDerivationPathOffset

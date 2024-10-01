@@ -8,13 +8,13 @@ import com.radixdlt.sargon.PersonaData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addPersona
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.init
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class CreatePersonaUseCase @Inject constructor(

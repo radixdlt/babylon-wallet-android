@@ -4,12 +4,12 @@ import com.radixdlt.sargon.Url
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.core.sargon.addNetworkIfDoesNotExist
 import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class SwitchNetworkUseCase @Inject constructor(

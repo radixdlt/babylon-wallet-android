@@ -14,7 +14,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.factorSourceId
-import rdx.works.profile.data.repository.MnemonicIntegrityRepository
+import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
@@ -25,14 +25,14 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val mnemonicRepository: MnemonicRepository,
     private val getBackupStateUseCase: GetBackupStateUseCase,
-    private val mnemonicIntegrityRepository: MnemonicIntegrityRepository
+    private val checkKeystoreIntegrityUseCase: CheckKeystoreIntegrityUseCase
 ) {
 
     operator fun invoke(): Flow<List<EntityWithSecurityPrompt>> = combine(
         getProfileUseCase.flow.map { it.allEntitiesOnCurrentNetwork },
         preferencesManager.getBackedUpFactorSourceIds(),
         getBackupStateUseCase(),
-        mnemonicIntegrityRepository.didMnemonicIntegrityChange
+        checkKeystoreIntegrityUseCase.didMnemonicIntegrityChange
     ) { entities, backedUpFactorSourceIds, cloudBackupState, _ ->
         entities.mapNotNull { entity ->
             mapToEntityWithSecurityPrompt(entity, backedUpFactorSourceIds, cloudBackupState)

@@ -17,6 +17,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.Accounts
@@ -35,7 +36,7 @@ import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.HostInfoRepository
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
-import rdx.works.profile.domain.GenerateProfileUseCase
+import rdx.works.profile.domain.DeriveProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val generateProfileUseCase: GenerateProfileUseCase,
+    private val deriveProfileUseCase: DeriveProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
@@ -202,26 +203,21 @@ class AccountRecoveryScanViewModel @Inject constructor(
     }
 
     @Suppress("UnsafeCallOnNullableType")
-    fun onContinueClick(biometricAuthenticationProvider: suspend () -> Boolean) {
+    fun onContinueClick() {
         viewModelScope.launch {
             if (givenTempMnemonic != null) { // account scan from onboarding with a given main babylon seed phrase
-                val authenticated = biometricAuthenticationProvider()
-                if (authenticated.not()) {
-                    _state.update { it.copy(isScanningNetwork = false) }
-                    return@launch
-                }
                 _state.update { it.copy(isScanningNetwork = true) }
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                generateProfileUseCase.derived(
+                deriveProfileUseCase(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
                     accounts = Accounts(accounts)
                 ).onSuccess {
                     sendEvent(Event.RecoverComplete)
                 }.onFailure { error ->
-                    if (error is ProfileException.SecureStorageAccess) {
+                    if (error is CommonException.SecureStorageWriteException) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     } else {
                         _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }

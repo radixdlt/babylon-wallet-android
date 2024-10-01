@@ -12,6 +12,7 @@ import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
@@ -29,7 +30,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import rdx.works.core.domain.ProfileState
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.currentNetwork
@@ -84,7 +84,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
 
         coEvery { mnemonicRepository.readMnemonic(any()) } returns Result.success(babylonMnemonic)
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } returns Result.success(Unit)
-        coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
+        coEvery { profileRepository.profileState } returns flowOf(ProfileState.Loaded(profile))
         coEvery { profileRepository.saveProfile(any()) } just Runs
 
         val usecase = MigrateOlympiaAccountsUseCase(profileRepository, testDispatcher)
