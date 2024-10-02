@@ -1,36 +1,39 @@
 import io.gitlab.arturbosch.detekt.Detekt
 
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext {
-        minSdk = 27
-        compileSdk = 34
-        targetSdk = 34
-        internalVersionName = "babylon"
-        kotlinCompilerExtensionVersion = "1.5.8"
-    }
     dependencies {
+        // Since version catalog is not available in buildscript, hardcode these dependencies
         classpath "io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.5"
         classpath "org.jacoco:org.jacoco.core:0.8.11"
     }
-}// Top-level build file where you can add configuration options common to all sub-projects/modules.
+}
 
 plugins {
-    alias libs.plugins.android.application apply false
-    alias libs.plugins.android.library apply false
-    alias libs.plugins.kotlin.android apply false
-    alias libs.plugins.kotlin.serialization
-    alias libs.plugins.kotlin.jvm apply false
-    alias libs.plugins.ben.manes.versions
-    alias libs.plugins.version.catalog.update
-    alias libs.plugins.google.services apply false
-    alias libs.plugins.firebase.crashlytics apply false
-    alias libs.plugins.hilt apply false
-    alias libs.plugins.ksp apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.ben.manes.versions)
+    alias(libs.plugins.version.catalog.update)
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.ksp) apply false
+}
+
+ext {
+    minSdk = 27
+    compileSdk = 34
+    targetSdk = 34
+    internalVersionName = "babylon"
+    kotlinCompilerExtensionVersion = "1.5.8"  // Get version from catalog
 }
 
 allprojects {
     apply from: "$rootDir/config/detekt.gradle"
-    
+
     // Enable dependency locking for all configurations in all projects
     dependencyLocking {
         lockAllConfigurations()
