@@ -27,5 +27,4 @@ class KeystoreManager @Inject constructor() {
     } else {
         Result.success(false)
     }
-
 }
