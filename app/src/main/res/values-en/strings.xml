@@ -403,6 +403,10 @@
   <string name="dAppRequest_metadata_wallet">Radix Wallet</string>
   <string name="dAppRequest_personalDataBox_edit">Edit</string>
   <string name="dAppRequest_personalDataBox_requiredInformation">Required information:</string>
+  <string name="dAppRequest_personaProofOfOwnership_title">Verify Persona Login</string>
+  <string name="dAppRequest_personaProofOfOwnership_subtitle">**%s** is requesting verification of your login with the following Persona.</string>
+  <string name="dAppRequest_accountsProofOfOwnership_title">Verify Account Ownership</string>
+  <string name="dAppRequest_accountsProofOfOwnership_subtitle">**%s** is requesting verification that you own the following Account(s).</string>
   <string name="transactionReview_title">Review Your Transaction</string>
   <string name="transactionReview_proposingDappSubtitle">Proposed by %s</string>
   <string name="transactionReview_transferTitle">Review Your Transfer</string>
