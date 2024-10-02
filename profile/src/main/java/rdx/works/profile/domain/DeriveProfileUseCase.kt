@@ -33,7 +33,7 @@ class DeriveProfileUseCase @Inject constructor(
         else -> withContext(defaultDispatcher) {
             val sargonOs = sargonOsManager.sargonOs
 
-            keystoreManager.resetKeySpecs()
+            keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
             runCatching {
                 sargonOs.newWalletWithDerivedBdfs(

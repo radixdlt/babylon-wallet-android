@@ -24,6 +24,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.KeystoreManager
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
@@ -52,7 +53,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus,
-    private val homeCardsRepository: HomeCardsRepository
+    private val homeCardsRepository: HomeCardsRepository,
+    private val keystoreManager: KeystoreManager
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -65,6 +67,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = args.backupType?.let { backupType ->
+                // Reset keyspec before importing any mnemonic, when keyspec is invalid
+                keystoreManager.resetMnemonicKeySpecWhenInvalidated()
+
                 getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
             } ?: run {
                 getProfileUseCase.flow.firstOrNull()
