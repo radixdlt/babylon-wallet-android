@@ -105,7 +105,7 @@ class CreateAccountViewModel @Inject constructor(
 
     private suspend fun createWallet(): Result<Unit> {
         val sargonOs = sargonOsManager.sargonOs
-        keystoreManager.resetKeySpecs()
+        keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
         return runCatching {
             sargonOs.newWallet()
