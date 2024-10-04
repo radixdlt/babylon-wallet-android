@@ -6,10 +6,11 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingRequestResponse
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.toRequiredFields
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -62,7 +63,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
-    private lateinit var request: IncomingMessage.IncomingRequest.UnauthorizedRequest
+    private lateinit var request: WalletUnauthorizedRequest
 
     init {
         viewModelScope.launch {
@@ -76,7 +77,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val requestToHandle = incomingRequestRepository.getRequest(
                 args.interactionId
-            ) as? IncomingMessage.IncomingRequest.UnauthorizedRequest
+            ) as? WalletUnauthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
@@ -115,7 +116,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                == DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -232,7 +233,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
                     getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
                 },
-                onetimeSharedPersonaData = state.value.selectedPersonaData
+                oneTimePersonaData = state.value.selectedPersonaData
             ).mapCatching {
                 respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
             }.onSuccess { result ->

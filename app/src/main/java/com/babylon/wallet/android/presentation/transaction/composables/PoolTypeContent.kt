@@ -9,9 +9,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
@@ -70,8 +72,8 @@ fun PoolTypePreview() {
     RadixWalletTheme {
         PoolTypeContent(
             state = TransactionReviewViewModel.State(
-                request = IncomingMessage.IncomingRequest.TransactionRequest(
-                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(
+                request = TransactionRequest(
+                    remoteEntityId = RemoteEntityID.ConnectorId(
                         "b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc"
                     ),
                     interactionId = UUID.randomUUID().toString(),
@@ -81,7 +83,7 @@ fun PoolTypePreview() {
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
+                    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(NetworkId.MAINNET)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

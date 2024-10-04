@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerha
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
+import com.babylon.wallet.android.domain.model.messages.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState

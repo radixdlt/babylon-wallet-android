@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
@@ -221,14 +221,14 @@ class MainViewModel @Inject constructor(
                         peerdroidClient
                             .listenForIncomingRequests()
                             .cancellable()
-                            .collect { incomingRequest ->
-                                val remoteConnectorId = incomingRequest.remoteEntityId
-                                val requestId = incomingRequest.interactionId
+                            .collect { dappToWalletInteraction ->
+                                val remoteConnectorId = dappToWalletInteraction.remoteEntityId
+                                val requestId = dappToWalletInteraction.interactionId
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
                                         "remote connector $remoteConnectorId with id $requestId"
                                 )
-                                verifyIncomingRequest(incomingRequest)
+                                verifyIncomingRequest(dappToWalletInteraction)
                             }
                     }
                     incomingDappRequestErrorsJob = viewModelScope.launch {
@@ -313,7 +313,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun verifyIncomingRequest(request: IncomingRequest) {
+    private fun verifyIncomingRequest(request: IncomingMessage.DappToWalletInteraction) {
         verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
                 if (verified) {
@@ -413,7 +413,7 @@ class MainViewModel @Inject constructor(
 }
 
 sealed class MainEvent : OneOffEvent {
-    data class IncomingRequestEvent(val request: IncomingRequest) : MainEvent()
+    data class IncomingRequestEvent(val request: IncomingMessage.DappToWalletInteraction) : MainEvent()
 }
 
 data class MainUiState(

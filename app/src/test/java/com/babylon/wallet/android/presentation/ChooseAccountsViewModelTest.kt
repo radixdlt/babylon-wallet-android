@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
@@ -45,42 +47,42 @@ class ChooseAccountsViewModelTest {
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
 
-    private val accountsRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val accountsRequestExact = WalletUnauthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
     )
-    private val accountsTwoRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val accountsTwoRequestExact = WalletUnauthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 2,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
     )
 
-    private val accountsRequestAtLeast = IncomingMessage.IncomingRequest.UnauthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val accountsRequestAtLeast = WalletUnauthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 2,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             ),
             challenge = null
         )

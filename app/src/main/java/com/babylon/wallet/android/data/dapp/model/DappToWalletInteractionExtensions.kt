@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.PersonaRequestItem
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
@@ -19,10 +22,10 @@ import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
 
-fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID) = runCatching {
-    val metadata = IncomingMessage.IncomingRequest.RequestMetadata(
+fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntityID) = runCatching {
+    val metadata = DappToWalletInteraction.RequestMetadata(
         networkId = metadata.networkId,
-        origin = metadata.origin.toString(),
+        origin = metadata.origin,
         dAppDefinitionAddress = metadata.dappDefinitionAddress,
         isInternal = false
     )
@@ -44,10 +47,10 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: IncomingMes
 }
 
 fun DappToWalletInteractionSendTransactionItem.toDomainModel(
-    remoteConnectorId: IncomingMessage.RemoteEntityID, // from which CE comes the message
+    remoteConnectorId: RemoteEntityID,
     requestId: WalletInteractionId,
-    metadata: IncomingMessage.IncomingRequest.RequestMetadata
-) = IncomingMessage.IncomingRequest.TransactionRequest(
+    metadata: DappToWalletInteraction.RequestMetadata
+) = TransactionRequest(
     remoteEntityId = remoteConnectorId,
     interactionId = requestId,
     transactionManifestData = TransactionManifestData(
@@ -61,21 +64,23 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
 )
 
 private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedRequest(
-    remoteEntityId: IncomingMessage.RemoteEntityID,
+    remoteEntityId: RemoteEntityID,
     requestId: WalletInteractionId,
-    metadata: IncomingMessage.IncomingRequest.RequestMetadata
-): IncomingMessage.IncomingRequest.UnauthorizedRequest {
-    return IncomingMessage.IncomingRequest.UnauthorizedRequest(
+    metadata: DappToWalletInteraction.RequestMetadata
+): WalletUnauthorizedRequest {
+    return WalletUnauthorizedRequest(
         remoteEntityId = remoteEntityId,
         interactionId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(false),
-        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false),
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false)
     )
 }
 
-fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): PersonaRequestItem {
-    return PersonaRequestItem(
+fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(
+    isOngoing: Boolean = false
+): DappToWalletInteraction.PersonaDataRequestItem {
+    return DappToWalletInteraction.PersonaDataRequestItem(
         isRequestingName = isRequestingName == true,
         numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),
         numberOfRequestedPhoneNumbers = numberOfRequestedPhoneNumbers?.toDomainModel(),
@@ -85,65 +90,65 @@ fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(isOngoing: Boole
 
 fun DappToWalletInteractionAccountsRequestItem.toDomainModel(
     isOngoing: Boolean = true
-): IncomingMessage.IncomingRequest.AccountsRequestItem? {
+): DappToWalletInteraction.AccountsRequestItem? {
     // correct request but not actionable, return null
     if (numberOfAccounts.quantity.toInt() == 0 &&
         numberOfAccounts.quantifier == RequestedNumberQuantifier.EXACTLY
     ) {
         return null
     }
-    return IncomingMessage.IncomingRequest.AccountsRequestItem(
+    return DappToWalletInteraction.AccountsRequestItem(
         isOngoing = isOngoing,
         numberOfValues = numberOfAccounts.toDomainModel(),
         challenge = challenge
     )
 }
 
-fun RequestedQuantity.toDomainModel(): IncomingMessage.IncomingRequest.NumberOfValues {
+fun RequestedQuantity.toDomainModel(): DappToWalletInteraction.NumberOfValues {
     return when (quantifier) {
         RequestedNumberQuantifier.EXACTLY -> {
-            IncomingMessage.IncomingRequest.NumberOfValues(
+            DappToWalletInteraction.NumberOfValues(
                 quantity.toInt(),
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
             )
         }
 
         RequestedNumberQuantifier.AT_LEAST -> {
-            IncomingMessage.IncomingRequest.NumberOfValues(
+            DappToWalletInteraction.NumberOfValues(
                 quantity.toInt(),
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             )
         }
     }
 }
 
 private fun DappToWalletInteractionAuthorizedRequestItems.parseAuthorizedRequest(
-    remoteEntityId: IncomingMessage.RemoteEntityID,
+    remoteEntityId: RemoteEntityID,
     interactionId: WalletInteractionId,
-    metadata: IncomingMessage.IncomingRequest.RequestMetadata
-): IncomingMessage.IncomingRequest {
+    metadata: DappToWalletInteraction.RequestMetadata
+): DappToWalletInteraction {
     val authDomainModel = when (val auth = auth) {
         is DappToWalletInteractionAuthRequestItem.LoginWithChallenge -> {
-            IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge(
+            WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithChallenge(
                 auth.v1.challenge
             )
         }
 
         DappToWalletInteractionAuthRequestItem.LoginWithoutChallenge -> {
-            IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge
+            WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithoutChallenge
         }
 
         is DappToWalletInteractionAuthRequestItem.UsePersona -> {
-            IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
+            WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(
                 auth.v1.identityAddress
             )
         }
     }
-    return IncomingMessage.IncomingRequest.AuthorizedRequest(
+    return WalletAuthorizedRequest(
         remoteEntityId = remoteEntityId,
         interactionId = interactionId,
         requestMetadata = metadata,
-        authRequest = authDomainModel,
+        authRequestItem = authDomainModel,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(isOngoing = false),
         ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(isOngoing = true),
         oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(isOngoing = false),

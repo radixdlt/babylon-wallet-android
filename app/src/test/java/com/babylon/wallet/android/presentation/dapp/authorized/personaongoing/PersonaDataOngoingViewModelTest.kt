@@ -4,9 +4,9 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.RequiredPersonaField
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
@@ -95,9 +95,9 @@ internal class PersonaDataOngoingViewModelTest {
             fields = listOf(
                 RequiredPersonaField(
                     PersonaDataField.Kind.Name,
-                    IncomingMessage.IncomingRequest.NumberOfValues(
+                    IncomingMessage.DappToWalletInteraction.NumberOfValues(
                         1,
-                        IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
                     )
                 )
             )
@@ -124,9 +124,9 @@ internal class PersonaDataOngoingViewModelTest {
             fields = listOf(
                 RequiredPersonaField(
                     PersonaDataField.Kind.PhoneNumber,
-                    IncomingMessage.IncomingRequest.NumberOfValues(
+                    IncomingMessage.DappToWalletInteraction.NumberOfValues(
                         1,
-                        IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                        IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
                     )
                 )
             )

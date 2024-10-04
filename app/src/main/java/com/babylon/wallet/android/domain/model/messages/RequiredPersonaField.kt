@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.domain.model.messages
 
 import android.os.Parcelable
 import androidx.annotation.Keep
@@ -18,5 +18,5 @@ data class RequiredPersonaFields(
 @Parcelize
 data class RequiredPersonaField(
     val kind: PersonaDataField.Kind,
-    val numberOfValues: IncomingMessage.IncomingRequest.NumberOfValues
+    val numberOfValues: IncomingMessage.DappToWalletInteraction.NumberOfValues
 ) : Parcelable

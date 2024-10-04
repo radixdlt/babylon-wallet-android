@@ -34,7 +34,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -181,8 +183,8 @@ fun TransactionPreviewHeaderPreview() {
         TransactionPreviewHeader(
             onBackClick = {},
             state = State(
-                request = IncomingMessage.IncomingRequest.TransactionRequest(
-                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
+                request = TransactionRequest(
+                    remoteEntityId = RemoteEntityID.ConnectorId(""),
                     interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
@@ -190,7 +192,7 @@ fun TransactionPreviewHeaderPreview() {
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
+                    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(Gateway.default.network.id)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

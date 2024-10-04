@@ -2,8 +2,9 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.RadixConnectMobile
@@ -29,7 +30,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 ) {
 
     suspend fun respondWithFailure(
-        request: IncomingMessage.IncomingRequest,
+        request: DappToWalletInteraction,
         dappWalletInteractionErrorType: DappWalletInteractionErrorType,
         message: String? = null
     ) =
@@ -42,14 +43,14 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 )
             )
             when (request.remoteEntityId) {
-                is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                is RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         remoteConnectorId = request.remoteEntityId.value,
                         payload = payload.toJson()
                     ).mapCatching { IncomingRequestResponse.SuccessCE }
                 }
 
-                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                is RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     runCatching {
                         radixConnectMobile.sendDappInteractionResponse(
                             RadixConnectMobileWalletResponse(SessionId.fromString(request.remoteEntityId.value), payload)
@@ -64,12 +65,12 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         }
 
     suspend fun respondWithSuccess(
-        request: IncomingMessage.IncomingRequest,
+        request: DappToWalletInteraction,
         response: WalletToDappInteractionResponse
     ) =
         withContext(ioDispatcher) {
             when (request.remoteEntityId) {
-                is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                is RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionSuccessResponse(
                         remoteConnectorId = request.remoteEntityId.value,
                         response = response
@@ -80,7 +81,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     })
                 }
 
-                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                is RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     runCatching {
                         radixConnectMobile.sendDappInteractionResponse(
                             RadixConnectMobileWalletResponse(
@@ -100,7 +101,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         }
 
     suspend fun respondWithSuccess(
-        request: IncomingMessage.IncomingRequest,
+        request: DappToWalletInteraction,
         txId: String
     ) =
         withContext(ioDispatcher) {
@@ -117,14 +118,14 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 )
             )
             when (request.remoteEntityId) {
-                is IncomingMessage.RemoteEntityID.ConnectorId -> {
+                is RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendTransactionWriteResponseSuccess(
                         remoteConnectorId = request.remoteEntityId.value,
                         payload = payload.toJson()
                     ).mapCatching { IncomingRequestResponse.SuccessCE }
                 }
 
-                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
+                is RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     runCatching {
                         radixConnectMobile.sendDappInteractionResponse(
                             RadixConnectMobileWalletResponse(

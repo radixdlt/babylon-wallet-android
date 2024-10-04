@@ -1,12 +1,11 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.PersonaRequestItem
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
-import com.babylon.wallet.android.domain.model.toRequiredFields
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.toRequestedNumberQuantifier
+import com.babylon.wallet.android.domain.model.messages.toRequiredFields
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -43,31 +42,31 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 ) {
 
     @Suppress("ReturnCount", "NestedBlockDepth", "LongMethod")
-    suspend operator fun invoke(incomingRequest: IncomingRequest): Result<DAppData> {
+    suspend operator fun invoke(dappToWalletInteraction: DappToWalletInteraction): Result<DAppData> {
         var operationResult: Result<DAppData> = Result.failure(
             RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
         )
 
-        (incomingRequest as? AuthorizedRequest)?.let { request ->
-            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
+        (dappToWalletInteraction as? WalletAuthorizedRequest)?.let { request ->
+            (request.authRequestItem as? WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(
                     dAppDefinitionAddress = AccountAddress.init(request.metadata.dAppDefinitionAddress)
                 )
                 if (authorizedDapp == null) {
-                    respondWithInvalidPersona(incomingRequest)
+                    respondWithInvalidPersona(dappToWalletInteraction)
                     return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
-                if (incomingRequest.needSignatures() || incomingRequest.isMobileConnectRequest) {
+                if (dappToWalletInteraction.needSignatures() || dappToWalletInteraction.isMobileConnectRequest) {
                     return operationResult
                 }
                 val authorizedPersonaSimple = authorizedDapp
                     .referencesToAuthorizedPersonas
                     .firstOrNull { authorizedPersonaSimple ->
                         authorizedPersonaSimple.identityAddress.string ==
-                            (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.identityAddress?.string
+                            (request.authRequestItem as? WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest)?.identityAddress?.string
                     }
                 if (authorizedPersonaSimple == null) {
-                    respondWithInvalidPersona(incomingRequest)
+                    respondWithInvalidPersona(dappToWalletInteraction)
                     return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
 
@@ -75,7 +74,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     withAddress = authorizedPersonaSimple.identityAddress
                 )
                 if (persona == null) {
-                    respondWithInvalidPersona(incomingRequest)
+                    respondWithInvalidPersona(dappToWalletInteraction)
                     return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
 
@@ -127,15 +126,15 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         return operationResult
     }
 
-    private suspend fun respondWithInvalidPersona(incomingRequest: AuthorizedRequest) {
+    private suspend fun respondWithInvalidPersona(walletAuthorizedRequest: WalletAuthorizedRequest) {
         respondToIncomingRequestUseCase.respondWithFailure(
-            request = incomingRequest,
+            request = walletAuthorizedRequest,
             dappWalletInteractionErrorType = DappWalletInteractionErrorType.INVALID_PERSONA
         )
     }
 
     private suspend fun handleOngoingAccountsRequest(
-        request: AuthorizedRequest,
+        request: WalletAuthorizedRequest,
         authorizedDapp: AuthorizedDapp,
         authorizedPersonaSimple: AuthorizedPersonaSimple,
         hasOngoingPersonaDataRequest: Boolean,
@@ -196,7 +195,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun sendSuccessResponse(
-        request: AuthorizedRequest,
+        request: WalletAuthorizedRequest,
         persona: Persona,
         selectedAccounts: List<Selectable<Account>>,
         selectedPersonaData: PersonaData?,
@@ -221,7 +220,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun getAlreadyGrantedPersonaData(
-        request: AuthorizedRequest,
+        request: WalletAuthorizedRequest,
         authorizedDApp: AuthorizedDapp,
         authorizedPersonaSimple: AuthorizedPersonaSimple
     ): PersonaData? {
@@ -237,7 +236,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun getAccountsWithGrantedAccess(
-        request: AuthorizedRequest,
+        request: WalletAuthorizedRequest,
         authorizedDApp: AuthorizedDapp,
         authorizedPersonaSimple: AuthorizedPersonaSimple
     ): List<Selectable<Account>> {
@@ -261,7 +260,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     private suspend fun personaDataAccessAlreadyGranted(
         dApp: AuthorizedDapp,
-        requestItem: PersonaRequestItem,
+        requestItem: DappToWalletInteraction.PersonaDataRequestItem,
         personaAddress: IdentityAddress
     ): Boolean {
         val requestedFieldKinds = requestItem.toRequiredFields()

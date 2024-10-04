@@ -3,8 +3,7 @@ package com.babylon.wallet.android.domain.usecases.signing
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.LedgerResponse.SignatureOfSigner
+import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.FactorSource
@@ -26,7 +25,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
-typealias SignatureProviderResult = Result<Map<ProfileEntity, SignatureOfSigner>>
+typealias SignatureProviderResult = Result<Map<ProfileEntity, LedgerResponse.SignatureOfSigner>>
 typealias SignatureProviderCall = suspend (
     Map<ProfileEntity, HierarchicalDeterministicPublicKey>,
     LedgerDeviceModel
@@ -121,9 +120,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     // of the requested signer and of the signature response
     private fun mapEntitiesWithSignatures(
         signersWithPublicKeys: Map<ProfileEntity, HierarchicalDeterministicPublicKey>,
-        responseWithSignaturesOfSigners: List<SignatureOfSigner>
-    ): Map<ProfileEntity, SignatureOfSigner> {
-        val entitiesWithSignatures = mutableMapOf<ProfileEntity, SignatureOfSigner>()
+        responseWithSignaturesOfSigners: List<LedgerResponse.SignatureOfSigner>
+    ): Map<ProfileEntity, LedgerResponse.SignatureOfSigner> {
+        val entitiesWithSignatures = mutableMapOf<ProfileEntity, LedgerResponse.SignatureOfSigner>()
 
         signersWithPublicKeys.forEach { (profileEntity, hdPublicKey) ->
             val signatureOfSigner = responseWithSignaturesOfSigners.find {
@@ -157,7 +156,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         return signaturesProvider(signersWithPublicKeys, deviceModel).map { entitiesWithSignaturesResponse ->
             entitiesWithSignaturesResponse.map { (entity, signatureOfSigner) ->
                 when (signatureOfSigner.derivedPublicKey.curve) {
-                    IncomingMessage.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
+                    LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         val signatureWithPublicKey = SignatureWithPublicKey.Ed25519(
                             signature = Signature.Ed25519.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
                             publicKey = PublicKey.Ed25519.init(signatureOfSigner.derivedPublicKey.publicKeyHex).v1
@@ -168,7 +167,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                         )
                     }
 
-                    IncomingMessage.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
+                    LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         val signatureWithPublicKey = SignatureWithPublicKey.Secp256k1(
                             signature = Signature.Secp256k1.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
                             publicKey = PublicKey.Secp256k1.init(signatureOfSigner.derivedPublicKey.publicKeyHex).v1

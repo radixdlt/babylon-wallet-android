@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
@@ -11,8 +12,10 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
@@ -177,17 +180,17 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             identities = emptyList()
         )
     }
-    private val sampleRequest = IncomingMessage.IncomingRequest.TransactionRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val sampleRequest = TransactionRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        requestMetadata = IncomingMessage.DappToWalletInteraction.RequestMetadata(
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
             dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
             isInternal = false
         ),
-        transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
+        transactionType = TransactionType.Generic
     )
 
     private val profile = Profile.sample()

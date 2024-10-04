@@ -5,7 +5,9 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
@@ -86,83 +88,83 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     }
     private val samplePersona = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
 
-    private val requestWithNonExistingDappAddress = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val requestWithNonExistingDappAddress = WalletAuthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        requestMetadata = IncomingMessage.DappToWalletInteraction.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
+        authRequestItem = WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
-        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        ongoingAccountsRequestItem = IncomingMessage.DappToWalletInteraction.AccountsRequestItem(
             true,
-            IncomingMessage.IncomingRequest.NumberOfValues(
+            IncomingMessage.DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             ),
             null
         )
     )
 
-    private val usePersonaRequestOngoing = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val usePersonaRequestOngoing = WalletAuthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        requestMetadata = IncomingMessage.DappToWalletInteraction.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
-        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
-            true, IncomingMessage.IncomingRequest.NumberOfValues(
+        authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(IdentityAddress.sampleMainnet()),
+        ongoingAccountsRequestItem = IncomingMessage.DappToWalletInteraction.AccountsRequestItem(
+            true, IncomingMessage.DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             ),
             null
         )
     )
 
-    private val usePersonaRequestOngoingPlusOngoingData = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val usePersonaRequestOngoingPlusOngoingData = WalletAuthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        requestMetadata = IncomingMessage.DappToWalletInteraction.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
-        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
-            true, IncomingMessage.IncomingRequest.NumberOfValues(
+        authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(IdentityAddress.sampleMainnet()),
+        ongoingAccountsRequestItem = IncomingMessage.DappToWalletInteraction.AccountsRequestItem(
+            true, IncomingMessage.DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             ),
             null
         ),
-        ongoingPersonaDataRequestItem = IncomingMessage.IncomingRequest.PersonaRequestItem(
+        ongoingPersonaDataRequestItem = IncomingMessage.DappToWalletInteraction.PersonaDataRequestItem(
             isRequestingName = true,
             isOngoing = true
         )
     )
 
-    private val usePersonaRequestOneTimeAccounts = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val usePersonaRequestOneTimeAccounts = WalletAuthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        requestMetadata = IncomingMessage.DappToWalletInteraction.RequestMetadata(
             NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet()),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
-            false, IncomingMessage.IncomingRequest.NumberOfValues(
+        authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(IdentityAddress.sampleMainnet()),
+        oneTimeAccountsRequestItem = IncomingMessage.DappToWalletInteraction.AccountsRequestItem(
+            false, IncomingMessage.DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             ),
             null
         )

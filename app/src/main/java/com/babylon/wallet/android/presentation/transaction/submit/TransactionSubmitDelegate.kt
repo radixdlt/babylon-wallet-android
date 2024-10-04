@@ -7,8 +7,8 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
-import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
@@ -114,7 +114,7 @@ class TransactionSubmitDelegate @Inject constructor(
     }
 
     private suspend fun signAndSubmit(
-        transactionRequest: IncomingMessage.IncomingRequest.TransactionRequest,
+        transactionRequest: TransactionRequest,
         signTransactionUseCase: SignTransactionUseCase,
         feePayerAddress: AccountAddress?
     ) {
@@ -172,7 +172,7 @@ class TransactionSubmitDelegate @Inject constructor(
     }
 
     private suspend fun handleSubmitFailure(
-        transactionRequest: IncomingMessage.IncomingRequest.TransactionRequest,
+        transactionRequest: TransactionRequest,
         radixWalletException: RadixWalletException
     ) {
         if (radixWalletException.cause is ProfileException.SecureStorageAccess) {

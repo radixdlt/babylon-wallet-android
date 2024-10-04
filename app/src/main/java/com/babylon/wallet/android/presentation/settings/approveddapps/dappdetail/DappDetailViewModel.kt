@@ -4,9 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.RequiredPersonaField
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.ChangeLockerDepositsVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
@@ -145,9 +147,9 @@ class DappDetailViewModel @Inject constructor(
                 fields = requiredKinds.map {
                     RequiredPersonaField(
                         kind = it,
-                        numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+                        numberOfValues = DappToWalletInteraction.NumberOfValues(
                             1,
-                            IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                            DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -208,21 +210,21 @@ class DappDetailViewModel @Inject constructor(
                     val sharedAccounts = checkNotNull(
                         authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(persona.address)?.sharedAccounts
                     )
-                    val request = IncomingMessage.IncomingRequest.AuthorizedRequest(
-                        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
+                    val request = WalletAuthorizedRequest(
+                        remoteEntityId = RemoteEntityID.ConnectorId(""),
                         interactionId = UUID.randomUUID().toString(),
-                        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+                        requestMetadata = DappToWalletInteraction.RequestMetadata(
                             authorizedDapp.networkId,
                             "",
                             authorizedDapp.dappDefinitionAddress.string,
                             isInternal = true
                         ),
-                        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
+                        authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(
                             persona.address
                         ),
-                        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+                        ongoingAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
                             isOngoing = true,
-                            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+                            numberOfValues = DappToWalletInteraction.NumberOfValues(
                                 quantity = sharedAccounts.request.quantity.toInt(),
                                 quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
                             ),
@@ -233,7 +235,7 @@ class DappDetailViewModel @Inject constructor(
                             personaData = false
                         )
                     )
-                    incomingRequestRepository.add(incomingRequest = request)
+                    incomingRequestRepository.add(dappToWalletInteraction = request)
                 }
             }
         }

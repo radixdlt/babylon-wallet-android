@@ -6,8 +6,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -119,7 +119,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     private fun processIncomingRequest() {
-        val request = incomingRequestRepository.getRequest(args.interactionId) as? IncomingMessage.IncomingRequest.TransactionRequest
+        val request = incomingRequestRepository.getRequest(args.interactionId) as? TransactionRequest
         if (request == null) {
             viewModelScope.launch {
                 sendEvent(Event.Dismiss)
@@ -268,7 +268,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     data class State(
-        val request: IncomingMessage.IncomingRequest.TransactionRequest? = null,
+        val request: TransactionRequest? = null,
         val proposingDApp: DApp? = null,
         val endEpoch: ULong? = null,
         val isLoading: Boolean,
@@ -288,7 +288,7 @@ class TransactionReviewViewModel @Inject constructor(
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf()
     ) : UiState {
 
-        val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
+        val requestNonNull: TransactionRequest
             get() = requireNotNull(request)
 
         fun noneRequiredState(): State = copy(
