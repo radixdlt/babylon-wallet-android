@@ -45,7 +45,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
             when (request.remoteEntityId) {
                 is RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteEntityId.value,
+                        remoteConnectorId = request.remoteEntityId.id,
                         payload = payload.toJson()
                     ).mapCatching { IncomingRequestResponse.SuccessCE }
                 }
@@ -53,7 +53,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 is RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     runCatching {
                         radixConnectMobile.sendDappInteractionResponse(
-                            RadixConnectMobileWalletResponse(SessionId.fromString(request.remoteEntityId.value), payload)
+                            RadixConnectMobileWalletResponse(SessionId.fromString(request.remoteEntityId.id), payload)
                         )
                     }.onFailure {
                         Timber.d(it, "Failed to send failure response to Radix Mobile Connect")
@@ -72,7 +72,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
             when (request.remoteEntityId) {
                 is RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionSuccessResponse(
-                        remoteConnectorId = request.remoteEntityId.value,
+                        remoteConnectorId = request.remoteEntityId.id,
                         response = response
                     ).fold(onSuccess = {
                         Result.success(IncomingRequestResponse.SuccessCE)
@@ -85,7 +85,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     runCatching {
                         radixConnectMobile.sendDappInteractionResponse(
                             RadixConnectMobileWalletResponse(
-                                sessionId = SessionId.fromString(request.remoteEntityId.value),
+                                sessionId = SessionId.fromString(request.remoteEntityId.id),
                                 response = response
                             )
                         )
@@ -120,7 +120,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
             when (request.remoteEntityId) {
                 is RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendTransactionWriteResponseSuccess(
-                        remoteConnectorId = request.remoteEntityId.value,
+                        remoteConnectorId = request.remoteEntityId.id,
                         payload = payload.toJson()
                     ).mapCatching { IncomingRequestResponse.SuccessCE }
                 }
@@ -129,7 +129,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     runCatching {
                         radixConnectMobile.sendDappInteractionResponse(
                             RadixConnectMobileWalletResponse(
-                                sessionId = SessionId.fromString(request.remoteEntityId.value),
+                                sessionId = SessionId.fromString(request.remoteEntityId.id),
                                 response = payload
                             )
                         )

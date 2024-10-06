@@ -19,7 +19,7 @@ data class WalletAuthorizedRequest(
 
     override val isInternal: Boolean
         get() {
-            return requestMetadata.isInternal || remoteEntityId.value.isEmpty()
+            return requestMetadata.isInternal || remoteEntityId.id.isEmpty()
         }
 
     fun needSignatures(): Boolean {
