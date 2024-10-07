@@ -35,7 +35,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -65,15 +67,15 @@ fun MobileConnectLinkScreen(
                 MobileConnectLinkViewModel.Event.Close -> onClose()
                 is MobileConnectLinkViewModel.Event.HandleRequest -> {
                     when (event.request) {
-                        is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
+                        is WalletAuthorizedRequest -> {
                             onHandleRequestAuthorizedRequest(event.request.interactionId)
                         }
 
-                        is IncomingMessage.IncomingRequest.TransactionRequest -> {
+                        is TransactionRequest -> {
                             onHandleTransactionRequest(event.request.interactionId)
                         }
 
-                        is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
+                        is WalletUnauthorizedRequest -> {
                             onHandleUnauthorizedRequest(event.request.interactionId)
                         }
                     }

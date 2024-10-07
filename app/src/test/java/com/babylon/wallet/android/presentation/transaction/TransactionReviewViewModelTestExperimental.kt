@@ -9,7 +9,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
@@ -151,8 +152,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
 
     private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
-        val transactionRequest = IncomingMessage.IncomingRequest.TransactionRequest(
-            remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        val transactionRequest = TransactionRequest(
+            remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
             interactionId = transactionId,
             transactionManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)

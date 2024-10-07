@@ -21,7 +21,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
@@ -81,19 +83,19 @@ fun WalletApp(
                             navController.mobileConnect(event.request.interactionId)
                             return@collect
                         }
-                        when (val incomingRequest = event.request) {
-                            is IncomingMessage.IncomingRequest.TransactionRequest -> {
+                        when (val dappToWalletInteraction = event.request) {
+                            is TransactionRequest -> {
                                 navController.transactionReview(
-                                    requestId = incomingRequest.interactionId
+                                    requestId = dappToWalletInteraction.interactionId
                                 )
                             }
 
-                            is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
-                                navController.dAppLoginAuthorized(incomingRequest.interactionId)
+                            is WalletAuthorizedRequest -> {
+                                navController.dAppLoginAuthorized(dappToWalletInteraction.interactionId)
                             }
 
-                            is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
-                                navController.dAppLoginUnauthorized(incomingRequest.interactionId)
+                            is WalletUnauthorizedRequest -> {
+                                navController.dAppLoginUnauthorized(dappToWalletInteraction.interactionId)
                             }
                         }
                     }

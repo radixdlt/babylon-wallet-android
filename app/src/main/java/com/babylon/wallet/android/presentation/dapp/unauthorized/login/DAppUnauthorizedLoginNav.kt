@@ -10,7 +10,7 @@ import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 
 @VisibleForTesting
 internal const val ARG_REQUEST_ID = "request_id"

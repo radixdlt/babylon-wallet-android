@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.model.fullName
 import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.PersistentList

@@ -30,11 +30,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
@@ -489,8 +491,8 @@ fun TransactionPreviewContentPreview() {
         TransactionPreviewContent(
             onBackClick = {},
             state = State(
-                request = IncomingMessage.IncomingRequest.TransactionRequest(
-                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
+                request = TransactionRequest(
+                    remoteEntityId = RemoteEntityID.ConnectorId(""),
                     interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
@@ -498,7 +500,7 @@ fun TransactionPreviewContentPreview() {
                         message = TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
+                    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(NetworkId.MAINNET)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

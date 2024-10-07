@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.DefaultLocaleRule
-import com.babylon.wallet.android.data.transaction.NotaryAndSigners
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DetailedManifestClass

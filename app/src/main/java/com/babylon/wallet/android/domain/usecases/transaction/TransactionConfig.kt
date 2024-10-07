@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.transaction
+package com.babylon.wallet.android.domain.usecases.transaction
 
 object TransactionConfig {
     const val TIP_PERCENTAGE: UShort = 0u

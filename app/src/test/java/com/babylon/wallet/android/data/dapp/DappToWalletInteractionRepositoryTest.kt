@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.NetworkId
@@ -22,21 +24,21 @@ import org.junit.Test
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
-class IncomingRequestRepositoryTest {
+class DappToWalletInteractionRepositoryTest {
 
     private val eventBus = spyk<AppEventBusImpl>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl(eventBus)
     private val amountOfIncomingRequests = 100
-    private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val sampleIncomingRequest = WalletAuthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
-        ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        authRequestItem = WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithoutChallenge,
+        ongoingAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = true,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
@@ -55,7 +57,7 @@ class IncomingRequestRepositoryTest {
                     launch {
                         for (i in 1..amountOfIncomingRequests) { // and in each of them, add an incoming request
                             incomingRequestRepository.add(
-                                incomingRequest = sampleIncomingRequest.copy(
+                                dappToWalletInteraction = sampleIncomingRequest.copy(
                                     interactionId = UUID.randomUUID().toString()
                                 )
                             )
@@ -73,13 +75,13 @@ class IncomingRequestRepositoryTest {
 
     @Test
     fun `after being handled, next request is set as current`() = runTest {
-        var currentRequest: IncomingMessage.IncomingRequest? = null
+        var currentRequest: DappToWalletInteraction? = null
         incomingRequestRepository.currentRequestToHandle
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         val interactionIds = (1..5).map { UUID.randomUUID().toString() }
         interactionIds.forEach { id -> // and in each of them, add an incoming request
-            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = id))
+            incomingRequestRepository.add(dappToWalletInteraction = sampleIncomingRequest.copy(interactionId = id))
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)
@@ -101,13 +103,13 @@ class IncomingRequestRepositoryTest {
     @Test
     fun `adding mobile connect request and deferring current makes mobile request new current, while deferred event stays in queue`() =
         runTest {
-            var currentRequest: IncomingMessage.IncomingRequest? = null
+            var currentRequest: DappToWalletInteraction? = null
             val interactionId1 = UUID.randomUUID().toString()
             val interactionId2 = UUID.randomUUID().toString()
             incomingRequestRepository.currentRequestToHandle
                 .onEach { currentRequest = it }
                 .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
-            incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+            incomingRequestRepository.add(dappToWalletInteraction = sampleIncomingRequest.copy(interactionId = interactionId1))
             advanceUntilIdle()
             assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
             assert(currentRequest?.interactionId == interactionId1)
@@ -121,14 +123,14 @@ class IncomingRequestRepositoryTest {
 
     @Test
     fun `addFirst inserts item at 2nd position when there is high priority screen`() = runTest {
-        var currentRequest: IncomingMessage.IncomingRequest? = null
+        var currentRequest: DappToWalletInteraction? = null
         val interactionId1 = UUID.randomUUID().toString()
         val interactionId2 = UUID.randomUUID().toString()
         incomingRequestRepository.currentRequestToHandle
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         incomingRequestRepository.pauseIncomingRequests()
-        incomingRequestRepository.add(incomingRequest = sampleIncomingRequest.copy(interactionId = interactionId1))
+        incomingRequestRepository.add(dappToWalletInteraction = sampleIncomingRequest.copy(interactionId = interactionId1))
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
         assert(currentRequest?.interactionId == null)
@@ -142,7 +144,7 @@ class IncomingRequestRepositoryTest {
 
     @Test
     fun `reading buffered request clears it`() = runTest {
-        val request = mockk<IncomingMessage.IncomingRequest>()
+        val request = mockk<DappToWalletInteraction>()
         incomingRequestRepository.setBufferedRequest(request)
         assert(incomingRequestRepository.consumeBufferedRequest() != null)
         assert(incomingRequestRepository.consumeBufferedRequest() == null)

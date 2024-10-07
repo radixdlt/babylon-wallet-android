@@ -1,11 +1,12 @@
 package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.LedgerResponse
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,6 +15,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("discriminator")
 sealed interface LedgerInteractionResponse

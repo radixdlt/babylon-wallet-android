@@ -5,10 +5,10 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -143,7 +143,7 @@ internal fun sampleManifest(
 internal fun requestMetadata(
     manifestData: TransactionManifestData,
     dApp: DApp? = null
-) = IncomingMessage.IncomingRequest.RequestMetadata(
+) = DappToWalletInteraction.RequestMetadata(
     networkId = manifestData.networkId,
     origin = dApp?.claimedWebsites?.firstOrNull().orEmpty(),
     dAppDefinitionAddress = dApp?.dAppAddress?.string.orEmpty(),

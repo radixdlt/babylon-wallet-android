@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -39,7 +39,7 @@ class MobileConnectLinkViewModel @Inject constructor(
 
     private val args = MobileConnectArgs(savedStateHandle)
 
-    private lateinit var request: IncomingMessage.IncomingRequest
+    private lateinit var request: DappToWalletInteraction
 
     override fun initialState(): State {
         return State()
@@ -104,7 +104,7 @@ class MobileConnectLinkViewModel @Inject constructor(
 
     sealed class Event : OneOffEvent {
         data object Close : Event()
-        data class HandleRequest(val request: IncomingMessage.IncomingRequest) : Event()
+        data class HandleRequest(val request: DappToWalletInteraction) : Event()
     }
 
     data class State(

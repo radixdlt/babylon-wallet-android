@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
+import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.radixdlt.sargon.Account

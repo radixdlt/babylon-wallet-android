@@ -4,7 +4,10 @@ import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionExce
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.LedgerResponse
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.DappWalletInteractionErrorType
@@ -48,11 +51,11 @@ interface PeerdroidClient {
         message: String
     ): Result<Unit>
 
-    fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest>
+    fun listenForIncomingRequests(): Flow<DappToWalletInteraction>
 
-    fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse>
+    fun listenForLedgerResponses(): Flow<LedgerResponse>
 
-    fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error>
+    fun listenForIncomingRequestErrors(): Flow<Error>
 
     suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
@@ -112,15 +115,15 @@ class PeerdroidClientImpl @Inject constructor(
             .flowOn(ioDispatcher)
     }
 
-    override fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest> {
+    override fun listenForIncomingRequests(): Flow<DappToWalletInteraction> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error> {
+    override fun listenForIncomingRequestErrors(): Flow<Error> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse> {
+    override fun listenForLedgerResponses(): Flow<LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
@@ -149,7 +152,7 @@ class PeerdroidClientImpl @Inject constructor(
                         requestId = dappInteraction.interactionId
                     )
                 }
-                dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()
+                dappInteraction.toDomainModel(remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()
             } else {
                 val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
                 interaction.toDomainModel()

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.transaction
+package com.babylon.wallet.android.domain.usecases.signing
 
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest

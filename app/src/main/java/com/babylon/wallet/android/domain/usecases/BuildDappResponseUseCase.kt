@@ -1,14 +1,15 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.babylon.wallet.android.presentation.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DappWalletInteractionPersona
 import com.radixdlt.sargon.Exactly32Bytes
@@ -40,7 +41,7 @@ import javax.inject.Inject
 open class BuildDappResponseUseCase(private val accessFactorSourcesProxy: AccessFactorSourcesProxy) {
 
     protected suspend fun buildAccountsResponseItem(
-        request: IncomingMessage.IncomingRequest,
+        request: DappToWalletInteraction,
         accounts: List<Account>,
         challenge: Exactly32Bytes?,
         entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>,
@@ -115,7 +116,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
     @Suppress("LongParameterList", "ReturnCount", "LongMethod")
     suspend operator fun invoke(
-        request: AuthorizedRequest,
+        request: WalletAuthorizedRequest,
         selectedPersona: Persona,
         oneTimeAccounts: List<Account>,
         ongoingAccounts: List<Account>,
@@ -130,8 +131,8 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         )
 
         val authResponseItem: Result<WalletToDappInteractionAuthRequestResponseItem> =
-            when (val authRequest = request.authRequest) {
-                is AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge -> {
+            when (val authRequest = request.authRequestItem) {
+                is WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithChallenge -> {
                     var response: Result<WalletToDappInteractionAuthRequestResponseItem> = Result.failure(
                         RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                     )
@@ -171,7 +172,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     response
                 }
 
-                AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge -> {
+                WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithoutChallenge -> {
                     Result.success(
                         WalletToDappInteractionAuthRequestResponseItem.LoginWithoutChallenge(
                             v1 = WalletToDappInteractionAuthLoginWithoutChallengeRequestResponseItem(
@@ -181,7 +182,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     )
                 }
 
-                is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+                is WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest -> {
                     Result.success(
                         WalletToDappInteractionAuthRequestResponseItem.UsePersona(
                             v1 = WalletToDappInteractionAuthUsePersonaRequestResponseItem(
@@ -244,7 +245,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     }
 
     private fun getAccountsWithSignatureRequired(
-        request: AuthorizedRequest,
+        request: WalletAuthorizedRequest,
         ongoingAccounts: List<Account>,
         oneTimeAccounts: List<Account>
     ): List<ProfileEntity.AccountEntity> {
@@ -261,7 +262,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
 
     private suspend fun getSignaturesForAllEntities(
         challenge: Exactly32Bytes,
-        metadata: IncomingMessage.IncomingRequest.RequestMetadata,
+        metadata: DappToWalletInteraction.RequestMetadata,
         entities: List<ProfileEntity>
     ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
         val signRequest = SignRequest.SignAuthChallengeRequest(
@@ -283,9 +284,9 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
 
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
-        request: IncomingMessage.IncomingRequest.UnauthorizedRequest,
+        request: WalletUnauthorizedRequest,
         oneTimeAccounts: List<Account> = emptyList(),
-        onetimeSharedPersonaData: PersonaData? = null
+        oneTimePersonaData: PersonaData? = null
     ): Result<WalletToDappInteractionResponse> {
         var entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
 
@@ -328,7 +329,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                     items = WalletToDappInteractionResponseItems.UnauthorizedRequest(
                         v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(
                             oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
-                            oneTimePersonaData = onetimeSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem()
+                            oneTimePersonaData = oneTimePersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem()
                         ),
                     )
                 )

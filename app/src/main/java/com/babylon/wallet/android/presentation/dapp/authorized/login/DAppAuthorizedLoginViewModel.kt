@@ -6,13 +6,10 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AccountsRequestItem
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.model.IncomingRequestResponse
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
-import com.babylon.wallet.android.domain.model.toRequiredFields
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -84,7 +81,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private val mutex = Mutex()
 
-    private lateinit var request: AuthorizedRequest
+    private lateinit var request: WalletAuthorizedRequest
 
     private var authorizedDapp: AuthorizedDapp? = null
     private var editedDapp: AuthorizedDapp? = null
@@ -101,7 +98,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? AuthorizedRequest
+            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? WalletAuthorizedRequest
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
@@ -130,8 +127,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRoute(dAppDefinitionAddress: AccountAddress) {
-        when (val authRequest = request.authRequest) {
-            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
+        when (val authRequest = request.authRequestItem) {
+            is WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest -> {
                 val dapp = authorizedDapp
                 if (dapp != null) {
                     setInitialDappLoginRouteForUsePersonaRequest(dapp, authRequest)
@@ -155,23 +152,23 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     @Suppress("LongMethod", "CyclomaticComplexMethod", "UnsafeCallOnNullableType")
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
         dapp: AuthorizedDapp,
-        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
+        authRequestItem: WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest
     ) {
-        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.identityAddress)
+        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequestItem.identityAddress)
         if (hasAuthorizedPersona.not()) {
             onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
             return
         }
         val resetAccounts = request.resetRequestItem?.accounts == true
         val resetPersonaData = request.resetRequestItem?.personaData == true
-        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(authRequest.identityAddress))
+        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(authRequestItem.identityAddress))
         onSelectPersona(persona)
         val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
         val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
         val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
         val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
         val ongoingAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
-            personaAddress = authRequest.identityAddress,
+            personaAddress = authRequestItem.identityAddress,
             accountsRequestItem = ongoingAccountsRequestItem
         )
         val ongoingDataAlreadyGranted = personaDataAccessAlreadyGranted(
@@ -195,7 +192,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                            authRequest.identityAddress,
+                            authRequestItem.identityAddress,
                             ongoingPersonaDataRequestItem.toRequiredFields()
                         )
                     )
@@ -341,7 +338,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun handleOneTimeAccountRequestItem(
-        oneTimeAccountsRequestItem: AccountsRequestItem
+        oneTimeAccountsRequestItem: DappToWalletInteraction.AccountsRequestItem
     ) {
         val numberOfAccounts = oneTimeAccountsRequestItem.numberOfValues.quantity
         val isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly()
@@ -396,7 +393,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun requestedAccountsPermissionAlreadyGranted(
         personaAddress: IdentityAddress,
-        accountsRequestItem: AccountsRequestItem?
+        accountsRequestItem: DappToWalletInteraction.AccountsRequestItem?
     ): Boolean {
         if (accountsRequestItem == null) return false
         return authorizedDapp?.let { dapp ->
@@ -413,7 +410,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleOngoingPersonaDataRequestItem(
         personaAddress: IdentityAddress,
-        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem
+        requestItem: DappToWalletInteraction.PersonaDataRequestItem
     ) {
         val dapp = requireNotNull(editedDapp)
         val dataAccessAlreadyGranted = personaDataAccessAlreadyGranted(requestItem, personaAddress)
@@ -461,7 +458,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun personaDataAccessAlreadyGranted(
-        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem?,
+        requestItem: DappToWalletInteraction.PersonaDataRequestItem?,
         personaAddress: IdentityAddress
     ): Boolean {
         if (requestItem == null) return false
@@ -474,18 +471,18 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
     }
 
-    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: IncomingMessage.IncomingRequest.PersonaRequestItem) {
+    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaDataRequestItem: DappToWalletInteraction.PersonaDataRequestItem) {
         viewModelScope.launch {
             sendEvent(
                 Event.PersonaDataOnetime(
-                    oneTimePersonaRequestItem.toRequiredFields()
+                    oneTimePersonaDataRequestItem.toRequiredFields()
                 )
             )
         }
     }
 
     private suspend fun handleOngoingAddressRequestItem(
-        ongoingAccountsRequestItem: AccountsRequestItem,
+        ongoingAccountsRequestItem: DappToWalletInteraction.AccountsRequestItem,
         personaAddress: IdentityAddress
     ) {
         val dapp = requireNotNull(editedDapp)
