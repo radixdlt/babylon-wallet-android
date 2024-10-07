@@ -2,10 +2,8 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.messages.toRequestedNumberQuantifier
-import com.babylon.wallet.android.domain.model.messages.toRequiredFields
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress

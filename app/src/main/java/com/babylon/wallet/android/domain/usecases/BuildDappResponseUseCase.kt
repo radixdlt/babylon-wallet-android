@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose

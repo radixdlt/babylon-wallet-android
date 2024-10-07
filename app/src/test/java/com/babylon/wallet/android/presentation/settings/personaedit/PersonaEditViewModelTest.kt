@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.messages.IncomingMessage
@@ -101,9 +102,9 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
             fields = listOf(
                 RequiredPersonaField(
                     PersonaDataField.Kind.Name,
-                    IncomingMessage.DappToWalletInteraction.NumberOfValues(
+                    DappToWalletInteraction.NumberOfValues(
                         1,
-                        IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
+                        DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
                     )
                 )
             )

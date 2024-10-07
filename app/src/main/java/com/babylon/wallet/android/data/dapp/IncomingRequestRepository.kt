@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import kotlinx.coroutines.flow.Flow

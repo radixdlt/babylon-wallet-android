@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields

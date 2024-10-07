@@ -10,4 +10,4 @@ data class TransactionRequest(
     val transactionManifestData: TransactionManifestData,
     val requestMetadata: RequestMetadata,
     val transactionType: TransactionType = TransactionType.Generic
-) : IncomingMessage.DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata)
+) : DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata)

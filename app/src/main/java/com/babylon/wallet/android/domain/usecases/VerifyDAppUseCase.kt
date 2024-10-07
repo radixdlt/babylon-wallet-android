@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionR
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress

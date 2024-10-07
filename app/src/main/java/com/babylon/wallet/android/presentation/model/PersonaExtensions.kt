@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.model
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.CollectionOfEmailAddresses

@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.DappWalletInteractionErrorType

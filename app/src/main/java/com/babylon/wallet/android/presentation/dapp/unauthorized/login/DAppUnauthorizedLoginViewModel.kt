@@ -6,11 +6,10 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.domain.model.messages.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent

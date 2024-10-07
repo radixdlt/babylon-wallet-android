@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase

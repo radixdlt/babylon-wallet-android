@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.radixdlt.sargon.WalletInteractionId

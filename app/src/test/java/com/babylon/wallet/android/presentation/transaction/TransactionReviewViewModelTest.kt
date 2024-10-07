@@ -12,6 +12,7 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
@@ -184,7 +185,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
-        requestMetadata = IncomingMessage.DappToWalletInteraction.RequestMetadata(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
             dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,

@@ -27,7 +27,6 @@ sealed class LedgerResponse(val id: String) : IncomingMessage {
     enum class LedgerDeviceModel {
         NanoS, NanoSPlus, NanoX;
 
-
         fun toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
             return when (this) {
                 NanoS -> LedgerHardwareWalletModel.NANO_S

@@ -15,7 +15,7 @@ data class WalletAuthorizedRequest(
     val oneTimePersonaDataRequestItem: PersonaDataRequestItem? = null,
     val ongoingPersonaDataRequestItem: PersonaDataRequestItem? = null,
     val resetRequestItem: DappToWalletInteractionResetRequestItem? = null
-) : IncomingMessage.DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata) {
+) : DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata) {
 
     override val isInternal: Boolean
         get() {

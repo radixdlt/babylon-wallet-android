@@ -4,8 +4,8 @@ import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionExce
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingMessage
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.utils.Constants

@@ -18,5 +18,5 @@ data class RequiredPersonaFields(
 @Parcelize
 data class RequiredPersonaField(
     val kind: PersonaDataField.Kind,
-    val numberOfValues: IncomingMessage.DappToWalletInteraction.NumberOfValues
+    val numberOfValues: DappToWalletInteraction.NumberOfValues
 ) : Parcelable

@@ -12,7 +12,7 @@ data class WalletUnauthorizedRequest(
     val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
     val oneTimePersonaDataRequestItem: PersonaDataRequestItem? = null,
     val proofOfOwnershipRequestItem: ProofOfOwnershipRequestItem? = null
-) : IncomingMessage.DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata) {
+) : DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata) {
 
     data class ProofOfOwnershipRequestItem(
         val challenge: Exactly32Bytes,

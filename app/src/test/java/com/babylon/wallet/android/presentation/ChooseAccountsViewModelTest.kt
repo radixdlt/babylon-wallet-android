@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.fakes.FakeProfileRepository
