@@ -19,7 +19,6 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import javax.inject.Inject
 
-// TODO should not be under the data/transaction package. It's not a transaction(?)
 class ROLAClient @Inject constructor(
     private val getEntitiesOwnerKeysUseCase: GetEntitiesOwnerKeysUseCase,
     private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase,
