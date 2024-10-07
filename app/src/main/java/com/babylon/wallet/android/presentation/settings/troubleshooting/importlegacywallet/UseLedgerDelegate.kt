@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet
 
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.domain.model.messages.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState

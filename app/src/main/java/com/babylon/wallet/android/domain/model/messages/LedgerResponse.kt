@@ -5,6 +5,7 @@ import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.LedgerHardwareWalletModel
 
 sealed class LedgerResponse(val id: String) : IncomingMessage {
 
@@ -24,7 +25,16 @@ sealed class LedgerResponse(val id: String) : IncomingMessage {
     )
 
     enum class LedgerDeviceModel {
-        NanoS, NanoSPlus, NanoX
+        NanoS, NanoSPlus, NanoX;
+
+
+        fun toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
+            return when (this) {
+                NanoS -> LedgerHardwareWalletModel.NANO_S
+                NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
+                NanoX -> LedgerHardwareWalletModel.NANO_X
+            }
+        }
     }
 
     data class SignatureOfSigner(

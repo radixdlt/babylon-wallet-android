@@ -3,7 +3,6 @@ package com.babylon.wallet.android.domain.model.messages
 import android.os.Parcelable
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.Exactly32Bytes
-import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.WalletInteractionId
@@ -103,14 +102,6 @@ sealed interface IncomingMessage {
 fun IncomingMessage.DappToWalletInteraction.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
     IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.Exactly -> RequestedNumberQuantifier.EXACTLY
     IncomingMessage.DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast -> RequestedNumberQuantifier.AT_LEAST
-}
-
-fun LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
-    return when (this) {
-        LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletModel.NANO_S
-        LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
-        LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletModel.NANO_X
-    }
 }
 
 fun IncomingMessage.DappToWalletInteraction.PersonaDataRequestItem.toRequiredFields(): RequiredPersonaFields {
