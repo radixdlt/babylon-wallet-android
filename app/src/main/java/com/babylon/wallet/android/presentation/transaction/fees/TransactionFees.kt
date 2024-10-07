@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.div

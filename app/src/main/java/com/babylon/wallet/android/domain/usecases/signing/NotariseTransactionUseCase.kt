@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.usecases
+package com.babylon.wallet.android.domain.usecases.signing
 
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException

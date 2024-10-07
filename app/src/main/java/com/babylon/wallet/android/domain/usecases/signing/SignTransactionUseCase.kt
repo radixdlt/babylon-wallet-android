@@ -1,13 +1,10 @@
 package com.babylon.wallet.android.domain.usecases.signing
 
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.TransactionConfig.EPOCH_WINDOW
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.domain.usecases.NotariseTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig.EPOCH_WINDOW
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.radixdlt.sargon.AccountAddress

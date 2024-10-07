@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.transaction
+package com.babylon.wallet.android.domain.usecases.signing
 
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
@@ -19,6 +19,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import javax.inject.Inject
 
+// TODO should not be under the data/transaction package. It's not a transaction(?)
 class ROLAClient @Inject constructor(
     private val getEntitiesOwnerKeysUseCase: GetEntitiesOwnerKeysUseCase,
     private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase,

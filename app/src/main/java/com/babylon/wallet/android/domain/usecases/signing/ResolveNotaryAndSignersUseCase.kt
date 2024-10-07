@@ -1,12 +1,16 @@
-package com.babylon.wallet.android.domain.usecases
+package com.babylon.wallet.android.domain.usecases.signing
 
-import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.NotarySignature
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
+import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -32,5 +36,25 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
             signers = it,
             ephemeralNotaryPrivateKey = notary
         )
+    }
+}
+
+data class NotaryAndSigners(
+    val signers: List<ProfileEntity>,
+    private val ephemeralNotaryPrivateKey: Curve25519SecretKey
+) {
+    val notaryIsSignatory: Boolean
+        get() = signers.isEmpty()
+
+    fun notaryPublicKeyNew(): PublicKey.Ed25519 {
+        return ephemeralNotaryPrivateKey.toPublicKey()
+    }
+
+    fun signersPublicKeys(): List<PublicKey> = signers.map { signer ->
+        signer.securityState.transactionSigningFactorInstance.publicKey.publicKey
+    }
+
+    fun signWithNotary(signedIntentHash: SignedIntentHash): NotarySignature {
+        return ephemeralNotaryPrivateKey.notarize(signedIntentHash)
     }
 }
