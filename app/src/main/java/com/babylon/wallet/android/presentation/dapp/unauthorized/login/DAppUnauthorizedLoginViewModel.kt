@@ -19,10 +19,10 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.FailureDialogState
-import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
