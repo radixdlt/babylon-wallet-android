@@ -12,6 +12,7 @@ import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
+import com.radixdlt.sargon.DappToWalletInteractionProofOfOwnershipRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
 import com.radixdlt.sargon.DappToWalletInteractionSubintentRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
@@ -102,7 +103,16 @@ private fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(
         interactionId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(false),
-        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false)
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false),
+        proofOfOwnershipRequestItem = proofOfOwnership?.toDomainModel()
+    )
+}
+
+private fun DappToWalletInteractionProofOfOwnershipRequestItem.toDomainModel(): WalletUnauthorizedRequest.ProofOfOwnershipRequestItem {
+    return WalletUnauthorizedRequest.ProofOfOwnershipRequestItem(
+        challenge = challenge,
+        accountAddresses = accountAddresses,
+        personaAddress = identityAddress
     )
 }
 
