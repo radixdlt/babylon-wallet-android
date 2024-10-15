@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp
+package com.babylon.wallet.android.presentation.dapp.unauthorized
 
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 

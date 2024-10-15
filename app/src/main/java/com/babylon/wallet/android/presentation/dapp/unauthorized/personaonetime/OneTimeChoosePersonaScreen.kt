@@ -31,8 +31,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType

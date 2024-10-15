@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalAnimationApi::class, ExperimentalAnimationApi::class, ExperimentalAnimationApi::class)
-
 package com.babylon.wallet.android.presentation.dapp.unauthorized.login
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -25,7 +22,7 @@ import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.FailureDialogState
-import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.coroutines.flow.filterIsInstance
