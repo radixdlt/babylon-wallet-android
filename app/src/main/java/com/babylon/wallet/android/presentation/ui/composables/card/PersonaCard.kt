@@ -40,6 +40,35 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
+fun SimplePersonaCard(
+    modifier: Modifier = Modifier,
+    persona: Persona,
+) {
+    Column(modifier) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingDefault),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Thumbnail.Persona(
+                modifier = Modifier.size(54.dp),
+                persona = persona
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = persona.displayName.value,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1
+            )
+        }
+    }
+}
+
+@Composable
 fun PersonaCard(
     modifier: Modifier = Modifier,
     persona: Persona,
@@ -152,6 +181,15 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
                 Spacer(modifier = Modifier.height(paddingDefault))
             }
         }
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SimplePersonaCardPreview() {
+    RadixWalletTheme {
+        SimplePersonaCard(persona = Persona.sampleMainnet())
     }
 }
 
