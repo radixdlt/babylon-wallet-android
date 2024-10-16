@@ -34,12 +34,12 @@ internal class OneTimeChooseAccountsArgs(
     )
 }
 
-fun NavController.chooseAccountsOneTime(numberOfAccounts: Int, isExactAccountsCount: Boolean) {
+fun NavController.oneTimeChooseAccounts(numberOfAccounts: Int, isExactAccountsCount: Boolean) {
     navigate("choose_accounts_onetime_route/$numberOfAccounts/$isExactAccountsCount")
 }
 
 @Suppress("LongParameterList")
-fun NavGraphBuilder.chooseAccountsOneTime(
+fun NavGraphBuilder.oneTimeChooseAccounts(
     exitRequestFlow: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
