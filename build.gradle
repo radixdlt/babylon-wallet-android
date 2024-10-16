@@ -115,12 +115,12 @@ abstract class GenerateCurrentDependencies extends DefaultTask {
 
         dependencies.each { line ->
             // Clean the line by removing any '|' characters, tabulation, version conflict markers '->', and symbols like (*)
-            def cleanLine = line.replaceAll("[|\\t]", "").replaceAll("->.*", "").replaceAll("\\(\\*\\)", "").trim()
+            def cleanLine = line.replaceAll("[|\\t]", "").replaceAll("->.*", "").replaceAll("\\(\\*\\)", "").replaceAll("\\(c\\)", "").replaceAll("FAILED", "").trim()
 
             // Skip lines containing "FAILED" or "(c)"
-            if (cleanLine.contains("FAILED") || cleanLine.contains("(c)")) {
-                return
-            }
+            // if (cleanLine.contains("FAILED") || cleanLine.contains("(c)")) {
+            //     return
+            // }
 
             // Process the remaining dependency info (group:artifact:version)
             def parts = cleanLine.replaceFirst("(\\+---|\\|---|\\\\---)", "").split(":")
