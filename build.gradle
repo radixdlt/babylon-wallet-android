@@ -92,7 +92,6 @@ task compareDependencies {
  */
 abstract class GenerateCurrentDependencies extends DefaultTask {
     @OutputFile
-
     final abstract RegularFileProperty tmpLockFile = project.objects.fileProperty().convention(project.layout.buildDirectory.file('dependencies.lock.tmp'))
 
     GenerateCurrentDependencies() {
@@ -100,16 +99,35 @@ abstract class GenerateCurrentDependencies extends DefaultTask {
     }
 
     @TaskAction
-    void join() {
+    void generateLockfile() {
         println "Fetching project dependencies"
 
+        // Fetching the dependencies output for releaseRuntimeClasspath
         def output = "./gradlew app:dependencies --configuration releaseRuntimeClasspath".execute().text
         def startIndex = output.indexOf("releaseRuntimeClasspath")
         def endIndex = output.indexOf("BUILD SUCCESSFUL")
 
         def tmpFile = tmpLockFile.get().asFile
         tmpFile.delete()
-        tmpFile << output
+
+        // Extracting and processing the dependency tree
+        def dependencies = output.substring(startIndex, endIndex).split("\n").findAll { it.contains("\\---") || it.contains("+---") }
+
+        dependencies.each { line ->
+            // Clean the line by removing any '|' characters, tabulation, and resolving version conflict markers '->'
+            def cleanLine = line.replaceAll("[|\\t]", "").replaceAll("->.*", "").trim()
+
+            // Process the remaining dependency info (group:artifact:version)
+            def parts = cleanLine.replaceFirst("(\\+---|\\|---|\\\\---)", "").split(":")
+            if (parts.size() == 3) {
+                def group = parts[0].trim()
+                def artifact = parts[1].trim()
+                def version = parts[2].trim()
+
+                // Write the formatted entry to the lockfile
+                tmpFile << "${group}:${artifact}:${version}=releaseRuntimeClasspath\n"
+            }
+        }
     }
 }
 
