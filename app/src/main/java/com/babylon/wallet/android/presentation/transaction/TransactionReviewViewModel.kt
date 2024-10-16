@@ -32,7 +32,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.ResourceIdentifier
-import com.radixdlt.sargon.TransactionToReview
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
@@ -287,14 +287,14 @@ class TransactionReviewViewModel @Inject constructor(
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val selectedFeePayerInput: SelectFeePayerInput? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val transactionToReview: TransactionToReview? = null
+        val transactionManifest: TransactionManifest? = null
     ) : UiState {
 
         val requestNonNull: TransactionRequest
             get() = requireNotNull(request)
 
-        val transactionToReviewNonNull: TransactionToReview
-            get() = requireNotNull(transactionToReview)
+        val transactionManifestNonNull: TransactionManifest
+            get() = requireNotNull(transactionManifest)
 
         fun noneRequiredState(): State = copy(
             sheetState = Sheet.CustomizeFees(
@@ -350,7 +350,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         fun feePayerCandidates(): List<AccountAddress> {
-            val summary = transactionToReview?.transactionManifest?.summary ?: return emptyList()
+            val summary = transactionManifestNonNull.summary
             return summary.addressesOfAccountsWithdrawnFrom +
                 summary.addressesOfAccountsDepositedInto +
                 summary.addressesOfAccountsRequiringAuth

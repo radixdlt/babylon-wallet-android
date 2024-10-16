@@ -50,8 +50,9 @@ class SignTransactionUseCase @Inject constructor(
         }.then { notarySignersAndEpoch ->
             notariseTransactionUseCase(
                 request = NotariseTransactionUseCase.Request(
-                    manifestData = manifestWithLockFee,
-                    manifest = request.manifest,
+                    manifest = manifestWithLockFee,
+                    networkId = request.manifestData.networkId,
+                    message = request.manifestData.messageSargon,
                     notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKeyNew(),
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
                     startEpoch = notarySignersAndEpoch.second,
@@ -68,24 +69,21 @@ class SignTransactionUseCase @Inject constructor(
     }
 
     data class Request(
-        private val manifestData: TransactionManifestData,
-        var manifest: TransactionManifest,
+        val manifestData: TransactionManifestData,
+        val manifest: TransactionManifest,
         val lockFee: Decimal192,
         val tipPercentage: UShort,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val feePayerAddress: AccountAddress? = null
     ) {
 
-        val manifestWithLockFee: TransactionManifestData
+        val manifestWithLockFee: TransactionManifest
             get() = if (feePayerAddress == null) {
-                manifestData
+                manifest
             } else {
-                TransactionManifestData.from(
-                    manifest = manifest.modifyLockFee(
-                        addressOfFeePayer = feePayerAddress,
-                        fee = lockFee
-                    ).also { manifest = it },
-                    message = manifestData.message
+                manifest.modifyLockFee(
+                    addressOfFeePayer = feePayerAddress,
+                    fee = lockFee
                 )
             }
     }

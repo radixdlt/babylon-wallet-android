@@ -123,7 +123,7 @@ class TransactionSubmitDelegate @Inject constructor(
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
                 manifestData = transactionRequest.transactionManifestData,
-                manifest = _state.value.transactionToReviewNonNull.transactionManifest,
+                manifest = _state.value.transactionManifestNonNull,
                 lockFee = _state.value.transactionFees.transactionFeeToLock,
                 tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
                 ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
@@ -271,12 +271,10 @@ class TransactionSubmitDelegate @Inject constructor(
             )
         }
 
-        val modifiedManifest = _state.value.transactionToReviewNonNull.transactionManifest.modifyAddGuarantees(guarantees = guarantees)
+        val modifiedManifest = _state.value.transactionManifestNonNull.modifyAddGuarantees(guarantees = guarantees)
         _state.update {
             it.copy(
-                transactionToReview = _state.value.transactionToReview?.copy(
-                    transactionManifest = modifiedManifest
-                )
+                transactionManifest = modifiedManifest
             )
         }
 

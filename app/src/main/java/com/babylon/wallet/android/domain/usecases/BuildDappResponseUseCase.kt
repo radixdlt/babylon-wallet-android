@@ -331,9 +331,10 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                         v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(
                             oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                             oneTimePersonaData = oneTimePersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
-                            //TODO this should be replaced after merging the proof of ownership PR
+                            // TODO this should be replaced when merging the proof of ownership feature
                             proofOfOwnership = WalletToDappInteractionProofOfOwnershipRequestResponseItem(
-                                challenge = request.proofOfOwnershipRequestItem?.challenge ?: return Result.failure(Throwable("No challenge provided")),
+                                challenge = request.proofOfOwnershipRequestItem?.challenge
+                                    ?: return Result.failure(Throwable("No challenge provided")),
                                 proofs = emptyList()
                             )
                         ),

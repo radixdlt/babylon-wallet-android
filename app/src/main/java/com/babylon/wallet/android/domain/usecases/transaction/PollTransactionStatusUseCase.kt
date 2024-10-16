@@ -55,7 +55,10 @@ class PollTransactionStatusUseCase @Inject constructor(
                 result = Result.failure(
                     RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary(
                         txId = txId,
-                        txProcessingTime = ((endEpoch - transactionStatus.currentEpoch) * EPOCH_WINDOW_DURATION_IN_MINUTES.toULong()).toString()
+                        txProcessingTime = (
+                            (endEpoch - transactionStatus.currentEpoch) *
+                                EPOCH_WINDOW_DURATION_IN_MINUTES.toULong()
+                            ).toString()
                     )
                 ),
                 transactionType = transactionType

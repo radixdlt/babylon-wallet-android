@@ -13,18 +13,9 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.Blob
-import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.ExecutionSummary
-import com.radixdlt.sargon.Nonce
-import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.TransactionToReview
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.secureRandom
 import com.radixdlt.sargon.extensions.summary
-import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -74,7 +65,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     notaryPublicKey = _state.value.ephemeralNotaryPrivateKey.toPublicKey()
                 )
             }.then { transactionToReview ->
-                _state.update { it.copy(transactionToReview = transactionToReview) }
+                _state.update { it.copy(transactionManifest = transactionToReview.transactionManifest) }
 
                 val manifestSummary = transactionToReview.transactionManifest.summary
                 resolveNotaryAndSignersUseCase(
@@ -82,8 +73,6 @@ class TransactionAnalysisDelegate @Inject constructor(
                     personaAddressesRequiringAuth = manifestSummary.addressesOfPersonasRequiringAuth,
                     notary = _state.value.ephemeralNotaryPrivateKey
                 ).map { notaryAndSigners ->
-                    _state.update { it.copy(transactionToReview = transactionToReview) }
-
                     transactionToReview.executionSummary
                         .resolvePreview(notaryAndSigners)
                         .resolveFees(notaryAndSigners)
