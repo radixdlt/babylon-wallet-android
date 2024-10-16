@@ -23,10 +23,10 @@ import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsP
 import kotlinx.serialization.encodeToString
 
 @VisibleForTesting
-internal const val ARG_REQUIRED_FIELDS = "required_fields"
+private const val ARG_REQUIRED_FIELDS = "required_fields"
 
 @VisibleForTesting
-internal const val ARG_SHOW_BACK = "show_back"
+private const val ARG_SHOW_BACK = "show_back"
 
 internal class OneTimeChoosePersonaArgs(
     val requiredPersonaFields: RequiredPersonaFields,

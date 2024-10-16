@@ -86,6 +86,7 @@ class VerifyEntitiesViewModel @Inject constructor(
     fun onContinueClick() {
         state.value.walletUnauthorizedRequest?.let { request ->
             viewModelScope.launch {
+                setSigningInProgress(true)
                 val signRequest = request.proofOfOwnershipRequestItem?.challenge?.hex?.let { challengeHex ->
                     SignRequest.SignAuthChallengeRequest(
                         challengeHex = challengeHex,
@@ -120,18 +121,24 @@ class VerifyEntitiesViewModel @Inject constructor(
                         } else {
                             sendEvent(Event.EntitiesVerified)
                         }
+                        setSigningInProgress(false)
+                    }.onFailure {
+                        setSigningInProgress(false)
                     }
                 }
             }
         }
     }
 
+    private fun setSigningInProgress(isEnabled: Boolean) = _state.update { it.copy(isSigningInProgress = isEnabled) }
+
     data class State(
         val walletUnauthorizedRequest: WalletUnauthorizedRequest? = null,
         val requestedPersona: ProfileEntity.PersonaEntity? = null,
         val requestedAccounts: List<ProfileEntity.AccountEntity> = emptyList(),
         val signatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
-        val canNavigateBack: Boolean = false
+        val canNavigateBack: Boolean = false,
+        val isSigningInProgress: Boolean = false
     ) : UiState {
 
         enum class EntityType {

@@ -23,7 +23,7 @@ internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
 @VisibleForTesting
 internal const val ARG_EXACT_ACCOUNT_COUNT = "exact_account_count"
 
-internal const val ROUTE_CHOOSE_ACCOUNTS_ONETIME = "choose_accounts_onetime_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}"
+private const val ROUTE_CHOOSE_ACCOUNTS_ONETIME = "choose_accounts_onetime_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}"
 
 internal class OneTimeChooseAccountsArgs(
     val numberOfAccounts: Int,

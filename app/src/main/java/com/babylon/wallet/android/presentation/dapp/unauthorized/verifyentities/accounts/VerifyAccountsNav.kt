@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.accounts
 
+import android.os.Bundle
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -42,8 +43,12 @@ fun NavGraphBuilder.verifyAccounts(
             navArgument(ARG_ENTITIES_FOR_PROOF) { type = NavType.StringType },
             navArgument(ARG_CAN_NAVIGATE_BACK) { type = NavType.BoolType }
         ),
-        enterTransition = { // TODO update transition similar to PersonaDataOneTimeNav
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        enterTransition = {
+            if (requiresHorizontalTransition(targetState.arguments)) {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+            } else {
+                slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+            }
         },
         exitTransition = {
             ExitTransition.None
@@ -67,4 +72,9 @@ fun NavGraphBuilder.verifyAccounts(
             onBackClick = onBackClick
         )
     }
+}
+
+private fun requiresHorizontalTransition(arguments: Bundle?): Boolean {
+    arguments ?: return false
+    return arguments.getBoolean(ARG_CAN_NAVIGATE_BACK)
 }
