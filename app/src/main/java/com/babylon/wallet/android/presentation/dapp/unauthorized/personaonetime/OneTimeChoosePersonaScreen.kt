@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.Per
 import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
+import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -58,6 +59,8 @@ fun OneTimeChoosePersonaScreen(
     onEdit: (OneTimeChoosePersonaEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
+    onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
     onLoginFlowCancelled: () -> Unit,
     modifier: Modifier = Modifier
@@ -69,6 +72,14 @@ fun OneTimeChoosePersonaScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
+                is Event.NavigateToVerifyPersona -> onNavigateToVerifyPersona(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
+                is Event.NavigateToVerifyAccounts -> onNavigateToVerifyAccounts(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
                 Event.CloseLoginFlow -> onLoginFlowCancelled()
                 else -> {}
             }
@@ -87,11 +98,11 @@ fun OneTimeChoosePersonaScreen(
 
     PersonaDataOnetimeContent(
         modifier = modifier,
-        onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
+        onContinueClick = sharedViewModel::onPersonaGranted,
         dapp = sharedState.dapp,
         onBackClick = {
             if (sharedState.initialUnauthorizedLoginRoute is InitialUnauthorizedLoginRoute.OnetimePersonaData) {
-                sharedViewModel.onRejectRequest()
+                sharedViewModel.onUserRejectedRequest()
             } else {
                 onBackClick()
             }
@@ -100,7 +111,7 @@ fun OneTimeChoosePersonaScreen(
         personas = state.personaListToDisplay,
         onSelectPersona = {
             viewModel.onSelectPersona(it)
-            sharedViewModel.onSelectPersona(it)
+            sharedViewModel.onPersonaSelected(it)
         },
         onCreatePersona = viewModel::onCreatePersona,
         onEditClick = viewModel::onEditClick,
