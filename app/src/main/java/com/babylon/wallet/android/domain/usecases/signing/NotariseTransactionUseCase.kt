@@ -16,6 +16,7 @@ import com.radixdlt.sargon.SignedIntent
 import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionHeader
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.init
@@ -42,7 +43,7 @@ class NotariseTransactionUseCase @Inject constructor() {
                     notaryIsSignatory = request.notaryIsSignatory,
                     tipPercentage = request.tipPercentage
                 ),
-                manifest = request.manifestData.manifestSargon,
+                manifest = request.manifest,
                 message = request.manifestData.messageSargon
             )
         }.getOrElse { error ->
@@ -79,8 +80,8 @@ class NotariseTransactionUseCase @Inject constructor() {
 
             NotarizationResult(
                 intentHash = notarizedTransaction.signedIntent.intent.hash(),
-                compiledNotarizedIntent = notarizedTransaction.compile(),
-                endEpoch = request.endEpoch
+                endEpoch = request.endEpoch,
+                notarizedTransaction = notarizedTransaction
             )
         }.mapError { error ->
             PrepareTransactionException.PrepareNotarizedTransaction(error)
@@ -89,6 +90,7 @@ class NotariseTransactionUseCase @Inject constructor() {
 
     data class Request(
         val manifestData: TransactionManifestData,
+        val manifest: TransactionManifest,
         val notaryPublicKey: PublicKey,
         val notaryIsSignatory: Boolean,
         val startEpoch: Epoch,

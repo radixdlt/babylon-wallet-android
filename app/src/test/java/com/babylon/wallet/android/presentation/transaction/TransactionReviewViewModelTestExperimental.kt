@@ -24,14 +24,20 @@ import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.FeeLocks
+import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.PerRecipientAssetTransfer
 import com.radixdlt.sargon.PerRecipientAssetTransfers
 import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.perRecipientTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
@@ -68,15 +74,36 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val savedStateHandle = mockk<SavedStateHandle>().apply {
         every { get<String>(ARG_TRANSACTION_REQUEST_ID) } returns transactionId
     }
+    private val emptyExecutionSummary = ExecutionSummary(
+        feeLocks = FeeLocks(
+            lock = 0.toDecimal192(),
+            contingentLock = 0.toDecimal192()
+        ),
+        feeSummary = FeeSummary(
+            executionCost = 0.toDecimal192(),
+            finalizationCost = 0.toDecimal192(),
+            storageExpansionCost = 0.toDecimal192(),
+            royaltyCost = 0.toDecimal192()
+        ),
+        detailedClassification = listOf(),
+        reservedInstructions = listOf(),
+        deposits = mapOf(),
+        withdrawals = mapOf(),
+        addressesOfAccountsRequiringAuth = listOf(),
+        addressesOfIdentitiesRequiringAuth = listOf(),
+        encounteredAddresses = listOf(),
+        newEntities = NewEntities(
+            metadata = mapOf()
+        ),
+        presentedProofs = listOf(),
+        newlyCreatedNonFungibles = listOf()
+    )
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val transactionRepository = mockk<TransactionRepository>().apply {
         coEvery { getLedgerEpoch() } returns Result.success(1000.toULong())
-        coEvery { getTransactionPreview(any()) } returns Result.success(
-            TransactionPreviewResponse(
-                encodedReceipt = "",
-                receipt = CoreApiTransactionReceipt(status = "success"),
-                logs = emptyList()
-            )
+        coEvery { analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
+            transactionManifest = TransactionManifest.sample(),
+            executionSummary = emptyExecutionSummary
         )
     }
     private val stateRepository = mockk<StateRepository>()
@@ -126,11 +153,11 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         } returns Result.success(testProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.associateWith { 10.toDecimal192() }.orEmpty())
         val notarization = NotarizationResult(
             intentHash = IntentHash.sample(),
-            compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
-            endEpoch = 0u
+            endEpoch = 0u,
+            notarizedTransaction = NotarizedTransaction.sample()
         )
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarization)
-        coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(TransactionSubmitResponse(duplicate = false))
+        coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(IntentHash.sample())
 
 
         vm.value.state.test {

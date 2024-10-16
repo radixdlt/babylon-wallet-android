@@ -206,6 +206,7 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                             is EntitySecurityState.Unsecured -> state.copy(
                                 value = state.value.copy(authenticationSigning = authSigningFactorInstance)
                             )
+                            is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
                         }
                         account.copy(securityState = updatedSecurityState)
                     }
@@ -219,6 +220,7 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                             is EntitySecurityState.Unsecured -> state.copy(
                                 value = state.value.copy(authenticationSigning = authSigningFactorInstance)
                             )
+                            is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
                         }
                         persona.copy(securityState = updatedSecurityState)
                     }
@@ -560,6 +562,7 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     is FactorSource.TrustedContact -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+                    is FactorSource.Passphrase -> TODO()
                 }
             }
         ).asList()

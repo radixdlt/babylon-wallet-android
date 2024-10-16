@@ -6,7 +6,6 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.isZero
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -16,7 +15,10 @@ class SearchFeePayersUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(manifestData: TransactionManifestData, lockFee: Decimal192): Result<TransactionFeePayers> {
+    suspend operator fun invoke(
+        feePayerCandidates: List<AccountAddress>,
+        lockFee: Decimal192
+    ): Result<TransactionFeePayers> {
         val allAccounts = profileUseCase().activeAccountsOnCurrentNetwork
         return stateRepository.getOwnedXRD(accounts = allAccounts).map { accountsWithXRD ->
             val candidates = accountsWithXRD.mapNotNull { entry ->
@@ -28,7 +30,7 @@ class SearchFeePayersUseCase @Inject constructor(
                     hasEnoughBalance = entry.value >= lockFee
                 )
             }
-            val candidateAddress = manifestData.feePayerCandidates().firstOrNull { address ->
+            val candidateAddress = feePayerCandidates.firstOrNull { address ->
                 candidates.any { it.account.address == address && it.xrdAmount >= lockFee }
             }
 

@@ -57,6 +57,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                         return Result.failure(it)
                     }
                 }
+                is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
             }
         }
         return Result.success(entitiesWithSignaturesList)

@@ -50,10 +50,6 @@ data class NotaryAndSigners(
         return ephemeralNotaryPrivateKey.toPublicKey()
     }
 
-    fun signersPublicKeys(): List<PublicKey> = signers.map { signer ->
-        signer.securityState.transactionSigningFactorInstance.publicKey.publicKey
-    }
-
     fun signWithNotary(signedIntentHash: SignedIntentHash): NotarySignature {
         return ephemeralNotaryPrivateKey.notarize(signedIntentHash)
     }

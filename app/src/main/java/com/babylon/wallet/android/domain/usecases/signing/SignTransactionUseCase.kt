@@ -14,9 +14,11 @@ import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
+import com.radixdlt.sargon.extensions.summary
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.then
@@ -32,10 +34,9 @@ class SignTransactionUseCase @Inject constructor(
     suspend operator fun invoke(request: Request): Result<NotarizationResult> {
         val manifestWithLockFee = request.manifestWithLockFee
 
-        val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
         return resolveNotaryAndSignersUseCase(
-            accountsAddressesRequiringAuth = entitiesRequiringAuth.accounts,
-            personaAddressesRequiringAuth = entitiesRequiringAuth.identities,
+            accountsAddressesRequiringAuth = request.manifest.summary.addressesOfAccountsRequiringAuth,
+            personaAddressesRequiringAuth = request.manifest.summary.addressesOfPersonasRequiringAuth,
             notary = request.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
             transactionRepository.getLedgerEpoch().fold(
@@ -50,6 +51,7 @@ class SignTransactionUseCase @Inject constructor(
             notariseTransactionUseCase(
                 request = NotariseTransactionUseCase.Request(
                     manifestData = manifestWithLockFee,
+                    manifest = request.manifest,
                     notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKeyNew(),
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
                     startEpoch = notarySignersAndEpoch.second,
@@ -66,7 +68,8 @@ class SignTransactionUseCase @Inject constructor(
     }
 
     data class Request(
-        private val manifest: TransactionManifestData,
+        private val manifestData: TransactionManifestData,
+        var manifest: TransactionManifest,
         val lockFee: Decimal192,
         val tipPercentage: UShort,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
@@ -75,14 +78,14 @@ class SignTransactionUseCase @Inject constructor(
 
         val manifestWithLockFee: TransactionManifestData
             get() = if (feePayerAddress == null) {
-                manifest
+                manifestData
             } else {
                 TransactionManifestData.from(
-                    manifest = manifest.manifestSargon.modifyLockFee(
+                    manifest = manifest.modifyLockFee(
                         addressOfFeePayer = feePayerAddress,
                         fee = lockFee
-                    ),
-                    message = manifest.message
+                    ).also { manifest = it },
+                    message = manifestData.message
                 )
             }
     }
