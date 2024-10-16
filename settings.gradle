@@ -22,14 +22,7 @@ dependencyResolutionManagement {
         maven { url 'https://jitpack.io' }
     }
 
-    //No need, it is automatically picked up
-    // versionCatalogs {
-    //     libs {
-    //         from(files("./gradle/libs.versions.toml"))
-    //     }
-    // }
 }
-
 rootProject.name = "BabylonWallet"
 include ':app'
 include ':peerdroid'
