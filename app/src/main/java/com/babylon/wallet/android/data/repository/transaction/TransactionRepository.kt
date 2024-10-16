@@ -69,7 +69,7 @@ class TransactionRepositoryImpl @Inject constructor(
                 instructions = manifestData.instructions,
                 blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
                 message = manifestData.messageSargon,
-                isWalletTransaction = isInternal,
+                areInstructionsOriginatingFromHost = isInternal,
                 nonce = Nonce.secureRandom(),
                 notaryPublicKey = notaryPublicKey,
             )
