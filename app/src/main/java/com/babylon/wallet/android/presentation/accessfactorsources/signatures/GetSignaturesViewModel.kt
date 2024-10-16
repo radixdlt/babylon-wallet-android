@@ -136,12 +136,12 @@ class GetSignaturesViewModel @Inject constructor(
             }
 
             null -> {
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
                 accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.EntitiesWithSignatures(
                         signersWithSignatures = state.value.entitiesWithSignatures
                     )
                 )
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
             }
         }
     }
@@ -198,11 +198,11 @@ class GetSignaturesViewModel @Inject constructor(
                 ).onSuccess { entitiesWithSignaturesList ->
                     entitiesWithSignaturesForAllDeviceFactorSources.addAll(entitiesWithSignaturesList)
                 }.onFailure {
-                    // return the output (error) and end the signing process
+                    // end the signing process and return the output (error)
+                    sendEvent(event = Event.AccessingFactorSourceCompleted)
                     accessFactorSourcesIOHandler.setOutput(
                         AccessFactorSourcesOutput.Failure(error = it)
                     )
-                    sendEvent(event = Event.AccessingFactorSourceCompleted)
                     return@launch
                 }
             }
@@ -236,13 +236,11 @@ class GetSignaturesViewModel @Inject constructor(
                 ) {
                     return@launch // should be return@launch to keep the bottom sheet open
                 }
-
-                // otherwise return the output (error)
+                // end the signing process and return the output (error)
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
                 accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.Failure(error = error)
                 )
-                // and end the signing process
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
             }
         }
     }
