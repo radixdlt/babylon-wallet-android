@@ -23,6 +23,7 @@ import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.FailureDialogState
 import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.coroutines.flow.filterIsInstance
@@ -30,20 +31,34 @@ import kotlinx.coroutines.flow.filterIsInstance
 @Composable
 fun DappUnauthorizedLoginScreen(
     viewModel: DAppUnauthorizedLoginViewModel,
-    navigateToChooseAccount: (Int, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onNavigateToChooseAccount: (Int, Boolean) -> Unit,
+    onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    when (val route = state.initialUnauthorizedLoginRoute) {
-        is InitialUnauthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
-            route.numberOfAccounts,
-            route.isExactAccountsCount
-        )
-        is InitialUnauthorizedLoginRoute.OnetimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
-        null -> {}
+
+    LaunchedEffect(state.initialUnauthorizedLoginRoute) {
+        when (val route = state.initialUnauthorizedLoginRoute) {
+            is InitialUnauthorizedLoginRoute.ChooseAccount -> onNavigateToChooseAccount(
+                route.numberOfAccounts,
+                route.isExactAccountsCount
+            )
+            is InitialUnauthorizedLoginRoute.OnetimePersonaData -> onNavigateToOneTimePersonaData(route.requiredPersonaFields)
+            is InitialUnauthorizedLoginRoute.VerifyPersona -> onNavigateToVerifyPersona(
+                route.walletUnauthorizedRequestInteractionId,
+                route.entitiesForProofWithSignatures
+            )
+            is InitialUnauthorizedLoginRoute.VerifyAccounts -> onNavigateToVerifyAccounts(
+                route.walletUnauthorizedRequestInteractionId,
+                route.entitiesForProofWithSignatures
+            )
+            null -> {}
+        }
     }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.filterIsInstance<Event.CloseLoginFlow>().collect {
             onLoginFlowComplete()
