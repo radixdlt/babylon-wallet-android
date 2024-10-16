@@ -49,6 +49,7 @@ class SargonPublicKeySerializer : KSerializer<PublicKey> {
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 class SignatureWithPublicKeySerializer : KSerializer<SignatureWithPublicKey> {
 
     override val descriptor: SerialDescriptor =

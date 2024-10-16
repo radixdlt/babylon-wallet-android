@@ -129,7 +129,7 @@ class GetSignaturesViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         showContentForFactorSource = State.ShowContentForFactorSource.Device,
-                        isRetryButtonEnabled = true // enable the Retry button, reason is at line 184
+                        isRetryButtonEnabled = true // enable the Retry button, reason is at line 185
                     )
                 }
                 sendEvent(event = Event.RequestBiometricToAccessDeviceFactorSources)

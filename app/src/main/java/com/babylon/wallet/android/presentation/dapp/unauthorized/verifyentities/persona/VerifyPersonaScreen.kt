@@ -67,6 +67,7 @@ fun VerifyPersonaScreen(
         profileEntities = state.nextEntitiesForProof.toImmutableList(),
         canNavigateBack = state.canNavigateBack,
         onContinueClick = viewModel::onContinueClick,
+        isSigningInProgress = state.isSigningInProgress,
         onCloseClick = {
             if (state.canNavigateBack) {
                 onBackClick()

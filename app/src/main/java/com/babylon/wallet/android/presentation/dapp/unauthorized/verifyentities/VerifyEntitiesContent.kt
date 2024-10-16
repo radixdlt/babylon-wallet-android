@@ -55,6 +55,7 @@ fun VerifyEntitiesContent(
     entityType: VerifyEntitiesViewModel.State.EntityType,
     profileEntities: ImmutableList<ProfileEntity>,
     canNavigateBack: Boolean,
+    isSigningInProgress: Boolean,
     onContinueClick: () -> Unit,
     onCloseClick: () -> Unit
 ) {
@@ -71,7 +72,8 @@ fun VerifyEntitiesContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
-                text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue)
+                text = stringResource(id = R.string.dAppRequest_personalDataPermission_continue),
+                isLoading = isSigningInProgress
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -160,6 +162,7 @@ fun VerifyPersonaScreenPreview() {
             entityType = VerifyEntitiesViewModel.State.EntityType.Persona,
             profileEntities = listOf(Persona.sampleMainnet.ripley.asProfileEntity()).toImmutableList(),
             canNavigateBack = false,
+            isSigningInProgress = false,
             onContinueClick = {},
             onCloseClick = {}
         )
@@ -178,6 +181,7 @@ fun VerifyAccountsScreenPreview() {
                 it.asProfileEntity()
             }.toImmutableList(),
             canNavigateBack = true,
+            isSigningInProgress = true,
             onContinueClick = {},
             onCloseClick = {}
         )
