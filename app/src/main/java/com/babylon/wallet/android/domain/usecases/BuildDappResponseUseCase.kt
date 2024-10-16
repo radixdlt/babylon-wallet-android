@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionPersonaDataRequestResponseItem
+import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
@@ -283,11 +284,11 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy
 ) : BuildDappResponseUseCase(accessFactorSourcesProxy = accessFactorSourcesProxy) {
 
-    @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
         request: WalletUnauthorizedRequest,
         oneTimeAccounts: List<Account> = emptyList(),
-        oneTimePersonaData: PersonaData? = null
+        oneTimePersonaData: PersonaData? = null,
+        verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
     ): Result<WalletToDappInteractionResponse> {
         var entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
 
@@ -323,6 +324,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                     ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
             )
         }
+
         return Result.success(
             WalletToDappInteractionResponse.Success(
                 v1 = WalletToDappInteractionSuccessResponse(
@@ -331,12 +333,9 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                         v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(
                             oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                             oneTimePersonaData = oneTimePersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
-                            // TODO this should be replaced when merging the proof of ownership feature
-                            proofOfOwnership = WalletToDappInteractionProofOfOwnershipRequestResponseItem(
-                                challenge = request.proofOfOwnershipRequestItem?.challenge
-                                    ?: return Result.failure(Throwable("No challenge provided")),
-                                proofs = emptyList()
-                            )
+                            proofOfOwnership = request.proofOfOwnershipRequestItem?.let {
+                                verifiedEntities.toWalletToDappInteractionProofOfOwnershipRequestResponseItem(it.challenge)
+                            }
                         ),
                     )
                 )
