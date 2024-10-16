@@ -33,7 +33,8 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
             }
         )
-        chooseAccountsOneTime(
+
+        oneTimeChooseAccounts(
             exitRequestFlow = {
                 navController.popBackStack()
             },
@@ -48,7 +49,9 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             },
             navController = navController
         )
-        personaDataOnetimeUnauthorized(
+
+        oneTimeChoosePersona(
+            navController = navController,
             onEdit = {
                 navController.personaEditScreen(it.personaAddress, it.requiredPersonaFields)
             },

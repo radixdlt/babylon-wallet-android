@@ -33,11 +33,13 @@ fun OneTimeChooseAccountsScreen(
     modifier: Modifier = Modifier
 ) {
     val sharedViewModelState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     if (sharedViewModelState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             sharedViewModel.dismissNoMnemonicError()
         }
     }
+
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -47,6 +49,7 @@ fun OneTimeChooseAccountsScreen(
             }
         }
     }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -60,11 +63,14 @@ fun OneTimeChooseAccountsScreen(
             }
         }
     }
+
     BackHandler {
         sharedViewModel.onRejectRequest()
     }
+
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     ChooseAccountContent(
         onBackClick = sharedViewModel::onRejectRequest,
         onContinueClick = {
@@ -82,6 +88,7 @@ fun OneTimeChooseAccountsScreen(
         showBackButton = false,
         modifier = modifier
     )
+
     DappInteractionFailureDialog(
         dialogState = sharedState.failureDialogState,
         onAcknowledgeFailureDialog = sharedViewModel::onAcknowledgeFailureDialog

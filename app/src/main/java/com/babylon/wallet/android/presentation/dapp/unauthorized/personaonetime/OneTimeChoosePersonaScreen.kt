@@ -52,10 +52,10 @@ import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
 
 @Composable
-fun PersonaDataOnetimeScreen(
-    viewModel: PersonaDataOnetimeViewModel,
+fun OneTimeChoosePersonaScreen(
+    viewModel: OneTimeChoosePersonaViewModel,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
-    onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
+    onEdit: (OneTimeChoosePersonaEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
@@ -64,6 +64,7 @@ fun PersonaDataOnetimeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -73,17 +74,17 @@ fun PersonaDataOnetimeScreen(
             }
         }
     }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is PersonaDataOnetimeEvent.OnEditPersona -> {
-                    onEdit(event)
-                }
+                is OneTimeChoosePersonaEvent.OnEditPersona -> onEdit(event)
 
-                is PersonaDataOnetimeEvent.CreatePersona -> onCreatePersona(event.firstPersonaCreated)
+                is OneTimeChoosePersonaEvent.CreatePersona -> onCreatePersona(event.firstPersonaCreated)
             }
         }
     }
+
     PersonaDataOnetimeContent(
         modifier = modifier,
         onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
