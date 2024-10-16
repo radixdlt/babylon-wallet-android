@@ -13,12 +13,12 @@ repos:
         # Optional: Specify the dependency file pattern for your repository
         files: |
             (?x)^(
-                ./gradle.lockfile
+                ./dependencies.lock
             )$
         # Optional: Specify additional arguments to be passed to `phylum-ci`
         args:
           - -vv
-          - --depfile=gradle.lockfile
+          - --depfile=dependencies.lock
           - --audit
           - --force-analysis
           - --all-deps
