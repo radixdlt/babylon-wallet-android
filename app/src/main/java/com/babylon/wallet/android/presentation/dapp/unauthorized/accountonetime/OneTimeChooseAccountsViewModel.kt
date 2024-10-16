@@ -50,10 +50,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                 }
 
                 _state.update {
-                    it.copy(
-                        availableAccountItems = accountItems.toPersistentList(),
-                        showProgress = false
-                    )
+                    it.copy(availableAccountItems = accountItems.toPersistentList())
                 }
             }
         }
@@ -100,7 +97,6 @@ sealed interface OneTimeChooseAccountsEvent : OneOffEvent {
 
 data class OneTimeChooseAccountUiState(
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
-    val showProgress: Boolean = true,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
     val isSingleChoice: Boolean = false,
