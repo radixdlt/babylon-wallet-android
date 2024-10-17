@@ -30,7 +30,7 @@ fun NavController.dAppLoginUnauthorized(requestId: String, navOptionsBuilder: Na
 @Suppress("LongParameterList")
 fun NavGraphBuilder.dAppLoginUnauthorized(
     navController: NavController,
-    onNavigateToChooseAccount: (Int, Boolean) -> Unit,
+    onNavigateToChooseAccount: (String, Int, Boolean) -> Unit,
     onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
