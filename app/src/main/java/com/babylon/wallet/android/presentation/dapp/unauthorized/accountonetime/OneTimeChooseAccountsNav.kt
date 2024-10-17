@@ -27,9 +27,9 @@ internal const val ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID = "arg_unauthorized_r
 internal const val ARG_EXACT_ACCOUNT_COUNT = "arg_exact_account_count"
 
 private const val ROUTE_CHOOSE_ACCOUNTS_ONETIME = "choose_accounts_onetime_route/" +
-        "{$ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID}/" +
-        "{$ARG_NUMBER_OF_ACCOUNTS}/" +
-        "{$ARG_EXACT_ACCOUNT_COUNT}"
+    "{$ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID}/" +
+    "{$ARG_NUMBER_OF_ACCOUNTS}/" +
+    "{$ARG_EXACT_ACCOUNT_COUNT}"
 
 internal class OneTimeChooseAccountsArgs(
     val unauthorizedRequestInteractionId: String,

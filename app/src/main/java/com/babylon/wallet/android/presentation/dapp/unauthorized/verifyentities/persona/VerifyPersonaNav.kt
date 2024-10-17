@@ -58,7 +58,11 @@ fun NavGraphBuilder.verifyPersona(
             EnterTransition.None
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            if (requiresHorizontalTransition(initialState.arguments)) {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            } else {
+                slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+            }
         }
     ) { navBackStackEntry ->
         val parentEntry = remember(navBackStackEntry) {
