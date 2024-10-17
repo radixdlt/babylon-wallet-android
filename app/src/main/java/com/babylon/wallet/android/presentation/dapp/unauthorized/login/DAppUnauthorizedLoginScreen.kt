@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 @Composable
 fun DappUnauthorizedLoginScreen(
     viewModel: DAppUnauthorizedLoginViewModel,
-    onNavigateToChooseAccount: (Int, Boolean) -> Unit,
+    onNavigateToChooseAccount: (String, Int, Boolean) -> Unit,
     onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
@@ -43,6 +43,7 @@ fun DappUnauthorizedLoginScreen(
     LaunchedEffect(state.initialUnauthorizedLoginRoute) {
         when (val route = state.initialUnauthorizedLoginRoute) {
             is InitialUnauthorizedLoginRoute.ChooseAccount -> onNavigateToChooseAccount(
+                route.walletUnauthorizedRequestInteractionId,
                 route.numberOfAccounts,
                 route.isExactAccountsCount
             )

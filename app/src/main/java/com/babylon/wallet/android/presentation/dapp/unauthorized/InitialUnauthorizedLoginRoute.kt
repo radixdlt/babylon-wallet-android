@@ -10,6 +10,7 @@ sealed interface InitialUnauthorizedLoginRoute {
     ) : InitialUnauthorizedLoginRoute
 
     data class ChooseAccount(
+        val walletUnauthorizedRequestInteractionId: String,
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean
     ) : InitialUnauthorizedLoginRoute

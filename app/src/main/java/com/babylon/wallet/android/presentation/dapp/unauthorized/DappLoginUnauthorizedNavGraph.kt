@@ -25,8 +25,12 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
     ) {
         dAppLoginUnauthorized(
             navController,
-            onNavigateToChooseAccount = { numberOfAccounts, isExactAccountsCount ->
-                navController.oneTimeChooseAccounts(numberOfAccounts, isExactAccountsCount)
+            onNavigateToChooseAccount = { unauthorizedRequestInteractionId, numberOfAccounts, isExactAccountsCount ->
+                navController.oneTimeChooseAccounts(
+                    unauthorizedRequestInteractionId = unauthorizedRequestInteractionId,
+                    numberOfAccounts = numberOfAccounts,
+                    isExactAccountsCount = isExactAccountsCount
+                )
             },
             onNavigateToOneTimePersonaData = {
                 navController.oneTimeChoosePersona(it, false)
