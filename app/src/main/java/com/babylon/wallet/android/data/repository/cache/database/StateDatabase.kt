@@ -64,8 +64,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Added next cursor to metadata column and locked flag")
         const val VERSION_9 = 9
 
-        // Add account locker logic
+        @Deprecated("Add account locker logic")
         const val VERSION_10 = 10
+
+        // Updated metadata schema: Added Origin MetadataType
+        const val VERSION_11 = 11
 
         private const val NAME = "STATE_DATABASE"
 
