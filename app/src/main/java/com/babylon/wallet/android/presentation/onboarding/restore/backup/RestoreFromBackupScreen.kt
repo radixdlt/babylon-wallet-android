@@ -16,10 +16,13 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -59,6 +62,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.presentation.onboarding.restore.backup.RestoreFromBackupViewModel.State.PasswordSheet
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -275,24 +280,22 @@ private fun RestoreFromBackupContent(
         }
     }
 
-    if (state.isPasswordSheetVisible) {
-        DefaultModalSheetLayout(
-            sheetState = modalBottomSheetState,
-            enableImePadding = true,
-            wrapContent = true,
-            sheetContent = {
-                if (state.passwordSheetState is RestoreFromBackupViewModel.State.PasswordSheet.Open) {
-                    PasswordSheet(
-                        state = state.passwordSheetState,
-                        onBackClick = onBackClick,
-                        onPasswordTyped = onPasswordTyped,
-                        onPasswordRevealToggle = onPasswordRevealToggle,
-                        onPasswordSubmitted = onPasswordSubmitted
-                    )
-                }
-            },
-            onDismissRequest = onBackClick
-        )
+    if (state.passwordSheetState is PasswordSheet.Open) {
+        BottomSheetDialogWrapper(
+            modifier = Modifier.imePadding(),
+            addScrim = true,
+            showDragHandle = true,
+            headerBackIcon = Icons.AutoMirrored.Filled.ArrowBack,
+            showDefaultTopBar = true,
+            onDismiss = onBackClick,
+        ) {
+            PasswordSheet(
+                state = state.passwordSheetState,
+                onPasswordTyped = onPasswordTyped,
+                onPasswordRevealToggle = onPasswordRevealToggle,
+                onPasswordSubmitted = onPasswordSubmitted
+            )
+        }
     }
 }
 
@@ -488,7 +491,6 @@ private fun SyncSheetState(
 private fun PasswordSheet(
     modifier: Modifier = Modifier,
     state: RestoreFromBackupViewModel.State.PasswordSheet.Open,
-    onBackClick: () -> Unit,
     onPasswordTyped: (String) -> Unit,
     onPasswordRevealToggle: () -> Unit,
     onPasswordSubmitted: () -> Unit
@@ -496,11 +498,6 @@ private fun PasswordSheet(
     Column(
         modifier = modifier
     ) {
-        RadixCenteredTopAppBar(
-            title = "",
-            onBackClick = onBackClick,
-        )
-
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()

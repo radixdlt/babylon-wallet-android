@@ -18,12 +18,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -68,7 +74,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.settings.securitycenter.backup.BackupViewModel.State.EncryptSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
@@ -288,24 +296,27 @@ private fun BackupScreenContent(
         }
     }
 
-    if (state.isEncryptSheetVisible) {
-        DefaultModalSheetLayout(
-            sheetState = modalBottomSheetState,
-            sheetContent = {
-                if (state.encryptSheet is BackupViewModel.State.EncryptSheet.Open) {
-                    EncryptSheet(
-                        state = state.encryptSheet,
-                        onPasswordTyped = onEncryptPasswordTyped,
-                        onPasswordRevealToggle = onEncryptPasswordRevealToggle,
-                        onPasswordConfirmTyped = onEncryptConfirmPasswordTyped,
-                        onPasswordConfirmRevealToggle = onEncryptPasswordConfirmRevealToggle,
-                        onSubmitClick = onEncryptSubmitClick,
-                        onBackClick = onBackClick
-                    )
-                }
-            },
-            onDismissRequest = onBackClick
-        )
+    if (state.encryptSheet is EncryptSheet.Open) {
+        BottomSheetDialogWrapper(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.statusBarsAndBanner)
+                .imePadding()
+                .navigationBarsPadding(),
+            addScrim = true,
+            showDragHandle = true,
+            headerBackIcon = Icons.AutoMirrored.Filled.ArrowBack,
+            showDefaultTopBar = true,
+            onDismiss = onBackClick,
+        ) {
+            EncryptSheet(
+                state = state.encryptSheet,
+                onPasswordTyped = onEncryptPasswordTyped,
+                onPasswordRevealToggle = onEncryptPasswordRevealToggle,
+                onPasswordConfirmTyped = onEncryptConfirmPasswordTyped,
+                onPasswordConfirmRevealToggle = onEncryptPasswordConfirmRevealToggle,
+                onSubmitClick = onEncryptSubmitClick
+            )
+        }
     }
 }
 
@@ -666,17 +677,9 @@ private fun EncryptSheet(
     onPasswordConfirmTyped: (String) -> Unit,
     onPasswordConfirmRevealToggle: () -> Unit,
     onSubmitClick: () -> Unit,
-    onBackClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
-        topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.empty),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
-        },
         bottomBar = {
             RadixPrimaryButton(
                 modifier = Modifier
