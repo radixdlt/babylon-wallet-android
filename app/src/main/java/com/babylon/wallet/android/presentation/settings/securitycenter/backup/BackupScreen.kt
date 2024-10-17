@@ -747,6 +747,8 @@ private fun EncryptSheet(
                 visualTransformation = if (state.isPasswordRevealed) VisualTransformation.None else PasswordVisualTransformation()
             )
 
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
             val focusManager = LocalFocusManager.current
             var isConfirmFocused by remember { mutableStateOf(false) }
             RadixTextField(
