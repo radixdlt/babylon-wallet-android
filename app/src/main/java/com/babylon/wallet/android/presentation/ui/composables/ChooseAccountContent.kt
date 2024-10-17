@@ -45,7 +45,7 @@ fun ChooseAccountContent(
     onContinueClick: () -> Unit,
     isContinueButtonEnabled: Boolean,
     accountItems: ImmutableList<AccountItemUiModel>,
-    onAccountSelect: (Int) -> Unit,
+    onAccountSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
     dapp: DApp?,
@@ -114,14 +114,14 @@ fun ChooseAccountContent(
                         )
                         .clip(RadixTheme.shapes.roundedRectSmall)
                         .clickable {
-                            onAccountSelect(index)
+                            onAccountSelected(index)
                         },
                     accountName = accountItem.displayName.orEmpty(),
                     address = accountItem.address,
                     checked = accountItem.isSelected,
                     isSingleChoice = isSingleChoice,
                     radioButtonClicked = {
-                        onAccountSelect(index)
+                        onAccountSelected(index)
                     }
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -206,7 +206,7 @@ fun ChooseAccountContentPreview() {
                     isSelected = false
                 )
             ),
-            onAccountSelect = {},
+            onAccountSelected = {},
             onCreateNewAccount = {},
             dapp = DApp.sampleMainnet(),
             isOneTime = false,
