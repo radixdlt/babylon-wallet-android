@@ -138,6 +138,7 @@ fun VerifyEntitiesContent(
                     is ProfileEntity.AccountEntity -> {
                         SimpleAccountCard(
                             modifier = Modifier
+                                .fillMaxSize()
                                 .background(
                                     entity.account.appearanceId.gradient(),
                                     shape = RadixTheme.shapes.roundedRectSmall
