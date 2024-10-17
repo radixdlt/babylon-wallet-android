@@ -27,9 +27,9 @@ data class EntitiesForProofWithSignatures(
         > = emptyMap()
 )
 
-const val ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID = "unauthorized_request_interaction_id_arg"
-const val ARG_ENTITIES_FOR_PROOF = "entities_for_proof_arg"
-const val ARG_CAN_NAVIGATE_BACK = "can_navigate_back_arg"
+internal const val ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID = "unauthorized_request_interaction_id_arg"
+internal const val ARG_ENTITIES_FOR_PROOF = "entities_for_proof_arg"
+internal const val ARG_CAN_NAVIGATE_BACK = "can_navigate_back_arg"
 
 class VerifyEntitiesArgs(
     val unauthorizedRequestInteractionId: String,
