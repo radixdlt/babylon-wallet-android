@@ -19,12 +19,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.serializers.PublicKeySerializer
-import rdx.works.core.serializers.SignatureSerializer
+import rdx.works.core.sargon.serializers.SargonPublicKeySerializer
+import rdx.works.core.sargon.serializers.SargonSignatureSerializer
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -57,15 +58,16 @@ interface PeerdroidLink {
         message: LinkClientExchangeInteraction
     ): Result<Unit>
 
+    @OptIn(ExperimentalSerializationApi::class)
     @Serializable
     data class LinkClientExchangeInteraction(
         @EncodeDefault
         @SerialName("discriminator")
         val discriminator: String = "linkClient",
-        @Serializable(with = PublicKeySerializer::class)
+        @Serializable(with = SargonPublicKeySerializer::class)
         @SerialName("publicKey")
         val publicKey: PublicKey,
-        @Serializable(with = SignatureSerializer::class)
+        @Serializable(with = SargonSignatureSerializer::class)
         @SerialName("signature")
         val signature: Signature
     )

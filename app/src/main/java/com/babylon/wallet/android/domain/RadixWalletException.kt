@@ -52,6 +52,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object InvalidRequest : DappRequestException()
         data object UnacceptableManifest : DappRequestException()
         data object InvalidPersona : DappRequestException()
+        data object InvalidPersonaOrAccounts : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
         data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
@@ -80,6 +81,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 UnacceptableManifest -> DappWalletInteractionErrorType.INVALID_REQUEST
                 is WrongNetwork -> DappWalletInteractionErrorType.WRONG_NETWORK
                 is PreviewError -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+                InvalidPersonaOrAccounts -> DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS
             }
     }
 
@@ -299,6 +301,7 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
             R.string.common_somethingWentWrong
         )
         is RadixWalletException.DappRequestException.PreviewError -> context.getString(R.string.error_transactionFailure_reviewFailure)
+        RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(R.string.dAppRequest_requestPersonaNotFoundAlert_message)
     }
 }
 

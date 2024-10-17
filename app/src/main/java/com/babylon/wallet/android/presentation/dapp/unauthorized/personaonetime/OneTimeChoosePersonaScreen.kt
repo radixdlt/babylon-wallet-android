@@ -31,10 +31,11 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
+import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -52,45 +53,56 @@ import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
 
 @Composable
-fun PersonaDataOnetimeScreen(
-    viewModel: PersonaDataOnetimeViewModel,
+fun OneTimeChoosePersonaScreen(
+    viewModel: OneTimeChoosePersonaViewModel,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
-    onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
+    onEdit: (OneTimeChoosePersonaEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     onBackClick: () -> Unit,
+    onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
     onLoginFlowCancelled: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
+                is Event.NavigateToVerifyPersona -> onNavigateToVerifyPersona(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
+                is Event.NavigateToVerifyAccounts -> onNavigateToVerifyAccounts(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
                 Event.CloseLoginFlow -> onLoginFlowCancelled()
                 else -> {}
             }
         }
     }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is PersonaDataOnetimeEvent.OnEditPersona -> {
-                    onEdit(event)
-                }
+                is OneTimeChoosePersonaEvent.OnEditPersona -> onEdit(event)
 
-                is PersonaDataOnetimeEvent.CreatePersona -> onCreatePersona(event.firstPersonaCreated)
+                is OneTimeChoosePersonaEvent.CreatePersona -> onCreatePersona(event.firstPersonaCreated)
             }
         }
     }
+
     PersonaDataOnetimeContent(
         modifier = modifier,
-        onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
+        onContinueClick = sharedViewModel::onPersonaGranted,
         dapp = sharedState.dapp,
         onBackClick = {
             if (sharedState.initialUnauthorizedLoginRoute is InitialUnauthorizedLoginRoute.OnetimePersonaData) {
-                sharedViewModel.onRejectRequest()
+                sharedViewModel.onUserRejectedRequest()
             } else {
                 onBackClick()
             }
@@ -99,7 +111,7 @@ fun PersonaDataOnetimeScreen(
         personas = state.personaListToDisplay,
         onSelectPersona = {
             viewModel.onSelectPersona(it)
-            sharedViewModel.onSelectPersona(it)
+            sharedViewModel.onPersonaSelected(it)
         },
         onCreatePersona = viewModel::onCreatePersona,
         onEditClick = viewModel::onEditClick,

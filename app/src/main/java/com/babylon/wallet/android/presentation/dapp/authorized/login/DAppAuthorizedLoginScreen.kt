@@ -23,7 +23,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -65,29 +65,31 @@ fun DappAuthorizedLoginScreen(
         }
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    when (val route = state.initialAuthorizedLoginRoute) {
-        is InitialAuthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
-            route.numberOfAccounts,
-            route.isExactAccountsCount,
-            route.oneTime,
-            route.showBack
-        )
+    LaunchedEffect(state.initialAuthorizedLoginRoute) {
+        when (val route = state.initialAuthorizedLoginRoute) {
+            is InitialAuthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
+                route.numberOfAccounts,
+                route.isExactAccountsCount,
+                route.oneTime,
+                route.showBack
+            )
 
-        is InitialAuthorizedLoginRoute.OneTimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
-        is InitialAuthorizedLoginRoute.OngoingPersonaData -> navigateToOngoingPersonaData(
-            route.personaAddress,
-            route.requiredPersonaFields
-        )
+            is InitialAuthorizedLoginRoute.OneTimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
+            is InitialAuthorizedLoginRoute.OngoingPersonaData -> navigateToOngoingPersonaData(
+                route.personaAddress,
+                route.requiredPersonaFields
+            )
 
-        is InitialAuthorizedLoginRoute.Permission -> navigateToPermissions(
-            route.numberOfAccounts,
-            route.isExactAccountsCount,
-            route.oneTime,
-            route.showBack
-        )
+            is InitialAuthorizedLoginRoute.Permission -> navigateToPermissions(
+                route.numberOfAccounts,
+                route.isExactAccountsCount,
+                route.oneTime,
+                route.showBack
+            )
 
-        is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(route.dappDefinitionAddress)
-        else -> {}
+            is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(route.dappDefinitionAddress)
+            else -> {}
+        }
     }
     Scaffold(
         modifier = modifier,

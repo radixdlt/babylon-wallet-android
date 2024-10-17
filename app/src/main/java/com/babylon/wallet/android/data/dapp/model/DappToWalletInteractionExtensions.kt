@@ -11,6 +11,7 @@ import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
+import com.radixdlt.sargon.DappToWalletInteractionProofOfOwnershipRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
 import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
@@ -56,7 +57,9 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     transactionManifestData = TransactionManifestData(
         instructions = unvalidatedManifest.transactionManifestString,
         networkId = metadata.networkId,
-        message = message?.let { TransactionManifestData.TransactionMessage.Public(it) } ?: TransactionManifestData.TransactionMessage.None,
+        message = message?.let {
+            TransactionManifestData.TransactionMessage.Public(it)
+        } ?: TransactionManifestData.TransactionMessage.None,
         blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
         version = version.toLong()
     ),
@@ -73,7 +76,16 @@ private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedReq
         interactionId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(false),
-        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false)
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false),
+        proofOfOwnershipRequestItem = proofOfOwnership?.toDomainModel()
+    )
+}
+
+private fun DappToWalletInteractionProofOfOwnershipRequestItem.toDomainModel(): WalletUnauthorizedRequest.ProofOfOwnershipRequestItem {
+    return WalletUnauthorizedRequest.ProofOfOwnershipRequestItem(
+        challenge = challenge,
+        accountAddresses = accountAddresses,
+        personaAddress = identityAddress
     )
 }
 
