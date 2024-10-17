@@ -76,6 +76,7 @@ fun ChooseAccountsScreen(
         isOneTime = state.oneTimeRequest,
         isSingleChoice = state.isSingleChoice,
         showBackButton = state.showBackButton,
+        isSigningInProgress = false, // TODO update when refactoring
         modifier = modifier
     )
 
@@ -137,6 +138,7 @@ fun ChooseAccountsScreenPreview() {
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
+            isSigningInProgress = false,
             showBackButton = true
         )
     }
