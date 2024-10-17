@@ -123,7 +123,7 @@ class ChooseAccountsViewModelTest {
     fun `given a request for at least 2 accounts, when user selects one, then continue button is disabled`() =
         runTest {
             advanceUntilIdle()
-            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelected(0)
             val state = viewModel.state.first()
             assertFalse(state.isContinueButtonEnabled)
         }
@@ -132,8 +132,8 @@ class ChooseAccountsViewModelTest {
     fun `given a request for at least 2 accounts, when user selects two, then continue button is enabled`() =
         runTest {
             advanceUntilIdle()
-            viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
+            viewModel.onAccountSelected(0)
+            viewModel.onAccountSelected(1)
             val state = viewModel.state.first()
             assertTrue(state.isContinueButtonEnabled)
         }
@@ -142,9 +142,9 @@ class ChooseAccountsViewModelTest {
     fun `given a request for at least 2 accounts, when user selects two and unselect the last selected, then continue button is disabled`() =
         runTest {
             advanceUntilIdle()
-            viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
-            viewModel.onAccountSelect(1)
+            viewModel.onAccountSelected(0)
+            viewModel.onAccountSelected(1)
+            viewModel.onAccountSelected(1)
             val state = viewModel.state.first()
             assertFalse(state.isContinueButtonEnabled)
         }
@@ -168,7 +168,7 @@ class ChooseAccountsViewModelTest {
             advanceUntilIdle()
 
             // when
-            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelected(0)
 
             // then
             val state = viewModel.state.first()
@@ -194,7 +194,7 @@ class ChooseAccountsViewModelTest {
             advanceUntilIdle()
 
             // when
-            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelected(0)
 
             // then
             val state = viewModel.state.first()
@@ -218,8 +218,8 @@ class ChooseAccountsViewModelTest {
             advanceUntilIdle()
 
             // when
-            viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
+            viewModel.onAccountSelected(0)
+            viewModel.onAccountSelected(1)
 
             // then
             val state = viewModel.state.first()

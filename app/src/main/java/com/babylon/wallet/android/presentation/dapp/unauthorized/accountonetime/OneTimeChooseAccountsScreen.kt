@@ -89,7 +89,7 @@ fun OneTimeChooseAccountsScreen(
         },
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
-        onAccountSelect = viewModel::onAccountSelect,
+        onAccountSelected = viewModel::onAccountSelected,
         onCreateNewAccount = onAccountCreationClick,
         dapp = sharedState.dapp,
         isOneTime = true,
@@ -129,7 +129,7 @@ fun OneTimeAccountContentPreview() {
                     isSelected = false
                 )
             ),
-            onAccountSelect = {},
+            onAccountSelected = {},
             onCreateNewAccount = {},
             dapp = DApp.sampleMainnet(),
             isOneTime = true,
