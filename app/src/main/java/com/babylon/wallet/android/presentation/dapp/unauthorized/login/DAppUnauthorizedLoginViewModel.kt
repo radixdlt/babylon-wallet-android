@@ -50,7 +50,8 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
-/** The order of presenting the screens for a [WalletUnauthorizedRequest],
+/**
+ * The order of presenting the screens for a [WalletUnauthorizedRequest],
  * regardless of whether all the *RequestItems are present, is as follows:
  *
  * 1. oneTimeAccountsRequestItem: AccountsRequestItem -> OneTimeChooseAccountsScreen
@@ -59,7 +60,7 @@ import javax.inject.Inject
  *      a. personaAddress: IdentityAddress -> VerifyPersonaScreen
  *      b. accountAddresses: List<AccountAddress> -> VerifyAccountsScreen
  *
- * For each screen wallet asks for signature(s) IF a challenge exists in the *RequestItem.
+ * For each screen wallet asks for signature(s) IF a challenge is present in the *RequestItem.
  *
  */
 @Suppress("LongParameterList", "TooManyFunctions")
