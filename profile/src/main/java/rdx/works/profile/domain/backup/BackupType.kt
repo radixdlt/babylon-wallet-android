@@ -1,6 +1,7 @@
 package rdx.works.profile.domain.backup
 
 import kotlinx.serialization.Serializable
+import rdx.works.core.serializers.StringUrlEncodedSerializer
 
 @Serializable
 sealed interface BackupType {
@@ -19,6 +20,9 @@ sealed interface BackupType {
         data object PlainText : File
 
         @Serializable
-        data class Encrypted(val password: String) : File
+        data class Encrypted(
+            @Serializable(with = StringUrlEncodedSerializer::class)
+            val password: String
+        ) : File
     }
 }
