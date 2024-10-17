@@ -199,7 +199,7 @@ fun Metadata.ValueView(
                 maxLines = 2
             )
 
-            MetadataType.Url -> Row(
+            MetadataType.Url, MetadataType.Origin -> Row(
                 modifier = modifier
                     .fillMaxWidth()
                     .clickable { context.openUrl(value) },
@@ -224,6 +224,6 @@ fun Metadata.ValueView(
 private const val ASSET_METADATA_SHORT_STRING_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
-        valueType is MetadataType.Url ||
-            (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
-        )
+            valueType is MetadataType.Url || valueType is MetadataType.Origin ||
+                    (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
+            )

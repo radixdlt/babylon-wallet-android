@@ -448,7 +448,7 @@ private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
             Metadata.Collection(
                 key = ExplicitMetadataKey.TAGS.key,
                 values = it.map { tag ->
-                    Metadata.Primitive(key = ExplicitMetadataKey.TAGS.key, value = tag, valueType = MetadataType.Url)
+                    Metadata.Primitive(key = ExplicitMetadataKey.TAGS.key, value = tag, valueType = MetadataType.String)
                 }
             )
         )
