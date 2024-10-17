@@ -54,6 +54,7 @@ fun ChooseAccountContent(
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     showBackButton: Boolean,
+    isSigningInProgress: Boolean
 ) {
     Scaffold(
         modifier = modifier,
@@ -69,7 +70,8 @@ fun ChooseAccountContent(
             RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = isContinueButtonEnabled,
-                text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)
+                text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue),
+                isLoading = isSigningInProgress
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -213,7 +215,8 @@ fun ChooseAccountContentPreview() {
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
-            showBackButton = true
+            showBackButton = true,
+            isSigningInProgress = false
         )
     }
 }

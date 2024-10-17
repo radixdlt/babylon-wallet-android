@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedReques
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
+import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsViewModel
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.Gateway
@@ -95,11 +96,14 @@ class ChooseAccountsViewModelTest {
         viewModel = OneTimeChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf(
+                    ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                     ARG_NUMBER_OF_ACCOUNTS to accountsRequestAtLeast.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                     ARG_EXACT_ACCOUNT_COUNT to true
                 )
             ),
-            getProfileUseCase = getProfileUseCase
+            getProfileUseCase = getProfileUseCase,
+            incomingRequestRepository = incomingRequestRepository,
+            accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
         )
     }
 
@@ -158,11 +162,14 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
+                        ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                         ARG_NUMBER_OF_ACCOUNTS to accountsRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
             )
 
             advanceUntilIdle()
@@ -184,11 +191,14 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
+                        ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                         ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
             )
 
             advanceUntilIdle()
@@ -209,11 +219,14 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
+                        ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                         ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
             )
             advanceUntilIdle()
 

@@ -64,13 +64,10 @@ fun OneTimeChooseAccountsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                OneTimeChooseAccountsEvent.NavigateToCompletionScreen -> {
-                    exitRequestFlow()
+                is OneTimeChooseAccountsEvent.AccountsCollected -> {
+                    sharedViewModel.onOneTimeAccountsCollected(accountsWithSignatures = event.accountsWithSignatures)
                 }
-
-                OneTimeChooseAccountsEvent.FailedToSendResponse -> {
-                    exitRequestFlow() // TODO probably later we need to show an error message
-                }
+                OneTimeChooseAccountsEvent.TerminateFlow -> exitRequestFlow()
             }
         }
     }
@@ -84,9 +81,7 @@ fun OneTimeChooseAccountsScreen(
 
     ChooseAccountContent(
         onBackClick = sharedViewModel::onUserRejectedRequest,
-        onContinueClick = {
-            sharedViewModel.onAccountsSelected(state.selectedAccounts())
-        },
+        onContinueClick = viewModel::onContinueClick,
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
         onAccountSelected = viewModel::onAccountSelected,
@@ -97,6 +92,7 @@ fun OneTimeChooseAccountsScreen(
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
         showBackButton = false,
+        isSigningInProgress = state.isSigningInProgress,
         modifier = modifier
     )
 
@@ -136,6 +132,7 @@ fun OneTimeAccountContentPreview() {
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
+            isSigningInProgress = false,
             showBackButton = false
         )
     }
