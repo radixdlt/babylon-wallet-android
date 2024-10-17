@@ -25,7 +25,7 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
         AccountLockerTouchedAtEntity::class,
         AccountLockerVaultItemEntity::class
     ],
-    version = StateDatabase.VERSION_10
+    version = StateDatabase.VERSION_11
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
