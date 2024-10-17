@@ -276,7 +276,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
     is MetadataOriginValue -> Metadata.Primitive(
         key = key,
         value = typed.value,
-        valueType = MetadataType.Url,
+        valueType = MetadataType.Origin,
         isLocked = isLocked
     )
 
@@ -286,7 +286,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
             Metadata.Primitive(
                 key = key,
                 value = it,
-                valueType = MetadataType.Url,
+                valueType = MetadataType.Origin,
                 isLocked = isLocked
             )
         },
