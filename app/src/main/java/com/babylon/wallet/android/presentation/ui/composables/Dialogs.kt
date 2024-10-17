@@ -117,6 +117,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
@@ -214,6 +215,7 @@ fun BottomSheetDialogWrapper(
                                 .padding(top = RadixTheme.dimensions.paddingMedium)
                                 .fillMaxWidth()
                                 .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
+                            backIcon = headerBackIcon,
                             onDismissRequest = { onDismissRequest() },
                             title = title
                         )
