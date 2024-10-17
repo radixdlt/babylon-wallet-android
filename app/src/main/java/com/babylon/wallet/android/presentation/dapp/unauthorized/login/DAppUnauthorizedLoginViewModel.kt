@@ -20,7 +20,6 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.FailureDialogState
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
@@ -36,16 +35,12 @@ import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
-import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.allAccountsOnCurrentNetwork
 import rdx.works.core.sargon.allPersonasOnCurrentNetwork
@@ -76,7 +71,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -186,6 +180,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
+                            walletUnauthorizedRequestInteractionId = args.interactionId,
                             numberOfAccounts = request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             isExactAccountsCount = request.oneTimeAccountsRequestItem.numberOfValues.quantifier
                                 == DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
@@ -235,9 +230,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onAccountsSelected(onetimeAccounts: List<AccountItemUiModel>) {
+    fun onOneTimeAccountsCollected(accountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?>) {
         viewModelScope.launch {
-            _state.update { it.copy(selectedAccountsOneTime = onetimeAccounts.toPersistentList()) }
+            _state.update { it.copy(oneTimeAccountsWithSignatures = accountsWithSignatures) }
             val request = request
             if (request.oneTimePersonaDataRequestItem != null) {
                 sendEvent(Event.NavigateToOneTimeChoosePersona(request.oneTimePersonaDataRequestItem.toRequiredFields()))
@@ -338,11 +333,9 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private fun sendResponseToDapp() {
         viewModelScope.launch {
-            buildUnauthorizedDappResponseUseCase(
+            BuildUnauthorizedDappResponseUseCase().invoke(
                 request = request,
-                oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
-                    getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
-                },
+                oneTimeAccountsWithSignatures = state.value.oneTimeAccountsWithSignatures,
                 oneTimePersonaData = state.value.selectedPersonaData,
                 verifiedEntities = state.value.verifiedEntities
             ).mapCatching {
@@ -417,8 +410,8 @@ data class DAppUnauthorizedLoginUiState(
     val failureDialogState: FailureDialogState = FailureDialogState.Closed,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
     val selectedPersonaData: PersonaData? = null,
-    val selectedAccountsOneTime: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedPersona: PersonaUiModel? = null,
+    val oneTimeAccountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?> = emptyMap(),
     val personaRequiredProofOfOwnership: IdentityAddress? = null,
     val accountsRequiredProofOfOwnership: List<AccountAddress>? = null,
     val verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),

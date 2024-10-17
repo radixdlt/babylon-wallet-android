@@ -280,49 +280,49 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
     }
 }
 
-class BuildUnauthorizedDappResponseUseCase @Inject constructor(
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
-) : BuildDappResponseUseCase(accessFactorSourcesProxy = accessFactorSourcesProxy) {
+class BuildUnauthorizedDappResponseUseCase {
 
-    suspend operator fun invoke(
+    @Suppress("UnsafeCallOnNullableType")
+    operator fun invoke(
         request: WalletUnauthorizedRequest,
-        oneTimeAccounts: List<Account> = emptyList(),
+        oneTimeAccountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?> = emptyMap(),
         oneTimePersonaData: PersonaData? = null,
         verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
     ): Result<WalletToDappInteractionResponse> {
-        var entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
-
-        if (request.oneTimeAccountsRequestItem?.challenge != null) {
-            val signRequest = SignRequest.RolaSignRequest(
-                challengeHex = request.oneTimeAccountsRequestItem.challenge.hex,
-                origin = request.metadata.origin,
-                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-            )
-
-            accessFactorSourcesProxy.getSignatures(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signPurpose = SignPurpose.SignAuth,
-                    signers = oneTimeAccounts.map { it.asProfileEntity() },
-                    signRequest = signRequest
-                )
-            ).onSuccess { result ->
-                entitiesWithSignatures = result.signersWithSignatures
-            }.onFailure { error ->
-                return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(error))
+        val oneTimeAccountsResponseItem = if (oneTimeAccountsWithSignatures.isNotEmpty()) {
+            val accountsWithProofs = if (oneTimeAccountsWithSignatures.all { it.value != null }) {
+                oneTimeAccountsWithSignatures.map { (accountEntity, signatureWithPublicKey) ->
+                    WalletToDappInteractionAccountProof(
+                        accountAddress = accountEntity.accountAddress,
+                        proof = WalletToDappInteractionAuthProof(
+                            publicKey = signatureWithPublicKey!!.publicKey, // safe because of line 293
+                            curve = when (signatureWithPublicKey.publicKey) {
+                                is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
+                                is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
+                            },
+                            signature = signatureWithPublicKey.signature
+                        )
+                    )
+                }
+            } else {
+                null
             }
-        }
 
-        val oneTimeAccountsResponseItem = buildAccountsResponseItem(
-            request = request,
-            accounts = oneTimeAccounts,
-            challenge = request.oneTimeAccountsRequestItem?.challenge,
-            entitiesWithSignatures = entitiesWithSignatures
-        )
-        if (oneTimeAccountsResponseItem.isFailure) {
-            return Result.failure(
-                exception = oneTimeAccountsResponseItem.exceptionOrNull()
-                    ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
+            val oneTimeAccountsResponse = oneTimeAccountsWithSignatures.keys.map { accountEntity ->
+                WalletInteractionWalletAccount(
+                    address = accountEntity.accountAddress,
+                    label = accountEntity.account.displayName,
+                    appearanceId = accountEntity.account.appearanceId
+                )
+            }
+
+            WalletToDappInteractionAccountsRequestResponseItem(
+                accounts = oneTimeAccountsResponse,
+                challenge = request.oneTimeAccountsRequestItem?.challenge,
+                proofs = accountsWithProofs
             )
+        } else {
+            null
         }
 
         return Result.success(
@@ -331,7 +331,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                     interactionId = request.interactionId,
                     items = WalletToDappInteractionResponseItems.UnauthorizedRequest(
                         v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(
-                            oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
+                            oneTimeAccounts = oneTimeAccountsResponseItem,
                             oneTimePersonaData = oneTimePersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
                             proofOfOwnership = request.proofOfOwnershipRequestItem?.let {
                                 verifiedEntities.toWalletToDappInteractionProofOfOwnershipRequestResponseItem(it.challenge)
