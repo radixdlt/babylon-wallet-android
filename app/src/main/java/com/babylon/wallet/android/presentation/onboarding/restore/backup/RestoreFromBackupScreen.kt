@@ -30,7 +30,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,7 +38,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -77,7 +75,6 @@ import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.launch
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import java.time.ZoneId
@@ -448,30 +445,6 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
             onClick = onOtherRestoreOptionsClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SyncSheetState(
-    state: SheetState,
-    isSheetVisible: Boolean,
-    onSheetClosed: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(isSheetVisible) {
-        if (isSheetVisible) {
-            scope.launch { state.show() }
-        } else {
-            scope.launch { state.hide() }
-        }
-    }
-
-    LaunchedEffect(state.isVisible) {
-        if (!state.isVisible) {
-            onSheetClosed()
-        }
     }
 }
 

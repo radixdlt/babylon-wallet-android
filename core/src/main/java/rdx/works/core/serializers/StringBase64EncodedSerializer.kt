@@ -1,7 +1,5 @@
 package rdx.works.core.serializers
 
-import android.util.Base64
-import android.util.Log
 import io.ktor.util.decodeBase64String
 import io.ktor.util.encodeBase64
 import kotlinx.serialization.KSerializer
@@ -11,7 +9,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-object StringBase64EncodedSerializer: KSerializer<String> {
+object StringBase64EncodedSerializer : KSerializer<String> {
     private const val SERIAL_NAME = "rdx.works.core.serializers.StringBase64EncodedSerializer"
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
