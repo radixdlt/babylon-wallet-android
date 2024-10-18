@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,7 +34,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,7 +64,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.RestoreFromBackupViewModel.State.PasswordSheet
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
@@ -156,19 +155,6 @@ private fun RestoreFromBackupContent(
         message = state.uiMessage,
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
-    )
-
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    SyncSheetState(
-        state = modalBottomSheetState,
-        isSheetVisible = state.isPasswordSheetVisible,
-        onSheetClosed = {
-            if (state.isPasswordSheetVisible) {
-                onBackClick()
-            }
-        }
     )
 
     Scaffold(
@@ -282,7 +268,9 @@ private fun RestoreFromBackupContent(
 
     if (state.passwordSheetState is PasswordSheet.Open) {
         BottomSheetDialogWrapper(
-            modifier = Modifier.imePadding(),
+            modifier = Modifier
+                .imePadding()
+                .navigationBarsPadding(),
             addScrim = true,
             showDragHandle = true,
             headerBackIcon = Icons.AutoMirrored.Filled.ArrowBack,

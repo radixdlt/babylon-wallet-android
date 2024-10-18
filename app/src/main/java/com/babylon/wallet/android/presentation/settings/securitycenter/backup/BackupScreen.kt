@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -39,7 +38,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,7 +76,6 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.backup.Ba
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -173,20 +170,6 @@ private fun BackupScreenContent(
             onDeny = onFileBackupDeny
         )
     }
-
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-
-    SyncSheetState(
-        sheetState = modalBottomSheetState,
-        isSheetVisible = state.isEncryptSheetVisible,
-        onSheetClosed = {
-            if (state.isEncryptSheetVisible) {
-                onBackClick()
-            }
-        }
-    )
 
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
