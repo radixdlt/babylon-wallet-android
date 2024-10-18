@@ -7,6 +7,8 @@ import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransaction
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.IntentSignature
 import com.radixdlt.sargon.IntentSignatures
+import com.radixdlt.sargon.Message
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.NotarySignature
@@ -16,10 +18,9 @@ import com.radixdlt.sargon.SignedIntent
 import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionHeader
 import com.radixdlt.sargon.TransactionIntent
-import com.radixdlt.sargon.extensions.compile
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.init
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.mapError
 import javax.inject.Inject
@@ -34,7 +35,7 @@ class NotariseTransactionUseCase @Inject constructor() {
         val intent = runCatching {
             TransactionIntent(
                 header = TransactionHeader(
-                    networkId = request.manifestData.networkId,
+                    networkId = request.networkId,
                     startEpochInclusive = request.startEpoch,
                     endEpochExclusive = request.endEpoch,
                     nonce = request.nonce,
@@ -42,8 +43,8 @@ class NotariseTransactionUseCase @Inject constructor() {
                     notaryIsSignatory = request.notaryIsSignatory,
                     tipPercentage = request.tipPercentage
                 ),
-                manifest = request.manifestData.manifestSargon,
-                message = request.manifestData.messageSargon
+                manifest = request.manifest,
+                message = request.message
             )
         }.getOrElse { error ->
             return Result.failure(PrepareTransactionException.BuildTransactionHeader(error))
@@ -79,8 +80,8 @@ class NotariseTransactionUseCase @Inject constructor() {
 
             NotarizationResult(
                 intentHash = notarizedTransaction.signedIntent.intent.hash(),
-                compiledNotarizedIntent = notarizedTransaction.compile(),
-                endEpoch = request.endEpoch
+                endEpoch = request.endEpoch,
+                notarizedTransaction = notarizedTransaction
             )
         }.mapError { error ->
             PrepareTransactionException.PrepareNotarizedTransaction(error)
@@ -88,7 +89,9 @@ class NotariseTransactionUseCase @Inject constructor() {
     }
 
     data class Request(
-        val manifestData: TransactionManifestData,
+        val manifest: TransactionManifest,
+        val networkId: NetworkId,
+        val message: Message,
         val notaryPublicKey: PublicKey,
         val notaryIsSignatory: Boolean,
         val startEpoch: Epoch,
