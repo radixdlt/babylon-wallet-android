@@ -301,7 +301,9 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
             R.string.common_somethingWentWrong
         )
         is RadixWalletException.DappRequestException.PreviewError -> context.getString(R.string.error_transactionFailure_reviewFailure)
-        RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(R.string.dAppRequest_requestPersonaNotFoundAlert_message)
+        RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(
+            R.string.dAppRequest_requestPersonaNotFoundAlert_message
+        )
     }
 }
 
