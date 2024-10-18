@@ -16,27 +16,28 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -59,7 +60,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.onboarding.restore.backup.RestoreFromBackupViewModel.State.PasswordSheet
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
@@ -73,7 +75,6 @@ import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.launch
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.CloudBackupFileEntity
 import java.time.ZoneId
@@ -151,19 +152,6 @@ private fun RestoreFromBackupContent(
         message = state.uiMessage,
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
-    )
-
-    val modalBottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    SyncSheetState(
-        state = modalBottomSheetState,
-        isSheetVisible = state.isPasswordSheetVisible,
-        onSheetClosed = {
-            if (state.isPasswordSheetVisible) {
-                onBackClick()
-            }
-        }
     )
 
     Scaffold(
@@ -275,24 +263,24 @@ private fun RestoreFromBackupContent(
         }
     }
 
-    if (state.isPasswordSheetVisible) {
-        DefaultModalSheetLayout(
-            sheetState = modalBottomSheetState,
-            enableImePadding = true,
-            wrapContent = true,
-            sheetContent = {
-                if (state.passwordSheetState is RestoreFromBackupViewModel.State.PasswordSheet.Open) {
-                    PasswordSheet(
-                        state = state.passwordSheetState,
-                        onBackClick = onBackClick,
-                        onPasswordTyped = onPasswordTyped,
-                        onPasswordRevealToggle = onPasswordRevealToggle,
-                        onPasswordSubmitted = onPasswordSubmitted
-                    )
-                }
-            },
-            onDismissRequest = onBackClick
-        )
+    if (state.passwordSheetState is PasswordSheet.Open) {
+        BottomSheetDialogWrapper(
+            modifier = Modifier
+                .imePadding()
+                .navigationBarsPadding(),
+            addScrim = true,
+            showDragHandle = true,
+            headerBackIcon = Icons.AutoMirrored.Filled.ArrowBack,
+            showDefaultTopBar = true,
+            onDismiss = onBackClick,
+        ) {
+            PasswordSheet(
+                state = state.passwordSheetState,
+                onPasswordTyped = onPasswordTyped,
+                onPasswordRevealToggle = onPasswordRevealToggle,
+                onPasswordSubmitted = onPasswordSubmitted
+            )
+        }
     }
 }
 
@@ -460,35 +448,10 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SyncSheetState(
-    state: SheetState,
-    isSheetVisible: Boolean,
-    onSheetClosed: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-
-    LaunchedEffect(isSheetVisible) {
-        if (isSheetVisible) {
-            scope.launch { state.show() }
-        } else {
-            scope.launch { state.hide() }
-        }
-    }
-
-    LaunchedEffect(state.isVisible) {
-        if (!state.isVisible) {
-            onSheetClosed()
-        }
-    }
-}
-
 @Composable
 private fun PasswordSheet(
     modifier: Modifier = Modifier,
     state: RestoreFromBackupViewModel.State.PasswordSheet.Open,
-    onBackClick: () -> Unit,
     onPasswordTyped: (String) -> Unit,
     onPasswordRevealToggle: () -> Unit,
     onPasswordSubmitted: () -> Unit
@@ -496,11 +459,6 @@ private fun PasswordSheet(
     Column(
         modifier = modifier
     ) {
-        RadixCenteredTopAppBar(
-            title = "",
-            onBackClick = onBackClick,
-        )
-
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
