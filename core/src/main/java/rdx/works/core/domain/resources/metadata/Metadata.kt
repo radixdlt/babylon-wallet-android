@@ -113,4 +113,8 @@ sealed interface MetadataType {
     @Serializable
     @SerialName("url")
     data object Url : MetadataType
+
+    @Serializable
+    @SerialName("origin")
+    data object Origin : MetadataType
 }
