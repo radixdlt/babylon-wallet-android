@@ -224,6 +224,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                             )
                         )
                     }
+                } else {
+                    onUserRejectedRequest()
                 }
             }
 
