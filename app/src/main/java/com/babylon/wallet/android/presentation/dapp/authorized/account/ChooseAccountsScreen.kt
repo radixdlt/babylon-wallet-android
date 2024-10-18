@@ -70,12 +70,13 @@ fun ChooseAccountsScreen(
         accountItems = state.availableAccountItems,
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
-        onAccountSelect = viewModel::onAccountSelect,
+        onAccountSelected = viewModel::onAccountSelect,
         onCreateNewAccount = onAccountCreationClick,
         dapp = sharedState.dapp,
         isOneTime = state.oneTimeRequest,
         isSingleChoice = state.isSingleChoice,
         showBackButton = state.showBackButton,
+        isSigningInProgress = false, // TODO update when refactoring
         modifier = modifier
     )
 
@@ -130,13 +131,14 @@ fun ChooseAccountsScreenPreview() {
                     isSelected = false
                 )
             ),
-            onAccountSelect = {},
+            onAccountSelected = {},
             onCreateNewAccount = {},
             dapp = DApp.sampleMainnet(),
             isOneTime = false,
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
+            isSigningInProgress = false,
             showBackButton = true
         )
     }
