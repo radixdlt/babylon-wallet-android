@@ -123,13 +123,7 @@ data class TransactionFees(
      * Finalized fee to lock for the transaction
      **/
     val transactionFeeToLock: Decimal192
-        get() = totalExecutionCost +
-            networkFinalization +
-            effectiveTip +
-            networkStorage +
-            feePaddingAmountForCalculation +
-            royalties -
-            nonContingentFeeLock
+        get() = (networkFee - nonContingentFeeLock).clamped
 
     val transactionFeeTotalUsd: FiatPrice?
         get() = xrdFiatPrice?.let { FiatPrice(transactionFeeToLock * it.price, it.currency) }
