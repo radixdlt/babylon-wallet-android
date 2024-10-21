@@ -109,42 +109,42 @@ fun NetworkFeeContent(
             )
         }
 
-        if (noFeePayerSelected) {
-            if (!isNetworkFeeLoading) {
+        if (isNetworkFeeLoading.not()) {
+            if (noFeePayerSelected) {
                 WarningText(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = RadixTheme.dimensions.paddingSmall),
                     text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_feePayerRequired)),
                 )
-            }
-        } else if (insufficientBalanceToPayTheFee) {
-            WarningText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingSmall),
-                text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
-                contentColor = RadixTheme.colors.red1,
-                textStyle = RadixTheme.typography.body1Header
-            )
-        } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-            ) {
+            } else if (insufficientBalanceToPayTheFee) {
                 WarningText(
-                    modifier = Modifier.weight(1f),
-                    text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = RadixTheme.dimensions.paddingSmall),
+                    text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
+                    contentColor = RadixTheme.colors.red1,
                     textStyle = RadixTheme.typography.body1Header
                 )
-                InfoButton(
-                    text = stringResource(R.string.empty),
-                    color = RadixTheme.colors.gray3,
-                    onClick = {
-                        onInfoClick(GlossaryItem.payingaccount)
-                    }
-                )
+            } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = RadixTheme.dimensions.paddingSmall),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                ) {
+                    WarningText(
+                        modifier = Modifier.weight(1f),
+                        text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
+                        textStyle = RadixTheme.typography.body1Header
+                    )
+                    InfoButton(
+                        text = stringResource(R.string.empty),
+                        color = RadixTheme.colors.gray3,
+                        onClick = {
+                            onInfoClick(GlossaryItem.payingaccount)
+                        }
+                    )
+                }
             }
         }
 
