@@ -87,20 +87,20 @@ data class TransactionFees(
 
     // ********* ADVANCED *********
 
-    val networkExecutionCost: String
+    val totalExecutionCostDisplayed: String
         get() = totalExecutionCost.formatted()
 
-    val networkFinalizationCost: String
+    val finalizationCostDisplayed: String
         get() = networkFinalization.formatted()
 
-    val networkStorageCost: String
+    val storageExpansionCostDisplayed: String
         get() = networkStorage.formatted()
 
-    val royaltiesCost: String
+    val royaltiesCostDisplayed: String
         get() = royalties.formatted()
 
     val noRoyaltiesCostDue: Boolean
-        get() = royaltiesCost == "0"
+        get() = royaltiesCostDisplayed == "0"
 
     /**
      * This is negative amount (if greater than zero) representation of nonContingentLock for Paid by dApps section
