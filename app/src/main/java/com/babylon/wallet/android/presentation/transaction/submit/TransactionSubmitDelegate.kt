@@ -66,7 +66,7 @@ class TransactionSubmitDelegate @Inject constructor(
         approvalJob = applicationScope.launch {
             val currentState = _state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.id
-            val manifestNetworkId = currentState.requestNonNull.transactionManifestData.networkId
+            val manifestNetworkId = currentState.transactionManifestDataNonNull.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -81,7 +81,9 @@ class TransactionSubmitDelegate @Inject constructor(
             if (currentState.feePayers?.selectedAccountAddress != null) {
                 val requestWithGuarantees = try {
                     val request = currentState.requestNonNull
-                    request.copy(transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType))
+                    val newManifestData = currentState.transactionManifestDataNonNull.attachGuarantees(currentState.previewType)
+                    _state.update { it.copy(transactionManifestData = newManifestData) }
+                    request.copy(transactionManifestData = newManifestData)
                 } catch (exception: Exception) {
                     logger.e(exception)
                     return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
@@ -123,7 +125,6 @@ class TransactionSubmitDelegate @Inject constructor(
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
                 manifestData = transactionRequest.transactionManifestData,
-                manifest = _state.value.transactionManifestNonNull,
                 lockFee = _state.value.transactionFees.transactionFeeToLock,
                 tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
                 ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
@@ -271,15 +272,8 @@ class TransactionSubmitDelegate @Inject constructor(
             )
         }
 
-        val modifiedManifest = _state.value.transactionManifestNonNull.modifyAddGuarantees(guarantees = guarantees)
-        _state.update {
-            it.copy(
-                transactionManifest = modifiedManifest
-            )
-        }
-
         return TransactionManifestData.from(
-            manifest = modifiedManifest,
+            manifest = _state.value.transactionManifestNonNull.modifyAddGuarantees(guarantees = guarantees),
             message = message
         )
     }

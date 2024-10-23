@@ -65,7 +65,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     notaryPublicKey = _state.value.ephemeralNotaryPrivateKey.toPublicKey()
                 )
             }.then { transactionToReview ->
-                _state.update { it.copy(transactionManifest = transactionToReview.transactionManifest) }
+                _state.update { it.copy(transactionManifestData = TransactionManifestData.from(transactionToReview.transactionManifest)) }
 
                 val manifestSummary = transactionToReview.transactionManifest.summary
                 resolveNotaryAndSignersUseCase(
@@ -81,7 +81,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 _state.update { it.copy(transactionFees = transactionFees) }
 
                 searchFeePayersUseCase(
-                    feePayerCandidates = _state.value.feePayerCandidates(),
+                    feePayerCandidates = _state.value.feePayerCandidates,
                     lockFee = transactionFees.defaultTransactionFee
                 )
             }.onSuccess { feePayers ->

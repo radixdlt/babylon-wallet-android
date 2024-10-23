@@ -12,6 +12,7 @@ import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.toList
 
 data class TransactionManifestData(
+    val manifest: TransactionManifest,
     val instructions: String,
     val networkId: NetworkId,
     val message: TransactionMessage = TransactionMessage.None,
@@ -43,6 +44,7 @@ data class TransactionManifestData(
             manifest: TransactionManifest,
             message: TransactionMessage = TransactionMessage.None
         ) = TransactionManifestData(
+            manifest = manifest,
             instructions = manifest.instructionsString,
             networkId = manifest.networkId,
             message = message,

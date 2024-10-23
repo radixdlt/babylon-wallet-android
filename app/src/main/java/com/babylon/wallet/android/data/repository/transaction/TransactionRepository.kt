@@ -60,7 +60,7 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override suspend fun analyzeTransaction(
         manifestData: TransactionManifestData,
-        isInternal: Boolean,
+        isWalletTransaction: Boolean,
         notaryPublicKey: PublicKey.Ed25519
     ): TransactionToReview {
         return withContext(dispatcher) {
@@ -69,7 +69,7 @@ class TransactionRepositoryImpl @Inject constructor(
                 instructions = manifestData.instructions,
                 blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
                 message = manifestData.messageSargon,
-                areInstructionsOriginatingFromHost = isInternal,
+                areInstructionsOriginatingFromHost = isWalletTransaction,
                 nonce = Nonce.secureRandom(),
                 notaryPublicKey = notaryPublicKey,
             )

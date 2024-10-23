@@ -33,10 +33,11 @@ class SignTransactionUseCase @Inject constructor(
 
     suspend operator fun invoke(request: Request): Result<NotarizationResult> {
         val manifestWithLockFee = request.manifestWithLockFee
+        val summary = request.manifestWithLockFee.summary
 
         return resolveNotaryAndSignersUseCase(
-            accountsAddressesRequiringAuth = request.manifest.summary.addressesOfAccountsRequiringAuth,
-            personaAddressesRequiringAuth = request.manifest.summary.addressesOfPersonasRequiringAuth,
+            accountsAddressesRequiringAuth = summary.addressesOfAccountsRequiringAuth,
+            personaAddressesRequiringAuth = summary.addressesOfPersonasRequiringAuth,
             notary = request.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
             transactionRepository.getLedgerEpoch().fold(
@@ -70,7 +71,6 @@ class SignTransactionUseCase @Inject constructor(
 
     data class Request(
         val manifestData: TransactionManifestData,
-        val manifest: TransactionManifest,
         val lockFee: Decimal192,
         val tipPercentage: UShort,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
@@ -79,9 +79,9 @@ class SignTransactionUseCase @Inject constructor(
 
         val manifestWithLockFee: TransactionManifest
             get() = if (feePayerAddress == null) {
-                manifest
+                manifestData.manifest
             } else {
-                manifest.modifyLockFee(
+                manifestData.manifest.modifyLockFee(
                     addressOfFeePayer = feePayerAddress,
                     fee = lockFee
                 )

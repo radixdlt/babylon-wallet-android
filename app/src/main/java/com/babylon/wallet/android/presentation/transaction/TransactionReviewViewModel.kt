@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
@@ -225,7 +226,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = _state.value.feePayerCandidates()
+        val selectedFeePayerInvolvedInTransaction = _state.value.feePayerCandidates
             .any { accountAddress ->
                 accountAddress == selectedFeePayerAccount.address
             }
@@ -287,14 +288,23 @@ class TransactionReviewViewModel @Inject constructor(
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val selectedFeePayerInput: SelectFeePayerInput? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val transactionManifest: TransactionManifest? = null
+        val transactionManifestData: TransactionManifestData? = null
     ) : UiState {
 
         val requestNonNull: TransactionRequest
             get() = requireNotNull(request)
 
+        val transactionManifestDataNonNull: TransactionManifestData
+            get() = requireNotNull(transactionManifestData)
+
         val transactionManifestNonNull: TransactionManifest
-            get() = requireNotNull(transactionManifest)
+            get() = requireNotNull(transactionManifestDataNonNull.manifest)
+
+        val feePayerCandidates: List<AccountAddress> by lazy {
+            transactionManifestNonNull.summary.addressesOfAccountsWithdrawnFrom +
+                transactionManifestNonNull.summary.addressesOfAccountsDepositedInto +
+                transactionManifestNonNull.summary.addressesOfAccountsRequiringAuth
+        }
 
         fun noneRequiredState(): State = copy(
             sheetState = Sheet.CustomizeFees(
@@ -349,13 +359,6 @@ class TransactionReviewViewModel @Inject constructor(
             )
         )
 
-        fun feePayerCandidates(): List<AccountAddress> {
-            val summary = transactionManifestNonNull.summary
-            return summary.addressesOfAccountsWithdrawnFrom +
-                summary.addressesOfAccountsDepositedInto +
-                summary.addressesOfAccountsRequiringAuth
-        }
-
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transfer
 
@@ -375,7 +378,7 @@ class TransactionReviewViewModel @Inject constructor(
 
         val isSelectedFeePayerInvolvedInTransaction: Boolean
             get() = runCatching {
-                feePayerCandidates().contains(feePayers?.selectedAccountAddress)
+                feePayerCandidates.contains(feePayers?.selectedAccountAddress)
             }.getOrNull() ?: false
 
         val isBalanceInsufficientToPayTheFee: Boolean

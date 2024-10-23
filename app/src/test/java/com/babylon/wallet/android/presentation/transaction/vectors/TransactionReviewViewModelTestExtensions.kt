@@ -34,7 +34,9 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
@@ -137,7 +139,8 @@ internal fun sampleManifest(
 ) = TransactionManifestData(
     instructions = instructions,
     networkId = networkId,
-    message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message)
+    message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message),
+    manifest = TransactionManifest.sample()
 )
 
 internal fun requestMetadata(

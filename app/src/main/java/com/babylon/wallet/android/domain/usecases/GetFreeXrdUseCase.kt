@@ -50,7 +50,6 @@ class GetFreeXrdUseCase @Inject constructor(
                 signTransactionUseCase(
                     request = SignTransactionUseCase.Request(
                         manifestData = manifestData,
-                        manifest = manifest,
                         lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
                         tipPercentage = TIP_PERCENTAGE
                     )
