@@ -25,6 +25,7 @@ fun EntitySecurityState.Companion.unsecured(
 val EntitySecurityState.factorSourceId: FactorSourceId
     get() = when (this) {
         is EntitySecurityState.Unsecured -> FactorSourceId.Hash(value.transactionSigning.factorSourceId)
+        is EntitySecurityState.Securified -> TODO()
     }
 
 val EntitySecurityState.usesEd25519: Boolean
@@ -34,6 +35,7 @@ val EntitySecurityState.usesEd25519: Boolean
 
             badge is PublicKey.Ed25519
         }
+        is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
     }
 
 val EntitySecurityState.usesSECP256k1: Boolean
@@ -43,6 +45,7 @@ val EntitySecurityState.usesSECP256k1: Boolean
 
             badge is PublicKey.Secp256k1
         }
+        is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
     }
 
 val EntitySecurityState.derivationPathScheme: DerivationPathScheme
@@ -53,16 +56,19 @@ val EntitySecurityState.derivationPathScheme: DerivationPathScheme
                 is DerivationPath.Cap26 -> DerivationPathScheme.CAP26
             }
         }
+        is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
     }
 
 val EntitySecurityState.transactionSigningFactorInstance: HierarchicalDeterministicFactorInstance
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.transactionSigning
+        is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
     }
 
 val EntitySecurityState.authenticationSigningFactorInstance: HierarchicalDeterministicFactorInstance?
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.authenticationSigning
+        is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
     }
 
 val EntitySecurityState.hasAuthSigning: Boolean

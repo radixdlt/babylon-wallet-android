@@ -10,7 +10,6 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
-import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -48,10 +47,6 @@ data class NotaryAndSigners(
 
     fun notaryPublicKeyNew(): PublicKey.Ed25519 {
         return ephemeralNotaryPrivateKey.toPublicKey()
-    }
-
-    fun signersPublicKeys(): List<PublicKey> = signers.map { signer ->
-        signer.securityState.transactionSigningFactorInstance.publicKey.publicKey
     }
 
     fun signWithNotary(signedIntentHash: SignedIntentHash): NotarySignature {

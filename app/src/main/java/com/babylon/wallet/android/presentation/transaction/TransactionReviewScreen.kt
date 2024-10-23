@@ -63,9 +63,11 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
@@ -495,6 +497,7 @@ fun TransactionPreviewContentPreview() {
                     remoteEntityId = RemoteEntityID.ConnectorId(""),
                     interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
+                        manifest = TransactionManifest.sample(),
                         instructions = "",
                         networkId = NetworkId.MAINNET,
                         message = TransactionMessage.Public("Hello"),

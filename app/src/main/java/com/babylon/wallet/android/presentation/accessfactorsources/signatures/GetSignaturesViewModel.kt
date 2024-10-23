@@ -97,6 +97,7 @@ class GetSignaturesViewModel @Inject constructor(
                     is FactorSource.TrustedContact -> {
                         // Not implemented yet
                     }
+                    is FactorSource.Passphrase -> TODO("Passphrase is not yet supported.")
                 }
             }
 
@@ -271,6 +272,7 @@ class GetSignaturesViewModel @Inject constructor(
                         }
                     }
                 }
+                is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
             }
         }
 

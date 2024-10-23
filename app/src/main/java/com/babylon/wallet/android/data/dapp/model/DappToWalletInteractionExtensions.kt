@@ -16,8 +16,10 @@ import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
@@ -54,6 +56,7 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     remoteEntityId = remoteConnectorId,
     interactionId = requestId,
     transactionManifestData = TransactionManifestData(
+        manifest = TransactionManifest.init(unvalidatedManifest.transactionManifestString, metadata.networkId),
         instructions = unvalidatedManifest.transactionManifestString,
         networkId = metadata.networkId,
         message = message?.let { TransactionManifestData.TransactionMessage.Public(it) } ?: TransactionManifestData.TransactionMessage.None,
