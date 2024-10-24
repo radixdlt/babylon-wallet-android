@@ -15,7 +15,7 @@ import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.SignedIntent
-import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.SignedTransactionIntentHash
 import com.radixdlt.sargon.TransactionHeader
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.TransactionManifest
@@ -72,7 +72,7 @@ class NotariseTransactionUseCase @Inject constructor() {
             return Result.failure(PrepareTransactionException.PrepareNotarizedTransaction(error))
         }
 
-        return signatureGatherer.notarise(signedIntentHash = signedIntent.hash()).mapCatching { signature ->
+        return signatureGatherer.notarise(signedTransactionIntentHash = signedIntent.hash()).mapCatching { signature ->
             val notarizedTransaction = NotarizedTransaction(
                 signedIntent = signedIntent,
                 notarySignature = signature
@@ -104,6 +104,6 @@ class NotariseTransactionUseCase @Inject constructor() {
 
         suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>>
 
-        suspend fun notarise(signedIntentHash: SignedIntentHash): Result<NotarySignature>
+        suspend fun notarise(signedTransactionIntentHash: SignedTransactionIntentHash): Result<NotarySignature>
     }
 }

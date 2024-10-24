@@ -8,7 +8,7 @@ import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
@@ -447,14 +447,14 @@ class DappToWalletInteractionUnvalidatedTest {
     fun `transaction approval response matches expected`() {
         val interacionId = UUID.randomUUID().toString()
         val expected =
-            """{"discriminator":"success","interactionId":"$interacionId","items":{"discriminator":"transaction","send":{"transactionIntentHash":"txid_rdx1frcm6zzyfd08z0deu9x24sh64eccxeux4j2dv3dsqeuh9qsz4y6szm3ltd"}}}"""
+            """{"discriminator":"success","interactionId":"$interacionId","items":{"discriminator":"transaction","send":{"transactionTransactionIntentHash":"txid_rdx1frcm6zzyfd08z0deu9x24sh64eccxeux4j2dv3dsqeuh9qsz4y6szm3ltd"}}}"""
         val response: WalletToDappInteractionResponse = WalletToDappInteractionResponse.Success(
             v1 = WalletToDappInteractionSuccessResponse(
                 interactionId = interacionId,
                 items = WalletToDappInteractionResponseItems.Transaction(
                     v1 = WalletToDappInteractionTransactionResponseItems(
                         send = WalletToDappInteractionSendTransactionResponseItem(
-                            IntentHash.init("txid_rdx1frcm6zzyfd08z0deu9x24sh64eccxeux4j2dv3dsqeuh9qsz4y6szm3ltd"),
+                            TransactionIntentHash.init("txid_rdx1frcm6zzyfd08z0deu9x24sh64eccxeux4j2dv3dsqeuh9qsz4y6szm3ltd"),
                         )
                     )
                 )

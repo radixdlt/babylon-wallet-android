@@ -21,14 +21,14 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 
 @Composable
 internal fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionId: IntentHash?,
+    transactionId: TransactionIntentHash?,
     isMobileConnect: Boolean,
     isInternal: Boolean,
     dAppName: String?
@@ -104,7 +104,7 @@ private fun SuccessBottomDialogPreview(
 ) {
     RadixWalletTheme {
         SuccessContent(
-            transactionId = IntentHash.sample(),
+            transactionId = TransactionIntentHash.sample(),
             isMobileConnect = isMobileConnect,
             isInternal = false,
             dAppName = null

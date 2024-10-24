@@ -12,7 +12,7 @@ import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.SignedTransactionIntentHash
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
@@ -33,7 +33,7 @@ class SignTransactionUseCase @Inject constructor(
 
     suspend operator fun invoke(request: Request): Result<NotarizationResult> {
         val manifestWithLockFee = request.manifestWithLockFee
-        val summary = request.manifestWithLockFee.summary
+        val summary = request.manifestWithLockFee.summary!!
 
         return resolveNotaryAndSignersUseCase(
             accountsAddressesRequiringAuth = summary.addressesOfAccountsRequiringAuth,
@@ -113,8 +113,8 @@ class SignTransactionUseCase @Inject constructor(
             }
         }
 
-        override suspend fun notarise(signedIntentHash: SignedIntentHash): Result<NotarySignature> = runCatching {
-            notaryAndSigners.signWithNotary(signedIntentHash = signedIntentHash)
+        override suspend fun notarise(signedTransactionIntentHash: SignedTransactionIntentHash): Result<NotarySignature> = runCatching {
+            notaryAndSigners.signWithNotary(signedTransactionIntentHash = signedTransactionIntentHash)
         }
     }
 }

@@ -301,9 +301,9 @@ class TransactionReviewViewModel @Inject constructor(
             get() = requireNotNull(transactionManifestDataNonNull.manifest)
 
         val feePayerCandidates: List<AccountAddress> by lazy {
-            transactionManifestNonNull.summary.addressesOfAccountsWithdrawnFrom +
-                transactionManifestNonNull.summary.addressesOfAccountsDepositedInto +
-                transactionManifestNonNull.summary.addressesOfAccountsRequiringAuth
+            transactionManifestNonNull.summary!!.addressesOfAccountsWithdrawnFrom +
+                    transactionManifestNonNull.summary!!.addressesOfAccountsDepositedInto +
+                    transactionManifestNonNull.summary!!.addressesOfAccountsRequiringAuth
         }
 
         fun noneRequiredState(): State = copy(
