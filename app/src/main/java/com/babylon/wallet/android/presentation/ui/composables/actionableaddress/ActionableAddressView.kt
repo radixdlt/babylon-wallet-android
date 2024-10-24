@@ -44,8 +44,8 @@ import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
-import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
@@ -60,8 +60,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import rdx.works.core.sargon.dashboardUrl
 import rdx.works.core.sargon.serializers.AddressSerializer
-import rdx.works.core.sargon.serializers.TransactionIntentHashSerializer
 import rdx.works.core.sargon.serializers.NonFungibleGlobalIdSerializer
+import rdx.works.core.sargon.serializers.TransactionIntentHashSerializer
 
 @Composable
 fun ActionableAddressView(
