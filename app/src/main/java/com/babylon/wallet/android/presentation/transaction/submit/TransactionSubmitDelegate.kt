@@ -14,8 +14,8 @@ import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
+import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.Event
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -23,14 +23,14 @@ import com.babylon.wallet.android.presentation.transaction.model.TransactionErro
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.TransactionGuarantee
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
+import com.radixdlt.sargon.extensions.orZero
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
@@ -51,7 +51,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private val transactionStatusClient: TransactionStatusClient,
     private val exceptionMessageProvider: ExceptionMessageProvider,
     @ApplicationScope private val applicationScope: CoroutineScope
-) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionSubmit")
 
@@ -64,9 +64,9 @@ class TransactionSubmitDelegate @Inject constructor(
         if (approvalJob != null) return
 
         approvalJob = applicationScope.launch {
-            val currentState = _state.value
+            val currentState = data.value
             val currentNetworkId = getCurrentGatewayUseCase().network.id
-            val manifestNetworkId = currentState.transactionManifestDataNonNull.networkId
+            val manifestNetworkId = data.value.transactionToReviewData.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -79,28 +79,30 @@ class TransactionSubmitDelegate @Inject constructor(
             }
 
             if (currentState.feePayers?.selectedAccountAddress != null) {
-                val requestWithGuarantees = try {
-                    val request = currentState.requestNonNull
-                    val newManifestData = currentState.transactionManifestDataNonNull.attachGuarantees(currentState.previewType)
-                    _state.update { it.copy(transactionManifestData = newManifestData) }
-                    request.copy(transactionManifestData = newManifestData)
+                try {
+                    val newManifest = data.value.transactionToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
+                    data.update {
+                        it.copy(
+                            _transactionToReviewData = it.transactionToReviewData.copy(
+                                transactionToReview = it.transactionToReviewData.transactionToReview.copy(
+                                    transactionManifest = newManifest
+                                )
+                            )
+                        )
+                    }
                 } catch (exception: Exception) {
                     logger.e(exception)
                     return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
                 }
 
-                signAndSubmit(
-                    transactionRequest = requestWithGuarantees,
-                    signTransactionUseCase = signTransactionUseCase,
-                    feePayerAddress = currentState.feePayers.selectedAccountAddress
-                )
+                signAndSubmit()
             }
         }
     }
 
     suspend fun onDismiss(exception: RadixWalletException.DappRequestException): Result<Unit> = runCatching {
         if (approvalJob == null) {
-            val request = _state.value.requestNonNull
+            val request = data.value.request
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(
                     request = request,
@@ -115,31 +117,29 @@ class TransactionSubmitDelegate @Inject constructor(
         }
     }
 
-    private suspend fun signAndSubmit(
-        transactionRequest: TransactionRequest,
-        signTransactionUseCase: SignTransactionUseCase,
-        feePayerAddress: AccountAddress?
-    ) {
+    private suspend fun signAndSubmit() {
+        val transactionRequest = data.value.request
+        val feePayerAddress = data.value.feePayers?.selectedAccountAddress
+
         _state.update { it.copy(isSubmitting = true) }
 
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
-                manifestData = transactionRequest.transactionManifestData,
-                lockFee = _state.value.transactionFees.transactionFeeToLock,
-                tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
-                ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
+                manifest = data.value.transactionToReviewData.transactionToReview.transactionManifest,
+                networkId = data.value.transactionToReviewData.networkId,
+                message = data.value.transactionToReviewData.message,
+                lockFee = _state.value.transactionFeesInfo?.transactionFees?.transactionFeeToLock.orZero(),
+                tipPercentage = _state.value.transactionFeesInfo?.transactionFees?.tipPercentageForTransaction ?: 0.toUShort(),
+                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey,
                 feePayerAddress = feePayerAddress
             )
         ).then { notarizationResult ->
             transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
                 .map { notarizationResult }
         }.onSuccess { notarization ->
-            _state.update {
-                it.copy(
-                    isSubmitting = false,
-                    endEpoch = notarization.endEpoch
-                )
-            }
+            data.update { it.copy(endEpoch = notarization.endEpoch) }
+            _state.update { it.copy(isSubmitting = false) }
+
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.interactionId,
@@ -221,7 +221,7 @@ class TransactionSubmitDelegate @Inject constructor(
         }
     }
 
-    private fun TransactionManifestData.attachGuarantees(previewType: PreviewType): TransactionManifestData {
+    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
         var manifest = this
         if (previewType is PreviewType.Transfer) {
             manifest = manifest.addAssertions(
@@ -241,14 +241,13 @@ class TransactionSubmitDelegate @Inject constructor(
             it.copy(isSubmitting = false, error = TransactionErrorMessage(error))
         }
 
-        val currentState = _state.value
-        if (currentState.requestNonNull.isInternal) {
+        if (data.value.request.isInternal) {
             return
         }
         error.asRadixWalletException()?.let { radixWalletException ->
             radixWalletException.toDappWalletInteractionErrorType()?.let { walletErrorType ->
                 respondToIncomingRequestUseCase.respondWithFailure(
-                    request = currentState.requestNonNull,
+                    request = data.value.request,
                     dappWalletInteractionErrorType = walletErrorType,
                     message = radixWalletException.getDappMessage()
                 )
@@ -257,9 +256,9 @@ class TransactionSubmitDelegate @Inject constructor(
         approvalJob = null
     }
 
-    private fun TransactionManifestData.addAssertions(
+    private fun TransactionManifest.addAssertions(
         depositing: List<Transferable.Depositing>
-    ): TransactionManifestData {
+    ): TransactionManifest {
         val guarantees = depositing.mapNotNull { transferable ->
             val assertion = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount ?: return@mapNotNull null
             val resource = transferable.transferable.resource as? Resource.FungibleResource ?: return@mapNotNull null
@@ -271,10 +270,6 @@ class TransactionSubmitDelegate @Inject constructor(
                 percentage = assertion.percentage
             )
         }
-
-        return TransactionManifestData.from(
-            manifest = _state.value.transactionManifestNonNull.modifyAddGuarantees(guarantees = guarantees),
-            message = message
-        )
+        return modifyAddGuarantees(guarantees = guarantees)
     }
 }

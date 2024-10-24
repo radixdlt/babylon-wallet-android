@@ -35,7 +35,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
@@ -138,7 +138,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 )
             }.mapCatching {
-                TransactionManifestData.from(it)
+                UnvalidatedManifestData.from(it)
             }.onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
                 val requestId = UUID.randomUUID().toString()

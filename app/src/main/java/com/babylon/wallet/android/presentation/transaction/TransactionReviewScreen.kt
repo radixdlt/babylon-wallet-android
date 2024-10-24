@@ -33,9 +33,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
-import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
-import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -52,7 +49,6 @@ import com.babylon.wallet.android.presentation.transaction.composables.RawManife
 import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
-import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -62,20 +58,13 @@ import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.orZero
-import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.TransactionManifestData.TransactionMessage
-import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Resource
-import java.util.UUID
 
 @Composable
 fun TransactionReviewScreen(
@@ -117,8 +106,8 @@ fun TransactionReviewScreen(
         onTransferableNonFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
-        onPayerChanged = viewModel::onPayerChanged,
-        onPayerSelected = viewModel::onPayerSelected,
+        onPayerChanged = viewModel::onFeePayerChanged,
+        onPayerSelected = viewModel::onFeePayerSelected,
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
         onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
@@ -344,16 +333,16 @@ private fun TransactionPreviewContent(
                             }
                         )
 
-                        NetworkFeeContent(
-                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                            fees = state.transactionFees,
-                            noFeePayerSelected = state.noFeePayerSelected,
-                            insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                            isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
-                            isNetworkFeeLoading = state.isNetworkFeeLoading,
-                            onCustomizeClick = onCustomizeClick,
-                            onInfoClick = onInfoClick
-                        )
+                        state.transactionFeesInfo?.let { feesInfo ->
+                            NetworkFeeContent(
+                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                                feesInfo = feesInfo,
+                                isNetworkFeeLoading = state.isNetworkFeeLoading,
+                                onCustomizeClick = onCustomizeClick,
+                                onInfoClick = onInfoClick
+                            )
+                        }
+
                         SlideToSignButton(
                             modifier = Modifier
                                 .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
@@ -379,9 +368,6 @@ private fun TransactionPreviewContent(
             sheetContent = {
                 BottomSheetContent(
                     sheetState = state.sheetState,
-                    transactionFees = state.transactionFees,
-                    insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                    isSelectedFeePayerInvolvedInTransaction = state.isSelectedFeePayerInvolvedInTransaction,
                     onCloseBottomSheetClick = onCloseBottomSheetClick,
                     onGuaranteesApplyClick = onGuaranteesApplyClick,
                     onGuaranteeValueChanged = onGuaranteeValueChanged,
@@ -425,9 +411,6 @@ private fun TransactionPreviewContent(
 private fun BottomSheetContent(
     modifier: Modifier = Modifier,
     sheetState: State.Sheet,
-    transactionFees: TransactionFees,
-    insufficientBalanceToPayTheFee: Boolean,
-    isSelectedFeePayerInvolvedInTransaction: Boolean,
     onCloseBottomSheetClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
@@ -459,9 +442,6 @@ private fun BottomSheetContent(
             FeesSheet(
                 modifier = modifier,
                 state = sheetState,
-                transactionFees = transactionFees,
-                insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
-                isSelectedFeePayerInvolvedInTransaction = isSelectedFeePayerInvolvedInTransaction,
                 onClose = onCloseBottomSheetClick,
                 onChangeFeePayerClick = onChangeFeePayerClick,
                 onSelectFeePayerClick = onSelectFeePayerClick,
@@ -493,18 +473,6 @@ fun TransactionPreviewContentPreview() {
         TransactionPreviewContent(
             onBackClick = {},
             state = State(
-                request = TransactionRequest(
-                    remoteEntityId = RemoteEntityID.ConnectorId(""),
-                    interactionId = UUID.randomUUID().toString(),
-                    transactionManifestData = TransactionManifestData(
-                        manifest = TransactionManifest.sample(),
-                        instructions = "",
-                        networkId = NetworkId.MAINNET,
-                        message = TransactionMessage.Public("Hello"),
-                        version = TransactionVersion.Default.value
-                    ),
-                    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(NetworkId.MAINNET)
-                ),
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming

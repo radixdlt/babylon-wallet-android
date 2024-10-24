@@ -5,8 +5,6 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -88,7 +86,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.transaction.NotarizationResult
@@ -170,16 +168,16 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         endEpoch = 50u
     )
     private val sampleRequestId = UUID.randomUUID().toString()
-    private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
+    private val sampleUnvalidatedManifestData = mockk<UnvalidatedManifestData>().apply {
         every { networkId } returns NetworkId.MAINNET
         every { instructions } returns ""
         every { blobs } returns emptyList()
-        every { message } returns TransactionManifestData.TransactionMessage.None
+        every { message } returns UnvalidatedManifestData.TransactionMessage.None
     }
     private val sampleRequest = TransactionRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = sampleRequestId,
-        transactionManifestData = sampleTransactionManifestData,
+        transactionManifestData = sampleUnvalidatedManifestData,
         requestMetadata = DappToWalletInteraction.RequestMetadata(
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
@@ -294,7 +292,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getDAppsUseCase = getDAppsUseCase,
             appEventBus = appEventBus,
             getProfileUseCase = getProfileUseCase,
-            coroutineDispatcher = coroutineDispatcher
+            defaultDispatcher = coroutineDispatcher
         )
     }
 

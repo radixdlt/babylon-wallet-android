@@ -18,8 +18,9 @@ import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.perAssetTransfers
+import com.radixdlt.sargon.extensions.plaintext
 import kotlinx.coroutines.flow.update
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
@@ -43,19 +44,13 @@ class PrepareManifestDelegate @Inject constructor(
                 )
             )
         }.map { manifest ->
-            TransactionManifestData.from(
+            UnvalidatedManifestData.from(
                 manifest = manifest,
-                message = when (val messageState = _state.value.messageState) {
-                    is TransferViewModel.State.Message.Added -> TransactionManifestData.TransactionMessage.Public(
-                        message = messageState.message
-                    )
-
-                    is TransferViewModel.State.Message.None -> TransactionManifestData.TransactionMessage.None
-                }
+                message = (_state.value.messageState as? TransferViewModel.State.Message.Added)?.message
             ).prepareInternalTransactionRequest()
         }.onSuccess { request ->
-            _state.update { it.copy(transferRequestId = request.interactionId.toString()) }
-            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.transactionManifestData.instructions}")
+            _state.update { it.copy(transferRequestId = request.interactionId) }
+            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.unvalidatedManifestData.instructions}")
             incomingRequestRepository.add(request)
         }.onFailure { error ->
             _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }

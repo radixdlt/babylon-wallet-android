@@ -40,7 +40,7 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -129,22 +129,22 @@ internal fun testViewModel(
     savedStateHandle = savedStateHandle,
     appEventBus = appEventBus,
     getProfileUseCase = getProfileUseCase,
-    coroutineDispatcher = testDispatcher
+    defaultDispatcher = testDispatcher
 )
 
 internal fun sampleManifest(
     instructions: String,
     networkId: NetworkId = NetworkId.MAINNET,
     message: String? = null
-) = TransactionManifestData(
+) = UnvalidatedManifestData(
     instructions = instructions,
     networkId = networkId,
-    message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message),
+    message = if (message == null) UnvalidatedManifestData.TransactionMessage.None else UnvalidatedManifestData.TransactionMessage.Public(message),
     manifest = TransactionManifest.sample()
 )
 
 internal fun requestMetadata(
-    manifestData: TransactionManifestData,
+    manifestData: UnvalidatedManifestData,
     dApp: DApp? = null
 ) = DappToWalletInteraction.RequestMetadata(
     networkId = manifestData.networkId,

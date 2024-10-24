@@ -7,8 +7,10 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -32,10 +34,8 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.ResourceIdentifier
-import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
-import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
@@ -48,12 +48,12 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
@@ -72,11 +72,12 @@ class TransactionReviewViewModel @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    @DefaultDispatcher private val coroutineDispatcher: CoroutineDispatcher,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = TransactionReviewArgs(savedStateHandle)
+    private val data = MutableStateFlow(Data())
 
     override fun initialState(): State = State(
         isLoading = true,
@@ -87,10 +88,10 @@ class TransactionReviewViewModel @Inject constructor(
     init {
         initHiddenResources()
 
-        analysis(scope = viewModelScope, state = _state)
+        analysis(scope = viewModelScope, data = data, state = _state)
         guarantees(scope = viewModelScope, state = _state)
-        fees(scope = viewModelScope, state = _state)
-        submit(scope = viewModelScope, state = _state)
+        fees(scope = viewModelScope, data = data, state = _state)
+        submit(scope = viewModelScope, data = data, state = _state)
         submit.oneOffEventHandler = this
 
         observeDeferredRequests()
@@ -99,7 +100,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     private fun initHiddenResources() {
         viewModelScope.launch {
-            withContext(coroutineDispatcher) {
+            withContext(defaultDispatcher) {
                 _state.update {
                     it.copy(
                         hiddenResourceIds = getProfileUseCase().getResourcePreferences().hiddenResources
@@ -128,16 +129,31 @@ class TransactionReviewViewModel @Inject constructor(
                 sendEvent(Event.Dismiss)
             }
         } else {
-            _state.update { it.copy(request = request) }
-            viewModelScope.launch {
-                analysis.analyse()
+            data.update { it.copy(_request = request) }
+            _state.update {
+                it.copy(
+                    rawManifest = request.unvalidatedManifestData.instructions,
+                    message = request.unvalidatedManifestData.plainMessage
+                )
             }
 
-            if (!request.isInternal) {
+            viewModelScope.launch {
+                withContext(defaultDispatcher) {
+                    analysis.analyse()
+                    fees.resolveFees()
+                }
+            }
+
+            if (request.isInternal) {
+                _state.update { it.copy(proposingDApp = State.ProposingDApp.None) }
+            } else {
                 viewModelScope.launch {
-                    getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false).onSuccess { dApp ->
-                        _state.update { it.copy(proposingDApp = dApp) }
-                    }
+                    getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false)
+                        .onSuccess { dApp ->
+                            _state.update {
+                                it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
+                            }
+                        }
                 }
             }
         }
@@ -196,60 +212,24 @@ class TransactionReviewViewModel @Inject constructor(
         fees.onTipPercentageChanged(tipPercentage)
     }
 
-    fun onViewDefaultModeClick() = fees.onViewDefaultModeClick()
-
-    fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
-
-    fun onPayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
-        val selectFeePayerInput = state.value.selectedFeePayerInput ?: return
-
-        _state.update {
-            it.copy(
-                selectedFeePayerInput = selectFeePayerInput.copy(
-                    preselectedCandidate = selectedFeePayer
-                )
-            )
-        }
+    fun onViewDefaultModeClick() {
+        fees.onViewDefaultModeClick()
     }
 
-    fun onPayerSelected() {
-        val selectFeePayerInput = state.value.selectedFeePayerInput ?: return
-        val selectedFeePayerAccount = selectFeePayerInput.preselectedCandidate?.account ?: return
+    fun onViewAdvancedModeClick() {
+        fees.onViewAdvancedModeClick()
+    }
 
-        val feePayerSearchResult = state.value.feePayers
-        val transactionFees = state.value.transactionFees
-        val signersCount = state.value.defaultSignersCount
+    fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
+        fees.onFeePayerChanged(selectedFeePayer)
+    }
 
-        val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selectedAccountAddress = selectedFeePayerAccount.address,
-            candidates = feePayerSearchResult.candidates
-        )
-
-        val customizeFeesSheet = state.value.sheetState as? Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = _state.value.feePayerCandidates
-            .any { accountAddress ->
-                accountAddress == selectedFeePayerAccount.address
-            }
-
-        val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
-
-        _state.update {
-            it.copy(
-                transactionFees = transactionFees.copy(
-                    signersCount = updatedSignersCount
-                ),
-                feePayers = updatedFeePayerResult,
-                sheetState = customizeFeesSheet.copy(
-                    feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                        feePayerCandidate = selectedFeePayerAccount
-                    )
-                )
-            )
-        }
+    fun onFeePayerSelected() {
+        fees.onFeePayerSelected()
     }
 
     fun onFeePayerSelectionDismissRequest() {
-        _state.update { it.copy(selectedFeePayerInput = null) }
+        fees.onFeePayerSelectionDismissRequest()
     }
 
     fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
@@ -269,154 +249,54 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(showRawTransactionWarning = false) }
     }
 
-    data class State(
-        val request: TransactionRequest? = null,
-        val proposingDApp: DApp? = null,
-        val endEpoch: ULong? = null,
-        val isLoading: Boolean,
-        val isNetworkFeeLoading: Boolean,
-        val isSubmitting: Boolean = false,
-        val isRawManifestVisible: Boolean = false,
-        val showRawTransactionWarning: Boolean = false,
-        val previewType: PreviewType,
-        val transactionFees: TransactionFees = TransactionFees(),
-        val feePayers: TransactionFeePayers? = null,
-        val defaultSignersCount: Int = 0,
-        val sheetState: Sheet = Sheet.None,
-        private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
-        val error: TransactionErrorMessage? = null,
+    data class Data(
+        private val _request: TransactionRequest? = null,
+        private val _transactionToReviewData: TransactionToReviewData? = null,
+        private val _notaryAndSigners: NotaryAndSigners? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
-        val selectedFeePayerInput: SelectFeePayerInput? = null,
-        val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val transactionManifestData: TransactionManifestData? = null
-    ) : UiState {
+        val endEpoch: ULong? = null,
+        val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
+        val feePayers: TransactionFeePayers? = null,
+    ) {
 
-        val requestNonNull: TransactionRequest
-            get() = requireNotNull(request)
-
-        val transactionManifestDataNonNull: TransactionManifestData
-            get() = requireNotNull(transactionManifestData)
-
-        val transactionManifestNonNull: TransactionManifest
-            get() = requireNotNull(transactionManifestDataNonNull.manifest)
+        val request: TransactionRequest
+            get() = requireNotNull(_request)
+        val transactionToReviewData: TransactionToReviewData
+            get() = requireNotNull(_transactionToReviewData)
+        val notaryAndSigners: NotaryAndSigners
+            get() = requireNotNull(_notaryAndSigners)
 
         val feePayerCandidates: List<AccountAddress> by lazy {
-            transactionManifestNonNull.summary.addressesOfAccountsWithdrawnFrom +
-                transactionManifestNonNull.summary.addressesOfAccountsDepositedInto +
-                transactionManifestNonNull.summary.addressesOfAccountsRequiringAuth
+            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary
+            manifestSummary.addressesOfAccountsWithdrawnFrom +
+                manifestSummary.addressesOfAccountsDepositedInto +
+                manifestSummary.addressesOfAccountsRequiringAuth
         }
+    }
 
-        fun noneRequiredState(): State = copy(
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
-                feesMode = latestFeesMode
-            )
-        )
-
-        fun candidateSelectedState(feePayerCandidate: Account): State = copy(
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                    feePayerCandidate = feePayerCandidate
-                ),
-                feesMode = latestFeesMode
-            )
-        )
-
-        fun noCandidateSelectedState(): State = copy(
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
-                    candidates = feePayers?.candidates.orEmpty()
-                ),
-                feesMode = latestFeesMode
-            )
-        )
-
-        fun feePayerSelectionState(): State = copy(
-            selectedFeePayerInput = SelectFeePayerInput(
-                preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
-                candidates = feePayers?.candidates.orEmpty().toPersistentList(),
-                fee = transactionFees.transactionFeeToLock.formatted()
-            )
-        )
-
-        fun defaultModeState(): State = copy(
-            transactionFees = transactionFees.copy(
-                feePaddingAmount = null,
-                tipPercentage = null
-            ),
-            latestFeesMode = Sheet.CustomizeFees.FeesMode.Default,
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = (sheetState as Sheet.CustomizeFees).feePayerMode,
-                feesMode = Sheet.CustomizeFees.FeesMode.Default
-            )
-        )
-
-        fun advancedModeState(): State = copy(
-            latestFeesMode = Sheet.CustomizeFees.FeesMode.Advanced,
-            sheetState = Sheet.CustomizeFees(
-                feePayerMode = (sheetState as Sheet.CustomizeFees).feePayerMode,
-                feesMode = Sheet.CustomizeFees.FeesMode.Advanced
-            )
-        )
+    data class State(
+        val isLoading: Boolean,
+        val proposingDApp: ProposingDApp? = null,
+        val isRawManifestVisible: Boolean = false,
+        val rawManifest: String = "",
+        val showRawTransactionWarning: Boolean = false,
+        val message: String? = null,
+        val previewType: PreviewType,
+        val transactionFeesInfo: TransactionFeesInfo? = null,
+        val isNetworkFeeLoading: Boolean,
+        val sheetState: Sheet = Sheet.None,
+        val selectedFeePayerInput: SelectFeePayerInput? = null,
+        val error: TransactionErrorMessage? = null,
+        val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
+        val isSubmitEnabled: Boolean = false,
+        val isSubmitting: Boolean = false,
+    ) : UiState {
 
         val isRawManifestToggleVisible: Boolean
             get() = previewType is PreviewType.Transfer
 
-        val rawManifest: String = request?.transactionManifestData?.instructions.orEmpty()
-
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
-
-        val message: String?
-            get() = request?.transactionManifestData?.message?.messageOrNull
-
-        val isSubmitEnabled: Boolean
-            get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee
-
-        val noFeePayerSelected: Boolean
-            get() = feePayers?.selectedAccountAddress == null
-
-        val isSelectedFeePayerInvolvedInTransaction: Boolean
-            get() = runCatching {
-                feePayerCandidates.contains(feePayers?.selectedAccountAddress)
-            }.getOrNull() ?: false
-
-        val isBalanceInsufficientToPayTheFee: Boolean
-            get() {
-                if (feePayers == null) return true
-                val candidateAddress = feePayers.selectedAccountAddress ?: return true
-
-                val xrdInCandidateAccount = feePayers.candidates.find {
-                    it.account.address == candidateAddress
-                }?.xrdAmount.orZero()
-
-                // Calculate how many XRD have been used from accounts withdrawn from
-                // In cases were it is not a transfer type, then it means the user
-                // will not spend any other XRD rather than the ones spent for the fees
-                val xrdUsed = when (previewType) {
-                    is PreviewType.Transfer.GeneralTransfer -> {
-                        val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
-                        if (candidateAddressWithdrawn != null) {
-                            val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
-                                it.transferable
-                            }.filterIsInstance<TransferableAsset.Fungible.Token>().find { it.resource.isXrd }
-
-                            xrdResourceWithdrawn?.amount.orZero()
-                        } else {
-                            0.toDecimal192()
-                        }
-                    }
-                    // On-purpose made this check exhaustive, future types may involve accounts spending XRD
-                    is PreviewType.AccountsDepositSettings -> 0.toDecimal192()
-                    is PreviewType.NonConforming -> 0.toDecimal192()
-                    is PreviewType.None -> 0.toDecimal192()
-                    is PreviewType.UnacceptableManifest -> 0.toDecimal192()
-                    is PreviewType.Transfer.Pool -> 0.toDecimal192()
-                    is PreviewType.Transfer.Staking -> 0.toDecimal192()
-                }
-
-                return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
-            }
 
         val showDottedLine: Boolean
             get() = when (previewType) {
@@ -427,7 +307,27 @@ class TransactionReviewViewModel @Inject constructor(
                 else -> false
             }
 
-        sealed interface Sheet {
+        sealed interface ProposingDApp {
+
+            val name: String?
+                get() = when (this) {
+                    is Some -> dApp?.name
+                    None -> null
+                }
+
+            data object None : ProposingDApp
+
+            data class Some(val dApp: DApp?) : ProposingDApp
+        }
+
+        data class TransactionFeesInfo(
+            val transactionFees: TransactionFees,
+            val isSelectedFeePayerInvolvedInTransaction: Boolean,
+            val noFeePayerSelected: Boolean,
+            val isBalanceInsufficientToPayTheFee: Boolean,
+        )
+
+        interface Sheet {
 
             data object None : Sheet
 
@@ -437,7 +337,8 @@ class TransactionReviewViewModel @Inject constructor(
 
             data class CustomizeFees(
                 val feePayerMode: FeePayerMode,
-                val feesMode: FeesMode
+                val feesMode: FeesMode,
+                val feesInfo: TransactionFeesInfo
             ) : Sheet {
 
                 sealed interface FeePayerMode {

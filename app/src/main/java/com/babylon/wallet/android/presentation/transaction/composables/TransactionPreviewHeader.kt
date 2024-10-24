@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,21 +35,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
-import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
-import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sample
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.TransactionVersion
-import rdx.works.core.sargon.default
-import java.util.UUID
 
 @Composable
 fun TransactionPreviewHeader(
@@ -67,6 +58,8 @@ fun TransactionPreviewHeader(
                     .padding(start = RadixTheme.dimensions.paddingXXLarge)
                     .padding(end = RadixTheme.dimensions.paddingXLarge)
             ) {
+                val someDApp = remember(state.proposingDApp) { (state.proposingDApp as? State.ProposingDApp.Some) }
+
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -87,17 +80,18 @@ fun TransactionPreviewHeader(
                                 maxLines = 2,
                             )
                         }
-                        if (state.proposingDApp?.iconUrl != null) {
+                        if (someDApp?.dApp?.iconUrl != null) {
                             Thumbnail.DApp(
                                 modifier = Modifier
                                     .size(64.dp),
-                                dapp = state.proposingDApp,
+                                dapp = someDApp.dApp,
                                 shape = RadixTheme.shapes.roundedRectSmall
                             )
                         }
                     }
-                    if (state.request?.isInternal != true) {
-                        val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
+
+                    if (someDApp != null) {
+                        val dAppName = someDApp.dApp?.name.orEmpty().ifEmpty {
                             stringResource(id = R.string.dAppRequest_metadata_unknownName)
                         }
                         Text(
@@ -185,18 +179,6 @@ fun TransactionPreviewHeaderPreview() {
         TransactionPreviewHeader(
             onBackClick = {},
             state = State(
-                request = TransactionRequest(
-                    remoteEntityId = RemoteEntityID.ConnectorId(""),
-                    interactionId = UUID.randomUUID().toString(),
-                    transactionManifestData = TransactionManifestData(
-                        manifest = TransactionManifest.sample(),
-                        instructions = "",
-                        networkId = Gateway.default.network.id,
-                        message = TransactionManifestData.TransactionMessage.Public("Hello"),
-                        version = TransactionVersion.Default.value
-                    ),
-                    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(Gateway.default.network.id)
-                ),
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.None,

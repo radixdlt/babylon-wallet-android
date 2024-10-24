@@ -22,7 +22,7 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import javax.inject.Inject
 
 interface AccountLockersRepository {
@@ -126,7 +126,7 @@ class AccountLockersRepositoryImpl @Inject constructor(
                     claimableResources = cachedVaultItems.map { it.into() }
                 )
             }.mapCatching { manifest ->
-                TransactionManifestData.from(manifest)
+                UnvalidatedManifestData.from(manifest)
                     .prepareInternalTransactionRequest()
             }.onSuccess { request ->
                 incomingRequestRepository.add(request)

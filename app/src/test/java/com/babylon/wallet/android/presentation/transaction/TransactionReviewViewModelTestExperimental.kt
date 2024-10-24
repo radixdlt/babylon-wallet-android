@@ -4,9 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
@@ -23,7 +20,6 @@ import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountOrAddressOf
-import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
@@ -53,7 +49,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
@@ -178,7 +174,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         }
     }
 
-    private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
+    private fun mockManifestInput(manifestData: UnvalidatedManifestData = sampleManifest(instructions = "")) {
         val transactionRequest = TransactionRequest(
             remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
             interactionId = transactionId,
@@ -190,9 +186,9 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         coEvery { incomingRequestRepository.getRequest(transactionId) } returns transactionRequest
     }
 
-    private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData =
+    private fun simpleXRDTransfer(withProfile: Profile): UnvalidatedManifestData =
         with(withProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!) {
-            TransactionManifestData.from(
+            UnvalidatedManifestData.from(
                 manifest = TransactionManifest.perRecipientTransfers(
                     transfers = PerRecipientAssetTransfers(
                         addressOfSender = address,

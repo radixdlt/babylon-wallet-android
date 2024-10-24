@@ -15,7 +15,7 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.setOwnerKeysHashes
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import javax.inject.Inject
 
@@ -32,7 +32,7 @@ class ROLAClient @Inject constructor(
     suspend fun createAuthKeyManifest(
         entity: ProfileEntity,
         authSigningFactorInstance: HierarchicalDeterministicFactorInstance
-    ): Result<TransactionManifestData> {
+    ): Result<UnvalidatedManifestData> {
         val transactionSigningPublicKey = entity.securityState.transactionSigningFactorInstance.publicKey.publicKey
         val authSigningPublicKey = authSigningFactorInstance.publicKey.publicKey
 
@@ -52,7 +52,7 @@ class ROLAClient @Inject constructor(
                 ownerKeyHashes = publicKeys.map { PublicKeyHash.init(it) }
             )
         }.mapCatching {
-            TransactionManifestData.from(manifest = it)
+            UnvalidatedManifestData.from(manifest = it)
         }
     }
 

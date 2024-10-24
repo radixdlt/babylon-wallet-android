@@ -5,10 +5,10 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.radixdlt.sargon.WalletInteractionId
-import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.UnvalidatedManifestData
 import java.util.UUID
 
-fun TransactionManifestData.prepareInternalTransactionRequest(
+fun UnvalidatedManifestData.prepareInternalTransactionRequest(
     requestId: WalletInteractionId = UUID.randomUUID().toString(),
     blockUntilCompleted: Boolean = false,
     transactionType: TransactionType = TransactionType.Generic
@@ -17,7 +17,7 @@ fun TransactionManifestData.prepareInternalTransactionRequest(
     // check if a request is not internal before sending message to the dApp
     remoteEntityId = RemoteEntityID.ConnectorId(""),
     interactionId = requestId,
-    transactionManifestData = this,
+    unvalidatedManifestData = this,
     requestMetadata = DappToWalletInteraction.RequestMetadata.internal(networkId, blockUntilCompleted),
     transactionType = transactionType
 )
