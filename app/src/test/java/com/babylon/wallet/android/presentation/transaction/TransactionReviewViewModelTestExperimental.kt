@@ -27,7 +27,7 @@ import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
@@ -152,12 +152,12 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
             stateRepository.getOwnedXRD(testProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty())
         } returns Result.success(testProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.associateWith { 10.toDecimal192() }.orEmpty())
         val notarization = NotarizationResult(
-            intentHash = IntentHash.sample(),
+            intentHash = TransactionIntentHash.sample(),
             endEpoch = 0u,
             notarizedTransaction = NotarizedTransaction.sample()
         )
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarization)
-        coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(IntentHash.sample())
+        coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(TransactionIntentHash.sample())
 
 
         vm.value.state.test {

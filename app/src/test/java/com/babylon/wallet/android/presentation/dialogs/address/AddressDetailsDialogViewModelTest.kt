@@ -16,7 +16,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonEmptyMax64Bytes
 import com.radixdlt.sargon.NonFungibleGlobalId
@@ -414,7 +414,7 @@ class AddressDetailsDialogViewModelTest : StateViewModelTest<AddressDetailsDialo
     @Test
     fun `test full address section for transaction id`() {
         val rawAddress = "txid_tdx_2_1kduv3jxmn62r6xqknvsfn3ps5fpqj3ad5474e0z2hhgpwmlxj7fq8hp7gk"
-        val intentHash = IntentHash.init(rawAddress)
+        val intentHash = TransactionIntentHash.init(rawAddress)
 
         val actionableAddress = ActionableAddress.TransactionId(hash = intentHash, isVisitableInDashboard = true)
 

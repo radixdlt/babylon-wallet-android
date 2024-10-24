@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionSta
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +47,7 @@ class TransactionStatusClient @Inject constructor(
     }
 
     fun pollTransactionStatus(
-        intentHash: IntentHash,
+        intentHash: TransactionIntentHash,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: Epoch

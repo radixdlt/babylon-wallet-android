@@ -206,7 +206,6 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                             is EntitySecurityState.Unsecured -> state.copy(
                                 value = state.value.copy(authenticationSigning = authSigningFactorInstance)
                             )
-                            is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
                         }
                         account.copy(securityState = updatedSecurityState)
                     }
@@ -220,7 +219,6 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                             is EntitySecurityState.Unsecured -> state.copy(
                                 value = state.value.copy(authenticationSigning = authSigningFactorInstance)
                             )
-                            is EntitySecurityState.Securified -> TODO("Securified state is not yet supported.")
                         }
                         persona.copy(securityState = updatedSecurityState)
                     }

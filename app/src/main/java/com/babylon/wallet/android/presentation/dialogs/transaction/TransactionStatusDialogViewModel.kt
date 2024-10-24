@@ -17,7 +17,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.DappWalletInteractionErrorType
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -181,8 +181,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val walletErrorType: DappWalletInteractionErrorType?
             get() = (status as? TransactionStatus.Failed)?.walletErrorType
 
-        val transactionId: IntentHash?
-            get() = runCatching { IntentHash.init(status.transactionId) }.getOrNull()
+        val transactionId: TransactionIntentHash?
+            get() = runCatching { TransactionIntentHash.init(status.transactionId) }.getOrNull()
 
         enum class DismissInfo {
             STOP_WAITING,

@@ -5,6 +5,7 @@ import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Hash
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.bagOfBytesOf
+import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
@@ -19,7 +20,7 @@ sealed interface SignRequest {
         intent: TransactionIntent
     ) : SignRequest {
         // Used when signing with Ledger
-        override val dataToSign: BagOfBytes = intent.compile()
+        override val dataToSign: BagOfBytes = intent.compile().bytes
 
         // Used when signing with device
         override val hashedDataToSign: Hash = intent.hash().hash

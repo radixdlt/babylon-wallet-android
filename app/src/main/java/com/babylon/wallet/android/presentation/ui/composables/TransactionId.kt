@@ -12,10 +12,10 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 
 @Composable
-fun TransactionId(transactionId: IntentHash, modifier: Modifier = Modifier) {
+fun TransactionId(transactionId: TransactionIntentHash, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
