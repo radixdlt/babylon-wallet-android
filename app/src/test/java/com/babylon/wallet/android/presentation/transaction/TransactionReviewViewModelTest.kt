@@ -16,15 +16,15 @@ import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewDa
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
-import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
+import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
@@ -50,12 +50,12 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
@@ -65,7 +65,6 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
-import com.radixdlt.sargon.samples.samplePlaintext
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -164,9 +163,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
-    private val sampleIntentHash = IntentHash.sample()
+    private val sampleTransactionIntentHash = TransactionIntentHash.sample()
     private val notarizationResult = NotarizationResult(
-        intentHash = sampleIntentHash,
+        intentHash = sampleTransactionIntentHash,
         notarizedTransaction = NotarizedTransaction.sample(),
         endEpoch = 50u
     )
@@ -307,7 +306,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithSuccess(
                 request = sampleRequest,
-                txId = sampleIntentHash.bech32EncodedTxId
+                txId = sampleTransactionIntentHash.bech32EncodedTxId
             )
         }
     }

@@ -13,11 +13,11 @@ import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Epoch
-import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionStatus
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.mapError
@@ -38,10 +38,10 @@ interface TransactionRepository {
         notaryPublicKey: PublicKey.Ed25519
     ): TransactionToReviewData
 
-    suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<IntentHash>
+    suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash>
 
     @Throws
-    suspend fun pollTransactionStatus(intentHash: IntentHash): TransactionStatus
+    suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus
 
     suspend fun getLedgerEpoch(): Result<Epoch>
 
@@ -86,7 +86,7 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionApi.transactionConstruction().toResult().map { it.ledgerState.epoch.toULong() }
     }
 
-    override suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<IntentHash> {
+    override suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash> {
         return withContext(dispatcher) {
             runCatching {
                 val sargonOs = sargonOsManager.sargonOs
@@ -101,7 +101,7 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun pollTransactionStatus(intentHash: IntentHash): TransactionStatus {
+    override suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus {
         return withContext(dispatcher) {
             val sargonOs = sargonOsManager.sargonOs
             sargonOs.pollTransactionStatus(intentHash)

@@ -39,7 +39,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 notaryPublicKey = data.value.ephemeralNotaryPrivateKey.toPublicKey()
             )
         }.then { transactionToReviewData ->
-            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary
+            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary!!
             resolveNotaryAndSignersUseCase(
                 accountsAddressesRequiringAuth = manifestSummary.addressesOfAccountsRequiringAuth,
                 personaAddressesRequiringAuth = manifestSummary.addressesOfPersonasRequiringAuth,

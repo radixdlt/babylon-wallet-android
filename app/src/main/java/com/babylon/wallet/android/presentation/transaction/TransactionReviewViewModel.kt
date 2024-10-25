@@ -219,7 +219,7 @@ class TransactionReviewViewModel @Inject constructor(
             get() = requireNotNull(txNotaryAndSigners)
 
         val feePayerCandidates: List<AccountAddress> by lazy {
-            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary
+            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary!!
             manifestSummary.addressesOfAccountsWithdrawnFrom +
                 manifestSummary.addressesOfAccountsDepositedInto +
                 manifestSummary.addressesOfAccountsRequiringAuth
