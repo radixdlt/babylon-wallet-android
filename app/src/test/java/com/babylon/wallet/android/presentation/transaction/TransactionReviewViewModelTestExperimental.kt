@@ -24,9 +24,7 @@ import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
-import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.Message
-import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
@@ -35,6 +33,7 @@ import com.radixdlt.sargon.PerRecipientAssetTransfers
 import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.perRecipientTransfers
