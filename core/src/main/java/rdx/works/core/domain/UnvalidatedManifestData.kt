@@ -17,7 +17,7 @@ data class UnvalidatedManifestData(
     val plainMessage: String?,
     val blobs: List<BagOfBytes> = emptyList(),
 ) {
-    
+
     val message: Message by lazy {
         plainMessage?.let { Message.plaintext(it) } ?: Message.None
     }

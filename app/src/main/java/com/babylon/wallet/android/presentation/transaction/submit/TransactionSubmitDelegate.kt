@@ -16,7 +16,6 @@ import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreated
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.transaction.Event
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
@@ -26,7 +25,6 @@ import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
-import com.radixdlt.sargon.extensions.orZero
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
@@ -39,8 +37,13 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
+interface TransactionSubmitDelegate {
+
+    fun onApproveTransaction()
+}
+
 @Suppress("LongParameterList")
-class TransactionSubmitDelegate @Inject constructor(
+class TransactionSubmitDelegateImpl @Inject constructor(
     private val signTransactionUseCase: SignTransactionUseCase,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
@@ -51,22 +54,24 @@ class TransactionSubmitDelegate @Inject constructor(
     private val transactionStatusClient: TransactionStatusClient,
     private val exceptionMessageProvider: ExceptionMessageProvider,
     @ApplicationScope private val applicationScope: CoroutineScope
-) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>() {
+) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
+    TransactionSubmitDelegate {
 
     private val logger = Timber.tag("TransactionSubmit")
 
     private var approvalJob: Job? = null
 
-    var oneOffEventHandler: OneOffEventHandler<Event>? = null
+    var oneOffEventHandler: OneOffEventHandler<TransactionReviewViewModel.Event>? = null
 
-    fun onSubmit() {
+    override fun onApproveTransaction() {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
+        val txToReviewData = data.value.transactionToReviewData
 
         approvalJob = applicationScope.launch {
             val currentState = data.value
             val currentNetworkId = getCurrentGatewayUseCase().network.id
-            val manifestNetworkId = data.value.transactionToReviewData.networkId
+            val manifestNetworkId = txToReviewData.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -80,10 +85,10 @@ class TransactionSubmitDelegate @Inject constructor(
 
             if (currentState.feePayers?.selectedAccountAddress != null) {
                 try {
-                    val newManifest = data.value.transactionToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
+                    val newManifest = txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
                     data.update {
                         it.copy(
-                            _transactionToReviewData = it.transactionToReviewData.copy(
+                            txToReviewData = it.transactionToReviewData.copy(
                                 transactionToReview = it.transactionToReviewData.transactionToReview.copy(
                                     transactionManifest = newManifest
                                 )
@@ -110,7 +115,7 @@ class TransactionSubmitDelegate @Inject constructor(
                     message = exception.getDappMessage()
                 )
             }
-            oneOffEventHandler?.sendEvent(Event.Dismiss)
+            oneOffEventHandler?.sendEvent(TransactionReviewViewModel.Event.Dismiss)
             incomingRequestRepository.requestHandled(request.interactionId)
         } else {
             logger.d("Cannot dismiss transaction while is in progress")
@@ -128,8 +133,8 @@ class TransactionSubmitDelegate @Inject constructor(
                 manifest = data.value.transactionToReviewData.transactionToReview.transactionManifest,
                 networkId = data.value.transactionToReviewData.networkId,
                 message = data.value.transactionToReviewData.message,
-                lockFee = _state.value.transactionFeesInfo?.transactionFees?.transactionFeeToLock.orZero(),
-                tipPercentage = _state.value.transactionFeesInfo?.transactionFees?.tipPercentageForTransaction ?: 0.toUShort(),
+                lockFee = _state.value.transactionFees.transactionFeeToLock,
+                tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
                 ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey,
                 feePayerAddress = feePayerAddress
             )

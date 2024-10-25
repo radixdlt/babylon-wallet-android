@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
@@ -36,9 +37,9 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Tr
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorUnstakeProcessor
-import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
-import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
-import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
@@ -50,6 +51,7 @@ import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
@@ -63,6 +65,7 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.samplePlaintext
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -172,12 +175,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { networkId } returns NetworkId.MAINNET
         every { instructions } returns ""
         every { blobs } returns emptyList()
-        every { message } returns UnvalidatedManifestData.TransactionMessage.None
+        every { message } returns Message.None
     }
     private val sampleRequest = TransactionRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = sampleRequestId,
-        transactionManifestData = sampleUnvalidatedManifestData,
+        unvalidatedManifestData = sampleUnvalidatedManifestData,
         requestMetadata = DappToWalletInteraction.RequestMetadata(
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
@@ -232,7 +235,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns transactionToReview()
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns transactionToReviewData()
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             respondToIncomingRequestUseCase.respondWithSuccess(
@@ -266,16 +269,15 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 transactionRepository = transactionRepository,
                 previewTypeAnalyzer = previewTypeAnalyzer,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
-                searchFeePayersUseCase = searchFeePayersUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
-                getFiatValueUseCase = getFiatValueUseCase,
-                defaultDispatcher = coroutineDispatcher
             ),
-            guarantees = TransactionGuaranteesDelegate(),
-            fees = TransactionFeesDelegate(
+            guarantees = TransactionGuaranteesDelegateImpl(),
+            fees = TransactionFeesDelegateImpl(
                 getProfileUseCase = getProfileUseCase,
+                searchFeePayersUseCase = searchFeePayersUseCase,
+                getFiatValueUseCase = getFiatValueUseCase
             ),
-            submit = TransactionSubmitDelegate(
+            submit = TransactionSubmitDelegateImpl(
                 signTransactionUseCase = signTransactionUseCase,
                 respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
                 getCurrentGatewayUseCase = getCurrentGatewayUseCase,
@@ -327,7 +329,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         }
         assertEquals(DappWalletInteractionErrorType.WRONG_NETWORK, errorSlot.captured)
         vm.oneOffEvent.test {
-            TestCase.assertTrue(awaitItem() is Event.Dismiss)
+            TestCase.assertTrue(awaitItem() is TransactionReviewViewModel.Event.Dismiss)
         }
     }
 
@@ -359,24 +361,27 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "1.10842739440"
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
-            transactionManifest = TransactionManifest.sample(),
-            executionSummary = emptyExecutionSummary.copy(
-                feeLocks = FeeLocks(
-                    lock = 1.5.toDecimal192(),
-                    contingentLock = 0.toDecimal192()
-                ),
-                feeSummary = FeeSummary(
-                    executionCost = 0.3.toDecimal192(),
-                    finalizationCost = 0.3.toDecimal192(),
-                    storageExpansionCost = 0.2.toDecimal192(),
-                    royaltyCost = 0.2.toDecimal192()
-                ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
-                reservedInstructions = emptyList()
-            )
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns TransactionToReviewData(
+            transactionToReview = TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary.copy(
+                    feeLocks = FeeLocks(
+                        lock = 1.5.toDecimal192(),
+                        contingentLock = 0.toDecimal192()
+                    ),
+                    feeSummary = FeeSummary(
+                        executionCost = 0.3.toDecimal192(),
+                        finalizationCost = 0.3.toDecimal192(),
+                        storageExpansionCost = 0.2.toDecimal192(),
+                        royaltyCost = 0.2.toDecimal192()
+                    ),
+                    detailedClassification = listOf(
+                        DetailedManifestClass.General
+                    ),
+                    reservedInstructions = emptyList()
+                )
+            ),
+            message = Message.None
         )
         val vm = vm.value
         advanceUntilIdle()
@@ -392,42 +397,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = 0.9019403.toDecimal192()
 
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
-            transactionManifest = TransactionManifest.sample(),
-            executionSummary = emptyExecutionSummary.copy(
-                feeLocks = FeeLocks(
-                    lock = 0.5.toDecimal192(),
-                    contingentLock = 0.toDecimal192()
-                ),
-                feeSummary = FeeSummary(
-                    executionCost = 0.3.toDecimal192(),
-                    finalizationCost = 0.3.toDecimal192(),
-                    storageExpansionCost = 0.2.toDecimal192(),
-                    royaltyCost = 0.2.toDecimal192()
-                ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
-                reservedInstructions = emptyList()
-            )
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onTipPercentageChanged(tipPercentage)
-
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
-    }
-
-    @Test
-    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
-        val feePaddingAmount = "1.6"
-        val tipPercentage = "25"
-
-        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = 2.3678038.toDecimal192()
-
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
-            TransactionToReview(
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns TransactionToReviewData(
+            transactionToReview = TransactionToReview(
                 transactionManifest = TransactionManifest.sample(),
                 executionSummary = emptyExecutionSummary.copy(
                     feeLocks = FeeLocks(
@@ -445,6 +416,46 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                     ),
                     reservedInstructions = emptyList()
                 )
+            ),
+            message = Message.None
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onTipPercentageChanged(tipPercentage)
+
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
+    }
+
+    @Test
+    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
+        val feePaddingAmount = "1.6"
+        val tipPercentage = "25"
+
+        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = 2.3678038.toDecimal192()
+
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
+            TransactionToReviewData(
+                transactionToReview = TransactionToReview(
+                    transactionManifest = TransactionManifest.sample(),
+                    executionSummary = emptyExecutionSummary.copy(
+                        feeLocks = FeeLocks(
+                            lock = 0.5.toDecimal192(),
+                            contingentLock = 0.toDecimal192()
+                        ),
+                        feeSummary = FeeSummary(
+                            executionCost = 0.3.toDecimal192(),
+                            finalizationCost = 0.3.toDecimal192(),
+                            storageExpansionCost = 0.2.toDecimal192(),
+                            royaltyCost = 0.2.toDecimal192()
+                        ),
+                        detailedClassification = listOf(
+                            DetailedManifestClass.General
+                        ),
+                        reservedInstructions = emptyList()
+                    )
+                ),
+                message = Message.None
             )
         val vm = vm.value
         advanceUntilIdle()
@@ -454,8 +465,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
 
-    private fun transactionToReview() = TransactionToReview(
-        transactionManifest = TransactionManifest.sample(),
-        executionSummary = emptyExecutionSummary
+    private fun transactionToReviewData() = TransactionToReviewData(
+        transactionToReview = TransactionToReview(
+            transactionManifest = TransactionManifest.sample(),
+            executionSummary = emptyExecutionSummary
+        ),
+        message = Message.None
     )
 }

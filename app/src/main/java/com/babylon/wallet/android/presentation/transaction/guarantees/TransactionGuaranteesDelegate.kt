@@ -14,9 +14,24 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
 import javax.inject.Inject
 
-class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<TransactionReviewViewModel.State>() {
+interface TransactionGuaranteesDelegate {
 
-    fun onEdit() {
+    fun onEditGuaranteesClick()
+
+    fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String)
+
+    fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee)
+
+    fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee)
+
+    fun onGuaranteesApplyClick()
+}
+
+class TransactionGuaranteesDelegateImpl @Inject constructor() :
+    ViewModelDelegate<TransactionReviewViewModel.State>(),
+    TransactionGuaranteesDelegate {
+
+    override fun onEditGuaranteesClick() {
         val transaction = (_state.value.previewType as? PreviewType.Transfer) ?: return
 
         val accountsWithPredictedGuarantee = mutableListOf<AccountWithPredictedGuarantee>()
@@ -66,14 +81,18 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         }
     }
 
-    fun onValueChange(account: AccountWithPredictedGuarantee, value: String) {
+    override fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String) {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
 
         _state.update { state ->
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = { it.isTheSameGuaranteeItem(with = account) },
+                        predicate = {
+                            it.isTheSameGuaranteeItem(
+                                with = account
+                            )
+                        },
                         mutation = { it.change(value) }
                     )
                 )
@@ -81,14 +100,18 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         }
     }
 
-    fun onValueIncreased(account: AccountWithPredictedGuarantee) {
+    override fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee) {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
 
         _state.update { state ->
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = { it.isTheSameGuaranteeItem(with = account) },
+                        predicate = {
+                            it.isTheSameGuaranteeItem(
+                                with = account
+                            )
+                        },
                         mutation = { it.increase() }
                     )
                 )
@@ -96,14 +119,18 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         }
     }
 
-    fun onValueDecreased(account: AccountWithPredictedGuarantee) {
+    override fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee) {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
 
         _state.update { state ->
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = { it.isTheSameGuaranteeItem(with = account) },
+                        predicate = {
+                            it.isTheSameGuaranteeItem(
+                                with = account
+                            )
+                        },
                         mutation = { it.decrease() }
                     )
                 )
@@ -111,7 +138,7 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         }
     }
 
-    fun onApply() {
+    override fun onGuaranteesApplyClick() {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
         val preview = (_state.value.previewType as? PreviewType.Transfer) ?: return
         when (preview) {
@@ -119,14 +146,11 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                 _state.update {
                     it.copy(
                         previewType = preview.copy(
-                            to = preview.to.mapWhen(
-                                predicate = { depositing ->
-                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                                },
-                                mutation = { depositing ->
-                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                                }
-                            )
+                            to = preview.to.mapWhen(predicate = { depositing ->
+                                sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                            }, mutation = { depositing ->
+                                depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                            })
                         ),
                         sheetState = Sheet.None
                     )
@@ -137,14 +161,11 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                 _state.update {
                     it.copy(
                         previewType = preview.copy(
-                            to = preview.to.mapWhen(
-                                predicate = { depositing ->
-                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                                },
-                                mutation = { depositing ->
-                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                                }
-                            )
+                            to = preview.to.mapWhen(predicate = { depositing ->
+                                sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                            }, mutation = { depositing ->
+                                depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                            })
                         ),
                         sheetState = Sheet.None
                     )
@@ -155,14 +176,11 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                 _state.update {
                     it.copy(
                         previewType = preview.copy(
-                            to = preview.to.mapWhen(
-                                predicate = { depositing ->
-                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                                },
-                                mutation = { depositing ->
-                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                                }
-                            )
+                            to = preview.to.mapWhen(predicate = { depositing ->
+                                sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                            }, mutation = { depositing ->
+                                depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                            })
                         ),
                         sheetState = Sheet.None
                     )

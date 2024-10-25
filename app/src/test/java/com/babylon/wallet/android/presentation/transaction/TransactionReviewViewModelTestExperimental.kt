@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
@@ -24,6 +25,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
@@ -97,9 +99,12 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val transactionRepository = mockk<TransactionRepository>().apply {
         coEvery { getLedgerEpoch() } returns Result.success(1000.toULong())
-        coEvery { analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
-            transactionManifest = TransactionManifest.sample(),
-            executionSummary = emptyExecutionSummary
+        coEvery { analyzeTransaction(any(), any(), any()) } returns TransactionToReviewData(
+            transactionToReview = TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary
+            ),
+            message = Message.None
         )
     }
     private val stateRepository = mockk<StateRepository>()
@@ -136,7 +141,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     fun `given transaction id, when this id does not exist in the queue, then dismiss the transaction`() = runTest {
         every { incomingRequestRepository.getRequest(transactionId) } returns null
         vm.value.oneOffEvent.test {
-            assertTrue(awaitItem() is Event.Dismiss)
+            assertTrue(awaitItem() is TransactionReviewViewModel.Event.Dismiss)
         }
     }
 
@@ -178,10 +183,10 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         val transactionRequest = TransactionRequest(
             remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
             interactionId = transactionId,
-            transactionManifestData = manifestData,
+            unvalidatedManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
         ).also {
-            println(it.transactionManifestData.instructions)
+            println(it.unvalidatedManifestData.instructions)
         }
         coEvery { incomingRequestRepository.getRequest(transactionId) } returns transactionRequest
     }

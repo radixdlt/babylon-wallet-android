@@ -81,7 +81,7 @@ fun TransactionReviewScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                Event.Dismiss -> onDismiss()
+                TransactionReviewViewModel.Event.Dismiss -> onDismiss()
             }
         }
     }
@@ -93,7 +93,7 @@ fun TransactionReviewScreen(
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
-        promptForGuarantees = viewModel::promptForGuaranteesClick,
+        promptForGuarantees = viewModel::onEditGuaranteesClick,
         onCustomizeClick = viewModel::onCustomizeClick,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onCloseBottomSheetClick = viewModel::onCloseBottomSheetClick,
@@ -333,10 +333,11 @@ private fun TransactionPreviewContent(
                             }
                         )
 
-                        state.transactionFeesInfo?.let { feesInfo ->
+                        state.transactionFeesProperties?.let { feesInfo ->
                             NetworkFeeContent(
                                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                                feesInfo = feesInfo,
+                                fees = state.transactionFees,
+                                properties = feesInfo,
                                 isNetworkFeeLoading = state.isNetworkFeeLoading,
                                 onCustomizeClick = onCustomizeClick,
                                 onInfoClick = onInfoClick

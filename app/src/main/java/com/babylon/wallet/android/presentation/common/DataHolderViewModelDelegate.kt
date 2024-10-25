@@ -11,7 +11,7 @@ open class DataHolderViewModelDelegate<D, S : UiState> {
     lateinit var data: MutableStateFlow<D>
     lateinit var _state: MutableStateFlow<S>
 
-    open operator fun invoke(
+    operator fun invoke(
         scope: CoroutineScope,
         data: MutableStateFlow<D>,
         state: MutableStateFlow<S>

@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
@@ -26,11 +27,37 @@ import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-class TransactionFeesDelegate @Inject constructor(
+@Suppress("TooManyFunctions")
+interface TransactionFeesDelegate {
+
+    fun onCustomizeClick()
+
+    fun onChangeFeePayerClick()
+
+    fun onSelectFeePayerClick()
+
+    fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate)
+
+    fun onFeePayerSelected()
+
+    fun onFeePayerSelectionDismissRequest()
+
+    fun onFeePaddingAmountChanged(feePaddingAmount: String)
+
+    fun onTipPercentageChanged(tipPercentage: String)
+
+    fun onViewDefaultModeClick()
+
+    fun onViewAdvancedModeClick()
+}
+
+@Suppress("TooManyFunctions")
+class TransactionFeesDelegateImpl @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase
-) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>() {
+) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
+    TransactionFeesDelegate {
 
     private val logger = Timber.tag("TransactionFees")
 
@@ -44,13 +71,14 @@ class TransactionFeesDelegate @Inject constructor(
             notaryAndSigners = data.value.notaryAndSigners,
             previewType = _state.value.previewType
         )
+        _state.update { it.copy(transactionFees = transactionFees) }
 
         searchFeePayersUseCase(
             feePayerCandidates = data.value.feePayerCandidates,
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayers ->
             _state.update { it.copy(isNetworkFeeLoading = false) }
-            updateFeePayers(feePayers)
+            onFeePayersUpdated(feePayers)
             fetchXrdPrice()
         }.onFailure { throwable ->
             logger.w(throwable)
@@ -66,37 +94,41 @@ class TransactionFeesDelegate @Inject constructor(
         }
     }
 
-    suspend fun onCustomizeClick() {
-        val transactionFeesInfo = _state.value.transactionFeesInfo ?: return
+    override fun onCustomizeClick() {
+        val transactionFeesProperties = _state.value.transactionFeesProperties ?: return
 
-        if (transactionFeesInfo.transactionFees.defaultTransactionFee.isZero) {
+        if (_state.value.transactionFees.defaultTransactionFee.isZero) {
             // None required
             _state.update { state ->
                 state.copy(
                     sheetState = Sheet.CustomizeFees(
                         feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
                         feesMode = data.value.latestFeesMode,
-                        feesInfo = transactionFeesInfo
+                        transactionFees = state.transactionFees,
+                        properties = transactionFeesProperties
                     )
                 )
             }
         } else {
             val feePayers = data.value.feePayers ?: return
             if (feePayers.selectedAccountAddress != null) {
-                // Candidate selected
-                val feePayerCandidate = getProfileUseCase().activeAccountOnCurrentNetwork(
-                    withAddress = feePayers.selectedAccountAddress
-                ) ?: return
-                _state.update { state ->
-                    state.copy(
-                        sheetState = Sheet.CustomizeFees(
-                            feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
-                                feePayerCandidate = feePayerCandidate
-                            ),
-                            feesMode = data.value.latestFeesMode,
-                            feesInfo = transactionFeesInfo
+                viewModelScope.launch {
+                    // Candidate selected
+                    val feePayerCandidate = getProfileUseCase().activeAccountOnCurrentNetwork(
+                        withAddress = feePayers.selectedAccountAddress
+                    ) ?: return@launch
+                    _state.update { state ->
+                        state.copy(
+                            sheetState = Sheet.CustomizeFees(
+                                feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                                    feePayerCandidate = feePayerCandidate
+                                ),
+                                feesMode = data.value.latestFeesMode,
+                                transactionFees = state.transactionFees,
+                                properties = transactionFeesProperties
+                            )
                         )
-                    )
+                    }
                 }
             } else {
                 // No candidate selected
@@ -107,7 +139,8 @@ class TransactionFeesDelegate @Inject constructor(
                                 candidates = data.value.feePayers?.candidates.orEmpty()
                             ),
                             feesMode = data.value.latestFeesMode,
-                            feesInfo = transactionFeesInfo
+                            transactionFees = state.transactionFees,
+                            properties = transactionFeesProperties
                         )
                     )
                 }
@@ -115,15 +148,15 @@ class TransactionFeesDelegate @Inject constructor(
         }
     }
 
-    fun onChangeFeePayerClick() {
+    override fun onChangeFeePayerClick() {
         switchToFeePayerSelection()
     }
 
-    fun onSelectFeePayerClick() {
+    override fun onSelectFeePayerClick() {
         switchToFeePayerSelection()
     }
 
-    fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
+    override fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
         val selectFeePayerInput = _state.value.selectedFeePayerInput ?: return
 
         _state.update {
@@ -135,7 +168,7 @@ class TransactionFeesDelegate @Inject constructor(
         }
     }
 
-    fun onFeePayerSelected() {
+    override fun onFeePayerSelected() {
         val selectFeePayerInput = _state.value.selectedFeePayerInput ?: return
         val selectedFeePayerAccount = selectFeePayerInput.preselectedCandidate?.account ?: return
         val feePayerSearchResult = data.value.feePayers ?: return
@@ -146,7 +179,7 @@ class TransactionFeesDelegate @Inject constructor(
             selectedAccountAddress = selectedFeePayerAccount.address,
             candidates = feePayerSearchResult.candidates
         )
-        updateFeePayers(updatedFeePayerResult)
+        onFeePayersUpdated(updatedFeePayerResult)
 
         val customizeFeesSheet = _state.value.sheetState as? Sheet.CustomizeFees ?: return
         val updatedSignersCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
@@ -157,10 +190,8 @@ class TransactionFeesDelegate @Inject constructor(
 
         _state.update {
             it.copy(
-                transactionFeesInfo = it.transactionFeesInfo?.copy(
-                    transactionFees = it.transactionFeesInfo.transactionFees.copy(
-                        signersCount = updatedSignersCount
-                    )
+                transactionFees = it.transactionFees.copy(
+                    signersCount = updatedSignersCount
                 ),
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
@@ -171,22 +202,15 @@ class TransactionFeesDelegate @Inject constructor(
         }
     }
 
-    fun onFeePayerSelectionDismissRequest() {
+    override fun onFeePayerSelectionDismissRequest() {
         _state.update { it.copy(selectedFeePayerInput = null) }
     }
 
-    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
-        val transactionFeesInfo = requireNotNull(_state.value.transactionFeesInfo)
-        val newTransactionFees = transactionFeesInfo.transactionFees.copy(
+    override fun onFeePaddingAmountChanged(feePaddingAmount: String) {
+        val newTransactionFees = _state.value.transactionFees.copy(
             feePaddingAmount = feePaddingAmount
         )
-        _state.update { state ->
-            state.copy(
-                transactionFeesInfo = transactionFeesInfo.copy(
-                    transactionFees = newTransactionFees
-                )
-            )
-        }
+        _state.update { state -> state.copy(transactionFees = newTransactionFees) }
 
         searchFeePayersJob?.cancel()
         searchFeePayersJob = viewModelScope.launch {
@@ -198,24 +222,22 @@ class TransactionFeesDelegate @Inject constructor(
                     )
                 }
             )
-            updateFeePayers(newFeePayers)
+            onFeePayersUpdated(newFeePayers)
         }
     }
 
     @Suppress("MagicNumber")
-    fun onTipPercentageChanged(tipPercentage: String) {
+    override fun onTipPercentageChanged(tipPercentage: String) {
         _state.update { state ->
             state.copy(
-                transactionFeesInfo = state.transactionFeesInfo?.copy(
-                    transactionFees = state.transactionFeesInfo.transactionFees.copy(
-                        tipPercentage = tipPercentage.filter { it.isDigit() }
-                    )
+                transactionFees = state.transactionFees.copy(
+                    tipPercentage = tipPercentage.filter { it.isDigit() }
                 )
             )
         }
     }
 
-    fun onViewDefaultModeClick() {
+    override fun onViewDefaultModeClick() {
         data.update {
             it.copy(
                 latestFeesMode = Sheet.CustomizeFees.FeesMode.Default,
@@ -223,29 +245,29 @@ class TransactionFeesDelegate @Inject constructor(
         }
         _state.update { state ->
             state.copy(
-                transactionFeesInfo = state.transactionFeesInfo?.copy(
-                    transactionFees = state.transactionFeesInfo.transactionFees.copy(
-                        feePaddingAmount = null,
-                        tipPercentage = null
-                    )
+                transactionFees = state.transactionFees.copy(
+                    feePaddingAmount = null,
+                    tipPercentage = null
                 ),
                 sheetState = Sheet.CustomizeFees(
                     feePayerMode = (state.sheetState as Sheet.CustomizeFees).feePayerMode,
                     feesMode = Sheet.CustomizeFees.FeesMode.Default,
-                    feesInfo = requireNotNull(state.transactionFeesInfo)
+                    transactionFees = state.transactionFees,
+                    properties = requireNotNull(state.transactionFeesProperties)
                 )
             )
         }
     }
 
-    fun onViewAdvancedModeClick() {
+    override fun onViewAdvancedModeClick() {
         data.update { it.copy(latestFeesMode = Sheet.CustomizeFees.FeesMode.Advanced) }
         _state.update { state ->
             state.copy(
                 sheetState = Sheet.CustomizeFees(
                     feePayerMode = (state.sheetState as Sheet.CustomizeFees).feePayerMode,
                     feesMode = Sheet.CustomizeFees.FeesMode.Advanced,
-                    feesInfo = requireNotNull(state.transactionFeesInfo)
+                    transactionFees = state.transactionFees,
+                    properties = requireNotNull(state.transactionFeesProperties)
                 )
             )
         }
@@ -257,10 +279,8 @@ class TransactionFeesDelegate @Inject constructor(
                 .onSuccess { fiatPrice ->
                     _state.update { state ->
                         state.copy(
-                            transactionFeesInfo = state.transactionFeesInfo?.copy(
-                                transactionFees = state.transactionFeesInfo.transactionFees.copy(
-                                    xrdFiatPrice = fiatPrice
-                                )
+                            transactionFees = state.transactionFees.copy(
+                                xrdFiatPrice = fiatPrice
                             )
                         )
                     }
@@ -268,28 +288,26 @@ class TransactionFeesDelegate @Inject constructor(
         }
     }
 
-    private fun updateFeePayers(feePayers: TransactionFeePayers) {
+    private fun onFeePayersUpdated(feePayers: TransactionFeePayers) {
         data.update { it.copy(feePayers = feePayers) }
 
-        val transactionFeesInfo = TransactionReviewViewModel.State.TransactionFeesInfo(
-            transactionFees = _state.value.transactionFeesInfo?.transactionFees ?: TransactionFees(),
+        val transactionFees = _state.value.transactionFees
+        val transactionFeesProperties = TransactionReviewViewModel.State.TransactionFeesProperties(
             isSelectedFeePayerInvolvedInTransaction = isSelectedFeePayerInvolvedInTransaction(feePayers.selectedAccountAddress),
             noFeePayerSelected = feePayers.selectedAccountAddress == null,
-            isBalanceInsufficientToPayTheFee = isBalanceInsufficientToPayTheFee()
+            isBalanceInsufficientToPayTheFee = isBalanceInsufficientToPayTheFee(feePayers, transactionFees.transactionFeeToLock)
         )
 
         _state.update {
             it.copy(
-                transactionFeesInfo = transactionFeesInfo,
-                isSubmitEnabled = it.previewType != PreviewType.None && !transactionFeesInfo.isBalanceInsufficientToPayTheFee
+                transactionFeesProperties = transactionFeesProperties,
+                isSubmitEnabled = it.previewType != PreviewType.None && !transactionFeesProperties.isBalanceInsufficientToPayTheFee
             )
         }
     }
 
-    private fun isBalanceInsufficientToPayTheFee(): Boolean {
-        val feePayers = data.value.feePayers ?: return true
+    private fun isBalanceInsufficientToPayTheFee(feePayers: TransactionFeePayers, feeToLock: Decimal192): Boolean {
         val candidateAddress = feePayers.selectedAccountAddress ?: return true
-        val transactionFees = _state.value.transactionFeesInfo?.transactionFees ?: return true
 
         val xrdInCandidateAccount = feePayers.candidates.find {
             it.account.address == candidateAddress
@@ -320,7 +338,7 @@ class TransactionFeesDelegate @Inject constructor(
             is PreviewType.Transfer.Staking -> 0.toDecimal192()
         }
 
-        return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
+        return xrdInCandidateAccount - xrdUsed < feeToLock
     }
 
     private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
@@ -329,14 +347,13 @@ class TransactionFeesDelegate @Inject constructor(
 
     private fun switchToFeePayerSelection() {
         _state.update { state ->
-            val transactionFeesInfo = state.transactionFeesInfo ?: return@update state
             val feePayers = data.value.feePayers
 
             state.copy(
                 selectedFeePayerInput = TransactionReviewViewModel.State.SelectFeePayerInput(
                     preselectedCandidate = feePayers?.candidates?.firstOrNull { it.account.address == feePayers.selectedAccountAddress },
                     candidates = feePayers?.candidates.orEmpty().toPersistentList(),
-                    fee = transactionFeesInfo.transactionFees.transactionFeeToLock.formatted()
+                    fee = state.transactionFees.transactionFeeToLock.formatted()
                 )
             )
         }

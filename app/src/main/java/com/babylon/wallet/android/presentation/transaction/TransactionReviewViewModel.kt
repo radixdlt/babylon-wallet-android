@@ -21,12 +21,15 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
@@ -35,13 +38,9 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
-import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.minus
-import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.summary
-import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -66,15 +65,19 @@ import javax.inject.Inject
 class TransactionReviewViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val analysis: TransactionAnalysisDelegate,
-    private val guarantees: TransactionGuaranteesDelegate,
-    private val fees: TransactionFeesDelegate,
-    private val submit: TransactionSubmitDelegate,
+    private val guarantees: TransactionGuaranteesDelegateImpl,
+    private val fees: TransactionFeesDelegateImpl,
+    private val submit: TransactionSubmitDelegateImpl,
     private val getDAppsUseCase: GetDAppsUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getProfileUseCase: GetProfileUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<State>(),
+    OneOffEventHandler<TransactionReviewViewModel.Event> by OneOffEventHandlerImpl(),
+    TransactionGuaranteesDelegate by guarantees,
+    TransactionFeesDelegate by fees,
+    TransactionSubmitDelegate by submit {
 
     private val args = TransactionReviewArgs(savedStateHandle)
     private val data = MutableStateFlow(Data())
@@ -129,7 +132,7 @@ class TransactionReviewViewModel @Inject constructor(
                 sendEvent(Event.Dismiss)
             }
         } else {
-            data.update { it.copy(_request = request) }
+            data.update { it.copy(txRequest = request) }
             _state.update {
                 it.copy(
                     rawManifest = request.unvalidatedManifestData.instructions,
@@ -177,59 +180,8 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(isRawManifestVisible = !it.isRawManifestVisible) }
     }
 
-    fun onApproveTransaction() = submit.onSubmit()
-
-    fun promptForGuaranteesClick() = guarantees.onEdit()
-
-    fun onGuaranteeValueChange(account: AccountWithPredictedGuarantee, value: String) = guarantees.onValueChange(
-        account = account,
-        value = value
-    )
-
-    fun onGuaranteeValueIncreased(account: AccountWithPredictedGuarantee) = guarantees.onValueIncreased(account)
-
-    fun onGuaranteeValueDecreased(account: AccountWithPredictedGuarantee) = guarantees.onValueDecreased(account)
-
-    fun onGuaranteesApplyClick() = guarantees.onApply()
-
     fun onCloseBottomSheetClick() {
         _state.update { it.copy(sheetState = Sheet.None) }
-    }
-
-    fun onCustomizeClick() = viewModelScope.launch {
-        fees.onCustomizeClick()
-    }
-
-    fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
-
-    fun onSelectFeePayerClick() = fees.onSelectFeePayerClick()
-
-    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
-        fees.onFeePaddingAmountChanged(feePaddingAmount)
-    }
-
-    fun onTipPercentageChanged(tipPercentage: String) {
-        fees.onTipPercentageChanged(tipPercentage)
-    }
-
-    fun onViewDefaultModeClick() {
-        fees.onViewDefaultModeClick()
-    }
-
-    fun onViewAdvancedModeClick() {
-        fees.onViewAdvancedModeClick()
-    }
-
-    fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
-        fees.onFeePayerChanged(selectedFeePayer)
-    }
-
-    fun onFeePayerSelected() {
-        fees.onFeePayerSelected()
-    }
-
-    fun onFeePayerSelectionDismissRequest() {
-        fees.onFeePayerSelectionDismissRequest()
     }
 
     fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
@@ -250,9 +202,9 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     data class Data(
-        private val _request: TransactionRequest? = null,
-        private val _transactionToReviewData: TransactionToReviewData? = null,
-        private val _notaryAndSigners: NotaryAndSigners? = null,
+        private val txRequest: TransactionRequest? = null,
+        private val txToReviewData: TransactionToReviewData? = null,
+        private val txNotaryAndSigners: NotaryAndSigners? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val endEpoch: ULong? = null,
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
@@ -260,11 +212,11 @@ class TransactionReviewViewModel @Inject constructor(
     ) {
 
         val request: TransactionRequest
-            get() = requireNotNull(_request)
+            get() = requireNotNull(txRequest)
         val transactionToReviewData: TransactionToReviewData
-            get() = requireNotNull(_transactionToReviewData)
+            get() = requireNotNull(txToReviewData)
         val notaryAndSigners: NotaryAndSigners
-            get() = requireNotNull(_notaryAndSigners)
+            get() = requireNotNull(txNotaryAndSigners)
 
         val feePayerCandidates: List<AccountAddress> by lazy {
             val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary
@@ -282,7 +234,8 @@ class TransactionReviewViewModel @Inject constructor(
         val showRawTransactionWarning: Boolean = false,
         val message: String? = null,
         val previewType: PreviewType,
-        val transactionFeesInfo: TransactionFeesInfo? = null,
+        val transactionFeesProperties: TransactionFeesProperties? = null,
+        val transactionFees: TransactionFees = TransactionFees(),
         val isNetworkFeeLoading: Boolean,
         val sheetState: Sheet = Sheet.None,
         val selectedFeePayerInput: SelectFeePayerInput? = null,
@@ -320,8 +273,7 @@ class TransactionReviewViewModel @Inject constructor(
             data class Some(val dApp: DApp?) : ProposingDApp
         }
 
-        data class TransactionFeesInfo(
-            val transactionFees: TransactionFees,
+        data class TransactionFeesProperties(
             val isSelectedFeePayerInvolvedInTransaction: Boolean,
             val noFeePayerSelected: Boolean,
             val isBalanceInsufficientToPayTheFee: Boolean,
@@ -338,7 +290,8 @@ class TransactionReviewViewModel @Inject constructor(
             data class CustomizeFees(
                 val feePayerMode: FeePayerMode,
                 val feesMode: FeesMode,
-                val feesInfo: TransactionFeesInfo
+                val transactionFees: TransactionFees,
+                val properties: TransactionFeesProperties
             ) : Sheet {
 
                 sealed interface FeePayerMode {
@@ -370,10 +323,10 @@ class TransactionReviewViewModel @Inject constructor(
             val fee: String
         )
     }
-}
 
-sealed interface Event : OneOffEvent {
-    data object Dismiss : Event
+    sealed interface Event : OneOffEvent {
+        data object Dismiss : Event
+    }
 }
 
 sealed interface PreviewType {

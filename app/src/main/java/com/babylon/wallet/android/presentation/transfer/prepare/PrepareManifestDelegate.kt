@@ -18,7 +18,6 @@ import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.perAssetTransfers
-import com.radixdlt.sargon.extensions.plaintext
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.resources.Resource
