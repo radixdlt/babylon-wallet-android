@@ -40,7 +40,6 @@ import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.summary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -219,7 +218,7 @@ class TransactionReviewViewModel @Inject constructor(
             get() = requireNotNull(txNotaryAndSigners)
 
         val feePayerCandidates: List<AccountAddress> by lazy {
-            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary!!
+            val manifestSummary = transactionToReviewData.manifestSummary
             manifestSummary.addressesOfAccountsWithdrawnFrom +
                 manifestSummary.addressesOfAccountsDepositedInto +
                 manifestSummary.addressesOfAccountsRequiringAuth

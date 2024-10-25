@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Pr
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.ExecutionSummary
-import com.radixdlt.sargon.extensions.summary
 import kotlinx.coroutines.flow.update
 import rdx.works.core.then
 import timber.log.Timber
@@ -39,10 +38,9 @@ class TransactionAnalysisDelegate @Inject constructor(
                 notaryPublicKey = data.value.ephemeralNotaryPrivateKey.toPublicKey()
             )
         }.then { transactionToReviewData ->
-            val manifestSummary = transactionToReviewData.transactionToReview.transactionManifest.summary!!
             resolveNotaryAndSignersUseCase(
-                accountsAddressesRequiringAuth = manifestSummary.addressesOfAccountsRequiringAuth,
-                personaAddressesRequiringAuth = manifestSummary.addressesOfPersonasRequiringAuth,
+                accountsAddressesRequiringAuth = transactionToReviewData.manifestSummary.addressesOfAccountsRequiringAuth,
+                personaAddressesRequiringAuth = transactionToReviewData.manifestSummary.addressesOfPersonasRequiringAuth,
                 notary = data.value.ephemeralNotaryPrivateKey
             ).onSuccess { notaryAndSigners ->
                 data.update {
