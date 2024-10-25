@@ -71,13 +71,17 @@ class TransactionFeesDelegateImpl @Inject constructor(
             notaryAndSigners = data.value.notaryAndSigners,
             previewType = _state.value.previewType
         )
-        updateTransactionFees { transactionFees }
 
         searchFeePayersUseCase(
             feePayerCandidates = data.value.feePayerCandidates,
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayers ->
-            _state.update { it.copy(isNetworkFeeLoading = false) }
+            _state.update { state ->
+                state.copy(
+                    transactionFees = transactionFees,
+                    isNetworkFeeLoading = false
+                )
+            }
             onFeePayersUpdated(feePayers)
             fetchXrdPrice()
         }.onFailure { throwable ->
@@ -284,7 +288,9 @@ class TransactionFeesDelegateImpl @Inject constructor(
         _state.update { it.updateFeesDetails(feePayers, _state.value.transactionFees) }
     }
 
-    private fun updateTransactionFees(transactionFees: TransactionReviewViewModel.State.() -> TransactionFees) {
+    private fun updateTransactionFees(
+        transactionFees: TransactionReviewViewModel.State.() -> TransactionFees
+    ) {
         val feePayers = data.value.feePayers ?: return
         _state.update { it.updateFeesDetails(feePayers, transactionFees(it)) }
     }
