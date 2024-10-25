@@ -71,7 +71,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
             notaryAndSigners = data.value.notaryAndSigners,
             previewType = _state.value.previewType
         )
-        _state.update { it.copy(transactionFees = transactionFees) }
+        updateTransactionFees { transactionFees }
 
         searchFeePayersUseCase(
             feePayerCandidates = data.value.feePayerCandidates,
@@ -188,11 +188,13 @@ class TransactionFeesDelegateImpl @Inject constructor(
             signersCount + 1
         }
 
+        updateTransactionFees {
+            transactionFees.copy(
+                signersCount = updatedSignersCount
+            )
+        }
         _state.update {
             it.copy(
-                transactionFees = it.transactionFees.copy(
-                    signersCount = updatedSignersCount
-                ),
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                         feePayerCandidate = selectedFeePayerAccount
@@ -207,10 +209,11 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     override fun onFeePaddingAmountChanged(feePaddingAmount: String) {
-        val newTransactionFees = _state.value.transactionFees.copy(
-            feePaddingAmount = feePaddingAmount
-        )
-        _state.update { state -> state.copy(transactionFees = newTransactionFees) }
+        updateTransactionFees {
+            transactionFees.copy(
+                feePaddingAmount = feePaddingAmount
+            )
+        }
 
         searchFeePayersJob?.cancel()
         searchFeePayersJob = viewModelScope.launch {
@@ -218,7 +221,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
             val newFeePayers = feePayers.copy(
                 candidates = feePayers.candidates.map {
                     it.copy(
-                        hasEnoughBalance = it.xrdAmount >= newTransactionFees.transactionFeeToLock
+                        hasEnoughBalance = it.xrdAmount >= _state.value.transactionFees.transactionFeeToLock
                     )
                 }
             )
@@ -228,32 +231,25 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
     @Suppress("MagicNumber")
     override fun onTipPercentageChanged(tipPercentage: String) {
-        _state.update { state ->
-            state.copy(
-                transactionFees = state.transactionFees.copy(
-                    tipPercentage = tipPercentage.filter { it.isDigit() }
-                )
+        updateTransactionFees {
+            transactionFees.copy(
+                tipPercentage = tipPercentage.filter { it.isDigit() }
             )
         }
     }
 
     override fun onViewDefaultModeClick() {
-        data.update {
-            it.copy(
-                latestFeesMode = Sheet.CustomizeFees.FeesMode.Default,
+        data.update { it.copy(latestFeesMode = Sheet.CustomizeFees.FeesMode.Default) }
+        updateTransactionFees {
+            transactionFees.copy(
+                feePaddingAmount = null,
+                tipPercentage = null
             )
         }
         _state.update { state ->
             state.copy(
-                transactionFees = state.transactionFees.copy(
-                    feePaddingAmount = null,
-                    tipPercentage = null
-                ),
-                sheetState = Sheet.CustomizeFees(
-                    feePayerMode = (state.sheetState as Sheet.CustomizeFees).feePayerMode,
-                    feesMode = Sheet.CustomizeFees.FeesMode.Default,
-                    transactionFees = state.transactionFees,
-                    properties = requireNotNull(state.transactionFeesProperties)
+                sheetState = (state.sheetState as Sheet.CustomizeFees).copy(
+                    feesMode = Sheet.CustomizeFees.FeesMode.Default
                 )
             )
         }
@@ -263,11 +259,8 @@ class TransactionFeesDelegateImpl @Inject constructor(
         data.update { it.copy(latestFeesMode = Sheet.CustomizeFees.FeesMode.Advanced) }
         _state.update { state ->
             state.copy(
-                sheetState = Sheet.CustomizeFees(
-                    feePayerMode = (state.sheetState as Sheet.CustomizeFees).feePayerMode,
+                sheetState = (state.sheetState as Sheet.CustomizeFees).copy(
                     feesMode = Sheet.CustomizeFees.FeesMode.Advanced,
-                    transactionFees = state.transactionFees,
-                    properties = requireNotNull(state.transactionFeesProperties)
                 )
             )
         }
@@ -277,11 +270,9 @@ class TransactionFeesDelegateImpl @Inject constructor(
         viewModelScope.launch {
             getFiatValueUseCase.forXrd()
                 .onSuccess { fiatPrice ->
-                    _state.update { state ->
-                        state.copy(
-                            transactionFees = state.transactionFees.copy(
-                                xrdFiatPrice = fiatPrice
-                            )
+                    updateTransactionFees {
+                        transactionFees.copy(
+                            xrdFiatPrice = fiatPrice
                         )
                     }
                 }
@@ -290,20 +281,33 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
     private fun onFeePayersUpdated(feePayers: TransactionFeePayers) {
         data.update { it.copy(feePayers = feePayers) }
+        _state.update { it.updateFeesDetails(feePayers, _state.value.transactionFees) }
+    }
 
-        val transactionFees = _state.value.transactionFees
+    private fun updateTransactionFees(transactionFees: TransactionReviewViewModel.State.() -> TransactionFees) {
+        val feePayers = data.value.feePayers ?: return
+        _state.update { it.updateFeesDetails(feePayers, transactionFees(it)) }
+    }
+
+    private fun TransactionReviewViewModel.State.updateFeesDetails(
+        feePayers: TransactionFeePayers,
+        transactionFees: TransactionFees
+    ): TransactionReviewViewModel.State {
         val transactionFeesProperties = TransactionReviewViewModel.State.TransactionFeesProperties(
             isSelectedFeePayerInvolvedInTransaction = isSelectedFeePayerInvolvedInTransaction(feePayers.selectedAccountAddress),
             noFeePayerSelected = feePayers.selectedAccountAddress == null,
             isBalanceInsufficientToPayTheFee = isBalanceInsufficientToPayTheFee(feePayers, transactionFees.transactionFeeToLock)
         )
 
-        _state.update {
-            it.copy(
-                transactionFeesProperties = transactionFeesProperties,
-                isSubmitEnabled = it.previewType != PreviewType.None && !transactionFeesProperties.isBalanceInsufficientToPayTheFee
-            )
-        }
+        return copy(
+            transactionFees = transactionFees,
+            transactionFeesProperties = transactionFeesProperties,
+            sheetState = (sheetState as? Sheet.CustomizeFees)?.copy(
+                transactionFees = transactionFees,
+                properties = transactionFeesProperties
+            ) ?: sheetState,
+            isSubmitEnabled = previewType != PreviewType.None && !transactionFeesProperties.isBalanceInsufficientToPayTheFee
+        )
     }
 
     private fun isBalanceInsufficientToPayTheFee(feePayers: TransactionFeePayers, feeToLock: Decimal192): Boolean {
