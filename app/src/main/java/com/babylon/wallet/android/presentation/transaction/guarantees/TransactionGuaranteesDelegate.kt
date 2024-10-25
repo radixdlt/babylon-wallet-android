@@ -88,11 +88,7 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = {
-                            it.isTheSameGuaranteeItem(
-                                with = account
-                            )
-                        },
+                        predicate = { it.isTheSameGuaranteeItem(with = account) },
                         mutation = { it.change(value) }
                     )
                 )
@@ -107,11 +103,7 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = {
-                            it.isTheSameGuaranteeItem(
-                                with = account
-                            )
-                        },
+                        predicate = { it.isTheSameGuaranteeItem(with = account) },
                         mutation = { it.increase() }
                     )
                 )
@@ -126,11 +118,7 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
             state.copy(
                 sheetState = sheet.copy(
                     accountsWithPredictedGuarantees = sheet.accountsWithPredictedGuarantees.mapWhen(
-                        predicate = {
-                            it.isTheSameGuaranteeItem(
-                                with = account
-                            )
-                        },
+                        predicate = { it.isTheSameGuaranteeItem(with = account) },
                         mutation = { it.decrease() }
                     )
                 )
@@ -146,11 +134,14 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
                 _state.update {
                     it.copy(
                         previewType = preview.copy(
-                            to = preview.to.mapWhen(predicate = { depositing ->
-                                sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                            }, mutation = { depositing ->
-                                depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                            })
+                            to = preview.to.mapWhen(
+                                predicate = { depositing ->
+                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                                },
+                                mutation = { depositing ->
+                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                                }
+                            )
                         ),
                         sheetState = Sheet.None
                     )
@@ -161,11 +152,14 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
                 _state.update {
                     it.copy(
                         previewType = preview.copy(
-                            to = preview.to.mapWhen(predicate = { depositing ->
-                                sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                            }, mutation = { depositing ->
-                                depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                            })
+                            to = preview.to.mapWhen(
+                                predicate = { depositing ->
+                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                                },
+                                mutation = { depositing ->
+                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                                }
+                            )
                         ),
                         sheetState = Sheet.None
                     )
@@ -176,11 +170,14 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
                 _state.update {
                     it.copy(
                         previewType = preview.copy(
-                            to = preview.to.mapWhen(predicate = { depositing ->
-                                sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                            }, mutation = { depositing ->
-                                depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                            })
+                            to = preview.to.mapWhen(
+                                predicate = { depositing ->
+                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                                },
+                                mutation = { depositing ->
+                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                                }
+                            )
                         ),
                         sheetState = Sheet.None
                     )
