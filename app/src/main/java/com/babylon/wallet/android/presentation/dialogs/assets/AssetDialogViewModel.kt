@@ -15,8 +15,10 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.toMinutes
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.ResourceOrNonFungible
@@ -256,8 +258,8 @@ class AssetDialogViewModel @Inject constructor(
                 } else {
                     ClaimState.Unstaking(
                         amount = claimAmount,
-                        current = currentEpoch,
-                        claim = claimEpoch
+                        current = currentEpoch.toULong(),
+                        claim = claimEpoch.toULong()
                     )
                 }
             }
@@ -267,20 +269,16 @@ class AssetDialogViewModel @Inject constructor(
 
             data class Unstaking(
                 override val amount: Decimal192,
-                private val current: Long,
-                private val claim: Long
+                private val current: Epoch,
+                private val claim: Epoch
             ) : ClaimState() {
                 val approximateClaimMinutes: Long
-                    get() = (claim - current) * EPOCH_TIME_MINUTES
+                    get() = (claim - current).toMinutes().toLong()
             }
 
             data class ReadyToClaim(
                 override val amount: Decimal192
             ) : ClaimState()
-
-            companion object {
-                private const val EPOCH_TIME_MINUTES = 5
-            }
         }
 
         sealed interface HideConfirmationType {

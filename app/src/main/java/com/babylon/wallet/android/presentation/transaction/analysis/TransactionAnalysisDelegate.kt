@@ -58,13 +58,11 @@ class TransactionAnalysisDelegate @Inject constructor(
 
     private suspend fun startAnalysis(manifestData: TransactionManifestData) {
         withContext(defaultDispatcher) {
-            runCatching {
-                transactionRepository.analyzeTransaction(
-                    manifestData = manifestData,
-                    isWalletTransaction = _state.value.requestNonNull.isInternal,
-                    notaryPublicKey = _state.value.ephemeralNotaryPrivateKey.toPublicKey()
-                )
-            }.then { transactionToReview ->
+            transactionRepository.analyzeTransaction(
+                manifestData = manifestData,
+                isWalletTransaction = _state.value.requestNonNull.isInternal,
+                notaryPublicKey = _state.value.ephemeralNotaryPrivateKey.toPublicKey()
+            ).then { transactionToReview ->
                 _state.update { it.copy(transactionManifestData = TransactionManifestData.from(transactionToReview.transactionManifest)) }
 
                 val manifestSummary = requireNotNull(transactionToReview.transactionManifest.summary)
@@ -103,6 +101,9 @@ class TransactionAnalysisDelegate @Inject constructor(
                                 previewType = PreviewType.UnacceptableManifest
                             )
                         }
+                    }
+                    is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
+                        reportFailure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
                     }
                     else -> {
                         reportFailure(RadixWalletException.DappRequestException.PreviewError(error))

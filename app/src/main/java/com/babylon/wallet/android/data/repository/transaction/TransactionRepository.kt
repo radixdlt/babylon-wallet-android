@@ -31,17 +31,15 @@ import javax.inject.Inject
 
 interface TransactionRepository {
 
-    @Throws
     suspend fun analyzeTransaction(
         manifestData: TransactionManifestData,
         isWalletTransaction: Boolean,
         notaryPublicKey: PublicKey.Ed25519
-    ): TransactionToReview
+    ): Result<TransactionToReview>
 
     suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash>
 
-    @Throws
-    suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus
+    suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): Result<TransactionStatus>
 
     suspend fun getLedgerEpoch(): Result<Epoch>
 
@@ -62,17 +60,19 @@ class TransactionRepositoryImpl @Inject constructor(
         manifestData: TransactionManifestData,
         isWalletTransaction: Boolean,
         notaryPublicKey: PublicKey.Ed25519
-    ): TransactionToReview {
+    ): Result<TransactionToReview> {
         return withContext(dispatcher) {
-            val sargonOs = sargonOsManager.sargonOs
-            sargonOs.analyseTransactionPreview(
-                instructions = manifestData.instructions,
-                blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-                message = manifestData.messageSargon,
-                areInstructionsOriginatingFromHost = isWalletTransaction,
-                nonce = Nonce.secureRandom(),
-                notaryPublicKey = notaryPublicKey,
-            )
+            runCatching {
+                val sargonOs = sargonOsManager.sargonOs
+                sargonOs.analyseTransactionPreview(
+                    instructions = manifestData.instructions,
+                    blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
+                    message = manifestData.messageSargon,
+                    areInstructionsOriginatingFromHost = isWalletTransaction,
+                    nonce = Nonce.secureRandom(),
+                    notaryPublicKey = notaryPublicKey,
+                )
+            }
         }
     }
 
@@ -95,10 +95,12 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus {
+    override suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): Result<TransactionStatus> {
         return withContext(dispatcher) {
-            val sargonOs = sargonOsManager.sargonOs
-            sargonOs.pollTransactionStatus(intentHash)
+            runCatching {
+                val sargonOs = sargonOsManager.sargonOs
+                sargonOs.pollTransactionStatus(intentHash)
+            }
         }
     }
 
