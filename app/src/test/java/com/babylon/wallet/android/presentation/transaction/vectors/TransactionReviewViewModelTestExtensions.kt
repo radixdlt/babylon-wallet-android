@@ -17,7 +17,6 @@ import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreated
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
@@ -35,7 +34,9 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
@@ -101,7 +102,8 @@ internal fun testViewModel(
         resolveNotaryAndSignersUseCase = ResolveNotaryAndSignersUseCase(GetProfileUseCase(profileRepository, testDispatcher)),
         searchFeePayersUseCase = SearchFeePayersUseCase(GetProfileUseCase(profileRepository, testDispatcher), stateRepository),
         transactionRepository = transactionRepository,
-        getFiatValueUseCase = getFiatValueUseCase
+        getFiatValueUseCase = getFiatValueUseCase,
+        defaultDispatcher = testDispatcher
     ),
     guarantees = TransactionGuaranteesDelegate(),
     fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher)),
@@ -110,7 +112,6 @@ internal fun testViewModel(
         respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
         incomingRequestRepository = incomingRequestRepository,
-        submitTransactionUseCase = SubmitTransactionUseCase(transactionRepository = transactionRepository),
         clearCachedNewlyCreatedEntitiesUseCase = ClearCachedNewlyCreatedEntitiesUseCase(stateRepository = stateRepository),
         appEventBus = appEventBus,
         transactionStatusClient = TransactionStatusClient(
@@ -120,7 +121,8 @@ internal fun testViewModel(
             appScope = testScope
         ),
         exceptionMessageProvider = exceptionMessageProvider,
-        applicationScope = testScope
+        applicationScope = testScope,
+        transactionRepository = transactionRepository
     ),
     getDAppsUseCase = GetDAppsUseCase(stateRepository),
     incomingRequestRepository = incomingRequestRepository,
@@ -137,7 +139,8 @@ internal fun sampleManifest(
 ) = TransactionManifestData(
     instructions = instructions,
     networkId = networkId,
-    message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message)
+    message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message),
+    manifest = TransactionManifest.sample()
 )
 
 internal fun requestMetadata(

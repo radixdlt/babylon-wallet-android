@@ -27,7 +27,6 @@ import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreated
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
@@ -46,17 +45,19 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
@@ -113,7 +114,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
     private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val clearCachedNewlyCreatedEntitiesUseCase = mockk<ClearCachedNewlyCreatedEntitiesUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
@@ -163,10 +163,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
-    private val sampleIntentHash = IntentHash.sample()
+    private val sampleTransactionIntentHash = TransactionIntentHash.sample()
     private val notarizationResult = NotarizationResult(
-        intentHash = sampleIntentHash,
-        compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
+        intentHash = sampleTransactionIntentHash,
+        notarizedTransaction = NotarizedTransaction.sample(),
         endEpoch = 50u
     )
     private val sampleRequestId = UUID.randomUUID().toString()
@@ -175,10 +175,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { instructions } returns ""
         every { blobs } returns emptyList()
         every { message } returns TransactionManifestData.TransactionMessage.None
-        every { entitiesRequiringAuth() } returns TransactionManifestData.EntitiesRequiringAuth(
-            accounts = emptyList(),
-            identities = emptyList()
-        )
     }
     private val sampleRequest = TransactionRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
@@ -235,11 +231,15 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
-        coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
-        coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+            TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary
+            )
+        )
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             respondToIncomingRequestUseCase.respondWithSuccess(
@@ -263,7 +263,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 Curve25519SecretKey.secureRandom()
             )
         )
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
         coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
     }
@@ -271,12 +270,13 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
             analysis = TransactionAnalysisDelegate(
+                transactionRepository = transactionRepository,
                 previewTypeAnalyzer = previewTypeAnalyzer,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
-                transactionRepository = transactionRepository,
-                getFiatValueUseCase = getFiatValueUseCase
+                getFiatValueUseCase = getFiatValueUseCase,
+                defaultDispatcher = coroutineDispatcher
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
@@ -290,9 +290,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 appEventBus = appEventBus,
                 clearCachedNewlyCreatedEntitiesUseCase = clearCachedNewlyCreatedEntitiesUseCase,
                 transactionStatusClient = transactionStatusClient,
-                submitTransactionUseCase = submitTransactionUseCase,
                 applicationScope = TestScope(),
-                exceptionMessageProvider = exceptionMessageProvider
+                exceptionMessageProvider = exceptionMessageProvider,
+                transactionRepository = transactionRepository
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
@@ -312,7 +312,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithSuccess(
                 request = sampleRequest,
-                txId = sampleIntentHash.bech32EncodedTxId
+                txId = sampleTransactionIntentHash.bech32EncodedTxId
             )
         }
     }
@@ -366,21 +366,26 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "1.10842739440"
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = 1.5.toDecimal192(),
-                contingentLock = 0.toDecimal192()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = 0.3.toDecimal192(),
-                finalizationCost = 0.3.toDecimal192(),
-                storageExpansionCost = 0.2.toDecimal192(),
-                royaltyCost = 0.2.toDecimal192()
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+            TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary.copy(
+                    feeLocks = FeeLocks(
+                        lock = 1.5.toDecimal192(),
+                        contingentLock = 0.toDecimal192()
+                    ),
+                    feeSummary = FeeSummary(
+                        executionCost = 0.3.toDecimal192(),
+                        finalizationCost = 0.3.toDecimal192(),
+                        storageExpansionCost = 0.2.toDecimal192(),
+                        royaltyCost = 0.2.toDecimal192()
+                    ),
+                    detailedClassification = listOf(
+                        DetailedManifestClass.General
+                    ),
+                    reservedInstructions = emptyList()
+                )
+            )
         )
         val vm = vm.value
         advanceUntilIdle()
@@ -396,21 +401,26 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = 0.9019403.toDecimal192()
 
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = 0.5.toDecimal192(),
-                contingentLock = 0.toDecimal192()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = 0.3.toDecimal192(),
-                finalizationCost = 0.3.toDecimal192(),
-                storageExpansionCost = 0.2.toDecimal192(),
-                royaltyCost = 0.2.toDecimal192()
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+            TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary.copy(
+                    feeLocks = FeeLocks(
+                        lock = 0.5.toDecimal192(),
+                        contingentLock = 0.toDecimal192()
+                    ),
+                    feeSummary = FeeSummary(
+                        executionCost = 0.3.toDecimal192(),
+                        finalizationCost = 0.3.toDecimal192(),
+                        storageExpansionCost = 0.2.toDecimal192(),
+                        royaltyCost = 0.2.toDecimal192()
+                    ),
+                    detailedClassification = listOf(
+                        DetailedManifestClass.General
+                    ),
+                    reservedInstructions = emptyList()
+                )
+            )
         )
         val vm = vm.value
         advanceUntilIdle()
@@ -427,22 +437,28 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = 2.3678038.toDecimal192()
 
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = 0.5.toDecimal192(),
-                contingentLock = 0.toDecimal192()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = 0.3.toDecimal192(),
-                finalizationCost = 0.3.toDecimal192(),
-                storageExpansionCost = 0.2.toDecimal192(),
-                royaltyCost = 0.2.toDecimal192()
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
+            Result.success(
+                TransactionToReview(
+                    transactionManifest = TransactionManifest.sample(),
+                    executionSummary = emptyExecutionSummary.copy(
+                        feeLocks = FeeLocks(
+                            lock = 0.5.toDecimal192(),
+                            contingentLock = 0.toDecimal192()
+                        ),
+                        feeSummary = FeeSummary(
+                            executionCost = 0.3.toDecimal192(),
+                            finalizationCost = 0.3.toDecimal192(),
+                            storageExpansionCost = 0.2.toDecimal192(),
+                            royaltyCost = 0.2.toDecimal192()
+                        ),
+                        detailedClassification = listOf(
+                            DetailedManifestClass.General
+                        ),
+                        reservedInstructions = emptyList()
+                    )
+                )
+            )
         val vm = vm.value
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
@@ -450,13 +466,4 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
-
-    private fun previewResponse() = TransactionPreviewResponse(
-        encodedReceipt = "",
-        receipt = CoreApiTransactionReceipt(
-            status = "",
-            errorMessage = ""
-        ),
-        logs = emptyList()
-    )
 }

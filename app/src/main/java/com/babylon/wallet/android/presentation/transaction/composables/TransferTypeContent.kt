@@ -18,8 +18,10 @@ import com.babylon.wallet.android.presentation.transaction.model.AccountWithTran
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
@@ -71,6 +73,7 @@ fun TransactionPreviewTypePreview() {
                     ),
                     interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
+                        manifest = TransactionManifest.sample(),
                         instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
                         networkId = NetworkId.MAINNET,
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),

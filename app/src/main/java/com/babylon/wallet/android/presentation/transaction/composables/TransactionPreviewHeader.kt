@@ -42,7 +42,9 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.sargon.default
@@ -187,6 +189,7 @@ fun TransactionPreviewHeaderPreview() {
                     remoteEntityId = RemoteEntityID.ConnectorId(""),
                     interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
+                        manifest = TransactionManifest.sample(),
                         instructions = "",
                         networkId = Gateway.default.network.id,
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),

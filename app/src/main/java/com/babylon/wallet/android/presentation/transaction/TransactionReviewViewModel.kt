@@ -32,6 +32,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.ResourceIdentifier
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
@@ -40,6 +41,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.summary
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -52,6 +54,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
@@ -224,8 +227,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
-            .orEmpty()
+        val selectedFeePayerInvolvedInTransaction = _state.value.feePayerCandidates
             .any { accountAddress ->
                 accountAddress == selectedFeePayerAccount.address
             }
@@ -286,11 +288,25 @@ class TransactionReviewViewModel @Inject constructor(
         val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val selectedFeePayerInput: SelectFeePayerInput? = null,
-        val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf()
+        val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
+        val transactionManifestData: TransactionManifestData? = null
     ) : UiState {
 
         val requestNonNull: TransactionRequest
             get() = requireNotNull(request)
+
+        val transactionManifestDataNonNull: TransactionManifestData
+            get() = requireNotNull(transactionManifestData)
+
+        val transactionManifestNonNull: TransactionManifest
+            get() = requireNotNull(transactionManifestDataNonNull.manifest)
+
+        val feePayerCandidates: List<AccountAddress> by lazy {
+            val summary = requireNotNull(transactionManifestNonNull.summary)
+            summary.addressesOfAccountsWithdrawnFrom +
+                summary.addressesOfAccountsDepositedInto +
+                summary.addressesOfAccountsRequiringAuth
+        }
 
         fun noneRequiredState(): State = copy(
             sheetState = Sheet.CustomizeFees(
@@ -363,10 +379,9 @@ class TransactionReviewViewModel @Inject constructor(
             get() = if (transactionFees.transactionFeeToLock.isZero) false else feePayers?.selectedAccountAddress == null
 
         val isSelectedFeePayerInvolvedInTransaction: Boolean
-            get() = runCatching {
-                if (feePayers?.selectedAccountAddress == null) return@runCatching true
-                request?.transactionManifestData?.feePayerCandidates()?.contains(feePayers.selectedAccountAddress)
-            }.getOrNull() ?: false
+            get() = feePayers?.selectedAccountAddress?.let {
+                feePayerCandidates.contains(it)
+            } ?: true
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {

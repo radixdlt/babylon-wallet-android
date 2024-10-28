@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
+import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
@@ -13,7 +14,6 @@ import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.Event
@@ -45,7 +45,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val submitTransactionUseCase: SubmitTransactionUseCase,
+    private val transactionRepository: TransactionRepository,
     private val clearCachedNewlyCreatedEntitiesUseCase: ClearCachedNewlyCreatedEntitiesUseCase,
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
@@ -66,7 +66,7 @@ class TransactionSubmitDelegate @Inject constructor(
         approvalJob = applicationScope.launch {
             val currentState = _state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.id
-            val manifestNetworkId = currentState.requestNonNull.transactionManifestData.networkId
+            val manifestNetworkId = currentState.transactionManifestDataNonNull.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -120,14 +120,15 @@ class TransactionSubmitDelegate @Inject constructor(
 
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
-                manifest = transactionRequest.transactionManifestData,
+                manifestData = transactionRequest.transactionManifestData,
                 lockFee = _state.value.transactionFees.transactionFeeToLock,
                 tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
                 ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
                 feePayerAddress = feePayerAddress
             )
         ).then { notarizationResult ->
-            submitTransactionUseCase(notarizationResult = notarizationResult)
+            transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
+                .map { notarizationResult }
         }.onSuccess { notarization ->
             _state.update {
                 it.copy(
@@ -146,7 +147,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 )
             )
             transactionStatusClient.pollTransactionStatus(
-                txID = notarization.intentHash.bech32EncodedTxId,
+                intentHash = notarization.intentHash,
                 requestId = transactionRequest.interactionId,
                 transactionType = transactionRequest.transactionType,
                 endEpoch = notarization.endEpoch
@@ -268,7 +269,7 @@ class TransactionSubmitDelegate @Inject constructor(
         }
 
         return TransactionManifestData.from(
-            manifest = manifestSargon.modifyAddGuarantees(guarantees = guarantees),
+            manifest = _state.value.transactionManifestNonNull.modifyAddGuarantees(guarantees = guarantees),
             message = message
         )
     }

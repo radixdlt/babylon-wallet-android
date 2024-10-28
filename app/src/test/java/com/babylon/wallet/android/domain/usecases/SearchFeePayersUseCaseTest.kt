@@ -48,7 +48,7 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with enough xrd exists, returns the selected fee payer`() =
         testScope.runTest {
-            val manifestData = manifestDataWithAddress(account1)
+            val manifestData = feePayerCandidates(account1)
 
             val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
 
@@ -66,7 +66,7 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with not enough xrd exists, returns null fee payer and hasEnoughBalance false`() =
         testScope.runTest {
-            val manifestData = manifestDataWithAddress(account1)
+            val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.1)
             val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
@@ -85,7 +85,7 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with xrd does not exist, returns null fee payer and no candidates`() =
         testScope.runTest {
-            val manifestData = manifestDataWithAddress(account1)
+            val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.0)
             val result = useCase(manifestData, 200.toDecimal192()).getOrThrow()
@@ -117,34 +117,11 @@ class SearchFeePayersUseCaseTest {
     }
 
     companion object {
-        private fun manifestDataWithAddress(
+        private fun feePayerCandidates(
             account: Account
-        ) = TransactionManifestData.from(
-            manifest = TransactionManifest.perAssetTransfers(
-                transfers = PerAssetTransfers(
-                    fromAccount = account.address,
-                    fungibleResources = listOf(
-                        PerAssetTransfersOfFungibleResource(
-                            resource = PerAssetFungibleResource(
-                                resourceAddress = XrdResource.address(networkId = account.networkId),
-                                divisibility = 18.toUByte()
-                            ),
-                            transfers = listOf(
-                                PerAssetFungibleTransfer(
-                                    useTryDepositOrAbort = true,
-                                    amount = 10.toDecimal192(),
-                                    recipient = AccountOrAddressOf.AddressOfExternalAccount(
-                                        value = AccountAddress.sampleMainnet.random()
-                                    )
-                                )
-                            )
-                        )
-                    ),
-                    nonFungibleResources = emptyList()
-                )
-            )
+        ) = listOf(
+            account.address
         )
-
     }
 
 }

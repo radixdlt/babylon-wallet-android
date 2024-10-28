@@ -1,106 +1,64 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPayloadStatus
 import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.utils.toMinutes
 import com.radixdlt.sargon.Epoch
-import kotlinx.coroutines.delay
+import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.TransactionStatus
+import com.radixdlt.sargon.TransactionStatusReason
 import javax.inject.Inject
 
 class PollTransactionStatusUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository
 ) {
 
-    @Suppress("LongMethod", "ReturnCount")
     suspend operator fun invoke(
-        txID: String,
+        intentHash: TransactionIntentHash,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: Epoch
     ): TransactionStatusData {
-        var defaultPollDelayMs = DEFAULT_POLL_INTERVAL_MS
-        while (true) {
-            transactionRepository.getTransactionStatus(txID).onSuccess { statusCheckResult ->
-                val currentEpoch = statusCheckResult.ledgerState.epoch.toULong()
-                val txProcessingTime = ((endEpoch - currentEpoch) * 5.toULong()).toString()
+        val txId = intentHash.bech32EncodedTxId
 
-                when (statusCheckResult.knownPayloads.firstOrNull()?.payloadStatus) {
-                    TransactionPayloadStatus.Unknown,
-                    TransactionPayloadStatus.CommitPendingOutcomeUnknown,
-                    TransactionPayloadStatus.Pending -> {
-                        delay(defaultPollDelayMs)
-                        defaultPollDelayMs += POLL_INTERVAL_MS
+        return when (val transactionStatus = transactionRepository.pollTransactionStatus(intentHash)) {
+            is TransactionStatus.Failed -> TransactionStatusData(
+                txId = txId,
+                requestId = requestId,
+                result = Result.failure(
+                    if (transactionStatus.reason == TransactionStatusReason.WORKTOP_ERROR) {
+                        RadixWalletException.TransactionSubmitException.TransactionCommitted.AssertionFailed(txId)
+                    } else {
+                        RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure(txId)
                     }
-
-                    TransactionPayloadStatus.CommittedSuccess -> {
-                        // Stop Polling: MESSAGE 1
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = Result.success(Unit),
-                            transactionType = transactionType
-                        )
-                    }
-
-                    TransactionPayloadStatus.CommittedFailure -> {
-                        // Stop Polling: MESSAGE 2
-                        val isAssertionFailure = statusCheckResult.errorMessage?.contains("AssertionFailed") == true
-                        val exception = if (isAssertionFailure) {
-                            RadixWalletException.TransactionSubmitException.TransactionCommitted.AssertionFailed(
-                                txID
-                            )
-                        } else {
-                            RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure(
-                                txID
-                            )
-                        }
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = Result.failure(exception),
-                            transactionType = transactionType
-                        )
-                    }
-
-                    TransactionPayloadStatus.PermanentlyRejected -> {
-                        // Stop Polling: MESSAGE 4
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = Result.failure(
-                                RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently(
-                                    txID
-                                )
-                            ),
-                            transactionType = transactionType
-                        )
-                    }
-
-                    TransactionPayloadStatus.TemporarilyRejected -> {
-                        // Stop Polling: MESSAGE 3
-                        return TransactionStatusData(
-                            txId = txID,
-                            requestId = requestId,
-                            result = Result.failure(
-                                RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary(
-                                    txID,
-                                    txProcessingTime
-                                )
-                            ),
-                            transactionType = transactionType
-                        )
-                    }
-
-                    null -> {}
-                }
-            }
+                ),
+                transactionType = transactionType
+            )
+            is TransactionStatus.PermanentlyRejected -> TransactionStatusData(
+                txId = txId,
+                requestId = requestId,
+                result = Result.failure(RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently(txId)),
+                transactionType = transactionType
+            )
+            TransactionStatus.Success -> TransactionStatusData(
+                txId = txId,
+                requestId = requestId,
+                result = Result.success(Unit),
+                transactionType = transactionType
+            )
+            is TransactionStatus.TemporarilyRejected -> TransactionStatusData(
+                txId = txId,
+                requestId = requestId,
+                result = Result.failure(
+                    RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary(
+                        txId = txId,
+                        txProcessingTime = (endEpoch - transactionStatus.currentEpoch).toMinutes().toString()
+                    )
+                ),
+                transactionType = transactionType
+            )
         }
-    }
-
-    companion object {
-        private const val DEFAULT_POLL_INTERVAL_MS = 2000L
-        private const val POLL_INTERVAL_MS = 1000L
     }
 }

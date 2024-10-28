@@ -19,8 +19,10 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -79,6 +81,7 @@ fun StakeUnstakeTypePreview() {
                     ),
                     interactionId = UUID.randomUUID().toString(),
                     transactionManifestData = TransactionManifestData(
+                        manifest = TransactionManifest.sample(),
                         instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
                         networkId = NetworkId.MAINNET,
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
