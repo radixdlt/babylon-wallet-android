@@ -43,6 +43,8 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
         is DappToWalletInteractionItems.UnauthorizedRequest -> {
             itemsTemp.v1.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
         }
+
+        is DappToWalletInteractionItems.PreAuthorization -> TODO()
     }
 }.mapError {
     RadixWalletException.IncomingMessageException.MessageParse(it)

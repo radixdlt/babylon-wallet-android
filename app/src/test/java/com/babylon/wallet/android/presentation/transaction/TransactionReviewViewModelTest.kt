@@ -51,7 +51,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
@@ -163,9 +163,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
-    private val sampleIntentHash = IntentHash.sample()
+    private val sampleTransactionIntentHash = TransactionIntentHash.sample()
     private val notarizationResult = NotarizationResult(
-        intentHash = sampleIntentHash,
+        intentHash = sampleTransactionIntentHash,
         notarizedTransaction = NotarizedTransaction.sample(),
         endEpoch = 50u
     )
@@ -307,7 +307,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coVerify(exactly = 1) {
             respondToIncomingRequestUseCase.respondWithSuccess(
                 request = sampleRequest,
-                txId = sampleIntentHash.bech32EncodedTxId
+                txId = sampleTransactionIntentHash.bech32EncodedTxId
             )
         }
     }

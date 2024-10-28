@@ -6,10 +6,10 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.DappWalletInteractionErrorType
-import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.RadixConnectMobileWalletResponse
 import com.radixdlt.sargon.SessionId
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
@@ -111,7 +111,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     items = WalletToDappInteractionResponseItems.Transaction(
                         v1 = WalletToDappInteractionTransactionResponseItems(
                             send = WalletToDappInteractionSendTransactionResponseItem(
-                                transactionIntentHash = IntentHash.init(txId),
+                                transactionIntentHash = TransactionIntentHash.init(txId),
                             )
                         )
                     )

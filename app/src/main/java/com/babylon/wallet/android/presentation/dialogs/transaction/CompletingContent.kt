@@ -20,14 +20,14 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 
 @Composable
 internal fun CompletingContent(
     modifier: Modifier = Modifier,
-    transactionId: IntentHash?
+    transactionId: TransactionIntentHash?
 ) {
     Column(
         modifier
@@ -61,6 +61,6 @@ internal fun CompletingContent(
 @Composable
 private fun CompletingBottomDialogPreview() {
     RadixWalletTheme {
-        CompletingContent(transactionId = IntentHash.sample())
+        CompletingContent(transactionId = TransactionIntentHash.sample())
     }
 }

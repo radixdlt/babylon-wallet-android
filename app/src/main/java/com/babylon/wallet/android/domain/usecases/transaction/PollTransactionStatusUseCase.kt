@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.Epoch
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionStatus
 import com.radixdlt.sargon.TransactionStatusReason
 import javax.inject.Inject
@@ -17,7 +17,7 @@ class PollTransactionStatusUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        intentHash: IntentHash,
+        intentHash: TransactionIntentHash,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: Epoch

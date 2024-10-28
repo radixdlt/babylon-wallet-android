@@ -67,7 +67,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             }.then { transactionToReview ->
                 _state.update { it.copy(transactionManifestData = TransactionManifestData.from(transactionToReview.transactionManifest)) }
 
-                val manifestSummary = transactionToReview.transactionManifest.summary
+                val manifestSummary = requireNotNull(transactionToReview.transactionManifest.summary)
                 resolveNotaryAndSignersUseCase(
                     accountsAddressesRequiringAuth = manifestSummary.addressesOfAccountsRequiringAuth,
                     personaAddressesRequiringAuth = manifestSummary.addressesOfPersonasRequiringAuth,
