@@ -39,7 +39,7 @@ interface TransactionRepository {
 
     suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash>
 
-    suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): Result<TransactionStatus>
+    suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus
 
     suspend fun getLedgerEpoch(): Result<Epoch>
 
@@ -101,12 +101,10 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): Result<TransactionStatus> {
+    override suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus {
         return withContext(dispatcher) {
-            runCatching {
-                val sargonOs = sargonOsManager.sargonOs
-                sargonOs.pollTransactionStatus(intentHash)
-            }
+            val sargonOs = sargonOsManager.sargonOs
+            sargonOs.pollTransactionStatus(intentHash)
         }
     }
 
