@@ -33,7 +33,7 @@ class SignTransactionUseCase @Inject constructor(
 
     suspend operator fun invoke(request: Request): Result<NotarizationResult> {
         val manifestWithLockFee = request.manifestWithLockFee
-        val summary = request.manifestWithLockFee.summary!!
+        val summary = requireNotNull(request.manifestWithLockFee.summary)
 
         return resolveNotaryAndSignersUseCase(
             accountsAddressesRequiringAuth = summary.addressesOfAccountsRequiringAuth,
