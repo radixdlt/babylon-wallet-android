@@ -101,9 +101,11 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val transactionRepository = mockk<TransactionRepository>().apply {
         coEvery { getLedgerEpoch() } returns Result.success(1000.toULong())
-        coEvery { analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
-            transactionManifest = TransactionManifest.sample(),
-            executionSummary = emptyExecutionSummary
+        coEvery { analyzeTransaction(any(), any(), any()) } returns Result.success(
+            TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary
+            )
         )
     }
     private val stateRepository = mockk<StateRepository>()

@@ -234,7 +234,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns transactionToReview()
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+            TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary
+            )
+        )
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             respondToIncomingRequestUseCase.respondWithSuccess(
@@ -361,23 +366,25 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "1.10842739440"
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
-            transactionManifest = TransactionManifest.sample(),
-            executionSummary = emptyExecutionSummary.copy(
-                feeLocks = FeeLocks(
-                    lock = 1.5.toDecimal192(),
-                    contingentLock = 0.toDecimal192()
-                ),
-                feeSummary = FeeSummary(
-                    executionCost = 0.3.toDecimal192(),
-                    finalizationCost = 0.3.toDecimal192(),
-                    storageExpansionCost = 0.2.toDecimal192(),
-                    royaltyCost = 0.2.toDecimal192()
-                ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
-                reservedInstructions = emptyList()
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+            TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary.copy(
+                    feeLocks = FeeLocks(
+                        lock = 1.5.toDecimal192(),
+                        contingentLock = 0.toDecimal192()
+                    ),
+                    feeSummary = FeeSummary(
+                        executionCost = 0.3.toDecimal192(),
+                        finalizationCost = 0.3.toDecimal192(),
+                        storageExpansionCost = 0.2.toDecimal192(),
+                        royaltyCost = 0.2.toDecimal192()
+                    ),
+                    detailedClassification = listOf(
+                        DetailedManifestClass.General
+                    ),
+                    reservedInstructions = emptyList()
+                )
             )
         )
         val vm = vm.value
@@ -394,41 +401,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = 0.9019403.toDecimal192()
 
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns TransactionToReview(
-            transactionManifest = TransactionManifest.sample(),
-            executionSummary = emptyExecutionSummary.copy(
-                feeLocks = FeeLocks(
-                    lock = 0.5.toDecimal192(),
-                    contingentLock = 0.toDecimal192()
-                ),
-                feeSummary = FeeSummary(
-                    executionCost = 0.3.toDecimal192(),
-                    finalizationCost = 0.3.toDecimal192(),
-                    storageExpansionCost = 0.2.toDecimal192(),
-                    royaltyCost = 0.2.toDecimal192()
-                ),
-                detailedClassification = listOf(
-                    DetailedManifestClass.General
-                ),
-                reservedInstructions = emptyList()
-            )
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onTipPercentageChanged(tipPercentage)
-
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
-    }
-
-    @Test
-    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
-        val feePaddingAmount = "1.6"
-        val tipPercentage = "25"
-
-        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = 2.3678038.toDecimal192()
-
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
             TransactionToReview(
                 transactionManifest = TransactionManifest.sample(),
                 executionSummary = emptyExecutionSummary.copy(
@@ -448,6 +421,44 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                     reservedInstructions = emptyList()
                 )
             )
+        )
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.onTipPercentageChanged(tipPercentage)
+
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
+    }
+
+    @Test
+    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
+        val feePaddingAmount = "1.6"
+        val tipPercentage = "25"
+
+        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
+        val expectedFeeLock = 2.3678038.toDecimal192()
+
+        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
+            Result.success(
+                TransactionToReview(
+                    transactionManifest = TransactionManifest.sample(),
+                    executionSummary = emptyExecutionSummary.copy(
+                        feeLocks = FeeLocks(
+                            lock = 0.5.toDecimal192(),
+                            contingentLock = 0.toDecimal192()
+                        ),
+                        feeSummary = FeeSummary(
+                            executionCost = 0.3.toDecimal192(),
+                            finalizationCost = 0.3.toDecimal192(),
+                            storageExpansionCost = 0.2.toDecimal192(),
+                            royaltyCost = 0.2.toDecimal192()
+                        ),
+                        detailedClassification = listOf(
+                            DetailedManifestClass.General
+                        ),
+                        reservedInstructions = emptyList()
+                    )
+                )
+            )
         val vm = vm.value
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
@@ -455,9 +466,4 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
-
-    private fun transactionToReview() = TransactionToReview(
-        transactionManifest = TransactionManifest.sample(),
-        executionSummary = emptyExecutionSummary
-    )
 }
