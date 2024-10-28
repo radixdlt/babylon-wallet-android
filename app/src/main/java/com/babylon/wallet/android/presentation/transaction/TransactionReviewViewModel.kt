@@ -40,11 +40,6 @@ import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.isZero
-import com.radixdlt.sargon.extensions.minus
-import com.radixdlt.sargon.extensions.orZero
-import com.radixdlt.sargon.extensions.summary
-import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList

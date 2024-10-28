@@ -31,13 +31,11 @@ class TransactionAnalysisDelegate @Inject constructor(
             logger.v(it.instructions)
         }
 
-        runCatching {
-            transactionRepository.analyzeTransaction(
-                manifestData = manifestData,
-                isWalletTransaction = data.value.request.isInternal,
-                notaryPublicKey = data.value.ephemeralNotaryPrivateKey.toPublicKey()
-            )
-        }.then { transactionToReviewData ->
+        transactionRepository.analyzeTransaction(
+            manifestData = manifestData,
+            isWalletTransaction = data.value.request.isInternal,
+            notaryPublicKey = data.value.ephemeralNotaryPrivateKey.toPublicKey()
+        ).then { transactionToReviewData ->
             resolveNotaryAndSignersUseCase(
                 accountsAddressesRequiringAuth = transactionToReviewData.manifestSummary.addressesOfAccountsRequiringAuth,
                 personaAddressesRequiringAuth = transactionToReviewData.manifestSummary.addressesOfPersonasRequiringAuth,

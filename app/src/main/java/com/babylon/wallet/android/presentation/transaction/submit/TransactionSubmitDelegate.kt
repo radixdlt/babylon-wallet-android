@@ -69,7 +69,6 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         val txToReviewData = data.value.transactionToReviewData
 
         approvalJob = applicationScope.launch {
-            val currentState = data.value
             val currentNetworkId = getCurrentGatewayUseCase().network.id
             val manifestNetworkId = txToReviewData.networkId
 

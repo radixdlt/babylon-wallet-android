@@ -319,6 +319,10 @@ class TransactionFeesDelegateImpl @Inject constructor(
     private fun isBalanceInsufficientToPayTheFee(feePayers: TransactionFeePayers, feeToLock: Decimal192): Boolean {
         val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
+        if (feeToLock.isZero) {
+            return false
+        }
+
         val xrdInCandidateAccount = feePayers.candidates.find {
             it.account.address == candidateAddress
         }?.xrdAmount.orZero()
@@ -352,7 +356,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
-        return selectedAccountAddress?.let { data.value.feePayerCandidates.contains(it) } ?: false
+        return selectedAccountAddress?.let { data.value.feePayerCandidates.contains(it) } ?: true
     }
 
     private fun switchToFeePayerSelection() {
