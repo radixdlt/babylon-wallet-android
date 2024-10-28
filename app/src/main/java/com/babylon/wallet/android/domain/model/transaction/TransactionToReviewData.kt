@@ -12,5 +12,5 @@ data class TransactionToReviewData(
 ) {
 
     val networkId: NetworkId = transactionToReview.transactionManifest.networkId
-    val manifestSummary: ManifestSummary = transactionToReview.transactionManifest.summary!!
+    val manifestSummary: ManifestSummary = requireNotNull(transactionToReview.transactionManifest.summary)
 }
