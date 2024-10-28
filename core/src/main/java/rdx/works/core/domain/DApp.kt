@@ -68,12 +68,12 @@ data class DApp(
                             Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIMED_WEBSITES.key,
                                 "https://hammunet-dashboard.rdx-works-main.extratools.works",
-                                MetadataType.Url
+                                MetadataType.Origin
                             ),
                             Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIMED_WEBSITES.key,
                                 "https://ansharnet-dashboard.rdx-works-main.extratools.works",
-                                MetadataType.Url
+                                MetadataType.Origin
                             ),
                         )
                     ),

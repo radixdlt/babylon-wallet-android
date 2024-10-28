@@ -87,20 +87,20 @@ data class TransactionFees(
 
     // ********* ADVANCED *********
 
-    val networkExecutionCost: String
+    val totalExecutionCostDisplayed: String
         get() = totalExecutionCost.formatted()
 
-    val networkFinalizationCost: String
+    val finalizationCostDisplayed: String
         get() = networkFinalization.formatted()
 
-    val networkStorageCost: String
+    val storageExpansionCostDisplayed: String
         get() = networkStorage.formatted()
 
-    val royaltiesCost: String
+    val royaltiesCostDisplayed: String
         get() = royalties.formatted()
 
     val noRoyaltiesCostDue: Boolean
-        get() = royaltiesCost == "0"
+        get() = royaltiesCostDisplayed == "0"
 
     /**
      * This is negative amount (if greater than zero) representation of nonContingentLock for Paid by dApps section
@@ -123,13 +123,7 @@ data class TransactionFees(
      * Finalized fee to lock for the transaction
      **/
     val transactionFeeToLock: Decimal192
-        get() = totalExecutionCost +
-            networkFinalization +
-            effectiveTip +
-            networkStorage +
-            feePaddingAmountForCalculation +
-            royalties -
-            nonContingentFeeLock
+        get() = (networkFee - nonContingentFeeLock).clamped
 
     val transactionFeeTotalUsd: FiatPrice?
         get() = xrdFiatPrice?.let { FiatPrice(transactionFeeToLock * it.price, it.currency) }

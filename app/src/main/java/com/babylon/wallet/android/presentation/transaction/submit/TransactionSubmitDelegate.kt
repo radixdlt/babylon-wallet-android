@@ -78,23 +78,19 @@ class TransactionSubmitDelegate @Inject constructor(
                 return@launch
             }
 
-            if (currentState.feePayers?.selectedAccountAddress != null) {
-                val requestWithGuarantees = try {
-                    val request = currentState.requestNonNull
-                    val newManifestData = currentState.transactionManifestDataNonNull.attachGuarantees(currentState.previewType)
-                    _state.update { it.copy(transactionManifestData = newManifestData) }
-                    request.copy(transactionManifestData = newManifestData)
-                } catch (exception: Exception) {
-                    logger.e(exception)
-                    return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
-                }
-
-                signAndSubmit(
-                    transactionRequest = requestWithGuarantees,
-                    signTransactionUseCase = signTransactionUseCase,
-                    feePayerAddress = currentState.feePayers.selectedAccountAddress
-                )
+            val requestWithGuarantees = try {
+                val request = currentState.requestNonNull
+                request.copy(transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType))
+            } catch (exception: Exception) {
+                logger.e(exception)
+                return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
+
+            signAndSubmit(
+                transactionRequest = requestWithGuarantees,
+                signTransactionUseCase = signTransactionUseCase,
+                feePayerAddress = currentState.feePayers?.selectedAccountAddress
+            )
         }
     }
 

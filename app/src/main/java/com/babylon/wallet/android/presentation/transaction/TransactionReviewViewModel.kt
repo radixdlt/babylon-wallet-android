@@ -38,6 +38,7 @@ import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.summary
@@ -375,15 +376,16 @@ class TransactionReviewViewModel @Inject constructor(
             get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee
 
         val noFeePayerSelected: Boolean
-            get() = feePayers?.selectedAccountAddress == null
+            get() = if (transactionFees.transactionFeeToLock.isZero) false else feePayers?.selectedAccountAddress == null
 
         val isSelectedFeePayerInvolvedInTransaction: Boolean
-            get() = runCatching {
-                feePayerCandidates.contains(feePayers?.selectedAccountAddress)
-            }.getOrNull() ?: false
+            get() = feePayers?.selectedAccountAddress?.let {
+                feePayerCandidates.contains(it)
+            } ?: true
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {
+                if (transactionFees.transactionFeeToLock.isZero) return false
                 if (feePayers == null) return true
                 val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
