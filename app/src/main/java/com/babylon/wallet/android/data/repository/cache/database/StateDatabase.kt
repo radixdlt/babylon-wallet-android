@@ -25,7 +25,7 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
         AccountLockerTouchedAtEntity::class,
         AccountLockerVaultItemEntity::class
     ],
-    version = StateDatabase.VERSION_10
+    version = StateDatabase.VERSION_11
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -64,8 +64,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Added next cursor to metadata column and locked flag")
         const val VERSION_9 = 9
 
-        // Add account locker logic
+        @Deprecated("Add account locker logic")
         const val VERSION_10 = 10
+
+        // Updated metadata schema: Added Origin MetadataType
+        const val VERSION_11 = 11
 
         private const val NAME = "STATE_DATABASE"
 

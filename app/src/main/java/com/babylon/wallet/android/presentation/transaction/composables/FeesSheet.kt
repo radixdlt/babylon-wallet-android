@@ -347,7 +347,7 @@ fun FeesSheet(
 }
 
 @Composable
-fun NetworkFeesDefaultView(
+private fun NetworkFeesDefaultView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?
 ) {
@@ -470,7 +470,7 @@ fun NetworkFeesDefaultView(
 }
 
 @Composable
-fun NetworkFeesAdvancedView(
+private fun NetworkFeesAdvancedView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?,
     onFeePaddingAmountChanged: (String) -> Unit,
@@ -595,7 +595,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.networkExecutionCost.orEmpty()
+                        transactionFees?.totalExecutionCostDisplayed.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -622,7 +622,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.networkFinalizationCost.orEmpty()
+                        transactionFees?.finalizationCostDisplayed.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -677,7 +677,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.networkStorageCost.orEmpty()
+                        transactionFees?.storageExpansionCostDisplayed.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -730,7 +730,7 @@ fun NetworkFeesAdvancedView(
                 } else {
                     stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.royaltiesCost.orEmpty()
+                        transactionFees?.royaltiesCostDisplayed.orEmpty()
                     )
                 }
                 Text(

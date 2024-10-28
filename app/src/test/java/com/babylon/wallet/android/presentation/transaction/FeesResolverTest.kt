@@ -191,4 +191,38 @@ class FeesResolverTest {
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
         assertEquals("1.240813", fees.defaultTransactionFee.formatted())
     }
+
+    @Test
+    fun `verify total transaction fee to lock is zero when fully paid by dapp`() = runTest {
+        val summary = emptyExecutionSummary.copy(
+            feeLocks = FeeLocks(
+                lock = 1.1.toDecimal192(),
+                contingentLock = 0.toDecimal192()
+            ),
+            feeSummary = FeeSummary(
+                executionCost = 0.20627775.toDecimal192(),
+                finalizationCost = 0.01525175.toDecimal192(),
+                storageExpansionCost = 0.0343322748.toDecimal192(),
+                royaltyCost = 0.toDecimal192()
+            ),
+            detailedClassification = listOf(
+                DetailedManifestClass.General
+            ),
+            reservedInstructions = emptyList()
+        )
+
+        val fees = FeesResolver.resolve(
+            summary = summary,
+            notaryAndSigners = notaryAndSigners.copy(
+                signers = listOf(Account.sampleMainnet().asProfileEntity())
+            ),
+            previewType = PreviewType.None
+        )
+
+        assertEquals("0.2255169", fees.totalExecutionCostDisplayed)
+        assertEquals("0.0152518", fees.finalizationCostDisplayed)
+        assertEquals("0.0343323", fees.storageExpansionCostDisplayed)
+        assertEquals("0.041265137517", fees.feePaddingAmountToDisplay)
+        assertEquals("0", fees.transactionFeeToLock.formatted())
+    }
 }

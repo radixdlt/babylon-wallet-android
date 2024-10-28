@@ -83,25 +83,23 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 return@launch
             }
 
-            if (currentState.feePayers?.selectedAccountAddress != null) {
-                try {
-                    val newManifest = txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
-                    data.update {
-                        it.copy(
-                            txToReviewData = it.transactionToReviewData.copy(
-                                transactionToReview = it.transactionToReviewData.transactionToReview.copy(
-                                    transactionManifest = newManifest
-                                )
+            try {
+                val newManifest = txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
+                data.update {
+                    it.copy(
+                        txToReviewData = it.transactionToReviewData.copy(
+                            transactionToReview = it.transactionToReviewData.transactionToReview.copy(
+                                transactionManifest = newManifest
                             )
                         )
-                    }
-                } catch (exception: Exception) {
-                    logger.e(exception)
-                    return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
+                    )
                 }
-
-                signAndSubmit()
+            } catch (exception: Exception) {
+                logger.e(exception)
+                return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
+
+            signAndSubmit()
         }
     }
 

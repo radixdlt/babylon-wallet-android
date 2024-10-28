@@ -97,16 +97,25 @@ class TransactionAnalysisDelegate @Inject constructor(
                     )
                 }
             }
-            else -> {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        isNetworkFeeLoading = false,
-                        previewType = PreviewType.None,
-                        error = TransactionErrorMessage(error)
-                    )
-                }
+            is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
+                reportFailure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
             }
+            else -> {
+                reportFailure(RadixWalletException.DappRequestException.PreviewError(error))
+            }
+        }
+    }
+
+    private fun reportFailure(error: Throwable) {
+        logger.w(error)
+
+        _state.update {
+            it.copy(
+                isLoading = false,
+                isNetworkFeeLoading = false,
+                previewType = PreviewType.None,
+                error = TransactionErrorMessage(error)
+            )
         }
     }
 }
