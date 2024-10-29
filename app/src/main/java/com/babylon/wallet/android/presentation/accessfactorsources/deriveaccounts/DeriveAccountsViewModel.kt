@@ -19,17 +19,20 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.OnLedgerSettings
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ThirdPartyDeposits
-import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
+import com.radixdlt.sargon.extensions.indexInLocalKeySpace
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.string
@@ -68,7 +71,10 @@ class DeriveAccountsViewModel @Inject constructor(
 
     private lateinit var input: ToReDeriveAccounts
     private var profile: Profile? = null
-    private var nextDerivationPathOffset: UInt = 0u
+    private var nextDerivationPathOffset: HdPathComponent = HdPathComponent.init(
+        localKeySpace = 0u,
+        keySpace = KeySpace.Unsecurified(isHardened = true)
+    )
     private var reDerivePublicKeyJob: Job? = null
 
     init {
@@ -76,7 +82,7 @@ class DeriveAccountsViewModel @Inject constructor(
             profile = getProfileUseCase.finishedOnboardingProfile()
 
             input = accessFactorSourcesIOHandler.getInput() as ToReDeriveAccounts
-            nextDerivationPathOffset = input.nextDerivationPathOffset
+            nextDerivationPathOffset = input.nextDerivationPathIndex
             // if it is with given mnemonic it means it is an account recovery scan from onboarding,
             // thus profile is not initialized yet
             if (input is ToReDeriveAccounts.WithGivenMnemonic) {
@@ -163,7 +169,7 @@ class DeriveAccountsViewModel @Inject constructor(
         }
         withContext(ioDispatcher) {
             val networkId = profile?.currentGateway?.network?.id.orDefault()
-            val indicesToScan: Set<HDPathValue> = computeIndicesToScan(
+            val indicesToScan = computeIndicesToScan(
                 derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP44_OLYMPIA else DerivationPathScheme.CAP26,
                 forNetworkId = networkId,
                 factorSource = input.factorSource
@@ -180,7 +186,7 @@ class DeriveAccountsViewModel @Inject constructor(
             accessFactorSourcesIOHandler.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
-                    nextDerivationPathOffset = indicesToScan.last() + 1u
+                    nextDerivationPathIndex = HdPathComponent.init(indicesToScan.last().indexInGlobalKeySpace + 1u)
                 )
             )
         }
@@ -206,7 +212,7 @@ class DeriveAccountsViewModel @Inject constructor(
                 accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
-                        nextDerivationPathOffset = indicesToScan.last() + 1u
+                        nextDerivationPathIndex = HdPathComponent.init(indicesToScan.last().indexInGlobalKeySpace + 1u)
                     )
                 )
             }
@@ -214,7 +220,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private fun reDerivePublicKeysWithGivenMnemonic(
-        accountIndices: Set<HDPathValue>,
+        accountIndices: LinkedHashSet<HdPathComponent>,
         forNetworkId: NetworkId
     ): List<HierarchicalDeterministicPublicKey> {
         val mnemonicWithPassphrase = (input as ToReDeriveAccounts.WithGivenMnemonic).mnemonicWithPassphrase
@@ -228,7 +234,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun reDerivePublicKeysWithGivenAccountIndices(
-        accountIndices: Set<HDPathValue>,
+        accountIndices: LinkedHashSet<HdPathComponent>,
         forNetworkId: NetworkId
     ): Result<List<HierarchicalDeterministicPublicKey>> {
         val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
@@ -297,23 +303,28 @@ class DeriveAccountsViewModel @Inject constructor(
         derivationPathScheme: DerivationPathScheme,
         forNetworkId: NetworkId,
         factorSource: FactorSource
-    ): Set<HDPathValue> {
+    ): LinkedHashSet<HdPathComponent> {
         val network = profile?.networks?.asIdentifiable()?.getBy(forNetworkId)
         val usedIndices = network?.accounts
             ?.filter { account ->
                 account.factorSourceId == factorSource.id && account.derivationPathScheme == derivationPathScheme
             }
             ?.map { account ->
-                account.derivationPathEntityIndex
+                account.derivationPathEntityIndex.indexInLocalKeySpace
             }
             ?.toSet().orEmpty()
 
-        val indicesToScan = mutableSetOf<HDPathValue>()
-        val startIndex = nextDerivationPathOffset
+        val indicesToScan = LinkedHashSet<HdPathComponent>()
+        val startIndex = nextDerivationPathOffset.indexInLocalKeySpace
         var currentIndex = startIndex
         do {
             if (currentIndex !in usedIndices) {
-                indicesToScan.add(currentIndex)
+                indicesToScan.add(
+                    HdPathComponent.init(
+                        localKeySpace = currentIndex,
+                        keySpace = KeySpace.Unsecurified(isHardened = true)
+                    )
+                )
             }
             currentIndex++
         } while (indicesToScan.size < ACCOUNTS_PER_SCAN)

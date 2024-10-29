@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
@@ -98,19 +99,19 @@ sealed interface AccessFactorSourcesInput {
 
         val factorSource: FactorSource
         val isForLegacyOlympia: Boolean
-        val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
+        val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
 
         data class WithGivenMnemonic(
             override val factorSource: FactorSource,
             override val isForLegacyOlympia: Boolean = false,
-            override val nextDerivationPathOffset: UInt,
+            override val nextDerivationPathIndex: HdPathComponent,
             val mnemonicWithPassphrase: MnemonicWithPassphrase,
         ) : ToReDeriveAccounts
 
         data class WithGivenFactorSource(
             override val factorSource: FactorSource,
             override val isForLegacyOlympia: Boolean,
-            override val nextDerivationPathOffset: UInt,
+            override val nextDerivationPathIndex: HdPathComponent,
         ) : ToReDeriveAccounts
     }
 
@@ -139,7 +140,7 @@ sealed interface AccessFactorSourcesOutput {
 
     data class DerivedAccountsWithNextDerivationPath(
         val derivedAccounts: List<Account>,
-        val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
+        val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
     data class EntitiesWithSignatures(
