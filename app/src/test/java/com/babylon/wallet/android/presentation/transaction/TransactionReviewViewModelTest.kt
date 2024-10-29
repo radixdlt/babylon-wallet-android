@@ -396,7 +396,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
 
-        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.transactionFees.transactionFeeToLock)
+        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.fees?.transactionFees?.transactionFeeToLock)
     }
 
     @Test
@@ -434,7 +434,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
+        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
     }
 
     @Test
@@ -475,6 +475,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         vm.onFeePaddingAmountChanged(feePaddingAmount)
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
+        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
     }
 }

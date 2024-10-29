@@ -839,7 +839,7 @@ private fun FeesSheetEmptyPreview() {
                 feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
                 feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
                 transactionFees = TransactionFees(),
-                properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+                properties = TransactionReviewViewModel.State.Fees.Properties(
                     isSelectedFeePayerInvolvedInTransaction = false,
                     noFeePayerSelected = false,
                     isBalanceInsufficientToPayTheFee = false,
@@ -869,7 +869,7 @@ private fun FeesSheetNotEnoughXRDPreview() {
                 ),
                 feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
                 transactionFees = TransactionFees(),
-                properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+                properties = TransactionReviewViewModel.State.Fees.Properties(
                     isSelectedFeePayerInvolvedInTransaction = false,
                     noFeePayerSelected = false,
                     isBalanceInsufficientToPayTheFee = true,
@@ -899,7 +899,7 @@ private fun FeesSheetAccountNotInvolvedPreview() {
                 ),
                 feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
                 transactionFees = TransactionFees(),
-                properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+                properties = TransactionReviewViewModel.State.Fees.Properties(
                     isSelectedFeePayerInvolvedInTransaction = false,
                     noFeePayerSelected = false,
                     isBalanceInsufficientToPayTheFee = true,

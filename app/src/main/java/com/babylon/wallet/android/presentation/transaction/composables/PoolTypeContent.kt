@@ -66,7 +66,6 @@ fun PoolTypePreview() {
         PoolTypeContent(
             state = TransactionReviewViewModel.State(
                 isLoading = false,
-                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             onTransferableFungibleClick = {},

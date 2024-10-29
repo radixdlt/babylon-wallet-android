@@ -59,7 +59,6 @@ fun TransactionPreviewTypePreview() {
         TransferTypeContent(
             state = TransactionReviewViewModel.State(
                 isLoading = false,
-                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             preview = PreviewType.Transfer.GeneralTransfer(

@@ -1318,4 +1318,6 @@ Code: %s</string>
   <string name="confirmation_hideCollection_title">Hide Collection</string>
   <string name="confirmation_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
   <string name="confirmation_hideCollection_button">Hide</string>
+
+  <string name="transactionReview_preAuthorization_title">Review Your Pre-Authorization</string>
 </resources>

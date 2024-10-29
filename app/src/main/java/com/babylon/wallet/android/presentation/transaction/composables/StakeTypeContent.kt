@@ -67,7 +67,6 @@ fun StakeUnstakeTypePreview() {
         StakeTypeContent(
             state = TransactionReviewViewModel.State(
                 isLoading = false,
-                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             onTransferableFungibleClick = { _ -> },

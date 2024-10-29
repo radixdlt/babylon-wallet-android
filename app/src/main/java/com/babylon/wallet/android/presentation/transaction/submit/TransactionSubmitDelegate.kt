@@ -22,6 +22,7 @@ import com.babylon.wallet.android.presentation.transaction.model.TransactionErro
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
@@ -82,23 +83,14 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 return@launch
             }
 
-            try {
-                val newManifest = txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
-                data.update {
-                    it.copy(
-                        txToReviewData = it.transactionToReviewData.copy(
-                            transactionToReview = it.transactionToReviewData.transactionToReview.copy(
-                                transactionManifest = newManifest
-                            )
-                        )
-                    )
-                }
+            val manifestWithGuarantees = try {
+                txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
             } catch (exception: Exception) {
                 logger.e(exception)
                 return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
 
-            signAndSubmit()
+            signAndSubmit(manifestWithGuarantees)
         }
     }
 
@@ -119,7 +111,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
-    private suspend fun signAndSubmit() {
+    private suspend fun signAndSubmit(manifest: TransactionManifest) {
+        val fees = _state.value.fees ?: return
         val transactionRequest = data.value.request
         val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
@@ -127,11 +120,11 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
-                manifest = data.value.transactionToReviewData.transactionToReview.transactionManifest,
+                manifest = manifest,
                 networkId = data.value.transactionToReviewData.networkId,
                 message = data.value.transactionToReviewData.message,
-                lockFee = _state.value.transactionFees.transactionFeeToLock,
-                tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
+                lockFee = fees.transactionFees.transactionFeeToLock,
+                tipPercentage = fees.transactionFees.tipPercentageForTransaction,
                 ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey,
                 feePayerAddress = feePayerAddress
             )
@@ -223,6 +216,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
+    @Throws(CommonException::class)
     private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
         var manifest = this
         if (previewType is PreviewType.Transfer) {
@@ -258,6 +252,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         approvalJob = null
     }
 
+    @Throws(CommonException::class)
     private fun TransactionManifest.addAssertions(
         depositing: List<Transferable.Depositing>
     ): TransactionManifest {

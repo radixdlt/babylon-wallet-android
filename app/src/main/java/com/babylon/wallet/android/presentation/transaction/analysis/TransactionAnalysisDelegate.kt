@@ -54,6 +54,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             val previewType = resolvePreview(executionSummary)
             _state.update {
                 it.copy(
+                    transactionType = TransactionReviewViewModel.State.TransactionType.Regular,
                     isRawManifestVisible = previewType == PreviewType.NonConforming,
                     showRawTransactionWarning = previewType == PreviewType.NonConforming,
                     isLoading = false,
@@ -110,7 +111,6 @@ class TransactionAnalysisDelegate @Inject constructor(
         _state.update {
             it.copy(
                 isLoading = false,
-                isNetworkFeeLoading = false,
                 previewType = PreviewType.None,
                 error = TransactionErrorMessage(error)
             )

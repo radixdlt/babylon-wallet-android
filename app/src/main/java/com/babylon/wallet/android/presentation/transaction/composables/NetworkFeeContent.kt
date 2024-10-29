@@ -39,7 +39,7 @@ import com.radixdlt.sargon.extensions.formatted
 @Composable
 fun NetworkFeeContent(
     fees: TransactionFees,
-    properties: TransactionReviewViewModel.State.TransactionFeesProperties,
+    properties: TransactionReviewViewModel.State.Fees.Properties,
     isNetworkFeeLoading: Boolean,
     modifier: Modifier = Modifier,
     onCustomizeClick: () -> Unit,
@@ -164,7 +164,7 @@ fun NetworkFeeContentLoadingPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+            properties = TransactionReviewViewModel.State.Fees.Properties(
                 noFeePayerSelected = false,
                 isBalanceInsufficientToPayTheFee = false,
                 isSelectedFeePayerInvolvedInTransaction = true
@@ -182,7 +182,7 @@ fun NetworkFeeContentWithoutInvolvedAccountPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+            properties = TransactionReviewViewModel.State.Fees.Properties(
                 noFeePayerSelected = false,
                 isBalanceInsufficientToPayTheFee = false,
                 isSelectedFeePayerInvolvedInTransaction = false
@@ -200,7 +200,7 @@ fun NetworkFeeContentNoFeePayerPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+            properties = TransactionReviewViewModel.State.Fees.Properties(
                 noFeePayerSelected = true,
                 isBalanceInsufficientToPayTheFee = false,
                 isSelectedFeePayerInvolvedInTransaction = false
@@ -218,7 +218,7 @@ fun NetworkFeeContentInsufficientBalancePreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+            properties = TransactionReviewViewModel.State.Fees.Properties(
                 noFeePayerSelected = false,
                 isBalanceInsufficientToPayTheFee = true,
                 isSelectedFeePayerInvolvedInTransaction = true
@@ -236,7 +236,7 @@ fun NetworkFeeContentInsufficientBalanceWithoutInvolvedAccountPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            properties = TransactionReviewViewModel.State.TransactionFeesProperties(
+            properties = TransactionReviewViewModel.State.Fees.Properties(
                 noFeePayerSelected = false,
                 isBalanceInsufficientToPayTheFee = true,
                 isSelectedFeePayerInvolvedInTransaction = false

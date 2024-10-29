@@ -211,12 +211,17 @@ private fun TransactionPreviewContent(
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TransactionPreviewHeader(
-                onBackClick = onBackClick,
-                state = state,
-                onRawManifestClick = onRawManifestToggle,
-                scrollBehavior = scrollBehavior
-            )
+            state.transactionType?.let { transactionType ->
+                TransactionPreviewHeader(
+                    onBackClick = onBackClick,
+                    transactionType = transactionType,
+                    isRawManifestToggleVisible = state.isRawManifestToggleVisible,
+                    isRawManifestVisible = state.isRawManifestVisible,
+                    proposingDApp = state.proposingDApp,
+                    onRawManifestClick = onRawManifestToggle,
+                    scrollBehavior = scrollBehavior
+                )
+            }
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -307,7 +312,9 @@ private fun TransactionPreviewContent(
                     }
 
                     Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
-                        ReceiptEdge(color = RadixTheme.colors.gray5)
+                        if (state.showReceiptEdges) {
+                            ReceiptEdge(color = RadixTheme.colors.gray5)
+                        }
 
                         PresentingProofsContent(
                             badges = state.previewType.badges.toPersistentList(),
@@ -333,12 +340,12 @@ private fun TransactionPreviewContent(
                             }
                         )
 
-                        state.transactionFeesProperties?.let { feesInfo ->
+                        state.fees?.let { fees ->
                             NetworkFeeContent(
                                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                                fees = state.transactionFees,
-                                properties = feesInfo,
-                                isNetworkFeeLoading = state.isNetworkFeeLoading,
+                                fees = fees.transactionFees,
+                                properties = fees.properties,
+                                isNetworkFeeLoading = fees.isNetworkFeeLoading,
                                 onCustomizeClick = onCustomizeClick,
                                 onInfoClick = onInfoClick
                             )
@@ -358,7 +365,10 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
-            ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+
+            if (state.showReceiptEdges) {
+                ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+            }
         }
     }
     if (state.isSheetVisible) {
@@ -389,22 +399,25 @@ private fun TransactionPreviewContent(
         )
     }
 
-    val feePayerSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    SyncSheetState(
-        sheetState = feePayerSheetState,
-        isSheetVisible = state.selectedFeePayerInput != null,
-        onSheetClosed = onFeePayerSelectionDismiss
-    )
-    if (state.selectedFeePayerInput != null) {
-        FeePayerSelectionSheet(
-            input = state.selectedFeePayerInput,
-            sheetState = feePayerSheetState,
-            onPayerChanged = onPayerChanged,
-            onSelectButtonClick = onPayerSelected,
-            onDismiss = onFeePayerSelectionDismiss
+    state.fees?.let { fees ->
+        val feePayerSheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
         )
+        SyncSheetState(
+            sheetState = feePayerSheetState,
+            isSheetVisible = fees.selectedFeePayerInput != null,
+            onSheetClosed = onFeePayerSelectionDismiss
+        )
+
+        if (fees.selectedFeePayerInput != null) {
+            FeePayerSelectionSheet(
+                input = fees.selectedFeePayerInput,
+                sheetState = feePayerSheetState,
+                onPayerChanged = onPayerChanged,
+                onSelectButtonClick = onPayerSelected,
+                onDismiss = onFeePayerSelectionDismiss
+            )
+        }
     }
 }
 
@@ -475,7 +488,6 @@ fun TransactionPreviewContentPreview() {
             onBackClick = {},
             state = State(
                 isLoading = false,
-                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             onApproveTransaction = {},

@@ -83,7 +83,6 @@ class TransactionReviewViewModel @Inject constructor(
 
     override fun initialState(): State = State(
         isLoading = true,
-        isNetworkFeeLoading = true,
         previewType = PreviewType.None
     )
 
@@ -142,6 +141,7 @@ class TransactionReviewViewModel @Inject constructor(
             viewModelScope.launch {
                 withContext(defaultDispatcher) {
                     analysis.analyse()
+                    // TODO call this only if it's a regular transaction
                     fees.resolveFees()
                 }
             }
@@ -208,6 +208,7 @@ class TransactionReviewViewModel @Inject constructor(
         val endEpoch: ULong? = null,
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,
+        val transactionFees: TransactionFees? = null
     ) {
 
         val request: TransactionRequest
@@ -227,21 +228,20 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class State(
         val isLoading: Boolean,
+        val transactionType: TransactionType? = null,
         val proposingDApp: ProposingDApp? = null,
         val isRawManifestVisible: Boolean = false,
         val rawManifest: String = "",
         val showRawTransactionWarning: Boolean = false,
         val message: String? = null,
         val previewType: PreviewType,
-        val transactionFeesProperties: TransactionFeesProperties? = null,
-        val transactionFees: TransactionFees = TransactionFees(),
-        val isNetworkFeeLoading: Boolean,
         val sheetState: Sheet = Sheet.None,
-        val selectedFeePayerInput: SelectFeePayerInput? = null,
+        val fees: Fees? = null,
+        val preAuthorization: PreAuthorization? = null,
         val error: TransactionErrorMessage? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
         val isSubmitEnabled: Boolean = false,
-        val isSubmitting: Boolean = false,
+        val isSubmitting: Boolean = false
     ) : UiState {
 
         val isRawManifestToggleVisible: Boolean
@@ -259,6 +259,32 @@ class TransactionReviewViewModel @Inject constructor(
                 else -> false
             }
 
+        val showReceiptEdges: Boolean
+            get() = transactionType == TransactionType.Regular
+
+        enum class TransactionType {
+            Regular,
+            PreAuthorized
+        }
+
+        data class Fees(
+            val isNetworkFeeLoading: Boolean = true,
+            val properties: Properties = Properties(),
+            val transactionFees: TransactionFees = TransactionFees(),
+            val selectedFeePayerInput: SelectFeePayerInput? = null
+        ) {
+
+            data class Properties(
+                val isSelectedFeePayerInvolvedInTransaction: Boolean = true,
+                val noFeePayerSelected: Boolean = false,
+                val isBalanceInsufficientToPayTheFee: Boolean = false
+            )
+        }
+
+        data class PreAuthorization(
+            val validFor: String
+        )
+
         sealed interface ProposingDApp {
 
             val name: String?
@@ -272,12 +298,6 @@ class TransactionReviewViewModel @Inject constructor(
             data class Some(val dApp: DApp?) : ProposingDApp
         }
 
-        data class TransactionFeesProperties(
-            val isSelectedFeePayerInvolvedInTransaction: Boolean,
-            val noFeePayerSelected: Boolean,
-            val isBalanceInsufficientToPayTheFee: Boolean,
-        )
-
         interface Sheet {
 
             data object None : Sheet
@@ -290,7 +310,7 @@ class TransactionReviewViewModel @Inject constructor(
                 val feePayerMode: FeePayerMode,
                 val feesMode: FeesMode,
                 val transactionFees: TransactionFees,
-                val properties: TransactionFeesProperties
+                val properties: Fees.Properties
             ) : Sheet {
 
                 sealed interface FeePayerMode {

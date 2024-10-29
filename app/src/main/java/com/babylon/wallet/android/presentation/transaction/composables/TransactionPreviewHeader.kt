@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,18 +36,85 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
-    state: State,
+    transactionType: State.TransactionType,
+    isRawManifestToggleVisible: Boolean,
+    isRawManifestVisible: Boolean,
+    proposingDApp: State.ProposingDApp?,
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
+    scrollBehavior: TopAppBarScrollBehavior
+) {
+    TransactionPreviewHeader(
+        modifier = modifier,
+        title = stringResource(id = transactionType.titleRes()),
+        proposingDApp = proposingDApp,
+        actions = {
+            if (transactionType == State.TransactionType.Regular) {
+                RawManifestToggle(
+                    isToggleVisible = isRawManifestToggleVisible,
+                    isToggleOn = isRawManifestVisible,
+                    onRawManifestClick = onRawManifestClick
+                )
+            }
+        },
+        onBackClick = onBackClick,
+        scrollBehavior = scrollBehavior
+    )
+}
+
+@Composable
+private fun RawManifestToggle(
+    modifier: Modifier = Modifier,
+    isToggleVisible: Boolean,
+    isToggleOn: Boolean,
+    onRawManifestClick: () -> Unit
+) {
+    if (isToggleVisible) {
+        val icon = if (isToggleOn) {
+            com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_collapse
+        } else {
+            com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+        }
+        IconButton(
+            modifier = modifier
+                .padding(end = RadixTheme.dimensions.paddingXLarge)
+                .background(
+                    color = RadixTheme.colors.gray4,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
+                .size(width = 50.dp, height = 40.dp),
+            onClick = onRawManifestClick
+        ) {
+            Icon(
+                painter = painterResource(
+                    id = icon
+                ),
+                tint = Color.Unspecified,
+                contentDescription = "manifest expand"
+            )
+        }
+    }
+}
+
+@Composable
+private fun TransactionPreviewHeader(
+    modifier: Modifier = Modifier,
+    title: String,
+    proposingDApp: State.ProposingDApp?,
+    actions: @Composable RowScope.() -> Unit,
+    onBackClick: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     TwoRowsTopAppBar(
@@ -58,7 +126,7 @@ fun TransactionPreviewHeader(
                     .padding(start = RadixTheme.dimensions.paddingXXLarge)
                     .padding(end = RadixTheme.dimensions.paddingXLarge)
             ) {
-                val someDApp = remember(state.proposingDApp) { (state.proposingDApp as? State.ProposingDApp.Some) }
+                val someDApp = remember(proposingDApp) { (proposingDApp as? State.ProposingDApp.Some) }
 
                 Column {
                     Row(
@@ -110,7 +178,7 @@ fun TransactionPreviewHeader(
         smallTitle = {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.transactionReview_title),
+                text = title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center,
                 maxLines = 2
@@ -132,33 +200,7 @@ fun TransactionPreviewHeader(
                 )
             }
         },
-        actions = {
-            if (state.isRawManifestToggleVisible) {
-                val icon = if (state.isRawManifestVisible) {
-                    com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_collapse
-                } else {
-                    com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
-                }
-                IconButton(
-                    modifier = Modifier
-                        .padding(end = RadixTheme.dimensions.paddingXLarge)
-                        .background(
-                            color = RadixTheme.colors.gray4,
-                            shape = RadixTheme.shapes.roundedRectSmall
-                        )
-                        .size(width = 50.dp, height = 40.dp),
-                    onClick = onRawManifestClick
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            id = icon
-                        ),
-                        tint = Color.Unspecified,
-                        contentDescription = "manifest expand"
-                    )
-                }
-            }
-        },
+        actions = actions,
         colors = TopAppBarDefaults.largeTopAppBarColors(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
@@ -171,18 +213,35 @@ fun TransactionPreviewHeader(
     )
 }
 
+private fun State.TransactionType.titleRes(): Int {
+    return when (this) {
+        State.TransactionType.PreAuthorized -> R.string.transactionReview_preAuthorization_title
+        State.TransactionType.Regular -> R.string.transactionReview_title
+    }
+}
+
 @Preview(showBackground = true)
 @UsesSampleValues
 @Composable
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
-            onBackClick = {},
-            state = State(
-                isLoading = false,
-                isNetworkFeeLoading = false,
-                previewType = PreviewType.None,
+            transactionType = State.TransactionType.Regular,
+            proposingDApp = State.ProposingDApp.Some(
+                dApp = DApp(
+                    dAppAddress = AccountAddress.sampleMainnet(),
+                    metadata = listOf(
+                        rdx.works.core.domain.resources.metadata.Metadata.Primitive(
+                            key = rdx.works.core.domain.resources.ExplicitMetadataKey.ICON_URL.key,
+                            valueType = MetadataType.Url,
+                            value = "https://example.com/icon.png"
+                        )
+                    )
+                )
             ),
+            isRawManifestToggleVisible = true,
+            isRawManifestVisible = false,
+            onBackClick = {},
             onRawManifestClick = {},
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         )
