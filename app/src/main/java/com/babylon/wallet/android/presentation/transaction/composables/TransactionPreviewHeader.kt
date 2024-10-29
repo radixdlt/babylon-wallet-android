@@ -2,16 +2,18 @@
 
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,7 +64,8 @@ fun TransactionPreviewHeader(
         proposingDApp = proposingDApp,
         actions = {
             if (transactionType == State.TransactionType.Regular) {
-                RawManifestToggle(
+                TransactionRawManifestToggle(
+                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
                     isToggleVisible = isRawManifestToggleVisible,
                     isToggleOn = isRawManifestVisible,
                     onRawManifestClick = onRawManifestClick
@@ -72,40 +75,6 @@ fun TransactionPreviewHeader(
         onBackClick = onBackClick,
         scrollBehavior = scrollBehavior
     )
-}
-
-@Composable
-private fun RawManifestToggle(
-    modifier: Modifier = Modifier,
-    isToggleVisible: Boolean,
-    isToggleOn: Boolean,
-    onRawManifestClick: () -> Unit
-) {
-    if (isToggleVisible) {
-        val icon = if (isToggleOn) {
-            com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_collapse
-        } else {
-            com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
-        }
-        IconButton(
-            modifier = modifier
-                .padding(end = RadixTheme.dimensions.paddingXLarge)
-                .background(
-                    color = RadixTheme.colors.gray4,
-                    shape = RadixTheme.shapes.roundedRectSmall
-                )
-                .size(width = 50.dp, height = 40.dp),
-            onClick = onRawManifestClick
-        ) {
-            Icon(
-                painter = painterResource(
-                    id = icon
-                ),
-                tint = Color.Unspecified,
-                contentDescription = "manifest expand"
-            )
-        }
-    }
 }
 
 @Composable
@@ -142,34 +111,44 @@ private fun TransactionPreviewHeader(
                         ) {
                             Text(
                                 modifier = Modifier.weight(1.5f),
-                                text = stringResource(R.string.transactionReview_title),
+                                text = title,
                                 color = RadixTheme.colors.gray1,
                                 textAlign = TextAlign.Start,
                                 maxLines = 2,
                             )
                         }
-                        if (someDApp?.dApp?.iconUrl != null) {
-                            Thumbnail.DApp(
-                                modifier = Modifier
-                                    .size(64.dp),
-                                dapp = someDApp.dApp,
-                                shape = RadixTheme.shapes.roundedRectSmall
-                            )
-                        }
                     }
 
                     if (someDApp != null) {
-                        val dAppName = someDApp.dApp?.name.orEmpty().ifEmpty {
-                            stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val dAppName = someDApp.dApp?.name.orEmpty().ifEmpty {
+                                stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                            }
+
+                            if (someDApp.dApp?.iconUrl != null) {
+                                Thumbnail.DApp(
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                    dapp = someDApp.dApp,
+                                    shape = RadixTheme.shapes.roundedRectSmall
+                                )
+
+                                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+                            }
+
+                            Text(
+                                text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.Start,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
-                        Text(
-                            text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
-                            style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
                     }
                 }
             }
