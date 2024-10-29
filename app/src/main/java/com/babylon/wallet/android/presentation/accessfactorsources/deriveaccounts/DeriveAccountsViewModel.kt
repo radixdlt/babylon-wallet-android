@@ -186,7 +186,7 @@ class DeriveAccountsViewModel @Inject constructor(
             accessFactorSourcesIOHandler.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
-                    nextDerivationPathIndex = HdPathComponent.init(indicesToScan.last().indexInGlobalKeySpace + 1u)
+                    nextDerivationPathIndex = HdPathComponent.init(globalKeySpace = indicesToScan.last().indexInGlobalKeySpace + 1u)
                 )
             )
         }
@@ -212,7 +212,7 @@ class DeriveAccountsViewModel @Inject constructor(
                 accessFactorSourcesIOHandler.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
-                        nextDerivationPathIndex = HdPathComponent.init(indicesToScan.last().indexInGlobalKeySpace + 1u)
+                        nextDerivationPathIndex = HdPathComponent.init(globalKeySpace = indicesToScan.last().indexInGlobalKeySpace + 1u)
                     )
                 )
             }
