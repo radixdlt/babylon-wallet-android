@@ -42,7 +42,7 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase

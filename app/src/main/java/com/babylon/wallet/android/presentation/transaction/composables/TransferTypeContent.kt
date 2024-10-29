@@ -27,7 +27,7 @@ fun TransferTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     preview: PreviewType.Transfer.GeneralTransfer,
-    onPromptForGuarantees: () -> Unit,
+    onEditGuaranteesClick: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
@@ -39,7 +39,7 @@ fun TransferTypeContent(
         onTransferableFungibleClick = onTransferableFungibleClick,
         onNonTransferableFungibleClick = onNonTransferableFungibleClick,
         previewType = preview,
-        onPromptForGuarantees = onPromptForGuarantees,
+        onEditGuaranteesClick = onEditGuaranteesClick,
         middleSection = {
             ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -79,7 +79,7 @@ fun TransactionPreviewTypePreview() {
                 ),
                 newlyCreatedNFTItems = emptyList()
             ),
-            onPromptForGuarantees = {},
+            onEditGuaranteesClick = {},
             onDAppClick = { _ -> },
             onUnknownComponentsClick = {},
             onTransferableFungibleClick = {},

@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.domain.model.messages
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.radixdlt.sargon.WalletInteractionId
-import rdx.works.core.domain.UnvalidatedManifestData
 
 data class TransactionRequest(
     override val remoteEntityId: RemoteEntityID,

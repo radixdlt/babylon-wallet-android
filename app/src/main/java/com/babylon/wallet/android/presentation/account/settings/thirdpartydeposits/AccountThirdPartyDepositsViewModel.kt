@@ -4,8 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -35,7 +36,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
@@ -149,7 +149,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         blockUntilCompleted = true
                     )
                 )
-                handleRequestStatus(requestId.toString())
+                handleRequestStatus(requestId)
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage(t))

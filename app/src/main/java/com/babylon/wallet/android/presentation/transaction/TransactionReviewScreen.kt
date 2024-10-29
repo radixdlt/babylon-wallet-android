@@ -93,7 +93,7 @@ fun TransactionReviewScreen(
         onRawManifestToggle = viewModel::onRawManifestToggle,
         onMessageShown = viewModel::onMessageShown,
         modifier = modifier,
-        promptForGuarantees = viewModel::onEditGuaranteesClick,
+        onEditGuaranteesClick = viewModel::onEditGuaranteesClick,
         onCustomizeClick = viewModel::onCustomizeClick,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
         onCloseBottomSheetClick = viewModel::onCloseBottomSheetClick,
@@ -106,8 +106,8 @@ fun TransactionReviewScreen(
         onTransferableNonFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
-        onPayerChanged = viewModel::onFeePayerChanged,
-        onPayerSelected = viewModel::onFeePayerSelected,
+        onFeePayerChanged = viewModel::onFeePayerChanged,
+        onFeePayerSelected = viewModel::onFeePayerSelected,
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
         onFeePayerSelectionDismiss = viewModel::onFeePayerSelectionDismissRequest,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
@@ -129,7 +129,7 @@ private fun TransactionPreviewContent(
     onApproveTransaction: () -> Unit,
     onRawManifestToggle: () -> Unit,
     onMessageShown: () -> Unit,
-    promptForGuarantees: () -> Unit,
+    onEditGuaranteesClick: () -> Unit,
     onCustomizeClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onCloseBottomSheetClick: () -> Unit,
@@ -142,8 +142,8 @@ private fun TransactionPreviewContent(
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
-    onPayerSelected: () -> Unit,
+    onFeePayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
+    onFeePayerSelected: () -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onFeePayerSelectionDismiss: () -> Unit,
     onTipPercentageChanged: (String) -> Unit,
@@ -270,7 +270,7 @@ private fun TransactionPreviewContent(
                                 TransferTypeContent(
                                     state = state,
                                     preview = preview,
-                                    onPromptForGuarantees = promptForGuarantees,
+                                    onEditGuaranteesClick = onEditGuaranteesClick,
                                     onDAppClick = onDAppClick,
                                     onUnknownComponentsClick = { componentAddresses ->
                                         onUnknownAddressesClick(componentAddresses.map { it.asGeneral() }.toPersistentList())
@@ -291,7 +291,7 @@ private fun TransactionPreviewContent(
                                     state = state,
                                     onTransferableFungibleClick = onTransferableFungibleClick,
                                     onNonTransferableFungibleClick = onTransferableNonFungibleClick,
-                                    onPromptForGuarantees = promptForGuarantees,
+                                    onPromptForGuarantees = onEditGuaranteesClick,
                                     previewType = preview
                                 )
                             }
@@ -300,7 +300,7 @@ private fun TransactionPreviewContent(
                                 PoolTypeContent(
                                     state = state,
                                     onTransferableFungibleClick = onTransferableFungibleClick,
-                                    onPromptForGuarantees = promptForGuarantees,
+                                    onPromptForGuarantees = onEditGuaranteesClick,
                                     previewType = preview,
                                     onDAppClick = onDAppClick,
                                     onUnknownPoolsClick = { pools ->
@@ -413,8 +413,8 @@ private fun TransactionPreviewContent(
             FeePayerSelectionSheet(
                 input = fees.selectedFeePayerInput,
                 sheetState = feePayerSheetState,
-                onPayerChanged = onPayerChanged,
-                onSelectButtonClick = onPayerSelected,
+                onPayerChanged = onFeePayerChanged,
+                onSelectButtonClick = onFeePayerSelected,
                 onDismiss = onFeePayerSelectionDismiss
             )
         }
@@ -495,7 +495,7 @@ fun TransactionPreviewContentPreview() {
             onMessageShown = {},
             onGuaranteesApplyClick = {},
             onCloseBottomSheetClick = {},
-            promptForGuarantees = {},
+            onEditGuaranteesClick = {},
             onCustomizeClick = {},
             onDAppClick = {},
             onUnknownAddressesClick = {},
@@ -506,8 +506,8 @@ fun TransactionPreviewContentPreview() {
             onGuaranteeValueDecreased = {},
             onChangeFeePayerClick = {},
             onSelectFeePayerClick = {},
-            onPayerChanged = {},
-            onPayerSelected = {},
+            onFeePayerChanged = {},
+            onFeePayerSelected = {},
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},

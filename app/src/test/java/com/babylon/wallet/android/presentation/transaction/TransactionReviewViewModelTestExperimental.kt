@@ -51,7 +51,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.domain.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable

@@ -51,7 +51,7 @@ fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
-    promptForGuarantees: () -> Unit,
+    onEditGuaranteesClick: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
@@ -112,7 +112,7 @@ fun DepositAccountContent(
                         modifier = Modifier
                             .padding(top = RadixTheme.dimensions.paddingXSmall),
                         text = stringResource(id = R.string.transactionReview_customizeGuaranteesButtonTitle),
-                        onClick = promptForGuarantees
+                        onClick = onEditGuaranteesClick
                     )
                 }
             }
@@ -163,7 +163,7 @@ fun DepositAccountPreview() {
                 )
             ).toPersistentList(),
             hiddenResourceIds = persistentListOf(),
-            promptForGuarantees = {},
+            onEditGuaranteesClick = {},
             onTransferableFungibleClick = { },
             onNonTransferableFungibleClick = { _, _ -> }
         )

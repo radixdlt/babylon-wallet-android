@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.TransactionSubmitException
 import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
 import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
@@ -26,7 +27,6 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.UnvalidatedManifestData
 import javax.inject.Inject
 
 interface TransactionRepository {

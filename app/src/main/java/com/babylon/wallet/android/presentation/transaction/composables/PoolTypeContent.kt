@@ -45,7 +45,7 @@ fun PoolTypeContent(
         onTransferableFungibleClick = onTransferableFungibleClick,
         onNonTransferableFungibleClick = { _, _ -> },
         previewType = previewType,
-        onPromptForGuarantees = onPromptForGuarantees,
+        onEditGuaranteesClick = onPromptForGuarantees,
         middleSection = {
             PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),

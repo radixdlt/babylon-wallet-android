@@ -88,7 +88,7 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.transaction.NotarizationResult

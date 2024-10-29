@@ -1,7 +1,8 @@
 package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -19,7 +20,6 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
-import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber

@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
@@ -19,7 +20,6 @@ import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.toList
-import rdx.works.core.domain.UnvalidatedManifestData
 import rdx.works.core.mapError
 
 fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntityID) = runCatching {

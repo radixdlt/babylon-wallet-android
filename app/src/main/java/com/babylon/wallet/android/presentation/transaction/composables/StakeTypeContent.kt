@@ -48,7 +48,7 @@ fun StakeTypeContent(
         onTransferableFungibleClick = onTransferableFungibleClick,
         onNonTransferableFungibleClick = onNonTransferableFungibleClick,
         previewType = previewType,
-        onPromptForGuarantees = onPromptForGuarantees,
+        onEditGuaranteesClick = onPromptForGuarantees,
         middleSection = {
             ValidatorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
