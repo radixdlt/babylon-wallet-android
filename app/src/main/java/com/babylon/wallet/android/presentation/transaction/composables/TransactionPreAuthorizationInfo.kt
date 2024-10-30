@@ -47,7 +47,7 @@ fun TransactionPreAuthorizationInfo(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
         Text(
-            text = stringResource(id = R.string.transactionReview_preAuthorization_countdown, preAuthorization.validFor)
+            text = stringResource(id = R.string.preAuthorizationReview_expiration_atTime, preAuthorization.validFor)
                 .formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle()),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.pink1,
@@ -82,13 +82,13 @@ private fun Info(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = stringResource(id = R.string.transactionReview_preAuthorization_infoTitle),
+                text = stringResource(id = R.string.preAuthorizationReview_fees_title),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
 
             Text(
-                text = stringResource(id = R.string.transactionReview_preAuthorization_infoSubtitle),
+                text = stringResource(id = R.string.preAuthorizationReview_fees_subtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
