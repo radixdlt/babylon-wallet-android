@@ -7,12 +7,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -20,6 +20,7 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
@@ -31,7 +32,7 @@ fun TransferTypeContent(
     onEditGuaranteesClick: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     CommonTransferContent(
@@ -68,12 +69,10 @@ fun TransactionPreviewTypePreview() {
                     AccountWithTransferableResources.Owned(
                         account = Account.sampleMainnet(),
                         resources = listOf(
-                            Transferable.Depositing(
-                                transferable = TransferableAsset.Fungible.Token(
-                                    amount = 69.toDecimal192(),
-                                    resource = Resource.FungibleResource.sampleMainnet(),
-                                    isNewlyCreated = true
-                                )
+                            TransferableX.FungibleType.Token(
+                                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                amount = FungibleAmount.Exact("745".toDecimal192()),
+                                isNewlyCreated = false
                             )
                         )
                     )

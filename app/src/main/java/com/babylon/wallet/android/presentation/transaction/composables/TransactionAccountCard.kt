@@ -54,7 +54,7 @@ fun TransactionAccountCard(
     account: AccountWithTransferableResources,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     hiddenResourceWarning: String,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit, // TODO clicks needs update
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit, // TODO clicks needs update
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
@@ -73,7 +73,7 @@ fun TransactionAccountCard(
             when (transferable) {
                 is TransferableX.FungibleType.Token -> TransferableTokenItemContent(
                     modifier = Modifier.throttleClickable {
-//                        onTransferableFungibleClick(transferable)
+                        onTransferableFungibleClick(transferable)
                     },
                     transferableToken = transferable,
                     shape = shape,
@@ -106,7 +106,7 @@ fun TransactionAccountCard(
 
                 is TransferableX.FungibleType.LSU -> TransferableLsuItemContent(
                     modifier = Modifier.throttleClickable {
-//                        onTransferableFungibleClick(transferable)
+                        onTransferableFungibleClick(transferable)
                     },
                     transferableLSU = transferable,
                     shape = shape,
@@ -120,7 +120,7 @@ fun TransactionAccountCard(
                         hiddenResourceIds
                     ) { transferable.asset.resource.poolAddress in hiddenResourceIds.pools() },
                     hiddenResourceWarning = hiddenResourceWarning,
-                    onClick = {} //onTransferableFungibleClick
+                    onClick = onTransferableFungibleClick
                 )
 
                 is TransferableX.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
