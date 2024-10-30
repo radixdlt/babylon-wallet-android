@@ -360,7 +360,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
                 val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
                 if (candidateAddressWithdrawn != null) {
                     val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
-                        it.transferable
+                        it
                     }.filterIsInstance<TransferableAsset.Fungible.Token>().find { it.resource.isXrd }
 
                     xrdResourceWithdrawn?.amount.orZero()
