@@ -300,58 +300,6 @@ fun List<Transferable>.toAccountWithTransferableResources(
     }
 }
 
-fun ExecutionSummary.involvedOwnedAccounts(ownedAccounts: List<Account>): List<Account> {
-    val involvedAccountAddresses = withdrawals.keys + deposits.keys
-    return ownedAccounts.filter {
-        it.address in involvedAccountAddresses
-    }
-}
-
-fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
-    involvedAssets: List<Asset>,
-    allOwnedAccounts: List<Account>,
-    aggregateByResourceAddress: Boolean = false // for now I turned aggregation off to not introduce any bugs
-): List<AccountWithTransferableResources> {
-    return withdrawals.map { withdrawEntry ->
-        if (aggregateByResourceAddress) {
-            withdrawEntry.value.groupBy { it.address }.map { indicatorsPerResource ->
-                val resources = indicatorsPerResource.value
-                when (val first = resources.first()) {
-                    is ResourceIndicator.Fungible -> {
-                        val aggregateAmount = resources.map { it.amount }.sumOf { it }
-
-                        first.newlyCreatedResource(summary = this)?.let { newlyCreatedResource ->
-                            first.toNewlyCreatedTransferableAsset(newlyCreatedResource, aggregateAmount)
-                        } ?: first.toTransferableAsset(involvedAssets, aggregateAmount)
-                    }
-
-                    is ResourceIndicator.NonFungible -> {
-                        val nonFungibleLocalIds = resources.filterIsInstance<ResourceIndicator.NonFungible>()
-                            .fold(setOf<NonFungibleLocalId>(), operation = { acc, resource ->
-                                acc + resource.nonFungibleLocalIds.toSet()
-                            })
-                        val resource = first.copy(indicator = NonFungibleResourceIndicator.ByIds(nonFungibleLocalIds.toList()))
-                        resource.newlyCreatedResource(summary = this)?.let { newlyCreatedResource ->
-                            resource.toNewlyCreatedTransferableAsset(newlyCreatedResource)
-                        } ?: resource.toTransferableAsset(involvedAssets)
-                    }
-                }
-            }
-        } else {
-            withdrawEntry.value.map { resource ->
-                resource.newlyCreatedResource(summary = this)?.let { newlyCreatedResource ->
-                    resource.toNewlyCreatedTransferableAsset(newlyCreatedResource)
-                } ?: resource.toTransferableAsset(involvedAssets)
-            }
-        }.map {
-            Transferable.Withdrawing(it)
-        }.toAccountWithTransferableResources(
-            withdrawEntry.key,
-            allOwnedAccounts
-        )
-    }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
-}
-
 fun ExecutionSummary.resolveDepositingAsset(
     resourceIndicator: ResourceIndicator,
     involvedAssets: List<Asset>,
@@ -368,19 +316,6 @@ fun ExecutionSummary.resolveDepositingAsset(
     )
 }
 
-fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
-    involvedAssets: List<Asset>,
-    allOwnedAccounts: List<Account>,
-    defaultGuarantee: Decimal192
-) = deposits.map { depositEntry ->
-    depositEntry.value.map { resource ->
-        resolveDepositingAsset(resource, involvedAssets, defaultGuarantee)
-    }.toAccountWithTransferableResources(
-        depositEntry.key,
-        allOwnedAccounts
-    )
-}.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
-
 val ExecutionSummary.proofAddresses: List<ResourceOrNonFungible>
     get() = presentedProofs.map { specifier ->
         when (specifier) {
@@ -395,27 +330,6 @@ val ExecutionSummary.proofAddresses: List<ResourceOrNonFungible>
             }
         }
     }.flatten()
-
-fun ExecutionSummary.resolveBadges(assets: List<Asset>): List<Badge> {
-    val proofAddresses = presentedProofs.map { it.address }
-
-    return assets.filter { asset ->
-        asset.resource.address in proofAddresses
-    }.mapNotNull { asset ->
-        val specifier = presentedProofs.find { it.address == asset.resource.address } ?: return@mapNotNull null
-
-        val badgeResource = when (specifier) {
-            is ResourceSpecifier.Fungible -> {
-                // In this case we need to attach the amount of the specifier to the resource since it is not resolved by GW
-                (asset.resource as? Resource.FungibleResource)?.copy(ownedAmount = specifier.amount) ?: return@mapNotNull null
-            }
-
-            is ResourceSpecifier.NonFungible -> asset.resource
-        }
-
-        Badge(resource = badgeResource)
-    }
-}
 
 fun ExecutionSummary.newlyCreatedNonFungibleItems() = newlyCreatedNonFungibles.map {
     Item(

@@ -26,24 +26,22 @@ class PoolContributionProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolContribution): PreviewType {
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
         val badges = summary.resolveBadges(assets)
-        val defaultDepositGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
-        val from = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
-        val to = summary.extractDeposits(
-            classification = classification,
-            assets = assets,
-            defaultDepositGuarantee = defaultDepositGuarantee,
-            involvedOwnedAccounts = involvedOwnedAccounts
-        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
+
+        val (withdraws, deposits) = summary.resolveWithdrawsAndDeposits(
+            onLedgerAssets = assets,
+            profile = getProfileUseCase()
+        )
+
         return PreviewType.Transfer.Pool(
-            from = from,
-            to = to,
+            from = withdraws,
+            to = deposits,
             badges = badges,
             actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
             newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
     }
 
+    // TODO micbakos
     private fun ExecutionSummary.extractDeposits(
         classification: DetailedManifestClass.PoolContribution,
         assets: List<Asset>,

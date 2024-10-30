@@ -37,18 +37,26 @@ class ValidatorUnstakeProcessor @Inject constructor(
             addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
         val badges = summary.resolveBadges(assets)
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
-        val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
-        val toAccounts = classification.extractDeposits(
-            executionSummary = summary,
-            getProfileUseCase = getProfileUseCase,
-            assets = assets,
-            involvedOwnedAccounts = involvedOwnedAccounts
-        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
+
+        // TODO micbakos
+//        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
+//        val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
+//        val toAccounts = classification.extractDeposits(
+//            executionSummary = summary,
+//            getProfileUseCase = getProfileUseCase,
+//            assets = assets,
+//            involvedOwnedAccounts = involvedOwnedAccounts
+//        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
+
+        val (withdraws, deposits) = summary.resolveWithdrawsAndDeposits(
+            onLedgerAssets = assets,
+            profile = getProfileUseCase()
+        )
+
         return PreviewType.Transfer.Staking(
-            from = fromAccounts,
-            to = toAccounts,
+            from = withdraws,
+            to = deposits,
             badges = badges,
             validators = involvedValidators,
             actionType = PreviewType.Transfer.Staking.ActionType.Unstake,

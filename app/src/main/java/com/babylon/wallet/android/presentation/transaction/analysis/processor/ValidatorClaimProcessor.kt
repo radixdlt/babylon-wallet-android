@@ -34,28 +34,36 @@ class ValidatorClaimProcessor @Inject constructor(
             addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
         val badges = summary.resolveBadges(assets)
-        val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map {
             it.validator
         }.toSet() + assets.filterIsInstance<StakeClaim>().map {
             it.validator
         }.toSet()
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
-        val toAccounts = summary.toDepositingAccountsWithTransferableAssets(
-            assets,
-            involvedOwnedAccounts,
-            defaultDepositGuarantees
+
+        // TODO micbakos
+//        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
+//        val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
+//        val toAccounts = summary.toDepositingAccountsWithTransferableAssets(
+//            assets,
+//            involvedOwnedAccounts,
+//            defaultDepositGuarantees
+//        )
+//        val fromAccounts = extractWithdrawals(
+//            executionSummary = summary,
+//            assets = assets,
+//            defaultDepositGuarantees = defaultDepositGuarantees,
+//            involvedOwnedAccounts = involvedOwnedAccounts
+//        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
+
+        val (withdraws, deposits) = summary.resolveWithdrawsAndDeposits(
+            onLedgerAssets = assets,
+            profile = getProfileUseCase()
         )
-        val fromAccounts = extractWithdrawals(
-            executionSummary = summary,
-            assets = assets,
-            defaultDepositGuarantees = defaultDepositGuarantees,
-            involvedOwnedAccounts = involvedOwnedAccounts
-        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
+
         return PreviewType.Transfer.Staking(
             validators = involvedValidators.toList(),
-            from = fromAccounts,
-            to = toAccounts,
+            from = withdraws,
+            to = deposits,
             badges = badges,
             actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake,
             newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
