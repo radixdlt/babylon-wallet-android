@@ -294,9 +294,9 @@ fun List<Transferable>.toAccountWithTransferableResources(
 ): AccountWithTransferableResources {
     val ownedAccount = ownedAccounts.find { it.address == accountAddress }
     return if (ownedAccount != null) {
-        AccountWithTransferableResources.Owned(ownedAccount, this)
+        AccountWithTransferableResources.Owned(ownedAccount, emptyList())
     } else {
-        AccountWithTransferableResources.Other(accountAddress, this)
+        AccountWithTransferableResources.Other(accountAddress, emptyList())
     }
 }
 

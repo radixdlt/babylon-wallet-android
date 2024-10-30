@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
+import com.babylon.wallet.android.presentation.model.Amount
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
@@ -38,6 +40,6 @@ object FeesResolver {
 
 private fun List<AccountWithTransferableResources>.guaranteesCount(): Int = map { accountWithTransferableResources ->
     accountWithTransferableResources.resources.filter { transferable ->
-        transferable.guaranteeAssertion is GuaranteeAssertion.ForAmount // TODO
+        transferable.amount is FungibleAmount.Predicted
     }
 }.flatten().count()
