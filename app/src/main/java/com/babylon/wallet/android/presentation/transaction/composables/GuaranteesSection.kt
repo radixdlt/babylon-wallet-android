@@ -32,7 +32,7 @@ fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier)
             if (guaranteedQuantity != null) {
                 Text(
                     modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.transactionReview_estimated),
+                    text = stringResource(id = R.string.interactionReview_estimated),
                     style = RadixTheme.typography.body2Link,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -57,7 +57,7 @@ fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier)
             Row {
                 Text(
                     modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.transactionReview_guaranteed),
+                    text = stringResource(id = R.string.interactionReview_guaranteed),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,

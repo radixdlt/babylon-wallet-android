@@ -28,7 +28,7 @@ data class TransactionErrorMessage(
     @Composable
     fun getTitle(): String {
         return if (isNoMnemonicErrorVisible) {
-            stringResource(id = R.string.transactionReview_noMnemonicError_title)
+            stringResource(id = R.string.common_noMnemonicAlert_title)
         } else if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction) {
             stringResource(id = R.string.ledgerHardwareDevices_couldNotSign_title)
         } else {

@@ -424,8 +424,8 @@ fun BasicPromptAlertDialog(
 fun NoMnemonicAlertDialog(onDismiss: () -> Unit) {
     BasicPromptAlertDialog(
         finish = { onDismiss() },
-        titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-        messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+        titleText = stringResource(id = R.string.common_noMnemonicAlert_title),
+        messageText = stringResource(id = R.string.common_noMnemonicAlert_text),
         dismissText = null
     )
 }

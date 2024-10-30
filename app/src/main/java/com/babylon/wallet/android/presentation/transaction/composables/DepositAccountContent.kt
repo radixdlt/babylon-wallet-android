@@ -73,7 +73,7 @@ fun DepositAccountContent(
                         tint = RadixTheme.colors.gray2
                     )
                     Text(
-                        text = stringResource(id = R.string.transactionReview_depositsHeading).uppercase(),
+                        text = stringResource(id = R.string.interactionReview_depositsHeading).uppercase(),
                         style = RadixTheme.typography.body1Link,
                         color = RadixTheme.colors.gray2,
                         overflow = TextOverflow.Ellipsis,
@@ -97,7 +97,7 @@ fun DepositAccountContent(
                     TransactionAccountCard(
                         account = accountEntry,
                         hiddenResourceIds = hiddenResourceIds,
-                        hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_deposit),
+                        hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_deposit),
                         onTransferableFungibleClick = onTransferableFungibleClick,
                         onTransferableNonFungibleClick = onNonTransferableFungibleClick
                     )
@@ -111,7 +111,7 @@ fun DepositAccountContent(
                     RadixTextButton(
                         modifier = Modifier
                             .padding(top = RadixTheme.dimensions.paddingXSmall),
-                        text = stringResource(id = R.string.transactionReview_customizeGuaranteesButtonTitle),
+                        text = stringResource(id = R.string.interactionReview_customizeGuaranteesButtonTitle),
                         onClick = onEditGuaranteesClick
                     )
                 }

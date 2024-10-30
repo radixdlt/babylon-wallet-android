@@ -427,7 +427,7 @@ private fun TransactionPreviewContent(
                                 id = if (state.transactionType == State.TransactionType.PreAuthorized) {
                                     R.string.preAuthorizationReview_slideToSign
                                 } else {
-                                    R.string.transactionReview_slideToSign
+                                    R.string.interactionReview_slideToSign
                                 }
                             ),
                             enabled = state.isSubmitEnabled,

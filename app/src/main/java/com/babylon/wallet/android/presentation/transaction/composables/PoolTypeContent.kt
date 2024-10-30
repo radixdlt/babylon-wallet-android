@@ -36,8 +36,8 @@ fun PoolTypeContent(
     onUnknownPoolsClick: (List<Pool>) -> Unit
 ) {
     val poolSectionLabel = when (previewType.actionType) {
-        PreviewType.Transfer.Pool.ActionType.Contribution -> stringResource(id = R.string.transactionReview_poolContributionHeading)
-        PreviewType.Transfer.Pool.ActionType.Redemption -> stringResource(id = R.string.transactionReview_poolRedemptionHeading)
+        PreviewType.Transfer.Pool.ActionType.Contribution -> stringResource(id = R.string.interactionReview_poolContributionHeading)
+        PreviewType.Transfer.Pool.ActionType.Redemption -> stringResource(id = R.string.interactionReview_poolRedemptionHeading)
     }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),

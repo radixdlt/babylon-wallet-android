@@ -57,7 +57,7 @@ fun WithdrawAccountContent(
                 tint = RadixTheme.colors.gray2
             )
             Text(
-                text = stringResource(id = R.string.transactionReview_withdrawalsHeading)
+                text = stringResource(id = R.string.interactionReview_withdrawalsHeading)
                     .uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2,
@@ -78,7 +78,7 @@ fun WithdrawAccountContent(
                 TransactionAccountCard(
                     account = account,
                     hiddenResourceIds = hiddenResourceIds,
-                    hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+                    hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
                     onTransferableFungibleClick = onTransferableFungibleClick,
                     onTransferableNonFungibleClick = onNonTransferableFungibleClick
                 )

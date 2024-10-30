@@ -28,7 +28,7 @@ fun VerticalAmountSection(transferable: Transferable, modifier: Modifier = Modif
         val guaranteedQuantity = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
         if (guaranteedQuantity != null) {
             Text(
-                text = stringResource(id = R.string.transactionReview_estimated),
+                text = stringResource(id = R.string.interactionReview_estimated),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -52,7 +52,7 @@ fun VerticalAmountSection(transferable: Transferable, modifier: Modifier = Modif
         if (guaranteedQuantity != null) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Text(
-                text = stringResource(id = R.string.transactionReview_guaranteed),
+                text = stringResource(id = R.string.interactionReview_guaranteed),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,

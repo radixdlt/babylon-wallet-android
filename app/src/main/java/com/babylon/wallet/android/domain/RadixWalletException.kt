@@ -388,7 +388,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
             is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ->
                 when (val cause = this.cause) {
                     is ProfileException.NoMnemonic -> {
-                        R.string.transactionReview_noMnemonicError_text
+                        R.string.common_noMnemonicAlert_text
                     }
 
                     is RadixWalletException.LedgerCommunicationException -> {
