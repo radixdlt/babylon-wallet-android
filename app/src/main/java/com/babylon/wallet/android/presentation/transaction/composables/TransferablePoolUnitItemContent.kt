@@ -22,8 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
@@ -34,13 +33,12 @@ import com.radixdlt.sargon.extensions.formatted
 @Composable
 fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
-    transferable: Transferable,
+    transferablePoolUnit: TransferableX.FungibleType.PoolUnit,
     shape: Shape,
     isHidden: Boolean,
     hiddenResourceWarning: String,
-    onClick: (poolUnit: TransferableAsset.Fungible.PoolUnitAsset) -> Unit
+    onClick: (poolUnit: TransferableX.FungibleType.PoolUnit) -> Unit
 ) {
-    val transferablePoolUnit = transferable.transferable as TransferableAsset.Fungible.PoolUnitAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -63,7 +61,7 @@ fun TransferablePoolUnitItemContent(
         ) {
             Thumbnail.PoolUnit(
                 modifier = Modifier.size(42.dp),
-                poolUnit = transferablePoolUnit.unit
+                poolUnit = transferablePoolUnit.asset
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -76,14 +74,14 @@ fun TransferablePoolUnitItemContent(
                 )
 
                 Text(
-                    text = transferablePoolUnit.displaySubtitle(),
+                    text = transferablePoolUnit.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            VerticalAmountSection(transferable)
+//            VerticalAmountSection(transferablePoolUnit) // TODO
         }
         Text(
             modifier = Modifier
@@ -94,7 +92,7 @@ fun TransferablePoolUnitItemContent(
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        val poolResources = transferablePoolUnit.unit.pool?.resources.orEmpty()
+        val poolResources = transferablePoolUnit.asset.pool?.resources.orEmpty()
         Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)) {
             poolResources.forEachIndexed { index, item ->
                 val addDivider = index != poolResources.lastIndex
