@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
-import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.TransferableX
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import rdx.works.core.mapWhen
@@ -8,11 +8,11 @@ import rdx.works.core.mapWhen
 sealed interface AccountWithTransferableResources {
 
     val address: AccountAddress
-    val resources: List<Transferable>
+    val resources: List<TransferableX>
 
     data class Owned(
         val account: Account,
-        override val resources: List<Transferable>
+        override val resources: List<TransferableX>
     ) : AccountWithTransferableResources {
         override val address: AccountAddress
             get() = account.address
@@ -20,10 +20,10 @@ sealed interface AccountWithTransferableResources {
 
     data class Other(
         override val address: AccountAddress,
-        override val resources: List<Transferable>
+        override val resources: List<TransferableX>
     ) : AccountWithTransferableResources
 
-    fun updateFromGuarantees(
+    fun updateFromGuarantees( // TODO needs update
         accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
     ): AccountWithTransferableResources {
         val resourcesWithGuaranteesForAccount = accountsWithPredictedGuarantees.filter {
@@ -31,21 +31,21 @@ sealed interface AccountWithTransferableResources {
         }
 
         val resources = resources.mapWhen(
-            predicate = { depositing ->
+            predicate = { depositing -> // this is now Transferable
                 resourcesWithGuaranteesForAccount.any {
-                    it.address == address && it.transferable.resourceAddress == depositing.transferable.resourceAddress
+                    it.address == address && it.transferable.resourceAddress == depositing.resourceAddress
                 }
             },
             mutation = { depositing ->
-                val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
-                    it.transferable.resourceAddress == depositing.transferable.resourceAddress
-                }
-
-                if (accountWithGuarantee != null) {
-                    depositing.updateGuarantee(accountWithGuarantee.guaranteeOffsetDecimal)
-                } else {
+//                val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
+//                    it.transferable.resourceAddress == depositing.transferable.resourceAddress
+//                }
+//
+//                if (accountWithGuarantee != null) {
+//                    depositing.updateGuarantee(accountWithGuarantee.guaranteeOffsetDecimal)
+//                } else {
                     depositing
-                }
+//                }
             }
         )
         return when (this) {
