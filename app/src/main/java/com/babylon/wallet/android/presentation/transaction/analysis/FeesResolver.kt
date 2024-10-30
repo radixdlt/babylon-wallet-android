@@ -38,6 +38,6 @@ object FeesResolver {
 
 private fun List<AccountWithTransferableResources>.guaranteesCount(): Int = map { accountWithTransferableResources ->
     accountWithTransferableResources.resources.filter { transferable ->
-        transferable.guaranteeAssertion is GuaranteeAssertion.ForAmount
+        transferable.guaranteeAssertion is GuaranteeAssertion.ForAmount // TODO
     }
 }.flatten().count()
