@@ -24,8 +24,10 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.domain.model.Transferable
+import com.babylon.wallet.android.domain.model.FungibleAmount
+import com.babylon.wallet.android.domain.model.NonFungibleAmount
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.TransferableX
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -38,6 +40,8 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.sargon.fungibles
@@ -50,7 +54,7 @@ fun TransactionAccountCard(
     account: AccountWithTransferableResources,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     hiddenResourceWarning: String,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit, // TODO clicks needs update
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
@@ -66,29 +70,29 @@ fun TransactionAccountCard(
             val lastAsset = index == account.resources.lastIndex
             val shape = if (lastAsset) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
 
-            when (val asset = transferable.transferable) {
-                is TransferableAsset.Fungible.Token -> TransferableTokenItemContent(
+            when (transferable) {
+                is TransferableX.FungibleType.Token -> TransferableTokenItemContent(
                     modifier = Modifier.throttleClickable {
-                        onTransferableFungibleClick(asset)
+//                        onTransferableFungibleClick(transferable)
                     },
-                    transferable = transferable,
+                    transferableToken = transferable,
                     shape = shape,
                     isHidden = remember(
-                        asset,
+                        transferable,
                         hiddenResourceIds
-                    ) { asset.resource.address in hiddenResourceIds.fungibles() },
+                    ) { transferable.resourceAddress in hiddenResourceIds.fungibles() },
                     hiddenResourceWarning = hiddenResourceWarning
                 )
 
-                is TransferableAsset.NonFungible.NFTAssets -> {
+                is TransferableX.NonFungibleType.NFTCollection -> {
                     // Show each nft item
-                    asset.resource.items.forEachIndexed { itemIndex, item ->
-                        val lastNFT = itemIndex == asset.resource.items.lastIndex
+                    transferable.asset.resource.items.forEachIndexed { itemIndex, item ->
+                        val lastNFT = itemIndex == transferable.asset.resource.items.lastIndex
                         TransferableNftItemContent(
                             modifier = Modifier.throttleClickable {
-                                onTransferableNonFungibleClick(asset, item)
+//                                onTransferableNonFungibleClick(transferable, item)
                             },
-                            asset = asset,
+                            transferableNFTCollection = transferable,
                             shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
                             nftItem = item,
                             isHidden = remember(
@@ -100,29 +104,29 @@ fun TransactionAccountCard(
                     }
                 }
 
-                is TransferableAsset.Fungible.PoolUnitAsset -> TransferablePoolUnitItemContent(
-                    transferable = transferable,
+                is TransferableX.FungibleType.LSU -> TransferableLsuItemContent(
+                    modifier = Modifier.throttleClickable {
+//                        onTransferableFungibleClick(transferable)
+                    },
+                    transferableLSU = transferable,
+                    shape = shape,
+                )
+
+                is TransferableX.FungibleType.PoolUnit -> TransferablePoolUnitItemContent(
+                    transferablePoolUnit = transferable,
                     shape = shape,
                     isHidden = remember(
-                        asset,
+                        transferable,
                         hiddenResourceIds
-                    ) { asset.resource.poolAddress in hiddenResourceIds.pools() },
+                    ) { transferable.asset.resource.poolAddress in hiddenResourceIds.pools() },
                     hiddenResourceWarning = hiddenResourceWarning,
-                    onClick = onTransferableFungibleClick
+                    onClick = {} //onTransferableFungibleClick
                 )
 
-                is TransferableAsset.Fungible.LSUAsset -> TransferableLsuItemContent(
-                    modifier = Modifier.throttleClickable {
-                        onTransferableFungibleClick(asset)
-                    },
-                    transferable = transferable,
+                is TransferableX.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
+                    transferableStakeClaim = transferable,
                     shape = shape,
-                )
-
-                is TransferableAsset.NonFungible.StakeClaimAssets -> TransferableStakeClaimNftItemContent(
-                    transferable = asset,
-                    shape = shape,
-                    onClick = onTransferableNonFungibleClick
+                    onClick = {_,_ -> } //onTransferableNonFungibleClick
                 )
             }
 
@@ -202,18 +206,40 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
 @Preview("large font", fontScale = 2f)
 @Preview(showBackground = true)
 @Composable
-fun TransactionAccountCardPreview() {
+fun TransactionAccountCardWithTokenPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
             account = AccountWithTransferableResources.Owned(
                 account = Account.sampleMainnet(),
                 resources = listOf(
-                    Transferable.Withdrawing(
-                        transferable = TransferableAsset.Fungible.Token(
-                            amount = 689.203.toDecimal192(),
-                            resource = Resource.FungibleResource.sampleMainnet(),
-                            isNewlyCreated = false
-                        )
+                    TransferableX.FungibleType.Token(
+                        asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                        amount = FungibleAmount.Exact(666.toDecimal192()),
+                        isNewlyCreated = false
+                    )
+                )
+            ),
+            hiddenResourceIds = persistentListOf(),
+            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+            onTransferableFungibleClick = { },
+            onTransferableNonFungibleClick = { _, _ -> }
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun TransactionAccountCardWithNFTPreview() {
+    RadixWalletTheme {
+        TransactionAccountCard(
+            account = AccountWithTransferableResources.Owned(
+                account = Account.sampleMainnet(),
+                resources = listOf(
+                    TransferableX.NonFungibleType.NFTCollection(
+                        asset = NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet()),
+                        amount = NonFungibleAmount.Exact(nftItem = Resource.NonFungibleResource.sampleMainnet().items.first()),
+                        isNewlyCreated = false
                     )
                 )
             ),
