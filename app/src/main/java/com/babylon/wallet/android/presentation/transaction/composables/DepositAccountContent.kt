@@ -32,7 +32,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -54,7 +53,7 @@ fun DepositAccountContent(
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     onEditGuaranteesClick: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
+    onNonTransferableFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Column(modifier = modifier) {

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.TransferableX
@@ -22,7 +21,7 @@ fun CommonTransferContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
     previewType: PreviewType.Transfer,
     onEditGuaranteesClick: () -> Unit,
     middleSection: @Composable () -> Unit
