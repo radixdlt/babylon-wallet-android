@@ -12,21 +12,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.NonFungibleAmount
+import com.babylon.wallet.android.domain.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun TransferableNftItemContent(
     modifier: Modifier = Modifier,
     shape: Shape,
-    asset: TransferableAsset.NonFungible.NFTAssets,
+    transferableNFTCollection: TransferableX.NonFungibleType.NFTCollection,
     nftItem: Resource.NonFungibleResource.Item,
     isHidden: Boolean,
     hiddenResourceWarning: String
@@ -49,11 +56,11 @@ fun TransferableNftItemContent(
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(44.dp),
-                collection = asset.resource
+                collection = transferableNFTCollection.asset.resource
             )
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                 Text(
-                    text = asset.displayTitle(),
+                    text = transferableNFTCollection.asset.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -72,6 +79,25 @@ fun TransferableNftItemContent(
         TransferableHiddenItemWarning(
             isHidden = isHidden,
             text = hiddenResourceWarning
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun TransferableNftItemPreview() {
+    RadixWalletTheme {
+        TransferableNftItemContent(
+            transferableNFTCollection = TransferableX.NonFungibleType.NFTCollection(
+                asset = NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet()),
+                amount = NonFungibleAmount.Exact(nftItem = Resource.NonFungibleResource.sampleMainnet().items.first()),
+                isNewlyCreated = false
+            ),
+            nftItem = Resource.NonFungibleResource.sampleMainnet().items.first(),
+            shape = RectangleShape,
+            isHidden = false,
+            hiddenResourceWarning = "",
         )
     }
 }
