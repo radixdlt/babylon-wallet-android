@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -76,7 +76,7 @@ fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-//            VerticalAmountSection(transferable = transferable) // TODO
+            FungibleAmountSection(fungibleAmount = transferableLSU.amount)
         }
         Text(
             modifier = Modifier

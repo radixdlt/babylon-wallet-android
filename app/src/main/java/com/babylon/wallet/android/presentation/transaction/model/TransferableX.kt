@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.android.presentation.transaction.model
 
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
