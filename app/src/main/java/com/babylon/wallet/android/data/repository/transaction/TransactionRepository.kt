@@ -68,7 +68,6 @@ class TransactionRepositoryImpl @Inject constructor(
                 val transactionToReview = sargonOs.analyseTransactionPreview(
                     instructions = manifestData.instructions,
                     blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-                    message = message,
                     areInstructionsOriginatingFromHost = isWalletTransaction,
                     nonce = Nonce.secureRandom(),
                     notaryPublicKey = notaryPublicKey,
