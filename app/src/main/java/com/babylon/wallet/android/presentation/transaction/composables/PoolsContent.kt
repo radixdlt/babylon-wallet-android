@@ -129,7 +129,7 @@ fun PoolsContent(
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = null,
-                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPools.size),
+                    text = stringResource(id = R.string.interactionReview_unknownPools, unknownPools.size),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onUnknownPoolComponentsClick(unknownPools) }

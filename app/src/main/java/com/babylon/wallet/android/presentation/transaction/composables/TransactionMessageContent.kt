@@ -37,7 +37,7 @@ fun ColumnScope.TransactionMessageContent(
     Text(
         modifier = Modifier
             .padding(RadixTheme.dimensions.paddingDefault),
-        text = stringResource(id = R.string.transactionReview_messageHeading).uppercase(),
+        text = stringResource(id = R.string.interactionReview_messageHeading).uppercase(),
         style = RadixTheme.typography.body1Link,
         color = RadixTheme.colors.gray2,
         overflow = TextOverflow.Ellipsis,

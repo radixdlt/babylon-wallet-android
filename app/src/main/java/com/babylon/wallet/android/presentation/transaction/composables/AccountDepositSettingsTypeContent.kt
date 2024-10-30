@@ -59,7 +59,7 @@ fun AccountDepositSettingsTypeContent(
         if (preview.hasSettingSection) {
             SectionHeader(
                 Modifier.fillMaxWidth(),
-                stringResource(id = R.string.transactionReview_thirdPartyDepositSettingHeading).uppercase()
+                stringResource(id = R.string.interactionReview_thirdPartyDepositSettingHeading).uppercase()
             )
         }
         preview.accountsWithDepositSettingsChanges.filter { it.defaultDepositRule != null }.forEach { accountWithSettings ->
@@ -68,9 +68,9 @@ fun AccountDepositSettingsTypeContent(
                 accountWithSettings.defaultDepositRule?.let { newRule ->
                     val ruleText = stringResource(
                         id = when (newRule) {
-                            DepositRule.ACCEPT_ALL -> R.string.transactionReview_accountDepositSettings_acceptAllRule
-                            DepositRule.DENY_ALL -> R.string.transactionReview_accountDepositSettings_denyAllRule
-                            DepositRule.ACCEPT_KNOWN -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
+                            DepositRule.ACCEPT_ALL -> R.string.interactionReview_depositSettings_acceptAllRule
+                            DepositRule.DENY_ALL -> R.string.interactionReview_depositSettings_denyAllRule
+                            DepositRule.ACCEPT_KNOWN -> R.string.interactionReview_depositSettings_acceptKnownRule
                         }
                     ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
                     val icon = when (newRule) {
@@ -106,7 +106,7 @@ fun AccountDepositSettingsTypeContent(
                 Modifier
                     .fillMaxWidth()
                     .padding(top = RadixTheme.dimensions.paddingMedium),
-                stringResource(id = R.string.transactionReview_thirdPartyDepositExceptionsHeading).uppercase()
+                stringResource(id = R.string.interactionReview_thirdPartyDepositExceptionsHeading).uppercase()
             )
             preview.accountsWithDepositSettingsChanges.filter {
                 it.depositorChanges.isNotEmpty() || it.assetChanges.isNotEmpty()
@@ -213,11 +213,11 @@ private fun PreferenceChange(modifier: Modifier = Modifier, text: String, icon: 
 private fun AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Layout(modifier: Modifier = Modifier) {
     val (text, icon) = when (this) {
         AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add -> {
-            stringResource(id = R.string.transactionReview_accountDepositSettings_depositorChangeAdd) to DSR.ic_add_circle
+            stringResource(id = R.string.interactionReview_depositExceptions_depositorChangeAdd) to DSR.ic_add_circle
         }
 
         AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove -> {
-            stringResource(id = R.string.transactionReview_accountDepositSettings_depositorChangeRemove) to DSR.ic_minus_circle
+            stringResource(id = R.string.interactionReview_depositExceptions_depositorChangeRemove) to DSR.ic_minus_circle
         }
     }
     PreferenceChange(modifier = modifier, text = text, icon = icon)
@@ -227,15 +227,15 @@ private fun AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeTy
 private fun AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Layout(modifier: Modifier = Modifier) {
     val (text, icon) = when (this) {
         AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow -> {
-            stringResource(id = R.string.transactionReview_accountDepositSettings_assetChangeAllow) to DSR.ic_accept_all
+            stringResource(id = R.string.interactionReview_depositExceptions_assetChangeAllow) to DSR.ic_accept_all
         }
 
         AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow -> {
-            stringResource(id = R.string.transactionReview_accountDepositSettings_assetChangeDisallow) to DSR.ic_deny_all
+            stringResource(id = R.string.interactionReview_depositExceptions_assetChangeDisallow) to DSR.ic_deny_all
         }
 
         AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear -> {
-            stringResource(id = R.string.transactionReview_accountDepositSettings_assetChangeClear) to DSR.ic_minus_circle
+            stringResource(id = R.string.interactionReview_depositExceptions_assetChangeClear) to DSR.ic_minus_circle
         }
     }
     PreferenceChange(modifier, text = text, icon = icon)

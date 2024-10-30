@@ -425,9 +425,9 @@ private fun TransactionPreviewContent(
                                 ),
                             title = stringResource(
                                 id = if (state.transactionType == State.TransactionType.PreAuthorized) {
-                                    R.string.transactionReview_preAuthorization_slideToSign
+                                    R.string.preAuthorizationReview_slideToSign
                                 } else {
-                                    R.string.transactionReview_slideToSign
+                                    R.string.interactionReview_slideToSign
                                 }
                             ),
                             enabled = state.isSubmitEnabled,

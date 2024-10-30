@@ -34,13 +34,13 @@ fun StakeTypeContent(
 ) {
     val validatorSectionText = when (previewType.actionType) {
         PreviewType.Transfer.Staking.ActionType.Stake ->
-            stringResource(id = R.string.transactionReview_stakingToValidatorsHeading).uppercase()
+            stringResource(id = R.string.interactionReview_stakingToValidatorsHeading).uppercase()
 
         PreviewType.Transfer.Staking.ActionType.Unstake ->
-            stringResource(id = R.string.transactionReview_unstakingFromValidatorsHeading).uppercase()
+            stringResource(id = R.string.interactionReview_unstakingFromValidatorsHeading).uppercase()
 
         PreviewType.Transfer.Staking.ActionType.ClaimStake ->
-            stringResource(id = R.string.transactionReview_claimFromValidatorsHeading).uppercase()
+            stringResource(id = R.string.interactionReview_claimFromValidatorsHeading).uppercase()
     }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),

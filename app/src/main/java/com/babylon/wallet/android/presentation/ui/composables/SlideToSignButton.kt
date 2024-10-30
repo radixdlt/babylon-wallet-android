@@ -205,7 +205,7 @@ enum class ButtonSliderPosition {
 fun AccountContentPreview() {
     RadixWalletTheme {
         SlideToSignButton(
-            title = stringResource(id = R.string.transactionReview_slideToSign),
+            title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = true,
             isSubmitting = false,
             onSwipeComplete = { }
@@ -218,7 +218,7 @@ fun AccountContentPreview() {
 fun AccountContentPreviewDisabled() {
     RadixWalletTheme {
         SlideToSignButton(
-            title = stringResource(id = R.string.transactionReview_slideToSign),
+            title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = false,
             isSubmitting = false,
             onSwipeComplete = { }
@@ -231,7 +231,7 @@ fun AccountContentPreviewDisabled() {
 fun AccountContentPreviewSubmitting() {
     RadixWalletTheme {
         SlideToSignButton(
-            title = stringResource(id = R.string.transactionReview_slideToSign),
+            title = stringResource(id = R.string.interactionReview_slideToSign),
             enabled = true,
             isSubmitting = true,
             onSwipeComplete = { }

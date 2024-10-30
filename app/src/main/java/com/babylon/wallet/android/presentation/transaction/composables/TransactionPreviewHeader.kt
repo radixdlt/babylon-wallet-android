@@ -194,7 +194,7 @@ private fun TransactionPreviewHeader(
 
 private fun State.TransactionType.titleRes(): Int {
     return when (this) {
-        State.TransactionType.PreAuthorized -> R.string.transactionReview_preAuthorization_title
+        State.TransactionType.PreAuthorized -> R.string.preAuthorizationReview_title
         State.TransactionType.Regular -> R.string.transactionReview_title
     }
 }

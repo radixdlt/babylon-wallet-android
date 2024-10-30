@@ -74,7 +74,7 @@ fun ConnectedDAppsContent(
                 )
                 Text(
                     modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.transactionReview_usingDappsHeading).uppercase(),
+                    text = stringResource(id = R.string.interactionReview_usingDappsHeading).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2,
                     overflow = TextOverflow.Ellipsis,
@@ -121,7 +121,7 @@ fun ConnectedDAppsContent(
                     InvolvedComponentDetails(
                         iconSize = 44.dp,
                         dApp = null,
-                        text = stringResource(id = R.string.transactionReview_unknownComponents, unknownComponents.size),
+                        text = stringResource(id = R.string.interactionReview_unknownComponents, unknownComponents.size),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onUnknownComponentsClick(unknownComponents) }

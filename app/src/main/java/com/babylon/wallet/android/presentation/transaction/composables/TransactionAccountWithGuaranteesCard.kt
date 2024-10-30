@@ -76,7 +76,7 @@ fun TransactionAccountWithGuaranteesCard(
             Text(
                 text = when (accountWithGuarantee) {
                     is AccountWithPredictedGuarantee.Other -> stringResource(
-                        id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName
+                        id = com.babylon.wallet.android.R.string.interactionReview_externalAccountName
                     )
 
                     is AccountWithPredictedGuarantee.Owned -> accountWithGuarantee.account.displayName.value
@@ -134,7 +134,7 @@ fun TransactionAccountWithGuaranteesCard(
                     ) {
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.interactionReview_estimated),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -154,7 +154,7 @@ fun TransactionAccountWithGuaranteesCard(
                     Row {
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.interactionReview_guaranteed),
                             style = RadixTheme.typography.body2Regular,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,

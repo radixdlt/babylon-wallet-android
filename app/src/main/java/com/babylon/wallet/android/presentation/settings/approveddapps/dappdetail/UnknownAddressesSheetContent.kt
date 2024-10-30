@@ -47,7 +47,7 @@ fun UnknownAddressesSheetContent(
                 .fillMaxWidth()
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             title = stringResource(
-                id = if (isPools) R.string.transactionReview_unknownPools else R.string.transactionReview_unknownComponents,
+                id = if (isPools) R.string.interactionReview_unknownPools else R.string.interactionReview_unknownComponents,
                 unknownAddresses.size
             ),
             onDismissRequest = onBackClick

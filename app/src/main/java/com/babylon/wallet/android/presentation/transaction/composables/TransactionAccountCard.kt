@@ -141,7 +141,7 @@ fun TransactionAccountCardHeader(
 ) {
     AccountCardHeader(
         displayName = when (account) {
-            is AccountWithTransferableResources.Other -> stringResource(id = R.string.transactionReview_externalAccountName)
+            is AccountWithTransferableResources.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
             is AccountWithTransferableResources.Owned -> account.account.displayName.value
         },
         modifier = modifier
@@ -218,7 +218,7 @@ fun TransactionAccountCardPreview() {
                 )
             ),
             hiddenResourceIds = persistentListOf(),
-            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+            hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleClick = { _, _ -> }
         )
