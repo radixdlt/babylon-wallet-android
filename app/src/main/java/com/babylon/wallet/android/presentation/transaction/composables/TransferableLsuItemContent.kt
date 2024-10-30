@@ -25,8 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -36,10 +35,9 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun TransferableLsuItemContent(
     modifier: Modifier = Modifier,
-    transferable: Transferable,
+    transferableLSU: TransferableX.FungibleType.LSU,
     shape: Shape
 ) {
-    val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -59,26 +57,26 @@ fun TransferableLsuItemContent(
         ) {
             Thumbnail.LSU(
                 modifier = Modifier.size(42.dp),
-                liquidStakeUnit = transferableLsu.lsu,
+                liquidStakeUnit = transferableLSU.asset,
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = transferableLsu.displayTitle(),
+                    text = transferableLSU.asset.displayTitle(),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferableLsu.displaySubtitle(),
+                    text = transferableLSU.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            VerticalAmountSection(transferable = transferable)
+//            VerticalAmountSection(transferable = transferable) // TODO
         }
         Text(
             modifier = Modifier
@@ -113,7 +111,7 @@ fun TransferableLsuItemContent(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = transferableLsu.xrdWorth.formatted(),
+                text = transferableLSU.xrdWorth.formatted(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
