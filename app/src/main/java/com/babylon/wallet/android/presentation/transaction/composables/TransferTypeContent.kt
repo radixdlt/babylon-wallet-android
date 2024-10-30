@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -33,7 +32,7 @@ fun TransferTypeContent(
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),

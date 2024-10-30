@@ -24,7 +24,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.TransferableX
@@ -54,8 +53,8 @@ fun TransactionAccountCard(
     account: AccountWithTransferableResources,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     hiddenResourceWarning: String,
-    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit, // TODO clicks needs update
-    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -90,7 +89,7 @@ fun TransactionAccountCard(
                         val lastNFT = itemIndex == transferable.asset.resource.items.lastIndex
                         TransferableNftItemContent(
                             modifier = Modifier.throttleClickable {
-//                                onTransferableNonFungibleClick(transferable, item)
+                                onTransferableNonFungibleClick(transferable, item)
                             },
                             transferableNFTCollection = transferable,
                             shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
@@ -126,7 +125,7 @@ fun TransactionAccountCard(
                 is TransferableX.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
                     transferableStakeClaim = transferable,
                     shape = shape,
-                    onClick = {_,_ -> } //onTransferableNonFungibleClick
+                    onClick = onTransferableNonFungibleClick
                 )
             }
 
