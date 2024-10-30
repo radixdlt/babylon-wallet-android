@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
@@ -28,6 +27,7 @@ import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepo
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEvent
@@ -382,7 +382,7 @@ sealed interface PreviewType {
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
-                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable.resource }
+                allTransfers.resources.filter { it.isNewlyCreated }.map { it.asset.resource }
             }.flatten()
 
         val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
@@ -424,7 +424,7 @@ sealed interface PreviewType {
             val poolsInvolved: Set<rdx.works.core.domain.resources.Pool>
                 get() = (from + to).toSet().map { accountWithAssets ->
                     accountWithAssets.resources.mapNotNull {
-                        (it.transferable as? TransferableAsset.Fungible.PoolUnitAsset)?.unit?.pool
+                        (it as? TransferableX.FungibleType.PoolUnit)?.asset?.pool
                     }
                 }.flatten().toSet()
         }
