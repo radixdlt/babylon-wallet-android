@@ -37,7 +37,7 @@ fun NavController.transactionReview(requestId: String, navOptionsBuilder: NavOpt
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
     onTransferableFungibleClick: (TransferableX.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleClick: (TransferableX.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
