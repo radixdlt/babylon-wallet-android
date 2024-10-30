@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
-import com.babylon.wallet.android.domain.model.TransferableX
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import rdx.works.core.mapWhen

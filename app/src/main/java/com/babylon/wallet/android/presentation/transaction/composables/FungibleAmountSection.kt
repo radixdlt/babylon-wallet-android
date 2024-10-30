@@ -2,9 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transaction.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.formatted
@@ -129,24 +126,4 @@ private fun NoMoreThanText(modifier: Modifier = Modifier) {
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )
-}
-
-@Composable
-private fun HiddenTransferableWarning(
-    modifier: Modifier = Modifier,
-    isHidden: Boolean,
-    text: String
-) {
-    if (isHidden) {
-        Column(
-            modifier = modifier
-        ) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-            WarningText(
-                modifier = Modifier.fillMaxWidth(),
-                text = AnnotatedString(text),
-                textStyle = RadixTheme.typography.body1Header
-            )
-        }
-    }
 }
