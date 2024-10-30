@@ -66,7 +66,7 @@ import com.babylon.wallet.android.presentation.main.OlympiaErrorState
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -117,6 +117,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
@@ -214,6 +215,7 @@ fun BottomSheetDialogWrapper(
                                 .padding(top = RadixTheme.dimensions.paddingMedium)
                                 .fillMaxWidth()
                                 .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
+                            backIcon = headerBackIcon,
                             onDismissRequest = { onDismissRequest() },
                             title = title
                         )
@@ -460,7 +462,7 @@ fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionId: IntentHash?,
+    transactionId: TransactionIntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -530,7 +532,7 @@ private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParam
             isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
-            transactionId = IntentHash.sample()
+            transactionId = TransactionIntentHash.sample()
         )
     }
 }

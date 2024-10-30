@@ -18,9 +18,11 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Profile
@@ -32,7 +34,6 @@ import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.EntityFlags
 import com.radixdlt.sargon.extensions.FactorSources
-import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.ProfileNetworks
@@ -43,6 +44,8 @@ import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
@@ -264,36 +267,45 @@ fun Profile.nextAccountIndex(
     forNetworkId: NetworkId,
     factorSourceId: FactorSourceId,
     derivationPathScheme: DerivationPathScheme,
-): HDPathValue {
-    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return 0u
+): HdPathComponent {
+    val default = HdPathComponent.init(
+        localKeySpace = 0u,
+        keySpace = KeySpace.Unsecurified(isHardened = true)
+    )
+    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return default
+
     val accountsControlledByFactorSource = forNetwork.accounts.filter {
         it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
     }
     return if (accountsControlledByFactorSource.isEmpty()) {
-        0u
+        default
     } else {
-        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u
+        val global = accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex.indexInGlobalKeySpace } + 1u
+
+        HdPathComponent.init(globalKeySpace = global)
     }
 }
 
 fun Profile.nextPersonaIndex(
     forNetworkId: NetworkId,
     derivationPathScheme: DerivationPathScheme,
-    factorSourceID: FactorSourceId? = null
-): HDPathValue {
-    val network = networks.asIdentifiable().getBy(forNetworkId) ?: return 0u
+    factorSourceId: FactorSourceId
+): HdPathComponent {
+    val default = HdPathComponent.init(
+        localKeySpace = 0u,
+        keySpace = KeySpace.Unsecurified(isHardened = true)
+    )
+    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return default
 
-    val factorSource = factorSources.find {
-        it.id == factorSourceID
-    } ?: mainBabylonFactorSource ?: return 0u
-
-    val personasControlledByFactorSource = network.personas.filter {
-        it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
+    val personasControlledByFactorSource = forNetwork.personas.filter {
+        it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
     }
     return if (personasControlledByFactorSource.isEmpty()) {
-        0u
+        default
     } else {
-        personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u
+        val global = personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex.indexInGlobalKeySpace } + 1u
+
+        HdPathComponent.init(globalKeySpace = global)
     }
 }
 
@@ -560,6 +572,7 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     is FactorSource.TrustedContact -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+                    is FactorSource.Passphrase -> TODO()
                 }
             }
         ).asList()

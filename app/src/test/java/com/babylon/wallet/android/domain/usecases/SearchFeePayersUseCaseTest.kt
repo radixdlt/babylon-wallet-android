@@ -4,29 +4,18 @@ import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.PerAssetFungibleResource
-import com.radixdlt.sargon.PerAssetFungibleTransfer
-import com.radixdlt.sargon.PerAssetTransfers
-import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.perAssetTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
-import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
@@ -48,7 +37,7 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with enough xrd exists, returns the selected fee payer`() =
         testScope.runTest {
-            val manifestData = manifestDataWithAddress(account1)
+            val manifestData = feePayerCandidates(account1)
 
             val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
 
@@ -66,7 +55,7 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with not enough xrd exists, returns null fee payer and hasEnoughBalance false`() =
         testScope.runTest {
-            val manifestData = manifestDataWithAddress(account1)
+            val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.1)
             val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
@@ -85,7 +74,7 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with xrd does not exist, returns null fee payer and no candidates`() =
         testScope.runTest {
-            val manifestData = manifestDataWithAddress(account1)
+            val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.0)
             val result = useCase(manifestData, 200.toDecimal192()).getOrThrow()
@@ -117,34 +106,11 @@ class SearchFeePayersUseCaseTest {
     }
 
     companion object {
-        private fun manifestDataWithAddress(
+        private fun feePayerCandidates(
             account: Account
-        ) = TransactionManifestData.from(
-            manifest = TransactionManifest.perAssetTransfers(
-                transfers = PerAssetTransfers(
-                    fromAccount = account.address,
-                    fungibleResources = listOf(
-                        PerAssetTransfersOfFungibleResource(
-                            resource = PerAssetFungibleResource(
-                                resourceAddress = XrdResource.address(networkId = account.networkId),
-                                divisibility = 18.toUByte()
-                            ),
-                            transfers = listOf(
-                                PerAssetFungibleTransfer(
-                                    useTryDepositOrAbort = true,
-                                    amount = 10.toDecimal192(),
-                                    recipient = AccountOrAddressOf.AddressOfExternalAccount(
-                                        value = AccountAddress.sampleMainnet.random()
-                                    )
-                                )
-                            )
-                        )
-                    ),
-                    nonFungibleResources = emptyList()
-                )
-            )
+        ) = listOf(
+            account.address
         )
-
     }
 
 }

@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.radixdlt.sargon.Cap26Path
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
@@ -50,12 +49,8 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                     is ProfileEntity.PersonaEntity -> path.value.toIdentityAuthSigningDerivationPath(networkId = networkId)
                 }
             }
-
-            is DerivationPath.Cap26 -> when (val cap26Path = path.value) {
-                is Cap26Path.Account -> cap26Path.toAuthSigningDerivationPath()
-                is Cap26Path.Identity -> cap26Path.toAuthSigningDerivationPath()
-                is Cap26Path.GetId -> error("Entity should not contain Identity Path")
-            }
+            is DerivationPath.Account -> path.value.toAuthSigningDerivationPath()
+            is DerivationPath.Identity -> path.value.toAuthSigningDerivationPath()
         }
 
         val factorSourceId = transactionSigning.factorSourceId.asGeneral()

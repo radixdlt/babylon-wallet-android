@@ -9,15 +9,18 @@ import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorS
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.Message
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.SignedTransactionIntentHash
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
-import rdx.works.core.domain.TransactionManifestData
+import com.radixdlt.sargon.extensions.summary
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.then
 import javax.inject.Inject
@@ -30,12 +33,11 @@ class SignTransactionUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(request: Request): Result<NotarizationResult> {
-        val manifestWithLockFee = request.manifestWithLockFee
+        val summary = requireNotNull(request.manifestWithLockFee.summary)
 
-        val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
         return resolveNotaryAndSignersUseCase(
-            accountsAddressesRequiringAuth = entitiesRequiringAuth.accounts,
-            personaAddressesRequiringAuth = entitiesRequiringAuth.identities,
+            accountsAddressesRequiringAuth = summary.addressesOfAccountsRequiringAuth,
+            personaAddressesRequiringAuth = summary.addressesOfPersonasRequiringAuth,
             notary = request.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
             transactionRepository.getLedgerEpoch().fold(
@@ -49,7 +51,9 @@ class SignTransactionUseCase @Inject constructor(
         }.then { notarySignersAndEpoch ->
             notariseTransactionUseCase(
                 request = NotariseTransactionUseCase.Request(
-                    manifestData = manifestWithLockFee,
+                    manifest = request.manifestWithLockFee,
+                    networkId = request.networkId,
+                    message = request.message,
                     notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKeyNew(),
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
                     startEpoch = notarySignersAndEpoch.second,
@@ -66,23 +70,22 @@ class SignTransactionUseCase @Inject constructor(
     }
 
     data class Request(
-        private val manifest: TransactionManifestData,
+        private val manifest: TransactionManifest,
+        val message: Message,
+        val networkId: NetworkId,
         val lockFee: Decimal192,
         val tipPercentage: UShort,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val feePayerAddress: AccountAddress? = null
     ) {
 
-        val manifestWithLockFee: TransactionManifestData
+        val manifestWithLockFee: TransactionManifest
             get() = if (feePayerAddress == null) {
                 manifest
             } else {
-                TransactionManifestData.from(
-                    manifest = manifest.manifestSargon.modifyLockFee(
-                        addressOfFeePayer = feePayerAddress,
-                        fee = lockFee
-                    ),
-                    message = manifest.message
+                manifest.modifyLockFee(
+                    addressOfFeePayer = feePayerAddress,
+                    fee = lockFee
                 )
             }
     }
@@ -112,8 +115,8 @@ class SignTransactionUseCase @Inject constructor(
             }
         }
 
-        override suspend fun notarise(signedIntentHash: SignedIntentHash): Result<NotarySignature> = runCatching {
-            notaryAndSigners.signWithNotary(signedIntentHash = signedIntentHash)
+        override suspend fun notarise(signedTransactionIntentHash: SignedTransactionIntentHash): Result<NotarySignature> = runCatching {
+            notaryAndSigners.signWithNotary(signedTransactionIntentHash = signedTransactionIntentHash)
         }
     }
 }

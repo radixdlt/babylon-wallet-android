@@ -23,7 +23,7 @@ fun CommonTransferContent(
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     previewType: PreviewType.Transfer,
-    onPromptForGuarantees: () -> Unit,
+    onEditGuaranteesClick: () -> Unit,
     middleSection: @Composable () -> Unit
 ) {
     Column(
@@ -63,7 +63,7 @@ fun CommonTransferContent(
                         .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                     to = previewType.to.toPersistentList(),
                     hiddenResourceIds = state.hiddenResourceIds,
-                    promptForGuarantees = onPromptForGuarantees,
+                    onEditGuaranteesClick = onEditGuaranteesClick,
                     onTransferableFungibleClick = onTransferableFungibleClick,
                     onNonTransferableFungibleClick = onNonTransferableFungibleClick
                 )

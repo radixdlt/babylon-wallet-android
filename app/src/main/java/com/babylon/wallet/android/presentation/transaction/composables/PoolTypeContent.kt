@@ -11,26 +11,19 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
-import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
-import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
-import java.util.UUID
 
 @Composable
 fun PoolTypeContent(
@@ -52,7 +45,7 @@ fun PoolTypeContent(
         onTransferableFungibleClick = onTransferableFungibleClick,
         onNonTransferableFungibleClick = { _, _ -> },
         previewType = previewType,
-        onPromptForGuarantees = onPromptForGuarantees,
+        onEditGuaranteesClick = onPromptForGuarantees,
         middleSection = {
             PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -72,21 +65,7 @@ fun PoolTypePreview() {
     RadixWalletTheme {
         PoolTypeContent(
             state = TransactionReviewViewModel.State(
-                request = TransactionRequest(
-                    remoteEntityId = RemoteEntityID.ConnectorId(
-                        "b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc"
-                    ),
-                    interactionId = UUID.randomUUID().toString(),
-                    transactionManifestData = TransactionManifestData(
-                        instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
-                        networkId = NetworkId.MAINNET,
-                        message = TransactionManifestData.TransactionMessage.Public("Hello"),
-                        version = TransactionVersion.Default.value
-                    ),
-                    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(NetworkId.MAINNET)
-                ),
                 isLoading = false,
-                isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
             onTransferableFungibleClick = {},

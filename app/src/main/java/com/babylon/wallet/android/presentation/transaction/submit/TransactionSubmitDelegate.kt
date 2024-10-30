@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
+import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
@@ -13,24 +14,22 @@ import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
+import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.ViewModelDelegate
-import com.babylon.wallet.android.presentation.transaction.Event
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.TransactionGuarantee
+import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
@@ -39,34 +38,40 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
+interface TransactionSubmitDelegate {
+
+    fun onApproveTransaction()
+}
+
 @Suppress("LongParameterList")
-class TransactionSubmitDelegate @Inject constructor(
+class TransactionSubmitDelegateImpl @Inject constructor(
     private val signTransactionUseCase: SignTransactionUseCase,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val submitTransactionUseCase: SubmitTransactionUseCase,
+    private val transactionRepository: TransactionRepository,
     private val clearCachedNewlyCreatedEntitiesUseCase: ClearCachedNewlyCreatedEntitiesUseCase,
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
     private val exceptionMessageProvider: ExceptionMessageProvider,
     @ApplicationScope private val applicationScope: CoroutineScope
-) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
+    TransactionSubmitDelegate {
 
     private val logger = Timber.tag("TransactionSubmit")
 
     private var approvalJob: Job? = null
 
-    var oneOffEventHandler: OneOffEventHandler<Event>? = null
+    var oneOffEventHandler: OneOffEventHandler<TransactionReviewViewModel.Event>? = null
 
-    fun onSubmit() {
+    override fun onApproveTransaction() {
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
+        val txToReviewData = data.value.transactionToReviewData
 
         approvalJob = applicationScope.launch {
-            val currentState = _state.value
             val currentNetworkId = getCurrentGatewayUseCase().network.id
-            val manifestNetworkId = currentState.requestNonNull.transactionManifestData.networkId
+            val manifestNetworkId = txToReviewData.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
@@ -78,27 +83,20 @@ class TransactionSubmitDelegate @Inject constructor(
                 return@launch
             }
 
-            if (currentState.feePayers?.selectedAccountAddress != null) {
-                val requestWithGuarantees = try {
-                    val request = currentState.requestNonNull
-                    request.copy(transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType))
-                } catch (exception: Exception) {
-                    logger.e(exception)
-                    return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
-                }
-
-                signAndSubmit(
-                    transactionRequest = requestWithGuarantees,
-                    signTransactionUseCase = signTransactionUseCase,
-                    feePayerAddress = currentState.feePayers.selectedAccountAddress
-                )
+            val manifestWithGuarantees = try {
+                txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
+            } catch (exception: Exception) {
+                logger.e(exception)
+                return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
+
+            signAndSubmit(manifestWithGuarantees)
         }
     }
 
     suspend fun onDismiss(exception: RadixWalletException.DappRequestException): Result<Unit> = runCatching {
         if (approvalJob == null) {
-            val request = _state.value.requestNonNull
+            val request = data.value.request
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(
                     request = request,
@@ -106,37 +104,37 @@ class TransactionSubmitDelegate @Inject constructor(
                     message = exception.getDappMessage()
                 )
             }
-            oneOffEventHandler?.sendEvent(Event.Dismiss)
+            oneOffEventHandler?.sendEvent(TransactionReviewViewModel.Event.Dismiss)
             incomingRequestRepository.requestHandled(request.interactionId)
         } else {
             logger.d("Cannot dismiss transaction while is in progress")
         }
     }
 
-    private suspend fun signAndSubmit(
-        transactionRequest: TransactionRequest,
-        signTransactionUseCase: SignTransactionUseCase,
-        feePayerAddress: AccountAddress?
-    ) {
+    private suspend fun signAndSubmit(manifest: TransactionManifest) {
+        val fees = _state.value.fees ?: return
+        val transactionRequest = data.value.request
+        val feePayerAddress = data.value.feePayers?.selectedAccountAddress
+
         _state.update { it.copy(isSubmitting = true) }
 
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
-                manifest = transactionRequest.transactionManifestData,
-                lockFee = _state.value.transactionFees.transactionFeeToLock,
-                tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
-                ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
+                manifest = manifest,
+                networkId = data.value.transactionToReviewData.networkId,
+                message = data.value.transactionToReviewData.message,
+                lockFee = fees.transactionFees.transactionFeeToLock,
+                tipPercentage = fees.transactionFees.tipPercentageForTransaction,
+                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey,
                 feePayerAddress = feePayerAddress
             )
         ).then { notarizationResult ->
-            submitTransactionUseCase(notarizationResult = notarizationResult)
+            transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
+                .map { notarizationResult }
         }.onSuccess { notarization ->
-            _state.update {
-                it.copy(
-                    isSubmitting = false,
-                    endEpoch = notarization.endEpoch
-                )
-            }
+            data.update { it.copy(endEpoch = notarization.endEpoch) }
+            _state.update { it.copy(isSubmitting = false) }
+
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.interactionId,
@@ -148,7 +146,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 )
             )
             transactionStatusClient.pollTransactionStatus(
-                txID = notarization.intentHash.bech32EncodedTxId,
+                intentHash = notarization.intentHash,
                 requestId = transactionRequest.interactionId,
                 transactionType = transactionRequest.transactionType,
                 endEpoch = notarization.endEpoch
@@ -218,7 +216,8 @@ class TransactionSubmitDelegate @Inject constructor(
         }
     }
 
-    private fun TransactionManifestData.attachGuarantees(previewType: PreviewType): TransactionManifestData {
+    @Throws(CommonException::class)
+    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
         var manifest = this
         if (previewType is PreviewType.Transfer) {
             manifest = manifest.addAssertions(
@@ -238,14 +237,13 @@ class TransactionSubmitDelegate @Inject constructor(
             it.copy(isSubmitting = false, error = TransactionErrorMessage(error))
         }
 
-        val currentState = _state.value
-        if (currentState.requestNonNull.isInternal) {
+        if (data.value.request.isInternal) {
             return
         }
         error.asRadixWalletException()?.let { radixWalletException ->
             radixWalletException.toDappWalletInteractionErrorType()?.let { walletErrorType ->
                 respondToIncomingRequestUseCase.respondWithFailure(
-                    request = currentState.requestNonNull,
+                    request = data.value.request,
                     dappWalletInteractionErrorType = walletErrorType,
                     message = radixWalletException.getDappMessage()
                 )
@@ -254,9 +252,10 @@ class TransactionSubmitDelegate @Inject constructor(
         approvalJob = null
     }
 
-    private fun TransactionManifestData.addAssertions(
+    @Throws(CommonException::class)
+    private fun TransactionManifest.addAssertions(
         depositing: List<Transferable.Depositing>
-    ): TransactionManifestData {
+    ): TransactionManifest {
         val guarantees = depositing.mapNotNull { transferable ->
             val assertion = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount ?: return@mapNotNull null
             val resource = transferable.transferable.resource as? Resource.FungibleResource ?: return@mapNotNull null
@@ -268,10 +267,6 @@ class TransactionSubmitDelegate @Inject constructor(
                 percentage = assertion.percentage
             )
         }
-
-        return TransactionManifestData.from(
-            manifest = manifestSargon.modifyAddGuarantees(guarantees = guarantees),
-            message = message
-        )
+        return modifyAddGuarantees(guarantees = guarantees)
     }
 }

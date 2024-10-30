@@ -1,15 +1,17 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.AccountPath
+import com.radixdlt.sargon.Bip44LikePath
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.HDPathValue
-import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asHardened
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -42,30 +44,30 @@ class PublicKeyProvider @Inject constructor(
             EntityKind.PERSONA -> profile.nextPersonaIndex(
                 forNetworkId = forNetworkId,
                 derivationPathScheme = DerivationPathScheme.CAP26,
-                factorSourceID = factorSource.id
+                factorSourceId = factorSource.id
             )
         }
-        return DerivationPath.Cap26.account(
+        return AccountPath.init(
             networkId = forNetworkId,
             keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-            index = accountIndex
-        )
+            index = accountIndex.asHardened()
+        ).asGeneral()
     }
 
     fun getDerivationPathsForIndices(
         forNetworkId: NetworkId,
-        indices: Set<HDPathValue>,
+        indices: LinkedHashSet<HdPathComponent>,
         isForLegacyOlympia: Boolean = false
     ): List<DerivationPath> {
         return indices.map { accountIndex ->
             if (isForLegacyOlympia) {
-                DerivationPath.Bip44Like.init(index = accountIndex)
+                Bip44LikePath.init(accountIndex).asGeneral()
             } else {
-                DerivationPath.Cap26.account(
+                AccountPath.init(
                     networkId = forNetworkId,
                     keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-                    index = accountIndex,
-                )
+                    index = accountIndex.asHardened()
+                ).asGeneral()
             }
         }
     }

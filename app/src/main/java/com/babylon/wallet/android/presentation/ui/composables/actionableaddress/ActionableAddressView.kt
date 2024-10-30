@@ -44,8 +44,8 @@ import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
-import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
@@ -60,8 +60,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import rdx.works.core.sargon.dashboardUrl
 import rdx.works.core.sargon.serializers.AddressSerializer
-import rdx.works.core.sargon.serializers.IntentHashSerializer
 import rdx.works.core.sargon.serializers.NonFungibleGlobalIdSerializer
+import rdx.works.core.sargon.serializers.TransactionIntentHashSerializer
 
 @Composable
 fun ActionableAddressView(
@@ -114,7 +114,7 @@ fun ActionableAddressView(
 @Composable
 fun ActionableAddressView(
     modifier: Modifier = Modifier,
-    transactionId: IntentHash,
+    transactionId: TransactionIntentHash,
     isVisitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
@@ -341,8 +341,8 @@ sealed interface ActionableAddress {
     @Serializable
     @SerialName("transaction_id")
     data class TransactionId(
-        @Serializable(with = IntentHashSerializer::class)
-        val hash: IntentHash,
+        @Serializable(with = TransactionIntentHashSerializer::class)
+        val hash: TransactionIntentHash,
         @SerialName("is_visitable_in_dashboard")
         override val isVisitableInDashboard: Boolean
     ) : ActionableAddress {
@@ -476,7 +476,7 @@ sealed interface ActionableAddress {
 
         @Composable
         fun remember(
-            intentHash: IntentHash,
+            intentHash: TransactionIntentHash,
             isVisitableInDashboard: Boolean = true
         ): State<ActionableAddress?> {
             val actionableAddress = remember {
@@ -508,6 +508,6 @@ fun ActionableAddressViewPreview() {
 @Composable
 fun ActionableAddressViewTransactionIdPreview() {
     RadixWalletPreviewTheme {
-        ActionableAddressView(transactionId = IntentHash.sample())
+        ActionableAddressView(transactionId = TransactionIntentHash.sample())
     }
 }

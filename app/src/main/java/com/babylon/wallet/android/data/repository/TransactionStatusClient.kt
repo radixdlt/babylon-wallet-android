@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionSta
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,13 +47,13 @@ class TransactionStatusClient @Inject constructor(
     }
 
     fun pollTransactionStatus(
-        txID: String,
+        intentHash: TransactionIntentHash,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: Epoch
     ) {
         appScope.launch {
-            val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, endEpoch)
+            val pollResult = pollTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
             pollResult.result.onSuccess {
                 preferencesManager.incrementTransactionCompleteCounter()
                 appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
