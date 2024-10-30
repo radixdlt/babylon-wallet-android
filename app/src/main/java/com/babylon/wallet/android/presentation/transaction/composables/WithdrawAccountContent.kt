@@ -24,6 +24,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.radixdlt.sargon.ResourceIdentifier
@@ -36,7 +37,7 @@ fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
     from: ImmutableList<AccountWithTransferableResources>,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     if (from.isNotEmpty()) {

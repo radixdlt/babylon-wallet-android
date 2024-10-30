@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -20,6 +21,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
@@ -28,7 +30,7 @@ import rdx.works.core.domain.resources.sampleMainnet
 fun PoolTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
     previewType: PreviewType.Transfer.Pool,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
@@ -74,12 +76,10 @@ fun PoolTypePreview() {
                     AccountWithTransferableResources.Owned(
                         account = Account.sampleMainnet(),
                         resources = listOf(
-                            Transferable.Depositing(
-                                transferable = TransferableAsset.Fungible.Token(
-                                    amount = 69.toDecimal192(),
-                                    resource = Resource.FungibleResource.sampleMainnet(),
-                                    isNewlyCreated = true
-                                )
+                            TransferableX.FungibleType.Token(
+                                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                amount = FungibleAmount.Exact("745".toDecimal192()),
+                                isNewlyCreated = false
                             )
                         )
                     )

@@ -11,6 +11,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.collections.immutable.toPersistentList
@@ -20,7 +21,7 @@ import rdx.works.core.domain.resources.Resource
 fun CommonTransferContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     previewType: PreviewType.Transfer,
     onEditGuaranteesClick: () -> Unit,
