@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
@@ -81,7 +81,7 @@ fun TransferablePoolUnitItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-//            VerticalAmountSection(transferablePoolUnit) // TODO
+            FungibleAmountSection(fungibleAmount = transferablePoolUnit.amount)
         }
         Text(
             modifier = Modifier
