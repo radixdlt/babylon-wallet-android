@@ -1,14 +1,14 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
+import com.babylon.wallet.android.presentation.model.Amount
+import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.times
-import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
-import rdx.works.core.domain.resources.Resource
 
 sealed interface TransferableX {
 
@@ -40,7 +40,7 @@ sealed interface TransferableX {
             override val asset: rdx.works.core.domain.assets.PoolUnit,
             override val amount: FungibleAmount,
             override val isNewlyCreated: Boolean = false,
-            val contributionPerResource: Map<ResourceAddress, Decimal192>,
+            val contributionPerResource: Map<ResourceAddress, FungibleAmount>,
         ) : FungibleType
     }
 
@@ -60,58 +60,5 @@ sealed interface TransferableX {
             val xrdWorthPerNftItem: Map<NonFungibleLocalId, Decimal192>,// TODO not sure this is the right place
             override val isNewlyCreated: Boolean = false
         ) : NonFungibleType
-    }
-}
-
-sealed interface Amount // TODO might not needed
-
-sealed interface FungibleAmount : Amount {
-
-    data class Exact(val amount: Decimal192) : FungibleAmount
-
-    data class Range(
-        val minAmount: Decimal192,
-        val maxAmount: Decimal192
-    ) : FungibleAmount
-
-    data class Min(val amount: Decimal192) : FungibleAmount
-
-    data class Max(val amount: Decimal192) : FungibleAmount
-
-    data class Predicted(
-        val amount: Decimal192,
-        val instructionIndex: Long,
-        val guaranteeOffset: Decimal192
-    ) : FungibleAmount {
-
-        val guaranteeAmount: Decimal192
-            get() = amount * guaranteeOffset
-
-        @Suppress("MagicNumber")
-        val guaranteePercent: Decimal192
-            get() = guaranteeOffset * 100.toDecimal192()
-    }
-
-    data object Unknown : FungibleAmount
-}
-
-sealed interface NonFungibleAmount : Amount { // TODO under research
-
-    data class Exact(val nftItem: Resource.NonFungibleResource.Item) : NonFungibleAmount
-
-    data class NotExact(
-        val lowerBound: LowerBound,
-        val upperBound: UpperBound,
-    ) : NonFungibleAmount {
-
-        sealed interface LowerBound {
-            data object NonZero : LowerBound
-            data class Inclusive(val amount: Decimal192) : LowerBound
-        }
-
-        sealed interface UpperBound {
-            data class Inclusive(val amount: Decimal192) : UpperBound
-            data object Unbounded : UpperBound
-        }
     }
 }
