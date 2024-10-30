@@ -1318,4 +1318,11 @@ Code: %s</string>
   <string name="confirmation_hideCollection_title">Hide Collection</string>
   <string name="confirmation_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
   <string name="confirmation_hideCollection_button">Hide</string>
+
+  <string name="transactionReview_preAuthorization_title">Review Your Pre-Authorization</string>
+  <string name="transactionReview_preAuthorization_slideToSign">Slide to Sign and Return</string>
+  <string name="transactionReview_preAuthorization_infoTitle">Pre-authorization will be returned to MegaSwap for processing</string>
+  <string name="transactionReview_preAuthorization_infoSubtitle">Network fees will be paid by the dApp</string>
+  <string name="transactionReview_preAuthorization_countdown">Valid for the next **%s**</string>
+
 </resources>

@@ -4,13 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
@@ -23,11 +21,10 @@ import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountOrAddressOf
-import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
-import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
@@ -36,6 +33,7 @@ import com.radixdlt.sargon.PerRecipientAssetTransfers
 import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.perRecipientTransfers
@@ -53,7 +51,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.domain.TransactionManifestData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.asIdentifiable
@@ -102,9 +100,12 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val transactionRepository = mockk<TransactionRepository>().apply {
         coEvery { getLedgerEpoch() } returns Result.success(1000.toULong())
         coEvery { analyzeTransaction(any(), any(), any()) } returns Result.success(
-            TransactionToReview(
-                transactionManifest = TransactionManifest.sample(),
-                executionSummary = emptyExecutionSummary
+            TransactionToReviewData(
+                transactionToReview = TransactionToReview(
+                    transactionManifest = TransactionManifest.sample(),
+                    executionSummary = emptyExecutionSummary
+                ),
+                message = Message.None
             )
         )
     }
@@ -142,7 +143,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     fun `given transaction id, when this id does not exist in the queue, then dismiss the transaction`() = runTest {
         every { incomingRequestRepository.getRequest(transactionId) } returns null
         vm.value.oneOffEvent.test {
-            assertTrue(awaitItem() is Event.Dismiss)
+            assertTrue(awaitItem() is TransactionReviewViewModel.Event.Dismiss)
         }
     }
 
@@ -180,21 +181,21 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         }
     }
 
-    private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
+    private fun mockManifestInput(manifestData: UnvalidatedManifestData = sampleManifest(instructions = "")) {
         val transactionRequest = TransactionRequest(
             remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
             interactionId = transactionId,
-            transactionManifestData = manifestData,
+            unvalidatedManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
         ).also {
-            println(it.transactionManifestData.instructions)
+            println(it.unvalidatedManifestData.instructions)
         }
         coEvery { incomingRequestRepository.getRequest(transactionId) } returns transactionRequest
     }
 
-    private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData =
+    private fun simpleXRDTransfer(withProfile: Profile): UnvalidatedManifestData =
         with(withProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!) {
-            TransactionManifestData.from(
+            UnvalidatedManifestData.from(
                 manifest = TransactionManifest.perRecipientTransfers(
                     transfers = PerRecipientAssetTransfers(
                         addressOfSender = address,

@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
@@ -16,12 +17,9 @@ import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
-import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toList
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
 
 fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntityID) = runCatching {
@@ -57,13 +55,11 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
 ) = TransactionRequest(
     remoteEntityId = remoteConnectorId,
     interactionId = requestId,
-    transactionManifestData = TransactionManifestData(
-        manifest = TransactionManifest.init(unvalidatedManifest.transactionManifestString, metadata.networkId),
+    unvalidatedManifestData = UnvalidatedManifestData(
         instructions = unvalidatedManifest.transactionManifestString,
         networkId = metadata.networkId,
-        message = message?.let { TransactionManifestData.TransactionMessage.Public(it) } ?: TransactionManifestData.TransactionMessage.None,
+        plainMessage = message,
         blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
-        version = version.toLong()
     ),
     requestMetadata = metadata
 )

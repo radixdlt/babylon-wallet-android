@@ -8,13 +8,13 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
-import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
+import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -28,19 +28,21 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Tr
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorUnstakeProcessor
-import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
-import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
-import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toList
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -100,14 +102,15 @@ internal fun testViewModel(
         ),
         cacheNewlyCreatedEntitiesUseCase = CacheNewlyCreatedEntitiesUseCase(stateRepository),
         resolveNotaryAndSignersUseCase = ResolveNotaryAndSignersUseCase(GetProfileUseCase(profileRepository, testDispatcher)),
-        searchFeePayersUseCase = SearchFeePayersUseCase(GetProfileUseCase(profileRepository, testDispatcher), stateRepository),
-        transactionRepository = transactionRepository,
-        getFiatValueUseCase = getFiatValueUseCase,
-        defaultDispatcher = testDispatcher
+        transactionRepository = transactionRepository
     ),
-    guarantees = TransactionGuaranteesDelegate(),
-    fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher)),
-    submit = TransactionSubmitDelegate(
+    guarantees = TransactionGuaranteesDelegateImpl(),
+    fees = TransactionFeesDelegateImpl(
+        getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),
+        searchFeePayersUseCase = SearchFeePayersUseCase(GetProfileUseCase(profileRepository, testDispatcher), stateRepository),
+        getFiatValueUseCase = getFiatValueUseCase
+    ),
+    submit = TransactionSubmitDelegateImpl(
         signTransactionUseCase = signTransactionUseCase,
         respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
@@ -129,22 +132,22 @@ internal fun testViewModel(
     savedStateHandle = savedStateHandle,
     appEventBus = appEventBus,
     getProfileUseCase = getProfileUseCase,
-    coroutineDispatcher = testDispatcher
+    defaultDispatcher = testDispatcher
 )
 
 internal fun sampleManifest(
     instructions: String,
     networkId: NetworkId = NetworkId.MAINNET,
     message: String? = null
-) = TransactionManifestData(
+) = UnvalidatedManifestData(
     instructions = instructions,
     networkId = networkId,
-    message = if (message == null) TransactionManifestData.TransactionMessage.None else TransactionManifestData.TransactionMessage.Public(message),
-    manifest = TransactionManifest.sample()
+    plainMessage = message,
+    blobs = Blobs.sample().toList().map { it.bytes }
 )
 
 internal fun requestMetadata(
-    manifestData: TransactionManifestData,
+    manifestData: UnvalidatedManifestData,
     dApp: DApp? = null
 ) = DappToWalletInteraction.RequestMetadata(
     networkId = manifestData.networkId,

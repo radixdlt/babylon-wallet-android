@@ -8,16 +8,17 @@ import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionSta
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
+import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -43,13 +44,14 @@ class GetFreeXrdUseCase @Inject constructor(
             }.getOrElse {
                 return@withContext Result.failure(it)
             }
-            val manifestData = TransactionManifestData.from(manifest = manifest)
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
                 signTransactionUseCase(
                     request = SignTransactionUseCase.Request(
-                        manifestData = manifestData,
+                        manifest = manifest,
+                        networkId = manifest.networkId,
+                        message = Message.None,
                         lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
                         tipPercentage = TIP_PERCENTAGE
                     )

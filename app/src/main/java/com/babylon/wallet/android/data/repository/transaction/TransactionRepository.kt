@@ -7,6 +7,8 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.TransactionSubmitException
 import com.babylon.wallet.android.domain.model.AccountDepositResourceRules
+import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
@@ -18,7 +20,6 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionStatus
-import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.mapError
 import com.radixdlt.sargon.extensions.secureRandom
@@ -26,16 +27,15 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.TransactionManifestData
 import javax.inject.Inject
 
 interface TransactionRepository {
 
     suspend fun analyzeTransaction(
-        manifestData: TransactionManifestData,
+        manifestData: UnvalidatedManifestData,
         isWalletTransaction: Boolean,
         notaryPublicKey: PublicKey.Ed25519
-    ): Result<TransactionToReview>
+    ): Result<TransactionToReviewData>
 
     suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash>
 
@@ -57,20 +57,26 @@ class TransactionRepositoryImpl @Inject constructor(
 ) : TransactionRepository {
 
     override suspend fun analyzeTransaction(
-        manifestData: TransactionManifestData,
+        manifestData: UnvalidatedManifestData,
         isWalletTransaction: Boolean,
         notaryPublicKey: PublicKey.Ed25519
-    ): Result<TransactionToReview> {
+    ): Result<TransactionToReviewData> {
         return withContext(dispatcher) {
             runCatching {
                 val sargonOs = sargonOsManager.sargonOs
-                sargonOs.analyseTransactionPreview(
+                val message = manifestData.message
+                val transactionToReview = sargonOs.analyseTransactionPreview(
                     instructions = manifestData.instructions,
                     blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-                    message = manifestData.messageSargon,
+                    message = message,
                     areInstructionsOriginatingFromHost = isWalletTransaction,
                     nonce = Nonce.secureRandom(),
                     notaryPublicKey = notaryPublicKey,
+                )
+
+                TransactionToReviewData(
+                    transactionToReview = transactionToReview,
+                    message = message
                 )
             }
         }
