@@ -423,11 +423,11 @@ fun NavigationHost(
                     isNewlyCreated = fungibleTransferable.isNewlyCreated
                 )
             },
-            onTransferableNonFungibleClick = { asset, item ->
+            onTransferableNonFungibleClick = { nonFungibleTransferable, item ->
                 navController.nftAssetDialog(
-                    resourceAddress = asset.resource.address,
+                    resourceAddress = nonFungibleTransferable.asset.resource.address,
                     localId = item?.localId,
-                    isNewlyCreated = asset.isNewlyCreated
+                    isNewlyCreated = nonFungibleTransferable.isNewlyCreated
                 )
             },
             onDAppClick = { dApp ->

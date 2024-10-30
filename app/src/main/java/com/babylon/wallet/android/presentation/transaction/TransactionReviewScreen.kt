@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -79,6 +78,7 @@ import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
@@ -89,7 +89,7 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -156,7 +156,7 @@ private fun TransactionPreviewContent(
     onDAppClick: (DApp) -> Unit,
     onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onFeePayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
@@ -383,8 +383,9 @@ private fun TransactionPreviewContent(
                                     )
 
                                     is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
-                                        TransferableAsset.NonFungible.NFTAssets(
-                                            resource = resource,
+                                        TransferableX.NonFungibleType.NFTCollection(
+                                            asset = NonFungibleCollection(resource),
+                                            amount = TODO(),
                                             isNewlyCreated = false
                                         ),
                                         resource.items.firstOrNull()
