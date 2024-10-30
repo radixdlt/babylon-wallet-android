@@ -8,7 +8,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
@@ -44,6 +43,7 @@ import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
@@ -77,6 +77,7 @@ import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -254,7 +255,7 @@ fun NavigationHost(
             },
             onFungibleResourceClick = { resource, account ->
                 val resourceWithAmount = resource.ownedAmount?.let {
-                    mapOf(resource.address to it)
+                    mapOf(resource.address to FungibleAmount.Exact(amount = it))
                 }.orEmpty()
                 navController.fungibleAssetDialog(
                     resourceAddress = resource.address,
@@ -393,33 +394,33 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onTransferableFungibleClick = { asset ->
-                val resourcesWithAmount = when (asset) {
-                    is TransferableAsset.Fungible.LSUAsset -> {
+            onTransferableFungibleClick = { fungibleTransferable ->
+                val resourcesWithAmount = when (fungibleTransferable) {
+                    is TransferableX.FungibleType.LSU -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = asset.resourceAddress.networkId
+                            val networkId = fungibleTransferable.resourceAddress.networkId
                             XrdResource.address(networkId = networkId)
                         }.getOrNull()
 
                         mutableMapOf(
-                            asset.resource.address to asset.amount,
+                            fungibleTransferable.asset.resource.address to fungibleTransferable.amount,
                         ).apply {
                             if (xrdResourceAddress != null) {
-                                put(xrdResourceAddress, asset.xrdWorth)
+                                put(xrdResourceAddress, fungibleTransferable.amount)
                             }
                         }
                     }
 
-                    is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.address to asset.amount).apply {
-                        putAll(asset.contributionPerResource)
+                    is TransferableX.FungibleType.PoolUnit -> mutableMapOf(fungibleTransferable.asset.resource.address to fungibleTransferable.amount).apply {
+                        putAll(fungibleTransferable.contributionPerResource)
                     }
 
-                    is TransferableAsset.Fungible.Token -> mapOf(asset.resource.address to asset.amount)
+                    is TransferableX.FungibleType.Token -> mapOf(fungibleTransferable.asset.resource.address to fungibleTransferable.amount)
                 }
                 navController.fungibleAssetDialog(
-                    resourceAddress = asset.resource.address,
+                    resourceAddress = fungibleTransferable.asset.resource.address,
                     amounts = resourcesWithAmount,
-                    isNewlyCreated = asset.isNewlyCreated
+                    isNewlyCreated = fungibleTransferable.isNewlyCreated
                 )
             },
             onTransferableNonFungibleClick = { asset, item ->
@@ -447,7 +448,9 @@ fun NavigationHost(
                 when (spendingAsset) {
                     is SpendingAsset.Fungible -> navController.fungibleAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
-                        amounts = spendingAsset.resource.ownedAmount?.let { mapOf(spendingAsset.resourceAddress to it) }.orEmpty(),
+                        amounts = spendingAsset.resource.ownedAmount?.let {
+                            mapOf(spendingAsset.resourceAddress to FungibleAmount.Exact(amount = it))
+                        }.orEmpty(),
                         underAccountAddress = fromAccount.address
                     )
 
