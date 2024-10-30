@@ -10,6 +10,8 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.utils.replaceDoublePercent
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.domain.ProfileException
@@ -213,6 +215,10 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     data class CloudBackupException(
         val error: BackupServiceException
     ) : RadixWalletException()
+
+    data class ResourceCouldNotBeResolvedInTransaction(
+        val address: ResourceOrNonFungible
+    ): RadixWalletException()
 }
 
 interface DappWalletInteractionThrowable {
@@ -436,6 +442,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
         is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
+        is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> context.getString(R.string.common_somethingWentWrong)
     }
 }
 

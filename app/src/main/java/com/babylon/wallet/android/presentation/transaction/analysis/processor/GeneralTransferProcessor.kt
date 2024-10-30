@@ -17,22 +17,21 @@ class GeneralTransferProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val resolveComponentAddressesUseCase: ResolveComponentAddressesUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
+
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val dApps = summary.resolveDApps()
-        val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
         val badges = summary.resolveBadges(assets = assets)
 
+        val (withdraws, deposits) = resolveWithdrawsAndDeposits(
+            summary = summary,
+            assets = assets,
+            profile = getProfileUseCase()
+        )
+
         return PreviewType.Transfer.GeneralTransfer(
-            from = summary.toWithdrawingAccountsWithTransferableAssets(
-                involvedAssets = assets,
-                allOwnedAccounts = allOwnedAccounts
-            ),
-            to = summary.toDepositingAccountsWithTransferableAssets(
-                involvedAssets = assets,
-                allOwnedAccounts = allOwnedAccounts,
-                defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
-            ),
+            from = withdraws,
+            to = deposits,
             badges = badges,
             dApps = dApps,
             newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
