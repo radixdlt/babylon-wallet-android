@@ -5,7 +5,10 @@ package rdx.works.profile.olympiaimport
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Bip39WordCount
+import com.radixdlt.sargon.Bip44LikePath
 import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.HdPathComponent
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
@@ -89,7 +92,14 @@ class OlympiaWalletDataParser @Inject constructor(
             address = olympiaAddress,
             publicKey = publicKey,
             accountName = name,
-            derivationPath = DerivationPath.Bip44Like.init(index = parsedIndex.toUInt()),
+            derivationPath = DerivationPath.Bip44Like(
+                Bip44LikePath.init(
+                    HdPathComponent.init(
+                        localKeySpace = parsedIndex.toUInt(),
+                        keySpace = KeySpace.Unsecurified(isHardened = true)
+                    )
+                )
+            ),
             alreadyImported = alreadyImported,
             newBabylonAddress = newBabylonAddress,
             appearanceId = AppearanceId.from(parsedIndex.toUInt())

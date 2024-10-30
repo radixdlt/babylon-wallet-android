@@ -1,17 +1,18 @@
 package rdx.works.profile.accountextensions
 
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountPath
 import com.radixdlt.sargon.AssetException
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.DepositRule
-import com.radixdlt.sargon.DerivationPath
-import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HostId
 import com.radixdlt.sargon.HostInfo
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -19,7 +20,8 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.AssetsExceptionList
 import com.radixdlt.sargon.extensions.DepositorsAllowList
-import com.radixdlt.sargon.extensions.account
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asHardened
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -145,11 +147,14 @@ class TransferBetweenOwnedAccountsTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository.createNew() } returns Result.success(mnemonicWithPassphrase)
 
-        val derivationPath = DerivationPath.Cap26.account(
+        val derivationPath = AccountPath.init(
             networkId = defaultNetwork,
             keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-            index = 0u
-        )
+            index = HdPathComponent.init(
+                localKeySpace = 0u,
+                keySpace = KeySpace.Unsecurified(isHardened = true)
+            ).asHardened()
+        ).asGeneral()
         targetAccount = Account.initBabylon(
             networkId = defaultNetwork,
             displayName = DisplayName("target account"),

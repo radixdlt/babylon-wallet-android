@@ -12,6 +12,7 @@ import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.NetworkId
@@ -20,10 +21,9 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.EntityFlags
-import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.default
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.nonHardenedIndex
+import com.radixdlt.sargon.extensions.path
 import com.radixdlt.sargon.extensions.toBabylonAddress
 
 fun Collection<Account>.notHiddenAccounts(): List<Account> = filterNot { it.isHidden }
@@ -38,8 +38,8 @@ val Account.derivationPathScheme: DerivationPathScheme
 val Account.hasAuthSigning: Boolean
     get() = securityState.hasAuthSigning
 
-val Account.derivationPathEntityIndex: HDPathValue
-    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.nonHardenedIndex
+val Account.derivationPathEntityIndex: HdPathComponent
+    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.path.components.last()
 
 val Account.usesEd25519: Boolean
     get() = securityState.usesEd25519

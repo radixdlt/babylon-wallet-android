@@ -1,21 +1,25 @@
 package rdx.works.profile.domain.account
 
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountPath
 import com.radixdlt.sargon.AppearanceId
+import com.radixdlt.sargon.Bip44LikePath
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HostId
 import com.radixdlt.sargon.HostInfo
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asHardened
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBabylonAddress
@@ -61,11 +65,14 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             hostInfo = hostInfo,
             isMain = true
         )
-        val derivationPath = DerivationPath.Cap26.account(
+        val derivationPath = AccountPath.init(
             networkId = NetworkId.MAINNET,
             keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-            index = 0u
-        )
+            index = HdPathComponent.init(
+                localKeySpace = 0u,
+                keySpace = KeySpace.Unsecurified(isHardened = true)
+            ).asHardened()
+        ).asGeneral()
         val profile = Profile.init(
             deviceFactorSource = factorSource,
             hostId = hostId,
@@ -99,7 +106,10 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             phrase = "bridge easily outer film record undo turtle method knife quarter promote arch"
         )
         val accounts = List(11) { index ->
-            val derivationPath = DerivationPath.Bip44Like.init(index = index.toUInt())
+            val derivationPath = Bip44LikePath.init(index = HdPathComponent.init(
+                localKeySpace = index.toUInt(),
+                keySpace = KeySpace.Unsecurified(isHardened = true)
+            )).asGeneral()
             val hdPublicKey = olympiaMnemonic.derivePublicKey(path = derivationPath)
             val publicKey = hdPublicKey.publicKey as PublicKey.Secp256k1
 
@@ -110,7 +120,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                 address = olympiaAddress,
                 publicKey = publicKey,
                 accountName = "Olympia $index",
-                derivationPath = derivationPath,
+                derivationPath = derivationPath as DerivationPath.Bip44Like,
                 newBabylonAddress = olympiaAddress.toBabylonAddress(),
                 appearanceId = AppearanceId.init(index.toUByte())
             )

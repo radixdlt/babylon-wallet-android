@@ -19,8 +19,11 @@ import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HdPathComponent
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.Accounts
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -58,7 +61,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
 
     // used only when account recovery scan is from onboarding
     private var givenTempMnemonic: MnemonicWithPassphrase? = null
-    private var nextDerivationPathOffset: UInt = 0u
+    private var nextDerivationPathIndex: HdPathComponent = HdPathComponent.init(
+        localKeySpace = 0u,
+        keySpace = KeySpace.Unsecurified(isHardened = true)
+    )
 
     override fun initialState(): State = State()
 
@@ -130,7 +136,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToReDeriveAccounts.WithGivenMnemonic(
                         mnemonicWithPassphrase = givenTempMnemonic!!,
                         factorSource = factorSource,
-                        nextDerivationPathOffset = nextDerivationPathOffset
+                        nextDerivationPathIndex = nextDerivationPathIndex
                     )
                 )
             } else {
@@ -138,13 +144,13 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToReDeriveAccounts.WithGivenFactorSource(
                         factorSource = factorSource,
                         isForLegacyOlympia = isOlympia,
-                        nextDerivationPathOffset = nextDerivationPathOffset
+                        nextDerivationPathIndex = nextDerivationPathIndex
                     )
                 )
             }
             output.onSuccess { derivedAccountsWithNextDerivationPath ->
                 if (isActive) {
-                    nextDerivationPathOffset = derivedAccountsWithNextDerivationPath.nextDerivationPathOffset
+                    nextDerivationPathIndex = derivedAccountsWithNextDerivationPath.nextDerivationPathIndex
                     resolveStateFromDerivedAccounts(derivedAccountsWithNextDerivationPath.derivedAccounts)
                 }
             }.onFailure { e ->
