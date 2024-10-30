@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -38,9 +38,9 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun TransferableStakeClaimNftItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableAsset.NonFungible.StakeClaimAssets,
+    transferableStakeClaim: TransferableX.NonFungibleType.StakeClaim,
     shape: Shape,
-    onClick: (TransferableAsset.NonFungible.StakeClaimAssets, Resource.NonFungibleResource.Item) -> Unit
+    onClick: (TransferableX.NonFungibleType.StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -61,19 +61,19 @@ fun TransferableStakeClaimNftItemContent(
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(42.dp),
-                collection = transferable.resource
+                collection = transferableStakeClaim.asset.resource
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = transferable.displayTitle(),
+                    text = transferableStakeClaim.asset.displayTitle(),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.displaySubtitle(),
+                    text = transferableStakeClaim.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -91,14 +91,14 @@ fun TransferableStakeClaimNftItemContent(
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        transferable.resource.items.forEachIndexed { index, item ->
-            val addSpacer = index != transferable.resource.items.lastIndex
+        transferableStakeClaim.asset.resource.items.forEachIndexed { index, item ->
+            val addSpacer = index != transferableStakeClaim.asset.resource.items.lastIndex
             Row(
                 modifier = Modifier
                     .clip(RadixTheme.shapes.roundedRectSmall)
                     .throttleClickable {
                         onClick(
-                            transferable,
+                            transferableStakeClaim,
                             item
                         )
                     }
@@ -124,7 +124,7 @@ fun TransferableStakeClaimNftItemContent(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = transferable.xrdWorthPerNftItem[item.localId]?.formatted().orEmpty(),
+                    text = transferableStakeClaim.xrdWorthPerNftItem[item.localId]?.formatted().orEmpty(),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,
