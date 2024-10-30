@@ -28,7 +28,6 @@ import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun TransferablePoolUnitItemContent(
@@ -116,14 +115,21 @@ fun TransferablePoolUnitItemContent(
                         color = RadixTheme.colors.gray1,
                         maxLines = 2
                     )
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = transferablePoolUnit.contributionPerResource[item.address]?.formatted().orEmpty(),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.End,
-                        maxLines = 2
-                    )
+                    val contributionPerResourceAmount = transferablePoolUnit.contributionPerResource[item.address]
+                    if (contributionPerResourceAmount != null) {
+                        FungibleAmountSection(
+                            fungibleAmount = contributionPerResourceAmount
+                        )
+                    } else {
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = stringResource(id = R.string.empty),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.End,
+                            maxLines = 2
+                        )
+                    }
                 }
                 if (addDivider) {
                     HorizontalDivider(color = RadixTheme.colors.gray3)
