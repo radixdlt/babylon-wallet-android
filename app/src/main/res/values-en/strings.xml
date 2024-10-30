@@ -550,6 +550,8 @@
   <string name="common_rateLimitReached">Gateway access blocked due to exceeding rate limit. Please wait a few minutes to retry.</string>
   <string name="common_badHttpResponseStatusCode">Bad HTTP response status code %d</string>
   <string name="common_dismiss">Dismiss</string>
+  <string name="common_noMnemonicAlert_title">Could Not Complete</string>
+  <string name="common_noMnemonicAlert_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
@@ -1281,6 +1283,10 @@ Code: %s</string>
   <string name="infoLink_glossary_dashboard">## Radix Dashboard\n\nThe Radix Dashboard is a [dApp](?glossaryAnchor=dapps) created by the same team as the [Radix Wallet](?glossaryAnchor=radixwallet) to help users interact with the [Radix Network](?glossaryAnchor=radixnetwork) directly.\n\nYou can look up information about things on the Radix Network by entering its address, such as: Accounts, tokens, NFTs, components (smart contracts), and more.\n\nYou can also use the Radix Dashboard’s [network staking](?glossaryAnchor=networkstaking) feature to view the list of current Radix Network validators, stake XRD, and manage your existing network staking.\n\n[Visit the Radix Dashboard](https://dashboard.radixdlt.com) ↗</string>
   <string name="infoLink_glossary_bridging">## Bridging\n\nBridging is the process of getting assets into and out of the [Radix Network](?glossaryAnchor=radixnetwork). Assets on Radix can be held by your [Radix Wallet](?glossaryAnchor=radixnetwork), and used with [dApps](?glossaryAnchor=dapps) on Radix. There are a variety of dApps that provide bridging in different ways, for different assets.\n\nSometimes bridging involves converting an asset into a different form that can live on Radix. For example, dollars (USD) in your bank account might be bridged into Radix and become xUSDC tokens in your Radix Wallet. Or your Bitcoin (BTC) might be bridged into xwBTC tokens.\n\nSometimes bridging works as a swap, similar to a [DEX](?glossaryAnchor=dex). In this case you might swap one asset outside Radix for a different asset within Radix. Maybe you swap ETH (on the Ethereum network) for XRD tokens (on the Radix Network) at a current market price.</string>
   <string name="infoLink_glossary_payingaccount">## Why your Accounts will be linked\n\nPaying your transaction fee from this Account will make you identifiable on ledger as both the owner of the fee-paying Account and all other Accounts you use in this transaction.\n\nThis is because you’ll sign the transactions from each Account at the same time, so your Accounts will be linked together in the transaction record.</string>
+  <string name="infoLink_glossary_preauthorizations">## Pre-authorizations\n\nPre-authorizations are a way for a [dApp](?glossaryAnchor=dapps) to request your authorization to do something specific with your accounts and assets. When you approve a pre-authorization, it is provided to the dApp which can use it to create a [transaction](?glossaryAnchor=transactions) on the Radix Network.\n\n---\n\nA pre-authorization request looks very similar to a transaction request in your wallet. In both cases, you get to review exactly what\'s going to happen with your own accounts and assets.\n\nHowever, after you sign a pre-authorization, it is not submitted directly to the Radix Network like a transaction request. Instead, it is provided back to the dApp that requested it. The dApp can then include that pre-authorization in a transaction that it creates and submits.\n\nThis makes it possible for dApps to do helpful things, such as:\n\n• Pay the [transaction fees](?glossaryAnchor=transactionfee) for you.
+• Do transactions involving multiple people.
+• Mint a badge or NFT and directly deposit it to your account.\n\nIn all of these cases, the dApp still needs you to approve and sign any interactions with your accounts and assets - the Radix Network guarantees it.\n\nBecause the pre-authorization is provided back to the dApp, there is a time limit how long it lasts. Once this time limit is up, the pre-authorization expires and can\'t be used. A dApp will need to make a request for another one. You can see how long you have until your pre-authoirzation expires in the pre-authorization summary.</string>
+  <string name="infoLink_glossary_possibledappcalls">## Possible dApp Calls\n\nWhen a dApp requests a [pre-authorization](?glossaryAnchor=preauthorizations), you may see in the summary \"possible dApp calls\". This simply indicates that the dApp may add additional actions to your pre-authorization before submitting the transaction to the Radix Network.\n\nNot to worry - you are only approving and signing what you can see in your wallet. Nothing added by the dApp can do anything with your accounts and assets without your knowledge.</string>
   <string name="infoLink_title_tokens">What are Tokens?</string>
   <string name="infoLink_title_nfts">What are NFTs?</string>
   <string name="infoLink_title_networkstaking">What is Staking?</string>
@@ -1318,4 +1324,55 @@ Code: %s</string>
   <string name="confirmation_hideCollection_title">Hide Collection</string>
   <string name="confirmation_hideCollection_message">Hide **%s** NFT Collection in your Radix Wallet? You can always unhide it in your account settings.</string>
   <string name="confirmation_hideCollection_button">Hide</string>
+  <string name="preAuthorizationReview_title">Review your Pre-Authorization</string>
+  <string name="preAuthorizationReview_subtitle">Proposed by %s</string>
+  <string name="preAuthorizationReview_loading">Incoming Pre-Authorization</string>
+  <string name="preAuthorizationReview_fees_title">Pre-authorization will be returned to %s for processing.</string>
+  <string name="preAuthorizationReview_fees_subtitle">Network fees will be paid by the dApp</string>
+  <string name="preAuthorizationReview_expiration_atTime">Valid for the next **%s**</string>
+  <string name="preAuthorizationReview_expiration_afterDelay">Valid for **%s after approval**</string>
+  <string name="preAuthorizationReview_expiration_expired">Pre-authorization is no longer valid</string>
+  <string name="preAuthorizationReview_timeFormat_day">1 day</string>
+  <string name="preAuthorizationReview_timeFormat_days">%d days</string>
+  <string name="preAuthorizationReview_timeFormat_hour">%s hour</string>
+  <string name="preAuthorizationReview_timeFormat_hours">%s hours</string>
+  <string name="preAuthorizationReview_timeFormat_minute">%s minute</string>
+  <string name="preAuthorizationReview_timeFormat_minutes">%s minutes</string>
+  <string name="preAuthorizationReview_timeFormat_second">1 second</string>
+  <string name="preAuthorizationReview_timeFormat_seconds">%d seconds</string>
+  <string name="preAuthorizationReview_slideToSign">Slide to Sign and Return</string>
+  <string name="preAuthorizationReview_rawManifestAlert_title">Warning</string>
+  <string name="preAuthorizationReview_rawManifestAlert_message">This is a complex pre-authorization that cannot be summarized - the raw pre-authorization manifest will be shown. Do not sign and return unless you understand the contents.</string>
+  <string name="interactionReview_possibleDappCalls">Possible dApp calls</string>
+  <string name="interactionReview_customizeGuaranteesButtonTitle">Customize Guarantees</string>
+  <string name="interactionReview_estimated">Estimated</string>
+  <string name="interactionReview_externalAccountName">Account</string>
+  <string name="interactionReview_guaranteed">Guaranteed</string>
+  <string name="interactionReview_worth">Worth</string>
+  <string name="interactionReview_toBeClaimed">To be claimed</string>
+  <string name="interactionReview_unknownComponents">%d Unknown Components</string>
+  <string name="interactionReview_unknownPools">%d Pool Components</string>
+  <string name="interactionReview_slideToSign">Slide to Sign</string>
+  <string name="interactionReview_withdrawalsHeading">Withdrawing From</string>
+  <string name="interactionReview_depositsHeading">Depositing To</string>
+  <string name="interactionReview_messageHeading">Message</string>
+  <string name="interactionReview_presentingHeading">Presenting</string>
+  <string name="interactionReview_usingDappsHeading">Using dApps</string>
+  <string name="interactionReview_thirdPartyDepositSettingHeading">Third-party deposit setting</string>
+  <string name="interactionReview_thirdPartyDepositExceptionsHeading">Third-party deposit exceptions</string>
+  <string name="interactionReview_stakingToValidatorsHeading">Staking to Validators</string>
+  <string name="interactionReview_unstakingFromValidatorsHeading">Requesting unstake from validators</string>
+  <string name="interactionReview_claimFromValidatorsHeading">Claim from validators</string>
+  <string name="interactionReview_poolContributionHeading">Contributing to pools</string>
+  <string name="interactionReview_poolRedemptionHeading">Redeeming from pools</string>
+  <string name="interactionReview_depositSettings_acceptAllRule">Allow third parties to deposit **any asset** to this account.</string>
+  <string name="interactionReview_depositSettings_acceptKnownRule">Allow third parties to deposit **only assets this account has already held**.</string>
+  <string name="interactionReview_depositSettings_denyAllRule">**Disallow** all deposits from third parties without your consent.</string>
+  <string name="interactionReview_depositExceptions_assetChangeAllow">Allow</string>
+  <string name="interactionReview_depositExceptions_assetChangeDisallow">Disallow</string>
+  <string name="interactionReview_depositExceptions_assetChangeClear">Remove Exception</string>
+  <string name="interactionReview_depositExceptions_depositorChangeAdd">Add Depositor</string>
+  <string name="interactionReview_depositExceptions_depositorChangeRemove">Remove Depositor</string>
+  <string name="interactionReview_hiddenAsset_deposit">This asset is hidden and will not be visible in your Account</string>
+  <string name="interactionReview_hiddenAsset_withdraw">This asset is hidden and is not visible in your Account</string>
 </resources>
