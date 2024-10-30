@@ -4,7 +4,6 @@ import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddres
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
-import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -15,10 +14,9 @@ class TransferProcessor @Inject constructor(
 
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.Transfer): PreviewType {
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
-        val badges = summary.resolveBadges(assets = assets)
-        val (withdraws, deposits) = resolveWithdrawsAndDeposits(
-            summary = summary,
-            assets = assets,
+        val badges = summary.resolveBadges(onLedgerAssets = assets)
+        val (withdraws, deposits) = summary.resolveWithdrawsAndDeposits(
+            onLedgerAssets = assets,
             profile = getProfileUseCase()
         )
 

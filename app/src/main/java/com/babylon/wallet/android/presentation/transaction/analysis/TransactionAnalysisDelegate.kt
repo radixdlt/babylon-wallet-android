@@ -9,9 +9,11 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.ExecutionSummary
 import kotlinx.coroutines.flow.update
+import rdx.works.core.sargon.formatted
 import rdx.works.core.then
 import timber.log.Timber
 import javax.inject.Inject
@@ -93,6 +95,20 @@ class TransactionAnalysisDelegate @Inject constructor(
                         showRawTransactionWarning = false,
                         isLoading = false,
                         previewType = PreviewType.UnacceptableManifest
+                    )
+                }
+            }
+            is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> {
+                Timber.w(
+                    "Resource address ${error.address.formatted(AddressFormat.RAW)} neither on ledger nor as newly created entity. Defaulting to Non Conforming view."
+                )
+                // TODO micbakos
+                _state.update {
+                    it.copy(
+                        isRawManifestVisible = true,
+                        showRawTransactionWarning = false, // TODO micbakos
+                        isLoading = false,
+                        previewType = PreviewType.NonConforming
                     )
                 }
             }

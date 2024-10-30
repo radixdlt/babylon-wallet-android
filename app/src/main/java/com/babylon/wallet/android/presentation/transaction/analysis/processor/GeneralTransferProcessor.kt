@@ -8,7 +8,6 @@ import com.radixdlt.sargon.ExecutionSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -21,11 +20,10 @@ class GeneralTransferProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val dApps = summary.resolveDApps()
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
-        val badges = summary.resolveBadges(assets = assets)
+        val badges = summary.resolveBadges(onLedgerAssets = assets)
 
-        val (withdraws, deposits) = resolveWithdrawsAndDeposits(
-            summary = summary,
-            assets = assets,
+        val (withdraws, deposits) = summary.resolveWithdrawsAndDeposits(
+            onLedgerAssets = assets,
             profile = getProfileUseCase()
         )
 

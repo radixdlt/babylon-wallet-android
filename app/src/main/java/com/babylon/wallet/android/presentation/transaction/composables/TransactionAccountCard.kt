@@ -33,9 +33,11 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -237,7 +239,7 @@ fun TransactionAccountCardWithNFTPreview() {
                 resources = listOf(
                     TransferableX.NonFungibleType.NFTCollection(
                         asset = NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet()),
-                        amount = NonFungibleAmount.Exact(nftItem = Resource.NonFungibleResource.sampleMainnet().items.first()),
+                        amount = NonFungibleAmount.Exact(ids = listOf(NonFungibleLocalId.sample())),
                         isNewlyCreated = false
                     )
                 )

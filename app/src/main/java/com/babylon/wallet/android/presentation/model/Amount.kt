@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.serialization.Contextual
@@ -49,7 +50,7 @@ sealed interface FungibleAmount : Amount {
 
 sealed interface NonFungibleAmount : Amount { // TODO under research
 
-    data class Exact(val nftItem: Resource.NonFungibleResource.Item) : NonFungibleAmount
+    data class Exact(val ids: List<NonFungibleLocalId>) : NonFungibleAmount
 
     data class NotExact(
         val lowerBound: LowerBound,

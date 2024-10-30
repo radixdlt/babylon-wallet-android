@@ -24,7 +24,9 @@ import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
@@ -91,7 +93,7 @@ fun TransferableNftItemPreview() {
         TransferableNftItemContent(
             transferableNFTCollection = TransferableX.NonFungibleType.NFTCollection(
                 asset = NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet()),
-                amount = NonFungibleAmount.Exact(nftItem = Resource.NonFungibleResource.sampleMainnet().items.first()),
+                amount = NonFungibleAmount.Exact(ids = listOf(NonFungibleLocalId.sample())),
                 isNewlyCreated = false
             ),
             nftItem = Resource.NonFungibleResource.sampleMainnet().items.first(),
