@@ -35,8 +35,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -79,6 +79,7 @@ import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
@@ -87,7 +88,7 @@ fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
@@ -154,7 +155,7 @@ private fun TransactionPreviewContent(
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
     onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
@@ -374,9 +375,9 @@ private fun TransactionPreviewContent(
                             onClick = { badge ->
                                 when (val resource = badge.resource) {
                                     is Resource.FungibleResource -> onTransferableFungibleClick(
-                                        TransferableAsset.Fungible.Token(
-                                            amount = resource.ownedAmount.orZero(),
-                                            resource = resource,
+                                        TransferableX.FungibleType.Token(
+                                            asset = Token(resource = resource),
+                                            amount = FungibleAmount.Exact(amount = resource.ownedAmount.orZero()),
                                             isNewlyCreated = false
                                         )
                                     )
@@ -611,12 +612,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         AccountWithTransferableResources.Owned(
                             account = Account.sampleStokenet(),
                             resources = listOf(
-                                Transferable.Withdrawing(
-                                    transferable = TransferableAsset.Fungible.Token(
-                                        amount = 69.toDecimal192(),
-                                        resource = Resource.FungibleResource.sampleMainnet(),
-                                        isNewlyCreated = true
-                                    )
+                                TransferableX.FungibleType.Token(
+                                    asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                    amount = FungibleAmount.Exact("745".toDecimal192()),
+                                    isNewlyCreated = false
                                 )
                             )
                         )
@@ -625,12 +624,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         AccountWithTransferableResources.Owned(
                             account = Account.sampleMainnet(),
                             resources = listOf(
-                                Transferable.Depositing(
-                                    transferable = TransferableAsset.Fungible.Token(
-                                        amount = 69.toDecimal192(),
-                                        resource = Resource.FungibleResource.sampleMainnet(),
-                                        isNewlyCreated = true
-                                    )
+                                TransferableX.FungibleType.Token(
+                                    asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                    amount = FungibleAmount.Exact("745".toDecimal192()),
+                                    isNewlyCreated = false
                                 )
                             )
                         )
@@ -657,12 +654,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         AccountWithTransferableResources.Owned(
                             account = Account.sampleStokenet(),
                             resources = listOf(
-                                Transferable.Withdrawing(
-                                    transferable = TransferableAsset.Fungible.Token(
-                                        amount = 69.toDecimal192(),
-                                        resource = Resource.FungibleResource.sampleMainnet(),
-                                        isNewlyCreated = true
-                                    )
+                                TransferableX.FungibleType.Token(
+                                    asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                    amount = FungibleAmount.Exact("745".toDecimal192()),
+                                    isNewlyCreated = true
                                 )
                             )
                         )
@@ -671,12 +666,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         AccountWithTransferableResources.Owned(
                             account = Account.sampleMainnet(),
                             resources = listOf(
-                                Transferable.Depositing(
-                                    transferable = TransferableAsset.Fungible.Token(
-                                        amount = 69.toDecimal192(),
-                                        resource = Resource.FungibleResource.sampleMainnet(),
-                                        isNewlyCreated = true
-                                    )
+                                TransferableX.FungibleType.Token(
+                                    asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                    amount = FungibleAmount.Exact("745".toDecimal192()),
+                                    isNewlyCreated = true
                                 )
                             )
                         )
