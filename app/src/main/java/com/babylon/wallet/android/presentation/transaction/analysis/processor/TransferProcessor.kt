@@ -24,7 +24,7 @@ class TransferProcessor @Inject constructor(
             from = withdraws,
             to = deposits,
             badges = badges,
-            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
+            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
         )
     }
 }
