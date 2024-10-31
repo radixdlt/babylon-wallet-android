@@ -147,7 +147,7 @@ private fun PoolUnitItem(
 
         val resourcesWithAmounts = remember(poolUnit) {
             poolUnit.pool?.resources?.associateWith { resource ->
-                poolUnit.resourceRedemptionValue(resource)?.let {
+                poolUnit.poolItemRedemptionValue(resource.address)?.let {
                     FungibleAmount.Exact(it)
                 }
             }.orEmpty().toImmutableMap()

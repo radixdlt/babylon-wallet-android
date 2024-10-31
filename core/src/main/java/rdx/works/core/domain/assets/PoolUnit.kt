@@ -32,12 +32,27 @@ data class PoolUnit(
             stake.symbol
         }
 
-    fun resourceRedemptionValue(item: Resource.FungibleResource): Decimal192? {
-        val resourceVaultBalance = pool?.resources?.find { it.address == item.address }?.ownedAmount ?: return null
+    /**
+     * Calculates the redemption value for the given item in pool associated with this [address] address.
+     *
+     * @param [address] of the pool item to calculate the redemption value
+     * @param [poolUnitAmount] of the pool unit. Defaults to the pool unit's resource owned amount
+     * @param [contributionPerResource] a dictionary of how much each pool item contributes to a pool. Defaults to each pool
+     * item's owned amount.
+     */
+    fun poolItemRedemptionValue(
+        address: ResourceAddress,
+        poolUnitAmount: Decimal192? = stake.ownedAmount,
+        contributionPerResource: Map<ResourceAddress, Decimal192> = pool?.resources?.mapNotNull { entry ->
+            if (entry.ownedAmount == null) return@mapNotNull null
+            entry.address to entry.ownedAmount
+        }?.associate { it.first to it.second }.orEmpty()
+    ): Decimal192? {
+        if (poolUnitAmount == null) return null
+        val poolItemContribution = contributionPerResource[address] ?: return null
         val poolUnitSupply = stake.currentSupply.orZero()
-        val stakeAmount = stake.ownedAmount
-        return if (stakeAmount != null && stake.divisibility != null && !poolUnitSupply.isZero) {
-            ((stakeAmount * resourceVaultBalance) / poolUnitSupply).roundedWith(divisibility = stake.divisibility)
+        return if (stake.divisibility != null && !poolUnitSupply.isZero) {
+            ((poolUnitAmount * poolItemContribution) / poolUnitSupply).roundedWith(divisibility = stake.divisibility)
         } else {
             null
         }

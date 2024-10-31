@@ -214,7 +214,7 @@ class GetFiatValueUseCase @Inject constructor(
         is PoolUnit -> {
             val poolItemPrices = pool?.resources?.associateWith { poolItem ->
                 val poolItemFiatPrice = fiatPrices[poolItem.address]
-                val poolItemRedemptionValue = resourceRedemptionValue(poolItem)
+                val poolItemRedemptionValue = poolItemRedemptionValue(poolItem.address)
 
                 if (poolItemFiatPrice != null && poolItemRedemptionValue != null) {
                     FiatPrice(
