@@ -6,6 +6,7 @@ import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import rdx.works.core.domain.resources.Resource
 
 sealed interface Amount // TODO might not needed
 

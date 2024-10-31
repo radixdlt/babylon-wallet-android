@@ -80,7 +80,7 @@ fun LSUDialogContent(
 ) {
     val resourceAddress = args.resourceAddress
     val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
-        ?: lsu?.stakeValue()?.let { FungibleAmount.Exact(it) }
+        ?: lsu?.fungibleResource?.ownedAmount?.let { FungibleAmount.Exact(it) }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -138,7 +138,7 @@ fun LSUDialogContent(
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
-            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValue()?.let { FungibleAmount.Exact(it) }
+            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValueXRD()?.let { FungibleAmount.Exact(it) }
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
