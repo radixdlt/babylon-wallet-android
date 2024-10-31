@@ -375,12 +375,60 @@ private fun ExecutionSummary.resolveTransferable(
             )
         }
 
-        is PoolUnit -> Transferable.FungibleType.PoolUnit(
-            asset = asset,
-            amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee),
-            isNewlyCreated = isNewlyCreated,
-            contributionPerResource = emptyMap() // TODO
-        )
+        is PoolUnit -> {
+            val amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee)
+            Transferable.FungibleType.PoolUnit(
+                asset = asset,
+                amount = amount,
+                isNewlyCreated = isNewlyCreated,
+                contributionPerResource = asset.pool?.resources?.mapNotNull { entry ->
+                    val contribution = when (amount) {
+                        is FungibleAmount.Exact -> asset.poolItemRedemptionValue(
+                            address = entry.address,
+                            poolUnitAmount = amount.amount
+                        )?.let { FungibleAmount.Exact(amount = it) }
+
+                        is FungibleAmount.Predicted -> asset.poolItemRedemptionValue(
+                            address = entry.address,
+                            poolUnitAmount = amount.estimated
+                        )?.let { FungibleAmount.Exact(amount = it) }
+                        is FungibleAmount.Max -> asset.poolItemRedemptionValue(
+                            address = entry.address,
+                            poolUnitAmount = amount.amount
+                        )?.let { FungibleAmount.Max(amount = it) }
+                        is FungibleAmount.Min -> asset.poolItemRedemptionValue(
+                            address = entry.address,
+                            poolUnitAmount = amount.amount
+                        )?.let { FungibleAmount.Min(amount = it) }
+                        is FungibleAmount.Range -> {
+                            val min = asset.poolItemRedemptionValue(
+                                address = entry.address,
+                                poolUnitAmount = amount.minAmount
+                            )
+
+                            val max = asset.poolItemRedemptionValue(
+                                address = entry.address,
+                                poolUnitAmount = amount.maxAmount
+                            )
+
+                            if (min != null && max != null) {
+                                FungibleAmount.Range(
+                                    minAmount = min,
+                                    maxAmount = max
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                        is FungibleAmount.Unknown -> null
+                    }
+
+                    if (contribution == null) return@mapNotNull null
+
+                    entry.address to contribution
+                }?.associate { it }.orEmpty()
+            )
+        }
 
         is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
             asset = asset,

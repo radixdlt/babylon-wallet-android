@@ -127,7 +127,7 @@ fun PoolUnitDialogContent(
                 val resourcesWithAmount = remember(poolUnit, args) {
                     poolUnit.pool?.resources?.associateWith { resource ->
                         args.fungibleAmountOf(resource.address)
-                            ?: poolUnit.resourceRedemptionValue(resource)?.let { FungibleAmount.Exact(it) }
+                            ?: poolUnit.poolItemRedemptionValue(resource.address)?.let { FungibleAmount.Exact(it) }
                     }.orEmpty().toImmutableMap()
                 }
                 PoolResourcesValues(
