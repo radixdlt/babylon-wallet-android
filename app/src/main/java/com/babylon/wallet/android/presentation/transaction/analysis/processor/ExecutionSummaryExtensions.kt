@@ -148,14 +148,14 @@ fun ExecutionSummary.resolveWithdrawsAndDeposits(
         resourceIndicators = withdrawals,
         onLedgerAssets = onLedgerAssets,
         defaultDepositGuarantee = 0.toDecimal192()
-    )
+    ).sortedWith(AccountWithTransferables.Companion.Sorter(profile))
 
     val depositsPerAccount = resolveAccounts(
         profileAccounts = involvedAccounts,
         resourceIndicators = deposits,
         onLedgerAssets = onLedgerAssets,
         defaultDepositGuarantee = defaultDepositGuarantee
-    )
+    ).sortedWith(AccountWithTransferables.Companion.Sorter(profile))
 
     return withdrawsPerAccount to depositsPerAccount
 }
