@@ -57,7 +57,7 @@ sealed interface TransferableX {
         data class StakeClaim(
             override val asset: rdx.works.core.domain.assets.StakeClaim,
             override val amount: NonFungibleAmount,
-            val xrdWorthPerNftItem: Map<NonFungibleLocalId, Decimal192>,// TODO not sure this is the right place
+            val xrdWorthPerNftItem: Map<NonFungibleLocalId, Decimal192>, // TODO not sure this is the right place
             override val isNewlyCreated: Boolean = false
         ) : NonFungibleType
     }

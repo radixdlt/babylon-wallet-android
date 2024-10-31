@@ -26,8 +26,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account

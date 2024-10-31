@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
-import com.babylon.wallet.android.presentation.model.Amount
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees

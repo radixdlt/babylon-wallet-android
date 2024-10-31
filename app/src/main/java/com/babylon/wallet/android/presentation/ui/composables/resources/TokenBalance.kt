@@ -1,39 +1,43 @@
 package com.babylon.wallet.android.presentation.ui.composables.resources
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.FungibleAmount
-import com.radixdlt.sargon.extensions.formatted
+import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
 
 @Composable
 fun TokenBalance(
     modifier: Modifier = Modifier,
     amount: FungibleAmount?,
-    symbol: String,
-    align: TextAlign = TextAlign.Center
+    symbol: String?
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            modifier = modifier,
-            text = buildAnnotatedString {
-                when (amount) {
-                    is FungibleAmount.Exact -> append(amount.amount.formatted())
-                    else -> TODO("Sergiu: update UI to represent all the types of FungibleAmount")
-                }
-                withStyle(style = RadixTheme.typography.header.toSpanStyle()) {
-                    append(" $symbol")
-                }
-            },
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1,
-            textAlign = align
-        )
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        amount?.let {
+            FungibleAmountSection(
+                fungibleAmount = it,
+            )
+        }
+
+        if (amount != null && symbol != null) {
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+        }
+
+        symbol?.let {
+            Text(
+                modifier = modifier,
+                text = symbol,
+                style = RadixTheme.typography.header,
+                color = RadixTheme.colors.gray1
+            )
+        }
     }
 }

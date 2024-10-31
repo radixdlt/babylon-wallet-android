@@ -43,7 +43,7 @@ sealed interface AccountWithTransferableResources {
 //                if (accountWithGuarantee != null) {
 //                    depositing.updateGuarantee(accountWithGuarantee.guaranteeOffsetDecimal)
 //                } else {
-                    depositing
+                depositing
 //                }
             }
         )

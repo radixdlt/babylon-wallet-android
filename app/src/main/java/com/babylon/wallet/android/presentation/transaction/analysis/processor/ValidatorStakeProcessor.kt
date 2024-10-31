@@ -4,7 +4,6 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
@@ -19,7 +18,6 @@ import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.roundedWith
-import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -48,7 +46,6 @@ class ValidatorStakeProcessor @Inject constructor(
 //            assets = assets,
 //            involvedOwnedAccounts = involvedOwnedAccounts
 //        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
-
 
         val (withdraws, deposits) = summary.resolveWithdrawsAndDeposits(
             onLedgerAssets = assets,

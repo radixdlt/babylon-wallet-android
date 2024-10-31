@@ -100,7 +100,9 @@ class TransactionAnalysisDelegate @Inject constructor(
             }
             is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> {
                 Timber.w(
-                    "Resource address ${error.address.formatted(AddressFormat.RAW)} neither on ledger nor as newly created entity. Defaulting to Non Conforming view."
+                    "Resource address ${error.address.formatted(
+                        AddressFormat.RAW
+                    )} neither on ledger nor as newly created entity. Defaulting to Non Conforming view."
                 )
                 // TODO micbakos
                 _state.update {
