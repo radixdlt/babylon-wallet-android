@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -34,6 +35,8 @@ import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadat
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
@@ -43,14 +46,27 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.sargon.default
 
 @Composable
@@ -80,10 +96,10 @@ fun LSUDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         TokenBalance(
             modifier = Modifier
-                .fillMaxWidth(fraction = if (lsu == null) 0.5f else 1f)
+                .widthIn(min = if (lsu == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
                 .radixPlaceholder(visible = lsu == null),
             amount = amount,
-            symbol = lsu?.resource?.symbol.orEmpty()
+            symbol = lsu?.resource?.symbol
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -297,23 +313,19 @@ private fun LSUResourceValue(
         Column(horizontalAlignment = Alignment.End) {
             Box(
                 modifier = Modifier
-                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
+                    .widthIn(min = RadixTheme.dimensions.amountShimmeringWidth)
                     .radixPlaceholder(visible = amount == null),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                when (amount) {
-                    is FungibleAmount.Exact -> Text(
-                        text = amount.amount.formatted(),
-                        style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.End,
-                        maxLines = 1
+                amount?.let {
+                    FungibleAmountSection(
+                        fungibleAmount = it
                     )
-                    else -> TODO("Sergiu: update UI to represent all the types of FungibleAmount")
                 }
             }
 
-            // TODO("Sergiu: check if fiat balance also must be adjusted to accommodate other types of amount")
+            // TODO Sergiu: Most likely the fiat price should be per amount, for example if the amount is FungibleAmount.Range,
+            // the fiat price must be shown once below the min and once below the max
             val xrdPrice = remember(price, amount) {
                 (amount as? FungibleAmount.Exact)?.amount?.let { amount ->
                     price?.xrdPrice(amount)
@@ -342,3 +354,40 @@ private fun LSUResourceValue(
 fun LiquidStakeUnit?.name(): String = this?.name?.ifEmpty {
     stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 } ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun LSUDialogContentPreview() {
+    RadixWalletPreviewTheme {
+        LSUDialogContent(
+            lsu = LiquidStakeUnit(
+                fungibleResource = Resource.FungibleResource(
+                    address = ResourceAddress.xrd(NetworkId.MAINNET),
+                    ownedAmount = 123.toDecimal192(),
+                    currentSupply = Decimal192.sample.invoke(),
+                    assetBehaviours = setOf(AssetBehaviour.SUPPLY_INCREASABLE, AssetBehaviour.SUPPLY_FLEXIBLE),
+                    metadata = listOf(
+                        Metadata.Collection(
+                            key = ExplicitMetadataKey.TAGS.key,
+                            values = listOf(),
+                        )
+                    )
+                ),
+                validator = Validator(
+                    address = ValidatorAddress.sampleMainnet(),
+                    totalXrdStake = null
+                )
+            ),
+            price = null,
+            args = AssetDialogArgs.Fungible(
+                resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
+                isNewlyCreated = false,
+                underAccountAddress = null,
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to FungibleAmount.Exact(Decimal192.sample()))
+            ),
+            isLoadingBalance = false,
+            onInfoClick = {}
+        )
+    }
+}

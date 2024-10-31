@@ -48,10 +48,10 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
 import com.radixdlt.sargon.samples.sample
-import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
@@ -94,10 +94,10 @@ fun FungibleDialogContent(
             if (amount != null) {
                 TokenBalance(
                     modifier = Modifier
-                        .fillMaxWidth(fraction = if (token?.resource == null) 0.5f else 1f)
-                        .radixPlaceholder(visible = token?.resource == null),
+                        .widthIn(min = if (token == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
+                        .radixPlaceholder(visible = token == null),
                     amount = amount,
-                    symbol = token?.resource?.symbol.orEmpty(),
+                    symbol = token?.resource?.symbol
                 )
 
                 val fiatPrice = tokenPrice?.price
@@ -257,7 +257,7 @@ private fun FungibleIconSection(
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-private fun InfoPreview() {
+private fun FungibleDialogContentPreview() {
     RadixWalletPreviewTheme {
         FungibleDialogContent(
             token = Token(
@@ -272,7 +272,7 @@ private fun InfoPreview() {
                             values = listOf(),
                         )
                     )
-                ),
+                )
             ),
             tokenPrice = AssetPrice.TokenPrice(
                 asset = Token(
@@ -287,7 +287,7 @@ private fun InfoPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.sampleMainnet.xrd.toString() to FungibleAmount.Exact(Decimal192.sample.invoke()))
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to FungibleAmount.Exact(Decimal192.sample()))
             ),
             isLoadingBalance = false,
             canBeHidden = true,

@@ -84,7 +84,7 @@ interface PreviewTypeProcessor<C : DetailedManifestClass> {
     private fun ExecutionSummary.involvedProfileAccounts(profile: Profile): Accounts {
         val involvedAccountAddresses = (withdrawals.keys + deposits.keys)
 
-        val accountsToSearch = profile.activeAccountsOnCurrentNetwork.asIdentifiable();
+        val accountsToSearch = profile.activeAccountsOnCurrentNetwork.asIdentifiable()
         return involvedAccountAddresses.mapNotNull { address ->
             accountsToSearch.getBy(address)
         }.asIdentifiable()
@@ -357,7 +357,7 @@ interface PreviewTypeProcessor<C : DetailedManifestClass> {
         profile: Profile
     ): Pair<List<AccountWithTransferableResources>, List<AccountWithTransferableResources>> {
         val involvedAccounts = involvedProfileAccounts(profile)
-        val defaultDepositGuarantee = profile.appPreferences.transaction.defaultDepositGuarantee;
+        val defaultDepositGuarantee = profile.appPreferences.transaction.defaultDepositGuarantee
 
         val withdrawsPerAccount = resolveAccounts(
             profileAccounts = involvedAccounts,

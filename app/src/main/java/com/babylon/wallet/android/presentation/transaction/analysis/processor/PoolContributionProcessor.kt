@@ -14,7 +14,6 @@ import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 

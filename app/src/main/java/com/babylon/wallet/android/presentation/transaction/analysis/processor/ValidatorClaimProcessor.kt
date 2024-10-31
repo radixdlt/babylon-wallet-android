@@ -18,7 +18,6 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
