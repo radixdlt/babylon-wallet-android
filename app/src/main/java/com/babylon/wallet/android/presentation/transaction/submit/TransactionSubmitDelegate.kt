@@ -111,6 +111,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun signAndSubmit(manifest: TransactionManifest) {
         val fees = _state.value.fees ?: return
         val transactionRequest = data.value.request

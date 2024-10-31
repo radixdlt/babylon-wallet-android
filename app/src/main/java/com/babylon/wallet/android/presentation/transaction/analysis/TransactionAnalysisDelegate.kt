@@ -18,9 +18,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.then
 import timber.log.Timber
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import javax.inject.Inject
+
+private const val EXPIRATION_COUNTDOWN_PERIOD_MS = 1000L
 
 @Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
@@ -84,7 +85,6 @@ class TransactionAnalysisDelegate @Inject constructor(
             onError(error)
         }
     }
-
 
     private suspend fun resolvePreview(executionSummary: ExecutionSummary): PreviewType {
         return previewTypeAnalyzer.analyze(executionSummary).also { previewType ->
@@ -160,7 +160,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             }
 
             while (remainingSeconds >= 0) {
-                delay(1000)
+                delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
                 _state.update { state ->
                     state.copy(
                         preAuthorization = state.preAuthorization?.copy(
