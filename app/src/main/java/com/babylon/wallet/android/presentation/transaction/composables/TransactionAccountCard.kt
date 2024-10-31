@@ -26,18 +26,16 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -52,11 +50,11 @@ import rdx.works.core.sargon.pools
 @Composable
 fun TransactionAccountCard(
     modifier: Modifier = Modifier,
-    account: AccountWithTransferableResources,
+    account: AccountWithTransferables,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     hiddenResourceWarning: String,
-    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onTransferableNonFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -67,12 +65,12 @@ fun TransactionAccountCard(
             shape = RadixTheme.shapes.roundedRectTopMedium
         )
 
-        account.resources.forEachIndexed { index, transferable ->
-            val lastAsset = index == account.resources.lastIndex
+        account.transferables.forEachIndexed { index, transferable ->
+            val lastAsset = index == account.transferables.lastIndex
             val shape = if (lastAsset) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
 
             when (transferable) {
-                is TransferableX.FungibleType.Token -> TransferableTokenItemContent(
+                is Transferable.FungibleType.Token -> TransferableTokenItemContent(
                     modifier = Modifier.throttleClickable {
                         onTransferableFungibleClick(transferable)
                     },
@@ -85,7 +83,7 @@ fun TransactionAccountCard(
                     hiddenResourceWarning = hiddenResourceWarning
                 )
 
-                is TransferableX.NonFungibleType.NFTCollection -> {
+                is Transferable.NonFungibleType.NFTCollection -> {
                     // Show each nft item
                     transferable.asset.resource.items.forEachIndexed { itemIndex, item ->
                         val lastNFT = itemIndex == transferable.asset.resource.items.lastIndex
@@ -105,7 +103,7 @@ fun TransactionAccountCard(
                     }
                 }
 
-                is TransferableX.FungibleType.LSU -> TransferableLsuItemContent(
+                is Transferable.FungibleType.LSU -> TransferableLsuItemContent(
                     modifier = Modifier.throttleClickable {
                         onTransferableFungibleClick(transferable)
                     },
@@ -113,7 +111,7 @@ fun TransactionAccountCard(
                     shape = shape,
                 )
 
-                is TransferableX.FungibleType.PoolUnit -> TransferablePoolUnitItemContent(
+                is Transferable.FungibleType.PoolUnit -> TransferablePoolUnitItemContent(
                     transferablePoolUnit = transferable,
                     shape = shape,
                     isHidden = remember(
@@ -124,7 +122,7 @@ fun TransactionAccountCard(
                     onClick = onTransferableFungibleClick
                 )
 
-                is TransferableX.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
+                is Transferable.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
                     transferableStakeClaim = transferable,
                     shape = shape,
                     onClick = onTransferableNonFungibleClick
@@ -141,20 +139,20 @@ fun TransactionAccountCard(
 @Composable
 fun TransactionAccountCardHeader(
     modifier: Modifier = Modifier,
-    account: AccountWithTransferableResources,
+    account: AccountWithTransferables,
     shape: Shape = RadixTheme.shapes.roundedRectTopMedium
 ) {
     AccountCardHeader(
         displayName = when (account) {
-            is AccountWithTransferableResources.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
-            is AccountWithTransferableResources.Owned -> account.account.displayName.value
+            is AccountWithTransferables.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
+            is AccountWithTransferables.Owned -> account.account.displayName.value
         },
         modifier = modifier
             .fillMaxWidth()
             .background(
                 brush = when (account) {
-                    is AccountWithTransferableResources.Other -> SolidColor(RadixTheme.colors.gray2)
-                    is AccountWithTransferableResources.Owned -> account.account.appearanceId.gradient()
+                    is AccountWithTransferables.Other -> SolidColor(RadixTheme.colors.gray2)
+                    is AccountWithTransferables.Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape
             )
@@ -210,10 +208,10 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
 fun TransactionAccountCardWithTokenPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
-            account = AccountWithTransferableResources.Owned(
+            account = AccountWithTransferables.Owned(
                 account = Account.sampleMainnet(),
-                resources = listOf(
-                    TransferableX.FungibleType.Token(
+                transferables = listOf(
+                    Transferable.FungibleType.Token(
                         asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                         amount = FungibleAmount.Exact(666.toDecimal192()),
                         isNewlyCreated = false
@@ -240,10 +238,10 @@ fun TransactionAccountCardWithNFTPreview() {
             NonFungibleAmount.Exact(nfts = asset.collection.items)
         }
         TransactionAccountCard(
-            account = AccountWithTransferableResources.Owned(
+            account = AccountWithTransferables.Owned(
                 account = Account.sampleMainnet(),
-                resources = listOf(
-                    TransferableX.NonFungibleType.NFTCollection(
+                transferables = listOf(
+                    Transferable.NonFungibleType.NFTCollection(
                         asset = asset,
                         amount = amount,
                         isNewlyCreated = false

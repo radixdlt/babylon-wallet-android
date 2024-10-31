@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -13,15 +12,6 @@ import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
-
-@Composable
-fun TransferableAsset.Fungible.LSUAsset.displaySubtitle(): String = lsu.displaySubtitle()
-
-@Composable
-fun TransferableAsset.Fungible.PoolUnitAsset.displaySubtitle(): String = unit.displaySubtitle()
-
-@Composable
-fun TransferableAsset.NonFungible.StakeClaimAssets.displaySubtitle(): String = claim.displaySubtitle()
 
 // When we have the distinction between an NFT and a claim the subtitle for claims will change to the validator's name
 @Composable

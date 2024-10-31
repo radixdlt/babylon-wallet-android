@@ -23,11 +23,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sample
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
@@ -36,7 +34,7 @@ import rdx.works.core.domain.resources.sampleMainnet
 fun TransferableNftItemContent(
     modifier: Modifier = Modifier,
     shape: Shape,
-    transferableNFTCollection: TransferableX.NonFungibleType.NFTCollection,
+    transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
     nftItem: Resource.NonFungibleResource.Item,
     isHidden: Boolean,
     hiddenResourceWarning: String
@@ -98,7 +96,7 @@ fun TransferableNftItemPreview() {
             NonFungibleAmount.Exact(nfts = asset.collection.items)
         }
         TransferableNftItemContent(
-            transferableNFTCollection = TransferableX.NonFungibleType.NFTCollection(
+            transferableNFTCollection = Transferable.NonFungibleType.NFTCollection(
                 asset = asset,
                 amount = amount,
                 isNewlyCreated = false

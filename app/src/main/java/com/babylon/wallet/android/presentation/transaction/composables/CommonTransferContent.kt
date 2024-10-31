@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.collections.immutable.toPersistentList
@@ -20,8 +20,8 @@ import rdx.works.core.domain.resources.Resource
 fun CommonTransferContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
     previewType: PreviewType.Transfer,
     onEditGuaranteesClick: () -> Unit,
     middleSection: @Composable () -> Unit

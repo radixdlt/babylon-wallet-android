@@ -77,7 +77,7 @@ import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -396,7 +396,7 @@ fun NavigationHost(
             },
             onTransferableFungibleClick = { fungibleTransferable ->
                 val resourcesWithAmount = when (fungibleTransferable) {
-                    is TransferableX.FungibleType.LSU -> {
+                    is Transferable.FungibleType.LSU -> {
                         val xrdResourceAddress = runCatching {
                             val networkId = fungibleTransferable.resourceAddress.networkId
                             XrdResource.address(networkId = networkId)
@@ -411,13 +411,13 @@ fun NavigationHost(
                         }
                     }
 
-                    is TransferableX.FungibleType.PoolUnit -> mutableMapOf(
+                    is Transferable.FungibleType.PoolUnit -> mutableMapOf(
                         fungibleTransferable.asset.resource.address to fungibleTransferable.amount
                     ).apply {
                         putAll(fungibleTransferable.contributionPerResource)
                     }
 
-                    is TransferableX.FungibleType.Token -> mapOf(fungibleTransferable.asset.resource.address to fungibleTransferable.amount)
+                    is Transferable.FungibleType.Token -> mapOf(fungibleTransferable.asset.resource.address to fungibleTransferable.amount)
                 }
                 navController.fungibleAssetDialog(
                     resourceAddress = fungibleTransferable.asset.resource.address,

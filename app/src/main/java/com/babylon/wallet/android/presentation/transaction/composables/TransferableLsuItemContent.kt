@@ -27,7 +27,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.XrdResource
@@ -35,7 +35,7 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun TransferableLsuItemContent(
     modifier: Modifier = Modifier,
-    transferableLSU: TransferableX.FungibleType.LSU,
+    transferableLSU: Transferable.FungibleType.LSU,
     shape: Shape
 ) {
     Column(

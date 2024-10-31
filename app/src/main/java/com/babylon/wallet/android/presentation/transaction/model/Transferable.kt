@@ -10,16 +10,16 @@ import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 
-sealed interface TransferableX {
+sealed interface Transferable {
 
     val asset: Asset
-    val amount: Amount // TODO might not needed
+    val amount: Amount
     val isNewlyCreated: Boolean
 
     val resourceAddress: ResourceAddress
         get() = asset.resource.address
 
-    sealed interface FungibleType : TransferableX {
+    sealed interface FungibleType : Transferable {
 
         override val amount: FungibleAmount
 
@@ -44,7 +44,7 @@ sealed interface TransferableX {
         ) : FungibleType
     }
 
-    sealed interface NonFungibleType : TransferableX {
+    sealed interface NonFungibleType : Transferable {
 
         override val amount: NonFungibleAmount
 

@@ -24,10 +24,10 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesD
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithDepositSettingsChanges
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEvent
@@ -302,9 +302,7 @@ class TransactionReviewViewModel @Inject constructor(
 
             data object None : Sheet
 
-            data class CustomizeGuarantees(
-                val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>
-            ) : Sheet
+            data class CustomizeGuarantees(val guarantees: List<GuaranteeItem>) : Sheet
 
             data class CustomizeFees(
                 val feePayerMode: FeePayerMode,
@@ -376,13 +374,13 @@ sealed interface PreviewType {
     }
 
     sealed interface Transfer : PreviewType {
-        val from: List<AccountWithTransferableResources>
-        val to: List<AccountWithTransferableResources>
+        val from: List<AccountWithTransferables>
+        val to: List<AccountWithTransferables>
         val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
-                allTransfers.resources.filter { it.isNewlyCreated }.map { it.asset.resource }
+                allTransfers.transferables.filter { it.isNewlyCreated }.map { it.asset.resource }
             }.flatten()
 
         val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
@@ -398,8 +396,8 @@ sealed interface PreviewType {
             }
 
         data class Staking(
-            override val from: List<AccountWithTransferableResources>,
-            override val to: List<AccountWithTransferableResources>,
+            override val from: List<AccountWithTransferables>,
+            override val to: List<AccountWithTransferables>,
             override val badges: List<Badge>,
             val validators: List<Validator>,
             val actionType: ActionType,
@@ -411,8 +409,8 @@ sealed interface PreviewType {
         }
 
         data class Pool(
-            override val from: List<AccountWithTransferableResources>,
-            override val to: List<AccountWithTransferableResources>,
+            override val from: List<AccountWithTransferables>,
+            override val to: List<AccountWithTransferables>,
             override val badges: List<Badge>,
             val actionType: ActionType,
             override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
@@ -423,15 +421,15 @@ sealed interface PreviewType {
 
             val poolsInvolved: Set<rdx.works.core.domain.resources.Pool>
                 get() = (from + to).toSet().map { accountWithAssets ->
-                    accountWithAssets.resources.mapNotNull {
-                        (it as? TransferableX.FungibleType.PoolUnit)?.asset?.pool
+                    accountWithAssets.transferables.mapNotNull {
+                        (it as? Transferable.FungibleType.PoolUnit)?.asset?.pool
                     }
                 }.flatten().toSet()
         }
 
         data class GeneralTransfer(
-            override val from: List<AccountWithTransferableResources>,
-            override val to: List<AccountWithTransferableResources>,
+            override val from: List<AccountWithTransferables>,
+            override val to: List<AccountWithTransferables>,
             override val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
             override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>

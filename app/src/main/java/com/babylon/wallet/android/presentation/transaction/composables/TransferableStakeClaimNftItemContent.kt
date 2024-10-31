@@ -28,7 +28,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.extensions.formatted
@@ -38,9 +38,9 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun TransferableStakeClaimNftItemContent(
     modifier: Modifier = Modifier,
-    transferableStakeClaim: TransferableX.NonFungibleType.StakeClaim,
+    transferableStakeClaim: Transferable.NonFungibleType.StakeClaim,
     shape: Shape,
-    onClick: (TransferableX.NonFungibleType.StakeClaim, Resource.NonFungibleResource.Item) -> Unit
+    onClick: (Transferable.NonFungibleType.StakeClaim, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier

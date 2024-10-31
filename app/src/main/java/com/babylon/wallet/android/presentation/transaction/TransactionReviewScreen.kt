@@ -55,9 +55,9 @@ import com.babylon.wallet.android.presentation.transaction.composables.Transacti
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
 import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -88,8 +88,8 @@ fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
-    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onTransferableNonFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -150,13 +150,13 @@ private fun TransactionPreviewContent(
     onCustomizeClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onCloseBottomSheetClick: () -> Unit,
-    onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
-    onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
-    onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
+    onGuaranteeValueChanged: (GuaranteeItem, String) -> Unit,
+    onGuaranteeValueIncreased: (GuaranteeItem) -> Unit,
+    onGuaranteeValueDecreased: (GuaranteeItem) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
-    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onTransferableNonFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onFeePayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
@@ -375,7 +375,7 @@ private fun TransactionPreviewContent(
                             onClick = { badge ->
                                 when (val resource = badge.resource) {
                                     is Resource.FungibleResource -> onTransferableFungibleClick(
-                                        TransferableX.FungibleType.Token(
+                                        Transferable.FungibleType.Token(
                                             asset = Token(resource = resource),
                                             amount = FungibleAmount.Exact(amount = resource.ownedAmount.orZero()),
                                             isNewlyCreated = false
@@ -383,7 +383,7 @@ private fun TransactionPreviewContent(
                                     )
 
                                     is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
-                                        TransferableX.NonFungibleType.NFTCollection(
+                                        Transferable.NonFungibleType.NFTCollection(
                                             asset = NonFungibleCollection(resource),
                                             amount = TODO(),
                                             isNewlyCreated = false
@@ -503,9 +503,9 @@ private fun BottomSheetContent(
     sheetState: State.Sheet,
     onCloseBottomSheetClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
-    onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
-    onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
-    onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
+    onGuaranteeValueChanged: (GuaranteeItem, String) -> Unit,
+    onGuaranteeValueIncreased: (GuaranteeItem) -> Unit,
+    onGuaranteeValueDecreased: (GuaranteeItem) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
@@ -610,10 +610,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                 ),
                 previewType = PreviewType.Transfer.GeneralTransfer(
                     from = listOf(
-                        AccountWithTransferableResources.Owned(
+                        AccountWithTransferables.Owned(
                             account = Account.sampleStokenet(),
-                            resources = listOf(
-                                TransferableX.FungibleType.Token(
+                            transferables = listOf(
+                                Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                                     amount = FungibleAmount.Exact("745".toDecimal192()),
                                     isNewlyCreated = false
@@ -622,10 +622,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         )
                     ),
                     to = listOf(
-                        AccountWithTransferableResources.Owned(
+                        AccountWithTransferables.Owned(
                             account = Account.sampleMainnet(),
-                            resources = listOf(
-                                TransferableX.FungibleType.Token(
+                            transferables = listOf(
+                                Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                                     amount = FungibleAmount.Exact("745".toDecimal192()),
                                     isNewlyCreated = false
@@ -652,10 +652,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                 ),
                 previewType = PreviewType.Transfer.GeneralTransfer(
                     from = listOf(
-                        AccountWithTransferableResources.Owned(
+                        AccountWithTransferables.Owned(
                             account = Account.sampleStokenet(),
-                            resources = listOf(
-                                TransferableX.FungibleType.Token(
+                            transferables = listOf(
+                                Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                                     amount = FungibleAmount.Exact("745".toDecimal192()),
                                     isNewlyCreated = true
@@ -664,10 +664,10 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         )
                     ),
                     to = listOf(
-                        AccountWithTransferableResources.Owned(
+                        AccountWithTransferables.Owned(
                             account = Account.sampleMainnet(),
-                            resources = listOf(
-                                TransferableX.FungibleType.Token(
+                            transferables = listOf(
+                                Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                                     amount = FungibleAmount.Exact("745".toDecimal192()),
                                     isNewlyCreated = true

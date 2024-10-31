@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.NonFungibleGlobalId
@@ -49,11 +49,11 @@ class ValidatorUnstakeProcessor @Inject constructor(
     }
 
     // Adds claim epoch and claim amount data to NFTs related to this transaction
-    private fun List<AccountWithTransferableResources>.augmentWithClaimNFTs(
+    private fun List<AccountWithTransferables>.augmentWithClaimNFTs(
         claimsData: Map<NonFungibleGlobalId, UnstakeData>
-    ): List<AccountWithTransferableResources> = map { accountWithTransferables ->
-        val transferables = accountWithTransferables.resources.map tr@{ transferable ->
-            val transferableClaim = (transferable as TransferableX.NonFungibleType.StakeClaim) ?: return@tr transferable
+    ): List<AccountWithTransferables> = map { accountWithTransferables ->
+        val transferables = accountWithTransferables.transferables.map tr@{ transferable ->
+            val transferableClaim = (transferable as Transferable.NonFungibleType.StakeClaim) ?: return@tr transferable
 
             val nfts = when (transferableClaim.amount) {
                 is NonFungibleAmount.Exact -> transferableClaim.amount.nfts
