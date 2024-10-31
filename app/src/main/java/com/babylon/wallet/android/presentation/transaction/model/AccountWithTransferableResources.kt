@@ -53,6 +53,11 @@ sealed interface AccountWithTransferableResources {
         }
     }
 
+    fun update(transferables: List<TransferableX>): AccountWithTransferableResources = when (this) {
+        is Other -> copy(resources = transferables)
+        is Owned -> copy(resources = transferables)
+    }
+
     companion object {
         class Sorter(
             private val ownedAccountsOrder: List<Account>
