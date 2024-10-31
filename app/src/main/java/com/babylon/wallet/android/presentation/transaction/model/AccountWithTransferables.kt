@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.transaction.model
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Profile
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 
 sealed interface AccountWithTransferables {
 
@@ -56,6 +58,9 @@ sealed interface AccountWithTransferables {
         class Sorter(
             private val ownedAccountsOrder: List<Account>
         ) : Comparator<AccountWithTransferables> {
+
+            constructor(profile: Profile): this(profile.activeAccountsOnCurrentNetwork)
+
             override fun compare(thisAccount: AccountWithTransferables?, otherAccount: AccountWithTransferables?): Int {
                 val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
                 val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
