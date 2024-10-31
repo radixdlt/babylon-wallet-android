@@ -1,9 +1,17 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TrackedPoolRedemption
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -20,45 +28,51 @@ class PoolRedemptionProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        // TODO micbakos
-//        val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
-//        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
-//        val from = summary.withdrawals.map { withdrawsPerAddress ->
-//            withdrawsPerAddress.value.map { withdraw ->
-//                val poolUnit = assets.find { it.resource.address == withdraw.address } as? PoolUnit
-//                if (poolUnit == null) {
-//                    summary.resolveDepositingAsset(withdraw, assets, defaultDepositGuarantees)
-//                } else {
-//                    val redemptions = classification.poolRedemptions.filter {
-//                        it.poolUnitsResourceAddress == withdraw.address
-//                    }
-//                    val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
-//                    val poolUnitAmount = redemptions.find {
-//                        it.poolUnitsResourceAddress == poolUnit.resourceAddress
-//                    }?.poolUnitsAmount.orZero()
-//                    Transferable.Withdrawing(
-//                        transferable = TransferableAsset.Fungible.PoolUnitAsset(
-//                            amount = redemptions.map { it.poolUnitsAmount }.sumOf { it },
-//                            unit = poolUnit.copy(
-//                                stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
-//                            ),
-//                            redemptionResourceAddresses.associateWith { contributedResourceAddress ->
-//                                redemptions.mapNotNull {
-//                                    it.redeemedResources[contributedResourceAddress]
-//                                }.sumOf { it }
-//                            }
-//                        )
-//                    )
-//                }
-//            }.toAccountWithTransferableResources(withdrawsPerAddress.key, involvedOwnedAccounts)
-//        }.sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
-
         return PreviewType.Transfer.Pool(
-            from = withdraws,
+            from = withdraws.augmentWithRedemptions(redemptions = classification.poolRedemptions),
             to = deposits,
             badges = badges,
             actionType = PreviewType.Transfer.Pool.ActionType.Redemption,
             newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )
+    }
+
+    private fun List<AccountWithTransferableResources>.augmentWithRedemptions(
+        redemptions: List<TrackedPoolRedemption>
+    ): List<AccountWithTransferableResources> = map { accountWithTransferables ->
+        val augmentedTransferables = accountWithTransferables.resources.map { transferable ->
+            val poolUnit = (transferable as? TransferableX.FungibleType.PoolUnit) ?: return@map transferable
+
+            var totalPoolUnitAmount = 0.toDecimal192();
+            val redemptionsPerResource = mutableMapOf<ResourceAddress, Decimal192>()
+
+            redemptions
+                .filter {
+                    it.poolUnitsResourceAddress == poolUnit.resourceAddress
+                }.forEach { redemption ->
+                    redemption.redeemedResources.forEach { (address, amount) ->
+                        val currentAmount = redemptionsPerResource.getOrDefault(address, 0.toDecimal192())
+
+                        redemptionsPerResource[address] = currentAmount + amount
+                    }
+
+                    totalPoolUnitAmount += redemption.poolUnitsAmount
+                }
+
+            val newAmount = when (poolUnit.amount) {
+                is FungibleAmount.Exact -> FungibleAmount.Exact(totalPoolUnitAmount)
+                is FungibleAmount.Predicted -> poolUnit.amount.copy(
+                    amount = totalPoolUnitAmount
+                )
+                else -> FungibleAmount.Exact(totalPoolUnitAmount)
+            }
+
+            poolUnit.copy(
+                amount = newAmount,
+                contributionPerResource = redemptionsPerResource.mapValues { FungibleAmount.Exact(it.value) }
+            )
+        }
+
+        accountWithTransferables.update(augmentedTransferables)
     }
 }
