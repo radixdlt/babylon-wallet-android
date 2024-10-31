@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceOrNonFungible
@@ -47,11 +47,11 @@ class ValidatorStakeProcessor @Inject constructor(
         )
     }
 
-    private fun List<AccountWithTransferableResources>.augmentWithStakes(
+    private fun List<AccountWithTransferables>.augmentWithStakes(
         stakes: List<TrackedValidatorStake>
-    ): List<AccountWithTransferableResources> = map { accountWithTransferableResources ->
-        val transferables = accountWithTransferableResources.resources.map tr@{ transferable ->
-            val lsu = (transferable as? TransferableX.FungibleType.LSU) ?: return@tr transferable
+    ): List<AccountWithTransferables> = map { accountWithTransferableResources ->
+        val transferables = accountWithTransferableResources.transferables.map tr@{ transferable ->
+            val lsu = (transferable as? Transferable.FungibleType.LSU) ?: return@tr transferable
 
             var totalStakeForLSU = 0.toDecimal192()
             var totalXrdWorthForLSU = 0.toDecimal192()
@@ -65,7 +65,7 @@ class ValidatorStakeProcessor @Inject constructor(
 
             val lsuAmount = when (lsu.amount) {
                 is FungibleAmount.Exact -> lsu.amount.amount
-                is FungibleAmount.Predicted -> lsu.amount.amount
+                is FungibleAmount.Predicted -> lsu.amount.estimated
                 else -> TODO() // Cannot calculate
             }
 

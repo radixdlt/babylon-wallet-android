@@ -7,8 +7,6 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.GuaranteeAssertion
-import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
@@ -16,8 +14,10 @@ import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreated
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -30,7 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.assets.Asset
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
 import rdx.works.profile.domain.ProfileException
@@ -83,14 +83,19 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 return@launch
             }
 
-            val manifestWithGuarantees = try {
-                txToReviewData.transactionToReview.transactionManifest.attachGuarantees(_state.value.previewType)
-            } catch (exception: Exception) {
-                logger.e(exception)
+            runCatching {
+                when (val previewType = _state.value.previewType) {
+                    is PreviewType.Transfer -> txToReviewData.transactionToReview.transactionManifest.addAssertions(
+                        deposits = previewType.to
+                    )
+                    else -> txToReviewData.transactionToReview.transactionManifest
+                }
+            }.onSuccess { manifestToSubmit ->
+                signAndSubmit(manifestToSubmit)
+            }.onFailure { error ->
+                logger.e(error)
                 return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
-
-            signAndSubmit(manifestWithGuarantees)
         }
     }
 
@@ -217,18 +222,12 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     }
 
     @Throws(CommonException::class)
-    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
-        var manifest = this
+    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest =
         if (previewType is PreviewType.Transfer) {
-            manifest = manifest.addAssertions(
-                depositing = previewType.to.map {
-                    it.resources
-                }.flatten().filterIsInstance<Transferable.Depositing>()
-            )
+            this.addAssertions(previewType.to)
+        } else {
+            this
         }
-
-        return manifest
-    }
 
     private suspend fun reportFailure(error: Throwable) {
         logNonFatalException(error)
@@ -254,17 +253,20 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
     @Throws(CommonException::class)
     private fun TransactionManifest.addAssertions(
-        depositing: List<Transferable.Depositing>
+        deposits: List<AccountWithTransferables>
     ): TransactionManifest {
-        val guarantees = depositing.mapNotNull { transferable ->
-            val assertion = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount ?: return@mapNotNull null
-            val resource = transferable.transferable.resource as? Resource.FungibleResource ?: return@mapNotNull null
+        val allTransferables = deposits.map { it.transferables }.flatten()
+
+        val guarantees = allTransferables.mapNotNull { transferable ->
+            val amount = (transferable.amount as? FungibleAmount.Predicted) ?: return@mapNotNull null
+            val fungibleAsset = (transferable.asset as? Asset.Fungible) ?: return@mapNotNull null
+
             TransactionGuarantee(
-                amount = assertion.amount,
-                instructionIndex = assertion.instructionIndex.toULong(),
-                resourceAddress = resource.address,
-                resourceDivisibility = resource.divisibility?.value,
-                percentage = assertion.percentage
+                amount = amount.estimated,
+                instructionIndex = amount.instructionIndex.toULong(),
+                resourceAddress = fungibleAsset.resource.address,
+                resourceDivisibility = fungibleAsset.resource.divisibility?.value,
+                percentage = amount.percent
             )
         }
         return modifyAddGuarantees(guarantees = guarantees)

@@ -25,18 +25,18 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
 fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
-    transferablePoolUnit: TransferableX.FungibleType.PoolUnit,
+    transferablePoolUnit: Transferable.FungibleType.PoolUnit,
     shape: Shape,
     isHidden: Boolean,
     hiddenResourceWarning: String,
-    onClick: (poolUnit: TransferableX.FungibleType.PoolUnit) -> Unit
+    onClick: (poolUnit: Transferable.FungibleType.PoolUnit) -> Unit
 ) {
     Column(
         modifier = modifier

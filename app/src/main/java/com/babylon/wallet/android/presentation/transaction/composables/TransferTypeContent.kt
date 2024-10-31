@@ -10,8 +10,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -31,8 +31,8 @@ fun TransferTypeContent(
     onEditGuaranteesClick: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
-    onTransferableFungibleClick: (asset: TransferableX.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableX.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
@@ -65,10 +65,10 @@ fun TransactionPreviewTypePreview() {
             preview = PreviewType.Transfer.GeneralTransfer(
                 from = emptyList(),
                 to = listOf(
-                    AccountWithTransferableResources.Owned(
+                    AccountWithTransferables.Owned(
                         account = Account.sampleMainnet(),
-                        resources = listOf(
-                            TransferableX.FungibleType.Token(
+                        transferables = listOf(
+                            Transferable.FungibleType.Token(
                                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                                 amount = FungibleAmount.Exact("745".toDecimal192()),
                                 isNewlyCreated = false

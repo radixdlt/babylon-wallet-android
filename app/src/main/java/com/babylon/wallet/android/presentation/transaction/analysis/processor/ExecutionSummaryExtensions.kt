@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
@@ -139,7 +139,7 @@ fun ExecutionSummary.resolveNewlyCreatedNFTs() = newlyCreatedNonFungibles.map {
 fun ExecutionSummary.resolveWithdrawsAndDeposits(
     onLedgerAssets: List<Asset>,
     profile: Profile
-): Pair<List<AccountWithTransferableResources>, List<AccountWithTransferableResources>> {
+): Pair<List<AccountWithTransferables>, List<AccountWithTransferables>> {
     val involvedAccounts = involvedProfileAccounts(profile)
     val defaultDepositGuarantee = profile.appPreferences.transaction.defaultDepositGuarantee;
 
@@ -234,9 +234,9 @@ private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
 private fun ResourceIndicator.Fungible.amount(defaultGuaranteeOffset: Decimal192) = when (val fungibleIndicator = indicator) {
     is FungibleResourceIndicator.Guaranteed -> FungibleAmount.Exact(fungibleIndicator.decimal)
     is FungibleResourceIndicator.Predicted -> FungibleAmount.Predicted(
-        amount = fungibleIndicator.predictedDecimal.value,
+        estimated = fungibleIndicator.predictedDecimal.value,
         instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
-        guaranteeOffset = defaultGuaranteeOffset
+        percent = defaultGuaranteeOffset
     )
 }
 
@@ -346,14 +346,14 @@ private fun ExecutionSummary.resolveTransferable(
     resourceIndicator: ResourceIndicator,
     onLedgerAssets: List<Asset>,
     defaultDepositGuarantee: Decimal192
-): TransferableX {
+): Transferable {
     val (asset, isNewlyCreated) = resolveAsset(
         resourceIndicator = resourceIndicator,
         onLedgerAssets = onLedgerAssets
     )
 
     return when (asset) {
-        is Token -> TransferableX.FungibleType.Token(
+        is Token -> Transferable.FungibleType.Token(
             asset = asset,
             amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee),
             isNewlyCreated = isNewlyCreated
@@ -363,11 +363,11 @@ private fun ExecutionSummary.resolveTransferable(
             val amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee)
             val amountDecimal = when (amount) {
                 is FungibleAmount.Exact -> amount.amount
-                is FungibleAmount.Predicted -> amount.amount
+                is FungibleAmount.Predicted -> amount.estimated
                 else -> TODO()
             }
 
-            TransferableX.FungibleType.LSU(
+            Transferable.FungibleType.LSU(
                 asset = asset,
                 amount = amount,
                 xrdWorth = asset.stakeValueXRD(ownedAmount = amountDecimal).orZero(),
@@ -375,20 +375,20 @@ private fun ExecutionSummary.resolveTransferable(
             )
         }
 
-        is PoolUnit -> TransferableX.FungibleType.PoolUnit(
+        is PoolUnit -> Transferable.FungibleType.PoolUnit(
             asset = asset,
             amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee),
             isNewlyCreated = isNewlyCreated,
             contributionPerResource = emptyMap() // TODO
         )
 
-        is NonFungibleCollection -> TransferableX.NonFungibleType.NFTCollection(
+        is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
             asset = asset,
             amount = (resourceIndicator as ResourceIndicator.NonFungible).amount(asset),
             isNewlyCreated = isNewlyCreated,
         )
 
-        is StakeClaim -> TransferableX.NonFungibleType.StakeClaim(
+        is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
             asset = asset,
             amount = (resourceIndicator as ResourceIndicator.NonFungible).amount(asset),
             xrdWorthPerNftItem = asset.nonFungibleResource.items.associate { it.localId to it.claimAmountXrd.orZero() },
@@ -413,14 +413,14 @@ private fun ExecutionSummary.resolveAccounts(
 
     val profileAccount = profileAccounts.getBy(entry.key)
     if (profileAccount != null) {
-        AccountWithTransferableResources.Owned(
+        AccountWithTransferables.Owned(
             account = profileAccount,
-            resources = transferables
+            transferables = transferables
         )
     } else {
-        AccountWithTransferableResources.Other(
+        AccountWithTransferables.Other(
             address = entry.key,
-            resources = transferables
+            transferables = transferables
         )
     }
 }

@@ -21,7 +21,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -32,7 +32,7 @@ import rdx.works.core.domain.resources.sampleMainnet
 @Composable
 fun TransferableTokenItemContent(
     modifier: Modifier = Modifier,
-    transferableToken: TransferableX.FungibleType.Token,
+    transferableToken: Transferable.FungibleType.Token,
     shape: Shape,
     isHidden: Boolean,
     hiddenResourceWarning: String
@@ -81,7 +81,7 @@ fun TransferableTokenItemContent(
 private fun TransferableTokenWithExactAmountPreview() {
     RadixWalletTheme {
         TransferableTokenItemContent(
-            transferableToken = TransferableX.FungibleType.Token(
+            transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                 amount = FungibleAmount.Exact("745".toDecimal192()),
                 isNewlyCreated = false
@@ -99,7 +99,7 @@ private fun TransferableTokenWithExactAmountPreview() {
 private fun TransferableTokenWithRangeAmountPreview() {
     RadixWalletTheme {
         TransferableTokenItemContent(
-            transferableToken = TransferableX.FungibleType.Token(
+            transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                 amount = FungibleAmount.Range(minAmount = "123".toDecimal192(), maxAmount = "3564".toDecimal192()),
                 isNewlyCreated = false
@@ -117,7 +117,7 @@ private fun TransferableTokenWithRangeAmountPreview() {
 private fun TransferableTokenWithMinAmountPreview() {
     RadixWalletTheme {
         TransferableTokenItemContent(
-            transferableToken = TransferableX.FungibleType.Token(
+            transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                 amount = FungibleAmount.Min("10.0396".toDecimal192()),
                 isNewlyCreated = false
@@ -135,7 +135,7 @@ private fun TransferableTokenWithMinAmountPreview() {
 private fun TransferableTokenWithMaxAmountPreview() {
     RadixWalletTheme {
         TransferableTokenItemContent(
-            transferableToken = TransferableX.FungibleType.Token(
+            transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                 amount = FungibleAmount.Max("10.0396".toDecimal192()),
                 isNewlyCreated = false
@@ -153,12 +153,12 @@ private fun TransferableTokenWithMaxAmountPreview() {
 private fun TransferableTokenWithGuaranteeAmountPreview() {
     RadixWalletTheme {
         TransferableTokenItemContent(
-            transferableToken = TransferableX.FungibleType.Token(
+            transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                 amount = FungibleAmount.Predicted(
-                    amount = 69.toDecimal192(),
+                    estimated = 69.toDecimal192(),
                     instructionIndex = 4L,
-                    guaranteeOffset = "180".toDecimal192()
+                    percent = "180".toDecimal192()
                 ),
                 isNewlyCreated = false
             ),
@@ -175,7 +175,7 @@ private fun TransferableTokenWithGuaranteeAmountPreview() {
 private fun TransferableTokenWithUnknownAmountPreview() {
     RadixWalletTheme {
         TransferableTokenItemContent(
-            transferableToken = TransferableX.FungibleType.Token(
+            transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
                 amount = FungibleAmount.Unknown,
                 isNewlyCreated = false

@@ -96,7 +96,7 @@ fun FungibleAmountSection(
                     overflow = TextOverflow.Ellipsis
                 )
                 AmountText(
-                    amount = fungibleAmount.amount,
+                    amount = fungibleAmount.estimated,
                     textStyle = amountTextStyle
                 )
             }
@@ -110,7 +110,7 @@ fun FungibleAmountSection(
                     overflow = TextOverflow.Ellipsis
                 )
                 AmountText(
-                    amount = fungibleAmount.guaranteeAmount,
+                    amount = fungibleAmount.guaranteed,
                     textStyle = amountTextStyle
                 )
             }

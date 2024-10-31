@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
-import com.babylon.wallet.android.presentation.transaction.model.TransferableX
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
@@ -37,11 +37,11 @@ class PoolRedemptionProcessor @Inject constructor(
         )
     }
 
-    private fun List<AccountWithTransferableResources>.augmentWithRedemptions(
+    private fun List<AccountWithTransferables>.augmentWithRedemptions(
         redemptions: List<TrackedPoolRedemption>
-    ): List<AccountWithTransferableResources> = map { accountWithTransferables ->
-        val augmentedTransferables = accountWithTransferables.resources.map tr@{ transferable ->
-            val poolUnit = (transferable as? TransferableX.FungibleType.PoolUnit) ?: return@tr transferable
+    ): List<AccountWithTransferables> = map { accountWithTransferables ->
+        val augmentedTransferables = accountWithTransferables.transferables.map tr@{ transferable ->
+            val poolUnit = (transferable as? Transferable.FungibleType.PoolUnit) ?: return@tr transferable
 
             var totalPoolUnitAmount = 0.toDecimal192();
             val redemptionsPerResource = mutableMapOf<ResourceAddress, Decimal192>()
@@ -62,7 +62,7 @@ class PoolRedemptionProcessor @Inject constructor(
             val newAmount = when (poolUnit.amount) {
                 is FungibleAmount.Exact -> FungibleAmount.Exact(totalPoolUnitAmount)
                 is FungibleAmount.Predicted -> poolUnit.amount.copy(
-                    amount = totalPoolUnitAmount
+                    estimated = totalPoolUnitAmount
                 )
                 else -> FungibleAmount.Exact(totalPoolUnitAmount)
             }

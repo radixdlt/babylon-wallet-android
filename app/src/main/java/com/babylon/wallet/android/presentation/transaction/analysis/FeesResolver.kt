@@ -4,7 +4,7 @@ import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -36,8 +36,8 @@ object FeesResolver {
     }
 }
 
-private fun List<AccountWithTransferableResources>.guaranteesCount(): Int = map { accountWithTransferableResources ->
-    accountWithTransferableResources.resources.filter { transferable ->
+private fun List<AccountWithTransferables>.guaranteesCount(): Int = map { accountWithTransferableResources ->
+    accountWithTransferableResources.transferables.filter { transferable ->
         transferable.amount is FungibleAmount.Predicted
     }
 }.flatten().count()

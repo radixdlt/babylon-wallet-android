@@ -1,15 +1,16 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
@@ -369,11 +370,20 @@ class TransactionFeesDelegateImpl @Inject constructor(
             is PreviewType.Transfer.GeneralTransfer -> {
                 val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
                 if (candidateAddressWithdrawn != null) {
-                    val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
-                        it
-                    }.filterIsInstance<TransferableAsset.Fungible.Token>().find { it.resource.isXrd }
+                    val xrdAmount = candidateAddressWithdrawn
+                        .transferables
+                        .filterIsInstance<Transferable.FungibleType.Token>()
+                        .find { it.asset.resource.isXrd }?.amount
 
-                    xrdResourceWithdrawn?.amount.orZero()
+                    when (xrdAmount) {
+                        null -> 0.toDecimal192()
+                        is FungibleAmount.Exact -> xrdAmount.amount
+                        is FungibleAmount.Predicted -> xrdAmount.estimated
+                        is FungibleAmount.Max -> TODO()
+                        is FungibleAmount.Min -> TODO()
+                        is FungibleAmount.Range -> TODO()
+                        is FungibleAmount.Unknown -> TODO()
+                    }
                 } else {
                     0.toDecimal192()
                 }
