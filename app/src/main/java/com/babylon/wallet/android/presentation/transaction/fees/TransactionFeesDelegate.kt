@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
@@ -21,6 +22,9 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -66,8 +70,16 @@ class TransactionFeesDelegateImpl @Inject constructor(
     private var searchFeePayersJob: Job? = null
 
     suspend fun resolveFees() {
+        // The fees are not required for pre-authorized transactions
+        if (data.value.request.transactionType is TransactionType.PreAuthorized) {
+            return
+        }
+
         _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
-        val executionSummary = data.value.transactionToReviewData.transactionToReview.executionSummary
+        val transactionToReviewData = data.filter { it.isTransactionToReviewDataReady }
+            .map { it.transactionToReviewData }
+            .first()
+        val executionSummary = transactionToReviewData.transactionToReview.executionSummary
 
         val transactionFees = FeesResolver.resolve(
             summary = executionSummary,
@@ -344,7 +356,9 @@ class TransactionFeesDelegateImpl @Inject constructor(
                                 transactionFees = transactionFees,
                                 properties = properties
                             ) ?: state.sheetState,
-                            isSubmitEnabled = state.previewType != PreviewType.None && !properties.isBalanceInsufficientToPayTheFee
+                            submit = state.submit.copy(
+                                isEnabled = state.previewType != PreviewType.None && !properties.isBalanceInsufficientToPayTheFee
+                            )
                         )
                     }
                 }

@@ -125,6 +125,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     private fun processIncomingRequest() {
         val request = incomingRequestRepository.getRequest(args.interactionId) as? TransactionRequest
+
         if (request == null) {
             viewModelScope.launch {
                 sendEvent(Event.Dismiss)
@@ -141,7 +142,6 @@ class TransactionReviewViewModel @Inject constructor(
             viewModelScope.launch {
                 withContext(defaultDispatcher) {
                     analysis.analyse()
-                    // TODO call this only if it's a regular transaction
                     fees.resolveFees()
                 }
             }
@@ -224,6 +224,8 @@ class TransactionReviewViewModel @Inject constructor(
                 manifestSummary.addressesOfAccountsDepositedInto +
                 manifestSummary.addressesOfAccountsRequiringAuth
         }
+
+        val isTransactionToReviewDataReady = txToReviewData != null
     }
 
     data class State(
@@ -240,8 +242,7 @@ class TransactionReviewViewModel @Inject constructor(
         val preAuthorization: PreAuthorization? = null,
         val error: TransactionErrorMessage? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val isSubmitEnabled: Boolean = false,
-        val isSubmitting: Boolean = false
+        val submit: Submit = Submit()
     ) : UiState {
 
         val isRawManifestToggleVisible: Boolean
@@ -282,8 +283,14 @@ class TransactionReviewViewModel @Inject constructor(
         }
 
         data class PreAuthorization(
-            val validFor: String
-        )
+            val expiration: Expiration?
+        ) {
+
+            data class Expiration(
+                val isExpiringAtTime: Boolean,
+                val remainingSeconds: Long
+            )
+        }
 
         sealed interface ProposingDApp {
 
@@ -297,6 +304,12 @@ class TransactionReviewViewModel @Inject constructor(
 
             data class Some(val dApp: DApp?) : ProposingDApp
         }
+
+        data class Submit(
+            val isVisible: Boolean = false,
+            val isEnabled: Boolean = false,
+            val isLoading: Boolean = false
+        )
 
         interface Sheet {
 

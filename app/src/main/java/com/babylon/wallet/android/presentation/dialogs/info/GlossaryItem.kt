@@ -31,4 +31,6 @@ enum class GlossaryItem {
     validators,
     bridging,
     gateways,
+    preauthorizations,
+    possibledappcalls
 }

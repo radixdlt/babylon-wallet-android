@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -405,35 +406,40 @@ private fun TransactionPreviewContent(
                         state.preAuthorization?.let { preAuthorization ->
                             TransactionPreAuthorizationInfo(
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                                dAppName = state.proposingDApp?.name,
                                 preAuthorization = preAuthorization,
                                 onInfoClick = onInfoClick
                             )
                         }
 
-                        SlideToSignButton(
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = if (state.transactionType == State.TransactionType.PreAuthorized) {
-                                        RadixTheme.dimensions.paddingDefault
+                        AnimatedVisibility(
+                            visible = state.submit.isVisible
+                        ) {
+                            SlideToSignButton(
+                                modifier = Modifier
+                                    .padding(
+                                        horizontal = if (state.transactionType == State.TransactionType.PreAuthorized) {
+                                            RadixTheme.dimensions.paddingDefault
+                                        } else {
+                                            RadixTheme.dimensions.paddingXXLarge
+                                        }
+                                    )
+                                    .padding(
+                                        top = RadixTheme.dimensions.paddingDefault,
+                                        bottom = RadixTheme.dimensions.paddingXXLarge
+                                    ),
+                                title = stringResource(
+                                    id = if (state.transactionType == State.TransactionType.PreAuthorized) {
+                                        R.string.preAuthorizationReview_slideToSign
                                     } else {
-                                        RadixTheme.dimensions.paddingXXLarge
+                                        R.string.interactionReview_slideToSign
                                     }
-                                )
-                                .padding(
-                                    top = RadixTheme.dimensions.paddingDefault,
-                                    bottom = RadixTheme.dimensions.paddingXXLarge
                                 ),
-                            title = stringResource(
-                                id = if (state.transactionType == State.TransactionType.PreAuthorized) {
-                                    R.string.preAuthorizationReview_slideToSign
-                                } else {
-                                    R.string.interactionReview_slideToSign
-                                }
-                            ),
-                            enabled = state.isSubmitEnabled,
-                            isSubmitting = state.isSubmitting,
-                            onSwipeComplete = onApproveTransaction
-                        )
+                                enabled = state.submit.isEnabled,
+                                isSubmitting = state.submit.isLoading,
+                                onSwipeComplete = onApproveTransaction
+                            )
+                        }
                     }
                 }
             }
@@ -641,6 +647,9 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                     properties = State.Fees.Properties(),
                     transactionFees = TransactionFees(),
                     selectedFeePayerInput = null
+                ),
+                submit = State.Submit(
+                    isVisible = true
                 )
             ),
             State(
@@ -684,8 +693,18 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                 ),
                 fees = null,
                 preAuthorization = State.PreAuthorization(
-                    validFor = "23:03 minutes"
+                    expiration = State.PreAuthorization.Expiration(
+                        isExpiringAtTime = true,
+                        remainingSeconds = 12345
+                    )
+                ),
+                submit = State.Submit(
+                    isVisible = true
                 )
+            ),
+            State(
+                isLoading = false,
+                previewType = PreviewType.UnacceptableManifest
             )
         )
 }

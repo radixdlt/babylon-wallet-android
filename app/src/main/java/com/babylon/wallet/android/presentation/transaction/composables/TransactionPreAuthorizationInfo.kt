@@ -22,15 +22,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.utils.formattedSpans
+import java.util.Locale
 
 @Composable
 fun TransactionPreAuthorizationInfo(
     modifier: Modifier = Modifier,
-    preAuthorization: TransactionReviewViewModel.State.PreAuthorization,
+    dAppName: String?,
+    preAuthorization: State.PreAuthorization,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(
@@ -38,28 +40,39 @@ fun TransactionPreAuthorizationInfo(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Info(
-            onInfoClick = {
-                // TODO update to pre-auth specific glossary item
-                onInfoClick(GlossaryItem.transactions)
-            }
+            dAppName = dAppName,
+            onInfoClick = { onInfoClick(GlossaryItem.preauthorizations) }
         )
 
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+        preAuthorization.expiration?.let { expiration ->
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
-        Text(
-            text = stringResource(id = R.string.preAuthorizationReview_expiration_atTime, preAuthorization.validFor)
-                .formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle()),
-            style = RadixTheme.typography.body2Regular,
-            color = RadixTheme.colors.pink1,
-            modifier = Modifier.padding(
-                horizontal = RadixTheme.dimensions.paddingDefault
+            Text(
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault
+                ),
+                text = if (expiration.remainingSeconds > 0) {
+                    stringResource(
+                        id = if (expiration.isExpiringAtTime) {
+                            R.string.preAuthorizationReview_expiration_atTime
+                        } else {
+                            R.string.preAuthorizationReview_expiration_afterDelay
+                        },
+                        formatTime(seconds = expiration.remainingSeconds)
+                    )
+                } else {
+                    stringResource(id = R.string.preAuthorizationReview_expiration_expired)
+                }.formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle()),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.pink1
             )
-        )
+        }
     }
 }
 
 @Composable
 private fun Info(
+    dAppName: String?,
     onInfoClick: () -> Unit
 ) {
     Row(
@@ -82,7 +95,11 @@ private fun Info(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = stringResource(id = R.string.preAuthorizationReview_fees_title),
+                text = stringResource(
+                    id = R.string.preAuthorizationReview_fees_title,
+                    dAppName.orEmpty()
+                        .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                ),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -117,13 +134,62 @@ private fun Info(
     }
 }
 
+/**
+ * Given an amount of seconds, returns a formatted String using the corresponding unit (days/hours/minutes/seconds).
+ * A few examples on how should it look for each of them:
+ * - `8 days` / `1 day`
+ * - `23:21 hours` / `1:24 hour`
+ * - `56:02 minutes` / `1:23 minute`
+ * - `34 seconds` / `1 second`
+ */
+@Composable
+fun formatTime(seconds: Long): String {
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    val days = hours / 24
+    return when {
+        days > 0 -> if (days == 1L) {
+            stringResource(id = R.string.preAuthorizationReview_timeFormat_day)
+        } else {
+            stringResource(id = R.string.preAuthorizationReview_timeFormat_days, days)
+        }
+        hours > 0 -> {
+            val remainingMinutes = minutes % 60
+            val formatted = String.format(Locale.getDefault(), "%d:%02d", hours, remainingMinutes)
+            if (hours == 1L) {
+                stringResource(id = R.string.preAuthorizationReview_timeFormat_hour, formatted)
+            } else {
+                stringResource(id = R.string.preAuthorizationReview_timeFormat_hours, formatted)
+            }
+        }
+        minutes > 0 -> {
+            val remainingSeconds = seconds % 60
+            val formatted = String.format(Locale.getDefault(), "%d:%02d", minutes, remainingSeconds)
+            if (minutes == 1L) {
+                stringResource(id = R.string.preAuthorizationReview_timeFormat_minute, formatted)
+            } else {
+                stringResource(id = R.string.preAuthorizationReview_timeFormat_minutes, formatted)
+            }
+        }
+        else -> if (seconds == 1L) {
+            stringResource(id = R.string.preAuthorizationReview_timeFormat_second)
+        } else {
+            stringResource(id = R.string.preAuthorizationReview_timeFormat_seconds, seconds)
+        }
+    }
+}
+
 @Composable
 @Preview
 private fun TransactionPreAuthorizationInfoPreview() {
     RadixWalletPreviewTheme {
         TransactionPreAuthorizationInfo(
-            preAuthorization = TransactionReviewViewModel.State.PreAuthorization(
-                validFor = "23:03 minutes"
+            dAppName = "Megaswap",
+            preAuthorization = State.PreAuthorization(
+                expiration = State.PreAuthorization.Expiration(
+                    isExpiringAtTime = true,
+                    remainingSeconds = 12345
+                )
             ),
             onInfoClick = {}
         )

@@ -13,6 +13,7 @@ import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
+import com.radixdlt.sargon.DappToWalletInteractionSubintentRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.RequestedNumberQuantifier
@@ -42,7 +43,9 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
             itemsTemp.v1.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
         }
 
-        is DappToWalletInteractionItems.PreAuthorization -> TODO()
+        is DappToWalletInteractionItems.PreAuthorization -> {
+            itemsTemp.v1.request.toDomainModel(remoteEntityId, interactionId, metadata)
+        }
     }
 }.mapError {
     RadixWalletException.IncomingMessageException.MessageParse(it)
@@ -62,6 +65,25 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
         blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
     ),
     requestMetadata = metadata
+)
+
+fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
+    remoteConnectorId: RemoteEntityID,
+    requestId: WalletInteractionId,
+    metadata: DappToWalletInteraction.RequestMetadata
+) = TransactionRequest(
+    remoteEntityId = remoteConnectorId,
+    interactionId = requestId,
+    unvalidatedManifestData = UnvalidatedManifestData(
+        instructions = unvalidatedManifest.subintentManifestString,
+        networkId = metadata.networkId,
+        plainMessage = message,
+        blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
+    ),
+    requestMetadata = metadata,
+    transactionType = TransactionType.PreAuthorized(
+        expiration = expiration
+    )
 )
 
 private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedRequest(

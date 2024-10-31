@@ -224,6 +224,8 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.validators -> stringResource(R.string.infoLink_glossary_validators)
     GlossaryItem.bridging -> stringResource(R.string.infoLink_glossary_bridging)
     GlossaryItem.gateways -> stringResource(R.string.infoLink_glossary_gateways)
+    GlossaryItem.preauthorizations -> stringResource(id = R.string.infoLink_glossary_preauthorizations)
+    GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
 }
 
 @Composable

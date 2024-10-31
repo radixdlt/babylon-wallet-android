@@ -116,7 +116,13 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         val transactionRequest = data.value.request
         val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
-        _state.update { it.copy(isSubmitting = true) }
+        _state.update { state ->
+            state.copy(
+                submit = state.submit.copy(
+                    isLoading = true
+                )
+            )
+        }
 
         signTransactionUseCase(
             request = SignTransactionUseCase.Request(
@@ -133,7 +139,13 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 .map { notarizationResult }
         }.onSuccess { notarization ->
             data.update { it.copy(endEpoch = notarization.endEpoch) }
-            _state.update { it.copy(isSubmitting = false) }
+            _state.update { state ->
+                state.copy(
+                    submit = state.submit.copy(
+                        isLoading = false
+                    )
+                )
+            }
 
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
@@ -179,7 +191,13 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         when (radixWalletException) {
             // if signing rejected by user do not show any error dialog
             is RadixWalletException.DappRequestException.RejectedByUser -> {
-                _state.update { it.copy(isSubmitting = false) }
+                _state.update { state ->
+                    state.copy(
+                        submit = state.submit.copy(
+                            isLoading = false
+                        )
+                    )
+                }
                 approvalJob = null
                 return
             }
@@ -188,9 +206,11 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
             is RadixWalletException.LedgerCommunicationException -> {
                 logNonFatalException(radixWalletException)
-                _state.update {
-                    it.copy(
-                        isSubmitting = false,
+                _state.update { state ->
+                    state.copy(
+                        submit = state.submit.copy(
+                            isLoading = false
+                        ),
                         error = TransactionErrorMessage(radixWalletException)
                     )
                 }
@@ -233,8 +253,13 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private suspend fun reportFailure(error: Throwable) {
         logNonFatalException(error)
         logger.w(error)
-        _state.update {
-            it.copy(isSubmitting = false, error = TransactionErrorMessage(error))
+        _state.update { state ->
+            state.copy(
+                submit = state.submit.copy(
+                    isLoading = false
+                ),
+                error = TransactionErrorMessage(error)
+            )
         }
 
         if (data.value.request.isInternal) {
