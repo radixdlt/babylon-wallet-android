@@ -27,12 +27,12 @@ class ValidatorClaimProcessor @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.ValidatorClaim> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorClaim): PreviewType {
-        val networkId = getProfileUseCase().currentGateway.network.id
-        val xrdAddress = XrdResource.address(networkId)
+        val profile = getProfileUseCase()
+        val xrdAddress = XrdResource.address(profile.currentGateway.network.id)
         val assets = resolveAssetsFromAddressUseCase(
             addresses = summary.involvedAddresses() + ResourceOrNonFungible.Resource(xrdAddress)
         ).getOrThrow()
-        val badges = summary.resolveBadges(assets)
+
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map {
             it.validator
         }.toSet() + assets.filterIsInstance<StakeClaim>().map {
@@ -60,10 +60,10 @@ class ValidatorClaimProcessor @Inject constructor(
         )
 
         return PreviewType.Transfer.Staking(
-            validators = involvedValidators.toList(),
             from = withdraws,
             to = deposits,
-            badges = badges,
+            validators = involvedValidators.toList(),
+            badges = summary.resolveBadges(assets),
             actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake,
             newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
         )

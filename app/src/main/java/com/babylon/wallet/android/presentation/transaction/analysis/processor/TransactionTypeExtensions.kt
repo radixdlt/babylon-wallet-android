@@ -21,6 +21,7 @@ import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.amount
+import com.radixdlt.sargon.extensions.ids
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
@@ -38,25 +39,25 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 fun ExecutionSummary.involvedAddresses(
     excludeNewlyCreated: Boolean = true
 ): Set<ResourceOrNonFungible> {
-    val fungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>() +
+    val fungibleIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>() +
         deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
 
-    val nonFungibleResourceAddresses = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
+    val nonFungibleIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
         deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
 
-    val fungibles = fungibleResourceAddresses.asSequence().filterNot {
+    val fungibles = fungibleIndicators.asSequence().filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
     }.map {
         ResourceOrNonFungible.Resource(it.resourceAddress)
     }.toSet()
 
-    val nonFungibleGlobalIds = nonFungibleResourceAddresses.asSequence().filterNot {
+    val nonFungibleGlobalIds = nonFungibleIndicators.asSequence().filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
-    }.map { nonFungible ->
-        nonFungible.nonFungibleLocalIds.map { localId ->
+    }.map { nonFungibleIndicator ->
+        nonFungibleIndicator.indicator.ids.map { localId ->
             ResourceOrNonFungible.NonFungible(
                 NonFungibleGlobalId(
-                    resourceAddress = nonFungible.resourceAddress,
+                    resourceAddress = nonFungibleIndicator.resourceAddress,
                     nonFungibleLocalId = localId
                 )
             )
@@ -146,7 +147,7 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
         TransferableAsset.Fungible.LSUAsset(
             amount = aggregateAmount ?: amount,
             lsu = assetWithAmount,
-            xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake).orZero(),
+            xrdWorth = assetWithAmount.stakeValueXRD().orZero(),
             isNewlyCreated = false
         )
     }
