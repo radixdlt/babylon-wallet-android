@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
@@ -72,7 +74,8 @@ fun FungibleDialogContent(
 ) {
     val resourceAddress = args.resourceAddress
     val isNewlyCreated = args.isNewlyCreated
-    val amount = args.fungibleAmountOf(resourceAddress) ?: token?.resource?.ownedAmount
+    val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
+        ?: remember(token) { token?.resource?.ownedAmount?.let { FungibleAmount.Exact(it) } }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -284,7 +287,7 @@ private fun InfoPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.sampleMainnet.xrd.toString() to Decimal192.sample.invoke())
+                amounts = mapOf(ResourceAddress.sampleMainnet.xrd.toString() to FungibleAmount.Exact(Decimal192.sample.invoke()))
             ),
             isLoadingBalance = false,
             canBeHidden = true,

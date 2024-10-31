@@ -9,13 +9,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.radixdlt.sargon.Decimal192
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun TokenBalance(
     modifier: Modifier = Modifier,
-    amount: Decimal192?,
+    amount: FungibleAmount?,
     symbol: String,
     align: TextAlign = TextAlign.Center
 ) {
@@ -23,11 +23,12 @@ fun TokenBalance(
         Text(
             modifier = modifier,
             text = buildAnnotatedString {
-                if (amount != null) {
-                    append(amount.formatted())
-                    withStyle(style = RadixTheme.typography.header.toSpanStyle()) {
-                        append(" $symbol")
-                    }
+                when (amount) {
+                    is FungibleAmount.Exact -> append(amount.amount.formatted())
+                    else -> TODO("Sergiu: update UI to represent all the types of FungibleAmount")
+                }
+                withStyle(style = RadixTheme.typography.header.toSpanStyle()) {
+                    append(" $symbol")
                 }
             },
             style = RadixTheme.typography.title,

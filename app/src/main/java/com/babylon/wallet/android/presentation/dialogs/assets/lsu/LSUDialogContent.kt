@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
@@ -42,7 +43,6 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
@@ -63,7 +63,8 @@ fun LSUDialogContent(
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val resourceAddress = args.resourceAddress
-    val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
+    val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
+        ?: lsu?.stakeValue()?.let { FungibleAmount.Exact(it) }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -77,7 +78,6 @@ fun LSUDialogContent(
     ) {
         LSUIconSection(lsu = lsu)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
         TokenBalance(
             modifier = Modifier
                 .fillMaxWidth(fraction = if (lsu == null) 0.5f else 1f)
@@ -122,7 +122,7 @@ fun LSUDialogContent(
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
-            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValue()
+            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValue()?.let { FungibleAmount.Exact(it) }
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
@@ -265,7 +265,7 @@ private fun LSUIconSection(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: Decimal192?,
+    amount: FungibleAmount?,
     price: AssetPrice.LSUPrice?,
     isLoadingBalance: Boolean
 ) {
@@ -295,22 +295,28 @@ private fun LSUResourceValue(
         )
 
         Column(horizontalAlignment = Alignment.End) {
-            Text(
+            Box(
                 modifier = Modifier
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = amount == null),
-                text = amount?.formatted().orEmpty(),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 1
-            )
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                when (amount) {
+                    is FungibleAmount.Exact -> Text(
+                        text = amount.amount.formatted(),
+                        style = RadixTheme.typography.secondaryHeader,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.End,
+                        maxLines = 1
+                    )
+                    else -> TODO("Sergiu: update UI to represent all the types of FungibleAmount")
+                }
+            }
 
+            // TODO("Sergiu: check if fiat balance also must be adjusted to accommodate other types of amount")
             val xrdPrice = remember(price, amount) {
-                if (amount != null) {
+                (amount as? FungibleAmount.Exact)?.amount?.let { amount ->
                     price?.xrdPrice(amount)
-                } else {
-                    null
                 }
             }
             if (isLoadingBalance) {

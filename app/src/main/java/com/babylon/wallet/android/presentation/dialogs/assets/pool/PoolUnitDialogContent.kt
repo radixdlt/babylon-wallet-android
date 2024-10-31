@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.PoolResourcesValues
@@ -59,7 +60,8 @@ fun PoolUnitDialogContent(
     onHideClick: () -> Unit
 ) {
     val resourceAddress = args.resourceAddress
-    val amount = args.fungibleAmountOf(resourceAddress) ?: poolUnit?.stake?.ownedAmount
+    val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
+        ?: remember(poolUnit) { poolUnit?.stake?.ownedAmount?.let { FungibleAmount.Exact(it) } }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -111,7 +113,7 @@ fun PoolUnitDialogContent(
             if (poolUnit != null) {
                 val resourcesWithAmount = remember(poolUnit, args) {
                     poolUnit.pool?.resources?.associateWith {
-                        args.fungibleAmountOf(it.address) ?: poolUnit.resourceRedemptionValue(it)
+                        args.fungibleAmountOf(it.address) ?: poolUnit.resourceRedemptionValue(it)?.let { FungibleAmount.Exact(it) }
                     }.orEmpty().toImmutableMap()
                 }
                 PoolResourcesValues(
