@@ -26,6 +26,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
@@ -33,7 +34,6 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
@@ -147,7 +147,9 @@ private fun PoolUnitItem(
 
         val resourcesWithAmounts = remember(poolUnit) {
             poolUnit.pool?.resources?.associateWith {
-                poolUnit.resourceRedemptionValue(it)
+                poolUnit.resourceRedemptionValue(it)?.let {
+                    FungibleAmount.Exact(it)
+                }
             }.orEmpty().toImmutableMap()
         }
         PoolResourcesValues(
@@ -164,7 +166,7 @@ private fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
-    resources: ImmutableMap<Resource.FungibleResource, Decimal192?>,
+    resources: ImmutableMap<Resource.FungibleResource, FungibleAmount?>,
     poolUnitPrice: AssetPrice.PoolUnitPrice?,
     isLoadingBalance: Boolean,
     isCompact: Boolean = true
@@ -193,12 +195,15 @@ fun PoolResourcesValues(
                 )
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = resourceWithAmount.value?.formatted().orEmpty(),
-                        style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 1
-                    )
+                    when (val amount = resourceWithAmount.value) {
+                        is FungibleAmount.Exact -> Text(
+                            text = amount.amount.formatted(),
+                            style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
+                            color = RadixTheme.colors.gray1,
+                            maxLines = 1
+                        )
+                        else -> TODO("Sergiu: update UI to represent all the types of FungibleAmount")
+                    }
 
                     val fiatPrice = remember(poolUnitPrice, resourceWithAmount) {
                         poolUnitPrice?.xrdPrice(resourceWithAmount.key)
