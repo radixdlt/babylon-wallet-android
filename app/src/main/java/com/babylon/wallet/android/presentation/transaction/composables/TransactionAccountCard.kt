@@ -233,13 +233,19 @@ fun TransactionAccountCardWithTokenPreview() {
 @Composable
 fun TransactionAccountCardWithNFTPreview() {
     RadixWalletTheme {
+        val asset = remember {
+            NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
+        }
+        val amount = remember(asset) {
+            NonFungibleAmount.Exact(nfts = asset.collection.items)
+        }
         TransactionAccountCard(
             account = AccountWithTransferableResources.Owned(
                 account = Account.sampleMainnet(),
                 resources = listOf(
                     TransferableX.NonFungibleType.NFTCollection(
-                        asset = NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet()),
-                        amount = NonFungibleAmount.Exact(ids = listOf(NonFungibleLocalId.sample())),
+                        asset = asset,
+                        amount = amount,
                         isNewlyCreated = false
                     )
                 )

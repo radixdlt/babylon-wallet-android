@@ -48,7 +48,7 @@ sealed interface FungibleAmount : Amount {
 
 sealed interface NonFungibleAmount : Amount { // TODO under research
 
-    data class Exact(val ids: List<NonFungibleLocalId>) : NonFungibleAmount
+    data class Exact(val nfts: List<Resource.NonFungibleResource.Item>) : NonFungibleAmount
 
     data class NotExact(
         val lowerBound: LowerBound,

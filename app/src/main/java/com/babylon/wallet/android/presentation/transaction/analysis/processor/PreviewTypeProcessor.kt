@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
-import com.babylon.wallet.android.presentation.model.Amount
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -22,6 +21,7 @@ import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.ids
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -152,19 +152,25 @@ interface PreviewTypeProcessor<C : DetailedManifestClass> {
         return metadata
     }
 
-    private fun ResourceIndicator.amount(defaultGuaranteeOffset: Decimal192): Amount = when (this) {
-        is ResourceIndicator.Fungible -> when (val fungibleIndicator = indicator) {
-            is FungibleResourceIndicator.Guaranteed -> FungibleAmount.Exact(fungibleIndicator.decimal)
-            is FungibleResourceIndicator.Predicted -> FungibleAmount.Predicted(
-                amount = fungibleIndicator.predictedDecimal.value,
-                instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
-                guaranteeOffset = defaultGuaranteeOffset
+    private fun ResourceIndicator.Fungible.amount(defaultGuaranteeOffset: Decimal192) = when (val fungibleIndicator = indicator) {
+        is FungibleResourceIndicator.Guaranteed -> FungibleAmount.Exact(fungibleIndicator.decimal)
+        is FungibleResourceIndicator.Predicted -> FungibleAmount.Predicted(
+            amount = fungibleIndicator.predictedDecimal.value,
+            instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
+            guaranteeOffset = defaultGuaranteeOffset
+        )
+    }
+
+    private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonFungibleAmount {
+        val onLedgerItems = asset.resource.items
+
+        val items = indicator.ids.map { localId ->
+            onLedgerItems.find { it.localId == localId } ?: Resource.NonFungibleResource.Item(
+                collectionAddress = asset.resource.address, localId = localId
             )
         }
-        // TODO ask if we need to keep predicted instruction index
-        is ResourceIndicator.NonFungible -> NonFungibleAmount.Exact(
-            ids = indicator.ids
-        )
+
+        return NonFungibleAmount.Exact(nfts = items)
     }
 
     fun ExecutionSummary.resolveBadges(onLedgerAssets: List<Asset>): List<Badge> {
@@ -291,34 +297,43 @@ interface PreviewTypeProcessor<C : DetailedManifestClass> {
         return when (asset) {
             is Token -> TransferableX.FungibleType.Token(
                 asset = asset,
-                amount = resourceIndicator.amount(defaultDepositGuarantee) as FungibleAmount,
+                amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee),
                 isNewlyCreated = isNewlyCreated
             )
 
-            is LiquidStakeUnit -> TransferableX.FungibleType.LSU(
-                asset = asset,
-                amount = resourceIndicator.amount(defaultDepositGuarantee) as FungibleAmount,
-                xrdWorth = 0.toDecimal192(),
-                isNewlyCreated = isNewlyCreated
-            )
+            is LiquidStakeUnit -> {
+                val amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee)
+                val amountDecimal = when (amount) {
+                    is FungibleAmount.Exact -> amount.amount
+                    is FungibleAmount.Predicted -> amount.amount
+                    else -> TODO()
+                }
+
+                TransferableX.FungibleType.LSU(
+                    asset = asset,
+                    amount = amount,
+                    xrdWorth = asset.stakeValueXRD(ownedAmount = amountDecimal).orZero(),
+                    isNewlyCreated = isNewlyCreated
+                )
+            }
 
             is PoolUnit -> TransferableX.FungibleType.PoolUnit(
                 asset = asset,
-                amount = resourceIndicator.amount(defaultDepositGuarantee) as FungibleAmount,
+                amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee),
                 isNewlyCreated = isNewlyCreated,
-                contributionPerResource = emptyMap()
+                contributionPerResource = emptyMap() // TODO
             )
 
             is NonFungibleCollection -> TransferableX.NonFungibleType.NFTCollection(
                 asset = asset,
-                amount = resourceIndicator.amount(defaultDepositGuarantee) as NonFungibleAmount,
+                amount = (resourceIndicator as ResourceIndicator.NonFungible).amount(asset),
                 isNewlyCreated = isNewlyCreated,
             )
 
             is StakeClaim -> TransferableX.NonFungibleType.StakeClaim(
                 asset = asset,
-                amount = resourceIndicator.amount(defaultDepositGuarantee) as NonFungibleAmount,
-                xrdWorthPerNftItem = emptyMap(),
+                amount = (resourceIndicator as ResourceIndicator.NonFungible).amount(asset),
+                xrdWorthPerNftItem = asset.nonFungibleResource.items.associate { it.localId to it.claimAmountXrd.orZero() },
                 isNewlyCreated = isNewlyCreated
             )
         }

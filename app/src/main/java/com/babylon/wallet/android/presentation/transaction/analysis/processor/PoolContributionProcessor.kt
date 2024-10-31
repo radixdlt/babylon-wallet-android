@@ -49,8 +49,8 @@ class PoolContributionProcessor @Inject constructor(
     private fun List<AccountWithTransferableResources>.augmentWithContributions(
         contributions: List<TrackedPoolContribution>
     ): List<AccountWithTransferableResources> = map { accountWithTransferables ->
-        val augmentedTransferables = accountWithTransferables.resources.map { transferable ->
-            val poolUnit = (transferable as? TransferableX.FungibleType.PoolUnit) ?: return@map transferable
+        val augmentedTransferables = accountWithTransferables.resources.map tr@{ transferable ->
+            val poolUnit = (transferable as? TransferableX.FungibleType.PoolUnit) ?: return@tr transferable
 
             var totalPoolUnitAmount = 0.toDecimal192();
             val contributionsPerResource = mutableMapOf<ResourceAddress, Decimal192>()

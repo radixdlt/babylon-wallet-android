@@ -107,10 +107,7 @@ data class ValidatorWithStakes(
     val hasClaims: Boolean
         get() = stakeClaimNft != null && stakeClaimNft.nonFungibleResource.amount > 0L
 
-    fun stakeValue(): Decimal192? {
-        if (validator.totalXrdStake == null) return null
-        return liquidStakeUnit?.stakeValueInXRD(validator.totalXrdStake)
-    }
+    fun stakeValue(): Decimal192? = liquidStakeUnit?.stakeValueXRD()
 
     companion object {
         fun from(

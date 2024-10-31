@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -90,10 +91,16 @@ fun TransferableNftItemContent(
 @Composable
 fun TransferableNftItemPreview() {
     RadixWalletTheme {
+        val asset = remember {
+            NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
+        }
+        val amount = remember(asset) {
+            NonFungibleAmount.Exact(nfts = asset.collection.items)
+        }
         TransferableNftItemContent(
             transferableNFTCollection = TransferableX.NonFungibleType.NFTCollection(
-                asset = NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet()),
-                amount = NonFungibleAmount.Exact(ids = listOf(NonFungibleLocalId.sample())),
+                asset = asset,
+                amount = amount,
                 isNewlyCreated = false
             ),
             nftItem = Resource.NonFungibleResource.sampleMainnet().items.first(),
