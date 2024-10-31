@@ -24,7 +24,8 @@ class AccountDepositSettingsProcessor @Inject constructor(
         classification: DetailedManifestClass.AccountDepositSettingsUpdate
     ): PreviewType {
         val assets = resolveAssetsFromAddressUseCase(
-            addresses = classification.involvedResourceAddresses + summary.proofAddresses.toSet()
+            addresses = classification.involvedResourceAddresses +
+                    summary.involvedProofAddresses().toSet()
         ).getOrThrow()
         val badges = summary.resolveBadges(assets)
         val involvedAccountAddresses = classification.depositModeUpdates.keys +

@@ -43,7 +43,7 @@ class ValidatorStakeProcessor @Inject constructor(
             badges = summary.resolveBadges(assets),
             validators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator },
             actionType = PreviewType.Transfer.Staking.ActionType.Stake,
-            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
+            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
         )
     }
 

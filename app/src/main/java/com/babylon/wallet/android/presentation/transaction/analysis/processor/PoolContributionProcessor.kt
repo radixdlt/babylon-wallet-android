@@ -1,25 +1,17 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.model.TransferableX
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TrackedPoolContribution
-import com.radixdlt.sargon.extensions.address
-import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
-import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
-import rdx.works.core.domain.assets.Asset
-import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -42,7 +34,7 @@ class PoolContributionProcessor @Inject constructor(
             to = deposits.augmentWithContributions(contributions = classification.poolContributions),
             badges = badges,
             actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
-            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
+            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
         )
     }
 

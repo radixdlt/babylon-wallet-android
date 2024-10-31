@@ -33,7 +33,7 @@ class PoolRedemptionProcessor @Inject constructor(
             to = deposits,
             badges = badges,
             actionType = PreviewType.Transfer.Pool.ActionType.Redemption,
-            newlyCreatedNFTItems = summary.newlyCreatedNonFungibleItems()
+            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
         )
     }
 
