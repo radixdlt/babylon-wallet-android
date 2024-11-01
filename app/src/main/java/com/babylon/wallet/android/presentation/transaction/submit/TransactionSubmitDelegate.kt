@@ -266,7 +266,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 instructionIndex = amount.instructionIndex.toULong(),
                 resourceAddress = fungibleAsset.resource.address,
                 resourceDivisibility = fungibleAsset.resource.divisibility?.value,
-                percentage = amount.percent
+                percentage = amount.offset
             )
         }
         return modifyAddGuarantees(guarantees = guarantees)

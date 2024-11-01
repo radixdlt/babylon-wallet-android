@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.serialization.Contextual
@@ -31,11 +32,10 @@ sealed interface FungibleAmount : Amount {
     data class Predicted(
         @Contextual val estimated: Decimal192,
         val instructionIndex: Long,
-        @Contextual val percent: Decimal192
+        @Contextual val offset: Decimal192
     ) : FungibleAmount {
-
         val guaranteed: Decimal192
-            get() = estimated * percent
+            get() = estimated * offset
     }
 
     @Serializable
