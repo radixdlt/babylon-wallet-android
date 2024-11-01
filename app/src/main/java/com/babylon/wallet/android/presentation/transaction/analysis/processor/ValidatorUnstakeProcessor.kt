@@ -83,7 +83,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
             }
 
             transferableClaim.copy(
-                amount = NonFungibleAmount.Exact(nfts), // TODO
+                amount = NonFungibleAmount.Exact(nfts),
                 xrdWorthPerNftItem = nfts.associate { it.localId to it.claimAmountXrd.orZero() }
             )
         }
