@@ -357,7 +357,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         // In cases were it is not a transfer type, then it means the user
         // will not spend any other XRD rather than the ones spent for the fees
         val xrdUsed = when (val previewType = _state.value.previewType) {
-            is PreviewType.Transfer.GeneralTransfer -> {
+            is PreviewType.Transfer -> {
                 val candidateAddressWithdrawn = previewType.from.find { it.account.address == candidateAddress }
                 if (candidateAddressWithdrawn != null) {
                     val xrdAmount = candidateAddressWithdrawn
@@ -369,22 +369,17 @@ class TransactionFeesDelegateImpl @Inject constructor(
                         null -> 0.toDecimal192()
                         is FungibleAmount.Exact -> xrdAmount.amount
                         is FungibleAmount.Predicted -> xrdAmount.estimated
-                        is FungibleAmount.Max -> TODO()
-                        is FungibleAmount.Min -> TODO()
-                        is FungibleAmount.Range -> TODO()
-                        is FungibleAmount.Unknown -> TODO()
+                        else -> TODO()
                     }
                 } else {
                     0.toDecimal192()
                 }
             }
             // On-purpose made this check exhaustive, future types may involve accounts spending XRD
-            is PreviewType.AccountsDepositSettings -> 0.toDecimal192()
-            is PreviewType.NonConforming -> 0.toDecimal192()
-            is PreviewType.None -> 0.toDecimal192()
+            is PreviewType.AccountsDepositSettings,
+            is PreviewType.NonConforming,
+            is PreviewType.None,
             is PreviewType.UnacceptableManifest -> 0.toDecimal192()
-            is PreviewType.Transfer.Pool -> 0.toDecimal192()
-            is PreviewType.Transfer.Staking -> 0.toDecimal192()
         }
 
         return xrdInCandidateAccount - xrdUsed < feeToLock

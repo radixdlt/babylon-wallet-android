@@ -48,5 +48,4 @@ class PreviewTypeAnalyzer @Inject constructor(
 interface PreviewTypeProcessor<C : DetailedManifestClass> {
 
     suspend fun process(summary: ExecutionSummary, classification: C): PreviewType
-
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -255,18 +254,20 @@ fun TransactionAccountWithGuaranteesCardPreview() {
     RadixWalletTheme {
         val state: MutableState<GuaranteeItem> = remember {
             mutableStateOf(
-                GuaranteeItem.from(
-                    involvedAccount = InvolvedAccount.Owned(Account.sampleMainnet()),
-                    transferable = Transferable.FungibleType.Token(
-                        asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                        amount = FungibleAmount.Predicted(
-                            estimated = 10.toDecimal192(),
-                            instructionIndex = 1L,
-                            offset = 0.9.toDecimal192()
-                        ),
-                        isNewlyCreated = false
+                requireNotNull(
+                    GuaranteeItem.from(
+                        involvedAccount = InvolvedAccount.Owned(Account.sampleMainnet()),
+                        transferable = Transferable.FungibleType.Token(
+                            asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                            amount = FungibleAmount.Predicted(
+                                estimated = 10.toDecimal192(),
+                                instructionIndex = 1L,
+                                offset = 0.9.toDecimal192()
+                            ),
+                            isNewlyCreated = false
+                        )
                     )
-                )!!
+                )
             )
         }
         TransactionAccountWithGuaranteesCard(

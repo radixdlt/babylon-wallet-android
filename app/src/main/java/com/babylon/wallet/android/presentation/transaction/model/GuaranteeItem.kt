@@ -53,7 +53,7 @@ data class GuaranteeItem(
         copy(typedPercent = Decimal192.parseFromTextField(newTypedPercent).input)
 
     fun isTheSameGuaranteeItem(with: GuaranteeItem): Boolean = account.address == with.account.address &&
-            transferable.resourceAddress == with.transferable.resourceAddress
+        transferable.resourceAddress == with.transferable.resourceAddress
 
     companion object {
         fun from(
