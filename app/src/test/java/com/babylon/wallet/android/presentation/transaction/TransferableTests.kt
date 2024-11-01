@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
@@ -22,20 +23,20 @@ class TransferableTests {
     fun `test ordering of transferable accounts with assets`() {
         val ownedAccounts = listOf(account1, account2)
         val input = listOf(
-            AccountWithTransferables.Other(
-                address = other[1],
+            AccountWithTransferables(
+                account = InvolvedAccount.Other(other[1]),
                 transferables = listOf()
             ),
-            AccountWithTransferables.Other(
-                address = other[0],
+            AccountWithTransferables(
+                account = InvolvedAccount.Other(other[0]),
                 transferables = listOf()
             ),
-            AccountWithTransferables.Owned(
-                ownedAccounts[1],
+            AccountWithTransferables(
+                account = InvolvedAccount.Owned(ownedAccounts[1]),
                 transferables = listOf()
             ),
-            AccountWithTransferables.Owned(
-                ownedAccounts[0],
+            AccountWithTransferables(
+                account = InvolvedAccount.Owned(ownedAccounts[0]),
                 transferables = listOf()
             )
         )
@@ -44,20 +45,20 @@ class TransferableTests {
 
         assertEquals(
             listOf(
-                AccountWithTransferables.Owned(
-                    ownedAccounts[0],
+                AccountWithTransferables(
+                    account = InvolvedAccount.Owned(ownedAccounts[0]),
                     transferables = listOf()
                 ),
-                AccountWithTransferables.Owned(
-                    ownedAccounts[1],
+                AccountWithTransferables(
+                    account = InvolvedAccount.Owned(ownedAccounts[1]),
                     transferables = listOf()
                 ),
-                AccountWithTransferables.Other(
-                    address = other[1],
+                AccountWithTransferables(
+                    account = InvolvedAccount.Other(other[1]),
                     transferables = listOf()
                 ),
-                AccountWithTransferables.Other(
-                    address = other[0],
+                AccountWithTransferables(
+                    account = InvolvedAccount.Other(other[0]),
                     transferables = listOf()
                 )
             ),
