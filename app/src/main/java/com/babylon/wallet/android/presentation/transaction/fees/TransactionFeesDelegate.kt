@@ -369,7 +369,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
                         null -> 0.toDecimal192()
                         is FungibleAmount.Exact -> xrdAmount.amount
                         is FungibleAmount.Predicted -> xrdAmount.estimated
-                        else -> TODO()
+                        else -> 0.toDecimal192() // Should not go through these cases. Fees are calculated only on regular transactions.
                     }
                 } else {
                     0.toDecimal192()
