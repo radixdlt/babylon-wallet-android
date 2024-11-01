@@ -89,7 +89,7 @@ fun StakeUnstakeTypePreview() {
                 badges = emptyList(),
                 validators = emptyList(),
                 actionType = PreviewType.Transfer.Staking.ActionType.Stake,
-                newlyCreatedNFTItems = emptyList()
+                newlyCreatedGlobalIds = emptyList()
             ),
             onPromptForGuarantees = {},
         )

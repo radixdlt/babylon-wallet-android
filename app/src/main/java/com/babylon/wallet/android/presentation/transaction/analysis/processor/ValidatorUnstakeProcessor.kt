@@ -44,7 +44,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
             badges = summary.resolveBadges(assets),
             validators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator },
             actionType = PreviewType.Transfer.Staking.ActionType.Unstake,
-            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
+            newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }
 
@@ -53,7 +53,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         claimsData: Map<NonFungibleGlobalId, UnstakeData>
     ): List<AccountWithTransferables> = map { accountWithTransferables ->
         val transferables = accountWithTransferables.transferables.map tr@{ transferable ->
-            val transferableClaim = (transferable as Transferable.NonFungibleType.StakeClaim) ?: return@tr transferable
+            val transferableClaim = (transferable as? Transferable.NonFungibleType.StakeClaim) ?: return@tr transferable
 
             val nfts = when (transferableClaim.amount) {
                 is NonFungibleAmount.Exact -> transferableClaim.amount.nfts

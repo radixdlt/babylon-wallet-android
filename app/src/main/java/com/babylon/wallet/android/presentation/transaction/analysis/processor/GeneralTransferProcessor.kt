@@ -32,7 +32,7 @@ class GeneralTransferProcessor @Inject constructor(
             to = deposits,
             badges = badges,
             dApps = dApps,
-            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
+            newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }
 

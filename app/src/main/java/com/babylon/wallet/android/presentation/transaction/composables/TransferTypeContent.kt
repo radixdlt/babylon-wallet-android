@@ -76,7 +76,7 @@ fun TransactionPreviewTypePreview() {
                         )
                     )
                 ),
-                newlyCreatedNFTItems = emptyList()
+                newlyCreatedGlobalIds = emptyList()
             ),
             onEditGuaranteesClick = {},
             onDAppClick = { _ -> },

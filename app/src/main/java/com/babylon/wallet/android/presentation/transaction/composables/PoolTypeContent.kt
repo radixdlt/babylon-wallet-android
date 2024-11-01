@@ -86,7 +86,7 @@ fun PoolTypePreview() {
                 ),
                 badges = emptyList(),
                 actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
-                newlyCreatedNFTItems = emptyList()
+                newlyCreatedGlobalIds = emptyList()
             ),
             onPromptForGuarantees = {},
             onDAppClick = {},
