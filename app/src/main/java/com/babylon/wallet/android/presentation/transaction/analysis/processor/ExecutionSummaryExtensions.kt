@@ -48,13 +48,17 @@ fun ExecutionSummary.involvedAddresses(): Set<ResourceOrNonFungible> {
     val nonFungibleIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
             deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
 
-    val fungibles = fungibleIndicators.asSequence().filterNot {
+    val resourceAddresses = fungibleIndicators.asSequence().filterNot {
         newEntities.metadata.containsKey(it.address)
+    }.map {
+        ResourceOrNonFungible.Resource(it.resourceAddress)
+    }.toSet() + nonFungibleIndicators.asSequence().filterNot {
+        newEntities.metadata.containsKey(it.resourceAddress)
     }.map {
         ResourceOrNonFungible.Resource(it.resourceAddress)
     }.toSet()
 
-    val nonFungibleGlobalIds = nonFungibleIndicators.asSequence().filterNot {
+    val globalIds = nonFungibleIndicators.asSequence().filterNot {
         newEntities.metadata.containsKey(it.address)
     }.map { nonFungibleIndicator ->
         nonFungibleIndicator.indicator.ids.mapNotNull { localId ->
@@ -71,7 +75,7 @@ fun ExecutionSummary.involvedAddresses(): Set<ResourceOrNonFungible> {
         }
     }.flatten().toSet()
 
-    return fungibles + nonFungibleGlobalIds + involvedProofAddresses()
+    return resourceAddresses + globalIds + involvedProofAddresses()
 }
 
 /**
@@ -105,7 +109,7 @@ fun ExecutionSummary.resolveBadges(onLedgerAssets: List<Asset>): List<Badge> {
  *
  * @return The [ResourceOrNonFungible] addresses involved as proofs.
  */
-fun ExecutionSummary.involvedProofAddresses(): List<ResourceOrNonFungible> = presentedProofs.map { specifier ->
+fun ExecutionSummary.involvedProofAddresses(): Set<ResourceOrNonFungible> = presentedProofs.map { specifier ->
     when (specifier) {
         is ResourceSpecifier.Fungible -> listOf(ResourceOrNonFungible.Resource(specifier.resourceAddress))
         is ResourceSpecifier.NonFungible -> specifier.ids.map { localId ->
@@ -117,7 +121,7 @@ fun ExecutionSummary.involvedProofAddresses(): List<ResourceOrNonFungible> = pre
             )
         }
     }
-}.flatten()
+}.flatten().toSet()
 
 /**
  * Resolves all newly created NFTs as [Resource.NonFungibleResource.Item]s.
