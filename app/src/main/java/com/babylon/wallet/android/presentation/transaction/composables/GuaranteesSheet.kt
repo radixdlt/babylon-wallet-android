@@ -117,7 +117,6 @@ fun GuaranteesSheet(
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixPrimaryButton(
                     text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_applyButtonText),
                     onClick = {
@@ -125,7 +124,7 @@ fun GuaranteesSheet(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        .padding(RadixTheme.dimensions.paddingDefault),
                     enabled = state.isSubmitEnabled
                 )
             }
