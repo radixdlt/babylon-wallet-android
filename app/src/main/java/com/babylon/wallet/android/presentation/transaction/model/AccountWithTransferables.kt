@@ -32,7 +32,7 @@ sealed interface AccountWithTransferables {
         val guaranteesRelatedToAccount = guaranteeItems.filter { it.account.address == address }.associate {
             it.transferable.resourceAddress to it.updatedAmount
         }
-        transferables.map { transferable ->
+        val updatedTransferables = transferables.map { transferable ->
             val updatedAmount = guaranteesRelatedToAccount[transferable.resourceAddress] ?: return@map transferable
 
             when (transferable) {
@@ -43,10 +43,7 @@ sealed interface AccountWithTransferables {
             }
         }
 
-        return when (this) {
-            is Other -> copy(transferables = transferables)
-            is Owned -> copy(transferables = transferables)
-        }
+        return update(updatedTransferables)
     }
 
     fun update(transferables: List<Transferable>): AccountWithTransferables = when (this) {

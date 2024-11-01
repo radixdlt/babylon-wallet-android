@@ -472,7 +472,7 @@ private fun TransactionPreviewContent(
             },
             showDragHandle = true,
             onDismissRequest = onBackClick,
-            windowInsets = WindowInsets.systemBars.exclude(WindowInsets.navigationBars)
+            windowInsets = WindowInsets.systemBars
         )
     }
 
