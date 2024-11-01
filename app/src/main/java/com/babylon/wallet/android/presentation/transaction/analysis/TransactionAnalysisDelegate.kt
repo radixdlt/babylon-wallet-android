@@ -52,8 +52,9 @@ class TransactionAnalysisDelegate @Inject constructor(
             }.map {
                 transactionToReviewData.transactionToReview.executionSummary
             }
-        }.onSuccess { executionSummary ->
-            val previewType = resolvePreview(executionSummary)
+        }.mapCatching { executionSummary ->
+            resolvePreview(executionSummary)
+        }.onSuccess { previewType ->
             _state.update {
                 it.copy(
                     transactionType = TransactionReviewViewModel.State.TransactionType.Regular,
@@ -104,11 +105,11 @@ class TransactionAnalysisDelegate @Inject constructor(
                         AddressFormat.RAW
                     )} neither on ledger nor as newly created entity. Defaulting to Non Conforming view."
                 )
-                // TODO micbakos
+
                 _state.update {
                     it.copy(
                         isRawManifestVisible = true,
-                        showRawTransactionWarning = false, // TODO micbakos
+                        showRawTransactionWarning = true,
                         isLoading = false,
                         previewType = PreviewType.NonConforming
                     )
