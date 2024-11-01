@@ -306,7 +306,6 @@ class TransactionReviewViewModel @Inject constructor(
             data class CustomizeGuarantees(val guarantees: List<GuaranteeItem>) : Sheet {
 
                 val isSubmitEnabled: Boolean = guarantees.all { it.isInputValid }
-
             }
 
             data class CustomizeFees(

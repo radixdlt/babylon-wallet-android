@@ -33,7 +33,6 @@ fun TokenBalance(
 
         symbol?.let {
             Text(
-                modifier = modifier,
                 text = symbol,
                 style = RadixTheme.typography.header,
                 color = RadixTheme.colors.gray1

@@ -43,7 +43,7 @@ class PoolRedemptionProcessor @Inject constructor(
         val augmentedTransferables = accountWithTransferables.transferables.map tr@{ transferable ->
             val poolUnit = (transferable as? Transferable.FungibleType.PoolUnit) ?: return@tr transferable
 
-            var totalPoolUnitAmount = 0.toDecimal192();
+            var totalPoolUnitAmount = 0.toDecimal192()
             val redemptionsPerResource = mutableMapOf<ResourceAddress, Decimal192>()
 
             redemptions

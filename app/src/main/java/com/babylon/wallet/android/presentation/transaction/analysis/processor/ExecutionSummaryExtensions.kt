@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
@@ -44,10 +46,10 @@ import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
  */
 fun ExecutionSummary.involvedAddresses(): Set<ResourceOrNonFungible> {
     val fungibleIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.Fungible>() +
-            deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
+        deposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
 
     val nonFungibleIndicators = withdrawals.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>() +
-            deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
+        deposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
 
     val resourceAddresses = fungibleIndicators.asSequence().filterNot {
         newEntities.metadata.containsKey(it.address)
@@ -134,7 +136,7 @@ fun ExecutionSummary.resolveWithdrawsAndDeposits(
     profile: Profile
 ): Pair<List<AccountWithTransferables>, List<AccountWithTransferables>> {
     val involvedAccounts = involvedProfileAccounts(profile)
-    val defaultDepositGuarantee = profile.appPreferences.transaction.defaultDepositGuarantee;
+    val defaultDepositGuarantee = profile.appPreferences.transaction.defaultDepositGuarantee
 
     val withdrawsPerAccount = resolveAccounts(
         profileAccounts = involvedAccounts,
@@ -156,7 +158,7 @@ fun ExecutionSummary.resolveWithdrawsAndDeposits(
 private fun ExecutionSummary.involvedProfileAccounts(profile: Profile): Accounts {
     val involvedAccountAddresses = (withdrawals.keys + deposits.keys)
 
-    val accountsToSearch = profile.activeAccountsOnCurrentNetwork.asIdentifiable();
+    val accountsToSearch = profile.activeAccountsOnCurrentNetwork.asIdentifiable()
     return involvedAccountAddresses.mapNotNull { address ->
         accountsToSearch.getBy(address)
     }.asIdentifiable()
@@ -254,89 +256,98 @@ private fun ExecutionSummary.resolveAsset(
     resourceIndicator: ResourceIndicator,
     onLedgerAssets: List<Asset>
 ): Pair<Asset, Boolean> = when (resourceIndicator) {
-    is ResourceIndicator.Fungible -> {
-        val newEntityMetadata = newEntities.metadata[resourceIndicator.address]
-        if (newEntityMetadata != null) {
-            Token(
-                resource = Resource.FungibleResource(
-                    address = resourceIndicator.resourceAddress,
-                    ownedAmount = 0.toDecimal192(), // This amount is irrelevant
-                    metadata = newEntityMetadata.toMetadata()
-                )
-            ) to true
-        } else {
-            val asset = onLedgerAssets.find {
-                it.resource.address == resourceIndicator.address
-            } as? Asset.Fungible ?: throw ResourceCouldNotBeResolvedInTransaction(
-                ResourceOrNonFungible.Resource(resourceIndicator.resourceAddress)
-            )
+    is ResourceIndicator.Fungible -> resolveFungibleAsset(resourceIndicator, onLedgerAssets)
+    is ResourceIndicator.NonFungible -> resolveNonFungibleAsset(resourceIndicator, onLedgerAssets)
+}
 
-            asset to false
-        }
-    }
+private fun ExecutionSummary.resolveNonFungibleAsset(
+    resourceIndicator: ResourceIndicator.NonFungible,
+    onLedgerAssets: List<Asset>
+): Pair<Asset.NonFungible, Boolean> {
+    val ids = resourceIndicator.indicator.ids
 
-    is ResourceIndicator.NonFungible -> {
-        val ids = resourceIndicator.indicator.ids
-
-        val newEntityMetadata = newEntities.metadata[resourceIndicator.address]
-        if (newEntityMetadata != null) {
-            NonFungibleCollection(
-                collection = Resource.NonFungibleResource(
-                    address = resourceIndicator.resourceAddress,
-                    amount = 0, // This amount is irrelevant
-                    metadata = newEntityMetadata.toMetadata(),
-                    items = ids.map {
-                        Item(
-                            collectionAddress = resourceIndicator.resourceAddress,
-                            localId = it
-                        )
-                    }
-                )
-            ) to true
-        } else {
-            val nonFungibleAsset = onLedgerAssets.find {
-                it.resource.address == resourceIndicator.address
-            } as? Asset.NonFungible ?: throw ResourceCouldNotBeResolvedInTransaction(
-                ResourceOrNonFungible.Resource(resourceIndicator.resourceAddress)
-            )
-
-            val onLedgerNFTs = nonFungibleAsset.resource.items.associateBy { it.localId }
-            val newlyCreatedNFTs = newlyCreatedNonFungibles.mapNotNull {
-                if (it.resourceAddress == resourceIndicator.resourceAddress) {
-                    it.nonFungibleLocalId
-                } else {
-                    null
-                }
-            }
-
-            val items = ids.map { id ->
-                if (id in newlyCreatedNFTs) {
+    val newEntityMetadata = newEntities.metadata[resourceIndicator.address]
+    return if (newEntityMetadata != null) {
+        NonFungibleCollection(
+            collection = Resource.NonFungibleResource(
+                address = resourceIndicator.resourceAddress,
+                amount = 0, // This amount is irrelevant
+                metadata = newEntityMetadata.toMetadata(),
+                items = ids.map {
                     Item(
                         collectionAddress = resourceIndicator.resourceAddress,
-                        localId = id
-                    )
-                } else {
-                    onLedgerNFTs[id] ?: throw ResourceCouldNotBeResolvedInTransaction(
-                        ResourceOrNonFungible.NonFungible(
-                            NonFungibleGlobalId(
-                                resourceAddress = resourceIndicator.resourceAddress,
-                                nonFungibleLocalId = id
-                            )
-                        )
+                        localId = it
                     )
                 }
+            )
+        ) to true
+    } else {
+        val nonFungibleAsset = onLedgerAssets.find {
+            it.resource.address == resourceIndicator.address
+        } as? Asset.NonFungible ?: throw ResourceCouldNotBeResolvedInTransaction(
+            ResourceOrNonFungible.Resource(resourceIndicator.resourceAddress)
+        )
+
+        val onLedgerNFTs = nonFungibleAsset.resource.items.associateBy { it.localId }
+        val newlyCreatedNFTs = newlyCreatedNonFungibles.mapNotNull {
+            if (it.resourceAddress == resourceIndicator.resourceAddress) {
+                it.nonFungibleLocalId
+            } else {
+                null
             }
-
-            when (nonFungibleAsset) {
-                is NonFungibleCollection -> nonFungibleAsset.copy(
-                    collection = nonFungibleAsset.collection.copy(items = items)
-                )
-
-                is StakeClaim -> nonFungibleAsset.copy(
-                    nonFungibleResource = nonFungibleAsset.nonFungibleResource.copy(items = items)
-                )
-            } to false
         }
+
+        val items = ids.map { id ->
+            if (id in newlyCreatedNFTs) {
+                Item(
+                    collectionAddress = resourceIndicator.resourceAddress,
+                    localId = id
+                )
+            } else {
+                onLedgerNFTs[id] ?: throw ResourceCouldNotBeResolvedInTransaction(
+                    ResourceOrNonFungible.NonFungible(
+                        NonFungibleGlobalId(
+                            resourceAddress = resourceIndicator.resourceAddress,
+                            nonFungibleLocalId = id
+                        )
+                    )
+                )
+            }
+        }
+
+        when (nonFungibleAsset) {
+            is NonFungibleCollection -> nonFungibleAsset.copy(
+                collection = nonFungibleAsset.collection.copy(items = items)
+            )
+
+            is StakeClaim -> nonFungibleAsset.copy(
+                nonFungibleResource = nonFungibleAsset.nonFungibleResource.copy(items = items)
+            )
+        } to false
+    }
+}
+
+private fun ExecutionSummary.resolveFungibleAsset(
+    resourceIndicator: ResourceIndicator.Fungible,
+    onLedgerAssets: List<Asset>
+): Pair<Asset.Fungible, Boolean> {
+    val newEntityMetadata = newEntities.metadata[resourceIndicator.address]
+    return if (newEntityMetadata != null) {
+        Token(
+            resource = Resource.FungibleResource(
+                address = resourceIndicator.resourceAddress,
+                ownedAmount = 0.toDecimal192(), // This amount is irrelevant
+                metadata = newEntityMetadata.toMetadata()
+            )
+        ) to true
+    } else {
+        val asset = onLedgerAssets.find {
+            it.resource.address == resourceIndicator.address
+        } as? Asset.Fungible ?: throw ResourceCouldNotBeResolvedInTransaction(
+            ResourceOrNonFungible.Resource(resourceIndicator.resourceAddress)
+        )
+
+        asset to false
     }
 }
 
@@ -423,4 +434,3 @@ private fun ExecutionSummary.resolveAccounts(
         transferables = transferables
     )
 }
-

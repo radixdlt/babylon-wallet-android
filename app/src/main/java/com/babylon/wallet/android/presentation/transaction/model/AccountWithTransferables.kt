@@ -39,7 +39,7 @@ data class AccountWithTransferables(
             private val ownedAccountsOrder: List<Account>
         ) : Comparator<AccountWithTransferables> {
 
-            constructor(profile: Profile): this(profile.activeAccountsOnCurrentNetwork)
+            constructor(profile: Profile) : this(profile.activeAccountsOnCurrentNetwork)
 
             override fun compare(thisAccount: AccountWithTransferables?, otherAccount: AccountWithTransferables?): Int {
                 val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.account?.address }

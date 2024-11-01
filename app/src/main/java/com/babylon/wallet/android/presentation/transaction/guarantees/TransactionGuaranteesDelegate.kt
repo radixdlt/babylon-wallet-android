@@ -4,9 +4,7 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
-import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
@@ -43,7 +41,6 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
                 )?.also {
                     accountsWithPredictedGuarantee.add(it)
                 }
-
             }
         }
 

@@ -421,18 +421,15 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
-        RadixWalletException.FailedToCollectLedgerSignature -> context.getString(
-            R.string.common_somethingWentWrong
-        ) // TODO consider different copy
-        RadixWalletException.FailedToCollectSigners -> context.getString(
-            R.string.common_somethingWentWrong
-        ) // TODO consider different copy
-        RadixWalletException.DappMetadataEmpty -> context.getString(R.string.common_somethingWentWrong)
-        RadixWalletException.SignatureCancelled -> context.getString(R.string.common_somethingWentWrong)
-
+        RadixWalletException.FailedToCollectLedgerSignature,
+        RadixWalletException.FailedToCollectSigners,
+        RadixWalletException.DappMetadataEmpty,
+        RadixWalletException.SignatureCancelled,
+        is RadixWalletException.ResourceCouldNotBeResolvedInTransaction,
         is RadixWalletException.IncomingMessageException -> context.getString(
             R.string.common_somethingWentWrong
-        ) // TODO consider different copy
+        )
+
         is RadixWalletException.DappRequestException -> toUserFriendlyMessage(context)
         is RadixWalletException.DappVerificationException -> toUserFriendlyMessage(context)
         is RadixWalletException.LedgerCommunicationException -> toUserFriendlyMessage(context)
@@ -441,7 +438,6 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
         is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
         is RadixWalletException.CloudBackupException -> toUserFriendlyMessage()
-        is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> context.getString(R.string.common_somethingWentWrong)
     }
 }
 

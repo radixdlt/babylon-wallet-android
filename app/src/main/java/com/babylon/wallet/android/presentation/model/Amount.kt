@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.model
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.times
-import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.resources.Resource

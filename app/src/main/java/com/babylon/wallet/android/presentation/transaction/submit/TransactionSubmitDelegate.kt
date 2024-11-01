@@ -221,14 +221,6 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
-    @Throws(CommonException::class)
-    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest =
-        if (previewType is PreviewType.Transfer) {
-            this.addAssertions(previewType.to)
-        } else {
-            this
-        }
-
     private suspend fun reportFailure(error: Throwable) {
         logNonFatalException(error)
         logger.w(error)
