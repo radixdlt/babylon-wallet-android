@@ -124,18 +124,6 @@ fun ExecutionSummary.involvedProofAddresses(): Set<ResourceOrNonFungible> = pres
 }.flatten().toSet()
 
 /**
- * Resolves all newly created NFTs as [Resource.NonFungibleResource.Item]s.
- *
- * @return A list of [Resource.NonFungibleResource.Item] with empty data.
- */
-fun ExecutionSummary.resolveNewlyCreatedNFTs() = newlyCreatedNonFungibles.map {
-    Item(
-        it.resourceAddress,
-        it.nonFungibleLocalId
-    )
-}
-
-/**
  * Extracts information for all accounts and the transferables being involved in the transaction.
  *
  * @return A pair of withdraws and deposits.

@@ -40,7 +40,7 @@ class ValidatorClaimProcessor @Inject constructor(
             validators = involvedValidators.toList(),
             badges = summary.resolveBadges(assets),
             actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake,
-            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
+            newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }
 }

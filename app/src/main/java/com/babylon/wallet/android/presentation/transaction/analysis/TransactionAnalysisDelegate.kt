@@ -76,7 +76,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 if (newlyCreatedResources.isNotEmpty()) {
                     cacheNewlyCreatedEntitiesUseCase.forResources(newlyCreatedResources)
                 }
-                val newlyCreatedNFTItemsForExistingResources = previewType.newlyCreatedNFTItemsForExistingResources
+                val newlyCreatedNFTItemsForExistingResources = previewType.newlyCreatedNFTs
                 if (newlyCreatedNFTItemsForExistingResources.isNotEmpty()) {
                     cacheNewlyCreatedEntitiesUseCase.forNFTs(newlyCreatedNFTItemsForExistingResources)
                 }

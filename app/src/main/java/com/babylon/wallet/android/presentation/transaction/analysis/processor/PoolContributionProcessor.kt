@@ -34,7 +34,7 @@ class PoolContributionProcessor @Inject constructor(
             to = deposits.augmentWithContributions(contributions = classification.poolContributions),
             badges = badges,
             actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
-            newlyCreatedNFTItems = summary.resolveNewlyCreatedNFTs()
+            newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }
 

@@ -36,6 +36,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.hiddenResources
@@ -380,23 +381,24 @@ sealed interface PreviewType {
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferables>
         val to: List<AccountWithTransferables>
-        val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
+        val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
                 allTransfers.transferables.filter { it.isNewlyCreated }.map { it.asset.resource }
             }.flatten()
 
-        val newlyCreatedNFTItemsForExistingResources: List<Resource.NonFungibleResource.Item>
+        val newlyCreatedNFTs: List<Resource.NonFungibleResource.Item>
             get() {
-                val newlyCreatedNFTResources = newlyCreatedResources.filterIsInstance<Resource.NonFungibleResource>()
-                val addresses = newlyCreatedNFTResources.map { it.address }
-                return newlyCreatedNFTItems.filterNot { nftItem ->
-                    val newResource = newlyCreatedNFTResources.find { resource ->
-                        resource.address == nftItem.collectionAddress
+                val allItems = (from + to).asSequence().map { it.transferables }.flatten().map {
+                    when (it) {
+                        is Transferable.NonFungibleType.NFTCollection -> it.amount.allNfts
+                        is Transferable.NonFungibleType.StakeClaim -> it.amount.allNfts
+                        else -> emptyList()
                     }
-                    nftItem.collectionAddress in addresses && nftItem.localId in newResource?.items?.map { it.localId }.orEmpty()
-                }
+                }.flatten().associateBy { it.globalId }
+
+                return newlyCreatedGlobalIds.mapNotNull { allItems[it] }
             }
 
         data class Staking(
@@ -405,7 +407,7 @@ sealed interface PreviewType {
             override val badges: List<Badge>,
             val validators: List<Validator>,
             val actionType: ActionType,
-            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
+            override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
         ) : Transfer {
             enum class ActionType {
                 Stake, Unstake, ClaimStake
@@ -417,7 +419,7 @@ sealed interface PreviewType {
             override val to: List<AccountWithTransferables>,
             override val badges: List<Badge>,
             val actionType: ActionType,
-            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
+            override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
@@ -436,7 +438,7 @@ sealed interface PreviewType {
             override val to: List<AccountWithTransferables>,
             override val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
-            override val newlyCreatedNFTItems: List<Resource.NonFungibleResource.Item>
+            override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
         ) : Transfer
     }
 }

@@ -44,7 +44,12 @@ sealed interface FungibleAmount : Amount {
 
 sealed interface NonFungibleAmount : Amount { // TODO under research
 
-    data class Exact(val nfts: List<Resource.NonFungibleResource.Item>) : NonFungibleAmount
+    val allNfts: List<Resource.NonFungibleResource.Item>
+
+    data class Exact(val nfts: List<Resource.NonFungibleResource.Item>) : NonFungibleAmount {
+        override val allNfts: List<Resource.NonFungibleResource.Item>
+            get() = nfts
+    }
 
     data class NotExact(
         val lowerBound: LowerBound,
@@ -60,5 +65,8 @@ sealed interface NonFungibleAmount : Amount { // TODO under research
             data class Inclusive(val amount: Decimal192) : UpperBound
             data object Unbounded : UpperBound
         }
+
+        override val allNfts: List<Resource.NonFungibleResource.Item>
+            get() = emptyList()
     }
 }

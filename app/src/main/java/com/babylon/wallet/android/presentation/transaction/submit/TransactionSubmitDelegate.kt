@@ -165,7 +165,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             }
             val previewType = _state.value.previewType
             if (previewType is PreviewType.Transfer) {
-                clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTItemsForExistingResources)
+                clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTs)
             }
         }.onFailure { throwable ->
             throwable.asRadixWalletException()?.let { radixWalletException ->
