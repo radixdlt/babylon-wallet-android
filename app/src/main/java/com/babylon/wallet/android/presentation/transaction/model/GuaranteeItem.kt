@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
 import com.babylon.wallet.android.presentation.model.FungibleAmount
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
@@ -15,18 +14,6 @@ import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
-
-sealed interface InvolvedAccount {
-
-    val address: AccountAddress
-
-    data class Owned(val account: Account): InvolvedAccount {
-        override val address: AccountAddress
-            get() = account.address
-    }
-
-    data class Other(override val address: AccountAddress): InvolvedAccount
-}
 
 @Suppress("MagicNumber")
 data class GuaranteeItem(
