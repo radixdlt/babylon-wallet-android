@@ -33,6 +33,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
@@ -156,8 +157,8 @@ fun DepositAccountPreview() {
     RadixWalletTheme {
         DepositAccountContent(
             to = listOf(
-                AccountWithTransferables.Owned(
-                    account = Account.sampleMainnet(),
+                AccountWithTransferables(
+                    account = InvolvedAccount.Owned(Account.sampleMainnet()),
                     transferables = emptyList()
                 )
             ).toPersistentList(),

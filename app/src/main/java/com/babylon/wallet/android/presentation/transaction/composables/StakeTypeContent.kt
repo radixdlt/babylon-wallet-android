@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -75,8 +76,8 @@ fun StakeUnstakeTypePreview() {
             previewType = PreviewType.Transfer.Staking(
                 to = persistentListOf(),
                 from = listOf(
-                    AccountWithTransferables.Owned(
-                        account = Account.sampleMainnet(),
+                    AccountWithTransferables(
+                        account = InvolvedAccount.Owned(Account.sampleMainnet()),
                         transferables = listOf(
                             Transferable.FungibleType.Token(
                                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),

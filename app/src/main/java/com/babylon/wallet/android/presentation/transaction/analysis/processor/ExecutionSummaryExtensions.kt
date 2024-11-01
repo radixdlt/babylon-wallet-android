@@ -4,6 +4,7 @@ import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBe
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
@@ -416,16 +417,10 @@ private fun ExecutionSummary.resolveAccounts(
     }
 
     val profileAccount = profileAccounts.getBy(entry.key)
-    if (profileAccount != null) {
-        AccountWithTransferables.Owned(
-            account = profileAccount,
-            transferables = transferables
-        )
-    } else {
-        AccountWithTransferables.Other(
-            address = entry.key,
-            transferables = transferables
-        )
-    }
+
+    AccountWithTransferables(
+        account = profileAccount?.let { InvolvedAccount.Owned(it) } ?: InvolvedAccount.Other(entry.key),
+        transferables = transferables
+    )
 }
 

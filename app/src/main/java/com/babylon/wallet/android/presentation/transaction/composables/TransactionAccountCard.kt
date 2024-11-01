@@ -27,6 +27,7 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -61,7 +62,7 @@ fun TransactionAccountCard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TransactionAccountCardHeader(
-            account = account,
+            accountWithTransferables = account,
             shape = RadixTheme.shapes.roundedRectTopMedium
         )
 
@@ -139,25 +140,25 @@ fun TransactionAccountCard(
 @Composable
 fun TransactionAccountCardHeader(
     modifier: Modifier = Modifier,
-    account: AccountWithTransferables,
+    accountWithTransferables: AccountWithTransferables,
     shape: Shape = RadixTheme.shapes.roundedRectTopMedium
 ) {
     AccountCardHeader(
-        displayName = when (account) {
-            is AccountWithTransferables.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
-            is AccountWithTransferables.Owned -> account.account.displayName.value
+        displayName = when (val involvedAccount = accountWithTransferables.account) {
+            is InvolvedAccount.Other -> stringResource(id = R.string.interactionReview_externalAccountName)
+            is InvolvedAccount.Owned -> involvedAccount.account.displayName.value
         },
         modifier = modifier
             .fillMaxWidth()
             .background(
-                brush = when (account) {
-                    is AccountWithTransferables.Other -> SolidColor(RadixTheme.colors.gray2)
-                    is AccountWithTransferables.Owned -> account.account.appearanceId.gradient()
+                brush = when (val involvedAccount = accountWithTransferables.account) {
+                    is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2)
+                    is InvolvedAccount.Owned -> involvedAccount.account.appearanceId.gradient()
                 },
                 shape = shape
             )
             .padding(RadixTheme.dimensions.paddingMedium),
-        address = account.address
+        address = accountWithTransferables.account.address
     )
 }
 
@@ -208,8 +209,8 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
 fun TransactionAccountCardWithTokenPreview() {
     RadixWalletTheme {
         TransactionAccountCard(
-            account = AccountWithTransferables.Owned(
-                account = Account.sampleMainnet(),
+            account = AccountWithTransferables(
+                account = InvolvedAccount.Owned(Account.sampleMainnet()),
                 transferables = listOf(
                     Transferable.FungibleType.Token(
                         asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
@@ -238,8 +239,8 @@ fun TransactionAccountCardWithNFTPreview() {
             NonFungibleAmount.Exact(nfts = asset.collection.items)
         }
         TransactionAccountCard(
-            account = AccountWithTransferables.Owned(
-                account = Account.sampleMainnet(),
+            account = AccountWithTransferables(
+                account = InvolvedAccount.Owned(Account.sampleMainnet()),
                 transferables = listOf(
                     Transferable.NonFungibleType.NFTCollection(
                         asset = asset,
