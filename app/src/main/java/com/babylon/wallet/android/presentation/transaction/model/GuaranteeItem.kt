@@ -32,40 +32,38 @@ sealed interface InvolvedAccount {
 data class GuaranteeItem(
     val account: InvolvedAccount,
     val transferable: Transferable.FungibleType,
-    val typedPercent: String
+    val typedPercent: String // User's typed amount
 ) {
-
-    val updatedAmount: FungibleAmount.Predicted = (transferable.amount as FungibleAmount.Predicted).copy(
-        percent = typedOffsetDecimal
-    )
 
     val accountAddress: AccountAddress
         get() = account.address
 
-    private val typedOffsetDecimal: Decimal192
-        get() = Decimal192.parseFromTextField(typedPercent).decimal.orZero() / hundred
+    // The decimal representation of the user's typed amount. Can be null if the input is malformed.
+    private val typedPercentDecimal: Decimal192? = Decimal192.parseFromTextField(textFieldString = typedPercent).decimal
+
+    val isInputValid: Boolean = typedPercentDecimal != null
+
+    val isDecreaseAllowed: Boolean = typedPercentDecimal != null && typedPercentDecimal > zero
+
+    // The updated amount with the guarantee.
+    val updatedAmount: FungibleAmount.Predicted = (transferable.amount as FungibleAmount.Predicted).copy(
+        offset = typedPercentDecimal.orZero() / hundred
+    )
 
     fun increase(): GuaranteeItem {
-        val newPercent = ((typedOffsetDecimal + changeOffset) * hundred).rounded(decimalPlaces = 1u)
+        val newPercent = (typedPercentDecimal.orZero() + changeOffset).rounded(decimalPlaces = 1u)
 
         return copy(typedPercent = newPercent.formattedTextField())
     }
 
     fun decrease(): GuaranteeItem {
-        val newPercent = ((typedOffsetDecimal - changeOffset).clamped * hundred).rounded(decimalPlaces = 1u)
+        val newPercent = (typedPercentDecimal.orZero() - changeOffset).clamped.rounded(decimalPlaces = 1u)
 
         return copy(typedPercent = newPercent.formattedTextField())
     }
 
-    fun change(newTypedPercent: String): GuaranteeItem {
-        val decimal = Decimal192.parseFromTextField(newTypedPercent).decimal.orZero()
-
-        return if (decimal >= zero) {
-            copy(typedPercent = newTypedPercent)
-        } else {
-            this
-        }
-    }
+    fun change(newTypedPercent: String): GuaranteeItem =
+        copy(typedPercent = Decimal192.parseFromTextField(newTypedPercent).input)
 
     fun isTheSameGuaranteeItem(with: GuaranteeItem): Boolean = account.address == with.account.address &&
             transferable.resourceAddress == with.transferable.resourceAddress
@@ -80,12 +78,12 @@ data class GuaranteeItem(
             return GuaranteeItem(
                 account = involvedAccount,
                 transferable = transferable,
-                typedPercent = predictedAmount.percent.formattedTextField()
+                typedPercent = (predictedAmount.offset * hundred).formattedTextField()
             )
         }
 
-        private val changeOffset = 0.01.toDecimal192()
-        private val zero = 0.toDecimal192()
+        private val changeOffset = 1.toDecimal192()
         private val hundred = 100.toDecimal192()
+        private val zero = 0.toDecimal192()
     }
 }

@@ -14,6 +14,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -197,13 +199,16 @@ fun TransactionAccountWithGuaranteesCard(
 
                 IconButton(
                     modifier = Modifier.weight(0.7f),
-                    onClick = onGuaranteePercentDecreased
+                    onClick = onGuaranteePercentDecreased,
+                    enabled = guaranteeItem.isDecreaseAllowed,
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        contentColor = RadixTheme.colors.gray1
+                    )
                 ) {
                     Icon(
                         painterResource(
                             id = com.babylon.wallet.android.R.drawable.ic_minus
                         ),
-                        tint = RadixTheme.colors.gray1,
                         contentDescription = "minus button"
                     )
                 }
@@ -213,6 +218,7 @@ fun TransactionAccountWithGuaranteesCard(
                     onValueChanged = onGuaranteePercentChanged,
                     value = guaranteeItem.typedPercent,
                     singleLine = true,
+                    errorHighlight = !guaranteeItem.isInputValid,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.None,
                         keyboardType = KeyboardType.Number
@@ -221,13 +227,15 @@ fun TransactionAccountWithGuaranteesCard(
 
                 IconButton(
                     modifier = Modifier.weight(0.7f),
-                    onClick = onGuaranteePercentIncreased
+                    onClick = onGuaranteePercentIncreased,
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        contentColor = RadixTheme.colors.gray1
+                    )
                 ) {
                     Icon(
                         painterResource(
                             id = com.babylon.wallet.android.R.drawable.ic_plus
                         ),
-                        tint = RadixTheme.colors.gray1,
                         contentDescription = "plus button"
                     )
                 }
@@ -254,7 +262,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                         amount = FungibleAmount.Predicted(
                             estimated = 10.toDecimal192(),
                             instructionIndex = 1L,
-                            percent = 90.toDecimal192()
+                            offset = 0.9.toDecimal192()
                         ),
                         isNewlyCreated = false
                     )

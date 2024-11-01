@@ -126,7 +126,7 @@ fun GuaranteesSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    enabled = true
+                    enabled = state.isSubmitEnabled
                 )
             }
         }
@@ -148,7 +148,7 @@ private fun GuaranteesSheetPreview() {
                             amount = FungibleAmount.Predicted(
                                 estimated = 10.toDecimal192(),
                                 instructionIndex = 1L,
-                                percent = 100.toDecimal192()
+                                offset = 1.toDecimal192()
                             ),
                             isNewlyCreated = false
                         ),

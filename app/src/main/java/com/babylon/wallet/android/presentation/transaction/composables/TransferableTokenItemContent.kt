@@ -158,7 +158,7 @@ private fun TransferableTokenWithGuaranteeAmountPreview() {
                 amount = FungibleAmount.Predicted(
                     estimated = 69.toDecimal192(),
                     instructionIndex = 4L,
-                    percent = "180".toDecimal192()
+                    offset = "1.8".toDecimal192()
                 ),
                 isNewlyCreated = false
             ),

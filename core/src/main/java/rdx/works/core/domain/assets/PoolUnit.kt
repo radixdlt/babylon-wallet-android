@@ -46,7 +46,7 @@ data class PoolUnit(
         contributionPerResource: Map<ResourceAddress, Decimal192> = pool?.resources?.mapNotNull { entry ->
             if (entry.ownedAmount == null) return@mapNotNull null
             entry.address to entry.ownedAmount
-        }?.associate { it.first to it.second }.orEmpty()
+        }?.associate { it }.orEmpty()
     ): Decimal192? {
         if (poolUnitAmount == null) return null
         val poolItemContribution = contributionPerResource[address] ?: return null

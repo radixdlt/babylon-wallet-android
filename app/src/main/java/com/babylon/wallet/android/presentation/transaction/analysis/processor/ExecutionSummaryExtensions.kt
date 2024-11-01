@@ -236,15 +236,20 @@ private fun ResourceIndicator.Fungible.amount(defaultGuaranteeOffset: Decimal192
     is FungibleResourceIndicator.Predicted -> FungibleAmount.Predicted(
         estimated = fungibleIndicator.predictedDecimal.value,
         instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
-        percent = defaultGuaranteeOffset
+        offset = defaultGuaranteeOffset
     )
+}
+
+private fun ResourceIndicator.Fungible.amountDecimal() = when (val fungibleIndicator = indicator) {
+    is FungibleResourceIndicator.Guaranteed -> fungibleIndicator.decimal
+    is FungibleResourceIndicator.Predicted -> fungibleIndicator.predictedDecimal.value
 }
 
 private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonFungibleAmount {
     val onLedgerItems = asset.resource.items
 
     val items = indicator.ids.map { localId ->
-        onLedgerItems.find { it.localId == localId } ?: Resource.NonFungibleResource.Item(
+        onLedgerItems.find { it.localId == localId } ?: Item(
             collectionAddress = asset.resource.address, localId = localId
         )
     }
@@ -288,7 +293,7 @@ private fun ExecutionSummary.resolveAsset(
                     amount = 0, // This amount is irrelevant
                     metadata = newEntityMetadata.toMetadata(),
                     items = ids.map {
-                        Resource.NonFungibleResource.Item(
+                        Item(
                             collectionAddress = resourceIndicator.resourceAddress,
                             localId = it
                         )
@@ -313,7 +318,7 @@ private fun ExecutionSummary.resolveAsset(
 
             val items = ids.map { id ->
                 if (id in newlyCreatedNFTs) {
-                    Resource.NonFungibleResource.Item(
+                    Item(
                         collectionAddress = resourceIndicator.resourceAddress,
                         localId = id
                     )
@@ -360,68 +365,27 @@ private fun ExecutionSummary.resolveTransferable(
         )
 
         is LiquidStakeUnit -> {
-            val amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee)
-            val amountDecimal = when (amount) {
-                is FungibleAmount.Exact -> amount.amount
-                is FungibleAmount.Predicted -> amount.estimated
-                else -> TODO()
-            }
-
+            val fungibleResourceIndicator = resourceIndicator as ResourceIndicator.Fungible
             Transferable.FungibleType.LSU(
                 asset = asset,
-                amount = amount,
-                xrdWorth = asset.stakeValueXRD(ownedAmount = amountDecimal).orZero(),
+                amount = fungibleResourceIndicator.amount(defaultDepositGuarantee),
+                xrdWorth = asset.stakeValueXRD(ownedAmount = fungibleResourceIndicator.amountDecimal()).orZero(),
                 isNewlyCreated = isNewlyCreated
             )
         }
 
         is PoolUnit -> {
-            val amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee)
+            val fungibleResourceIndicator = resourceIndicator as ResourceIndicator.Fungible
+
             Transferable.FungibleType.PoolUnit(
                 asset = asset,
-                amount = amount,
+                amount = fungibleResourceIndicator.amount(defaultDepositGuarantee),
                 isNewlyCreated = isNewlyCreated,
                 contributionPerResource = asset.pool?.resources?.mapNotNull { entry ->
-                    val contribution = when (amount) {
-                        is FungibleAmount.Exact -> asset.poolItemRedemptionValue(
-                            address = entry.address,
-                            poolUnitAmount = amount.amount
-                        )?.let { FungibleAmount.Exact(amount = it) }
-
-                        is FungibleAmount.Predicted -> asset.poolItemRedemptionValue(
-                            address = entry.address,
-                            poolUnitAmount = amount.estimated
-                        )?.let { FungibleAmount.Exact(amount = it) }
-                        is FungibleAmount.Max -> asset.poolItemRedemptionValue(
-                            address = entry.address,
-                            poolUnitAmount = amount.amount
-                        )?.let { FungibleAmount.Max(amount = it) }
-                        is FungibleAmount.Min -> asset.poolItemRedemptionValue(
-                            address = entry.address,
-                            poolUnitAmount = amount.amount
-                        )?.let { FungibleAmount.Min(amount = it) }
-                        is FungibleAmount.Range -> {
-                            val min = asset.poolItemRedemptionValue(
-                                address = entry.address,
-                                poolUnitAmount = amount.minAmount
-                            )
-
-                            val max = asset.poolItemRedemptionValue(
-                                address = entry.address,
-                                poolUnitAmount = amount.maxAmount
-                            )
-
-                            if (min != null && max != null) {
-                                FungibleAmount.Range(
-                                    minAmount = min,
-                                    maxAmount = max
-                                )
-                            } else {
-                                null
-                            }
-                        }
-                        is FungibleAmount.Unknown -> null
-                    }
+                    val contribution = asset.poolItemRedemptionValue(
+                        address = entry.address,
+                        poolUnitAmount = fungibleResourceIndicator.amountDecimal()
+                    )?.let { FungibleAmount.Exact(amount = it) }
 
                     if (contribution == null) return@mapNotNull null
 

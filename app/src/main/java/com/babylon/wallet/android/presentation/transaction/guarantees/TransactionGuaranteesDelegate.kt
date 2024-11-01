@@ -45,7 +45,10 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
                 GuaranteeItem.from(
                     involvedAccount = involvedAccount,
                     transferable = fungibleTransferable
-                )
+                )?.also {
+                    accountsWithPredictedGuarantee.add(it)
+                }
+
             }
         }
 
