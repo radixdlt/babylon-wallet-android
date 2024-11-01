@@ -39,6 +39,7 @@ import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
@@ -385,7 +386,7 @@ private fun TransactionPreviewContent(
                                     is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
                                         Transferable.NonFungibleType.NFTCollection(
                                             asset = NonFungibleCollection(resource),
-                                            amount = TODO(),
+                                            amount = NonFungibleAmount.Exact(nfts = resource.items),
                                             isNewlyCreated = false
                                         ),
                                         resource.items.firstOrNull()
