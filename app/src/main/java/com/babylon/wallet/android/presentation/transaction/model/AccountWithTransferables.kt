@@ -2,34 +2,20 @@ package com.babylon.wallet.android.presentation.transaction.model
 
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Profile
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 
-sealed interface AccountWithTransferables {
-
-    val address: AccountAddress
+data class AccountWithTransferables(
+    val account: InvolvedAccount,
     val transferables: List<Transferable>
-
-    data class Owned(
-        val account: Account,
-        override val transferables: List<Transferable>
-    ) : AccountWithTransferables {
-        override val address: AccountAddress
-            get() = account.address
-    }
-
-    data class Other(
-        override val address: AccountAddress,
-        override val transferables: List<Transferable>
-    ) : AccountWithTransferables
+) {
 
     fun hashCustomisableGuarantees() = transferables.any { it.amount is FungibleAmount.Predicted }
 
     fun updateFromGuarantees(
         guaranteeItems: List<GuaranteeItem>
     ): AccountWithTransferables {
-        val guaranteesRelatedToAccount = guaranteeItems.filter { it.account.address == address }.associate {
+        val guaranteesRelatedToAccount = guaranteeItems.filter { it.account.address == account.address }.associate {
             it.transferable.resourceAddress to it.updatedAmount
         }
         val updatedTransferables = transferables.map { transferable ->
@@ -46,10 +32,7 @@ sealed interface AccountWithTransferables {
         return update(updatedTransferables)
     }
 
-    fun update(transferables: List<Transferable>): AccountWithTransferables = when (this) {
-        is Other -> copy(transferables = transferables)
-        is Owned -> copy(transferables = transferables)
-    }
+    fun update(transferables: List<Transferable>): AccountWithTransferables = copy(transferables = transferables)
 
     companion object {
         class Sorter(
@@ -59,8 +42,8 @@ sealed interface AccountWithTransferables {
             constructor(profile: Profile): this(profile.activeAccountsOnCurrentNetwork)
 
             override fun compare(thisAccount: AccountWithTransferables?, otherAccount: AccountWithTransferables?): Int {
-                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
-                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
+                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.account?.address }
+                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.account?.address }
 
                 return if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
                     1 // The other account is owned, so it takes higher priority

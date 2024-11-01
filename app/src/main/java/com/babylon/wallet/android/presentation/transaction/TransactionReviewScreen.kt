@@ -56,6 +56,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.TransferT
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -609,8 +610,8 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                 ),
                 previewType = PreviewType.Transfer.GeneralTransfer(
                     from = listOf(
-                        AccountWithTransferables.Owned(
-                            account = Account.sampleStokenet(),
+                        AccountWithTransferables(
+                            account = InvolvedAccount.Owned(Account.sampleStokenet()),
                             transferables = listOf(
                                 Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
@@ -621,8 +622,8 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         )
                     ),
                     to = listOf(
-                        AccountWithTransferables.Owned(
-                            account = Account.sampleMainnet(),
+                        AccountWithTransferables(
+                            account = InvolvedAccount.Owned(Account.sampleMainnet()),
                             transferables = listOf(
                                 Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
@@ -651,8 +652,8 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                 ),
                 previewType = PreviewType.Transfer.GeneralTransfer(
                     from = listOf(
-                        AccountWithTransferables.Owned(
-                            account = Account.sampleStokenet(),
+                        AccountWithTransferables(
+                            account = InvolvedAccount.Owned(Account.sampleStokenet()),
                             transferables = listOf(
                                 Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
@@ -663,8 +664,8 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         )
                     ),
                     to = listOf(
-                        AccountWithTransferables.Owned(
-                            account = Account.sampleMainnet(),
+                        AccountWithTransferables(
+                            account = InvolvedAccount.Owned(Account.sampleMainnet()),
                             transferables = listOf(
                                 Transferable.FungibleType.Token(
                                     asset = Token(resource = Resource.FungibleResource.sampleMainnet()),

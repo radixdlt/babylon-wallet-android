@@ -33,17 +33,12 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
         val transaction = (_state.value.previewType as? PreviewType.Transfer) ?: return
 
         val accountsWithPredictedGuarantee = mutableListOf<GuaranteeItem>()
-        transaction.to.forEach { accountWithTransferableResources ->
-            accountWithTransferableResources.transferables.forEach tr@{ transferable ->
+        transaction.to.forEach { accountWithTransferables ->
+            accountWithTransferables.transferables.forEach tr@{ transferable ->
                 val fungibleTransferable = (transferable as? Transferable.FungibleType) ?: return@tr
 
-                val involvedAccount = when (accountWithTransferableResources) {
-                    is AccountWithTransferables.Other -> InvolvedAccount.Other(accountWithTransferableResources.address)
-                    is AccountWithTransferables.Owned -> InvolvedAccount.Owned(accountWithTransferableResources.account)
-                }
-
                 GuaranteeItem.from(
-                    involvedAccount = involvedAccount,
+                    involvedAccount = accountWithTransferables.account,
                     transferable = fungibleTransferable
                 )?.also {
                     accountsWithPredictedGuarantee.add(it)
@@ -112,7 +107,7 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
 
         val depositsWithUpdatedGuarantees = preview.to.mapWhen(
             predicate = { depositing ->
-                sheet.guarantees.any { it.accountAddress == depositing.address }
+                sheet.guarantees.any { it.accountAddress == depositing.account.address }
             },
             mutation = { depositing ->
                 depositing.updateFromGuarantees(sheet.guarantees)

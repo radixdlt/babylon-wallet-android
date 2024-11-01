@@ -368,7 +368,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         // will not spend any other XRD rather than the ones spent for the fees
         val xrdUsed = when (val previewType = _state.value.previewType) {
             is PreviewType.Transfer.GeneralTransfer -> {
-                val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
+                val candidateAddressWithdrawn = previewType.from.find { it.account.address == candidateAddress }
                 if (candidateAddressWithdrawn != null) {
                     val xrdAmount = candidateAddressWithdrawn
                         .transferables

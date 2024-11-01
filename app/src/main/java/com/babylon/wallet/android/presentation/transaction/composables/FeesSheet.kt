@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
@@ -206,8 +207,8 @@ fun FeesSheet(
                     TransactionAccountCardHeader(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        account = AccountWithTransferables.Owned(
-                            account = feePayer.feePayerCandidate,
+                        accountWithTransferables = AccountWithTransferables(
+                            account = InvolvedAccount.Owned(feePayer.feePayerCandidate),
                             transferables = emptyList()
                         ),
                         shape = RadixTheme.shapes.roundedRectMedium
