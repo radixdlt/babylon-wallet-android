@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
+package com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
 import com.babylon.wallet.android.presentation.model.FungibleAmount
