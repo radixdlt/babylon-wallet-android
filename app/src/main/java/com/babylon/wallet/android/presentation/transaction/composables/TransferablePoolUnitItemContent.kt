@@ -115,7 +115,7 @@ fun TransferablePoolUnitItemContent(
                         color = RadixTheme.colors.gray1,
                         maxLines = 2
                     )
-                    val contributionPerResourceAmount = transferablePoolUnit.contributionPerResource[item.address]
+                    val contributionPerResourceAmount = transferablePoolUnit.contributions[item.address]
                     if (contributionPerResourceAmount != null) {
                         FungibleAmountSection(
                             fungibleAmount = contributionPerResourceAmount

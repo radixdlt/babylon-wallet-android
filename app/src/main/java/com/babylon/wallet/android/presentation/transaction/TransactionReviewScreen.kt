@@ -385,7 +385,7 @@ private fun TransactionPreviewContent(
                                     is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
                                         Transferable.NonFungibleType.NFTCollection(
                                             asset = NonFungibleCollection(resource),
-                                            amount = NonFungibleAmount.Exact(nfts = resource.items),
+                                            amount = NonFungibleAmount.Certain(nfts = resource.items),
                                             isNewlyCreated = false
                                         ),
                                         resource.items.firstOrNull()

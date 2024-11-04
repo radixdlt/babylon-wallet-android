@@ -414,7 +414,7 @@ fun NavigationHost(
                     is Transferable.FungibleType.PoolUnit -> mutableMapOf(
                         fungibleTransferable.asset.resource.address to fungibleTransferable.amount
                     ).apply {
-                        putAll(fungibleTransferable.contributionPerResource)
+                        putAll(fungibleTransferable.contributions)
                     }
 
                     is Transferable.FungibleType.Token -> mapOf(fungibleTransferable.asset.resource.address to fungibleTransferable.amount)

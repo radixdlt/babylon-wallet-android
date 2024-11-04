@@ -391,8 +391,8 @@ sealed interface PreviewType {
             get() {
                 val allItems = (from + to).asSequence().map { it.transferables }.flatten().map {
                     when (it) {
-                        is Transferable.NonFungibleType.NFTCollection -> it.amount.allNfts
-                        is Transferable.NonFungibleType.StakeClaim -> it.amount.allNfts
+                        is Transferable.NonFungibleType.NFTCollection -> it.amount.certainNFTs
+                        is Transferable.NonFungibleType.StakeClaim -> it.amount.certainNFTs
                         else -> emptyList()
                     }
                 }.flatten().associateBy { it.globalId }

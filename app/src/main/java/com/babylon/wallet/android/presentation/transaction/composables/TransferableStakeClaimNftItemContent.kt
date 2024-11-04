@@ -124,7 +124,7 @@ fun TransferableStakeClaimNftItemContent(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = transferableStakeClaim.xrdWorthPerNftItem[item.localId]?.formatted().orEmpty(),
+                    text = item.claimAmountXrd?.formatted().orEmpty(),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,

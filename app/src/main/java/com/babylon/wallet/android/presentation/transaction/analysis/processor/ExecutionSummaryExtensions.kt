@@ -37,6 +37,7 @@ import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.toResourceOrNonFungible
 
 /**
  * Resolves all the addresses involved in the transaction and can be queried from gateway. That means that newly created
@@ -113,17 +114,7 @@ fun ExecutionSummary.resolveBadges(onLedgerAssets: List<Asset>): List<Badge> {
  * @return The [ResourceOrNonFungible] addresses involved as proofs.
  */
 fun ExecutionSummary.involvedProofAddresses(): Set<ResourceOrNonFungible> = presentedProofs.map { specifier ->
-    when (specifier) {
-        is ResourceSpecifier.Fungible -> listOf(ResourceOrNonFungible.Resource(specifier.resourceAddress))
-        is ResourceSpecifier.NonFungible -> specifier.ids.map { localId ->
-            ResourceOrNonFungible.NonFungible(
-                NonFungibleGlobalId(
-                    resourceAddress = specifier.resourceAddress,
-                    nonFungibleLocalId = localId
-                )
-            )
-        }
-    }
+    specifier.toResourceOrNonFungible()
 }.flatten().toSet()
 
 /**
@@ -249,7 +240,7 @@ private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonF
         )
     }
 
-    return NonFungibleAmount.Exact(nfts = items)
+    return NonFungibleAmount.Certain(nfts = items)
 }
 
 private fun ExecutionSummary.resolveAsset(
@@ -284,9 +275,7 @@ private fun ExecutionSummary.resolveNonFungibleAsset(
     } else {
         val nonFungibleAsset = onLedgerAssets.find {
             it.resource.address == resourceIndicator.address
-        } as? Asset.NonFungible ?: throw ResourceCouldNotBeResolvedInTransaction(
-            ResourceOrNonFungible.Resource(resourceIndicator.resourceAddress)
-        )
+        } as? Asset.NonFungible ?: throw ResourceCouldNotBeResolvedInTransaction(resourceIndicator.resourceAddress)
 
         val onLedgerNFTs = nonFungibleAsset.resource.items.associateBy { it.localId }
         val newlyCreatedNFTs = newlyCreatedNonFungibles.mapNotNull {
@@ -305,12 +294,8 @@ private fun ExecutionSummary.resolveNonFungibleAsset(
                 )
             } else {
                 onLedgerNFTs[id] ?: throw ResourceCouldNotBeResolvedInTransaction(
-                    ResourceOrNonFungible.NonFungible(
-                        NonFungibleGlobalId(
-                            resourceAddress = resourceIndicator.resourceAddress,
-                            nonFungibleLocalId = id
-                        )
-                    )
+                    resourceAddress = resourceIndicator.resourceAddress,
+                    localId = id
                 )
             }
         }
@@ -344,7 +329,7 @@ private fun ExecutionSummary.resolveFungibleAsset(
         val asset = onLedgerAssets.find {
             it.resource.address == resourceIndicator.address
         } as? Asset.Fungible ?: throw ResourceCouldNotBeResolvedInTransaction(
-            ResourceOrNonFungible.Resource(resourceIndicator.resourceAddress)
+            resourceIndicator.resourceAddress
         )
 
         asset to false
@@ -370,11 +355,14 @@ private fun ExecutionSummary.resolveTransferable(
 
         is LiquidStakeUnit -> {
             val fungibleResourceIndicator = resourceIndicator as ResourceIndicator.Fungible
+            val amount = fungibleResourceIndicator.amount(defaultDepositGuarantee)
             Transferable.FungibleType.LSU(
                 asset = asset,
-                amount = fungibleResourceIndicator.amount(defaultDepositGuarantee),
-                xrdWorth = asset.stakeValueXRD(ownedAmount = fungibleResourceIndicator.amountDecimal()).orZero(),
-                isNewlyCreated = isNewlyCreated
+                amount = amount,
+                isNewlyCreated = isNewlyCreated,
+                xrdWorth = amount.calculateWith { decimal ->
+                    asset.stakeValueXRD(lsu = decimal).orZero()
+                }
             )
         }
 
@@ -385,16 +373,6 @@ private fun ExecutionSummary.resolveTransferable(
                 asset = asset,
                 amount = fungibleResourceIndicator.amount(defaultDepositGuarantee),
                 isNewlyCreated = isNewlyCreated,
-                contributionPerResource = asset.pool?.resources?.mapNotNull { entry ->
-                    val contribution = asset.poolItemRedemptionValue(
-                        address = entry.address,
-                        poolUnitAmount = fungibleResourceIndicator.amountDecimal()
-                    )?.let { FungibleAmount.Exact(amount = it) }
-
-                    if (contribution == null) return@mapNotNull null
-
-                    entry.address to contribution
-                }?.associate { it }.orEmpty()
             )
         }
 
@@ -407,7 +385,6 @@ private fun ExecutionSummary.resolveTransferable(
         is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
             asset = asset,
             amount = (resourceIndicator as ResourceIndicator.NonFungible).amount(asset),
-            xrdWorthPerNftItem = asset.nonFungibleResource.items.associate { it.localId to it.claimAmountXrd.orZero() },
             isNewlyCreated = isNewlyCreated
         )
     }

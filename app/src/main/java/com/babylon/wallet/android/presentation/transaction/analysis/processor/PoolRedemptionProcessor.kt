@@ -67,10 +67,7 @@ class PoolRedemptionProcessor @Inject constructor(
                 else -> FungibleAmount.Exact(totalPoolUnitAmount)
             }
 
-            poolUnit.copy(
-                amount = newAmount,
-                contributionPerResource = redemptionsPerResource.mapValues { FungibleAmount.Exact(it.value) }
-            )
+            poolUnit.copy(amount = newAmount)
         }
 
         accountWithTransferables.update(augmentedTransferables)

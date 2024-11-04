@@ -5,7 +5,6 @@ import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
-import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceAddress
@@ -44,33 +43,24 @@ class PoolContributionProcessor @Inject constructor(
         val augmentedTransferables = accountWithTransferables.transferables.map tr@{ transferable ->
             val poolUnit = (transferable as? Transferable.FungibleType.PoolUnit) ?: return@tr transferable
 
-            var totalPoolUnitAmount = 0.toDecimal192()
-            val contributionsPerResource = mutableMapOf<ResourceAddress, Decimal192>()
+            var totalPoolUnitAmount = poolUnit.amount.just(0.toDecimal192())
+            val contributionsPerResource = mutableMapOf<ResourceAddress, FungibleAmount>()
 
-            contributions
-                .filter {
-                    it.poolUnitsResourceAddress == poolUnit.resourceAddress
-                }.forEach { contribution ->
-                    contribution.contributedResources.forEach { (address, amount) ->
-                        val currentAmount = contributionsPerResource.getOrDefault(address, 0.toDecimal192())
+            contributions.filter {
+                it.poolUnitsResourceAddress == poolUnit.resourceAddress
+            }.forEach { contribution ->
+                contribution.contributedResources.forEach { (address, amount) ->
+                    val currentAmount = contributionsPerResource.getOrDefault(address, poolUnit.amount.just(0.toDecimal192()))
 
-                        contributionsPerResource[address] = currentAmount + amount
-                    }
-
-                    totalPoolUnitAmount += contribution.poolUnitsAmount
+                    contributionsPerResource[address] = currentAmount.calculateWith { it + amount }
                 }
 
-            val newAmount = when (poolUnit.amount) {
-                is FungibleAmount.Exact -> FungibleAmount.Exact(totalPoolUnitAmount)
-                is FungibleAmount.Predicted -> poolUnit.amount.copy(
-                    estimated = totalPoolUnitAmount
-                )
-                else -> FungibleAmount.Exact(totalPoolUnitAmount)
+                totalPoolUnitAmount = totalPoolUnitAmount.calculateWith { it + contribution.poolUnitsAmount }
             }
 
             poolUnit.copy(
-                amount = newAmount,
-                contributionPerResource = contributionsPerResource.mapValues { FungibleAmount.Exact(it.value) }
+                amount = totalPoolUnitAmount,
+                contributions = contributionsPerResource
             )
         }
 
