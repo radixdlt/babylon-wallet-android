@@ -73,7 +73,7 @@ sealed interface NonFungibleAmount : Amount {
 
     data class NotExact(
         val certain: List<Resource.NonFungibleResource.Item>,
-        val additional: NonFungibleAmountBounds?
+        val additional: NonFungibleAmountBounds
     ) : NonFungibleAmount {
 
         override val certainNFTs: List<Resource.NonFungibleResource.Item>
