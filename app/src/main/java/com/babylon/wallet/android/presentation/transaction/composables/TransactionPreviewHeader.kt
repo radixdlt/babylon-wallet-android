@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -50,7 +51,7 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 @Composable
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
-    transactionType: State.TransactionType,
+    transactionType: TransactionType,
     isRawManifestToggleVisible: Boolean,
     isRawManifestVisible: Boolean,
     proposingDApp: State.ProposingDApp?,
@@ -63,7 +64,7 @@ fun TransactionPreviewHeader(
         title = stringResource(id = transactionType.titleRes()),
         proposingDApp = proposingDApp,
         actions = {
-            if (transactionType == State.TransactionType.Regular) {
+            if (!transactionType.isPreAuthorized) {
                 TransactionRawManifestToggle(
                     modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
                     isToggleVisible = isRawManifestToggleVisible,
@@ -192,11 +193,9 @@ private fun TransactionPreviewHeader(
     )
 }
 
-private fun State.TransactionType.titleRes(): Int {
-    return when (this) {
-        State.TransactionType.PreAuthorized -> R.string.preAuthorizationReview_title
-        State.TransactionType.Regular -> R.string.transactionReview_title
-    }
+private fun TransactionType.titleRes(): Int = when (this) {
+    is TransactionType.PreAuthorized -> R.string.preAuthorizationReview_title
+    else -> R.string.transactionReview_title
 }
 
 @Preview(showBackground = true)
@@ -205,7 +204,7 @@ private fun State.TransactionType.titleRes(): Int {
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
-            transactionType = State.TransactionType.Regular,
+            transactionType = TransactionType.Generic,
             proposingDApp = State.ProposingDApp.Some(
                 dApp = DApp(
                     dAppAddress = AccountAddress.sampleMainnet(),

@@ -31,17 +31,17 @@ fun StakeTypeContent(
     state: TransactionReviewViewModel.State,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
-    previewType: PreviewType.Transfer.Staking,
+    previewType: PreviewType.Transaction.Staking,
     onPromptForGuarantees: () -> Unit
 ) {
     val validatorSectionText = when (previewType.actionType) {
-        PreviewType.Transfer.Staking.ActionType.Stake ->
+        PreviewType.Transaction.Staking.ActionType.Stake ->
             stringResource(id = R.string.interactionReview_stakingToValidatorsHeading).uppercase()
 
-        PreviewType.Transfer.Staking.ActionType.Unstake ->
+        PreviewType.Transaction.Staking.ActionType.Unstake ->
             stringResource(id = R.string.interactionReview_unstakingFromValidatorsHeading).uppercase()
 
-        PreviewType.Transfer.Staking.ActionType.ClaimStake ->
+        PreviewType.Transaction.Staking.ActionType.ClaimStake ->
             stringResource(id = R.string.interactionReview_claimFromValidatorsHeading).uppercase()
     }
     CommonTransferContent(
@@ -73,7 +73,7 @@ fun StakeUnstakeTypePreview() {
             ),
             onTransferableFungibleClick = { _ -> },
             onNonTransferableFungibleClick = { _, _ -> },
-            previewType = PreviewType.Transfer.Staking(
+            previewType = PreviewType.Transaction.Staking(
                 to = persistentListOf(),
                 from = listOf(
                     AccountWithTransferables(
@@ -89,7 +89,7 @@ fun StakeUnstakeTypePreview() {
                 ),
                 badges = emptyList(),
                 validators = emptyList(),
-                actionType = PreviewType.Transfer.Staking.ActionType.Stake,
+                actionType = PreviewType.Transaction.Staking.ActionType.Stake,
                 newlyCreatedGlobalIds = emptyList()
             ),
             onPromptForGuarantees = {},

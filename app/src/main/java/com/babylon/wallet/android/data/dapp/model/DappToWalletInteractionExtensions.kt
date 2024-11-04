@@ -13,6 +13,7 @@ import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
+import com.radixdlt.sargon.DappToWalletInteractionSubintentRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.RequestedNumberQuantifier
@@ -30,25 +31,35 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
         isInternal = false
     )
     when (val itemsTemp = items) {
-        is DappToWalletInteractionItems.AuthorizedRequest -> {
-            itemsTemp.v1.parseAuthorizedRequest(remoteEntityId, interactionId, metadata)
-        }
+        is DappToWalletInteractionItems.AuthorizedRequest -> itemsTemp.v1.toDomainModel(
+            remoteEntityId = remoteEntityId,
+            interactionId = interactionId,
+            metadata = metadata
+        )
 
-        is DappToWalletInteractionItems.Transaction -> {
-            itemsTemp.v1.send.toDomainModel(remoteEntityId, interactionId, metadata)
-        }
+        is DappToWalletInteractionItems.Transaction -> itemsTemp.v1.send.toDomainModel(
+            remoteConnectorId = remoteEntityId,
+            requestId = interactionId,
+            metadata = metadata
+        )
 
-        is DappToWalletInteractionItems.UnauthorizedRequest -> {
-            itemsTemp.v1.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
-        }
+        is DappToWalletInteractionItems.UnauthorizedRequest -> itemsTemp.v1.toDomainModel(
+            remoteEntityId = remoteEntityId,
+            requestId = interactionId,
+            metadata = metadata
+        )
 
-        is DappToWalletInteractionItems.PreAuthorization -> TODO()
+        is DappToWalletInteractionItems.PreAuthorization -> itemsTemp.v1.request.toDomainModel(
+            remoteConnectorId = remoteEntityId,
+            requestId = interactionId,
+            metadata = metadata
+        )
     }
 }.mapError {
     RadixWalletException.IncomingMessageException.MessageParse(it)
 }
 
-fun DappToWalletInteractionSendTransactionItem.toDomainModel(
+private fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     remoteConnectorId: RemoteEntityID,
     requestId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata
@@ -64,7 +75,24 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     requestMetadata = metadata
 )
 
-private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedRequest(
+private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
+    remoteConnectorId: RemoteEntityID,
+    requestId: WalletInteractionId,
+    metadata: DappToWalletInteraction.RequestMetadata
+) = TransactionRequest(
+    remoteEntityId = remoteConnectorId,
+    interactionId = requestId,
+    unvalidatedManifestData = UnvalidatedManifestData(
+        instructions = unvalidatedManifest.subintentManifestString,
+        networkId = metadata.networkId,
+        plainMessage = message,
+        blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
+    ),
+    requestMetadata = metadata,
+    transactionType = TransactionType.PreAuthorized(expiration = expiration)
+)
+
+private fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(
     remoteEntityId: RemoteEntityID,
     requestId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata
@@ -78,7 +106,7 @@ private fun DappToWalletInteractionUnauthorizedRequestItems.parseUnauthorizedReq
     )
 }
 
-fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(
+private fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(
     isOngoing: Boolean = false
 ): DappToWalletInteraction.PersonaDataRequestItem {
     return DappToWalletInteraction.PersonaDataRequestItem(
@@ -89,7 +117,7 @@ fun DappToWalletInteractionPersonaDataRequestItem.toDomainModel(
     )
 }
 
-fun DappToWalletInteractionAccountsRequestItem.toDomainModel(
+private fun DappToWalletInteractionAccountsRequestItem.toDomainModel(
     isOngoing: Boolean = true
 ): DappToWalletInteraction.AccountsRequestItem? {
     // correct request but not actionable, return null
@@ -105,7 +133,7 @@ fun DappToWalletInteractionAccountsRequestItem.toDomainModel(
     )
 }
 
-fun RequestedQuantity.toDomainModel(): DappToWalletInteraction.NumberOfValues {
+private fun RequestedQuantity.toDomainModel(): DappToWalletInteraction.NumberOfValues {
     return when (quantifier) {
         RequestedNumberQuantifier.EXACTLY -> {
             DappToWalletInteraction.NumberOfValues(
@@ -123,7 +151,7 @@ fun RequestedQuantity.toDomainModel(): DappToWalletInteraction.NumberOfValues {
     }
 }
 
-private fun DappToWalletInteractionAuthorizedRequestItems.parseAuthorizedRequest(
+private fun DappToWalletInteractionAuthorizedRequestItems.toDomainModel(
     remoteEntityId: RemoteEntityID,
     interactionId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata

@@ -10,7 +10,6 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.UnstakeData
-import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -38,12 +37,12 @@ class ValidatorUnstakeProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transfer.Staking(
+        return PreviewType.Transaction.Staking(
             from = withdraws,
             to = deposits.augmentWithClaimNFTs(claimsData = classification.claimsNonFungibleData),
             badges = summary.resolveBadges(assets),
             validators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator },
-            actionType = PreviewType.Transfer.Staking.ActionType.Unstake,
+            actionType = PreviewType.Transaction.Staking.ActionType.Unstake,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

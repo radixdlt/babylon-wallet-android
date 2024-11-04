@@ -32,7 +32,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Ac
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolRedemptionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.ExecutionSummaryAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
@@ -127,7 +127,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
-    private val previewTypeAnalyzer = PreviewTypeAnalyzer(
+    private val executionSummaryAnalyser = ExecutionSummaryAnalyser(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
             getProfileUseCase = getProfileUseCase,
@@ -274,7 +274,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         return TransactionReviewViewModel(
             analysis = TransactionAnalysisDelegate(
                 transactionRepository = transactionRepository,
-                previewTypeAnalyzer = previewTypeAnalyzer,
+                executionSummaryAnalyser = executionSummaryAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
             ),

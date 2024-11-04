@@ -34,12 +34,12 @@ class ValidatorStakeProcessor @Inject constructor(
             profile = profile
         )
 
-        return PreviewType.Transfer.Staking(
+        return PreviewType.Transaction.Staking(
             from = withdraws,
             to = deposits.augmentWithStakes(classification.validatorStakes),
             badges = summary.resolveBadges(assets),
             validators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator },
-            actionType = PreviewType.Transfer.Staking.ActionType.Stake,
+            actionType = PreviewType.Transaction.Staking.ActionType.Stake,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

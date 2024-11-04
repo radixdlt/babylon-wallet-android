@@ -22,7 +22,7 @@ fun CommonTransferContent(
     state: TransactionReviewViewModel.State,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
-    previewType: PreviewType.Transfer,
+    previewType: PreviewType.Transaction,
     onEditGuaranteesClick: () -> Unit,
     middleSection: @Composable () -> Unit
 ) {

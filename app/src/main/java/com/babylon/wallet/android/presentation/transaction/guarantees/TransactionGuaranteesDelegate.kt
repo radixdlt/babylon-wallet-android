@@ -28,7 +28,7 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
     TransactionGuaranteesDelegate {
 
     override fun onEditGuaranteesClick() {
-        val transaction = (_state.value.previewType as? PreviewType.Transfer) ?: return
+        val transaction = (_state.value.previewType as? PreviewType.Transaction) ?: return
 
         val accountsWithPredictedGuarantee = mutableListOf<GuaranteeItem>()
         transaction.to.forEach { accountWithTransferables ->
@@ -100,7 +100,7 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
 
     override fun onGuaranteesApplyClick() {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
-        val preview = (_state.value.previewType as? PreviewType.Transfer) ?: return
+        val preview = (_state.value.previewType as? PreviewType.Transaction) ?: return
 
         val depositsWithUpdatedGuarantees = preview.to.mapWhen(
             predicate = { depositing ->
@@ -112,9 +112,9 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
         )
 
         val updatedPreview = when (preview) {
-            is PreviewType.Transfer.GeneralTransfer -> preview.copy(to = depositsWithUpdatedGuarantees)
-            is PreviewType.Transfer.Pool -> preview.copy(to = depositsWithUpdatedGuarantees)
-            is PreviewType.Transfer.Staking -> preview.copy(to = depositsWithUpdatedGuarantees)
+            is PreviewType.Transaction.GeneralTransfer -> preview.copy(to = depositsWithUpdatedGuarantees)
+            is PreviewType.Transaction.Pool -> preview.copy(to = depositsWithUpdatedGuarantees)
+            is PreviewType.Transaction.Staking -> preview.copy(to = depositsWithUpdatedGuarantees)
         }
 
         _state.update {

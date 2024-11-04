@@ -20,7 +20,7 @@ class TransferProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transfer.GeneralTransfer(
+        return PreviewType.Transaction.GeneralTransfer(
             from = withdraws,
             to = deposits,
             badges = badges,
