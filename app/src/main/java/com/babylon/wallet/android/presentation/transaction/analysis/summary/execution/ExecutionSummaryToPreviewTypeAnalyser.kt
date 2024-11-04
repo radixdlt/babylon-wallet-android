@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.transaction.analysis.processor
+package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
 
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
@@ -8,7 +8,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
-class ExecutionSummaryAnalyser @Inject constructor(
+class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val generalTransferProcessor: GeneralTransferProcessor,
     private val transferProcessor: TransferProcessor,
     private val poolContributionProcessor: PoolContributionProcessor,

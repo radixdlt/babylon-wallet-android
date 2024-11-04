@@ -19,15 +19,15 @@ import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolContributionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolRedemptionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ExecutionSummaryAnalyser
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.TransferProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorUnstakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDepositSettingsProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorUnstakeProcessor
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
@@ -65,7 +65,7 @@ internal fun testViewModel(
     getFiatValueUseCase: GetFiatValueUseCase
 ) = TransactionReviewViewModel(
     analysis = TransactionAnalysisDelegate(
-        executionSummaryAnalyser = ExecutionSummaryAnalyser(
+        executionSummaryToPreviewTypeAnalyser = ExecutionSummaryToPreviewTypeAnalyser(
             generalTransferProcessor = GeneralTransferProcessor(
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository),
                 getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),

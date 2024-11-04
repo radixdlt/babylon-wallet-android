@@ -4,8 +4,6 @@ import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ManifestSummary
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.SubintentManifest
-import com.radixdlt.sargon.TransactionManifest
 
 sealed interface Summary {
 
@@ -44,17 +42,3 @@ sealed interface Summary {
 
 }
 
-sealed interface SummarizedManifest {
-
-    val networkId: NetworkId
-
-    data class Transaction(val manifest: TransactionManifest): SummarizedManifest {
-        override val networkId: NetworkId
-            get() = manifest.networkId
-    }
-
-    data class Subintent(val manifest: SubintentManifest): SummarizedManifest {
-        override val networkId: NetworkId
-            get() = manifest.networkId
-    }
-}

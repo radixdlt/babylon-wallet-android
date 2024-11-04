@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.transaction.analysis.processor
+package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
 import com.babylon.wallet.android.presentation.model.FungibleAmount
@@ -16,8 +16,6 @@ import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.SimpleCountedResourceBounds
 import com.radixdlt.sargon.SimpleResourceBounds
 import com.radixdlt.sargon.UnspecifiedResources
-import com.radixdlt.sargon.extensions.Accounts
-import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.orZero
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit

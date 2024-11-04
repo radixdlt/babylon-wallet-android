@@ -7,10 +7,10 @@ import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntiti
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ExecutionSummaryAnalyser
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummarizedManifest
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryAnalyser
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.Blob
@@ -29,8 +29,8 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
-    private val executionSummaryAnalyser: ExecutionSummaryAnalyser,
-    private val manifestSummaryAnalyser: ManifestSummaryAnalyser,
+    private val executionSummaryToPreviewTypeAnalyser: ExecutionSummaryToPreviewTypeAnalyser,
+    private val manifestSummaryToPreviewTypeAnalyser: ManifestSummaryToPreviewTypeAnalyser,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val sargonOsManager: SargonOsManager,
     private val getProfileUseCase: GetProfileUseCase
@@ -81,7 +81,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             manifest = SummarizedManifest.Transaction(transactionToReview.transactionManifest),
             summary = transactionToReview.executionSummary
         )
-        val previewType = executionSummaryAnalyser.analyze(summary)
+        val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
 
         Analysis(
             previewType = previewType,
@@ -107,7 +107,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     manifest = SummarizedManifest.Subintent(preAuthToReview.v1.manifest),
                     summary = preAuthToReview.v1.summary
                 )
-                val previewType = executionSummaryAnalyser.analyze(summary)
+                val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
 
                 Analysis(
                     previewType = previewType,
@@ -121,7 +121,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     manifest = SummarizedManifest.Subintent(preAuthToReview.v1.manifest),
                     summary = preAuthToReview.v1.summary
                 )
-                val previewType = manifestSummaryAnalyser.analyze(summary = summary)
+                val previewType = manifestSummaryToPreviewTypeAnalyser.analyze(summary = summary)
 
                 Analysis(
                     previewType = previewType,

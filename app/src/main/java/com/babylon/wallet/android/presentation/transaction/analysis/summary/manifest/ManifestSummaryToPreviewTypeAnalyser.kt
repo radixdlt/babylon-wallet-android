@@ -2,17 +2,16 @@ package com.babylon.wallet.android.presentation.transaction.analysis.summary.man
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.involvedResourceAddresses
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.resolveWithdrawsAndDeposits
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.involvedResourceAddresses
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.resolveWithdrawsAndDeposits
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummaryToPreviewTypeAnalyzer
 import com.radixdlt.sargon.DappToWalletInteractionSubintentExpiration
-import com.radixdlt.sargon.ManifestSummary
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-class ManifestSummaryAnalyser @Inject constructor(
+class ManifestSummaryToPreviewTypeAnalyser @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
     private val getProfileUseCase: GetProfileUseCase,
 ): SummaryToPreviewTypeAnalyzer<Summary.FromStaticAnalysis> {

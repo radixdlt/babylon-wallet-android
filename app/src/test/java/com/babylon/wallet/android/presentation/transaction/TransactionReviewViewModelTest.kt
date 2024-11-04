@@ -28,15 +28,15 @@ import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSigner
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolContributionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolRedemptionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ExecutionSummaryAnalyser
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.TransferProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorUnstakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDepositSettingsProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorUnstakeProcessor
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
@@ -127,7 +127,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
-    private val executionSummaryAnalyser = ExecutionSummaryAnalyser(
+    private val executionSummaryToPreviewTypeAnalyser = ExecutionSummaryToPreviewTypeAnalyser(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
             getProfileUseCase = getProfileUseCase,
@@ -274,7 +274,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         return TransactionReviewViewModel(
             analysis = TransactionAnalysisDelegate(
                 transactionRepository = transactionRepository,
-                executionSummaryAnalyser = executionSummaryAnalyser,
+                executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
             ),
