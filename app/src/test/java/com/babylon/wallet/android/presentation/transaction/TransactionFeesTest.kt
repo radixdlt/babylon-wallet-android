@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
-import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
@@ -21,7 +21,7 @@ import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 
-class FeesResolverTest {
+class TransactionFeesTest {
 
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
@@ -74,7 +74,7 @@ class FeesResolverTest {
             reservedInstructions = emptyList()
         )
 
-        val fees = FeesResolver.resolve(summary, notaryAndSigners, PreviewType.None)
+        val fees = TransactionFees.from(summary, notaryAndSigners, PreviewType.None)
 
         assertEquals("0.1283795", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
@@ -100,7 +100,7 @@ class FeesResolverTest {
             reservedInstructions = emptyList()
         )
 
-        val fees = FeesResolver.resolve(summary, notaryAndSigners, PreviewType.None)
+        val fees = TransactionFees.from(summary, notaryAndSigners, PreviewType.None)
 
         assertEquals("0.5283795", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
@@ -126,7 +126,7 @@ class FeesResolverTest {
             reservedInstructions = emptyList()
         )
 
-        val fees = FeesResolver.resolve(summary, notaryAndSigners, PreviewType.None)
+        val fees = TransactionFees.from(summary, notaryAndSigners, PreviewType.None)
 
         assertEquals("0.0283795", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
@@ -152,7 +152,7 @@ class FeesResolverTest {
             reservedInstructions = emptyList()
         )
 
-        val fees = FeesResolver.resolve(summary, notaryAndSigners, PreviewType.None)
+        val fees = TransactionFees.from(summary, notaryAndSigners, PreviewType.None)
 
         assertNull(fees.networkFeeDisplayed)
         assertEquals("0", fees.defaultRoyaltyFeesDisplayed)
@@ -178,7 +178,7 @@ class FeesResolverTest {
             reservedInstructions = emptyList()
         )
 
-        val fees = FeesResolver.resolve(
+        val fees = TransactionFees.from(
             summary = summary,
             notaryAndSigners = notaryAndSigners.copy(
                 signers = listOf(Account.sampleMainnet().asProfileEntity())
@@ -211,7 +211,7 @@ class FeesResolverTest {
             reservedInstructions = emptyList()
         )
 
-        val fees = FeesResolver.resolve(
+        val fees = TransactionFees.from(
             summary = summary,
             notaryAndSigners = notaryAndSigners.copy(
                 signers = listOf(Account.sampleMainnet().asProfileEntity())

@@ -10,7 +10,6 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
-import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -77,7 +76,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         )
         _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
 
-        val transactionFees = FeesResolver.resolve(
+        val transactionFees = TransactionFees.from(
             summary = executionSummary,
             notaryAndSigners = NotaryAndSigners(
                 signers = analysis.signers,
