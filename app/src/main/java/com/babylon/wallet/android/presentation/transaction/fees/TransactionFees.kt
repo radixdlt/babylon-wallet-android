@@ -123,13 +123,21 @@ data class TransactionFees(
      * Finalized fee to lock for the transaction
      **/
     val transactionFeeToLock: Decimal192
-        get() = (networkFee - nonContingentFeeLock).clamped
+        get() = (
+            totalExecutionCost +
+                networkFinalization +
+                effectiveTip +
+                networkStorage +
+                feePaddingAmountForCalculation +
+                royalties -
+                nonContingentFeeLock
+            ).clamped
 
     val transactionFeeTotalUsd: FiatPrice?
         get() = xrdFiatPrice?.let { FiatPrice(transactionFeeToLock * it.price, it.currency) }
 
     /**
-     * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION
+     * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION + STORAGE)
      */
     private val defaultPadding: Decimal192 = PERCENT_15 * (totalExecutionCost + networkFinalization + networkStorage)
 
