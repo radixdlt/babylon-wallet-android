@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis.summary.man
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.involvedResourceAddresses
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.resolveWithdrawsAndDeposits
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummaryToPreviewTypeAnalyzer
 import com.radixdlt.sargon.DappToWalletInteractionSubintentExpiration
