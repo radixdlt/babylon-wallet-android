@@ -9,18 +9,21 @@ import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
+import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
-import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toUnit
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
@@ -65,22 +68,24 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
     private val logger = Timber.tag("TransactionFees")
 
-    suspend fun resolveFees(signers: List<ProfileEntity>) {
+    suspend fun resolveFees(analysis: Analysis): Result<Unit> {
+        val executionSummary = (analysis.summary as? Summary.FromExecution)?.summary ?: error(
+            "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
+        )
         _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
-        val executionSummary = data.value.transactionToReviewData.transactionToReview.executionSummary
 
         val transactionFees = FeesResolver.resolve(
             summary = executionSummary,
             notaryAndSigners = NotaryAndSigners(
-                signers = signers,
+                signers = analysis.signers,
                 ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey
             ),
             previewType = _state.value.previewType
         )
         observeFeesChanges()
 
-        searchFeePayersUseCase(
-            feePayerCandidates = data.value.feePayerCandidates,
+        return searchFeePayersUseCase(
+            feePayerCandidates = executionSummary.feePayerCandidates(),
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayers ->
             _state.update { state ->
@@ -105,7 +110,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
                     error = TransactionErrorMessage(throwable)
                 )
             }
-        }
+        }.toUnit()
     }
 
     override fun onCustomizeClick() {
@@ -392,7 +397,12 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
-        return selectedAccountAddress?.let { data.value.feePayerCandidates.contains(it) } ?: true
+        val executionSummary = (data.value.summary as? Summary.FromExecution)?.summary ?: error(
+            "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
+        )
+
+        val candidates = executionSummary.feePayerCandidates()
+        return selectedAccountAddress?.let { candidates.contains(it) } ?: true
     }
 
     private fun switchToFeePayerSelection() {
@@ -412,4 +422,8 @@ class TransactionFeesDelegateImpl @Inject constructor(
             )
         }
     }
+
+    private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
+            deposits.keys +
+            addressesOfAccountsRequiringAuth.toSet()
 }

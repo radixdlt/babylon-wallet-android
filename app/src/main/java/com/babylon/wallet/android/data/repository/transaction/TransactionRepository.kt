@@ -31,12 +31,6 @@ import javax.inject.Inject
 
 interface TransactionRepository {
 
-    suspend fun analyzeTransaction(
-        manifestData: UnvalidatedManifestData,
-        isWalletTransaction: Boolean,
-        notaryPublicKey: PublicKey.Ed25519
-    ): Result<TransactionToReviewData>
-
     suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash>
 
     suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus
@@ -55,31 +49,6 @@ class TransactionRepositoryImpl @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : TransactionRepository {
-
-    override suspend fun analyzeTransaction(
-        manifestData: UnvalidatedManifestData,
-        isWalletTransaction: Boolean,
-        notaryPublicKey: PublicKey.Ed25519
-    ): Result<TransactionToReviewData> {
-        return withContext(dispatcher) {
-            runCatching {
-                val sargonOs = sargonOsManager.sargonOs
-                val message = manifestData.message
-                val transactionToReview = sargonOs.analyseTransactionPreview(
-                    instructions = manifestData.instructions,
-                    blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-                    areInstructionsOriginatingFromHost = isWalletTransaction,
-                    nonce = Nonce.secureRandom(),
-                    notaryPublicKey = notaryPublicKey,
-                )
-
-                TransactionToReviewData(
-                    transactionToReview = transactionToReview,
-                    message = message
-                )
-            }
-        }
-    }
 
     override suspend fun getLedgerEpoch(): Result<Epoch> {
         return transactionApi.transactionConstruction().toResult().map { it.ledgerState.epoch.toULong() }
