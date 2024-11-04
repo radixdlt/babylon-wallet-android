@@ -234,15 +234,15 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
-            TransactionToReviewData(
-                transactionToReview = TransactionToReview(
-                    transactionManifest = TransactionManifest.sample(),
-                    executionSummary = emptyExecutionSummary
-                ),
-                message = Message.None
-            )
-        )
+//        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+//            TransactionToReviewData(
+//                transactionToReview = TransactionToReview(
+//                    transactionManifest = TransactionManifest.sample(),
+//                    executionSummary = emptyExecutionSummary
+//                ),
+//                message = Message.None
+//            )
+//        )
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             respondToIncomingRequestUseCase.respondWithSuccess(

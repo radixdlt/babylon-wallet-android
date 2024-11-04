@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
-import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -18,6 +17,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
@@ -59,6 +59,7 @@ import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.sargon.getResourcePreferences
+import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -142,15 +143,20 @@ class TransactionReviewViewModel @Inject constructor(
             }
 
             withContext(defaultDispatcher) {
-                analysis.analyse().onSuccess { signers ->
-                    if (!request.transactionType.isPreAuthorized) {
-                        fees.resolveFees(signers) // TODO check result type
+                analysis.analyse()
+                    .onSuccess { analysis ->
+                        data.update { it.copy(txSummary = analysis.summary) }
                     }
-                }
+                    .then { analysis ->
+                        if (!request.transactionType.isPreAuthorized) {
+                            fees.resolveFees(analysis)
+                        } else {
+                            Result.success(Unit)
+                        }
+                    }
 
+                processDApp(request)
             }
-
-            processDApp(request)
         }
     }
 
@@ -208,7 +214,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class Data(
         private val txRequest: TransactionRequest? = null,
-        private val txToReviewData: TransactionToReviewData? = null,
+        private val txSummary: Summary? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val signers: List<ProfileEntity> = emptyList(),
         val endEpoch: ULong? = null,
@@ -219,15 +225,10 @@ class TransactionReviewViewModel @Inject constructor(
 
         val request: TransactionRequest
             get() = requireNotNull(txRequest)
-        val transactionToReviewData: TransactionToReviewData
-            get() = requireNotNull(txToReviewData)
 
-        val feePayerCandidates: List<AccountAddress> by lazy {
-            val manifestSummary = transactionToReviewData.manifestSummary
-            manifestSummary.addressesOfAccountsWithdrawnFrom +
-                    manifestSummary.addressesOfAccountsDepositedInto +
-                    manifestSummary.addressesOfAccountsRequiringAuth
-        }
+        val summary: Summary
+            get() = requireNotNull(txSummary)
+
     }
 
     data class State(
@@ -449,8 +450,7 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferables>,
         val to: List<AccountWithTransferables>,
         val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
-        override val badges: List<Badge>,
-        val expiration: Expiration?
+        override val badges: List<Badge>
     ) : PreviewType {
 
         sealed interface Expiration {
