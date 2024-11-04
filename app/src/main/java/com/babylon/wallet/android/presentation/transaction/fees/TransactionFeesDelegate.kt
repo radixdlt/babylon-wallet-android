@@ -19,7 +19,6 @@ import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
@@ -62,8 +61,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
     TransactionFeesDelegate {
 
     private val logger = Timber.tag("TransactionFees")
-
-    private var searchFeePayersJob: Job? = null
 
     suspend fun resolveFees() {
         _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
@@ -228,30 +225,23 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     override fun onFeePaddingAmountChanged(feePaddingAmount: String) {
-        data.update {
-            it.copy(
-                transactionFees = it.transactionFees?.copy(
-                    feePaddingAmount = feePaddingAmount
+        val transactionFees = data.value.transactionFees ?: return
+        val feePayers = data.value.feePayers ?: return
+        val newTransactionFees = transactionFees.copy(
+            feePaddingAmount = feePaddingAmount
+        )
+
+        data.update { data ->
+            data.copy(
+                transactionFees = newTransactionFees,
+                feePayers = feePayers.copy(
+                    candidates = feePayers.candidates.map {
+                        it.copy(
+                            hasEnoughBalance = it.xrdAmount >= newTransactionFees.transactionFeeToLock
+                        )
+                    }
                 )
             )
-        }
-
-        searchFeePayersJob?.cancel()
-        searchFeePayersJob = viewModelScope.launch {
-            val feePayers = data.value.feePayers ?: return@launch
-            val transactionFees = data.value.transactionFees ?: return@launch
-
-            data.update { data ->
-                data.copy(
-                    feePayers = feePayers.copy(
-                        candidates = feePayers.candidates.map {
-                            it.copy(
-                                hasEnoughBalance = it.xrdAmount >= transactionFees.transactionFeeToLock
-                            )
-                        }
-                    )
-                )
-            }
         }
     }
 
