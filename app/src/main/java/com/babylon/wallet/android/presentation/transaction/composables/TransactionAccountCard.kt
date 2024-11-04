@@ -236,7 +236,7 @@ fun TransactionAccountCardWithNFTPreview() {
             NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
         }
         val amount = remember(asset) {
-            NonFungibleAmount.Exact(nfts = asset.collection.items)
+            NonFungibleAmount.Certain(nfts = asset.collection.items)
         }
         TransactionAccountCard(
             account = AccountWithTransferables(

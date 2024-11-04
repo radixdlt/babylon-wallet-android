@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -9,13 +8,11 @@ import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.TrackedValidatorStake
-import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
-import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.roundedWith
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -53,26 +50,23 @@ class ValidatorStakeProcessor @Inject constructor(
         val transferables = accountWithTransferableResources.transferables.map tr@{ transferable ->
             val lsu = (transferable as? Transferable.FungibleType.LSU) ?: return@tr transferable
 
-            var totalStakeForLSU = 0.toDecimal192()
-            var totalXrdWorthForLSU = 0.toDecimal192()
+            var totalStaked = 0.toDecimal192()
+            var totalStakedXrd = 0.toDecimal192()
 
             stakes.filter {
                 it.liquidStakeUnitAddress == lsu.resourceAddress
             }.forEach { stake ->
-                totalStakeForLSU += stake.liquidStakeUnitAmount
-                totalXrdWorthForLSU += stake.xrdAmount
+                totalStaked += stake.liquidStakeUnitAmount
+                totalStakedXrd += stake.xrdAmount
             }
 
-            val lsuAmount = when (lsu.amount) {
-                is FungibleAmount.Exact -> lsu.amount.amount
-                is FungibleAmount.Predicted -> lsu.amount.estimated
-                else -> TODO() // Cannot calculate
-            }
-
-            val xrdWorth = ((lsuAmount / totalStakeForLSU) * totalXrdWorthForLSU)
-                .roundedWith(lsu.asset.fungibleResource.divisibility)
-
-            lsu.copy(xrdWorth = xrdWorth)
+            lsu.copy(xrdWorth = lsu.amount.calculateWith { decimal ->
+                lsu.asset.stakeValueXRD(
+                    lsu = decimal,
+                    totalStaked = totalStaked,
+                    totalStakedInXrd = totalStakedXrd
+                ).orZero()
+            })
         }
 
         accountWithTransferableResources.update(transferables)

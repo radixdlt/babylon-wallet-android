@@ -7,7 +7,8 @@ import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 
 data class AccountWithTransferables(
     val account: InvolvedAccount,
-    val transferables: List<Transferable>
+    val transferables: List<Transferable>,
+    val additionalTransferablesPresent: Boolean = false
 ) {
 
     fun hashCustomisableGuarantees() = transferables.any { it.amount is FungibleAmount.Predicted }

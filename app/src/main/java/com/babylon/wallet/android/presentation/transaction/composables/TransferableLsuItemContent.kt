@@ -109,14 +109,15 @@ fun TransferableLsuItemContent(
                 color = RadixTheme.colors.gray1,
                 maxLines = 2
             )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = transferableLSU.xrdWorth.formatted(),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 2
-            )
+            // TODO sergiu
+//            Text(
+//                modifier = Modifier.weight(1f),
+//                text = transferableLSU.xrdWorth.formatted(),
+//                style = RadixTheme.typography.body1HighImportance,
+//                color = RadixTheme.colors.gray1,
+//                textAlign = TextAlign.End,
+//                maxLines = 2
+//            )
         }
     }
 }

@@ -93,7 +93,7 @@ fun TransferableNftItemPreview() {
             NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
         }
         val amount = remember(asset) {
-            NonFungibleAmount.Exact(nfts = asset.collection.items)
+            NonFungibleAmount.Certain(nfts = asset.collection.items)
         }
         TransferableNftItemContent(
             transferableNFTCollection = Transferable.NonFungibleType.NFTCollection(
