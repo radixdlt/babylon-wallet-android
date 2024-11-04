@@ -66,7 +66,7 @@ class ValidatorStakeProcessor @Inject constructor(
             val lsuAmount = when (lsu.amount) {
                 is FungibleAmount.Exact -> lsu.amount.amount
                 is FungibleAmount.Predicted -> lsu.amount.estimated
-                else -> TODO() // Cannot calculate
+                else -> error("No other amount type should exist in regular transaction. Received: ${lsu.amount}")
             }
 
             val xrdWorth = ((lsuAmount / totalStakeForLSU) * totalXrdWorthForLSU)
