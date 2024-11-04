@@ -273,10 +273,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
             analysis = TransactionAnalysisDelegate(
-                transactionRepository = transactionRepository,
                 executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
-                resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
+                getProfileUseCase = getProfileUseCase,
+                manifestSummaryToPreviewTypeAnalyser = ,
+                sargonOsManager =
             ),
             guarantees = TransactionGuaranteesDelegateImpl(),
             fees = TransactionFeesDelegateImpl(

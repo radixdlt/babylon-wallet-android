@@ -1,8 +1,13 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
+import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.model.guaranteesCount
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.clamped
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.formattedTextField
@@ -168,6 +173,30 @@ data class TransactionFees(
     }
 
     companion object {
+
+        fun from(
+            summary: ExecutionSummary,
+            notaryAndSigners: NotaryAndSigners,
+            previewType: PreviewType
+        ) = TransactionFees(
+            nonContingentFeeLock = summary.feeLocks.lock,
+            networkExecution = summary.feeSummary.executionCost,
+            networkFinalization = summary.feeSummary.finalizationCost,
+            networkStorage = summary.feeSummary.storageExpansionCost,
+            royalties = summary.feeSummary.royaltyCost,
+            guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
+            notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
+            includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
+            signersCount = notaryAndSigners.signers.count()
+        ).let { fees ->
+            if (fees.defaultTransactionFee > 0.toDecimal192()) {
+                // There will be a lock fee so update lock fee cost
+                fees.copy(includeLockFee = true)
+            } else {
+                fees
+            }
+        }
+
         private val PERCENT_15 = 0.15.toDecimal192()
 
         private val LOCK_FEE_INSTRUCTION_COST: Decimal192 = 0.08581566997.toDecimal192()

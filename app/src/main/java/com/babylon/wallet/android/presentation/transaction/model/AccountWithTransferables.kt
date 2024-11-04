@@ -59,3 +59,9 @@ data class AccountWithTransferables(
         }
     }
 }
+
+fun List<AccountWithTransferables>.guaranteesCount(): Int = map { accountWithTransferableResources ->
+    accountWithTransferableResources.transferables.filter { transferable ->
+        transferable.amount is FungibleAmount.Predicted
+    }
+}.flatten().count()
