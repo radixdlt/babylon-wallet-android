@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.transaction.analysis.processor
+package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
