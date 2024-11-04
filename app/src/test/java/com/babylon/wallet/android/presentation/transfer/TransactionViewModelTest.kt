@@ -47,7 +47,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
-class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
+class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()

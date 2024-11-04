@@ -3,13 +3,13 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.transaction.TransactionToReviewData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
-import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -38,7 +38,9 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,6 +61,7 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
+import kotlin.time.Duration
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
@@ -124,41 +127,43 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    private fun processIncomingRequest() {
+    private fun processIncomingRequest() = viewModelScope.launch {
         val request = incomingRequestRepository.getRequest(args.interactionId) as? TransactionRequest
         if (request == null) {
-            viewModelScope.launch {
-                sendEvent(Event.Dismiss)
-            }
+            sendEvent(Event.Dismiss)
         } else {
             data.update { it.copy(txRequest = request) }
             _state.update {
                 it.copy(
+                    transactionType = request.transactionType,
                     rawManifest = request.unvalidatedManifestData.instructions,
                     message = request.unvalidatedManifestData.plainMessage
                 )
             }
 
-            viewModelScope.launch {
-                withContext(defaultDispatcher) {
-                    analysis.analyse()
-                    // TODO call this only if it's a regular transaction
-                    fees.resolveFees()
+            withContext(defaultDispatcher) {
+                analysis.analyse().onSuccess { signers ->
+                    if (!request.transactionType.isPreAuthorized) {
+                        fees.resolveFees(signers) // TODO check result type
+                    }
                 }
+
             }
 
-            if (request.isInternal) {
-                _state.update { it.copy(proposingDApp = State.ProposingDApp.None) }
-            } else {
-                viewModelScope.launch {
-                    getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false)
-                        .onSuccess { dApp ->
-                            _state.update {
-                                it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
-                            }
-                        }
+            processDApp(request)
+        }
+    }
+
+    private suspend fun processDApp(request: TransactionRequest) {
+        if (request.isInternal) {
+            _state.update { it.copy(proposingDApp = State.ProposingDApp.None) }
+        } else {
+            getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false)
+                .onSuccess { dApp ->
+                    _state.update {
+                        it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
+                    }
                 }
-            }
         }
     }
 
@@ -204,8 +209,8 @@ class TransactionReviewViewModel @Inject constructor(
     data class Data(
         private val txRequest: TransactionRequest? = null,
         private val txToReviewData: TransactionToReviewData? = null,
-        private val txNotaryAndSigners: NotaryAndSigners? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
+        val signers: List<ProfileEntity> = emptyList(),
         val endEpoch: ULong? = null,
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,
@@ -216,14 +221,12 @@ class TransactionReviewViewModel @Inject constructor(
             get() = requireNotNull(txRequest)
         val transactionToReviewData: TransactionToReviewData
             get() = requireNotNull(txToReviewData)
-        val notaryAndSigners: NotaryAndSigners
-            get() = requireNotNull(txNotaryAndSigners)
 
         val feePayerCandidates: List<AccountAddress> by lazy {
             val manifestSummary = transactionToReviewData.manifestSummary
             manifestSummary.addressesOfAccountsWithdrawnFrom +
-                manifestSummary.addressesOfAccountsDepositedInto +
-                manifestSummary.addressesOfAccountsRequiringAuth
+                    manifestSummary.addressesOfAccountsDepositedInto +
+                    manifestSummary.addressesOfAccountsRequiringAuth
         }
     }
 
@@ -246,27 +249,28 @@ class TransactionReviewViewModel @Inject constructor(
     ) : UiState {
 
         val isRawManifestToggleVisible: Boolean
-            get() = previewType is PreviewType.Transfer
+            get() = previewType is PreviewType.Transaction
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
 
         val showDottedLine: Boolean
             get() = when (previewType) {
-                is PreviewType.Transfer -> {
+                is PreviewType.Transaction -> {
                     previewType.from.isNotEmpty() && previewType.to.isNotEmpty()
                 }
 
                 else -> false
             }
 
-        val showReceiptEdges: Boolean
-            get() = transactionType == TransactionType.Regular
+        val isPreAuthorized: Boolean
+            get() = transactionType?.isPreAuthorized == true
 
-        enum class TransactionType {
-            Regular,
-            PreAuthorized
-        }
+        val showReceiptEdges: Boolean
+            get() = !isOpenTransaction
+
+        val isOpenTransaction: Boolean
+            get() = previewType !is PreviewType.PreAuthTransaction
 
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,
@@ -377,7 +381,7 @@ sealed interface PreviewType {
             get() = accountsWithDepositSettingsChanges.any { it.assetChanges.isNotEmpty() || it.depositorChanges.isNotEmpty() }
     }
 
-    sealed interface Transfer : PreviewType {
+    sealed interface Transaction : PreviewType {
         val from: List<AccountWithTransferables>
         val to: List<AccountWithTransferables>
         val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
@@ -407,7 +411,7 @@ sealed interface PreviewType {
             val validators: List<Validator>,
             val actionType: ActionType,
             override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
-        ) : Transfer {
+        ) : Transaction {
             enum class ActionType {
                 Stake, Unstake, ClaimStake
             }
@@ -419,7 +423,7 @@ sealed interface PreviewType {
             override val badges: List<Badge>,
             val actionType: ActionType,
             override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
-        ) : Transfer {
+        ) : Transaction {
             enum class ActionType {
                 Contribution, Redemption
             }
@@ -438,6 +442,24 @@ sealed interface PreviewType {
             override val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
             override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
-        ) : Transfer
+        ) : Transaction
+    }
+
+    data class PreAuthTransaction(
+        val from: List<AccountWithTransferables>,
+        val to: List<AccountWithTransferables>,
+        val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
+        override val badges: List<Badge>,
+        val expiration: Expiration?
+    ) : PreviewType {
+
+        sealed interface Expiration {
+            data class AtTime(val timestamp: Timestamp) : Expiration
+
+            data class DelayAfterSign(val delay: Duration) : Expiration
+
+            data object None : Expiration
+        }
+
     }
 }

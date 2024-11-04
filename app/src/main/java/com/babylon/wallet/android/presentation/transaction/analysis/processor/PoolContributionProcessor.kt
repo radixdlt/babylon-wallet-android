@@ -28,11 +28,11 @@ class PoolContributionProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transfer.Pool(
+        return PreviewType.Transaction.Pool(
             from = withdraws,
             to = deposits.augmentWithContributions(contributions = classification.poolContributions),
             badges = badges,
-            actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
+            actionType = PreviewType.Transaction.Pool.ActionType.Contribution,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

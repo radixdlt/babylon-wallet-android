@@ -6,7 +6,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
-class PreviewTypeAnalyzer @Inject constructor(
+class ExecutionSummaryAnalyser @Inject constructor(
     private val generalTransferProcessor: GeneralTransferProcessor,
     private val transferProcessor: TransferProcessor,
     private val poolContributionProcessor: PoolContributionProcessor,
@@ -16,7 +16,7 @@ class PreviewTypeAnalyzer @Inject constructor(
     private val validatorClaimProcessor: ValidatorClaimProcessor,
     private val validatorUnstakeProcessor: ValidatorUnstakeProcessor
 ) {
-    suspend fun analyze(summary: ExecutionSummary): PreviewType {
+    suspend fun analyse(summary: ExecutionSummary): PreviewType {
         val manifestClass = summary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
 
         return when (manifestClass) {

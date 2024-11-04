@@ -267,12 +267,3 @@ private fun SimpleResourceBounds.NonFungible.resolveAmount() = when (val bounds 
     null -> null
 }
 
-private fun ManifestSummary.involvedProfileAccounts(profile: Profile): Accounts {
-    val involvedAccountAddresses = (accountWithdrawals.keys + accountDeposits.keys)
-
-    val accountsToSearch = profile.activeAccountsOnCurrentNetwork.asIdentifiable()
-    return involvedAccountAddresses.mapNotNull { address ->
-        accountsToSearch.getBy(address)
-    }.asIdentifiable()
-}
-

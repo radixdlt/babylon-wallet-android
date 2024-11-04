@@ -85,7 +85,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
             runCatching {
                 when (val previewType = _state.value.previewType) {
-                    is PreviewType.Transfer -> txToReviewData.transactionToReview.transactionManifest.addAssertions(
+                    is PreviewType.Transaction -> txToReviewData.transactionToReview.transactionManifest.addAssertions(
                         deposits = previewType.to
                     )
                     else -> txToReviewData.transactionToReview.transactionManifest
@@ -164,7 +164,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 )
             }
             val previewType = _state.value.previewType
-            if (previewType is PreviewType.Transfer) {
+            if (previewType is PreviewType.Transaction) {
                 clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTs)
             }
         }.onFailure { throwable ->

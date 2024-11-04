@@ -261,7 +261,7 @@ private fun TransactionPreviewContent(
                     Box(
                         modifier = Modifier
                             .then(
-                                if (state.transactionType == State.TransactionType.PreAuthorized) {
+                                if (state.isPreAuthorized) {
                                     Modifier
                                         .padding(horizontal = RadixTheme.dimensions.paddingSmall)
                                         .background(
@@ -293,7 +293,7 @@ private fun TransactionPreviewContent(
                         androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier
                                 .applyIf(
-                                    state.transactionType == State.TransactionType.PreAuthorized,
+                                    state.isPreAuthorized,
                                     Modifier.padding(top = RadixTheme.dimensions.paddingSmall)
                                 ),
                             visible = !state.isRawManifestVisible,
@@ -307,7 +307,7 @@ private fun TransactionPreviewContent(
                                 }
 
                                 is PreviewType.NonConforming -> {}
-                                is PreviewType.Transfer.GeneralTransfer -> {
+                                is PreviewType.Transaction.GeneralTransfer -> {
                                     TransferTypeContent(
                                         state = state,
                                         preview = preview,
@@ -327,7 +327,7 @@ private fun TransactionPreviewContent(
                                     )
                                 }
 
-                                is PreviewType.Transfer.Staking -> {
+                                is PreviewType.Transaction.Staking -> {
                                     StakeTypeContent(
                                         state = state,
                                         onTransferableFungibleClick = onTransferableFungibleClick,
@@ -337,7 +337,7 @@ private fun TransactionPreviewContent(
                                     )
                                 }
 
-                                is PreviewType.Transfer.Pool -> {
+                                is PreviewType.Transaction.Pool -> {
                                     PoolTypeContent(
                                         state = state,
                                         onTransferableFungibleClick = onTransferableFungibleClick,
@@ -349,10 +349,12 @@ private fun TransactionPreviewContent(
                                         }
                                     )
                                 }
+
+                                is PreviewType.PreAuthTransaction -> TODO()
                             }
                         }
 
-                        if (state.transactionType == State.TransactionType.PreAuthorized) {
+                        if (state.isOpenTransaction) {
                             TransactionRawManifestToggle(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -416,7 +418,7 @@ private fun TransactionPreviewContent(
                         SlideToSignButton(
                             modifier = Modifier
                                 .padding(
-                                    horizontal = if (state.transactionType == State.TransactionType.PreAuthorized) {
+                                    horizontal = if (state.isOpenTransaction) {
                                         RadixTheme.dimensions.paddingDefault
                                     } else {
                                         RadixTheme.dimensions.paddingXXLarge
@@ -427,7 +429,7 @@ private fun TransactionPreviewContent(
                                     bottom = RadixTheme.dimensions.paddingXXLarge
                                 ),
                             title = stringResource(
-                                id = if (state.transactionType == State.TransactionType.PreAuthorized) {
+                                id = if (state.isOpenTransaction) {
                                     R.string.preAuthorizationReview_slideToSign
                                 } else {
                                     R.string.interactionReview_slideToSign
@@ -602,13 +604,12 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
         get() = sequenceOf(
             State(
                 isLoading = false,
-                transactionType = State.TransactionType.Regular,
                 proposingDApp = State.ProposingDApp.Some(
                     DApp(
                         dAppAddress = AccountAddress.sampleMainnet()
                     )
                 ),
-                previewType = PreviewType.Transfer.GeneralTransfer(
+                previewType = PreviewType.Transaction.GeneralTransfer(
                     from = listOf(
                         AccountWithTransferables(
                             account = InvolvedAccount.Owned(Account.sampleStokenet()),
@@ -644,13 +645,12 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
             ),
             State(
                 isLoading = false,
-                transactionType = State.TransactionType.PreAuthorized,
                 proposingDApp = State.ProposingDApp.Some(
                     DApp(
                         dAppAddress = AccountAddress.sampleMainnet()
                     )
                 ),
-                previewType = PreviewType.Transfer.GeneralTransfer(
+                previewType = PreviewType.Transaction.GeneralTransfer(
                     from = listOf(
                         AccountWithTransferables(
                             account = InvolvedAccount.Owned(Account.sampleStokenet()),

@@ -32,14 +32,14 @@ fun PoolTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    previewType: PreviewType.Transfer.Pool,
+    previewType: PreviewType.Transaction.Pool,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownPoolsClick: (List<Pool>) -> Unit
 ) {
     val poolSectionLabel = when (previewType.actionType) {
-        PreviewType.Transfer.Pool.ActionType.Contribution -> stringResource(id = R.string.interactionReview_poolContributionHeading)
-        PreviewType.Transfer.Pool.ActionType.Redemption -> stringResource(id = R.string.interactionReview_poolRedemptionHeading)
+        PreviewType.Transaction.Pool.ActionType.Contribution -> stringResource(id = R.string.interactionReview_poolContributionHeading)
+        PreviewType.Transaction.Pool.ActionType.Redemption -> stringResource(id = R.string.interactionReview_poolRedemptionHeading)
     }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
@@ -71,7 +71,7 @@ fun PoolTypePreview() {
                 previewType = PreviewType.NonConforming
             ),
             onTransferableFungibleClick = {},
-            previewType = PreviewType.Transfer.Pool(
+            previewType = PreviewType.Transaction.Pool(
                 to = persistentListOf(),
                 from = listOf(
                     AccountWithTransferables(
@@ -86,7 +86,7 @@ fun PoolTypePreview() {
                     )
                 ),
                 badges = emptyList(),
-                actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
+                actionType = PreviewType.Transaction.Pool.ActionType.Contribution,
                 newlyCreatedGlobalIds = emptyList()
             ),
             onPromptForGuarantees = {},

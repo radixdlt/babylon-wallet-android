@@ -23,7 +23,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Ac
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolRedemptionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.ExecutionSummaryAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
@@ -65,7 +65,7 @@ internal fun testViewModel(
     getFiatValueUseCase: GetFiatValueUseCase
 ) = TransactionReviewViewModel(
     analysis = TransactionAnalysisDelegate(
-        previewTypeAnalyzer = PreviewTypeAnalyzer(
+        executionSummaryAnalyser = ExecutionSummaryAnalyser(
             generalTransferProcessor = GeneralTransferProcessor(
                 resolveAssetsFromAddressUseCase = ResolveAssetsFromAddressUseCase(stateRepository),
                 getProfileUseCase = GetProfileUseCase(profileRepository, testDispatcher),

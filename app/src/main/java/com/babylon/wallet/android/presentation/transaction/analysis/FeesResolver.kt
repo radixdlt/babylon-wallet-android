@@ -21,7 +21,7 @@ object FeesResolver {
             networkFinalization = summary.feeSummary.finalizationCost,
             networkStorage = summary.feeSummary.storageExpansionCost,
             royalties = summary.feeSummary.royaltyCost,
-            guaranteesCount = (previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
+            guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
             signersCount = notaryAndSigners.signers.count()

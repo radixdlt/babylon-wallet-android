@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.fees
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.model.FungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -13,6 +14,7 @@ import com.babylon.wallet.android.presentation.transaction.model.TransactionErro
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
@@ -66,13 +68,16 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
     private var searchFeePayersJob: Job? = null
 
-    suspend fun resolveFees() {
+    suspend fun resolveFees(signers: List<ProfileEntity>) {
         _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
         val executionSummary = data.value.transactionToReviewData.transactionToReview.executionSummary
 
         val transactionFees = FeesResolver.resolve(
             summary = executionSummary,
-            notaryAndSigners = data.value.notaryAndSigners,
+            notaryAndSigners = NotaryAndSigners(
+                signers = signers,
+                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey
+            ),
             previewType = _state.value.previewType
         )
         observeFeesChanges()
@@ -185,7 +190,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val selectedFeePayerAccount = feesState.selectedFeePayerInput?.preselectedCandidate?.account ?: return
         val feePayers = data.value.feePayers ?: return
 
-        val signersCount = data.value.notaryAndSigners.signers.count()
+        val signersCount = data.value.signers.count()
 
         val updatedFeePayers = feePayers.copy(
             selectedAccountAddress = selectedFeePayerAccount.address,
@@ -367,7 +372,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         // In cases were it is not a transfer type, then it means the user
         // will not spend any other XRD rather than the ones spent for the fees
         val xrdUsed = when (val previewType = _state.value.previewType) {
-            is PreviewType.Transfer -> {
+            is PreviewType.Transaction -> {
                 val candidateAddressWithdrawn = previewType.from.find { it.account.address == candidateAddress }
                 if (candidateAddressWithdrawn != null) {
                     val xrdAmount = candidateAddressWithdrawn
@@ -389,6 +394,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
             is PreviewType.AccountsDepositSettings,
             is PreviewType.NonConforming,
             is PreviewType.None,
+            is PreviewType.PreAuthTransaction,
             is PreviewType.UnacceptableManifest -> 0.toDecimal192()
         }
 

@@ -28,11 +28,11 @@ class PoolRedemptionProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transfer.Pool(
+        return PreviewType.Transaction.Pool(
             from = withdraws.augmentWithRedemptions(redemptions = classification.poolRedemptions),
             to = deposits,
             badges = badges,
-            actionType = PreviewType.Transfer.Pool.ActionType.Redemption,
+            actionType = PreviewType.Transaction.Pool.ActionType.Redemption,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

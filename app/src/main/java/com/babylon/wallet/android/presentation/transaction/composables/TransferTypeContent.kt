@@ -28,7 +28,7 @@ import rdx.works.core.domain.resources.sampleMainnet
 fun TransferTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    preview: PreviewType.Transfer.GeneralTransfer,
+    preview: PreviewType.Transaction.GeneralTransfer,
     onEditGuaranteesClick: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
@@ -63,7 +63,7 @@ fun TransactionPreviewTypePreview() {
                 isLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            preview = PreviewType.Transfer.GeneralTransfer(
+            preview = PreviewType.Transaction.GeneralTransfer(
                 from = emptyList(),
                 to = listOf(
                     AccountWithTransferables(
