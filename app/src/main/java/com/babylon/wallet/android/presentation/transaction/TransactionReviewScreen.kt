@@ -4,17 +4,27 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -24,11 +34,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -45,10 +64,8 @@ import com.babylon.wallet.android.presentation.transaction.composables.FeePayerS
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
-import com.babylon.wallet.android.presentation.transaction.composables.PoolTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
-import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreAuthorizationInfo
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
@@ -66,20 +83,23 @@ import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.utils.copyToClipboard
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
@@ -270,9 +290,6 @@ private fun TransactionPreviewContent(
                                             ),
                                             shape = RadixTheme.shapes.roundedRectMedium
                                         )
-                                        .padding(
-                                            top = RadixTheme.dimensions.paddingDefault
-                                        )
                                 } else {
                                     Modifier.background(color = RadixTheme.colors.gray5)
                                 }
@@ -283,10 +300,17 @@ private fun TransactionPreviewContent(
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
-                            RawManifestView(
+                            androidx.compose.material.Text(
                                 modifier = Modifier
-                                    .padding(RadixTheme.dimensions.paddingDefault),
-                                manifest = state.rawManifest
+                                    .padding(
+                                        top = 74.dp,
+                                        bottom = RadixTheme.dimensions.paddingDefault
+                                    )
+                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                text = state.rawManifest,
+                                color = RadixTheme.colors.gray1,
+                                fontSize = 13.sp,
+                                fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
                             )
                         }
 
@@ -301,68 +325,75 @@ private fun TransactionPreviewContent(
                             exit = fadeOut()
                         ) {
                             when (val preview = state.previewType) {
-                                is PreviewType.None -> {}
-                                is PreviewType.UnacceptableManifest -> {
-                                    return@AnimatedVisibility
-                                }
+                                is PreviewType.Transaction -> TransferTypeContent(
+                                    state = state,
+                                    previewType = preview,
+                                    onEditGuaranteesClick = onEditGuaranteesClick,
+                                    onTransferableFungibleClick = onTransferableFungibleClick,
+                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick,
+                                    onDAppClick = onDAppClick,
+                                    onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) }
+                                )
 
-                                is PreviewType.NonConforming -> {}
-                                is PreviewType.Transaction.GeneralTransfer -> {
-                                    TransferTypeContent(
-                                        state = state,
-                                        preview = preview,
-                                        onEditGuaranteesClick = onEditGuaranteesClick,
-                                        onDAppClick = onDAppClick,
-                                        onUnknownComponentsClick = { componentAddresses ->
-                                            onUnknownAddressesClick(componentAddresses.map { it.asGeneral() }.toPersistentList())
-                                        },
-                                        onTransferableFungibleClick = onTransferableFungibleClick,
-                                        onNonTransferableFungibleClick = onTransferableNonFungibleClick
-                                    )
-                                }
+                                is PreviewType.AccountsDepositSettings -> AccountDepositSettingsTypeContent(
+                                    preview = preview
+                                )
 
-                                is PreviewType.AccountsDepositSettings -> {
-                                    AccountDepositSettingsTypeContent(
-                                        preview = preview
-                                    )
-                                }
-
-                                is PreviewType.Transaction.Staking -> {
-                                    StakeTypeContent(
-                                        state = state,
-                                        onTransferableFungibleClick = onTransferableFungibleClick,
-                                        onNonTransferableFungibleClick = onTransferableNonFungibleClick,
-                                        onPromptForGuarantees = onEditGuaranteesClick,
-                                        previewType = preview
-                                    )
-                                }
-
-                                is PreviewType.Transaction.Pool -> {
-                                    PoolTypeContent(
-                                        state = state,
-                                        onTransferableFungibleClick = onTransferableFungibleClick,
-                                        onPromptForGuarantees = onEditGuaranteesClick,
-                                        previewType = preview,
-                                        onDAppClick = onDAppClick,
-                                        onUnknownPoolsClick = { pools ->
-                                            onUnknownAddressesClick(pools.map { Address.Pool(it.address) }.toPersistentList())
-                                        }
-                                    )
-                                }
-
-                                is PreviewType.PreAuthTransaction -> TODO()
+                                else -> {}
                             }
                         }
 
-                        if (state.isOpenTransaction) {
-                            TransactionRawManifestToggle(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(end = RadixTheme.dimensions.paddingDefault),
-                                isToggleVisible = state.isRawManifestToggleVisible,
-                                isToggleOn = state.isRawManifestVisible,
-                                onRawManifestClick = onRawManifestToggle
-                            )
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingDefault,
+                                    end = RadixTheme.dimensions.paddingDefault
+                                ),
+                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = state.isRawManifestVisible,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                val context = LocalContext.current
+                                Button(
+                                    modifier = Modifier.height(40.dp),
+                                    onClick = {
+                                        context.copyToClipboard(
+                                            label = "Manifest",
+                                            value = state.rawManifest,
+                                            successMessage = context.getString(R.string.addressAction_copiedToClipboard)
+                                        )
+                                    },
+                                    shape = RadixTheme.shapes.roundedRectSmall,
+                                    elevation = null,
+                                    colors = ButtonDefaults.buttonColors(
+                                        backgroundColor = RadixTheme.colors.gray4,
+                                        contentColor = RadixTheme.colors.gray1
+                                    )
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(16.dp),
+                                        painter = painterResource(id = R.drawable.ic_copy),
+                                        contentDescription = "copy"
+                                    )
+                                    Text(
+                                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
+                                        text = stringResource(R.string.common_copy),
+                                        style = RadixTheme.typography.body1Header
+                                    )
+                                }
+                            }
+
+                            if (state.isPreAuthorization && state.isRawManifestToggleVisible) {
+                                TransactionRawManifestToggle(
+                                    isToggleOn = state.isRawManifestVisible,
+                                    onRawManifestClick = onRawManifestToggle
+                                )
+                            }
                         }
                     }
 
@@ -418,7 +449,7 @@ private fun TransactionPreviewContent(
                         SlideToSignButton(
                             modifier = Modifier
                                 .padding(
-                                    horizontal = if (state.isOpenTransaction) {
+                                    horizontal = if (state.isPreAuthorization) {
                                         RadixTheme.dimensions.paddingDefault
                                     } else {
                                         RadixTheme.dimensions.paddingXXLarge
@@ -429,7 +460,7 @@ private fun TransactionPreviewContent(
                                     bottom = RadixTheme.dimensions.paddingXXLarge
                                 ),
                             title = stringResource(
-                                id = if (state.isOpenTransaction) {
+                                id = if (state.isPreAuthorization) {
                                     R.string.preAuthorizationReview_slideToSign
                                 } else {
                                     R.string.interactionReview_slideToSign
@@ -609,7 +640,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         dAppAddress = AccountAddress.sampleMainnet()
                     )
                 ),
-                previewType = PreviewType.Transaction.GeneralTransfer(
+                previewType = PreviewType.Transaction(
                     from = listOf(
                         AccountWithTransferables(
                             account = InvolvedAccount.Owned(Account.sampleStokenet()),
@@ -634,7 +665,15 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                             )
                         )
                     ),
-                    newlyCreatedGlobalIds = emptyList()
+                    involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
+                        components = listOf(
+                            ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
+                        )
+                    ),
+                    badges = listOf(
+                        Badge.sample(),
+                        Badge.sample.other()
+                    )
                 ),
                 fees = State.Fees(
                     isNetworkFeeLoading = false,
@@ -650,7 +689,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         dAppAddress = AccountAddress.sampleMainnet()
                     )
                 ),
-                previewType = PreviewType.Transaction.GeneralTransfer(
+                previewType = PreviewType.Transaction(
                     from = listOf(
                         AccountWithTransferables(
                             account = InvolvedAccount.Owned(Account.sampleStokenet()),
@@ -675,7 +714,13 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                             )
                         )
                     ),
-                    newlyCreatedGlobalIds = emptyList()
+                    involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
+                        components = listOf(
+                            ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
+                        ),
+                        morePossibleDAppsPresent = true
+                    ),
+                    badges = emptyList()
                 ),
                 fees = null,
                 preAuthorization = State.PreAuthorization(

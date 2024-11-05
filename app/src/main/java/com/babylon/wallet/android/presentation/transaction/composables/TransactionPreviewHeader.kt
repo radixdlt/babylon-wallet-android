@@ -64,10 +64,9 @@ fun TransactionPreviewHeader(
         title = stringResource(id = transactionType.titleRes()),
         proposingDApp = proposingDApp,
         actions = {
-            if (!transactionType.isPreAuthorized) {
+            if (!transactionType.isPreAuthorized && isRawManifestToggleVisible) {
                 TransactionRawManifestToggle(
                     modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
-                    isToggleVisible = isRawManifestToggleVisible,
                     isToggleOn = isRawManifestVisible,
                     onRawManifestClick = onRawManifestClick
                 )

@@ -111,15 +111,9 @@ class TransactionGuaranteesDelegateImpl @Inject constructor() :
             }
         )
 
-        val updatedPreview = when (preview) {
-            is PreviewType.Transaction.GeneralTransfer -> preview.copy(to = depositsWithUpdatedGuarantees)
-            is PreviewType.Transaction.Pool -> preview.copy(to = depositsWithUpdatedGuarantees)
-            is PreviewType.Transaction.Staking -> preview.copy(to = depositsWithUpdatedGuarantees)
-        }
-
         _state.update {
             it.copy(
-                previewType = updatedPreview,
+                previewType = preview.copy(to = depositsWithUpdatedGuarantees),
                 sheetState = Sheet.None
             )
         }

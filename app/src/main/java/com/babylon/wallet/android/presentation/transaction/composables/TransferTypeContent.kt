@@ -1,89 +1,78 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
-import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
-import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.ManifestEncounteredComponentAddress
-import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.samples.sampleMainnet
+import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.radixdlt.sargon.Address
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun TransferTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    preview: PreviewType.Transaction.GeneralTransfer,
+    previewType: PreviewType.Transaction,
     onEditGuaranteesClick: () -> Unit,
-    onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<ManifestEncounteredComponentAddress>) -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onDAppClick: (DApp) -> Unit,
+    onUnknownComponentsClick: (List<Address>) -> Unit
 ) {
-    CommonTransferContent(
-        modifier = modifier.fillMaxSize(),
-        state = state,
-        onTransferableFungibleClick = onTransferableFungibleClick,
-        onNonTransferableFungibleClick = onNonTransferableFungibleClick,
-        previewType = preview,
-        onEditGuaranteesClick = onEditGuaranteesClick,
-        middleSection = {
-            ConnectedDAppsContent(
+    Column(modifier = modifier.fillMaxSize()) {
+        state.message?.let {
+            TransactionMessageContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                connectedDApps = preview.dApps.toPersistentList(),
+                transactionMessage = it
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        }
+
+        WithdrawAccountContent(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            from = previewType.from.toPersistentList(),
+            hiddenResourceIds = state.hiddenResourceIds,
+            onTransferableFungibleClick = onTransferableFungibleClick,
+            onNonTransferableFungibleClick = onNonTransferableFungibleClick
+        )
+
+        Column(
+            modifier = Modifier
+                .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
+                .padding(top = RadixTheme.dimensions.paddingLarge)
+        ) {
+            InvolvedComponentsContent(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                involvedComponents = previewType.involvedComponents,
                 onDAppClick = onDAppClick,
                 onUnknownComponentsClick = onUnknownComponentsClick
             )
-        }
-    )
-}
 
-@UsesSampleValues
-@Preview(showBackground = true)
-@Composable
-fun TransactionPreviewTypePreview() {
-    RadixWalletTheme {
-        TransferTypeContent(
-            state = TransactionReviewViewModel.State(
-                isLoading = false,
-                previewType = PreviewType.NonConforming
-            ),
-            preview = PreviewType.Transaction.GeneralTransfer(
-                from = emptyList(),
-                to = listOf(
-                    AccountWithTransferables(
-                        account = InvolvedAccount.Owned(Account.sampleMainnet()),
-                        transferables = listOf(
-                            Transferable.FungibleType.Token(
-                                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                                amount = CountedAmount.Exact("745".toDecimal192()),
-                                isNewlyCreated = false
-                            )
-                        )
+            DepositAccountContent(
+                modifier = Modifier
+                    .padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
                     )
-                ),
-                newlyCreatedGlobalIds = emptyList()
-            ),
-            onEditGuaranteesClick = {},
-            onDAppClick = { _ -> },
-            onUnknownComponentsClick = {},
-            onTransferableFungibleClick = {},
-            onNonTransferableFungibleClick = { _, _ -> }
-        )
+                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+                to = previewType.to.toPersistentList(),
+                hiddenResourceIds = state.hiddenResourceIds,
+                onEditGuaranteesClick = onEditGuaranteesClick,
+                onTransferableFungibleClick = onTransferableFungibleClick,
+                onNonTransferableFungibleClick = onNonTransferableFungibleClick
+            )
+        }
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
     }
 }

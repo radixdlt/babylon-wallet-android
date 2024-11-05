@@ -398,7 +398,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
             is PreviewType.AccountsDepositSettings,
             is PreviewType.NonConforming,
             is PreviewType.None,
-            is PreviewType.PreAuthTransaction,
             is PreviewType.UnacceptableManifest -> 0.toDecimal192()
         }
 
