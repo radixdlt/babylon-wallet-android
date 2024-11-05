@@ -228,7 +228,6 @@ class TransactionReviewViewModel @Inject constructor(
 
         val summary: Summary
             get() = requireNotNull(txSummary)
-
     }
 
     data class State(
@@ -396,8 +395,8 @@ sealed interface PreviewType {
             get() {
                 val allItems = (from + to).asSequence().map { it.transferables }.flatten().map {
                     when (it) {
-                        is Transferable.NonFungibleType.NFTCollection -> it.amount.certainNFTs
-                        is Transferable.NonFungibleType.StakeClaim -> it.amount.certainNFTs
+                        is Transferable.NonFungibleType.NFTCollection -> it.amount.certain
+                        is Transferable.NonFungibleType.StakeClaim -> it.amount.certain
                         else -> emptyList()
                     }
                 }.flatten().associateBy { it.globalId }
@@ -460,6 +459,5 @@ sealed interface PreviewType {
 
             data object None : Expiration
         }
-
     }
 }

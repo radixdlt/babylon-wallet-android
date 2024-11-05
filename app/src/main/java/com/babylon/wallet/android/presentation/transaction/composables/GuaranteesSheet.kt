@@ -20,7 +20,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
@@ -144,7 +144,7 @@ private fun GuaranteesSheetPreview() {
                         account = InvolvedAccount.Owned(Account.sampleMainnet()),
                         transferable = Transferable.FungibleType.Token(
                             asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                            amount = FungibleAmount.Predicted(
+                            amount = CountedAmount.Predicted(
                                 estimated = 10.toDecimal192(),
                                 instructionIndex = 1L,
                                 offset = 1.toDecimal192()

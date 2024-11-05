@@ -1,9 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
-import com.babylon.wallet.android.presentation.model.NonFungibleAmountBounds
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -88,7 +87,6 @@ fun ManifestSummary.resolveWithdrawsAndDeposits(
     profile = profile
 )
 
-
 private fun AccountAddress.toInvolvedAccount(profile: Profile): InvolvedAccount {
     val profileAccount = profile.activeAccountsOnCurrentNetwork.find { it.address == this }
 
@@ -108,7 +106,7 @@ private fun ManifestSummary.resolveWithdraws(
             is AccountWithdraw.Amount -> {
                 val asset = onLedgerAssets.find { it.resource.address == withdraw.resourceAddress } as? Asset.Fungible
                     ?: throw ResourceCouldNotBeResolvedInTransaction(withdraw.resourceAddress)
-                val amount = FungibleAmount.Exact(withdraw.amount)
+                val amount = CountedAmount.Exact(withdraw.amount)
 
                 when (asset) {
                     is Token -> Transferable.FungibleType.Token(
@@ -145,12 +143,12 @@ private fun ManifestSummary.resolveWithdraws(
                 when (asset) {
                     is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
                         asset = asset,
-                        amount = NonFungibleAmount.Certain(items)
+                        amount = NonFungibleAmount(items)
                     )
 
                     is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
                         asset = asset,
-                        amount = NonFungibleAmount.Certain(items)
+                        amount = NonFungibleAmount(items)
                     )
                 }
             }
@@ -208,8 +206,8 @@ private fun ManifestSummary.resolveDeposits(
                 }
 
                 val amount = when (val additionalAmount = specifier.resolveAmount()) {
-                    null -> NonFungibleAmount.Certain(certainItems)
-                    else -> NonFungibleAmount.NotExact(
+                    null -> NonFungibleAmount(certainItems)
+                    else -> NonFungibleAmount(
                         certain = certainItems,
                         additional = additionalAmount
                     )
@@ -238,30 +236,29 @@ private fun ManifestSummary.resolveDeposits(
 }
 
 private fun SimpleResourceBounds.Fungible.resolveAmount() = when (val bounds = bounds) {
-    is SimpleCountedResourceBounds.AtLeast -> FungibleAmount.Min(bounds.amount)
-    is SimpleCountedResourceBounds.AtMost -> FungibleAmount.Max(bounds.amount)
-    is SimpleCountedResourceBounds.Between -> FungibleAmount.Range(
+    is SimpleCountedResourceBounds.AtLeast -> CountedAmount.Min(bounds.amount)
+    is SimpleCountedResourceBounds.AtMost -> CountedAmount.Max(bounds.amount)
+    is SimpleCountedResourceBounds.Between -> CountedAmount.Range(
         minAmount = bounds.minAmount,
         maxAmount = bounds.maxAmount
     )
 
-    is SimpleCountedResourceBounds.Exact -> FungibleAmount.Exact(bounds.amount)
-    is SimpleCountedResourceBounds.UnknownAmount -> FungibleAmount.Unknown
+    is SimpleCountedResourceBounds.Exact -> CountedAmount.Exact(bounds.amount)
+    is SimpleCountedResourceBounds.UnknownAmount -> CountedAmount.Unknown
 }
 
 private fun SimpleResourceBounds.NonFungible.resolveAmount() = when (val bounds = bounds.additionalAmount) {
-    is SimpleCountedResourceBounds.AtLeast -> NonFungibleAmountBounds.Min(bounds.amount)
-    is SimpleCountedResourceBounds.AtMost -> NonFungibleAmountBounds.Max(bounds.amount)
-    is SimpleCountedResourceBounds.Between -> NonFungibleAmountBounds.Range(
+    is SimpleCountedResourceBounds.AtLeast -> CountedAmount.Min(bounds.amount)
+    is SimpleCountedResourceBounds.AtMost -> CountedAmount.Max(bounds.amount)
+    is SimpleCountedResourceBounds.Between -> CountedAmount.Range(
         minAmount = bounds.minAmount,
         maxAmount = bounds.maxAmount
     )
 
-    is SimpleCountedResourceBounds.Exact -> NonFungibleAmountBounds.Exact(
+    is SimpleCountedResourceBounds.Exact -> CountedAmount.Exact(
         amount = bounds.amount
     )
 
-    is SimpleCountedResourceBounds.UnknownAmount -> NonFungibleAmountBounds.Unknown
+    is SimpleCountedResourceBounds.UnknownAmount -> CountedAmount.Unknown
     null -> null
 }
-

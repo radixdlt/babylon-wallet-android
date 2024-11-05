@@ -222,15 +222,16 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         val address: ResourceOrNonFungible
     ) : RadixWalletException() {
 
-        constructor(resourceAddress: ResourceAddress): this(ResourceOrNonFungible.Resource(value = resourceAddress))
+        constructor(resourceAddress: ResourceAddress) : this(ResourceOrNonFungible.Resource(value = resourceAddress))
 
-        constructor(resourceAddress: ResourceAddress, localId: NonFungibleLocalId): this(ResourceOrNonFungible.NonFungible(
-            NonFungibleGlobalId(
-                resourceAddress = resourceAddress,
-                nonFungibleLocalId = localId
+        constructor(resourceAddress: ResourceAddress, localId: NonFungibleLocalId) : this(
+            ResourceOrNonFungible.NonFungible(
+                NonFungibleGlobalId(
+                    resourceAddress = resourceAddress,
+                    nonFungibleLocalId = localId
+                )
             )
-        ))
-
+        )
     }
 }
 

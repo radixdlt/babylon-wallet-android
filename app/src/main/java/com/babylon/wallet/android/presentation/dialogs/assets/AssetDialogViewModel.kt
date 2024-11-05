@@ -13,7 +13,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toMinutes
@@ -80,39 +80,31 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 withAllMetadata = true
             ).mapCatching { assets ->
-                when (val asset = assets.first()) {
-                    // In case we receive a fungible asset, let's copy the custom amount
+                val assetAndAmount = when (val asset = assets.first()) {
                     is Asset.Fungible -> {
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
-                        val fungibleAmount = fungibleArgs.fungibleAmountOf(asset.resource.address)
-
-                        val resourceWithAmount = when (fungibleAmount) {
-                            is FungibleAmount.Exact -> asset.resource.copy(
-                                ownedAmount = fungibleAmount.amount
-                            )
-                            is FungibleAmount.Max -> TODO()
-                            is FungibleAmount.Min -> TODO()
-                            is FungibleAmount.Predicted -> TODO()
-                            is FungibleAmount.Range -> TODO()
-                            FungibleAmount.Unknown -> TODO()
-                            null -> TODO()
-                        }
+                        val amount = fungibleArgs.fungibleAmountOf(asset.resource.address)
+                        val resourceWithAmount = (amount as? CountedAmount.Exact)?.amount?.let {
+                            asset.resource.copy(ownedAmount = it)
+                        } ?: asset.resource
 
                         when (asset) {
                             is LiquidStakeUnit -> asset.copy(fungibleResource = resourceWithAmount)
                             is PoolUnit -> asset.copy(stake = resourceWithAmount)
                             is Token -> asset.copy(resource = resourceWithAmount)
-                        }
+                        } to amount
                     }
 
                     is Asset.NonFungible -> {
-                        asset
+                        asset to null
                     }
                 }
-            }.mapCatching { asset ->
+                val asset = assetAndAmount.first
+
                 _state.update {
                     it.copy(
                         asset = asset,
+//                        amount = assetAndAmount.second,
                         canBeHidden = canBeHidden(asset)
                     )
                 }

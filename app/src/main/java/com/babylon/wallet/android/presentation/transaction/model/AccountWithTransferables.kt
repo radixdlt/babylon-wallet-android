@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Profile
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
@@ -11,7 +11,7 @@ data class AccountWithTransferables(
     val additionalTransferablesPresent: Boolean = false
 ) {
 
-    fun hashCustomisableGuarantees() = transferables.any { it.amount is FungibleAmount.Predicted }
+    fun hasCustomisableGuarantees() = transferables.any { (it as? Transferable.FungibleType)?.amount is CountedAmount.Predicted }
 
     fun updateFromGuarantees(
         guaranteeItems: List<GuaranteeItem>
@@ -62,6 +62,6 @@ data class AccountWithTransferables(
 
 fun List<AccountWithTransferables>.guaranteesCount(): Int = map { accountWithTransferableResources ->
     accountWithTransferableResources.transferables.filter { transferable ->
-        transferable.amount is FungibleAmount.Predicted
+        (transferable as? Transferable.FungibleType)?.amount is CountedAmount.Predicted
     }
 }.flatten().count()

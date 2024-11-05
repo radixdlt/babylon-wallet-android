@@ -109,7 +109,7 @@ fun DepositAccountContent(
                 }
 
                 val hasCustomisableGuarantees = remember(to) {
-                    to.any { it.hashCustomisableGuarantees() }
+                    to.any { it.hasCustomisableGuarantees() }
                 }
                 if (hasCustomisableGuarantees) {
                     RadixTextButton(

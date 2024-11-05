@@ -1,12 +1,9 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -18,7 +15,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.radixdlt.sargon.Decimal192
@@ -30,65 +27,64 @@ import com.radixdlt.sargon.samples.sample
 @Composable
 fun FungibleAmountSection(
     modifier: Modifier = Modifier,
-    fungibleAmount: FungibleAmount,
+    countedAmount: CountedAmount?,
     amountTextStyle: TextStyle = RadixTheme.typography.secondaryHeader
 ) {
-    when (fungibleAmount) {
-        is FungibleAmount.Exact -> {
+    when (countedAmount) {
+        is CountedAmount.Exact -> {
             AmountText(
                 modifier = modifier,
-                amount = fungibleAmount.amount,
+                amount = countedAmount.amount,
                 textStyle = amountTextStyle
             )
         }
-        is FungibleAmount.Max -> {
+        is CountedAmount.Max -> {
             Column(
                 modifier = modifier,
                 horizontalAlignment = Alignment.End
             ) {
                 NoMoreThanText()
                 AmountText(
-                    amount = fungibleAmount.amount,
+                    amount = countedAmount.amount,
                     textStyle = amountTextStyle
                 )
             }
         }
-        is FungibleAmount.Min -> {
+        is CountedAmount.Min -> {
             Column(
                 modifier = modifier,
                 horizontalAlignment = Alignment.End
             ) {
                 AtLeastText()
                 AmountText(
-                    amount = fungibleAmount.amount,
+                    amount = countedAmount.amount,
                     textStyle = amountTextStyle
                 )
             }
         }
-        is FungibleAmount.Range -> {
+        is CountedAmount.Range -> {
             Column(
                 modifier = modifier,
                 horizontalAlignment = Alignment.End
             ) {
                 AtLeastText()
                 AmountText(
-                    amount = fungibleAmount.minAmount,
+                    amount = countedAmount.minAmount,
                     textStyle = amountTextStyle
                 )
                 NoMoreThanText()
                 AmountText(
-                    amount = fungibleAmount.maxAmount,
+                    amount = countedAmount.maxAmount,
                     textStyle = amountTextStyle
                 )
             }
         }
-        is FungibleAmount.Predicted -> {
-            Row(
+        is CountedAmount.Predicted -> {
+            Column(
                 modifier = modifier,
-                verticalAlignment = CenterVertically
+                horizontalAlignment = Alignment.End
             ) {
                 Text(
-                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
                     text = stringResource(id = R.string.transactionReview_estimated),
                     style = RadixTheme.typography.body2Link,
                     color = RadixTheme.colors.gray1,
@@ -96,32 +92,21 @@ fun FungibleAmountSection(
                     overflow = TextOverflow.Ellipsis
                 )
                 AmountText(
-                    amount = fungibleAmount.estimated,
-                    textStyle = amountTextStyle
-                )
-            }
-            Row {
-                Text(
-                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.transactionReview_guaranteed),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                AmountText(
-                    amount = fungibleAmount.guaranteed,
+                    amount = countedAmount.estimated,
                     textStyle = amountTextStyle
                 )
             }
         }
-        FungibleAmount.Unknown -> {
+        CountedAmount.Unknown -> {
             WarningText(
                 modifier = modifier,
                 text = AnnotatedString("Amount of deposit is unknown"),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 contentColor = RadixTheme.colors.orange1
             )
+        }
+        else -> {
+            // TODO only symbol
         }
     }
 }
@@ -172,25 +157,25 @@ private fun NoMoreThanText(modifier: Modifier = Modifier) {
 @Preview
 @UsesSampleValues
 private fun FungibleAmountSectionPreview(
-    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) fungibleAmount: FungibleAmount
+    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) countedAmount: CountedAmount
 ) {
     RadixWalletPreviewTheme {
         FungibleAmountSection(
-            fungibleAmount = fungibleAmount
+            countedAmount = countedAmount
         )
     }
 }
 
 @UsesSampleValues
-class FungibleAmountSectionPreviewProvider : PreviewParameterProvider<FungibleAmount> {
+class FungibleAmountSectionPreviewProvider : PreviewParameterProvider<CountedAmount> {
 
-    override val values: Sequence<FungibleAmount>
+    override val values: Sequence<CountedAmount>
         get() = sequenceOf(
-            FungibleAmount.Exact(Decimal192.sample()),
-            FungibleAmount.Max(Decimal192.sample()),
-            FungibleAmount.Min(Decimal192.sample()),
-            FungibleAmount.Range(Decimal192.sample(), Decimal192.sample.other()),
-            FungibleAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192()),
-            FungibleAmount.Unknown
+            CountedAmount.Exact(Decimal192.sample()),
+            CountedAmount.Max(Decimal192.sample()),
+            CountedAmount.Min(Decimal192.sample()),
+            CountedAmount.Range(Decimal192.sample(), Decimal192.sample.other()),
+            CountedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192()),
+            CountedAmount.Unknown
         )
 }

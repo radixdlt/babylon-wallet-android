@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
@@ -29,7 +28,6 @@ import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.XrdResource
 
 @Composable
@@ -76,7 +74,7 @@ fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            FungibleAmountSection(fungibleAmount = transferableLSU.amount)
+            FungibleAmountSection(countedAmount = transferableLSU.amount)
         }
         Text(
             modifier = Modifier

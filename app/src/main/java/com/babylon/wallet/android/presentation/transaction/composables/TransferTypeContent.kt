@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
@@ -71,7 +71,7 @@ fun TransactionPreviewTypePreview() {
                         transferables = listOf(
                             Transferable.FungibleType.Token(
                                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                                amount = FungibleAmount.Exact("745".toDecimal192()),
+                                amount = CountedAmount.Exact("745".toDecimal192()),
                                 isNewlyCreated = false
                             )
                         )

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
@@ -33,7 +33,7 @@ data class GuaranteeItem(
     val isDecreaseAllowed: Boolean = typedPercentDecimal != null && typedPercentDecimal > zero
 
     // The updated amount with the guarantee.
-    val updatedAmount: FungibleAmount.Predicted = (transferable.amount as FungibleAmount.Predicted).copy(
+    val updatedAmount: CountedAmount.Predicted = (transferable.amount as CountedAmount.Predicted).copy(
         offset = typedPercentDecimal.orZero() / hundred
     )
 
@@ -60,7 +60,7 @@ data class GuaranteeItem(
             involvedAccount: InvolvedAccount,
             transferable: Transferable.FungibleType
         ): GuaranteeItem? {
-            val predictedAmount = (transferable.amount as? FungibleAmount.Predicted) ?: return null
+            val predictedAmount = (transferable.amount as? CountedAmount.Predicted) ?: return null
 
             return GuaranteeItem(
                 account = involvedAccount,

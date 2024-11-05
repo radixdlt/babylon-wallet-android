@@ -54,10 +54,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val transferables = accountWithTransferables.transferables.map tr@{ transferable ->
             val transferableClaim = (transferable as? Transferable.NonFungibleType.StakeClaim) ?: return@tr transferable
 
-            val nfts = when (transferableClaim.amount) {
-                is NonFungibleAmount.Certain -> transferableClaim.amount.nfts
-                is NonFungibleAmount.NotExact -> TODO()
-            }.map nf@{ nft ->
+            val nfts = transferableClaim.amount.certain.map nf@{ nft ->
                 val data = claimsData[nft.globalId] ?: return@nf nft
 
                 nft.copy(
@@ -81,7 +78,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                 )
             }
 
-            transferableClaim.copy(amount = NonFungibleAmount.Certain(nfts))
+            transferableClaim.copy(amount = NonFungibleAmount(nfts))
         }
 
         accountWithTransferables.update(transferables)

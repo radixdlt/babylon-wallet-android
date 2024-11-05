@@ -6,35 +6,40 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.resources.Resource
 
-sealed interface Amount // TODO might not needed
+sealed interface Amount
+
+data class NonFungibleAmount(
+    val certain: List<Resource.NonFungibleResource.Item>,
+    val additional: CountedAmount? = null
+) : Amount
 
 @Serializable
-sealed interface FungibleAmount : Amount {
+sealed interface CountedAmount {
 
     @Serializable
-    data class Exact(@Contextual val amount: Decimal192) : FungibleAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount = Exact(amount = calculation(amount))
+    data class Exact(@Contextual val amount: Decimal192) : CountedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Exact(amount = calculation(amount))
     }
 
     @Serializable
     data class Range(
         @Contextual val minAmount: Decimal192,
         @Contextual val maxAmount: Decimal192
-    ) : FungibleAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount = Range(
+    ) : CountedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Range(
             minAmount = calculation(minAmount),
             maxAmount = calculation(maxAmount)
         )
     }
 
     @Serializable
-    data class Min(@Contextual val amount: Decimal192) : FungibleAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount = Min(amount = calculation(amount))
+    data class Min(@Contextual val amount: Decimal192) : CountedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Min(amount = calculation(amount))
     }
 
     @Serializable
-    data class Max(@Contextual val amount: Decimal192) : FungibleAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount = Max(amount = calculation(amount))
+    data class Max(@Contextual val amount: Decimal192) : CountedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Max(amount = calculation(amount))
     }
 
     @Serializable
@@ -42,63 +47,22 @@ sealed interface FungibleAmount : Amount {
         @Contextual val estimated: Decimal192,
         val instructionIndex: Long,
         @Contextual val offset: Decimal192
-    ) : FungibleAmount {
+    ) : CountedAmount {
+
         val guaranteed: Decimal192
             get() = estimated * offset
 
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount = copy(
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = copy(
             estimated = calculation(estimated)
         )
     }
 
     @Serializable
-    data object Unknown : FungibleAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount = Unknown
+    data object Unknown : CountedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Unknown
     }
 
-    fun just(decimal: Decimal192): FungibleAmount = calculateWith { decimal }
+    fun just(decimal: Decimal192): CountedAmount = calculateWith { decimal }
 
-    fun calculateWith(calculation: (Decimal192) -> Decimal192): FungibleAmount
-}
-
-sealed interface NonFungibleAmount : Amount {
-
-    // TODO may need to remove this
-    val certainNFTs: List<Resource.NonFungibleResource.Item>
-
-    data class Certain(val nfts: List<Resource.NonFungibleResource.Item>) : NonFungibleAmount {
-        override val certainNFTs: List<Resource.NonFungibleResource.Item>
-            get() = nfts
-    }
-
-    data class NotExact(
-        val certain: List<Resource.NonFungibleResource.Item>,
-        val additional: NonFungibleAmountBounds
-    ) : NonFungibleAmount {
-
-        override val certainNFTs: List<Resource.NonFungibleResource.Item>
-            get() = certain
-    }
-}
-
-sealed interface NonFungibleAmountBounds {
-    @Serializable
-    data class Exact(
-        @Contextual val amount: Decimal192,
-    ) : NonFungibleAmountBounds
-
-    @Serializable
-    data class Range(
-        @Contextual val minAmount: Decimal192,
-        @Contextual val maxAmount: Decimal192
-    ) : NonFungibleAmountBounds
-
-    @Serializable
-    data class Min(@Contextual val amount: Decimal192) : NonFungibleAmountBounds
-
-    @Serializable
-    data class Max(@Contextual val amount: Decimal192) : NonFungibleAmountBounds
-
-    @Serializable
-    data object Unknown: NonFungibleAmountBounds
+    fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount
 }

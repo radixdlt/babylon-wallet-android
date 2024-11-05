@@ -12,7 +12,6 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
-import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -68,7 +67,6 @@ class ResolveSignersUseCase @Inject constructor(
             personas.find { it.address == address }?.asProfileEntity()
         }
     }
-
 }
 
 data class NotaryAndSigners(

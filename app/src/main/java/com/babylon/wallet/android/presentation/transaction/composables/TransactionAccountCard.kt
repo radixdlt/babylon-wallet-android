@@ -24,7 +24,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
@@ -214,7 +214,7 @@ fun TransactionAccountCardWithTokenPreview() {
                 transferables = listOf(
                     Transferable.FungibleType.Token(
                         asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                        amount = FungibleAmount.Exact(666.toDecimal192()),
+                        amount = CountedAmount.Exact(666.toDecimal192()),
                         isNewlyCreated = false
                     )
                 )
@@ -236,7 +236,7 @@ fun TransactionAccountCardWithNFTPreview() {
             NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
         }
         val amount = remember(asset) {
-            NonFungibleAmount.Certain(nfts = asset.collection.items)
+            NonFungibleAmount(certain = asset.collection.items)
         }
         TransactionAccountCard(
             account = AccountWithTransferables(

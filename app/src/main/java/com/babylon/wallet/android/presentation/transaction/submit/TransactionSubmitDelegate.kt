@@ -14,13 +14,14 @@ import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreated
 import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummarizedManifest
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
@@ -101,7 +102,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                     else -> summary
                 }
             }.onSuccess { summaryWithPotentialAssertions ->
-                //signAndSubmit(manifestToSubmit)
+                // signAndSubmit(manifestToSubmit)
             }.onFailure { error ->
                 logger.e(error)
                 return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
@@ -260,7 +261,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         val allTransferables = deposits.map { it.transferables }.flatten()
 
         val guarantees = allTransferables.mapNotNull { transferable ->
-            val amount = (transferable.amount as? FungibleAmount.Predicted) ?: return@mapNotNull null
+            val amount = ((transferable as? Transferable.FungibleType)?.amount as? CountedAmount.Predicted) ?: return@mapNotNull null
             val fungibleAsset = (transferable.asset as? Asset.Fungible) ?: return@mapNotNull null
 
             TransactionGuarantee(
