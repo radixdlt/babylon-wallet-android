@@ -54,7 +54,8 @@ data class Pool(
                 resources = listOf(
                     Resource.FungibleResource.sampleMainnet.random(),
                     Resource.FungibleResource.sampleMainnet.random()
-                )
+                ),
+                associatedDApp = DApp.sampleMainnet()
             )
 
             override fun other(): Pool = Pool(

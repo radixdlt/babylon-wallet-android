@@ -34,12 +34,14 @@ class ValidatorClaimProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transaction.Staking(
+        return PreviewType.Transaction(
             from = withdraws,
             to = deposits,
-            validators = involvedValidators.toList(),
             badges = summary.resolveBadges(assets),
-            actionType = PreviewType.Transaction.Staking.ActionType.ClaimStake,
+            involvedComponents = PreviewType.Transaction.InvolvedComponents.Validators(
+                validators = involvedValidators,
+                actionType = PreviewType.Transaction.InvolvedComponents.Validators.ActionType.ClaimStake
+            ),
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

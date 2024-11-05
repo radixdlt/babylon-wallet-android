@@ -20,10 +20,11 @@ class TransferProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transaction.GeneralTransfer(
+        return PreviewType.Transaction(
             from = withdraws,
             to = deposits,
             badges = badges,
+            involvedComponents = PreviewType.Transaction.InvolvedComponents.None,
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

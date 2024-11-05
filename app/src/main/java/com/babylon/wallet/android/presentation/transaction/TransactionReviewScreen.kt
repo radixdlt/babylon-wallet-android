@@ -45,10 +45,8 @@ import com.babylon.wallet.android.presentation.transaction.composables.FeePayerS
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
-import com.babylon.wallet.android.presentation.transaction.composables.PoolTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
-import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreAuthorizationInfo
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
@@ -69,17 +67,19 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
@@ -301,60 +301,25 @@ private fun TransactionPreviewContent(
                             exit = fadeOut()
                         ) {
                             when (val preview = state.previewType) {
-                                is PreviewType.None -> {}
-                                is PreviewType.UnacceptableManifest -> {
-                                    return@AnimatedVisibility
-                                }
+                                is PreviewType.Transaction -> TransferTypeContent(
+                                    state = state,
+                                    previewType = preview,
+                                    onEditGuaranteesClick = onEditGuaranteesClick,
+                                    onTransferableFungibleClick = onTransferableFungibleClick,
+                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick,
+                                    onDAppClick = onDAppClick,
+                                    onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) }
+                                )
 
-                                is PreviewType.NonConforming -> {}
-                                is PreviewType.Transaction.GeneralTransfer -> {
-                                    TransferTypeContent(
-                                        state = state,
-                                        preview = preview,
-                                        onEditGuaranteesClick = onEditGuaranteesClick,
-                                        onDAppClick = onDAppClick,
-                                        onUnknownComponentsClick = { componentAddresses ->
-                                            onUnknownAddressesClick(componentAddresses.map { it.asGeneral() }.toPersistentList())
-                                        },
-                                        onTransferableFungibleClick = onTransferableFungibleClick,
-                                        onNonTransferableFungibleClick = onTransferableNonFungibleClick
-                                    )
-                                }
+                                is PreviewType.AccountsDepositSettings -> AccountDepositSettingsTypeContent(
+                                    preview = preview
+                                )
 
-                                is PreviewType.AccountsDepositSettings -> {
-                                    AccountDepositSettingsTypeContent(
-                                        preview = preview
-                                    )
-                                }
-
-                                is PreviewType.Transaction.Staking -> {
-                                    StakeTypeContent(
-                                        state = state,
-                                        onTransferableFungibleClick = onTransferableFungibleClick,
-                                        onNonTransferableFungibleClick = onTransferableNonFungibleClick,
-                                        onPromptForGuarantees = onEditGuaranteesClick,
-                                        previewType = preview
-                                    )
-                                }
-
-                                is PreviewType.Transaction.Pool -> {
-                                    PoolTypeContent(
-                                        state = state,
-                                        onTransferableFungibleClick = onTransferableFungibleClick,
-                                        onPromptForGuarantees = onEditGuaranteesClick,
-                                        previewType = preview,
-                                        onDAppClick = onDAppClick,
-                                        onUnknownPoolsClick = { pools ->
-                                            onUnknownAddressesClick(pools.map { Address.Pool(it.address) }.toPersistentList())
-                                        }
-                                    )
-                                }
-
-                                is PreviewType.PreAuthTransaction -> {}
+                                else -> {}
                             }
                         }
 
-                        if (state.isOpenTransaction) {
+                        if (state.isPreAuthorization) {
                             TransactionRawManifestToggle(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -418,7 +383,7 @@ private fun TransactionPreviewContent(
                         SlideToSignButton(
                             modifier = Modifier
                                 .padding(
-                                    horizontal = if (state.isOpenTransaction) {
+                                    horizontal = if (state.isPreAuthorization) {
                                         RadixTheme.dimensions.paddingDefault
                                     } else {
                                         RadixTheme.dimensions.paddingXXLarge
@@ -429,7 +394,7 @@ private fun TransactionPreviewContent(
                                     bottom = RadixTheme.dimensions.paddingXXLarge
                                 ),
                             title = stringResource(
-                                id = if (state.isOpenTransaction) {
+                                id = if (state.isPreAuthorization) {
                                     R.string.preAuthorizationReview_slideToSign
                                 } else {
                                     R.string.interactionReview_slideToSign
@@ -609,7 +574,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         dAppAddress = AccountAddress.sampleMainnet()
                     )
                 ),
-                previewType = PreviewType.Transaction.GeneralTransfer(
+                previewType = PreviewType.Transaction(
                     from = listOf(
                         AccountWithTransferables(
                             account = InvolvedAccount.Owned(Account.sampleStokenet()),
@@ -634,7 +599,15 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                             )
                         )
                     ),
-                    newlyCreatedGlobalIds = emptyList()
+                    involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
+                        components = listOf(
+                            ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
+                        )
+                    ),
+                    badges = listOf(
+                        Badge.sample(),
+                        Badge.sample.other()
+                    )
                 ),
                 fees = State.Fees(
                     isNetworkFeeLoading = false,
@@ -650,7 +623,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         dAppAddress = AccountAddress.sampleMainnet()
                     )
                 ),
-                previewType = PreviewType.Transaction.GeneralTransfer(
+                previewType = PreviewType.Transaction(
                     from = listOf(
                         AccountWithTransferables(
                             account = InvolvedAccount.Owned(Account.sampleStokenet()),
@@ -675,7 +648,13 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                             )
                         )
                     ),
-                    newlyCreatedGlobalIds = emptyList()
+                    involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
+                        components = listOf(
+                            ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
+                        ),
+                        morePossibleDAppsPresent = true
+                    ),
+                    badges = emptyList()
                 ),
                 fees = null,
                 preAuthorization = State.PreAuthorization(

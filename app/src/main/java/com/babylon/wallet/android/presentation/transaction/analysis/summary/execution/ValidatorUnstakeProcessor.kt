@@ -37,12 +37,14 @@ class ValidatorUnstakeProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transaction.Staking(
+        return PreviewType.Transaction(
             from = withdraws,
             to = deposits.augmentWithClaimNFTs(claimsData = classification.claimsNonFungibleData),
             badges = summary.resolveBadges(assets),
-            validators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator },
-            actionType = PreviewType.Transaction.Staking.ActionType.Unstake,
+            involvedComponents = PreviewType.Transaction.InvolvedComponents.Validators(
+                validators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }.toSet(),
+                actionType = PreviewType.Transaction.InvolvedComponents.Validators.ActionType.Unstake
+            ),
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }

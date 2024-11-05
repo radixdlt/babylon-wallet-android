@@ -27,10 +27,13 @@ class ManifestSummaryToPreviewTypeAnalyser @Inject constructor(
             profile = profile
         )
 
-        return PreviewType.PreAuthTransaction(
+        return PreviewType.Transaction(
             from = withdraws,
             to = deposits,
-            dApps = summary.summary.resolveDApps(),
+            involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
+                components = summary.summary.resolveDApps(),
+                morePossibleDAppsPresent = true
+            ),
             badges = summary.summary.resolveBadges(onLedgerAssets = assets),
         )
     }
