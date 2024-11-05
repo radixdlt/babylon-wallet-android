@@ -21,6 +21,7 @@ import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.amount
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -57,7 +58,7 @@ fun ExecutionSummary.involvedAddresses(
     }.map { nonFungible ->
         nonFungible.nonFungibleLocalIds.map { localId ->
             ResourceOrNonFungible.NonFungible(
-                NonFungibleGlobalId(
+                NonFungibleGlobalId.init(
                     resourceAddress = nonFungible.resourceAddress,
                     nonFungibleLocalId = localId
                 )
@@ -387,7 +388,7 @@ val ExecutionSummary.proofAddresses: List<ResourceOrNonFungible>
             is ResourceSpecifier.Fungible -> listOf(ResourceOrNonFungible.Resource(specifier.resourceAddress))
             is ResourceSpecifier.NonFungible -> specifier.ids.map { localId ->
                 ResourceOrNonFungible.NonFungible(
-                    NonFungibleGlobalId(
+                    NonFungibleGlobalId.init(
                         resourceAddress = specifier.resourceAddress,
                         nonFungibleLocalId = localId
                     )

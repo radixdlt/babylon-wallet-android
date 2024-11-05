@@ -12,6 +12,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.address
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -69,7 +70,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                 claimedResource as? ResourceIndicator.NonFungible
                     ?: error("No non-fungible indicator found")
                 val stakeClaimNftItems = claimedResource.nonFungibleLocalIds.map { localId ->
-                    val globalId = NonFungibleGlobalId(
+                    val globalId = NonFungibleGlobalId.init(
                         resourceAddress = claimedResource.resourceAddress,
                         nonFungibleLocalId = localId,
                     )

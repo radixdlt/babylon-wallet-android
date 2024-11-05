@@ -228,7 +228,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
 
     is MetadataNonFungibleGlobalIdValue -> Metadata.Primitive(
         key = key,
-        value = NonFungibleGlobalId(
+        value = NonFungibleGlobalId.init(
             resourceAddress = ResourceAddress.init(typed.resourceAddress),
             nonFungibleLocalId = NonFungibleLocalId.init(typed.nonFungibleId)
         ).string,
@@ -241,7 +241,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
         values = typed.propertyValues.map {
             Metadata.Primitive(
                 key = key,
-                value = NonFungibleGlobalId(
+                value = NonFungibleGlobalId.init(
                     resourceAddress = ResourceAddress.init(it.resourceAddress),
                     nonFungibleLocalId = NonFungibleLocalId.init(it.nonFungibleId)
                 ).string,

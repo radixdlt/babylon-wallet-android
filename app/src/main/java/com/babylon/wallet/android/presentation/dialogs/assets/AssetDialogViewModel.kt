@@ -23,6 +23,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.hiddenResources
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isXRD
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -67,7 +68,7 @@ class AssetDialogViewModel @Inject constructor(
                     is AssetDialogArgs.NFT -> if (args.localId != null) {
                         setOf(
                             ResourceOrNonFungible.NonFungible(
-                                NonFungibleGlobalId(
+                                NonFungibleGlobalId.init(
                                     resourceAddress = args.resourceAddress,
                                     nonFungibleLocalId = args.localId
                                 )

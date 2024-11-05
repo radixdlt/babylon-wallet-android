@@ -69,7 +69,7 @@ fun Account.Companion.initBabylon(
     flags: EntityFlags = EntityFlags(),
     customAppearanceId: AppearanceId? = null
 ): Account {
-    val accountAddress = AccountAddress.init(hdPublicKey.publicKey, networkId)
+    val accountAddress = AccountAddress.init("account_rdx12yjjm6akwvlqs7jd6praqzgayzahuurskdkkz3lpq4yas9ndq4f52h")
     val unsecuredSecurityState = EntitySecurityState.unsecured(
         hdPublicKey = hdPublicKey,
         factorSourceId = factorSourceId

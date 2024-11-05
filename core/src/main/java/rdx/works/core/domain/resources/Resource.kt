@@ -4,10 +4,12 @@ import android.net.Uri
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.NonFungibleLocalIdKind
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.intId
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
@@ -206,7 +208,7 @@ sealed class Resource {
         ) : Comparable<Item> {
 
             val globalId: NonFungibleGlobalId by lazy {
-                NonFungibleGlobalId(
+                NonFungibleGlobalId.init(
                     resourceAddress = collectionAddress,
                     nonFungibleLocalId = localId
                 )
@@ -252,47 +254,7 @@ sealed class Resource {
                 return claimEpoch?.let { it <= currentEpoch } ?: false
             }
 
-            override fun compareTo(other: Item): Int = when (localId) {
-                is NonFungibleLocalId.Str -> {
-                    val otherStr = other.localId as? NonFungibleLocalId.Str
-
-                    if (otherStr != null) {
-                        localId.string.compareTo(otherStr.string)
-                    } else {
-                        -1
-                    }
-                }
-
-                is NonFungibleLocalId.Ruid -> {
-                    val otherRuid = other.localId as? NonFungibleLocalId.Ruid
-
-                    if (otherRuid != null) {
-                        localId.string.compareTo(otherRuid.string)
-                    } else {
-                        -1
-                    }
-                }
-
-                is NonFungibleLocalId.Bytes -> {
-                    val otherBytes = other.localId as? NonFungibleLocalId.Bytes
-
-                    if (otherBytes != null) {
-                        localId.string.compareTo(otherBytes.string)
-                    } else {
-                        -1
-                    }
-                }
-
-                is NonFungibleLocalId.Integer -> {
-                    val otherInteger = (other.localId as? NonFungibleLocalId.Integer)
-
-                    if (otherInteger != null) {
-                        localId.value.compareTo(otherInteger.value)
-                    } else {
-                        -1
-                    }
-                }
-            }
+            override fun compareTo(other: Item): Int = localId.string.compareTo(other.localId.string)
         }
 
         companion object

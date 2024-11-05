@@ -8,6 +8,7 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -34,7 +35,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             val resourceAddress = entry.key
             entry.value.map { localId ->
                 ResourceOrNonFungible.NonFungible(
-                    NonFungibleGlobalId(resourceAddress, localId)
+                    NonFungibleGlobalId.init(resourceAddress, localId)
                 )
             }
         }.flatten().toSet(),
