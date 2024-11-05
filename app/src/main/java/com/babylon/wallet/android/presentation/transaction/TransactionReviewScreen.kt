@@ -281,7 +281,7 @@ private fun TransactionPreviewContent(
                     Box(
                         modifier = Modifier
                             .then(
-                                if (state.isPreAuthorized) {
+                                if (state.isPreAuthorization) {
                                     Modifier
                                         .padding(horizontal = RadixTheme.dimensions.paddingSmall)
                                         .background(
@@ -317,7 +317,7 @@ private fun TransactionPreviewContent(
                         androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier
                                 .applyIf(
-                                    state.isPreAuthorized,
+                                    state.isPreAuthorization,
                                     Modifier.padding(top = RadixTheme.dimensions.paddingSmall)
                                 ),
                             visible = !state.isRawManifestVisible,
@@ -332,7 +332,8 @@ private fun TransactionPreviewContent(
                                     onTransferableFungibleClick = onTransferableFungibleClick,
                                     onNonTransferableFungibleClick = onTransferableNonFungibleClick,
                                     onDAppClick = onDAppClick,
-                                    onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) }
+                                    onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) },
+                                    onInfoClick = onInfoClick
                                 )
 
                                 is PreviewType.AccountsDepositSettings -> AccountDepositSettingsTypeContent(
@@ -402,30 +403,32 @@ private fun TransactionPreviewContent(
                             ReceiptEdge(color = RadixTheme.colors.gray5)
                         }
 
-                        PresentingProofsContent(
-                            badges = state.previewType.badges.toPersistentList(),
-                            onInfoClick = onInfoClick,
-                            onClick = { badge ->
-                                when (val resource = badge.resource) {
-                                    is Resource.FungibleResource -> onTransferableFungibleClick(
-                                        Transferable.FungibleType.Token(
-                                            asset = Token(resource = resource),
-                                            amount = FungibleAmount.Exact(amount = resource.ownedAmount.orZero()),
-                                            isNewlyCreated = false
+                        if (!state.isPreAuthorization) {
+                            PresentingProofsContent(
+                                badges = state.previewType.badges.toPersistentList(),
+                                onInfoClick = onInfoClick,
+                                onClick = { badge ->
+                                    when (val resource = badge.resource) {
+                                        is Resource.FungibleResource -> onTransferableFungibleClick(
+                                            Transferable.FungibleType.Token(
+                                                asset = Token(resource = resource),
+                                                amount = FungibleAmount.Exact(amount = resource.ownedAmount.orZero()),
+                                                isNewlyCreated = false
+                                            )
                                         )
-                                    )
 
-                                    is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
-                                        Transferable.NonFungibleType.NFTCollection(
-                                            asset = NonFungibleCollection(resource),
-                                            amount = NonFungibleAmount.Certain(nfts = resource.items),
-                                            isNewlyCreated = false
-                                        ),
-                                        resource.items.firstOrNull()
-                                    )
+                                        is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
+                                            Transferable.NonFungibleType.NFTCollection(
+                                                asset = NonFungibleCollection(resource),
+                                                amount = NonFungibleAmount.Certain(nfts = resource.items),
+                                                isNewlyCreated = false
+                                            ),
+                                            resource.items.firstOrNull()
+                                        )
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
 
                         state.fees?.let { fees ->
                             NetworkFeeContent(
@@ -442,6 +445,7 @@ private fun TransactionPreviewContent(
                             TransactionPreAuthorizationInfo(
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
                                 preAuthorization = preAuthorization,
+                                proposingDApp = state.proposingDApp ?: State.ProposingDApp.None,
                                 onInfoClick = onInfoClick
                             )
                         }
