@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.seconds
 class ManifestSummaryToPreviewTypeAnalyser @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-): SummaryToPreviewTypeAnalyzer<Summary.FromStaticAnalysis> {
+) : SummaryToPreviewTypeAnalyzer<Summary.FromStaticAnalysis> {
 
     private fun DappToWalletInteractionSubintentExpiration?.toExpiration() = when (this) {
         is DappToWalletInteractionSubintentExpiration.AtTime -> PreviewType.PreAuthTransaction.Expiration.AtTime(
@@ -40,5 +40,4 @@ class ManifestSummaryToPreviewTypeAnalyser @Inject constructor(
             badges = emptyList(), // TODO
         )
     }
-
 }

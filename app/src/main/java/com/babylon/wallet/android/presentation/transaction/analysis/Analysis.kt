@@ -33,6 +33,4 @@ class Analysis private constructor(
             }
         }
     )
-
 }
-

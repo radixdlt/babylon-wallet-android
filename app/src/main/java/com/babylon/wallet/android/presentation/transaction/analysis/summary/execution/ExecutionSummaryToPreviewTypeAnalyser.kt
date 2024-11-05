@@ -17,7 +17,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val validatorStakeProcessor: ValidatorStakeProcessor,
     private val validatorClaimProcessor: ValidatorClaimProcessor,
     private val validatorUnstakeProcessor: ValidatorUnstakeProcessor
-): SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
+) : SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
         val executionSummary = summary.summary
@@ -31,7 +31,10 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             is DetailedManifestClass.ValidatorStake -> validatorStakeProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.ValidatorClaim -> validatorClaimProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.ValidatorUnstake -> validatorUnstakeProcessor.process(executionSummary, manifestClass)
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> accountDepositSettingsProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> accountDepositSettingsProcessor.process(
+                executionSummary,
+                manifestClass
+            )
         }
     }
 

@@ -7,23 +7,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
 
 @Composable
 fun TokenBalance(
     modifier: Modifier = Modifier,
-    amount: FungibleAmount?,
-    symbol: String?
+    amount: CountedAmount?,
+    symbol: String?,
+    amountTextStyle: TextStyle = RadixTheme.typography.secondaryHeader
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Bottom
     ) {
         amount?.let {
             FungibleAmountSection(
-                fungibleAmount = it,
+                countedAmount = it,
+//                symbol = symbol, todo
+                amountTextStyle = amountTextStyle
             )
         }
 

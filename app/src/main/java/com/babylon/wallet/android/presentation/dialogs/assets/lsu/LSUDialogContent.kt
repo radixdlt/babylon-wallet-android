@@ -34,7 +34,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
@@ -80,7 +80,7 @@ fun LSUDialogContent(
 ) {
     val resourceAddress = args.resourceAddress
     val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
-        ?: lsu?.fungibleResource?.ownedAmount?.let { FungibleAmount.Exact(it) }
+        ?: lsu?.fungibleResource?.ownedAmount?.let { CountedAmount.Exact(it) }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -138,7 +138,7 @@ fun LSUDialogContent(
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
-            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValueXRD()?.let { FungibleAmount.Exact(it) }
+            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValueXRD()?.let { CountedAmount.Exact(it) }
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
@@ -281,7 +281,7 @@ private fun LSUIconSection(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: FungibleAmount?,
+    amount: CountedAmount?,
     price: AssetPrice.LSUPrice?,
     isLoadingBalance: Boolean
 ) {
@@ -319,15 +319,13 @@ private fun LSUResourceValue(
             ) {
                 amount?.let {
                     FungibleAmountSection(
-                        fungibleAmount = it
+                        countedAmount = it
                     )
                 }
             }
 
-            // TODO Sergiu: Most likely the fiat price should be per amount, for example if the amount is FungibleAmount.Range,
-            // the fiat price must be shown once below the min and once below the max
             val xrdPrice = remember(price, amount) {
-                (amount as? FungibleAmount.Exact)?.amount?.let { amount ->
+                (amount as? CountedAmount.Exact)?.amount?.let { amount ->
                     price?.xrdPrice(amount)
                 }
             }
@@ -384,7 +382,7 @@ private fun LSUDialogContentPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to FungibleAmount.Exact(Decimal192.sample()))
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to CountedAmount.Exact(Decimal192.sample()))
             ),
             isLoadingBalance = false,
             onInfoClick = {}

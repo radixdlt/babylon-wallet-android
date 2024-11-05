@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -60,11 +60,11 @@ class PoolRedemptionProcessor @Inject constructor(
                 }
 
             val newAmount = when (poolUnit.amount) {
-                is FungibleAmount.Exact -> FungibleAmount.Exact(totalPoolUnitAmount)
-                is FungibleAmount.Predicted -> poolUnit.amount.copy(
+                is CountedAmount.Exact -> CountedAmount.Exact(totalPoolUnitAmount)
+                is CountedAmount.Predicted -> poolUnit.amount.copy(
                     estimated = totalPoolUnitAmount
                 )
-                else -> FungibleAmount.Exact(totalPoolUnitAmount)
+                else -> CountedAmount.Exact(totalPoolUnitAmount)
             }
 
             poolUnit.copy(amount = newAmount)

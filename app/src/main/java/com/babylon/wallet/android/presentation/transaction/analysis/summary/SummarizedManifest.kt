@@ -8,12 +8,12 @@ sealed interface SummarizedManifest {
 
     val networkId: NetworkId
 
-    data class Transaction(val manifest: TransactionManifest): SummarizedManifest {
+    data class Transaction(val manifest: TransactionManifest) : SummarizedManifest {
         override val networkId: NetworkId
             get() = manifest.networkId
     }
 
-    data class Subintent(val manifest: SubintentManifest): SummarizedManifest {
+    data class Subintent(val manifest: SubintentManifest) : SummarizedManifest {
         override val networkId: NetworkId
             get() = manifest.networkId
     }

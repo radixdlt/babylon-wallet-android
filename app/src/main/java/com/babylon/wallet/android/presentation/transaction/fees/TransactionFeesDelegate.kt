@@ -5,7 +5,7 @@ import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
@@ -376,8 +376,8 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
                     when (xrdAmount) {
                         null -> 0.toDecimal192()
-                        is FungibleAmount.Exact -> xrdAmount.amount
-                        is FungibleAmount.Predicted -> xrdAmount.estimated
+                        is CountedAmount.Exact -> xrdAmount.amount
+                        is CountedAmount.Predicted -> xrdAmount.estimated
                         else -> 0.toDecimal192() // Should not go through these cases. Fees are calculated only on regular transactions.
                     }
                 } else {
@@ -423,6 +423,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
-            deposits.keys +
-            addressesOfAccountsRequiringAuth.toSet()
+        deposits.keys +
+        addressesOfAccountsRequiringAuth.toSet()
 }

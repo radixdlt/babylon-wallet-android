@@ -60,13 +60,15 @@ class ValidatorStakeProcessor @Inject constructor(
                 totalStakedXrd += stake.xrdAmount
             }
 
-            lsu.copy(xrdWorth = lsu.amount.calculateWith { decimal ->
-                lsu.asset.stakeValueXRD(
-                    lsu = decimal,
-                    totalStaked = totalStaked,
-                    totalStakedInXrd = totalStakedXrd
-                ).orZero()
-            })
+            lsu.copy(
+                xrdWorth = lsu.amount.calculateWith { decimal ->
+                    lsu.asset.stakeValueXRD(
+                        lsu = decimal,
+                        totalStaked = totalStaked,
+                        totalStakedInXrd = totalStakedXrd
+                    ).orZero()
+                }
+            )
         }
 
         accountWithTransferableResources.update(transferables)

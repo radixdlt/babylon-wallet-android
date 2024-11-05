@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -44,7 +44,7 @@ class PoolContributionProcessor @Inject constructor(
             val poolUnit = (transferable as? Transferable.FungibleType.PoolUnit) ?: return@tr transferable
 
             var totalPoolUnitAmount = poolUnit.amount.just(0.toDecimal192())
-            val contributionsPerResource = mutableMapOf<ResourceAddress, FungibleAmount>()
+            val contributionsPerResource = mutableMapOf<ResourceAddress, CountedAmount>()
 
             contributions.filter {
                 it.poolUnitsResourceAddress == poolUnit.resourceAddress

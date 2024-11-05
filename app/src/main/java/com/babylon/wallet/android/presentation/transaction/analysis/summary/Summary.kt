@@ -13,7 +13,7 @@ sealed interface Summary {
     data class FromExecution(
         val manifest: SummarizedManifest,
         val summary: ExecutionSummary
-    ): Summary {
+    ) : Summary {
 
         override val entitiesRequiringAuth: List<AddressOfAccountOrPersona>
             get() = summary.addressesOfAccountsRequiringAuth.map {
@@ -29,7 +29,7 @@ sealed interface Summary {
     data class FromStaticAnalysis(
         val manifest: SummarizedManifest.Subintent,
         val summary: ManifestSummary
-    ): Summary {
+    ) : Summary {
         override val entitiesRequiringAuth: List<AddressOfAccountOrPersona>
             get() = summary.addressesOfAccountsRequiringAuth.map {
                 AddressOfAccountOrPersona.Account(it)
@@ -39,6 +39,4 @@ sealed interface Summary {
         override val networkId: NetworkId
             get() = manifest.networkId
     }
-
 }
-

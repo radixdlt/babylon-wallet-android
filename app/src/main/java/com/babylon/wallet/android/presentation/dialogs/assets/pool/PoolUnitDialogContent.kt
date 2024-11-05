@@ -34,7 +34,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.FungibleAmount
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -74,7 +74,7 @@ fun PoolUnitDialogContent(
 ) {
     val resourceAddress = args.resourceAddress
     val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
-        ?: remember(poolUnit) { poolUnit?.stake?.ownedAmount?.let { FungibleAmount.Exact(it) } }
+        ?: remember(poolUnit) { poolUnit?.stake?.ownedAmount?.let { CountedAmount.Exact(it) } }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -127,7 +127,7 @@ fun PoolUnitDialogContent(
                 val resourcesWithAmount = remember(poolUnit, args) {
                     poolUnit.pool?.resources?.associateWith { resource ->
                         args.fungibleAmountOf(resource.address)
-                            ?: poolUnit.poolItemRedemptionValue(resource.address)?.let { FungibleAmount.Exact(it) }
+                            ?: poolUnit.poolItemRedemptionValue(resource.address)?.let { CountedAmount.Exact(it) }
                     }.orEmpty().toImmutableMap()
                 }
                 PoolResourcesValues(
@@ -290,7 +290,7 @@ private fun PoolUnitDialogContentPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to FungibleAmount.Exact(Decimal192.sample()))
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to CountedAmount.Exact(Decimal192.sample()))
             ),
             poolUnit = PoolUnit(
                 stake = Resource.FungibleResource(

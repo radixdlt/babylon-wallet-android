@@ -80,7 +80,7 @@ fun TransferablePoolUnitItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            FungibleAmountSection(fungibleAmount = transferablePoolUnit.amount)
+            FungibleAmountSection(countedAmount = transferablePoolUnit.amount)
         }
         Text(
             modifier = Modifier
@@ -118,7 +118,7 @@ fun TransferablePoolUnitItemContent(
                     val contributionPerResourceAmount = transferablePoolUnit.contributions[item.address]
                     if (contributionPerResourceAmount != null) {
                         FungibleAmountSection(
-                            fungibleAmount = contributionPerResourceAmount
+                            countedAmount = contributionPerResourceAmount
                         )
                     } else {
                         Text(
