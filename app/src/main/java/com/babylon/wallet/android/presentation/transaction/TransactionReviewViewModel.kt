@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.sargon.getResourcePreferences
@@ -266,10 +267,10 @@ class TransactionReviewViewModel @Inject constructor(
             get() = transactionType?.isPreAuthorized == true
 
         val showReceiptEdges: Boolean
-            get() = !isOpenTransaction
+            get() = !isPreAuthorization
 
-        val isOpenTransaction: Boolean
-            get() = previewType !is PreviewType.PreAuthTransaction
+        val isPreAuthorization: Boolean
+            get() = transactionType is TransactionType.PreAuthorized
 
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,
@@ -380,10 +381,13 @@ sealed interface PreviewType {
             get() = accountsWithDepositSettingsChanges.any { it.assetChanges.isNotEmpty() || it.depositorChanges.isNotEmpty() }
     }
 
-    sealed interface Transaction : PreviewType {
-        val from: List<AccountWithTransferables>
-        val to: List<AccountWithTransferables>
-        val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
+    data class Transaction(
+        val from: List<AccountWithTransferables>,
+        val to: List<AccountWithTransferables>,
+        val involvedComponents: InvolvedComponents,
+        override val badges: List<Badge>,
+        private val newlyCreatedGlobalIds: List<NonFungibleGlobalId> = emptyList()
+    ) : PreviewType {
 
         val newlyCreatedResources: List<Resource>
             get() = (from + to).map { allTransfers ->
@@ -403,51 +407,58 @@ sealed interface PreviewType {
                 return newlyCreatedGlobalIds.mapNotNull { allItems[it] }
             }
 
-        data class Staking(
-            override val from: List<AccountWithTransferables>,
-            override val to: List<AccountWithTransferables>,
-            override val badges: List<Badge>,
-            val validators: List<Validator>,
-            val actionType: ActionType,
-            override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
-        ) : Transaction {
-            enum class ActionType {
-                Stake, Unstake, ClaimStake
-            }
-        }
+        sealed interface InvolvedComponents {
 
-        data class Pool(
-            override val from: List<AccountWithTransferables>,
-            override val to: List<AccountWithTransferables>,
-            override val badges: List<Badge>,
-            val actionType: ActionType,
-            override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
-        ) : Transaction {
-            enum class ActionType {
-                Contribution, Redemption
+            val isEmpty: Boolean
+                get() = when (this) {
+                    is None -> true
+                    is DApps -> components.isEmpty() && !morePossibleDAppsPresent
+                    is Pools -> pools.isEmpty()
+                    is Validators -> validators.isEmpty()
+                }
+
+            data class DApps(
+                val components: List<Pair<ManifestEncounteredComponentAddress, DApp?>>,
+                val morePossibleDAppsPresent: Boolean = false
+            ) : InvolvedComponents {
+
+                val verifiedDapps: List<DApp>
+                    get() = components.mapNotNull { it.second }
+
+                val unknownComponents: List<ManifestEncounteredComponentAddress>
+                    get() = components.mapNotNull { if (it.second == null) it.first else null }
             }
 
-            val poolsInvolved: Set<rdx.works.core.domain.resources.Pool>
-                get() = (from + to).toSet().map { accountWithAssets ->
-                    accountWithAssets.transferables.mapNotNull {
-                        (it as? Transferable.FungibleType.PoolUnit)?.asset?.pool
-                    }
-                }.flatten().toSet()
-        }
+            data class Validators(
+                val validators: Set<Validator>,
+                val actionType: ActionType
+            ) : InvolvedComponents {
 
-        data class GeneralTransfer(
-            override val from: List<AccountWithTransferables>,
-            override val to: List<AccountWithTransferables>,
-            override val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
-            override val newlyCreatedGlobalIds: List<NonFungibleGlobalId>
-        ) : Transaction
+                enum class ActionType {
+                    Stake,
+                    Unstake,
+                    ClaimStake
+                }
+            }
+
+            data class Pools(
+                val pools: Set<Pool>,
+                val actionType: ActionType
+            ) : InvolvedComponents {
+
+                val associatedDApps: List<DApp>
+                    get() = pools.mapNotNull { it.associatedDApp }
+
+                val unknownPools: List<Pool>
+                    get() = pools.filter { it.associatedDApp == null }
+
+                enum class ActionType {
+                    Contribution,
+                    Redemption
+                }
+            }
+
+            data object None : InvolvedComponents
+        }
     }
-
-    data class PreAuthTransaction(
-        val from: List<AccountWithTransferables>,
-        val to: List<AccountWithTransferables>,
-        val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
-        override val badges: List<Badge>
-    ) : PreviewType
 }

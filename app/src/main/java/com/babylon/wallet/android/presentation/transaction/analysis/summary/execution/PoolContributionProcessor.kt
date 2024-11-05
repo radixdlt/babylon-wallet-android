@@ -28,11 +28,22 @@ class PoolContributionProcessor @Inject constructor(
             profile = getProfileUseCase()
         )
 
-        return PreviewType.Transaction.Pool(
+        val augmentedDeposits = deposits.augmentWithContributions(contributions = classification.poolContributions)
+
+        val involvedPools = (withdraws + augmentedDeposits).toSet().map { accountWithTransferables ->
+            accountWithTransferables.transferables.mapNotNull {
+                (it as? Transferable.FungibleType.PoolUnit)?.asset?.pool
+            }
+        }.flatten().toSet()
+
+        return PreviewType.Transaction(
             from = withdraws,
-            to = deposits.augmentWithContributions(contributions = classification.poolContributions),
+            to = augmentedDeposits,
             badges = badges,
-            actionType = PreviewType.Transaction.Pool.ActionType.Contribution,
+            involvedComponents = PreviewType.Transaction.InvolvedComponents.Pools(
+                pools = involvedPools,
+                actionType = PreviewType.Transaction.InvolvedComponents.Pools.ActionType.Contribution
+            ),
             newlyCreatedGlobalIds = summary.newlyCreatedNonFungibles
         )
     }
