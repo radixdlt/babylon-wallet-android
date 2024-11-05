@@ -100,382 +100,382 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import java.util.UUID
 
-@Ignore("TODO Integration")
-@OptIn(ExperimentalCoroutinesApi::class)
-internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
-
-    @get:Rule
-    val defaultLocaleTestRule = DefaultLocaleRule()
-
-    private val signTransactionUseCase = mockk<SignTransactionUseCase>()
-    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
-    private val getResourcesUseCase = mockk<GetResourcesUseCase>()
-    private val resolveAssetsFromAddressUseCase = mockk<ResolveAssetsFromAddressUseCase>()
-    private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
-    private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
-    private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val clearCachedNewlyCreatedEntitiesUseCase = mockk<ClearCachedNewlyCreatedEntitiesUseCase>()
-    private val transactionStatusClient = mockk<TransactionStatusClient>()
-    private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
-    private val transactionRepository = mockk<TransactionRepository>()
-    private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
-    private val appEventBus = mockk<AppEventBus>()
-    private val incomingRequestRepository = IncomingRequestRepositoryImpl(appEventBus)
-    private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
-    private val savedStateHandle = mockk<SavedStateHandle>()
-    private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
-    private val getDAppsUseCase = mockk<GetDAppsUseCase>()
-    private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
-    private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
-    private val executionSummaryToPreviewTypeAnalyser = ExecutionSummaryToPreviewTypeAnalyser(
-        generalTransferProcessor = GeneralTransferProcessor(
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
-            getProfileUseCase = getProfileUseCase,
-            resolveComponentAddressesUseCase = resolveComponentAddressesUseCase
-        ),
-        transferProcessor = TransferProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        ),
-        poolContributionProcessor = PoolContributionProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        ),
-        accountDepositSettingsProcessor = AccountDepositSettingsProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        ),
-        poolRedemptionProcessor = PoolRedemptionProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        ),
-        validatorStakeProcessor = ValidatorStakeProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        ),
-        validatorUnstakeProcessor = ValidatorUnstakeProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        ),
-        validatorClaimProcessor = ValidatorClaimProcessor(
-            getProfileUseCase = getProfileUseCase,
-            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
-        )
-    )
-    private val coroutineDispatcher = UnconfinedTestDispatcher()
-    private val sampleTransactionIntentHash = TransactionIntentHash.sample()
-    private val notarizationResult = NotarizationResult(
-        intentHash = sampleTransactionIntentHash,
-        notarizedTransaction = NotarizedTransaction.sample(),
-        endEpoch = 50u
-    )
-    private val sampleRequestId = UUID.randomUUID().toString()
-    private val sampleUnvalidatedManifestData = mockk<UnvalidatedManifestData>().apply {
-        every { networkId } returns NetworkId.MAINNET
-        every { instructions } returns ""
-        every { blobs } returns emptyList()
-        every { message } returns Message.None
-    }
-    private val sampleRequest = TransactionRequest(
-        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = sampleRequestId,
-        unvalidatedManifestData = sampleUnvalidatedManifestData,
-        requestMetadata = DappToWalletInteraction.RequestMetadata(
-            networkId = NetworkId.MAINNET,
-            origin = "https://test.origin.com",
-            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
-            isInternal = false
-        ),
-        transactionType = TransactionType.Generic
-    )
-
-    private val profile = Profile.sample()
-        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
-        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
-
-    private val emptyExecutionSummary = ExecutionSummary(
-        feeLocks = FeeLocks(
-            lock = 0.toDecimal192(),
-            contingentLock = 0.toDecimal192()
-        ),
-        feeSummary = FeeSummary(
-            executionCost = 0.toDecimal192(),
-            finalizationCost = 0.toDecimal192(),
-            storageExpansionCost = 0.toDecimal192(),
-            royaltyCost = 0.toDecimal192()
-        ),
-        detailedClassification = listOf(),
-        reservedInstructions = listOf(),
-        deposits = mapOf(),
-        withdrawals = mapOf(),
-        addressesOfAccountsRequiringAuth = listOf(),
-        addressesOfIdentitiesRequiringAuth = listOf(),
-        encounteredAddresses = listOf(),
-        newEntities = NewEntities(
-            metadata = mapOf()
-        ),
-        presentedProofs = listOf(),
-        newlyCreatedNonFungibles = listOf()
-    )
-
-    @Before
-    override fun setUp() = runTest {
-        super.setUp()
-        val dApp = DApp.sampleMainnet()
-        coEvery {
-            getDAppsUseCase(dApp.dAppAddress, false)
-        } returns Result.success(dApp)
-        every { exceptionMessageProvider.throwableMessage(any()) } returns ""
-        every { deviceCapabilityHelper.isDeviceSecure } returns true
-        mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
-        every { logNonFatalException(any()) } just Runs
-        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
-        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
-        coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
-        coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
+//@Ignore("TODO Integration")
+//@OptIn(ExperimentalCoroutinesApi::class)
+//internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
+//
+//    @get:Rule
+//    val defaultLocaleTestRule = DefaultLocaleRule()
+//
+//    private val signTransactionUseCase = mockk<SignTransactionUseCase>()
+//    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+//    private val getResourcesUseCase = mockk<GetResourcesUseCase>()
+//    private val resolveAssetsFromAddressUseCase = mockk<ResolveAssetsFromAddressUseCase>()
+//    private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
+//    private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
+//    private val getProfileUseCase = mockk<GetProfileUseCase>()
+//    private val clearCachedNewlyCreatedEntitiesUseCase = mockk<ClearCachedNewlyCreatedEntitiesUseCase>()
+//    private val transactionStatusClient = mockk<TransactionStatusClient>()
+//    private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
+//    private val transactionRepository = mockk<TransactionRepository>()
+//    private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
+//    private val appEventBus = mockk<AppEventBus>()
+//    private val incomingRequestRepository = IncomingRequestRepositoryImpl(appEventBus)
+//    private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
+//    private val savedStateHandle = mockk<SavedStateHandle>()
+//    private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
+//    private val getDAppsUseCase = mockk<GetDAppsUseCase>()
+//    private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
+//    private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
+//    private val executionSummaryToPreviewTypeAnalyser = ExecutionSummaryToPreviewTypeAnalyser(
+//        generalTransferProcessor = GeneralTransferProcessor(
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
+//            getProfileUseCase = getProfileUseCase,
+//            resolveComponentAddressesUseCase = resolveComponentAddressesUseCase
+//        ),
+//        transferProcessor = TransferProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        ),
+//        poolContributionProcessor = PoolContributionProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        ),
+//        accountDepositSettingsProcessor = AccountDepositSettingsProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        ),
+//        poolRedemptionProcessor = PoolRedemptionProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        ),
+//        validatorStakeProcessor = ValidatorStakeProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        ),
+//        validatorUnstakeProcessor = ValidatorUnstakeProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        ),
+//        validatorClaimProcessor = ValidatorClaimProcessor(
+//            getProfileUseCase = getProfileUseCase,
+//            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+//        )
+//    )
+//    private val coroutineDispatcher = UnconfinedTestDispatcher()
+//    private val sampleTransactionIntentHash = TransactionIntentHash.sample()
+//    private val notarizationResult = NotarizationResult(
+//        intentHash = sampleTransactionIntentHash,
+//        notarizedTransaction = NotarizedTransaction.sample(),
+//        endEpoch = 50u
+//    )
+//    private val sampleRequestId = UUID.randomUUID().toString()
+//    private val sampleUnvalidatedManifestData = mockk<UnvalidatedManifestData>().apply {
+//        every { networkId } returns NetworkId.MAINNET
+//        every { instructions } returns ""
+//        every { blobs } returns emptyList()
+//        every { message } returns Message.None
+//    }
+//    private val sampleRequest = TransactionRequest(
+//        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
+//        interactionId = sampleRequestId,
+//        unvalidatedManifestData = sampleUnvalidatedManifestData,
+//        requestMetadata = DappToWalletInteraction.RequestMetadata(
+//            networkId = NetworkId.MAINNET,
+//            origin = "https://test.origin.com",
+//            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
+//            isInternal = false
+//        ),
+//        transactionType = TransactionType.Generic
+//    )
+//
+//    private val profile = Profile.sample()
+//        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+//        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
+//
+//    private val emptyExecutionSummary = ExecutionSummary(
+//        feeLocks = FeeLocks(
+//            lock = 0.toDecimal192(),
+//            contingentLock = 0.toDecimal192()
+//        ),
+//        feeSummary = FeeSummary(
+//            executionCost = 0.toDecimal192(),
+//            finalizationCost = 0.toDecimal192(),
+//            storageExpansionCost = 0.toDecimal192(),
+//            royaltyCost = 0.toDecimal192()
+//        ),
+//        detailedClassification = listOf(),
+//        reservedInstructions = listOf(),
+//        deposits = mapOf(),
+//        withdrawals = mapOf(),
+//        addressesOfAccountsRequiringAuth = listOf(),
+//        addressesOfIdentitiesRequiringAuth = listOf(),
+//        encounteredAddresses = listOf(),
+//        newEntities = NewEntities(
+//            metadata = mapOf()
+//        ),
+//        presentedProofs = listOf(),
+//        newlyCreatedNonFungibles = listOf()
+//    )
+//
+//    @Before
+//    override fun setUp() = runTest {
+//        super.setUp()
+//        val dApp = DApp.sampleMainnet()
+//        coEvery {
+//            getDAppsUseCase(dApp.dAppAddress, false)
+//        } returns Result.success(dApp)
+//        every { exceptionMessageProvider.throwableMessage(any()) } returns ""
+//        every { deviceCapabilityHelper.isDeviceSecure } returns true
+//        mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
+//        every { logNonFatalException(any()) } just Runs
+//        every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
+//        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
+//        coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
+//        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
+//        coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
+////        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+////            TransactionToReviewData(
+////                transactionToReview = TransactionToReview(
+////                    transactionManifest = TransactionManifest.sample(),
+////                    executionSummary = emptyExecutionSummary
+////                ),
+////                message = Message.None
+////            )
+////        )
+//        coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
+//        coEvery {
+//            respondToIncomingRequestUseCase.respondWithSuccess(
+//                request = any(),
+//                txId = any(),
+//            )
+//        } returns Result.success(IncomingRequestResponse.SuccessCE)
+//        coEvery {
+//            respondToIncomingRequestUseCase.respondWithFailure(
+//                request = any(),
+//                dappWalletInteractionErrorType = any(),
+//                message = any()
+//            )
+//        } returns Result.success(IncomingRequestResponse.SuccessCE)
+//        coEvery { appEventBus.sendEvent(any()) } returns Unit
+//        incomingRequestRepository.add(sampleRequest)
+//        every { getProfileUseCase.flow } returns flowOf(profile)
+//        coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
+//            NotaryAndSigners(
+//                listOf(),
+//                Curve25519SecretKey.secureRandom()
+//            )
+//        )
+//        coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
+//        coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
+//    }
+//
+//    override fun initVM(): TransactionReviewViewModel {
+//        return TransactionReviewViewModel(
+//            analysis = TransactionAnalysisDelegate(
+//                executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
+//                cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
+//                getProfileUseCase = getProfileUseCase,
+//                manifestSummaryToPreviewTypeAnalyser = ,
+//                sargonOsManager =
+//            ),
+//            guarantees = TransactionGuaranteesDelegateImpl(),
+//            fees = TransactionFeesDelegateImpl(
+//                getProfileUseCase = getProfileUseCase,
+//                searchFeePayersUseCase = searchFeePayersUseCase,
+//                getFiatValueUseCase = getFiatValueUseCase
+//            ),
+//            submit = TransactionSubmitDelegateImpl(
+//                signTransactionUseCase = signTransactionUseCase,
+//                respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
+//                getCurrentGatewayUseCase = getCurrentGatewayUseCase,
+//                incomingRequestRepository = incomingRequestRepository,
+//                appEventBus = appEventBus,
+//                clearCachedNewlyCreatedEntitiesUseCase = clearCachedNewlyCreatedEntitiesUseCase,
+//                transactionStatusClient = transactionStatusClient,
+//                applicationScope = TestScope(),
+//                exceptionMessageProvider = exceptionMessageProvider,
+//                transactionRepository = transactionRepository
+//            ),
+//            incomingRequestRepository = incomingRequestRepository,
+//            savedStateHandle = savedStateHandle,
+//            getDAppsUseCase = getDAppsUseCase,
+//            appEventBus = appEventBus,
+//            getProfileUseCase = getProfileUseCase,
+//            defaultDispatcher = coroutineDispatcher
+//        )
+//    }
+//
+//    @Test
+//    fun `transaction approval success`() = runTest {
+//        val vm = vm.value
+//        advanceUntilIdle()
+//        vm.onApproveTransaction()
+//        advanceUntilIdle()
+//        coVerify(exactly = 1) {
+//            respondToIncomingRequestUseCase.respondWithSuccess(
+//                request = sampleRequest,
+//                txId = sampleTransactionIntentHash.bech32EncodedTxId
+//            )
+//        }
+//    }
+//
+//    @Test
+//    fun `transaction approval wrong network`() = runTest {
+//        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
+//        val vm = vm.value
+//        advanceUntilIdle()
+//        vm.onApproveTransaction()
+//        advanceUntilIdle()
+//        val errorSlot = slot<DappWalletInteractionErrorType>()
+//        coVerify(exactly = 1) {
+//            respondToIncomingRequestUseCase.respondWithFailure(
+//                request = sampleRequest,
+//                dappWalletInteractionErrorType = capture(errorSlot),
+//                message = any()
+//            )
+//        }
+//        assertEquals(DappWalletInteractionErrorType.WRONG_NETWORK, errorSlot.captured)
+//        vm.oneOffEvent.test {
+//            TestCase.assertTrue(awaitItem() is TransactionReviewViewModel.Event.Dismiss)
+//        }
+//    }
+//
+//    @Test
+//    fun `transaction approval sign and submit error`() = runTest {
+//        coEvery { signTransactionUseCase(any()) } returns Result.failure(
+//            RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
+//        )
+//        val vm = vm.value
+//        advanceUntilIdle()
+//        vm.onApproveTransaction()
+//        advanceUntilIdle()
+//        val state = vm.state.first()
+//        val errorSlot = slot<DappWalletInteractionErrorType>()
+//        coVerify(exactly = 1) {
+//            respondToIncomingRequestUseCase.respondWithFailure(
+//                request = sampleRequest,
+//                dappWalletInteractionErrorType = capture(errorSlot),
+//                message = any()
+//            )
+//        }
+//        assertEquals(DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION, errorSlot.captured)
+//        assertNotNull(state.error)
+//    }
+//
+//    @Test
+//    fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
+//        val feePaddingAmount = "1.6"
+//
+//        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
+//        val expectedFeeLock = "1.10842739440"
 //        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
 //            TransactionToReviewData(
 //                transactionToReview = TransactionToReview(
 //                    transactionManifest = TransactionManifest.sample(),
-//                    executionSummary = emptyExecutionSummary
+//                    executionSummary = emptyExecutionSummary.copy(
+//                        feeLocks = FeeLocks(
+//                            lock = 1.5.toDecimal192(),
+//                            contingentLock = 0.toDecimal192()
+//                        ),
+//                        feeSummary = FeeSummary(
+//                            executionCost = 0.3.toDecimal192(),
+//                            finalizationCost = 0.3.toDecimal192(),
+//                            storageExpansionCost = 0.2.toDecimal192(),
+//                            royaltyCost = 0.2.toDecimal192()
+//                        ),
+//                        detailedClassification = listOf(
+//                            DetailedManifestClass.General
+//                        ),
+//                        reservedInstructions = emptyList()
+//                    )
 //                ),
 //                message = Message.None
 //            )
 //        )
-        coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
-        coEvery {
-            respondToIncomingRequestUseCase.respondWithSuccess(
-                request = any(),
-                txId = any(),
-            )
-        } returns Result.success(IncomingRequestResponse.SuccessCE)
-        coEvery {
-            respondToIncomingRequestUseCase.respondWithFailure(
-                request = any(),
-                dappWalletInteractionErrorType = any(),
-                message = any()
-            )
-        } returns Result.success(IncomingRequestResponse.SuccessCE)
-        coEvery { appEventBus.sendEvent(any()) } returns Unit
-        incomingRequestRepository.add(sampleRequest)
-        every { getProfileUseCase.flow } returns flowOf(profile)
-        coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
-            NotaryAndSigners(
-                listOf(),
-                Curve25519SecretKey.secureRandom()
-            )
-        )
-        coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
-        coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
-    }
-
-    override fun initVM(): TransactionReviewViewModel {
-        return TransactionReviewViewModel(
-            analysis = TransactionAnalysisDelegate(
-                executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
-                cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
-                getProfileUseCase = getProfileUseCase,
-                manifestSummaryToPreviewTypeAnalyser = ,
-                sargonOsManager =
-            ),
-            guarantees = TransactionGuaranteesDelegateImpl(),
-            fees = TransactionFeesDelegateImpl(
-                getProfileUseCase = getProfileUseCase,
-                searchFeePayersUseCase = searchFeePayersUseCase,
-                getFiatValueUseCase = getFiatValueUseCase
-            ),
-            submit = TransactionSubmitDelegateImpl(
-                signTransactionUseCase = signTransactionUseCase,
-                respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
-                getCurrentGatewayUseCase = getCurrentGatewayUseCase,
-                incomingRequestRepository = incomingRequestRepository,
-                appEventBus = appEventBus,
-                clearCachedNewlyCreatedEntitiesUseCase = clearCachedNewlyCreatedEntitiesUseCase,
-                transactionStatusClient = transactionStatusClient,
-                applicationScope = TestScope(),
-                exceptionMessageProvider = exceptionMessageProvider,
-                transactionRepository = transactionRepository
-            ),
-            incomingRequestRepository = incomingRequestRepository,
-            savedStateHandle = savedStateHandle,
-            getDAppsUseCase = getDAppsUseCase,
-            appEventBus = appEventBus,
-            getProfileUseCase = getProfileUseCase,
-            defaultDispatcher = coroutineDispatcher
-        )
-    }
-
-    @Test
-    fun `transaction approval success`() = runTest {
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onApproveTransaction()
-        advanceUntilIdle()
-        coVerify(exactly = 1) {
-            respondToIncomingRequestUseCase.respondWithSuccess(
-                request = sampleRequest,
-                txId = sampleTransactionIntentHash.bech32EncodedTxId
-            )
-        }
-    }
-
-    @Test
-    fun `transaction approval wrong network`() = runTest {
-        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onApproveTransaction()
-        advanceUntilIdle()
-        val errorSlot = slot<DappWalletInteractionErrorType>()
-        coVerify(exactly = 1) {
-            respondToIncomingRequestUseCase.respondWithFailure(
-                request = sampleRequest,
-                dappWalletInteractionErrorType = capture(errorSlot),
-                message = any()
-            )
-        }
-        assertEquals(DappWalletInteractionErrorType.WRONG_NETWORK, errorSlot.captured)
-        vm.oneOffEvent.test {
-            TestCase.assertTrue(awaitItem() is TransactionReviewViewModel.Event.Dismiss)
-        }
-    }
-
-    @Test
-    fun `transaction approval sign and submit error`() = runTest {
-        coEvery { signTransactionUseCase(any()) } returns Result.failure(
-            RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onApproveTransaction()
-        advanceUntilIdle()
-        val state = vm.state.first()
-        val errorSlot = slot<DappWalletInteractionErrorType>()
-        coVerify(exactly = 1) {
-            respondToIncomingRequestUseCase.respondWithFailure(
-                request = sampleRequest,
-                dappWalletInteractionErrorType = capture(errorSlot),
-                message = any()
-            )
-        }
-        assertEquals(DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION, errorSlot.captured)
-        assertNotNull(state.error)
-    }
-
-    @Test
-    fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
-        val feePaddingAmount = "1.6"
-
-        // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "1.10842739440"
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
-            TransactionToReviewData(
-                transactionToReview = TransactionToReview(
-                    transactionManifest = TransactionManifest.sample(),
-                    executionSummary = emptyExecutionSummary.copy(
-                        feeLocks = FeeLocks(
-                            lock = 1.5.toDecimal192(),
-                            contingentLock = 0.toDecimal192()
-                        ),
-                        feeSummary = FeeSummary(
-                            executionCost = 0.3.toDecimal192(),
-                            finalizationCost = 0.3.toDecimal192(),
-                            storageExpansionCost = 0.2.toDecimal192(),
-                            royaltyCost = 0.2.toDecimal192()
-                        ),
-                        detailedClassification = listOf(
-                            DetailedManifestClass.General
-                        ),
-                        reservedInstructions = emptyList()
-                    )
-                ),
-                message = Message.None
-            )
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onFeePaddingAmountChanged(feePaddingAmount)
-
-        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.fees?.transactionFees?.transactionFeeToLock)
-    }
-
-    @Test
-    fun `verify transaction fee to lock is correct on advanced screen 2`() = runTest {
-        val tipPercentage = "25"
-
-        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = 0.9019403.toDecimal192()
-
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
-            TransactionToReviewData(
-                transactionToReview = TransactionToReview(
-                    transactionManifest = TransactionManifest.sample(),
-                    executionSummary = emptyExecutionSummary.copy(
-                        feeLocks = FeeLocks(
-                            lock = 0.5.toDecimal192(),
-                            contingentLock = 0.toDecimal192()
-                        ),
-                        feeSummary = FeeSummary(
-                            executionCost = 0.3.toDecimal192(),
-                            finalizationCost = 0.3.toDecimal192(),
-                            storageExpansionCost = 0.2.toDecimal192(),
-                            royaltyCost = 0.2.toDecimal192()
-                        ),
-                        detailedClassification = listOf(
-                            DetailedManifestClass.General
-                        ),
-                        reservedInstructions = emptyList()
-                    )
-                ),
-                message = Message.None
-            )
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onTipPercentageChanged(tipPercentage)
-
-        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
-    }
-
-    @Test
-    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
-        val feePaddingAmount = "1.6"
-        val tipPercentage = "25"
-
-        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = 2.3678038.toDecimal192()
-
-        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
-            Result.success(
-                TransactionToReviewData(
-                    transactionToReview = TransactionToReview(
-                        transactionManifest = TransactionManifest.sample(),
-                        executionSummary = emptyExecutionSummary.copy(
-                            feeLocks = FeeLocks(
-                                lock = 0.5.toDecimal192(),
-                                contingentLock = 0.toDecimal192()
-                            ),
-                            feeSummary = FeeSummary(
-                                executionCost = 0.3.toDecimal192(),
-                                finalizationCost = 0.3.toDecimal192(),
-                                storageExpansionCost = 0.2.toDecimal192(),
-                                royaltyCost = 0.2.toDecimal192()
-                            ),
-                            detailedClassification = listOf(
-                                DetailedManifestClass.General
-                            ),
-                            reservedInstructions = emptyList()
-                        )
-                    ),
-                    message = Message.None
-                )
-            )
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.onFeePaddingAmountChanged(feePaddingAmount)
-        vm.onTipPercentageChanged(tipPercentage)
-
-        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
-    }
-}
+//        val vm = vm.value
+//        advanceUntilIdle()
+//        vm.onFeePaddingAmountChanged(feePaddingAmount)
+//
+//        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.fees?.transactionFees?.transactionFeeToLock)
+//    }
+//
+//    @Test
+//    fun `verify transaction fee to lock is correct on advanced screen 2`() = runTest {
+//        val tipPercentage = "25"
+//
+//        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
+//        val expectedFeeLock = 0.9019403.toDecimal192()
+//
+//        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns Result.success(
+//            TransactionToReviewData(
+//                transactionToReview = TransactionToReview(
+//                    transactionManifest = TransactionManifest.sample(),
+//                    executionSummary = emptyExecutionSummary.copy(
+//                        feeLocks = FeeLocks(
+//                            lock = 0.5.toDecimal192(),
+//                            contingentLock = 0.toDecimal192()
+//                        ),
+//                        feeSummary = FeeSummary(
+//                            executionCost = 0.3.toDecimal192(),
+//                            finalizationCost = 0.3.toDecimal192(),
+//                            storageExpansionCost = 0.2.toDecimal192(),
+//                            royaltyCost = 0.2.toDecimal192()
+//                        ),
+//                        detailedClassification = listOf(
+//                            DetailedManifestClass.General
+//                        ),
+//                        reservedInstructions = emptyList()
+//                    )
+//                ),
+//                message = Message.None
+//            )
+//        )
+//        val vm = vm.value
+//        advanceUntilIdle()
+//        vm.onTipPercentageChanged(tipPercentage)
+//
+//        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
+//    }
+//
+//    @Test
+//    fun `verify transaction fee to lock is correct on advanced screen 3`() = runTest {
+//        val feePaddingAmount = "1.6"
+//        val tipPercentage = "25"
+//
+//        // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
+//        val expectedFeeLock = 2.3678038.toDecimal192()
+//
+//        coEvery { transactionRepository.analyzeTransaction(any(), any(), any()) } returns
+//            Result.success(
+//                TransactionToReviewData(
+//                    transactionToReview = TransactionToReview(
+//                        transactionManifest = TransactionManifest.sample(),
+//                        executionSummary = emptyExecutionSummary.copy(
+//                            feeLocks = FeeLocks(
+//                                lock = 0.5.toDecimal192(),
+//                                contingentLock = 0.toDecimal192()
+//                            ),
+//                            feeSummary = FeeSummary(
+//                                executionCost = 0.3.toDecimal192(),
+//                                finalizationCost = 0.3.toDecimal192(),
+//                                storageExpansionCost = 0.2.toDecimal192(),
+//                                royaltyCost = 0.2.toDecimal192()
+//                            ),
+//                            detailedClassification = listOf(
+//                                DetailedManifestClass.General
+//                            ),
+//                            reservedInstructions = emptyList()
+//                        )
+//                    ),
+//                    message = Message.None
+//                )
+//            )
+//        val vm = vm.value
+//        advanceUntilIdle()
+//        vm.onFeePaddingAmountChanged(feePaddingAmount)
+//        vm.onTipPercentageChanged(tipPercentage)
+//
+//        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
+//    }
+//}
