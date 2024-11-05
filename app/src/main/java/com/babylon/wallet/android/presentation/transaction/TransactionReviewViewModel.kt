@@ -262,9 +262,6 @@ class TransactionReviewViewModel @Inject constructor(
                 else -> false
             }
 
-        val isPreAuthorized: Boolean
-            get() = transactionType?.isPreAuthorized == true
-
         val showReceiptEdges: Boolean
             get() = !isPreAuthorization
 
