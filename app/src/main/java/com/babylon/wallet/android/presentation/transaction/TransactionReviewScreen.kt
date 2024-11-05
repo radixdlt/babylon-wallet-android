@@ -435,10 +435,10 @@ private fun TransactionPreviewContent(
                             )
                         }
 
-                        state.preAuthorization?.let { preAuthorization ->
+                        state.expiration?.let { expiration ->
                             TransactionPreAuthorizationInfo(
                                 modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                                preAuthorization = preAuthorization,
+                                expiration = expiration,
                                 proposingDApp = state.proposingDApp ?: State.ProposingDApp.None,
                                 onInfoClick = onInfoClick
                             )
@@ -720,10 +720,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                     ),
                     badges = emptyList()
                 ),
-                fees = null,
-                preAuthorization = State.PreAuthorization(
-                    validFor = "23:03 minutes"
-                )
+                fees = null
             )
         )
 }

@@ -11,24 +11,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.utils.TimeFormatter
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.DApp
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun TransactionPreAuthorizationInfo(
     modifier: Modifier = Modifier,
-    preAuthorization: TransactionReviewViewModel.State.PreAuthorization,
+    expiration: TransactionReviewViewModel.State.Expiration,
     proposingDApp: TransactionReviewViewModel.State.ProposingDApp,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -37,23 +44,37 @@ fun TransactionPreAuthorizationInfo(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         PreAuthorizationFeesHint(
-            modifier = Modifier.clickable {
+            proposingDApp = proposingDApp,
+            onClick = {
                 // TODO sergiu
                 onInfoClick(GlossaryItem.transactions)
-            },
-            proposingDApp = proposingDApp
+            }
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
+        val context = LocalContext.current
+        val time = remember(expiration) {
+            TimeFormatter.format(context, expiration.duration)
+        }
+
         Text(
-            text = stringResource(id = R.string.preAuthorizationReview_expiration_atTime, preAuthorization.validFor)
-                .formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle()),
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = if (expiration.isExpired) {
+                AnnotatedString(stringResource(id = R.string.preAuthorizationReview_expiration_expired))
+            } else if (expiration.startsAfterSign) {
+                stringResource(
+                    id = R.string.preAuthorizationReview_expiration_afterDelay,
+                    time
+                ).formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle())
+            } else {
+                stringResource(
+                    id = R.string.preAuthorizationReview_expiration_atTime,
+                    time
+                ).formattedSpans(boldStyle = RadixTheme.typography.body2HighImportance.toSpanStyle())
+            },
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.pink1,
-            modifier = Modifier.padding(
-                horizontal = RadixTheme.dimensions.paddingDefault
-            )
         )
     }
 }
@@ -61,13 +82,16 @@ fun TransactionPreAuthorizationInfo(
 @Composable
 fun PreAuthorizationFeesHint(
     modifier: Modifier = Modifier,
+    onClick: () -> Unit,
     proposingDApp: TransactionReviewViewModel.State.ProposingDApp
 ) {
     Row(
         modifier = modifier.background(
             color = RadixTheme.colors.gray5,
             shape = RadixTheme.shapes.roundedRectMedium
-        ).padding(
+        ).clickable {
+            onClick()
+        }.padding(
             vertical = RadixTheme.dimensions.paddingDefault,
             horizontal = RadixTheme.dimensions.paddingSemiLarge
         ),
@@ -98,11 +122,44 @@ fun PreAuthorizationFeesHint(
 @UsesSampleValues
 @Composable
 @Preview
-private fun TransactionPreAuthorizationInfoPreview() {
+private fun TransactionPreAuthorizationInfoAfterDelayPreview() {
     RadixWalletPreviewTheme {
         TransactionPreAuthorizationInfo(
-            preAuthorization = TransactionReviewViewModel.State.PreAuthorization(
-                validFor = "23:03 minutes"
+            expiration = TransactionReviewViewModel.State.Expiration(
+                duration = 5.hours + 23.minutes,
+                startsAfterSign = true
+            ),
+            proposingDApp = TransactionReviewViewModel.State.ProposingDApp.Some(DApp.sampleMainnet()),
+            onInfoClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Composable
+@Preview
+private fun TransactionPreAuthorizationInfoTimePreview() {
+    RadixWalletPreviewTheme {
+        TransactionPreAuthorizationInfo(
+            expiration = TransactionReviewViewModel.State.Expiration(
+                duration = 5.hours + 23.minutes,
+                startsAfterSign = false
+            ),
+            proposingDApp = TransactionReviewViewModel.State.ProposingDApp.Some(DApp.sampleMainnet()),
+            onInfoClick = {}
+        )
+    }
+}
+
+@UsesSampleValues
+@Composable
+@Preview
+private fun TransactionPreAuthorizationInfoExpiredPreview() {
+    RadixWalletPreviewTheme {
+        TransactionPreAuthorizationInfo(
+            expiration = TransactionReviewViewModel.State.Expiration(
+                duration = 0.seconds,
+                startsAfterSign = false
             ),
             proposingDApp = TransactionReviewViewModel.State.ProposingDApp.Some(DApp.sampleMainnet()),
             onInfoClick = {}
