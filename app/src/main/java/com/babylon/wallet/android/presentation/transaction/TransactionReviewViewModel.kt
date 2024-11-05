@@ -38,7 +38,6 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
@@ -62,7 +61,6 @@ import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
-import kotlin.time.Duration
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
@@ -450,14 +448,5 @@ sealed interface PreviewType {
         val to: List<AccountWithTransferables>,
         val dApps: List<Pair<ManifestEncounteredComponentAddress, DApp?>> = emptyList(),
         override val badges: List<Badge>
-    ) : PreviewType {
-
-        sealed interface Expiration {
-            data class AtTime(val timestamp: Timestamp) : Expiration
-
-            data class DelayAfterSign(val delay: Duration) : Expiration
-
-            data object None : Expiration
-        }
-    }
+    ) : PreviewType
 }
