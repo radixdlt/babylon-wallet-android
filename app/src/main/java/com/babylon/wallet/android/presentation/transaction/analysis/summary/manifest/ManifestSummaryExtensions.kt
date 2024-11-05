@@ -9,13 +9,16 @@ import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AccountWithdraw
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ManifestSummary
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceOrNonFungible
+import com.radixdlt.sargon.ResourceSpecifier
 import com.radixdlt.sargon.SimpleCountedResourceBounds
 import com.radixdlt.sargon.SimpleResourceBounds
 import com.radixdlt.sargon.UnspecifiedResources
+import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -23,6 +26,8 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.toResourceOrNonFungible
 
@@ -87,6 +92,32 @@ fun ManifestSummary.resolveWithdrawsAndDeposits(
     onLedgerAssets = onLedgerAssets,
     profile = profile
 )
+
+/**
+ * Extracts the [Badge]s involved in the transaction.
+ *
+ * @return A [Badge] that can be Fungible or NonFungible.
+ */
+fun ManifestSummary.resolveBadges(onLedgerAssets: List<Asset>): List<Badge> {
+    val proofAddresses = presentedProofs.associateBy { it.address }
+
+    return onLedgerAssets.filter { asset ->
+        asset.resource.address in proofAddresses.keys
+    }.mapNotNull { asset ->
+        val specifier = proofAddresses[asset.resource.address] ?: return@mapNotNull null
+
+        val badgeResource = when (specifier) {
+            is ResourceSpecifier.Fungible -> {
+                // In this case we need to attach the amount of the specifier to the resource since it is not resolved by GW
+                (asset.resource as? Resource.FungibleResource)?.copy(ownedAmount = specifier.amount) ?: return@mapNotNull null
+            }
+
+            is ResourceSpecifier.NonFungible -> asset.resource
+        }
+
+        Badge(resource = badgeResource)
+    }
+}
 
 
 private fun AccountAddress.toInvolvedAccount(profile: Profile): InvolvedAccount {

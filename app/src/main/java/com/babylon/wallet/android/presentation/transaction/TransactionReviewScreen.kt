@@ -350,7 +350,7 @@ private fun TransactionPreviewContent(
                                     )
                                 }
 
-                                is PreviewType.PreAuthTransaction -> TODO()
+                                is PreviewType.PreAuthTransaction -> {}
                             }
                         }
 
