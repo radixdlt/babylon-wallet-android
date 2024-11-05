@@ -26,41 +26,7 @@ fun RawManifestView(
     modifier: Modifier = Modifier,
     manifest: String
 ) {
-    val clipboardManager = LocalClipboardManager.current
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.End
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(RadixTheme.dimensions.paddingSmall)
-                .background(
-                    color = RadixTheme.colors.gray4,
-                    shape = RadixTheme.shapes.roundedRectSmall
-                )
-                .throttleClickable {
-                    clipboardManager.setText(buildAnnotatedString { append(manifest) })
-                }
-                .padding(RadixTheme.dimensions.paddingSmall),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(
-                    id = R.drawable.ic_copy
-                ),
-                contentDescription = ""
-            )
-            Text(
-                text = stringResource(id = com.babylon.wallet.android.R.string.common_copy),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
-            )
-        }
-        Text(
-            text = manifest,
-            color = RadixTheme.colors.gray1,
-            fontSize = 13.sp,
-            fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
-        )
-    }
+
+
+
 }
