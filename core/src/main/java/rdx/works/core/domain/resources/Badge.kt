@@ -14,7 +14,7 @@ data class Badge(
 
         @UsesSampleValues
         val sample: Sample<Badge>
-            get() = object: Sample<Badge> {
+            get() = object : Sample<Badge> {
                 override fun invoke(): Badge = Badge(
                     resource = Resource.FungibleResource.sampleMainnet()
                 )
@@ -22,8 +22,6 @@ data class Badge(
                 override fun other(): Badge = Badge(
                     resource = Resource.NonFungibleResource.sampleMainnet()
                 )
-
             }
-
     }
 }

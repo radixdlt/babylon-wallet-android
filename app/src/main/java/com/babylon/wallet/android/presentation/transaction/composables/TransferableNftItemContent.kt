@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -15,11 +18,15 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
@@ -52,14 +59,20 @@ fun TransferableNftItemContent(
             )
     ) {
         Row(
-            verticalAlignment = CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = CenterVertically
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(44.dp),
                 collection = transferableNFTCollection.asset.resource
             )
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
                 Text(
                     text = transferableNFTCollection.asset.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
@@ -76,7 +89,21 @@ fun TransferableNftItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            transferableNFTCollection.amount.additional?.let {
+                CountedAmountSection(amount = it)
+            }
         }
+
+        UnknownAmount(
+            modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+            amount = transferableNFTCollection.amount.additional
+        )
+
         TransferableHiddenItemWarning(
             isHidden = isHidden,
             text = hiddenResourceWarning
@@ -87,24 +114,29 @@ fun TransferableNftItemContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun TransferableNftItemPreview() {
+fun TransferableNftItemPreview(
+    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) amount: CountedAmount
+) {
     RadixWalletTheme {
         val asset = remember {
             NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
         }
-        val amount = remember(asset) {
-            NonFungibleAmount(certain = asset.collection.items)
+        val nonFungibleAmount = remember(asset) {
+            NonFungibleAmount(
+                certain = asset.collection.items,
+                additional = amount
+            )
         }
         TransferableNftItemContent(
             transferableNFTCollection = Transferable.NonFungibleType.NFTCollection(
                 asset = asset,
-                amount = amount,
+                amount = nonFungibleAmount,
                 isNewlyCreated = false
             ),
             nftItem = Resource.NonFungibleResource.sampleMainnet().items.first(),
             shape = RectangleShape,
             isHidden = false,
-            hiddenResourceWarning = "",
+            hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_deposit),
         )
     }
 }

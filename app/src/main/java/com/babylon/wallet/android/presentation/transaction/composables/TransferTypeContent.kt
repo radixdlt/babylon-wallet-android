@@ -67,6 +67,7 @@ fun TransferTypeContent(
                     .padding(
                         start = RadixTheme.dimensions.paddingDefault,
                         end = RadixTheme.dimensions.paddingDefault
+                    )
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                 to = previewType.to.toPersistentList(),
                 hiddenResourceIds = state.hiddenResourceIds,

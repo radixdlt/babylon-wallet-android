@@ -219,7 +219,7 @@ private fun DAppsContent(
 
         if (involvedDApps.morePossibleDAppsPresent) {
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable {  },
+                modifier = Modifier.fillMaxWidth().clickable { },
                 contentPadding = PaddingValues(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingSmall
@@ -295,7 +295,7 @@ private fun ValidatorsContent(
     ) {
         validators.validators.forEach { validator ->
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable {  },
+                modifier = Modifier.fillMaxWidth().clickable { },
                 icon = {
                     Thumbnail.Validator(
                         modifier = Modifier.size(44.dp),
@@ -353,7 +353,6 @@ private fun InvolvedComponent(
                 subtitle()
             }
         }
-
 
         if (infoIconVisible) {
             Icon(

@@ -117,7 +117,6 @@ fun ManifestSummary.resolveBadges(onLedgerAssets: List<Asset>): List<Badge> {
     }
 }
 
-
 private fun AccountAddress.toInvolvedAccount(profile: Profile): InvolvedAccount {
     val profileAccount = profile.activeAccountsOnCurrentNetwork.find { it.address == this }
 
