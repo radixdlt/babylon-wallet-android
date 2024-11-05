@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -32,6 +33,7 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.TimeFormatter
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -62,6 +64,9 @@ import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
+import kotlin.math.exp
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
@@ -153,8 +158,16 @@ class TransactionReviewViewModel @Inject constructor(
                             Result.success(Unit)
                         }
                     }
+            }
 
+            viewModelScope.launch(defaultDispatcher) {
                 processDApp(request)
+            }
+
+            if (request.transactionType is TransactionType.PreAuthorized) {
+                viewModelScope.launch(defaultDispatcher) {
+                    processExpiration(request.transactionType.expiration)
+                }
             }
         }
     }
@@ -169,6 +182,35 @@ class TransactionReviewViewModel @Inject constructor(
                         it.copy(proposingDApp = State.ProposingDApp.Some(dApp))
                     }
                 }
+        }
+    }
+
+    private fun processExpiration(expiration: SubintentExpiration) {
+        when (expiration) {
+            is SubintentExpiration.AtTime -> {
+                var seconds = expiration.timestamp.toEpochSecond().seconds
+
+                viewModelScope.launch {
+                    do  {
+                        _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
+                        seconds -= 1.seconds
+                    } while (seconds > 0.seconds)
+                }
+                expiration.timestamp.toEpochSecond().seconds
+            }
+            is SubintentExpiration.DelayAfterSign -> {
+                _state.update {
+                    it.copy(expiration = State.Expiration(
+                        duration = expiration.delay,
+                        startsAfterSign = true
+                    ))
+                }
+            }
+            else -> {
+                _state.update {
+                    it.copy(expiration = null)
+                }
+            }
         }
     }
 
@@ -241,10 +283,9 @@ class TransactionReviewViewModel @Inject constructor(
         val previewType: PreviewType,
         val sheetState: Sheet = Sheet.None,
         val fees: Fees? = null,
-        val preAuthorization: PreAuthorization? = null,
+        val expiration: Expiration? = null,
         val error: TransactionErrorMessage? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val isSubmitEnabled: Boolean = false,
         val isSubmitting: Boolean = false
     ) : UiState {
 
@@ -269,6 +310,27 @@ class TransactionReviewViewModel @Inject constructor(
         val isPreAuthorization: Boolean
             get() = transactionType is TransactionType.PreAuthorized
 
+        data class Expiration(
+            val duration: Duration,
+            val startsAfterSign: Boolean
+        ) {
+
+            val isExpired: Boolean
+                get() = duration == 0.seconds
+
+        }
+
+        val isSubmitEnabled: Boolean
+            get() {
+                if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) return false
+
+                return if (isPreAuthorization) {
+                    expiration?.isExpired?.not() ?: false
+                } else {
+                    fees?.properties?.isBalanceInsufficientToPayTheFee?.not() ?: false
+                }
+            }
+
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,
             val properties: Properties = Properties(),
@@ -282,10 +344,6 @@ class TransactionReviewViewModel @Inject constructor(
                 val isBalanceInsufficientToPayTheFee: Boolean = false
             )
         }
-
-        data class PreAuthorization(
-            val validFor: String
-        )
 
         sealed interface ProposingDApp {
 

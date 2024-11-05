@@ -219,7 +219,9 @@ private fun DAppsContent(
 
         if (involvedDApps.morePossibleDAppsPresent) {
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable {  },
+                modifier = Modifier.fillMaxWidth().clickable {
+                    // TODO sergiu
+                },
                 contentPadding = PaddingValues(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingSmall

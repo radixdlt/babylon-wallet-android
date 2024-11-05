@@ -354,7 +354,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
                                 transactionFees = transactionFees,
                                 properties = properties
                             ) ?: state.sheetState,
-                            isSubmitEnabled = state.previewType != PreviewType.None && !properties.isBalanceInsufficientToPayTheFee
                         )
                     }
                 }
