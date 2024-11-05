@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -25,16 +26,16 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 
 @Composable
-fun FungibleAmountSection(
+fun CountedAmountSection(
     modifier: Modifier = Modifier,
-    countedAmount: CountedAmount?,
+    amount: CountedAmount?,
     amountTextStyle: TextStyle = RadixTheme.typography.secondaryHeader
 ) {
-    when (countedAmount) {
+    when (amount) {
         is CountedAmount.Exact -> {
             AmountText(
                 modifier = modifier,
-                amount = countedAmount.amount,
+                amount = amount.amount,
                 textStyle = amountTextStyle
             )
         }
@@ -45,7 +46,7 @@ fun FungibleAmountSection(
             ) {
                 NoMoreThanText()
                 AmountText(
-                    amount = countedAmount.amount,
+                    amount = amount.amount,
                     textStyle = amountTextStyle
                 )
             }
@@ -57,7 +58,7 @@ fun FungibleAmountSection(
             ) {
                 AtLeastText()
                 AmountText(
-                    amount = countedAmount.amount,
+                    amount = amount.amount,
                     textStyle = amountTextStyle
                 )
             }
@@ -69,12 +70,12 @@ fun FungibleAmountSection(
             ) {
                 AtLeastText()
                 AmountText(
-                    amount = countedAmount.minAmount,
+                    amount = amount.minAmount,
                     textStyle = amountTextStyle
                 )
                 NoMoreThanText()
                 AmountText(
-                    amount = countedAmount.maxAmount,
+                    amount = amount.maxAmount,
                     textStyle = amountTextStyle
                 )
             }
@@ -92,22 +93,28 @@ fun FungibleAmountSection(
                     overflow = TextOverflow.Ellipsis
                 )
                 AmountText(
-                    amount = countedAmount.estimated,
+                    amount = amount.estimated,
                     textStyle = amountTextStyle
                 )
             }
         }
-        CountedAmount.Unknown -> {
-            WarningText(
-                modifier = modifier,
-                text = AnnotatedString("Amount of deposit is unknown"),
-                textStyle = RadixTheme.typography.body2HighImportance,
-                contentColor = RadixTheme.colors.orange1
-            )
-        }
-        else -> {
-            // TODO only symbol
-        }
+        else -> {}
+    }
+}
+
+@Composable
+fun UnknownAmount(
+    modifier: Modifier = Modifier,
+    amount: CountedAmount?
+) {
+    val unknownAmount = remember(amount) { amount as? CountedAmount.Unknown }
+    unknownAmount?.let {
+        WarningText(
+            modifier = modifier,
+            text = AnnotatedString("Amount of deposit is unknown"),
+            textStyle = RadixTheme.typography.body2HighImportance,
+            contentColor = RadixTheme.colors.orange1
+        )
     }
 }
 
@@ -160,8 +167,8 @@ private fun FungibleAmountSectionPreview(
     @PreviewParameter(FungibleAmountSectionPreviewProvider::class) countedAmount: CountedAmount
 ) {
     RadixWalletPreviewTheme {
-        FungibleAmountSection(
-            countedAmount = countedAmount
+        CountedAmountSection(
+            amount = countedAmount
         )
     }
 }

@@ -14,9 +14,11 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.CountedAmount
@@ -65,8 +67,12 @@ fun TransferableTokenItemContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            FungibleAmountSection(countedAmount = transferableToken.amount)
+            CountedAmountSection(amount = transferableToken.amount)
         }
+        UnknownAmount(
+            modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+            amount = transferableToken.amount
+        )
         TransferableHiddenItemWarning(
             isHidden = isHidden,
             text = hiddenResourceWarning
@@ -181,8 +187,8 @@ private fun TransferableTokenWithUnknownAmountPreview() {
                 isNewlyCreated = false
             ),
             shape = RectangleShape,
-            isHidden = false,
-            hiddenResourceWarning = ""
+            isHidden = true,
+            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw)
         )
     }
 }

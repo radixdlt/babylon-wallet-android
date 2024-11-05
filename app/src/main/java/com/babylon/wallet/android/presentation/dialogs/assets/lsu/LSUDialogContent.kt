@@ -35,7 +35,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadat
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.CountedAmount
-import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.CountedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -318,8 +318,8 @@ private fun LSUResourceValue(
                 contentAlignment = Alignment.CenterEnd
             ) {
                 amount?.let {
-                    FungibleAmountSection(
-                        countedAmount = it
+                    CountedAmountSection(
+                        amount = it
                     )
                 }
             }

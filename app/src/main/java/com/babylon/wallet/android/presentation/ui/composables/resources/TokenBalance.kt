@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.model.CountedAmount
-import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.CountedAmountSection
 
 @Composable
 fun TokenBalance(
@@ -24,8 +24,8 @@ fun TokenBalance(
         verticalAlignment = Alignment.Bottom
     ) {
         amount?.let {
-            FungibleAmountSection(
-                countedAmount = it,
+            CountedAmountSection(
+                amount = it,
 //                symbol = symbol, todo
                 amountTextStyle = amountTextStyle
             )

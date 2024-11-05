@@ -30,7 +30,7 @@ import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
-import com.babylon.wallet.android.presentation.transaction.composables.FungibleAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.CountedAmountSection
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -196,8 +196,8 @@ fun PoolResourcesValues(
 
                 Column(horizontalAlignment = Alignment.End) {
                     resourceWithAmount.value?.let {
-                        FungibleAmountSection(
-                            countedAmount = it,
+                        CountedAmountSection(
+                            amount = it,
                             amountTextStyle = if (isCompact) {
                                 RadixTheme.typography.body1HighImportance
                             } else {
