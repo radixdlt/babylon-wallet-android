@@ -49,6 +49,7 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
@@ -65,6 +66,8 @@ import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+
+private const val EXPIRATION_COUNTDOWN_PERIOD_MS = 1000L
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
@@ -138,7 +141,7 @@ class TransactionReviewViewModel @Inject constructor(
             data.update { it.copy(txRequest = request) }
             _state.update {
                 it.copy(
-                    transactionType = request.transactionType,
+                    isPreAuthorization = request.transactionType is TransactionType.PreAuthorized,
                     rawManifest = request.unvalidatedManifestData.instructions,
                     message = request.unvalidatedManifestData.plainMessage
                 )
@@ -192,9 +195,9 @@ class TransactionReviewViewModel @Inject constructor(
                     do  {
                         _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
                         seconds -= 1.seconds
+                        delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
                     } while (seconds > 0.seconds)
                 }
-                expiration.timestamp.toEpochSecond().seconds
             }
             is SubintentExpiration.DelayAfterSign -> {
                 _state.update {
@@ -271,7 +274,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class State(
         val isLoading: Boolean,
-        val transactionType: TransactionType? = null,
+        val isPreAuthorization: Boolean = false,
         val proposingDApp: ProposingDApp? = null,
         val isRawManifestVisible: Boolean = false,
         val rawManifest: String = "",
@@ -304,9 +307,6 @@ class TransactionReviewViewModel @Inject constructor(
         val showReceiptEdges: Boolean
             get() = !isPreAuthorization
 
-        val isPreAuthorization: Boolean
-            get() = transactionType is TransactionType.PreAuthorized
-
         data class Expiration(
             val duration: Duration,
             val startsAfterSign: Boolean
@@ -314,7 +314,6 @@ class TransactionReviewViewModel @Inject constructor(
 
             val isExpired: Boolean
                 get() = duration == 0.seconds
-
         }
 
         val isSubmitEnabled: Boolean

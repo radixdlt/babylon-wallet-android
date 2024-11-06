@@ -242,10 +242,10 @@ private fun TransactionPreviewContent(
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            state.transactionType?.let { transactionType ->
+            if (!state.isLoading) {
                 TransactionPreviewHeader(
                     onBackClick = onBackClick,
-                    transactionType = transactionType,
+                    isPreAuthorization = state.isPreAuthorization,
                     isRawManifestPreviewable = state.rawManifestIsPreviewable,
                     isRawManifestVisible = state.isRawManifestVisible,
                     proposingDApp = state.proposingDApp,
@@ -262,219 +262,217 @@ private fun TransactionPreviewContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-        ) {
-            if (state.isLoading) {
-                FullscreenCircularProgressContent()
-            } else {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
+        if (state.isLoading) {
+            FullscreenCircularProgressContent()
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Box(
+                    modifier = Modifier
+                        .then(
+                            if (state.isPreAuthorization) {
+                                Modifier
+                                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            listOf(RadixTheme.colors.gray5, RadixTheme.colors.gray4)
+                                        ),
+                                        shape = RadixTheme.shapes.roundedRectMedium
+                                    )
+                            } else {
+                                Modifier.background(color = RadixTheme.colors.gray5)
+                            }
+                        )
                 ) {
-                    Box(
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = state.isRawManifestVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        androidx.compose.material.Text(
+                            modifier = Modifier
+                                .padding(
+                                    top = 74.dp,
+                                    bottom = RadixTheme.dimensions.paddingDefault
+                                )
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            text = state.rawManifest,
+                            color = RadixTheme.colors.gray1,
+                            fontSize = 13.sp,
+                            fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
+                        )
+                    }
+
+                    androidx.compose.animation.AnimatedVisibility(
                         modifier = Modifier
-                            .then(
-                                if (state.isPreAuthorization) {
-                                    Modifier
-                                        .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                                        .background(
-                                            brush = Brush.verticalGradient(
-                                                listOf(RadixTheme.colors.gray5, RadixTheme.colors.gray4)
-                                            ),
-                                            shape = RadixTheme.shapes.roundedRectMedium
-                                        )
-                                } else {
-                                    Modifier.background(color = RadixTheme.colors.gray5)
-                                }
+                            .applyIf(
+                                state.isPreAuthorization,
+                                Modifier.padding(top = RadixTheme.dimensions.paddingLarge)
+                            ),
+                        visible = !state.isRawManifestVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        when (val preview = state.previewType) {
+                            is PreviewType.Transaction -> TransactionTypeContent(
+                                state = state,
+                                previewType = preview,
+                                onEditGuaranteesClick = onEditGuaranteesClick,
+                                onTransferableFungibleClick = onTransferableFungibleClick,
+                                onNonTransferableFungibleClick = onTransferableNonFungibleClick,
+                                onDAppClick = onDAppClick,
+                                onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) },
+                                onInfoClick = onInfoClick
                             )
+
+                            is PreviewType.AccountsDepositSettings -> AccountDepositSettingsTypeContent(
+                                preview = preview
+                            )
+
+                            else -> {}
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(
+                                top = RadixTheme.dimensions.paddingDefault,
+                                end = RadixTheme.dimensions.paddingDefault
+                            ),
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         androidx.compose.animation.AnimatedVisibility(
                             visible = state.isRawManifestVisible,
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
-                            androidx.compose.material.Text(
-                                modifier = Modifier
-                                    .padding(
-                                        top = 74.dp,
-                                        bottom = RadixTheme.dimensions.paddingDefault
+                            val context = LocalContext.current
+                            Button(
+                                modifier = Modifier.height(40.dp),
+                                onClick = {
+                                    context.copyToClipboard(
+                                        label = "Manifest",
+                                        value = state.rawManifest,
+                                        successMessage = context.getString(R.string.addressAction_copiedToClipboard)
                                     )
-                                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                                text = state.rawManifest,
-                                color = RadixTheme.colors.gray1,
-                                fontSize = 13.sp,
-                                fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
-                            )
-                        }
-
-                        androidx.compose.animation.AnimatedVisibility(
-                            modifier = Modifier
-                                .applyIf(
-                                    state.isPreAuthorization,
-                                    Modifier.padding(top = RadixTheme.dimensions.paddingSmall)
-                                ),
-                            visible = !state.isRawManifestVisible,
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            when (val preview = state.previewType) {
-                                is PreviewType.Transaction -> TransactionTypeContent(
-                                    state = state,
-                                    previewType = preview,
-                                    onEditGuaranteesClick = onEditGuaranteesClick,
-                                    onTransferableFungibleClick = onTransferableFungibleClick,
-                                    onNonTransferableFungibleClick = onTransferableNonFungibleClick,
-                                    onDAppClick = onDAppClick,
-                                    onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) },
-                                    onInfoClick = onInfoClick
+                                },
+                                shape = RadixTheme.shapes.roundedRectSmall,
+                                elevation = null,
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = RadixTheme.colors.gray4,
+                                    contentColor = RadixTheme.colors.gray1
                                 )
-
-                                is PreviewType.AccountsDepositSettings -> AccountDepositSettingsTypeContent(
-                                    preview = preview
-                                )
-
-                                else -> {}
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(
-                                    top = RadixTheme.dimensions.paddingDefault,
-                                    end = RadixTheme.dimensions.paddingDefault
-                                ),
-                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = state.isRawManifestVisible,
-                                enter = fadeIn(),
-                                exit = fadeOut()
                             ) {
-                                val context = LocalContext.current
-                                Button(
-                                    modifier = Modifier.height(40.dp),
-                                    onClick = {
-                                        context.copyToClipboard(
-                                            label = "Manifest",
-                                            value = state.rawManifest,
-                                            successMessage = context.getString(R.string.addressAction_copiedToClipboard)
-                                        )
-                                    },
-                                    shape = RadixTheme.shapes.roundedRectSmall,
-                                    elevation = null,
-                                    colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = RadixTheme.colors.gray4,
-                                        contentColor = RadixTheme.colors.gray1
-                                    )
-                                ) {
-                                    Icon(
-                                        modifier = Modifier.size(16.dp),
-                                        painter = painterResource(id = R.drawable.ic_copy),
-                                        contentDescription = "copy"
-                                    )
-                                    Text(
-                                        modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
-                                        text = stringResource(R.string.common_copy),
-                                        style = RadixTheme.typography.body1Header
-                                    )
-                                }
-                            }
-
-                            if (state.isPreAuthorization && state.rawManifestIsPreviewable) {
-                                TransactionRawManifestToggle(
-                                    isToggleOn = state.isRawManifestVisible,
-                                    onRawManifestClick = onRawManifestToggle
+                                Icon(
+                                    modifier = Modifier.size(16.dp),
+                                    painter = painterResource(id = R.drawable.ic_copy),
+                                    contentDescription = "copy"
+                                )
+                                Text(
+                                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
+                                    text = stringResource(R.string.common_copy),
+                                    style = RadixTheme.typography.body1Header
                                 )
                             }
                         }
-                    }
 
-                    Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
-                        if (state.showReceiptEdges) {
-                            ReceiptEdge(color = RadixTheme.colors.gray5)
-                        }
-
-                        if (!state.isPreAuthorization) {
-                            PresentingProofsContent(
-                                badges = state.previewType.badges.toPersistentList(),
-                                onInfoClick = onInfoClick,
-                                onClick = { badge ->
-                                    when (val resource = badge.resource) {
-                                        is Resource.FungibleResource -> onTransferableFungibleClick(
-                                            Transferable.FungibleType.Token(
-                                                asset = Token(resource = resource),
-                                                amount = CountedAmount.Exact(amount = resource.ownedAmount.orZero()),
-                                                isNewlyCreated = false
-                                            )
-                                        )
-
-                                        is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
-                                            Transferable.NonFungibleType.NFTCollection(
-                                                asset = NonFungibleCollection(resource),
-                                                amount = NonFungibleAmount(certain = resource.items),
-                                                isNewlyCreated = false
-                                            ),
-                                            resource.items.firstOrNull()
-                                        )
-                                    }
-                                }
+                        if (state.isPreAuthorization && state.rawManifestIsPreviewable) {
+                            TransactionRawManifestToggle(
+                                isToggleOn = state.isRawManifestVisible,
+                                onRawManifestClick = onRawManifestToggle
                             )
                         }
-
-                        state.fees?.let { fees ->
-                            NetworkFeeContent(
-                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                                fees = fees.transactionFees,
-                                properties = fees.properties,
-                                isNetworkFeeLoading = fees.isNetworkFeeLoading,
-                                onCustomizeClick = onCustomizeClick,
-                                onInfoClick = onInfoClick
-                            )
-                        }
-
-                        state.expiration?.let { expiration ->
-                            TransactionPreAuthorizationInfo(
-                                modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                                expiration = expiration,
-                                proposingDApp = state.proposingDApp ?: State.ProposingDApp.None,
-                                onInfoClick = onInfoClick
-                            )
-                        }
-
-                        SlideToSignButton(
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = if (state.isPreAuthorization) {
-                                        RadixTheme.dimensions.paddingDefault
-                                    } else {
-                                        RadixTheme.dimensions.paddingXXLarge
-                                    }
-                                )
-                                .padding(
-                                    top = RadixTheme.dimensions.paddingDefault,
-                                    bottom = RadixTheme.dimensions.paddingXXLarge
-                                ),
-                            title = stringResource(
-                                id = if (state.isPreAuthorization) {
-                                    R.string.preAuthorizationReview_slideToSign
-                                } else {
-                                    R.string.interactionReview_slideToSign
-                                }
-                            ),
-                            enabled = state.isSubmitEnabled,
-                            isSubmitting = state.isSubmitting,
-                            onSwipeComplete = onApproveTransaction
-                        )
                     }
                 }
-            }
 
-            if (state.showReceiptEdges) {
-                ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+                Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
+                    if (state.showReceiptEdges) {
+                        ReceiptEdge(color = RadixTheme.colors.gray5)
+                    }
+
+                    if (!state.isPreAuthorization) {
+                        PresentingProofsContent(
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                            badges = state.previewType.badges.toPersistentList(),
+                            onInfoClick = onInfoClick,
+                            onClick = { badge ->
+                                when (val resource = badge.resource) {
+                                    is Resource.FungibleResource -> onTransferableFungibleClick(
+                                        Transferable.FungibleType.Token(
+                                            asset = Token(resource = resource),
+                                            amount = CountedAmount.Exact(amount = resource.ownedAmount.orZero()),
+                                            isNewlyCreated = false
+                                        )
+                                    )
+
+                                    is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
+                                        Transferable.NonFungibleType.NFTCollection(
+                                            asset = NonFungibleCollection(resource),
+                                            amount = NonFungibleAmount(certain = resource.items),
+                                            isNewlyCreated = false
+                                        ),
+                                        resource.items.firstOrNull()
+                                    )
+                                }
+                            }
+                        )
+                    }
+
+                    state.fees?.let { fees ->
+                        NetworkFeeContent(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                            fees = fees.transactionFees,
+                            properties = fees.properties,
+                            isNetworkFeeLoading = fees.isNetworkFeeLoading,
+                            onCustomizeClick = onCustomizeClick,
+                            onInfoClick = onInfoClick
+                        )
+                    }
+
+                    state.expiration?.let { expiration ->
+                        TransactionPreAuthorizationInfo(
+                            modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
+                            expiration = expiration,
+                            proposingDApp = state.proposingDApp ?: State.ProposingDApp.None,
+                            onInfoClick = onInfoClick
+                        )
+                    }
+
+                    SlideToSignButton(
+                        modifier = Modifier
+                            .padding(
+                                horizontal = if (state.isPreAuthorization) {
+                                    RadixTheme.dimensions.paddingDefault
+                                } else {
+                                    RadixTheme.dimensions.paddingXXLarge
+                                }
+                            )
+                            .padding(
+                                top = RadixTheme.dimensions.paddingDefault,
+                                bottom = RadixTheme.dimensions.paddingXXLarge
+                            ),
+                        title = stringResource(
+                            id = if (state.isPreAuthorization) {
+                                R.string.preAuthorizationReview_slideToSign
+                            } else {
+                                R.string.interactionReview_slideToSign
+                            }
+                        ),
+                        enabled = state.isSubmitEnabled,
+                        isSubmitting = state.isSubmitting,
+                        onSwipeComplete = onApproveTransaction
+                    )
+                }
             }
+        }
+
+        if (state.showReceiptEdges) {
+            ReceiptEdge(color = RadixTheme.colors.defaultBackground)
         }
     }
 
@@ -682,6 +680,7 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
             ),
             State(
                 isLoading = false,
+                isPreAuthorization = true,
                 proposingDApp = State.ProposingDApp.Some(
                     DApp(
                         dAppAddress = AccountAddress.sampleMainnet()
@@ -718,9 +717,13 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                         ),
                         morePossibleDAppsPresent = true
                     ),
-                    badges = emptyList()
+                    badges = listOf(Badge.sample())
                 ),
                 fees = null
+            ),
+            State(
+                isLoading = true,
+                previewType = PreviewType.None
             )
         )
 }

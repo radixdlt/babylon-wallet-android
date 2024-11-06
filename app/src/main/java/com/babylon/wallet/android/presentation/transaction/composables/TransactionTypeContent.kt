@@ -27,6 +27,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sampleStokenet
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -74,7 +75,8 @@ fun TransactionTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 involvedComponents = previewType.involvedComponents,
                 onDAppClick = onDAppClick,
-                onUnknownComponentsClick = onUnknownComponentsClick
+                onUnknownComponentsClick = onUnknownComponentsClick,
+                onInfoClick = onInfoClick
             )
 
 
@@ -91,34 +93,39 @@ fun TransactionTypeContent(
                 onTransferableFungibleClick = onTransferableFungibleClick,
                 onNonTransferableFungibleClick = onNonTransferableFungibleClick
             )
-
-            if (state.isPreAuthorization) {
-                PresentingProofsContent(
-                    badges = state.previewType.badges.toPersistentList(),
-                    onInfoClick = onInfoClick,
-                    onClick = { badge ->
-                        when (val resource = badge.resource) {
-                            is Resource.FungibleResource -> onTransferableFungibleClick(
-                                Transferable.FungibleType.Token(
-                                    asset = Token(resource = resource),
-                                    amount = CountedAmount.Exact(amount = resource.ownedAmount.orZero()),
-                                    isNewlyCreated = false
-                                )
-                            )
-
-                            is Resource.NonFungibleResource -> onNonTransferableFungibleClick(
-                                Transferable.NonFungibleType.NFTCollection(
-                                    asset = NonFungibleCollection(resource),
-                                    amount = NonFungibleAmount(certain = resource.items),
-                                    isNewlyCreated = false
-                                ),
-                                resource.items.firstOrNull()
-                            )
-                        }
-                    }
-                )
-            }
         }
+
+        if (state.isPreAuthorization) {
+            PresentingProofsContent(
+                modifier = Modifier.padding(
+                    horizontal = RadixTheme.dimensions.paddingSmall,
+                    vertical = RadixTheme.dimensions.paddingDefault
+                ),
+                badges = state.previewType.badges.toPersistentList(),
+                onInfoClick = onInfoClick,
+                onClick = { badge ->
+                    when (val resource = badge.resource) {
+                        is Resource.FungibleResource -> onTransferableFungibleClick(
+                            Transferable.FungibleType.Token(
+                                asset = Token(resource = resource),
+                                amount = CountedAmount.Exact(amount = resource.ownedAmount.orZero()),
+                                isNewlyCreated = false
+                            )
+                        )
+
+                        is Resource.NonFungibleResource -> onNonTransferableFungibleClick(
+                            Transferable.NonFungibleType.NFTCollection(
+                                asset = NonFungibleCollection(resource),
+                                amount = NonFungibleAmount(certain = resource.items),
+                                isNewlyCreated = false
+                            ),
+                            resource.items.firstOrNull()
+                        )
+                    }
+                }
+            )
+        }
+
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
     }
 }
@@ -134,7 +141,18 @@ fun TransactionPreviewTypePreview() {
                 previewType = PreviewType.NonConforming
             ),
             previewType = PreviewType.Transaction(
-                from = emptyList(),
+                from = listOf(
+                    AccountWithTransferables(
+                        account = InvolvedAccount.Owned(Account.sampleStokenet()),
+                        transferables = listOf(
+                            Transferable.FungibleType.Token(
+                                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                amount = CountedAmount.Exact("745".toDecimal192()),
+                                isNewlyCreated = true
+                            )
+                        )
+                    )
+                ),
                 to = listOf(
                     AccountWithTransferables(
                         account = InvolvedAccount.Owned(Account.sampleMainnet()),

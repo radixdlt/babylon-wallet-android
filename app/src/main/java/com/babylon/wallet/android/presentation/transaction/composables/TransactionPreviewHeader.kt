@@ -50,7 +50,7 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 @Composable
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
-    transactionType: TransactionType,
+    isPreAuthorization: Boolean,
     isRawManifestPreviewable: Boolean,
     isRawManifestVisible: Boolean,
     proposingDApp: State.ProposingDApp?,
@@ -58,8 +58,14 @@ fun TransactionPreviewHeader(
     onRawManifestClick: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
-    val title = stringResource(id = transactionType.titleRes())
-    val isToggleButtonVisible = !transactionType.isPreAuthorized && isRawManifestPreviewable
+    val title = stringResource(
+        id = if (isPreAuthorization) {
+            R.string.preAuthorizationReview_title
+        } else {
+            R.string.transactionReview_title
+        }
+    )
+    val isToggleButtonVisible = !isPreAuthorization && isRawManifestPreviewable
     TwoRowsTopAppBar(
         modifier = modifier,
         title = {
@@ -188,7 +194,7 @@ private fun TransactionType.titleRes(): Int = when (this) {
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
-            transactionType = TransactionType.Generic,
+            isPreAuthorization = false,
             proposingDApp = State.ProposingDApp.Some(
                 dApp = DApp(
                     dAppAddress = AccountAddress.sampleMainnet(),

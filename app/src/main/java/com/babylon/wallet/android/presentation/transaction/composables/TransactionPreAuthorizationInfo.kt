@@ -45,10 +45,7 @@ fun TransactionPreAuthorizationInfo(
     ) {
         PreAuthorizationFeesHint(
             proposingDApp = proposingDApp,
-            onClick = {
-                // TODO sergiu
-                onInfoClick(GlossaryItem.transactions)
-            }
+            onClick = { onInfoClick(GlossaryItem.preauthorizations) }
         )
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))

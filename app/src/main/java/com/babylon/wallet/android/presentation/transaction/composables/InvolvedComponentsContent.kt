@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.PreviewType.Transaction.InvolvedComponents.DApps
 import com.babylon.wallet.android.presentation.transaction.PreviewType.Transaction.InvolvedComponents.None
@@ -64,7 +65,8 @@ fun InvolvedComponentsContent(
     modifier: Modifier = Modifier,
     involvedComponents: PreviewType.Transaction.InvolvedComponents,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<Address>) -> Unit
+    onUnknownComponentsClick: (List<Address>) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     val isEmpty = remember(involvedComponents) { involvedComponents.isEmpty }
 
@@ -93,7 +95,8 @@ fun InvolvedComponentsContent(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
                         involvedDApps = involvedComponents,
                         onDAppClick = onDAppClick,
-                        onUnknownComponentsClick = onUnknownComponentsClick
+                        onUnknownComponentsClick = onUnknownComponentsClick,
+                        onInfoClick = onInfoClick
                     )
                     is Pools -> PoolsContent(
                         modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
@@ -180,7 +183,8 @@ private fun DAppsContent(
     modifier: Modifier = Modifier,
     involvedDApps: DApps,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<Address>) -> Unit
+    onUnknownComponentsClick: (List<Address>) -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -190,7 +194,9 @@ private fun DAppsContent(
 
         verifiedDApps.forEach { dApp ->
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable { onDAppClick(dApp) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onDAppClick(dApp) },
                 icon = {
                     Thumbnail.DApp(
                         modifier = Modifier.size(44.dp),
@@ -204,9 +210,11 @@ private fun DAppsContent(
         val unknownComponents = remember(involvedDApps) { involvedDApps.unknownComponents }
         if (unknownComponents.isNotEmpty()) {
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable {
-                    onUnknownComponentsClick(unknownComponents.map { it.asGeneral() })
-                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onUnknownComponentsClick(unknownComponents.map { it.asGeneral() })
+                    },
                 icon = {
                     Thumbnail.DApp(
                         modifier = Modifier.size(44.dp),
@@ -219,9 +227,9 @@ private fun DAppsContent(
 
         if (involvedDApps.morePossibleDAppsPresent) {
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable {
-                    // TODO sergiu
-                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onInfoClick(GlossaryItem.possibledappcalls) },
                 contentPadding = PaddingValues(
                     horizontal = RadixTheme.dimensions.paddingDefault,
                     vertical = RadixTheme.dimensions.paddingSmall
@@ -259,7 +267,9 @@ private fun PoolsContent(
 
         associatedDApps.forEach { dApp ->
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable { onDAppClick(dApp) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onDAppClick(dApp) },
                 icon = {
                     Thumbnail.DApp(
                         modifier = Modifier.size(44.dp),
@@ -273,7 +283,9 @@ private fun PoolsContent(
         val unknownPools = remember(pools) { pools.unknownPools }
         if (unknownPools.isNotEmpty()) {
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable { onUnknownComponentsClick(unknownPools.map { it.address.asGeneral() }) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onUnknownComponentsClick(unknownPools.map { it.address.asGeneral() }) },
                 icon = {
                     Thumbnail.DApp(
                         modifier = Modifier.size(44.dp),
@@ -297,7 +309,9 @@ private fun ValidatorsContent(
     ) {
         validators.validators.forEach { validator ->
             InvolvedComponent(
-                modifier = Modifier.fillMaxWidth().clickable { },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { },
                 icon = {
                     Thumbnail.Validator(
                         modifier = Modifier.size(44.dp),
@@ -383,7 +397,8 @@ fun UsingDAppsPreview() {
                 components = components
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -405,7 +420,8 @@ fun UsingDAppsWithPossibleOtherDAppsPreview() {
                 morePossibleDAppsPresent = true
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -427,7 +443,8 @@ fun PoolContributionPreview() {
                 actionType = Pools.ActionType.Contribution
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -449,7 +466,8 @@ fun PoolRedemptionPreview() {
                 actionType = Pools.ActionType.Redemption
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -471,7 +489,8 @@ fun StakePreview() {
                 actionType = Validators.ActionType.Stake
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -493,7 +512,8 @@ fun UnstakePreview() {
                 actionType = Validators.ActionType.Unstake
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }
@@ -515,7 +535,8 @@ fun ClaimPreview() {
                 actionType = Validators.ActionType.ClaimStake
             ),
             onDAppClick = {},
-            onUnknownComponentsClick = {}
+            onUnknownComponentsClick = {},
+            onInfoClick = {}
         )
     }
 }

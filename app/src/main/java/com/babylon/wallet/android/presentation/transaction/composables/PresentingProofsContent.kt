@@ -43,7 +43,7 @@ fun PresentingProofsContent(
 ) {
     if (badges.isNotEmpty()) {
         Column(
-            modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)
+            modifier = modifier
         ) {
             Row(
                 modifier = Modifier
