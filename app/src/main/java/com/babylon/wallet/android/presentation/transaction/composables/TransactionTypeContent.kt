@@ -7,27 +7,36 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ManifestEncounteredComponentAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
-fun TransferTypeContent(
+fun TransactionTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     previewType: PreviewType.Transaction,
@@ -119,12 +128,12 @@ fun TransferTypeContent(
 @Composable
 fun TransactionPreviewTypePreview() {
     RadixWalletTheme {
-        TransferTypeContent(
+        TransactionTypeContent(
             state = TransactionReviewViewModel.State(
                 isLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            preview = PreviewType.Transaction(
+            previewType = PreviewType.Transaction(
                 from = emptyList(),
                 to = listOf(
                     AccountWithTransferables(
@@ -138,13 +147,20 @@ fun TransactionPreviewTypePreview() {
                         )
                     )
                 ),
-                newlyCreatedGlobalIds = emptyList()
+                newlyCreatedGlobalIds = emptyList(),
+                involvedComponents = PreviewType.Transaction.InvolvedComponents.DApps(
+                    components = listOf(
+                        ManifestEncounteredComponentAddress.sampleMainnet() to DApp.sampleMainnet()
+                    )
+                ),
+                badges = listOf(Badge.sample())
             ),
             onEditGuaranteesClick = {},
             onDAppClick = { _ -> },
             onUnknownComponentsClick = {},
             onTransferableFungibleClick = {},
-            onNonTransferableFungibleClick = { _, _ -> }
+            onNonTransferableFungibleClick = { _, _ -> },
+            onInfoClick = {}
         )
     }
 }

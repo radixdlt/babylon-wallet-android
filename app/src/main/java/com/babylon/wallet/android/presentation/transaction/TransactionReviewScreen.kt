@@ -63,7 +63,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.Presentin
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreAuthorizationInfo
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
-import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.TransactionTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
@@ -319,7 +319,7 @@ private fun TransactionPreviewContent(
                             exit = fadeOut()
                         ) {
                             when (val preview = state.previewType) {
-                                is PreviewType.Transaction -> TransferTypeContent(
+                                is PreviewType.Transaction -> TransactionTypeContent(
                                     state = state,
                                     previewType = preview,
                                     onEditGuaranteesClick = onEditGuaranteesClick,
