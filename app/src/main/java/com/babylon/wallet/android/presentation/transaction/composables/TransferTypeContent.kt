@@ -11,6 +11,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -91,7 +92,7 @@ fun TransferTypeContent(
                             is Resource.FungibleResource -> onTransferableFungibleClick(
                                 Transferable.FungibleType.Token(
                                     asset = Token(resource = resource),
-                                    amount = FungibleAmount.Exact(amount = resource.ownedAmount.orZero()),
+                                    amount = CountedAmount.Exact(amount = resource.ownedAmount.orZero()),
                                     isNewlyCreated = false
                                 )
                             )
@@ -99,7 +100,7 @@ fun TransferTypeContent(
                             is Resource.NonFungibleResource -> onNonTransferableFungibleClick(
                                 Transferable.NonFungibleType.NFTCollection(
                                     asset = NonFungibleCollection(resource),
-                                    amount = NonFungibleAmount.Certain(nfts = resource.items),
+                                    amount = NonFungibleAmount(certain = resource.items),
                                     isNewlyCreated = false
                                 ),
                                 resource.items.firstOrNull()
