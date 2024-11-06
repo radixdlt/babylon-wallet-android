@@ -6,12 +6,17 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.resources.Resource
 
-sealed interface Amount
-
 data class NonFungibleAmount(
     val certain: List<Resource.NonFungibleResource.Item>,
     val additional: CountedAmount? = null
-) : Amount
+) {
+
+    init {
+        additional?.let {
+            require(it !is CountedAmount.Predicted) { "Predicted additional amount not supported for non-fungibles" }
+        }
+    }
+}
 
 @Serializable
 sealed interface CountedAmount {
