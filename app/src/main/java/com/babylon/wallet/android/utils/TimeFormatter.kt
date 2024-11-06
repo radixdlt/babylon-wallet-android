@@ -14,6 +14,7 @@ object TimeFormatter {
      * - `56:02 minutes` / `1:23 minute`
      * - `34 seconds` / `1 second`
      */
+    @Suppress("MagicNumber")
     fun format(context: Context, duration: Duration): String {
         val seconds = duration.inWholeSeconds
         val minutes = seconds / 60
@@ -50,6 +51,4 @@ object TimeFormatter {
             }
         }
     }
-
-
 }

@@ -192,7 +192,7 @@ class TransactionReviewViewModel @Inject constructor(
                 var seconds = expiration.timestamp.toEpochSecond().seconds
 
                 viewModelScope.launch {
-                    do  {
+                    do {
                         _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
                         seconds -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
@@ -201,10 +201,12 @@ class TransactionReviewViewModel @Inject constructor(
             }
             is SubintentExpiration.DelayAfterSign -> {
                 _state.update {
-                    it.copy(expiration = State.Expiration(
-                        duration = expiration.delay,
-                        startsAfterSign = true
-                    ))
+                    it.copy(
+                        expiration = State.Expiration(
+                            duration = expiration.delay,
+                            startsAfterSign = true
+                        )
+                    )
                 }
             }
             else -> {

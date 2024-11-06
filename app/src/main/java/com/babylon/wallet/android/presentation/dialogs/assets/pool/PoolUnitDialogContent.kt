@@ -35,13 +35,13 @@ import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadat
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.LargeCountedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.PoolResourcesValues
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
@@ -103,11 +103,11 @@ fun PoolUnitDialogContent(
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(
+            LargeCountedAmountSection(
                 modifier = Modifier
                     .widthIn(min = if (poolUnit == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
                     .radixPlaceholder(visible = poolUnit == null),
-                amount = amount,
+                countedAmount = amount,
                 symbol = poolUnit?.resource?.symbol
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

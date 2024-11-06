@@ -95,7 +95,7 @@ fun TransferableNftItemContent(
             Spacer(modifier = Modifier.weight(1f))
 
             transferableNFTCollection.amount.additional?.let {
-                CountedAmountSection(amount = it)
+                CountedAmountSection(countedAmount = it)
             }
         }
 
@@ -114,8 +114,8 @@ fun TransferableNftItemContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun TransferableNftItemPreview(
-    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) amount: CountedAmount
+private fun TransferableNftItemPreview(
+    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
 ) {
     RadixWalletTheme {
         val asset = remember {

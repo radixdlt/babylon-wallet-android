@@ -100,7 +100,7 @@ fun TransferableStakeClaimNftItemContent(
             Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
             transferableStakeClaim.amount.additional?.let {
-                CountedAmountSection(amount = it)
+                CountedAmountSection(countedAmount = it)
             }
         }
 
@@ -187,8 +187,8 @@ fun TransferableStakeClaimNftItemContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun TransferableStakeClaimNftItemPreview(
-    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) amount: CountedAmount
+private fun TransferableStakeClaimNftItemPreview(
+    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
 ) {
     RadixWalletTheme {
         val asset = remember {

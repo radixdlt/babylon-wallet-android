@@ -67,7 +67,7 @@ fun TransferableTokenItemContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            CountedAmountSection(amount = transferableToken.amount)
+            CountedAmountSection(countedAmount = transferableToken.amount)
         }
         UnknownAmount(
             modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),

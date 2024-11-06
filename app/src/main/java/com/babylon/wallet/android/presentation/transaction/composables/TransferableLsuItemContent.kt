@@ -85,7 +85,7 @@ fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            CountedAmountSection(amount = transferableLSU.amount)
+            CountedAmountSection(countedAmount = transferableLSU.amount)
         }
         UnknownAmount(
             modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall),
@@ -132,7 +132,7 @@ fun TransferableLsuItemContent(
                 Spacer(modifier = Modifier.weight(1f))
 
                 CountedAmountSection(
-                    amount = transferableLSU.xrdWorth
+                    countedAmount = transferableLSU.xrdWorth
                 )
             }
 
@@ -148,7 +148,7 @@ fun TransferableLsuItemContent(
 @Preview
 @UsesSampleValues
 private fun TransferableLsuItemPreview(
-    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) amount: CountedAmount
+    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
 ) {
     RadixWalletPreviewTheme {
         TransferableLsuItemContent(

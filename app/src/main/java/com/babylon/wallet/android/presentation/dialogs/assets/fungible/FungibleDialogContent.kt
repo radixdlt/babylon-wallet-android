@@ -34,13 +34,13 @@ import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadat
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.LargeCountedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
@@ -92,11 +92,11 @@ fun FungibleDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             if (amount != null) {
-                TokenBalance(
+                LargeCountedAmountSection(
                     modifier = Modifier
                         .widthIn(min = if (token == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
                         .radixPlaceholder(visible = token == null),
-                    amount = amount,
+                    countedAmount = amount,
                     symbol = token?.resource?.symbol
                 )
 

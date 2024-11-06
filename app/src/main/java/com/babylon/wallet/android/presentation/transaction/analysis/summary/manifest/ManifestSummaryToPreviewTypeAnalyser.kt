@@ -47,5 +47,4 @@ class ManifestSummaryToPreviewTypeAnalyser @Inject constructor(
             .mapNotNull { it.getOrNull() }
             .distinctBy { it.first }
     }
-
 }

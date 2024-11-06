@@ -90,7 +90,7 @@ fun TransferablePoolUnitItemContent(
                 )
             }
 
-            CountedAmountSection(amount = transferablePoolUnit.amount)
+            CountedAmountSection(countedAmount = transferablePoolUnit.amount)
         }
 
         UnknownAmount(
@@ -152,7 +152,7 @@ fun TransferablePoolUnitItemContent(
 
                         if (contributionPerResourceAmount != null) {
                             CountedAmountSection(
-                                amount = contributionPerResourceAmount,
+                                countedAmount = contributionPerResourceAmount,
                                 isPredictedAmountCompact = true
                             )
                         } else {
@@ -188,7 +188,7 @@ fun TransferablePoolUnitItemContent(
 @Preview
 @UsesSampleValues
 private fun TransferablePoolUnitItemPreview(
-    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) amount: CountedAmount
+    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
 ) {
     RadixWalletPreviewTheme {
         TransferablePoolUnitItemContent(

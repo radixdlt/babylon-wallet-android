@@ -406,7 +406,7 @@ fun NavigationHost(
                             fungibleTransferable.asset.resource.address to fungibleTransferable.amount,
                         ).apply {
                             if (xrdResourceAddress != null) {
-                                put(xrdResourceAddress, fungibleTransferable.amount)
+                                put(xrdResourceAddress, fungibleTransferable.xrdWorth)
                             }
                         }
                     }

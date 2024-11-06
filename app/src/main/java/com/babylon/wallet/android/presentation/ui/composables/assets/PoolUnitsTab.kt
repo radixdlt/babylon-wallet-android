@@ -197,8 +197,8 @@ fun PoolResourcesValues(
                 Column(horizontalAlignment = Alignment.End) {
                     resourceWithAmount.value?.let {
                         CountedAmountSection(
-                            amount = it,
-                            amountTextStyle = if (isCompact) {
+                            countedAmount = it,
+                            amountStyle = if (isCompact) {
                                 RadixTheme.typography.body1HighImportance
                             } else {
                                 RadixTheme.typography.secondaryHeader

@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.composables.CountedAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.LargeCountedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -43,7 +44,6 @@ import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsIt
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
@@ -94,11 +94,11 @@ fun LSUDialogContent(
     ) {
         LSUIconSection(lsu = lsu)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        TokenBalance(
+        LargeCountedAmountSection(
             modifier = Modifier
                 .widthIn(min = if (lsu == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
                 .radixPlaceholder(visible = lsu == null),
-            amount = amount,
+            countedAmount = amount,
             symbol = lsu?.resource?.symbol
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -319,7 +319,7 @@ private fun LSUResourceValue(
             ) {
                 amount?.let {
                     CountedAmountSection(
-                        amount = it,
+                        countedAmount = it,
                         isPredictedAmountCompact = true
                     )
                 }

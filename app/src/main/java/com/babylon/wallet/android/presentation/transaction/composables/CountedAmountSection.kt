@@ -1,11 +1,15 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -13,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -28,91 +33,135 @@ import com.radixdlt.sargon.samples.sample
 @Composable
 fun CountedAmountSection(
     modifier: Modifier = Modifier,
-    amount: CountedAmount?,
-    isPredictedAmountCompact: Boolean = false,
-    amountTextStyle: TextStyle = RadixTheme.typography.secondaryHeader
+    countedAmount: CountedAmount?,
+    amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
+    isPredictedAmountCompact: Boolean = false
 ) {
-    when (amount) {
-        is CountedAmount.Exact -> {
-            AmountText(
-                modifier = modifier,
-                amount = amount.amount,
-                textStyle = amountTextStyle
+    CountedAmountSection(
+        modifier = modifier,
+        countedAmount = countedAmount,
+        horizontalAlignment = Alignment.End,
+        qualifier = { text, style, color ->
+            QualifierText(
+                text = text,
+                fontSize = 12.sp,
+                style = style,
+                color = color
             )
-        }
-        is CountedAmount.Max -> {
-            Column(
-                modifier = modifier,
-                horizontalAlignment = Alignment.End
-            ) {
-                NoMoreThanText()
-                AmountText(
-                    amount = amount.amount,
-                    textStyle = amountTextStyle
-                )
+        },
+        amount = { amount ->
+            AmountText(
+                amount = amount,
+                amountStyle = amountStyle
+            )
+        },
+        isCompact = isPredictedAmountCompact
+    )
+}
+
+@Composable
+fun LargeCountedAmountSection(
+    modifier: Modifier = Modifier,
+    countedAmount: CountedAmount?,
+    symbol: String? = null
+) {
+    CountedAmountSection(
+        modifier = modifier,
+        countedAmount = countedAmount,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        qualifier = { text, style, color ->
+            QualifierText(
+                text = text,
+                fontSize = 16.sp,
+                style = style,
+                color = color
+            )
+        },
+        amount = { amount ->
+            AmountText(
+                amount = amount,
+                amountStyle = RadixTheme.typography.title,
+                symbol = symbol,
+                symbolStyle = RadixTheme.typography.secondaryHeader
+            )
+        },
+        isCompact = false
+    )
+}
+
+@Composable
+fun CountedAmountSection(
+    modifier: Modifier,
+    countedAmount: CountedAmount?,
+    horizontalAlignment: Alignment.Horizontal,
+    qualifier: @Composable (String, TextStyle, Color) -> Unit,
+    amount: @Composable (Decimal192) -> Unit,
+    isCompact: Boolean
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = horizontalAlignment
+    ) {
+        when (countedAmount) {
+            is CountedAmount.Exact -> {
+                amount(countedAmount.amount)
             }
-        }
-        is CountedAmount.Min -> {
-            Column(
-                modifier = modifier,
-                horizontalAlignment = Alignment.End
-            ) {
-                AtLeastText()
-                AmountText(
-                    amount = amount.amount,
-                    textStyle = amountTextStyle
+            is CountedAmount.Max -> {
+                qualifier(
+                    stringResource(id = R.string.interactionReview_noMoreThan),
+                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.colors.gray1
                 )
+
+                amount(countedAmount.amount)
             }
-        }
-        is CountedAmount.Range -> {
-            Column(
-                modifier = modifier,
-                horizontalAlignment = Alignment.End
-            ) {
-                AtLeastText()
-                AmountText(
-                    amount = amount.minAmount,
-                    textStyle = amountTextStyle
+            is CountedAmount.Min -> {
+                qualifier(
+                    stringResource(id = R.string.interactionReview_atLeast),
+                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.colors.gray1
                 )
-                NoMoreThanText()
-                AmountText(
-                    amount = amount.maxAmount,
-                    textStyle = amountTextStyle
-                )
+
+                amount(countedAmount.amount)
             }
-        }
-        is CountedAmount.Predicted -> {
-            Column(
-                modifier = modifier,
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = stringResource(id = R.string.transactionReview_estimated),
-                    style = RadixTheme.typography.body2Link,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+            is CountedAmount.Range -> {
+                qualifier(
+                    stringResource(id = R.string.interactionReview_atLeast),
+                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.colors.gray1
                 )
-                AmountText(
-                    amount = amount.estimated,
-                    textStyle = amountTextStyle
+
+                amount(countedAmount.minAmount)
+
+                qualifier(
+                    stringResource(id = R.string.interactionReview_noMoreThan),
+                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.colors.gray1
                 )
-                if (!isPredictedAmountCompact) {
-                    Text(
-                        text = stringResource(id = R.string.transactionReview_guaranteed),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+
+                amount(countedAmount.maxAmount)
+            }
+            is CountedAmount.Predicted -> {
+                qualifier(
+                    stringResource(id = R.string.transactionReview_estimated),
+                    RadixTheme.typography.body2Link,
+                    RadixTheme.colors.gray1
+                )
+
+                amount(countedAmount.estimated)
+
+                if (!isCompact) {
+                    qualifier(
+                        stringResource(id = R.string.transactionReview_guaranteed),
+                        RadixTheme.typography.body2Regular,
+                        RadixTheme.colors.gray2
                     )
-                    AmountText(
-                        amount = amount.guaranteed,
-                        textStyle = amountTextStyle
-                    )
+
+                    amount(countedAmount.guaranteed)
                 }
             }
+            else -> {}
         }
-        else -> {}
     }
 }
 
@@ -136,39 +185,48 @@ fun UnknownAmount(
 private fun AmountText(
     modifier: Modifier = Modifier,
     amount: Decimal192,
-    textStyle: TextStyle = RadixTheme.typography.secondaryHeader
+    symbol: String? = null,
+    amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
+    symbolStyle: TextStyle = RadixTheme.typography.secondaryHeader
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+    ) {
+        Text(
+            text = amount.formatted(),
+            style = amountStyle,
+            color = RadixTheme.colors.gray1,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        symbol?.let {
+            Text(
+                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXSmall),
+                text = it,
+                style = symbolStyle,
+                color = RadixTheme.colors.gray1
+            )
+        }
+    }
+}
+
+@Composable
+private fun QualifierText(
+    text: String,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier,
+    style: TextStyle = RadixTheme.typography.body1Regular,
+    color: Color = RadixTheme.colors.gray1
 ) {
     Text(
         modifier = modifier,
-        text = amount.formatted(),
-        style = textStyle,
-        color = RadixTheme.colors.gray1,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
-}
-
-@Composable
-private fun AtLeastText(modifier: Modifier = Modifier) {
-    Text(
-        modifier = modifier,
-        text = stringResource(id = R.string.interactionReview_atLeast),
-        style = RadixTheme.typography.body1Regular,
-        fontSize = 12.sp,
-        color = RadixTheme.colors.gray1,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
-}
-
-@Composable
-private fun NoMoreThanText(modifier: Modifier = Modifier) {
-    Text(
-        modifier = modifier,
-        text = stringResource(id = R.string.interactionReview_noMoreThan),
-        style = RadixTheme.typography.body1Regular,
-        fontSize = 12.sp,
-        color = RadixTheme.colors.gray1,
+        text = text,
+        style = style,
+        fontSize = fontSize,
+        color = color,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )
@@ -177,18 +235,32 @@ private fun NoMoreThanText(modifier: Modifier = Modifier) {
 @Composable
 @Preview
 @UsesSampleValues
-private fun FungibleAmountSectionPreview(
-    @PreviewParameter(FungibleAmountSectionPreviewProvider::class) countedAmount: CountedAmount
+private fun CountedAmountSectionPreview(
+    @PreviewParameter(CountedAmountSectionPreviewProvider::class) countedAmount: CountedAmount
 ) {
     RadixWalletPreviewTheme {
         CountedAmountSection(
-            amount = countedAmount
+            countedAmount = countedAmount
+        )
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun LargeCountedAmountSectionPreview(
+    @PreviewParameter(CountedAmountSectionPreviewProvider::class) countedAmount: CountedAmount
+) {
+    RadixWalletPreviewTheme {
+        LargeCountedAmountSection(
+            countedAmount = countedAmount,
+            symbol = "SYMBOL"
         )
     }
 }
 
 @UsesSampleValues
-class FungibleAmountSectionPreviewProvider : PreviewParameterProvider<CountedAmount> {
+class CountedAmountSectionPreviewProvider : PreviewParameterProvider<CountedAmount> {
 
     override val values: Sequence<CountedAmount>
         get() = sequenceOf(

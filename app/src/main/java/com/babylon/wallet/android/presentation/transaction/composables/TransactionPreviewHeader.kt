@@ -34,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -181,11 +180,6 @@ fun TransactionPreviewHeader(
         pinnedHeight = 82.dp,
         scrollBehavior = scrollBehavior
     )
-}
-
-private fun TransactionType.titleRes(): Int = when (this) {
-    is TransactionType.PreAuthorized -> R.string.preAuthorizationReview_title
-    else -> R.string.transactionReview_title
 }
 
 @Preview(showBackground = true)
