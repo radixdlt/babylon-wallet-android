@@ -1375,4 +1375,8 @@ Code: %s</string>
   <string name="interactionReview_depositExceptions_depositorChangeRemove">Remove Depositor</string>
   <string name="interactionReview_hiddenAsset_deposit">This asset is hidden and will not be visible in your Account</string>
   <string name="interactionReview_hiddenAsset_withdraw">This asset is hidden and is not visible in your Account</string>
+  <string name="interactionReview_unknown_deposits">Unknown deposits to this account may occur</string>
+  <string name="interactionReview_unknown_amount">Amount of deposit is unknown</string>
+  <string name="interactionReview_atLeast">At least</string>
+  <string name="interactionReview_noMoreThan">No more than</string>
 </resources>
