@@ -319,7 +319,8 @@ private fun LSUResourceValue(
             ) {
                 amount?.let {
                     CountedAmountSection(
-                        amount = it
+                        amount = it,
+                        isPredictedAmountCompact = true
                     )
                 }
             }

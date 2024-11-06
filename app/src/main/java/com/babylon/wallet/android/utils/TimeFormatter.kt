@@ -6,6 +6,14 @@ import kotlin.time.Duration
 
 object TimeFormatter {
 
+    /**
+     * Given an amount of seconds, returns a formatted String using the corresponding unit (days/hours/minutes/seconds).
+     * A few examples on how should it look for each of them:
+     * - `8 days` / `1 day`
+     * - `23:21 hours` / `1:24 hour`
+     * - `56:02 minutes` / `1:23 minute`
+     * - `34 seconds` / `1 second`
+     */
     fun format(context: Context, duration: Duration): String {
         val seconds = duration.inWholeSeconds
         val minutes = seconds / 60

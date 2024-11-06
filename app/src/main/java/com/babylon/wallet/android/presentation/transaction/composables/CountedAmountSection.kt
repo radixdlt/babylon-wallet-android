@@ -29,6 +29,7 @@ import com.radixdlt.sargon.samples.sample
 fun CountedAmountSection(
     modifier: Modifier = Modifier,
     amount: CountedAmount?,
+    isPredictedAmountCompact: Boolean = false,
     amountTextStyle: TextStyle = RadixTheme.typography.secondaryHeader
 ) {
     when (amount) {
@@ -96,6 +97,19 @@ fun CountedAmountSection(
                     amount = amount.estimated,
                     textStyle = amountTextStyle
                 )
+                if (!isPredictedAmountCompact) {
+                    Text(
+                        text = stringResource(id = R.string.transactionReview_guaranteed),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    AmountText(
+                        amount = amount.guaranteed,
+                        textStyle = amountTextStyle
+                    )
+                }
             }
         }
         else -> {}
@@ -111,7 +125,7 @@ fun UnknownAmount(
     unknownAmount?.let {
         WarningText(
             modifier = modifier,
-            text = AnnotatedString("Amount of deposit is unknown"),
+            text = AnnotatedString(stringResource(id = R.string.interactionReview_unknown_amount)),
             textStyle = RadixTheme.typography.body2HighImportance,
             contentColor = RadixTheme.colors.orange1
         )
@@ -138,7 +152,7 @@ private fun AmountText(
 private fun AtLeastText(modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
-        text = "At least",
+        text = stringResource(id = R.string.interactionReview_atLeast),
         style = RadixTheme.typography.body1Regular,
         fontSize = 12.sp,
         color = RadixTheme.colors.gray1,
@@ -151,7 +165,7 @@ private fun AtLeastText(modifier: Modifier = Modifier) {
 private fun NoMoreThanText(modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
-        text = "No more than",
+        text = stringResource(id = R.string.interactionReview_noMoreThan),
         style = RadixTheme.typography.body1Regular,
         fontSize = 12.sp,
         color = RadixTheme.colors.gray1,

@@ -152,7 +152,8 @@ fun TransferablePoolUnitItemContent(
 
                         if (contributionPerResourceAmount != null) {
                             CountedAmountSection(
-                                amount = contributionPerResourceAmount
+                                amount = contributionPerResourceAmount,
+                                isPredictedAmountCompact = true
                             )
                         } else {
                             Text(
