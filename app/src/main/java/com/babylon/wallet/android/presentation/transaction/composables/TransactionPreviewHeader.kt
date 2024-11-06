@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,40 +51,15 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
     transactionType: TransactionType,
-    isRawManifestToggleVisible: Boolean,
+    isRawManifestPreviewable: Boolean,
     isRawManifestVisible: Boolean,
     proposingDApp: State.ProposingDApp?,
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
-    TransactionPreviewHeader(
-        modifier = modifier,
-        title = stringResource(id = transactionType.titleRes()),
-        proposingDApp = proposingDApp,
-        actions = {
-            if (!transactionType.isPreAuthorized && isRawManifestToggleVisible) {
-                TransactionRawManifestToggle(
-                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
-                    isToggleOn = isRawManifestVisible,
-                    onRawManifestClick = onRawManifestClick
-                )
-            }
-        },
-        onBackClick = onBackClick,
-        scrollBehavior = scrollBehavior
-    )
-}
-
-@Composable
-private fun TransactionPreviewHeader(
-    modifier: Modifier = Modifier,
-    title: String,
-    proposingDApp: State.ProposingDApp?,
-    actions: @Composable RowScope.() -> Unit,
-    onBackClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior
-) {
+    val title = stringResource(id = transactionType.titleRes())
+    val isToggleButtonVisible = !transactionType.isPreAuthorized && isRawManifestPreviewable
     TwoRowsTopAppBar(
         modifier = modifier,
         title = {
@@ -179,7 +153,18 @@ private fun TransactionPreviewHeader(
                 )
             }
         },
-        actions = actions,
+        actions = {
+            if (isToggleButtonVisible) {
+                TransactionRawManifestToggle(
+                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
+                    isToggleOn = isRawManifestVisible,
+                    onRawManifestClick = onRawManifestClick
+                )
+            } else {
+                // Need to add the same space as the navigation icon to center the title
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault + 40.dp))
+            }
+        },
         colors = TopAppBarDefaults.largeTopAppBarColors(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
@@ -216,7 +201,7 @@ fun TransactionPreviewHeaderPreview() {
                     )
                 )
             ),
-            isRawManifestToggleVisible = true,
+            isRawManifestPreviewable = true,
             isRawManifestVisible = false,
             onBackClick = {},
             onRawManifestClick = {},

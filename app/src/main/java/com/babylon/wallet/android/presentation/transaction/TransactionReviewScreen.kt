@@ -246,7 +246,7 @@ private fun TransactionPreviewContent(
                 TransactionPreviewHeader(
                     onBackClick = onBackClick,
                     transactionType = transactionType,
-                    isRawManifestToggleVisible = state.isRawManifestToggleVisible,
+                    isRawManifestPreviewable = state.rawManifestIsPreviewable,
                     isRawManifestVisible = state.isRawManifestVisible,
                     proposingDApp = state.proposingDApp,
                     onRawManifestClick = onRawManifestToggle,
@@ -383,7 +383,7 @@ private fun TransactionPreviewContent(
                                 }
                             }
 
-                            if (state.isPreAuthorization && state.isRawManifestToggleVisible) {
+                            if (state.isPreAuthorization && state.rawManifestIsPreviewable) {
                                 TransactionRawManifestToggle(
                                     isToggleOn = state.isRawManifestVisible,
                                     onRawManifestClick = onRawManifestToggle

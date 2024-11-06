@@ -33,7 +33,6 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.TimeFormatter
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
@@ -64,7 +63,6 @@ import rdx.works.core.sargon.getResourcePreferences
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
-import kotlin.math.exp
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -288,7 +286,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isSubmitting: Boolean = false
     ) : UiState {
 
-        val isRawManifestToggleVisible: Boolean
+        val rawManifestIsPreviewable: Boolean
             get() = previewType is PreviewType.Transaction
 
         val isSheetVisible: Boolean
