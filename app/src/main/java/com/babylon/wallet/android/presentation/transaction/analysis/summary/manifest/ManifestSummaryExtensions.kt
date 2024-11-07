@@ -39,13 +39,20 @@ fun ManifestSummary.involvedResourceAddresses(): Set<ResourceOrNonFungible> {
     val withdrawAddresses = accountWithdrawals.values.flatten().map { withdraw ->
         when (withdraw) {
             is AccountWithdraw.Amount -> listOf(ResourceOrNonFungible.Resource(withdraw.resourceAddress))
-            is AccountWithdraw.Ids -> withdraw.ids.map { id ->
-                ResourceOrNonFungible.NonFungible(
-                    NonFungibleGlobalId(
-                        resourceAddress = withdraw.resourceAddress,
-                        nonFungibleLocalId = id
-                    )
-                )
+            is AccountWithdraw.Ids -> {
+                // Even if there are no ids, we still need to include the resource address to reflect the resources's additional amount
+                if (withdraw.ids.isEmpty()) {
+                    listOf(ResourceOrNonFungible.Resource(withdraw.resourceAddress))
+                } else {
+                    withdraw.ids.map { id ->
+                        ResourceOrNonFungible.NonFungible(
+                            NonFungibleGlobalId(
+                                resourceAddress = withdraw.resourceAddress,
+                                nonFungibleLocalId = id
+                            )
+                        )
+                    }
+                }
             }
         }
     }.flatten().toSet()
