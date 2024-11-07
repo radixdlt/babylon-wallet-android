@@ -99,7 +99,6 @@ private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
             is DappToWalletInteractionSubintentExpiration.AfterDelay -> SubintentExpiration.DelayAfterSign(
                 delay = expiration.v1.expireAfterSeconds.toLong().seconds
             )
-            null -> SubintentExpiration.None
         }
     )
 )

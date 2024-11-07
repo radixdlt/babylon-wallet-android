@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -201,10 +202,9 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         val transactionRequest = data.value.request
 
         return signSubintentUseCase(
-            networkId = transactionRequest.unvalidatedManifestData.networkId,
             manifest = subintentManifest,
-            message = transactionRequest.unvalidatedManifestData.messageV2,
-            maxProposerTimestamp = Timestamp.now()
+            message = transactionRequest.unvalidatedManifestData.plainMessage,
+            expiration = (transactionRequest.transactionType as TransactionType.PreAuthorized).expiration
         ).onSuccess { signedSubintent ->
             _state.update { it.copy(isSubmitting = false) }
 
@@ -220,6 +220,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
+    // TODO what about errors from sargon such as SubintentExpired.
     private suspend fun handleSignAndSubmitFailure(error: Throwable) {
         logger.e(error)
         approvalJob = null
