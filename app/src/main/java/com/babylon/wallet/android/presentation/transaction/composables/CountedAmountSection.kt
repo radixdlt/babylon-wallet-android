@@ -34,7 +34,7 @@ import com.radixdlt.sargon.samples.sample
 fun CountedAmountSection(
     modifier: Modifier = Modifier,
     countedAmount: CountedAmount?,
-    amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
+    amountStyle: TextStyle = RadixTheme.typography.body1Header,
     isCompact: Boolean = false
 ) {
     CountedAmountSection(
@@ -109,7 +109,7 @@ fun CountedAmountSection(
             is CountedAmount.Max -> {
                 qualifier(
                     stringResource(id = R.string.interactionReview_noMoreThan),
-                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 
@@ -118,7 +118,7 @@ fun CountedAmountSection(
             is CountedAmount.Min -> {
                 qualifier(
                     stringResource(id = R.string.interactionReview_atLeast),
-                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 
@@ -127,7 +127,7 @@ fun CountedAmountSection(
             is CountedAmount.Range -> {
                 qualifier(
                     stringResource(id = R.string.interactionReview_atLeast),
-                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 
@@ -135,7 +135,7 @@ fun CountedAmountSection(
 
                 qualifier(
                     stringResource(id = R.string.interactionReview_noMoreThan),
-                    RadixTheme.typography.body1HighImportance,
+                    RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 

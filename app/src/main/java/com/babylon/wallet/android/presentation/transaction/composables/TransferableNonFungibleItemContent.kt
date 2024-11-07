@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
@@ -102,7 +103,8 @@ private fun TransferableNonFungibleContent(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = CenterVertically
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(44.dp),
@@ -128,7 +130,7 @@ private fun TransferableNonFungibleContent(
                         transferableNFTCollection.resourceAddress.formatted()
                     },
                     style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1,
+                    color = RadixTheme.colors.gray2,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -136,8 +138,6 @@ private fun TransferableNonFungibleContent(
 
             additionalAmount?.let {
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
-                Spacer(modifier = Modifier.weight(1f))
 
                 CountedAmountSection(countedAmount = it)
             }
@@ -160,9 +160,7 @@ private fun TransferableNonFungibleContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-private fun TransferableNftItemPreview(
-    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
-) {
+private fun TransferableNftItemPreview() {
     RadixWalletTheme {
         val asset = remember {
             NonFungibleCollection(collection = Resource.NonFungibleResource.sampleMainnet())
@@ -170,7 +168,7 @@ private fun TransferableNftItemPreview(
         val nonFungibleAmount = remember(asset) {
             NonFungibleAmount(
                 certain = asset.collection.items,
-                additional = amount
+                additional = CountedAmount.Exact(10.toDecimal192())
             )
         }
         TransferableNonFungibleItemContent(

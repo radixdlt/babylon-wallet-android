@@ -1,13 +1,18 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,11 +20,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -29,6 +40,7 @@ import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Account
@@ -68,7 +80,7 @@ fun TransactionAccountCard(
         )
 
         account.transferables.forEachIndexed { index, transferable ->
-            val lastAsset = index == account.transferables.lastIndex
+            val lastAsset = index == account.transferables.lastIndex && !account.additionalTransferablesPresent
             val shape = if (lastAsset) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
 
             when (transferable) {
@@ -102,6 +114,10 @@ fun TransactionAccountCard(
                             ) { item.collectionAddress in hiddenResourceIds.nonFungibles() },
                             hiddenResourceWarning = hiddenResourceWarning
                         )
+
+                        if (!lastNFT || transferable.amount.additional != null) {
+                            HorizontalDivider(color = RadixTheme.colors.gray4)
+                        }
                     }
 
                     // Show additional amount
@@ -140,16 +156,38 @@ fun TransactionAccountCard(
                     onClick = onTransferableFungibleClick
                 )
 
-                is Transferable.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
-                    transferableStakeClaim = transferable,
-                    shape = shape,
-                    onClick = onTransferableNonFungibleItemClick
-                )
+                is Transferable.NonFungibleType.StakeClaim -> {
+                    TransferableStakeClaimNftItemContent(
+                        transferableStakeClaim = transferable,
+                        shape = if (lastAsset && transferable.amount.additional == null) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
+                        onClick = onTransferableNonFungibleItemClick
+                    )
+
+                    transferable.amount.additional?.let { amount ->
+                        HorizontalDivider(color = RadixTheme.colors.gray4)
+
+                        TransferableStakeClaimItemHeader(
+                            modifier = Modifier
+                                .background(
+                                    color = RadixTheme.colors.gray5,
+                                    shape = shape
+                                )
+                                .padding(vertical = RadixTheme.dimensions.paddingMedium)
+                                .throttleClickable { onTransferableNonFungibleByAmountClick(transferable, amount) },
+                            transferableStakeClaim = transferable,
+                            additionalAmount = amount
+                        )
+                    }
+                }
             }
 
             if (lastAsset.not()) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
             }
+        }
+
+        if (account.additionalTransferablesPresent) {
+            UnknownDeposits()
         }
     }
 }
@@ -218,6 +256,59 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
     }
 }
 
+@Composable
+private fun UnknownDeposits() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = RadixTheme.colors.gray5,
+                shape = RadixTheme.shapes.roundedRectBottomMedium
+            )
+            .padding(RadixTheme.dimensions.paddingMedium),
+        verticalAlignment = CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.unknown_resources),
+            contentDescription = null
+        )
+
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+        HorizontalStrokeLine(modifier = Modifier.width(48.dp))
+
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+        WarningText(
+            text = AnnotatedString(stringResource(id = R.string.interactionReview_unknown_deposits)),
+            textStyle = RadixTheme.typography.body2HighImportance,
+            contentColor = RadixTheme.colors.orange1
+        )
+    }
+}
+
+@Composable
+private fun HorizontalStrokeLine(
+    modifier: Modifier = Modifier,
+) {
+    val strokeColor = RadixTheme.colors.gray4
+    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
+    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
+    val lineHeight = with(LocalDensity.current) { 1.dp.toPx() }
+    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
+    Canvas(
+        modifier.height(1.dp)
+    ) {
+        drawLine(
+            color = strokeColor,
+            start = Offset(0f, 0f),
+            end = Offset(size.width, lineHeight),
+            strokeWidth = strokeWidth,
+            pathEffect = pathEffect
+        )
+    }
+}
+
 @UsesSampleValues
 @Preview("default")
 @Preview("large font", fontScale = 2f)
@@ -265,7 +356,8 @@ fun TransactionAccountCardWithNFTPreview() {
                         amount = amount,
                         isNewlyCreated = false
                     )
-                )
+                ),
+                additionalTransferablesPresent = true
             ),
             hiddenResourceIds = persistentListOf(),
             hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
