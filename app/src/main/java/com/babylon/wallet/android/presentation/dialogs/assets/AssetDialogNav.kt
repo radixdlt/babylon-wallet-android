@@ -38,35 +38,43 @@ fun NavController.fungibleAssetDialog(
     underAccountAddress: AccountAddress? = null,
 ) {
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress.string}" else ""
-    val fungibleAmounts = Serializer.kotlinxSerializationJson.encodeToString(FungibleAmounts(amounts.mapKeys { it.key.string }))
+    val countedAmounts = Serializer.kotlinxSerializationJson.encodeToString(CountedAmounts(amounts.mapKeys { it.key.string }))
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_FUNGIBLE" +
             "?${ARG_RESOURCE_ADDRESS}=${resourceAddress.string}" +
             "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-            "&$ARG_AMOUNTS=$fungibleAmounts" +
+            "&$ARG_AMOUNTS=$countedAmounts" +
             underAccountAddressParam
     )
 }
 
-fun NavController.nftAssetDialog(
+fun NavController.nonFungibleAssetDialog(
     resourceAddress: ResourceAddress,
     localId: NonFungibleLocalId? = null,
     isNewlyCreated: Boolean = false,
-    underAccountAddress: AccountAddress? = null
+    underAccountAddress: AccountAddress? = null,
+    amount: CountedAmount? = null
 ) {
     val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId.string, Charsets.UTF_8.name())}" else ""
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress.string}" else ""
+    val countedAmounts = amount?.let {
+        Serializer.kotlinxSerializationJson.encodeToString(
+            CountedAmounts(amounts = mapOf(resourceAddress.string to it))
+        )
+    }.orEmpty()
+
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
             "?${ARG_RESOURCE_ADDRESS}=${resourceAddress.string}" +
             "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
+            "&$ARG_AMOUNTS=$countedAmounts" +
             localIdParam +
             underAccountAddressParam
     )
 }
 
 @Serializable
-private data class FungibleAmounts(
+private data class CountedAmounts(
     val amounts: Map<String, @Contextual CountedAmount>
 )
 
@@ -85,32 +93,36 @@ sealed interface AssetDialogArgs {
         fun fungibleAmountOf(address: ResourceAddress): CountedAmount? = amounts[address.string]
     }
 
-    data class NFT(
+    data class NonFungible(
         override val resourceAddress: ResourceAddress,
         override val isNewlyCreated: Boolean,
         override val underAccountAddress: AccountAddress?,
-        val localId: NonFungibleLocalId?
+        val localId: NonFungibleLocalId?,
+        val amount: CountedAmount?
     ) : AssetDialogArgs
 
     companion object {
         fun from(savedStateHandle: SavedStateHandle): AssetDialogArgs {
+            val countedAmounts = savedStateHandle.get<String>(ARG_AMOUNTS)?.let { amountsSerialized ->
+                Serializer.kotlinxSerializationJson.decodeFromString<CountedAmounts>(amountsSerialized)
+            }
+
             return when (requireNotNull(savedStateHandle[ARG_RESOURCE_TYPE])) {
                 ARG_RESOURCE_TYPE_VALUE_FUNGIBLE -> {
-                    val amountsSerialized = requireNotNull(savedStateHandle.get<String>(ARG_AMOUNTS))
-                    val fungibleAmounts = Serializer.kotlinxSerializationJson.decodeFromString<FungibleAmounts>(amountsSerialized)
                     Fungible(
                         resourceAddress = ResourceAddress.init(requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS])),
                         isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                         underAccountAddress = savedStateHandle.get<String>(ARG_UNDER_ACCOUNT_ADDRESS)?.let { AccountAddress.init(it) },
-                        amounts = fungibleAmounts.amounts
+                        amounts = requireNotNull(countedAmounts?.amounts)
                     )
                 }
 
-                ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
+                ARG_RESOURCE_TYPE_VALUE_NFT -> NonFungible(
                     resourceAddress = ResourceAddress.init(requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS])),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle.get<String>(ARG_UNDER_ACCOUNT_ADDRESS)?.let { AccountAddress.init(it) },
-                    localId = savedStateHandle.get<String>(ARG_LOCAL_ID)?.let { NonFungibleLocalId.init(it) }
+                    localId = savedStateHandle.get<String>(ARG_LOCAL_ID)?.let { NonFungibleLocalId.init(it) },
+                    amount = countedAmounts?.amounts?.values?.firstOrNull()
                 )
 
                 else -> error("No type specified.")

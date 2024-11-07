@@ -43,7 +43,8 @@ fun TransactionTypeContent(
     previewType: PreviewType.Transaction,
     onEditGuaranteesClick: () -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<Address>) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
@@ -63,7 +64,8 @@ fun TransactionTypeContent(
             from = previewType.from.toPersistentList(),
             hiddenResourceIds = state.hiddenResourceIds,
             onTransferableFungibleClick = onTransferableFungibleClick,
-            onNonTransferableFungibleClick = onNonTransferableFungibleClick
+            onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+            onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
         )
 
         Column(
@@ -90,7 +92,8 @@ fun TransactionTypeContent(
                 hiddenResourceIds = state.hiddenResourceIds,
                 onEditGuaranteesClick = onEditGuaranteesClick,
                 onTransferableFungibleClick = onTransferableFungibleClick,
-                onNonTransferableFungibleClick = onNonTransferableFungibleClick
+                onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
             )
         }
 
@@ -112,7 +115,7 @@ fun TransactionTypeContent(
                             )
                         )
 
-                        is Resource.NonFungibleResource -> onNonTransferableFungibleClick(
+                        is Resource.NonFungibleResource -> onTransferableNonFungibleItemClick(
                             Transferable.NonFungibleType.NFTCollection(
                                 asset = NonFungibleCollection(resource),
                                 amount = NonFungibleAmount(certain = resource.items),
@@ -176,7 +179,8 @@ fun TransactionPreviewTypePreview() {
             onDAppClick = { _ -> },
             onUnknownComponentsClick = {},
             onTransferableFungibleClick = {},
-            onNonTransferableFungibleClick = { _, _ -> },
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> },
             onInfoClick = {}
         )
     }

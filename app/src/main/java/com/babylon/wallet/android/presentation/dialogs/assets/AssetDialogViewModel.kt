@@ -65,7 +65,7 @@ class AssetDialogViewModel @Inject constructor(
             resolveAssetsFromAddressUseCase(
                 addresses = when (args) {
                     is AssetDialogArgs.Fungible -> setOf(ResourceOrNonFungible.Resource(args.resourceAddress))
-                    is AssetDialogArgs.NFT -> if (args.localId != null) {
+                    is AssetDialogArgs.NonFungible -> if (args.localId != null) {
                         setOf(
                             ResourceOrNonFungible.NonFungible(
                                 NonFungibleGlobalId(

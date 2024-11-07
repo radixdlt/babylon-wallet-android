@@ -103,7 +103,8 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -134,7 +135,8 @@ fun TransactionReviewScreen(
         onDAppClick = onDAppClick,
         onUnknownAddressesClick = viewModel::onUnknownAddressesClick,
         onTransferableFungibleClick = onTransferableFungibleClick,
-        onTransferableNonFungibleClick = onTransferableNonFungibleClick,
+        onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+        onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
         onFeePayerChanged = viewModel::onFeePayerChanged,
@@ -170,7 +172,8 @@ private fun TransactionPreviewContent(
     onDAppClick: (DApp) -> Unit,
     onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onFeePayerChanged: (TransactionFeePayers.FeePayerCandidate) -> Unit,
@@ -322,7 +325,8 @@ private fun TransactionPreviewContent(
                                 previewType = preview,
                                 onEditGuaranteesClick = onEditGuaranteesClick,
                                 onTransferableFungibleClick = onTransferableFungibleClick,
-                                onNonTransferableFungibleClick = onTransferableNonFungibleClick,
+                                onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                                onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick,
                                 onDAppClick = onDAppClick,
                                 onUnknownComponentsClick = { onUnknownAddressesClick(it.toImmutableList()) },
                                 onInfoClick = onInfoClick
@@ -410,7 +414,7 @@ private fun TransactionPreviewContent(
                                         )
                                     )
 
-                                    is Resource.NonFungibleResource -> onTransferableNonFungibleClick(
+                                    is Resource.NonFungibleResource -> onTransferableNonFungibleItemClick(
                                         Transferable.NonFungibleType.NFTCollection(
                                             asset = NonFungibleCollection(resource),
                                             amount = NonFungibleAmount(certain = resource.items),
@@ -604,7 +608,8 @@ private fun TransactionPreviewContentPreview(
             onDAppClick = {},
             onUnknownAddressesClick = {},
             onTransferableFungibleClick = {},
-            onTransferableNonFungibleClick = { _, _ -> },
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},
