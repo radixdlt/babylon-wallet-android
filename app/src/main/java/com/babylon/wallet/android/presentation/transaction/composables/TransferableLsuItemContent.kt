@@ -132,7 +132,8 @@ fun TransferableLsuItemContent(
                 Spacer(modifier = Modifier.weight(1f))
 
                 CountedAmountSection(
-                    countedAmount = transferableLSU.xrdWorth
+                    countedAmount = transferableLSU.xrdWorth,
+                    isCompact = true
                 )
             }
 

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.model
 import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.orZero
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 
 data class AccountWithTransferables(
@@ -23,7 +24,12 @@ data class AccountWithTransferables(
             val updatedAmount = guaranteesRelatedToAccount[transferable.resourceAddress] ?: return@map transferable
 
             when (transferable) {
-                is Transferable.FungibleType.LSU -> transferable.copy(amount = updatedAmount)
+                is Transferable.FungibleType.LSU -> transferable.copy(
+                    amount = updatedAmount,
+                    xrdWorth = updatedAmount.calculateWith { decimal ->
+                        transferable.asset.stakeValueXRD(decimal).orZero()
+                    }
+                )
                 is Transferable.FungibleType.PoolUnit -> transferable.copy(amount = updatedAmount)
                 is Transferable.FungibleType.Token -> transferable.copy(amount = updatedAmount)
                 else -> transferable

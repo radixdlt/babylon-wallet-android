@@ -202,7 +202,7 @@ fun PoolResourcesValues(
                                 RadixTheme.typography.body1HighImportance
                             } else {
                                 RadixTheme.typography.secondaryHeader
-                            },
+                            }
                         )
                     }
 

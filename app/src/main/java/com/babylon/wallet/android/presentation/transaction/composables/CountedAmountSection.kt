@@ -35,7 +35,7 @@ fun CountedAmountSection(
     modifier: Modifier = Modifier,
     countedAmount: CountedAmount?,
     amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
-    isPredictedAmountCompact: Boolean = false
+    isCompact: Boolean = false
 ) {
     CountedAmountSection(
         modifier = modifier,
@@ -55,7 +55,7 @@ fun CountedAmountSection(
                 amountStyle = amountStyle
             )
         },
-        isCompact = isPredictedAmountCompact
+        isCompact = isCompact
     )
 }
 
