@@ -32,6 +32,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -54,7 +55,8 @@ fun DepositAccountContent(
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     onEditGuaranteesClick: () -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Column(modifier = modifier) {
@@ -100,7 +102,8 @@ fun DepositAccountContent(
                         hiddenResourceIds = hiddenResourceIds,
                         hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_deposit),
                         onTransferableFungibleClick = onTransferableFungibleClick,
-                        onTransferableNonFungibleClick = onNonTransferableFungibleClick
+                        onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                        onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
                     )
 
                     if (!lastItem) {
@@ -165,7 +168,8 @@ fun DepositAccountPreview() {
             hiddenResourceIds = persistentListOf(),
             onEditGuaranteesClick = {},
             onTransferableFungibleClick = { },
-            onNonTransferableFungibleClick = { _, _ -> }
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> }
         )
     }
 }

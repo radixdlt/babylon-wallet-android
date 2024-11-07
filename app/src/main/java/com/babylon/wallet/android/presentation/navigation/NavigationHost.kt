@@ -31,7 +31,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.assets.assetDialog
 import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
+import com.babylon.wallet.android.presentation.dialogs.assets.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
@@ -264,7 +264,7 @@ fun NavigationHost(
                 )
             },
             onNonFungibleResourceClick = { resource, item, account ->
-                navController.nftAssetDialog(
+                navController.nonFungibleAssetDialog(
                     resourceAddress = resource.address,
                     localId = item.localId,
                     underAccountAddress = account.address
@@ -425,11 +425,18 @@ fun NavigationHost(
                     isNewlyCreated = fungibleTransferable.isNewlyCreated
                 )
             },
-            onTransferableNonFungibleClick = { nonFungibleTransferable, item ->
-                navController.nftAssetDialog(
+            onTransferableNonFungibleItemClick = { nonFungibleTransferable, item ->
+                navController.nonFungibleAssetDialog(
                     resourceAddress = nonFungibleTransferable.asset.resource.address,
                     localId = item?.localId,
                     isNewlyCreated = nonFungibleTransferable.isNewlyCreated
+                )
+            },
+            onTransferableNonFungibleByAmountClick = { nonFungibleTransferable, amount ->
+                navController.nonFungibleAssetDialog(
+                    resourceAddress = nonFungibleTransferable.asset.resource.address,
+                    isNewlyCreated = nonFungibleTransferable.isNewlyCreated,
+                    amount = amount
                 )
             },
             onDAppClick = { dApp ->
@@ -456,7 +463,7 @@ fun NavigationHost(
                         underAccountAddress = fromAccount.address
                     )
 
-                    is SpendingAsset.NFT -> navController.nftAssetDialog(
+                    is SpendingAsset.NFT -> navController.nonFungibleAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
                         localId = spendingAsset.item.localId,
                         underAccountAddress = null // Marking as null hides claim button when the nft is a claim
@@ -579,7 +586,7 @@ fun NavigationHost(
                 navController.fungibleAssetDialog(resourceAddress = it.address)
             },
             onNonFungibleClick = {
-                navController.nftAssetDialog(resourceAddress = it.address)
+                navController.nonFungibleAssetDialog(resourceAddress = it.address)
             },
             onDismiss = {
                 navController.popBackStack()

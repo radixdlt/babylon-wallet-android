@@ -33,16 +33,58 @@ import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
-fun TransferableNftItemContent(
+fun TransferableNonFungibleItemContent(
     modifier: Modifier = Modifier,
     shape: Shape,
     transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
     nftItem: Resource.NonFungibleResource.Item,
+    isHidden: Boolean,
+    hiddenResourceWarning: String
+) {
+    TransferableNonFungibleContent(
+        modifier = modifier,
+        shape = shape,
+        transferableNFTCollection = transferableNFTCollection,
+        nftItem = nftItem,
+        additionalAmount = null,
+        isHidden = isHidden,
+        hiddenResourceWarning = hiddenResourceWarning
+    )
+}
+
+@Composable
+fun TransferableNonFungibleAmountContent(
+    modifier: Modifier = Modifier,
+    shape: Shape,
+    transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
+    amount: CountedAmount,
+    isHidden: Boolean,
+    hiddenResourceWarning: String
+) {
+    TransferableNonFungibleContent(
+        modifier = modifier,
+        shape = shape,
+        transferableNFTCollection = transferableNFTCollection,
+        nftItem = null,
+        additionalAmount = amount,
+        isHidden = isHidden,
+        hiddenResourceWarning = hiddenResourceWarning
+    )
+}
+
+@Composable
+private fun TransferableNonFungibleContent(
+    modifier: Modifier = Modifier,
+    shape: Shape,
+    transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
+    nftItem: Resource.NonFungibleResource.Item?,
+    additionalAmount: CountedAmount?,
     isHidden: Boolean,
     hiddenResourceWarning: String
 ) {
@@ -82,7 +124,9 @@ fun TransferableNftItemContent(
                 )
 
                 Text(
-                    text = nftItem.displaySubtitle(),
+                    text = nftItem?.displaySubtitle() ?: remember(transferableNFTCollection.resourceAddress) {
+                        transferableNFTCollection.resourceAddress.formatted()
+                    },
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -90,19 +134,21 @@ fun TransferableNftItemContent(
                 )
             }
 
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+            additionalAmount?.let {
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-            Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
-            transferableNFTCollection.amount.additional?.let {
                 CountedAmountSection(countedAmount = it)
             }
         }
 
-        UnknownAmount(
-            modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-            amount = transferableNFTCollection.amount.additional
-        )
+        additionalAmount?.let {
+            UnknownAmount(
+                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                amount = transferableNFTCollection.amount.additional
+            )
+        }
 
         TransferableHiddenItemWarning(
             isHidden = isHidden,
@@ -127,7 +173,7 @@ private fun TransferableNftItemPreview(
                 additional = amount
             )
         }
-        TransferableNftItemContent(
+        TransferableNonFungibleItemContent(
             transferableNFTCollection = Transferable.NonFungibleType.NFTCollection(
                 asset = asset,
                 amount = nonFungibleAmount,

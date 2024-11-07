@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.model.CountedAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -37,7 +38,8 @@ fun WithdrawAccountContent(
     from: ImmutableList<AccountWithTransferables>,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onNonTransferableFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit
 ) {
     if (from.isNotEmpty()) {
         Row(
@@ -80,7 +82,8 @@ fun WithdrawAccountContent(
                     hiddenResourceIds = hiddenResourceIds,
                     hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
                     onTransferableFungibleClick = onTransferableFungibleClick,
-                    onTransferableNonFungibleClick = onNonTransferableFungibleClick
+                    onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                    onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
                 )
 
                 if (index != from.lastIndex) {

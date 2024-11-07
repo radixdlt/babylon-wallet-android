@@ -55,7 +55,8 @@ fun TransactionAccountCard(
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     hiddenResourceWarning: String,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onTransferableNonFungibleClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -88,9 +89,9 @@ fun TransactionAccountCard(
                     // Show each nft item
                     transferable.asset.resource.items.forEachIndexed { itemIndex, item ->
                         val lastNFT = itemIndex == transferable.asset.resource.items.lastIndex
-                        TransferableNftItemContent(
+                        TransferableNonFungibleItemContent(
                             modifier = Modifier.throttleClickable {
-                                onTransferableNonFungibleClick(transferable, item)
+                                onTransferableNonFungibleItemClick(transferable, item)
                             },
                             transferableNFTCollection = transferable,
                             shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
@@ -99,6 +100,22 @@ fun TransactionAccountCard(
                                 item,
                                 hiddenResourceIds
                             ) { item.collectionAddress in hiddenResourceIds.nonFungibles() },
+                            hiddenResourceWarning = hiddenResourceWarning
+                        )
+                    }
+
+                    // Show additional amount
+                    transferable.amount.additional?.let { amount ->
+                        TransferableNonFungibleAmountContent(
+                            modifier = Modifier.throttleClickable {
+                                onTransferableNonFungibleByAmountClick(transferable, amount)
+                            },
+                            transferableNFTCollection = transferable,
+                            shape = if (lastAsset) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
+                            amount = amount,
+                            isHidden = remember(transferable.resourceAddress, hiddenResourceIds) {
+                                transferable.resourceAddress in hiddenResourceIds.nonFungibles()
+                            },
                             hiddenResourceWarning = hiddenResourceWarning
                         )
                     }
@@ -126,7 +143,7 @@ fun TransactionAccountCard(
                 is Transferable.NonFungibleType.StakeClaim -> TransferableStakeClaimNftItemContent(
                     transferableStakeClaim = transferable,
                     shape = shape,
-                    onClick = onTransferableNonFungibleClick
+                    onClick = onTransferableNonFungibleItemClick
                 )
             }
 
@@ -222,7 +239,8 @@ fun TransactionAccountCardWithTokenPreview() {
             hiddenResourceIds = persistentListOf(),
             hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
             onTransferableFungibleClick = { },
-            onTransferableNonFungibleClick = { _, _ -> }
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> }
         )
     }
 }
@@ -252,7 +270,8 @@ fun TransactionAccountCardWithNFTPreview() {
             hiddenResourceIds = persistentListOf(),
             hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
             onTransferableFungibleClick = { },
-            onTransferableNonFungibleClick = { _, _ -> }
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> }
         )
     }
 }
