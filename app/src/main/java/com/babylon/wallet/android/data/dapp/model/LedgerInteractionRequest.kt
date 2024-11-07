@@ -56,6 +56,19 @@ sealed interface LedgerInteractionRequest {
     }
 
     @Serializable
+    @SerialName("signSubintentHash")
+    data class SignSubintentHash(
+        @SerialName("interactionId")
+        override val interactionId: String,
+        @SerialName("signers")
+        val signers: List<KeyParameters>,
+        @SerialName("ledgerDevice")
+        val ledgerDevice: LedgerDevice,
+        @SerialName("subintentHash")
+        val subintentHash: String,
+    ) : LedgerInteractionRequest
+
+    @Serializable
     @SerialName("signChallenge")
     data class SignChallenge(
         @SerialName("interactionId")

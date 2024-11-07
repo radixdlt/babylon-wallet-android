@@ -60,7 +60,7 @@ class SignSubintentUseCase @Inject constructor(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signPurpose = SignPurpose.SignTransaction,
                 signers = signers,
-                signRequest = SignRequest.SignSubintentRequest(subintent = subintent)
+                signRequest = SignRequest.SubintentSignRequest(subintent = subintent)
             )
         ).map { signaturesResult ->
             val intentSignatures = signaturesResult.signersWithSignatures.values.map { IntentSignature.init(it) }

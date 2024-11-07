@@ -104,7 +104,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,
                     signers = signers,
-                    signRequest = SignRequest.SignTransactionRequest(intent = intent)
+                    signRequest = SignRequest.TransactionIntentSignRequest(transactionIntent = intent)
                 )
             ).map { signaturesResult ->
                 val intentSignatures = signaturesResult.signersWithSignatures.values.map { IntentSignature.init(it) }

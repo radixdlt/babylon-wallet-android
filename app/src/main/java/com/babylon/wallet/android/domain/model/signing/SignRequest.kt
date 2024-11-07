@@ -2,11 +2,11 @@ package com.babylon.wallet.android.domain.model.signing
 
 import com.babylon.wallet.android.utils.removeTrailingSlash
 import com.radixdlt.sargon.BagOfBytes
+import com.radixdlt.sargon.CompiledTransactionIntent
 import com.radixdlt.sargon.Hash
 import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.bagOfBytesOf
-import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
@@ -14,54 +14,49 @@ import rdx.works.core.toByteArray
 
 sealed interface SignRequest {
 
-    val dataToSign: BagOfBytes
-    val hashedDataToSign: Hash
+    fun intoHash(): Hash
 
-    class SignTransactionRequest(
-        intent: TransactionIntent
+    data class TransactionIntentSignRequest(
+        val transactionIntent: TransactionIntent,
     ) : SignRequest {
-        // Used when signing with Ledger
-        override val dataToSign: BagOfBytes = intent.compile().bytes
 
-        // Used when signing with device
-        override val hashedDataToSign: Hash = intent.hash().hash
-    }
+        val compiledTransactionIntent: CompiledTransactionIntent = transactionIntent.compile()
 
-    class SignSubintentRequest(
-        private val subintent: Subintent
-    ): SignRequest {
-        override val dataToSign: BagOfBytes
-            get() = subintent.compile().bytes
-
-        override val hashedDataToSign: Hash
-            get() = subintent.hash().hash
+        override fun intoHash(): Hash = transactionIntent.hash().hash
 
     }
 
-    class SignAuthChallengeRequest(
+    data class SubintentSignRequest(
+        val subintent: Subintent
+    ) : SignRequest {
+
+        override fun intoHash(): Hash = subintent.hash().hash
+
+    }
+
+    data class RolaSignRequest(
         val challengeHex: String,
         val origin: String,
         val dAppDefinitionAddress: String
     ) : SignRequest {
 
-        // TODO removeTrailingSlash is a hack to fix the issue with dapp login, it should be removed after logic is moved to sargon
-        override val dataToSign: BagOfBytes
-            get() {
-                require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
-                return bagOfBytesOf(
-                    byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) +
-                        challengeHex.hexToBagOfBytes().toByteArray() +
-                        dAppDefinitionAddress.length.toUByte().toByte() +
-                        dAppDefinitionAddress.toByteArray() +
-                        origin.removeTrailingSlash().toByteArray()
-                )
-            }
+        init {
+            require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
+        }
 
-        override val hashedDataToSign: Hash
-            get() = dataToSign.hash()
+        val payload: BagOfBytes = bagOfBytesOf(
+            byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) +
+                    challengeHex.hexToBagOfBytes().toByteArray() +
+                    dAppDefinitionAddress.length.toUByte().toByte() +
+                    dAppDefinitionAddress.toByteArray() +
+                    origin.removeTrailingSlash().toByteArray()
+        )
+
+        override fun intoHash(): Hash = payload.hash()
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52
         }
+
     }
 }
