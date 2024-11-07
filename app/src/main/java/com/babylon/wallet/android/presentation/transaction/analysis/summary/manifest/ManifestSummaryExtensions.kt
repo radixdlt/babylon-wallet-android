@@ -39,13 +39,19 @@ fun ManifestSummary.involvedResourceAddresses(): Set<ResourceOrNonFungible> {
     val withdrawAddresses = accountWithdrawals.values.flatten().map { withdraw ->
         when (withdraw) {
             is AccountWithdraw.Amount -> listOf(ResourceOrNonFungible.Resource(withdraw.resourceAddress))
-            is AccountWithdraw.Ids -> withdraw.ids.map { id ->
-                ResourceOrNonFungible.NonFungible(
-                    NonFungibleGlobalId(
-                        resourceAddress = withdraw.resourceAddress,
-                        nonFungibleLocalId = id
-                    )
-                )
+            is AccountWithdraw.Ids -> {
+                if (withdraw.ids.isEmpty()) {
+                    listOf(ResourceOrNonFungible.Resource(withdraw.resourceAddress))
+                } else {
+                    withdraw.ids.map { id ->
+                        ResourceOrNonFungible.NonFungible(
+                            NonFungibleGlobalId(
+                                resourceAddress = withdraw.resourceAddress,
+                                nonFungibleLocalId = id
+                            )
+                        )
+                    }
+                }
             }
         }
     }.flatten().toSet()
@@ -55,13 +61,17 @@ fun ManifestSummary.involvedResourceAddresses(): Set<ResourceOrNonFungible> {
             when (bounds) {
                 is SimpleResourceBounds.Fungible -> listOf(ResourceOrNonFungible.Resource(bounds.resourceAddress))
                 is SimpleResourceBounds.NonFungible -> {
-                    bounds.bounds.certainIds.map { id ->
-                        ResourceOrNonFungible.NonFungible(
-                            value = NonFungibleGlobalId(
-                                resourceAddress = bounds.resourceAddress,
-                                nonFungibleLocalId = id
+                    if (bounds.bounds.certainIds.isEmpty()) {
+                        listOf(ResourceOrNonFungible.Resource(bounds.resourceAddress))
+                    } else {
+                        bounds.bounds.certainIds.map { id ->
+                            ResourceOrNonFungible.NonFungible(
+                                value = NonFungibleGlobalId(
+                                    resourceAddress = bounds.resourceAddress,
+                                    nonFungibleLocalId = id
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
