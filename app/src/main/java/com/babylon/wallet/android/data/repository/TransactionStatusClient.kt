@@ -46,7 +46,7 @@ class TransactionStatusClient @Inject constructor(
         }.filterNotNull().cancellable()
     }
 
-    fun pollTransactionStatus(
+    fun startPollingForTransactionStatus(
         intentHash: TransactionIntentHash,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,

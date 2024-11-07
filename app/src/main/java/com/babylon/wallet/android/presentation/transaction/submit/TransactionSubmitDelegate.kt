@@ -92,6 +92,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 .then { summary ->
                     signAndSubmit(summary = summary)
                 }.onSuccess {
+                    approvalJob = null
+
                     val previewType = _state.value.previewType as? PreviewType.Transaction ?: return@onSuccess
                     clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTs)
                 }.onFailure { error ->
@@ -165,6 +167,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         ).then { notarizationResult ->
             transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
         }.onSuccess { notarization ->
+            _state.update { it.copy(isSubmitting = false) }
+
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.interactionId,
@@ -176,7 +180,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 )
             )
 
-            transactionStatusClient.pollTransactionStatus(
+            transactionStatusClient.startPollingForTransactionStatus(
                 intentHash = notarization.intentHash,
                 requestId = data.value.request.interactionId,
                 transactionType = data.value.request.transactionType,
@@ -185,9 +189,9 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
             // Respond to dApp
             if (!data.value.request.isInternal) {
-                respondToIncomingRequestUseCase.respondWithSuccess(
+                respondToIncomingRequestUseCase.respondWithSuccessTransactionIntent(
                     request = data.value.request,
-                    txId = notarization.intentHash.bech32EncodedTxId
+                    intentHash = notarization.intentHash
                 )
             }
         }.toUnitResult()
@@ -201,10 +205,18 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             manifest = subintentManifest,
             message = transactionRequest.unvalidatedManifestData.messageV2,
             maxProposerTimestamp = Timestamp.now()
-        ).onSuccess {
-            // TODO temporary
-            approvalJob = null
+        ).onSuccess { signedSubintent ->
             _state.update { it.copy(isSubmitting = false) }
+
+            // TODO poll subintent & send event
+
+            // Respond to dApp
+            if (!data.value.request.isInternal) {
+                respondToIncomingRequestUseCase.respondWithSuccessSubintent(
+                    request = data.value.request,
+                    signedSubintent = signedSubintent
+                )
+            }
         }
     }
 
