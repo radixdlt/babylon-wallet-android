@@ -209,11 +209,6 @@ class TransactionReviewViewModel @Inject constructor(
                     )
                 }
             }
-            else -> {
-                _state.update {
-                    it.copy(expiration = null)
-                }
-            }
         }
     }
 
