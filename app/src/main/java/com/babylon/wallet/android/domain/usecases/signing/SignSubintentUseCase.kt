@@ -41,40 +41,38 @@ class SignSubintentUseCase @Inject constructor(
         manifest: SubintentManifest,
         message: MessageV2,
         maxProposerTimestamp: Timestamp
-    ): Result<SignedSubintent> {
+    ): Result<SignedSubintent> = resolveSignersUseCase(summary = manifest.summary).then { signers ->
+        // TODO will be moved to sargon
         val epochRange = transactionRepository.getLedgerEpoch().getOrElse {
             return Result.failure(RadixWalletException.DappRequestException.GetEpoch)
         }.let { epoch ->
             epoch ..< epoch + TransactionConfig.EPOCH_WINDOW
         }
+        val subintent = Subintent.from(
+            networkId = networkId,
+            manifest = manifest,
+            message = message,
+            epochs = epochRange,
+            maxProposerTimestamp = maxProposerTimestamp
+        )
 
-        return resolveSignersUseCase(summary = manifest.summary).then { signers ->
-            val subintent = Subintent.from(
-                networkId = networkId,
-                manifest = manifest,
-                message = message,
-                epochs = epochRange,
-                maxProposerTimestamp = maxProposerTimestamp
+        accessFactorSourcesProxy.getSignatures(
+            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                signPurpose = SignPurpose.SignTransaction,
+                signers = signers,
+                signRequest = SignRequest.SignSubintentRequest(subintent = subintent)
             )
-
-            accessFactorSourcesProxy.getSignatures(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signPurpose = SignPurpose.SignTransaction,
-                    signers = signers,
-                    signRequest = SignRequest.SignSubintentRequest(subintent = subintent)
-                )
-            ).map { signaturesResult ->
-                val intentSignatures = signaturesResult.signersWithSignatures.values.map { IntentSignature.init(it) }
-                SignedSubintent(
-                    subintent = subintent,
-                    subintentSignatures = IntentSignatures(signatures = intentSignatures)
-                )
-            }.mapError { error ->
-                if (error is RejectedByUser || (error is FailedToSignTransaction && error.reason == UserRejectedSigningOfTransaction)) {
-                    RejectedByUser
-                } else {
-                    PrepareTransactionException.SignCompiledTransactionIntent(error)
-                }
+        ).map { signaturesResult ->
+            val intentSignatures = signaturesResult.signersWithSignatures.values.map { IntentSignature.init(it) }
+            SignedSubintent(
+                subintent = subintent,
+                subintentSignatures = IntentSignatures(signatures = intentSignatures)
+            )
+        }.mapError { error ->
+            if (error is RejectedByUser || (error is FailedToSignTransaction && error.reason == UserRejectedSigningOfTransaction)) {
+                RejectedByUser
+            } else {
+                PrepareTransactionException.SignCompiledTransactionIntent(error)
             }
         }
     }

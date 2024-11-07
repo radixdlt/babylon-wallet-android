@@ -201,7 +201,11 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             manifest = subintentManifest,
             message = transactionRequest.unvalidatedManifestData.messageV2,
             maxProposerTimestamp = Timestamp.now()
-        )
+        ).onSuccess {
+            // TODO temporary
+            approvalJob = null
+            _state.update { it.copy(isSubmitting = false) }
+        }
     }
 
     private suspend fun handleSignAndSubmitFailure(error: Throwable) {
