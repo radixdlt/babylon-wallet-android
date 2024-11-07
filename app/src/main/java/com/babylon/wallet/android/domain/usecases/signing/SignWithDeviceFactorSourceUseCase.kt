@@ -37,6 +37,8 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                                 ?: securityState.value.transactionSigning
 
                         is SignRequest.SignTransactionRequest -> securityState.value.transactionSigning
+
+                        is SignRequest.SignSubintentRequest -> securityState.value.transactionSigning
                     }
                     val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.value.id.asGeneral())
                     if (mnemonicExist.not()) return Result.failure(ProfileException.NoMnemonic)

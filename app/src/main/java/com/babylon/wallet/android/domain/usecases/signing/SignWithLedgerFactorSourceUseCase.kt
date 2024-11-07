@@ -53,6 +53,8 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 ledgerFactorSource = ledgerFactorSource,
                 request = signRequest
             )
+
+            is SignRequest.SignSubintentRequest -> TODO()
         }
     }
 
@@ -149,6 +151,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                         ?: securityState.transactionSigningFactorInstance
 
                 is SignRequest.SignTransactionRequest -> securityState.transactionSigningFactorInstance
+                is SignRequest.SignSubintentRequest -> securityState.transactionSigningFactorInstance
             }.publicKey
         }
 

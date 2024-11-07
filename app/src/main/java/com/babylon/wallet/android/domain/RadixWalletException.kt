@@ -36,11 +36,6 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class NetworkError(override val cause: Throwable? = null) : GatewayException(cause)
     }
 
-    data object DappMetadataEmpty : RadixWalletException()
-    data object SignatureCancelled : RadixWalletException()
-    data object FailedToCollectLedgerSignature : RadixWalletException()
-    data object FailedToCollectSigners : RadixWalletException()
-
     sealed class IncomingMessageException(cause: Throwable? = null) : RadixWalletException(cause = cause) {
         data class MessageParse(override val cause: Throwable? = null) : IncomingMessageException(cause)
         data class LedgerResponseParse(override val cause: Throwable? = null) : IncomingMessageException(cause)
@@ -436,10 +431,6 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
-        RadixWalletException.FailedToCollectLedgerSignature,
-        RadixWalletException.FailedToCollectSigners,
-        RadixWalletException.DappMetadataEmpty,
-        RadixWalletException.SignatureCancelled,
         is RadixWalletException.ResourceCouldNotBeResolvedInTransaction,
         is RadixWalletException.IncomingMessageException -> context.getString(
             R.string.common_somethingWentWrong

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.model.signing
 import com.babylon.wallet.android.utils.removeTrailingSlash
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Hash
+import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.bagOfBytesOf
 import com.radixdlt.sargon.extensions.bytes
@@ -24,6 +25,17 @@ sealed interface SignRequest {
 
         // Used when signing with device
         override val hashedDataToSign: Hash = intent.hash().hash
+    }
+
+    class SignSubintentRequest(
+        private val subintent: Subintent
+    ): SignRequest {
+        override val dataToSign: BagOfBytes
+            get() = subintent.compile().bytes
+
+        override val hashedDataToSign: Hash
+            get() = subintent.hash().hash
+
     }
 
     class SignAuthChallengeRequest(
