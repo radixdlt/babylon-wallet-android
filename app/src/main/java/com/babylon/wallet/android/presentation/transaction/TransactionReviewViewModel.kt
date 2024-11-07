@@ -196,7 +196,7 @@ class TransactionReviewViewModel @Inject constructor(
                         _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
                         seconds -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
-                    } while (seconds > 0.seconds)
+                    } while (seconds >= 0.seconds)
                 }
             }
             is SubintentExpiration.DelayAfterSign -> {
