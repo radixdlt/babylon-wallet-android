@@ -61,13 +61,13 @@ fun NavController.nonFungibleAssetDialog(
         Serializer.kotlinxSerializationJson.encodeToString(
             CountedAmounts(amounts = mapOf(resourceAddress.string to it))
         )
-    }.orEmpty()
+    }?.let { "&$ARG_AMOUNTS=$it" }
 
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
             "?${ARG_RESOURCE_ADDRESS}=${resourceAddress.string}" +
             "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-            "&$ARG_AMOUNTS=$countedAmounts" +
+            countedAmounts +
             localIdParam +
             underAccountAddressParam
     )
