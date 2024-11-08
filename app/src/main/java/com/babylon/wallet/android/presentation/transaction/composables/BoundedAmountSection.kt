@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.radixdlt.sargon.Decimal192
@@ -31,15 +31,15 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 
 @Composable
-fun CountedAmountSection(
+fun BoundedAmountSection(
     modifier: Modifier = Modifier,
-    countedAmount: CountedAmount?,
+    boundedAmount: BoundedAmount?,
     amountStyle: TextStyle = RadixTheme.typography.body1Header,
     isCompact: Boolean = false
 ) {
-    CountedAmountSection(
+    BoundedAmountSection(
         modifier = modifier,
-        countedAmount = countedAmount,
+        boundedAmount = boundedAmount,
         horizontalAlignment = Alignment.End,
         qualifier = { text, style, color ->
             QualifierText(
@@ -60,14 +60,14 @@ fun CountedAmountSection(
 }
 
 @Composable
-fun LargeCountedAmountSection(
+fun LargeBoundedAmountSection(
     modifier: Modifier = Modifier,
-    countedAmount: CountedAmount?,
+    boundedAmount: BoundedAmount?,
     symbol: String? = null
 ) {
-    CountedAmountSection(
+    BoundedAmountSection(
         modifier = modifier,
-        countedAmount = countedAmount,
+        boundedAmount = boundedAmount,
         horizontalAlignment = Alignment.CenterHorizontally,
         qualifier = { text, style, color ->
             QualifierText(
@@ -90,9 +90,9 @@ fun LargeCountedAmountSection(
 }
 
 @Composable
-fun CountedAmountSection(
+fun BoundedAmountSection(
     modifier: Modifier,
-    countedAmount: CountedAmount?,
+    boundedAmount: BoundedAmount?,
     horizontalAlignment: Alignment.Horizontal,
     qualifier: @Composable (String, TextStyle, Color) -> Unit,
     amount: @Composable (Decimal192) -> Unit,
@@ -102,36 +102,36 @@ fun CountedAmountSection(
         modifier = modifier,
         horizontalAlignment = horizontalAlignment
     ) {
-        when (countedAmount) {
-            is CountedAmount.Exact -> {
-                amount(countedAmount.amount)
+        when (boundedAmount) {
+            is BoundedAmount.Exact -> {
+                amount(boundedAmount.amount)
             }
-            is CountedAmount.Max -> {
+            is BoundedAmount.Max -> {
                 qualifier(
                     stringResource(id = R.string.interactionReview_noMoreThan),
                     RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 
-                amount(countedAmount.amount)
+                amount(boundedAmount.amount)
             }
-            is CountedAmount.Min -> {
+            is BoundedAmount.Min -> {
                 qualifier(
                     stringResource(id = R.string.interactionReview_atLeast),
                     RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 
-                amount(countedAmount.amount)
+                amount(boundedAmount.amount)
             }
-            is CountedAmount.Range -> {
+            is BoundedAmount.Range -> {
                 qualifier(
                     stringResource(id = R.string.interactionReview_atLeast),
                     RadixTheme.typography.body1Regular,
                     RadixTheme.colors.gray1
                 )
 
-                amount(countedAmount.minAmount)
+                amount(boundedAmount.minAmount)
 
                 qualifier(
                     stringResource(id = R.string.interactionReview_noMoreThan),
@@ -139,16 +139,16 @@ fun CountedAmountSection(
                     RadixTheme.colors.gray1
                 )
 
-                amount(countedAmount.maxAmount)
+                amount(boundedAmount.maxAmount)
             }
-            is CountedAmount.Predicted -> {
+            is BoundedAmount.Predicted -> {
                 qualifier(
                     stringResource(id = R.string.transactionReview_estimated),
                     RadixTheme.typography.body2Link,
                     RadixTheme.colors.gray1
                 )
 
-                amount(countedAmount.estimated)
+                amount(boundedAmount.estimated)
 
                 if (!isCompact) {
                     qualifier(
@@ -157,7 +157,7 @@ fun CountedAmountSection(
                         RadixTheme.colors.gray2
                     )
 
-                    amount(countedAmount.guaranteed)
+                    amount(boundedAmount.guaranteed)
                 }
             }
             else -> {}
@@ -168,9 +168,9 @@ fun CountedAmountSection(
 @Composable
 fun UnknownAmount(
     modifier: Modifier = Modifier,
-    amount: CountedAmount?
+    amount: BoundedAmount?
 ) {
-    val unknownAmount = remember(amount) { amount as? CountedAmount.Unknown }
+    val unknownAmount = remember(amount) { amount as? BoundedAmount.Unknown }
     unknownAmount?.let {
         WarningText(
             modifier = modifier,
@@ -235,12 +235,12 @@ private fun QualifierText(
 @Composable
 @Preview
 @UsesSampleValues
-private fun CountedAmountSectionPreview(
-    @PreviewParameter(CountedAmountSectionPreviewProvider::class) countedAmount: CountedAmount
+private fun BoundedAmountSectionPreview(
+    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) boundedAmount: BoundedAmount
 ) {
     RadixWalletPreviewTheme {
-        CountedAmountSection(
-            countedAmount = countedAmount
+        BoundedAmountSection(
+            boundedAmount = boundedAmount
         )
     }
 }
@@ -248,27 +248,27 @@ private fun CountedAmountSectionPreview(
 @Composable
 @Preview
 @UsesSampleValues
-private fun LargeCountedAmountSectionPreview(
-    @PreviewParameter(CountedAmountSectionPreviewProvider::class) countedAmount: CountedAmount
+private fun LargeBoundedAmountSectionPreview(
+    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) boundedAmount: BoundedAmount
 ) {
     RadixWalletPreviewTheme {
-        LargeCountedAmountSection(
-            countedAmount = countedAmount,
+        LargeBoundedAmountSection(
+            boundedAmount = boundedAmount,
             symbol = "SYMBOL"
         )
     }
 }
 
 @UsesSampleValues
-class CountedAmountSectionPreviewProvider : PreviewParameterProvider<CountedAmount> {
+class BoundedAmountSectionPreviewProvider : PreviewParameterProvider<BoundedAmount> {
 
-    override val values: Sequence<CountedAmount>
+    override val values: Sequence<BoundedAmount>
         get() = sequenceOf(
-            CountedAmount.Exact(Decimal192.sample()),
-            CountedAmount.Max(Decimal192.sample()),
-            CountedAmount.Min(Decimal192.sample()),
-            CountedAmount.Range(Decimal192.sample(), Decimal192.sample.other()),
-            CountedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192()),
-            CountedAmount.Unknown
+            BoundedAmount.Exact(Decimal192.sample()),
+            BoundedAmount.Max(Decimal192.sample()),
+            BoundedAmount.Min(Decimal192.sample()),
+            BoundedAmount.Range(Decimal192.sample(), Decimal192.sample.other()),
+            BoundedAmount.Predicted(Decimal192.sample(), 1, 0.75.toDecimal192()),
+            BoundedAmount.Unknown
         )
 }

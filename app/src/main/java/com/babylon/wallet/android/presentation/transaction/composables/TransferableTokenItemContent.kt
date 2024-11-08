@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -67,7 +67,7 @@ fun TransferableTokenItemContent(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            CountedAmountSection(countedAmount = transferableToken.amount)
+            BoundedAmountSection(boundedAmount = transferableToken.amount)
         }
         UnknownAmount(
             modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
@@ -89,7 +89,7 @@ private fun TransferableTokenWithExactAmountPreview() {
         TransferableTokenItemContent(
             transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                amount = CountedAmount.Exact("745".toDecimal192()),
+                amount = BoundedAmount.Exact("745".toDecimal192()),
                 isNewlyCreated = false
             ),
             shape = RectangleShape,
@@ -107,7 +107,7 @@ private fun TransferableTokenWithRangeAmountPreview() {
         TransferableTokenItemContent(
             transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                amount = CountedAmount.Range(minAmount = "123".toDecimal192(), maxAmount = "3564".toDecimal192()),
+                amount = BoundedAmount.Range(minAmount = "123".toDecimal192(), maxAmount = "3564".toDecimal192()),
                 isNewlyCreated = false
             ),
             shape = RectangleShape,
@@ -125,7 +125,7 @@ private fun TransferableTokenWithMinAmountPreview() {
         TransferableTokenItemContent(
             transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                amount = CountedAmount.Min("10.0396".toDecimal192()),
+                amount = BoundedAmount.Min("10.0396".toDecimal192()),
                 isNewlyCreated = false
             ),
             shape = RectangleShape,
@@ -143,7 +143,7 @@ private fun TransferableTokenWithMaxAmountPreview() {
         TransferableTokenItemContent(
             transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                amount = CountedAmount.Max("10.0396".toDecimal192()),
+                amount = BoundedAmount.Max("10.0396".toDecimal192()),
                 isNewlyCreated = false
             ),
             shape = RectangleShape,
@@ -161,7 +161,7 @@ private fun TransferableTokenWithGuaranteeAmountPreview() {
         TransferableTokenItemContent(
             transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                amount = CountedAmount.Predicted(
+                amount = BoundedAmount.Predicted(
                     estimated = 69.toDecimal192(),
                     instructionIndex = 4L,
                     offset = "1.8".toDecimal192()
@@ -183,7 +183,7 @@ private fun TransferableTokenWithUnknownAmountPreview() {
         TransferableTokenItemContent(
             transferableToken = Transferable.FungibleType.Token(
                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                amount = CountedAmount.Unknown,
+                amount = BoundedAmount.Unknown,
                 isNewlyCreated = false
             ),
             shape = RectangleShape,

@@ -3,7 +3,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary.execution
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
@@ -218,8 +218,8 @@ private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
 }
 
 private fun ResourceIndicator.Fungible.amount(defaultGuaranteeOffset: Decimal192) = when (val fungibleIndicator = indicator) {
-    is FungibleResourceIndicator.Guaranteed -> CountedAmount.Exact(fungibleIndicator.decimal)
-    is FungibleResourceIndicator.Predicted -> CountedAmount.Predicted(
+    is FungibleResourceIndicator.Guaranteed -> BoundedAmount.Exact(fungibleIndicator.decimal)
+    is FungibleResourceIndicator.Predicted -> BoundedAmount.Predicted(
         estimated = fungibleIndicator.predictedDecimal.value,
         instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
         offset = defaultGuaranteeOffset

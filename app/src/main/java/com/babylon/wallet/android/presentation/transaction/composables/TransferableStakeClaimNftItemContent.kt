@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
@@ -150,7 +150,7 @@ fun TransferableStakeClaimNftItemContent(
 fun TransferableStakeClaimItemHeader(
     modifier: Modifier = Modifier,
     transferableStakeClaim: Transferable.NonFungibleType.StakeClaim,
-    additionalAmount: CountedAmount?
+    additionalAmount: BoundedAmount?
 ) {
     Column(
         modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium)
@@ -188,7 +188,7 @@ fun TransferableStakeClaimItemHeader(
             additionalAmount?.let {
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-                CountedAmountSection(countedAmount = it)
+                BoundedAmountSection(boundedAmount = it)
             }
         }
 
@@ -203,7 +203,7 @@ fun TransferableStakeClaimItemHeader(
 @Preview(showBackground = true)
 @Composable
 private fun TransferableStakeClaimNftItemPreview(
-    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
+    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) amount: BoundedAmount
 ) {
     RadixWalletTheme {
         val asset = remember {

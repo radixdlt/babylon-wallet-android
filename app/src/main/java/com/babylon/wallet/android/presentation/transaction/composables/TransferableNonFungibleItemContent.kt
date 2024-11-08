@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
@@ -63,7 +63,7 @@ fun TransferableNonFungibleAmountContent(
     modifier: Modifier = Modifier,
     shape: Shape,
     transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
-    amount: CountedAmount,
+    amount: BoundedAmount,
     isHidden: Boolean,
     hiddenResourceWarning: String
 ) {
@@ -84,7 +84,7 @@ private fun TransferableNonFungibleContent(
     shape: Shape,
     transferableNFTCollection: Transferable.NonFungibleType.NFTCollection,
     nftItem: Resource.NonFungibleResource.Item?,
-    additionalAmount: CountedAmount?,
+    additionalAmount: BoundedAmount?,
     isHidden: Boolean,
     hiddenResourceWarning: String
 ) {
@@ -138,7 +138,7 @@ private fun TransferableNonFungibleContent(
             additionalAmount?.let {
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-                CountedAmountSection(countedAmount = it)
+                BoundedAmountSection(boundedAmount = it)
             }
         }
 
@@ -167,7 +167,7 @@ private fun TransferableNftItemPreview() {
         val nonFungibleAmount = remember(asset) {
             NonFungibleAmount(
                 certain = asset.collection.items,
-                additional = CountedAmount.Exact(10.toDecimal192())
+                additional = BoundedAmount.Exact(10.toDecimal192())
             )
         }
         TransferableNonFungibleItemContent(

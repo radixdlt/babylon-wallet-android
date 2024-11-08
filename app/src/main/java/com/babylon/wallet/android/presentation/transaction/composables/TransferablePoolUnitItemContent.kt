@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
@@ -90,7 +90,7 @@ fun TransferablePoolUnitItemContent(
                 )
             }
 
-            CountedAmountSection(countedAmount = transferablePoolUnit.amount)
+            BoundedAmountSection(boundedAmount = transferablePoolUnit.amount)
         }
 
         UnknownAmount(
@@ -151,8 +151,8 @@ fun TransferablePoolUnitItemContent(
                         Spacer(modifier = Modifier.weight(1f))
 
                         if (contributionPerResourceAmount != null) {
-                            CountedAmountSection(
-                                countedAmount = contributionPerResourceAmount,
+                            BoundedAmountSection(
+                                boundedAmount = contributionPerResourceAmount,
                                 isCompact = true
                             )
                         } else {
@@ -188,7 +188,7 @@ fun TransferablePoolUnitItemContent(
 @Preview
 @UsesSampleValues
 private fun TransferablePoolUnitItemPreview(
-    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
+    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) amount: BoundedAmount
 ) {
     RadixWalletPreviewTheme {
         TransferablePoolUnitItemContent(

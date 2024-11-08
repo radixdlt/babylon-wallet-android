@@ -11,7 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -44,7 +44,7 @@ fun TransactionTypeContent(
     onEditGuaranteesClick: () -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
-    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, BoundedAmount) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<Address>) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
@@ -110,7 +110,7 @@ fun TransactionTypeContent(
                         is Resource.FungibleResource -> onTransferableFungibleClick(
                             Transferable.FungibleType.Token(
                                 asset = Token(resource = resource),
-                                amount = CountedAmount.Exact(amount = resource.ownedAmount.orZero()),
+                                amount = BoundedAmount.Exact(amount = resource.ownedAmount.orZero()),
                                 isNewlyCreated = false
                             )
                         )
@@ -149,7 +149,7 @@ fun TransactionPreviewTypePreview() {
                         transferables = listOf(
                             Transferable.FungibleType.Token(
                                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                                amount = CountedAmount.Exact("745".toDecimal192()),
+                                amount = BoundedAmount.Exact("745".toDecimal192()),
                                 isNewlyCreated = true
                             )
                         )
@@ -161,7 +161,7 @@ fun TransactionPreviewTypePreview() {
                         transferables = listOf(
                             Transferable.FungibleType.Token(
                                 asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                                amount = CountedAmount.Exact("745".toDecimal192()),
+                                amount = BoundedAmount.Exact("745".toDecimal192()),
                                 isNewlyCreated = false
                             )
                         )

@@ -8,43 +8,43 @@ import rdx.works.core.domain.resources.Resource
 
 data class NonFungibleAmount(
     val certain: List<Resource.NonFungibleResource.Item>,
-    val additional: CountedAmount? = null
+    val additional: BoundedAmount? = null
 ) {
 
     init {
         additional?.let {
-            require(it !is CountedAmount.Predicted) { "Predicted additional amount not supported for non-fungibles" }
+            require(it !is BoundedAmount.Predicted) { "Predicted additional amount not supported for non-fungibles" }
         }
     }
 }
 
 @Serializable
-sealed interface CountedAmount {
+sealed interface BoundedAmount {
 
     @Serializable
-    data class Exact(@Contextual val amount: Decimal192) : CountedAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Exact(amount = calculation(amount))
+    data class Exact(@Contextual val amount: Decimal192) : BoundedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount = Exact(amount = calculation(amount))
     }
 
     @Serializable
     data class Range(
         @Contextual val minAmount: Decimal192,
         @Contextual val maxAmount: Decimal192
-    ) : CountedAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Range(
+    ) : BoundedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount = Range(
             minAmount = calculation(minAmount),
             maxAmount = calculation(maxAmount)
         )
     }
 
     @Serializable
-    data class Min(@Contextual val amount: Decimal192) : CountedAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Min(amount = calculation(amount))
+    data class Min(@Contextual val amount: Decimal192) : BoundedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount = Min(amount = calculation(amount))
     }
 
     @Serializable
-    data class Max(@Contextual val amount: Decimal192) : CountedAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Max(amount = calculation(amount))
+    data class Max(@Contextual val amount: Decimal192) : BoundedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount = Max(amount = calculation(amount))
     }
 
     @Serializable
@@ -52,22 +52,22 @@ sealed interface CountedAmount {
         @Contextual val estimated: Decimal192,
         val instructionIndex: Long,
         @Contextual val offset: Decimal192
-    ) : CountedAmount {
+    ) : BoundedAmount {
 
         val guaranteed: Decimal192
             get() = estimated * offset
 
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = copy(
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount = copy(
             estimated = calculation(estimated)
         )
     }
 
     @Serializable
-    data object Unknown : CountedAmount {
-        override fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount = Unknown
+    data object Unknown : BoundedAmount {
+        override fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount = Unknown
     }
 
-    fun just(decimal: Decimal192): CountedAmount = calculateWith { decimal }
+    fun just(decimal: Decimal192): BoundedAmount = calculateWith { decimal }
 
-    fun calculateWith(calculation: (Decimal192) -> Decimal192): CountedAmount
+    fun calculateWith(calculation: (Decimal192) -> Decimal192): BoundedAmount
 }

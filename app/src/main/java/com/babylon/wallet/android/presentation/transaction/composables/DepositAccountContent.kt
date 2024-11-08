@@ -32,7 +32,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -56,7 +56,7 @@ fun DepositAccountContent(
     onEditGuaranteesClick: () -> Unit,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
-    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, BoundedAmount) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Column(modifier = modifier) {

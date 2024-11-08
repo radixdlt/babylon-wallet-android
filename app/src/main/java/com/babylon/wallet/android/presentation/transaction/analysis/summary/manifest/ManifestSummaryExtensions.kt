@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest
 
 import com.babylon.wallet.android.domain.RadixWalletException.ResourceCouldNotBeResolvedInTransaction
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
@@ -146,7 +146,7 @@ private fun ManifestSummary.resolveWithdraws(
             is AccountWithdraw.Amount -> {
                 val asset = onLedgerAssets.find { it.resource.address == withdraw.resourceAddress } as? Asset.Fungible
                     ?: throw ResourceCouldNotBeResolvedInTransaction(withdraw.resourceAddress)
-                val amount = CountedAmount.Exact(withdraw.amount)
+                val amount = BoundedAmount.Exact(withdraw.amount)
 
                 when (asset) {
                     is Token -> Transferable.FungibleType.Token(
@@ -283,29 +283,29 @@ private fun SimpleResourceBounds.NonFungible.resolve(
 }
 
 private fun SimpleResourceBounds.Fungible.resolveAmount() = when (val bounds = bounds) {
-    is SimpleCountedResourceBounds.AtLeast -> CountedAmount.Min(bounds.amount)
-    is SimpleCountedResourceBounds.AtMost -> CountedAmount.Max(bounds.amount)
-    is SimpleCountedResourceBounds.Between -> CountedAmount.Range(
+    is SimpleCountedResourceBounds.AtLeast -> BoundedAmount.Min(bounds.amount)
+    is SimpleCountedResourceBounds.AtMost -> BoundedAmount.Max(bounds.amount)
+    is SimpleCountedResourceBounds.Between -> BoundedAmount.Range(
         minAmount = bounds.minAmount,
         maxAmount = bounds.maxAmount
     )
 
-    is SimpleCountedResourceBounds.Exact -> CountedAmount.Exact(bounds.amount)
-    is SimpleCountedResourceBounds.UnknownAmount -> CountedAmount.Unknown
+    is SimpleCountedResourceBounds.Exact -> BoundedAmount.Exact(bounds.amount)
+    is SimpleCountedResourceBounds.UnknownAmount -> BoundedAmount.Unknown
 }
 
 private fun SimpleResourceBounds.NonFungible.resolveAmount() = when (val bounds = bounds.additionalAmount) {
-    is SimpleCountedResourceBounds.AtLeast -> CountedAmount.Min(bounds.amount)
-    is SimpleCountedResourceBounds.AtMost -> CountedAmount.Max(bounds.amount)
-    is SimpleCountedResourceBounds.Between -> CountedAmount.Range(
+    is SimpleCountedResourceBounds.AtLeast -> BoundedAmount.Min(bounds.amount)
+    is SimpleCountedResourceBounds.AtMost -> BoundedAmount.Max(bounds.amount)
+    is SimpleCountedResourceBounds.Between -> BoundedAmount.Range(
         minAmount = bounds.minAmount,
         maxAmount = bounds.maxAmount
     )
 
-    is SimpleCountedResourceBounds.Exact -> CountedAmount.Exact(
+    is SimpleCountedResourceBounds.Exact -> BoundedAmount.Exact(
         amount = bounds.amount
     )
 
-    is SimpleCountedResourceBounds.UnknownAmount -> CountedAmount.Unknown
+    is SimpleCountedResourceBounds.UnknownAmount -> BoundedAmount.Unknown
     null -> null
 }

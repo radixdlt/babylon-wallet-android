@@ -14,7 +14,7 @@ import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransac
 import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummarizedManifest
@@ -296,7 +296,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         val allTransferables = deposits.map { it.transferables }.flatten()
 
         val guarantees = allTransferables.mapNotNull { transferable ->
-            val amount = ((transferable as? Transferable.FungibleType)?.amount as? CountedAmount.Predicted) ?: return@mapNotNull null
+            val amount = ((transferable as? Transferable.FungibleType)?.amount as? BoundedAmount.Predicted) ?: return@mapNotNull null
             val fungibleAsset = (transferable.asset as? Asset.Fungible) ?: return@mapNotNull null
 
             TransactionGuarantee(

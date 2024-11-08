@@ -13,7 +13,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toMinutes
@@ -84,7 +84,7 @@ class AssetDialogViewModel @Inject constructor(
                     is Asset.Fungible -> {
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
                         val amount = fungibleArgs.fungibleAmountOf(asset.resource.address)
-                        val resourceWithAmount = (amount as? CountedAmount.Exact)?.amount?.let {
+                        val resourceWithAmount = (amount as? BoundedAmount.Exact)?.amount?.let {
                             asset.resource.copy(ownedAmount = it)
                         } ?: asset.resource
 

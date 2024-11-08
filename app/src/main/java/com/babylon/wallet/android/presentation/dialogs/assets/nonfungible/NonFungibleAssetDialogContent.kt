@@ -38,8 +38,8 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.CountedAmount
-import com.babylon.wallet.android.presentation.transaction.composables.LargeCountedAmountSection
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -73,7 +73,7 @@ fun NonFungibleAssetDialogContent(
     asset: Asset.NonFungible?,
     price: AssetPrice.StakeClaimPrice?,
     isLoadingBalance: Boolean,
-    countedAmount: CountedAmount? = null,
+    boundedAmount: BoundedAmount? = null,
     isNewlyCreated: Boolean = false,
     accountContext: Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
@@ -244,10 +244,10 @@ fun NonFungibleAssetDialogContent(
                 )
             }
 
-            countedAmount?.let { amount ->
-                LargeCountedAmountSection(
+            boundedAmount?.let { amount ->
+                LargeBoundedAmountSection(
                     modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
-                    countedAmount = amount
+                    boundedAmount = amount
                 )
             }
 
@@ -489,7 +489,7 @@ private fun NonFungibleAssetDialogPreview() {
         NonFungibleAssetDialogContent(
             resourceAddress = ResourceAddress.sampleMainnet(),
             localId = NonFungibleLocalId.sample(),
-            countedAmount = CountedAmount.Range(minAmount = 10.toDecimal192(), 100.toDecimal192()),
+            boundedAmount = BoundedAmount.Range(minAmount = 10.toDecimal192(), 100.toDecimal192()),
             asset = NonFungibleCollection(
                 collection = Resource.NonFungibleResource.sampleMainnet(),
             ),

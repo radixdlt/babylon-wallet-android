@@ -117,7 +117,7 @@ fun AssetDialog(
                         accountContext = state.accountContext,
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
                         isLoadingBalance = isLoadingBalance,
-                        countedAmount = args?.amount,
+                        boundedAmount = args?.amount,
                         canBeHidden = state.canBeHidden,
                         onInfoClick = onInfoClick,
                         onClaimClick = viewModel::onClaimClick,

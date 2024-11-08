@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
@@ -85,7 +85,7 @@ fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            CountedAmountSection(countedAmount = transferableLSU.amount)
+            BoundedAmountSection(boundedAmount = transferableLSU.amount)
         }
         UnknownAmount(
             modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall),
@@ -131,8 +131,8 @@ fun TransferableLsuItemContent(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                CountedAmountSection(
-                    countedAmount = transferableLSU.xrdWorth,
+                BoundedAmountSection(
+                    boundedAmount = transferableLSU.xrdWorth,
                     isCompact = true
                 )
             }
@@ -149,14 +149,14 @@ fun TransferableLsuItemContent(
 @Preview
 @UsesSampleValues
 private fun TransferableLsuItemPreview(
-    @PreviewParameter(CountedAmountSectionPreviewProvider::class) amount: CountedAmount
+    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) amount: BoundedAmount
 ) {
     RadixWalletPreviewTheme {
         TransferableLsuItemContent(
             transferableLSU = Transferable.FungibleType.LSU(
                 asset = LiquidStakeUnit.sampleMainnet(),
                 amount = amount,
-                xrdWorth = CountedAmount.Max(Decimal192.sample())
+                xrdWorth = BoundedAmount.Max(Decimal192.sample())
             ),
             shape = RectangleShape
         )

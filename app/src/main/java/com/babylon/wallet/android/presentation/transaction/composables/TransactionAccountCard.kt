@@ -33,7 +33,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
@@ -66,7 +66,7 @@ fun TransactionAccountCard(
     hiddenResourceWarning: String,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
-    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, BoundedAmount) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -324,7 +324,7 @@ fun TransactionAccountCardWithTokenPreview() {
                 transferables = listOf(
                     Transferable.FungibleType.Token(
                         asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                        amount = CountedAmount.Exact(666.toDecimal192()),
+                        amount = BoundedAmount.Exact(666.toDecimal192()),
                         isNewlyCreated = false
                     )
                 )

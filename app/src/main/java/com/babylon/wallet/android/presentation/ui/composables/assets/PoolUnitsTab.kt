@@ -26,11 +26,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.model.displayTitleAsPoolUnit
-import com.babylon.wallet.android.presentation.transaction.composables.CountedAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.BoundedAmountSection
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -148,7 +148,7 @@ private fun PoolUnitItem(
         val resourcesWithAmounts = remember(poolUnit) {
             poolUnit.pool?.resources?.associateWith { resource ->
                 poolUnit.poolItemRedemptionValue(resource.address)?.let {
-                    CountedAmount.Exact(it)
+                    BoundedAmount.Exact(it)
                 }
             }.orEmpty().toImmutableMap()
         }
@@ -166,7 +166,7 @@ private fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
-    resources: ImmutableMap<Resource.FungibleResource, CountedAmount?>,
+    resources: ImmutableMap<Resource.FungibleResource, BoundedAmount?>,
     poolUnitPrice: AssetPrice.PoolUnitPrice?,
     isLoadingBalance: Boolean,
     isCompact: Boolean = true
@@ -196,8 +196,8 @@ fun PoolResourcesValues(
 
                 Column(horizontalAlignment = Alignment.End) {
                     resourceWithAmount.value?.let {
-                        CountedAmountSection(
-                            countedAmount = it,
+                        BoundedAmountSection(
+                            boundedAmount = it,
                             amountStyle = if (isCompact) {
                                 RadixTheme.typography.body1HighImportance
                             } else {

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -39,7 +39,7 @@ fun WithdrawAccountContent(
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
     onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
-    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, CountedAmount) -> Unit
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, BoundedAmount) -> Unit
 ) {
     if (from.isNotEmpty()) {
         Row(

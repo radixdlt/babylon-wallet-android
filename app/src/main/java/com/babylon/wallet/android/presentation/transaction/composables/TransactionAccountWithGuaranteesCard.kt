@@ -35,7 +35,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
@@ -259,7 +259,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                         involvedAccount = InvolvedAccount.Owned(Account.sampleMainnet()),
                         transferable = Transferable.FungibleType.Token(
                             asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                            amount = CountedAmount.Predicted(
+                            amount = BoundedAmount.Predicted(
                                 estimated = 10.toDecimal192(),
                                 instructionIndex = 1L,
                                 offset = 0.9.toDecimal192()

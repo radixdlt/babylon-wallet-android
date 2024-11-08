@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.model
 
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.orZero
@@ -18,26 +18,26 @@ sealed interface Transferable {
 
     sealed interface FungibleType : Transferable {
 
-        val amount: CountedAmount
+        val amount: BoundedAmount
 
         data class Token(
             override val asset: rdx.works.core.domain.assets.Token,
-            override val amount: CountedAmount,
+            override val amount: BoundedAmount,
             override val isNewlyCreated: Boolean = false
         ) : FungibleType
 
         data class LSU(
             override val asset: LiquidStakeUnit,
-            override val amount: CountedAmount,
+            override val amount: BoundedAmount,
             override val isNewlyCreated: Boolean = false,
-            val xrdWorth: CountedAmount
+            val xrdWorth: BoundedAmount
         ) : FungibleType
 
         data class PoolUnit(
             override val asset: rdx.works.core.domain.assets.PoolUnit,
-            override val amount: CountedAmount,
+            override val amount: BoundedAmount,
             override val isNewlyCreated: Boolean = false,
-            val contributions: Map<ResourceAddress, CountedAmount> = asset.pool?.resources.orEmpty().associate { poolItem ->
+            val contributions: Map<ResourceAddress, BoundedAmount> = asset.pool?.resources.orEmpty().associate { poolItem ->
                 poolItem.address to amount.calculateWith { decimal ->
                     asset.poolItemRedemptionValue(address = poolItem.address, poolUnitAmount = decimal).orZero()
                 }

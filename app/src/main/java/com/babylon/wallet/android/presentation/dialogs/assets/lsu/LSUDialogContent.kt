@@ -34,9 +34,9 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
-import com.babylon.wallet.android.presentation.model.CountedAmount
-import com.babylon.wallet.android.presentation.transaction.composables.CountedAmountSection
-import com.babylon.wallet.android.presentation.transaction.composables.LargeCountedAmountSection
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.BoundedAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -80,7 +80,7 @@ fun LSUDialogContent(
 ) {
     val resourceAddress = args.resourceAddress
     val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
-        ?: lsu?.fungibleResource?.ownedAmount?.let { CountedAmount.Exact(it) }
+        ?: lsu?.fungibleResource?.ownedAmount?.let { BoundedAmount.Exact(it) }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -94,11 +94,11 @@ fun LSUDialogContent(
     ) {
         LSUIconSection(lsu = lsu)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        LargeCountedAmountSection(
+        LargeBoundedAmountSection(
             modifier = Modifier
                 .widthIn(min = if (lsu == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
                 .radixPlaceholder(visible = lsu == null),
-            countedAmount = amount,
+            boundedAmount = amount,
             symbol = lsu?.resource?.symbol
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -138,7 +138,7 @@ fun LSUDialogContent(
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
-            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValueXRD()?.let { CountedAmount.Exact(it) }
+            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValueXRD()?.let { BoundedAmount.Exact(it) }
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
@@ -281,7 +281,7 @@ private fun LSUIconSection(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: CountedAmount?,
+    amount: BoundedAmount?,
     price: AssetPrice.LSUPrice?,
     isLoadingBalance: Boolean
 ) {
@@ -318,15 +318,15 @@ private fun LSUResourceValue(
                 contentAlignment = Alignment.CenterEnd
             ) {
                 amount?.let {
-                    CountedAmountSection(
-                        countedAmount = it,
+                    BoundedAmountSection(
+                        boundedAmount = it,
                         isCompact = true
                     )
                 }
             }
 
             val xrdPrice = remember(price, amount) {
-                (amount as? CountedAmount.Exact)?.amount?.let { amount ->
+                (amount as? BoundedAmount.Exact)?.amount?.let { amount ->
                     price?.xrdPrice(amount)
                 }
             }
@@ -383,7 +383,7 @@ private fun LSUDialogContentPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to CountedAmount.Exact(Decimal192.sample()))
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()))
             ),
             isLoadingBalance = false,
             onInfoClick = {}

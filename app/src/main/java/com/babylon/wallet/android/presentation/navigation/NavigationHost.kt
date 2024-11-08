@@ -43,7 +43,7 @@ import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
-import com.babylon.wallet.android.presentation.model.CountedAmount
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
@@ -255,7 +255,7 @@ fun NavigationHost(
             },
             onFungibleResourceClick = { resource, account ->
                 val resourceWithAmount = resource.ownedAmount?.let {
-                    mapOf(resource.address to CountedAmount.Exact(amount = it))
+                    mapOf(resource.address to BoundedAmount.Exact(amount = it))
                 }.orEmpty()
                 navController.fungibleAssetDialog(
                     resourceAddress = resource.address,
@@ -458,7 +458,7 @@ fun NavigationHost(
                     is SpendingAsset.Fungible -> navController.fungibleAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
                         amounts = spendingAsset.resource.ownedAmount?.let {
-                            mapOf(spendingAsset.resourceAddress to CountedAmount.Exact(amount = it))
+                            mapOf(spendingAsset.resourceAddress to BoundedAmount.Exact(amount = it))
                         }.orEmpty(),
                         underAccountAddress = fromAccount.address
                     )
