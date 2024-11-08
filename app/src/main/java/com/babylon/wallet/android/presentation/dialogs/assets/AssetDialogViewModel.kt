@@ -80,7 +80,7 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 withAllMetadata = true
             ).mapCatching { assets ->
-                val assetAndAmount = when (val asset = assets.first()) {
+                val asset = when (val asset = assets.first()) {
                     is Asset.Fungible -> {
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
                         val amount = fungibleArgs.fungibleAmountOf(asset.resource.address)
@@ -92,19 +92,17 @@ class AssetDialogViewModel @Inject constructor(
                             is LiquidStakeUnit -> asset.copy(fungibleResource = resourceWithAmount)
                             is PoolUnit -> asset.copy(stake = resourceWithAmount)
                             is Token -> asset.copy(resource = resourceWithAmount)
-                        } to amount
+                        }
                     }
 
                     is Asset.NonFungible -> {
-                        asset to null
+                        asset
                     }
                 }
-                val asset = assetAndAmount.first
 
                 _state.update {
                     it.copy(
                         asset = asset,
-//                        amount = assetAndAmount.second,
                         canBeHidden = canBeHidden(asset)
                     )
                 }

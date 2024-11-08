@@ -2,7 +2,6 @@ package rdx.works.core.domain.transaction
 
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.NotarizedTransaction
-import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.extensions.hash
 
 data class NotarizationResult(
@@ -11,5 +10,4 @@ data class NotarizationResult(
 ) {
 
     val intentHash = notarizedTransaction.signedIntent.intent.hash()
-
 }

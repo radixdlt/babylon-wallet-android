@@ -226,11 +226,6 @@ private fun ResourceIndicator.Fungible.amount(defaultGuaranteeOffset: Decimal192
     )
 }
 
-private fun ResourceIndicator.Fungible.amountDecimal() = when (val fungibleIndicator = indicator) {
-    is FungibleResourceIndicator.Guaranteed -> fungibleIndicator.decimal
-    is FungibleResourceIndicator.Predicted -> fungibleIndicator.predictedDecimal.value
-}
-
 private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonFungibleAmount {
     val onLedgerItems = asset.resource.items
 

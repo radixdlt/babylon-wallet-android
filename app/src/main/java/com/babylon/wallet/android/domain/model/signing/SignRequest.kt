@@ -23,7 +23,6 @@ sealed interface SignRequest {
         val compiledTransactionIntent: CompiledTransactionIntent = transactionIntent.compile()
 
         override fun intoHash(): Hash = transactionIntent.hash().hash
-
     }
 
     data class SubintentSignRequest(
@@ -31,7 +30,6 @@ sealed interface SignRequest {
     ) : SignRequest {
 
         override fun intoHash(): Hash = subintent.hash().hash
-
     }
 
     data class RolaSignRequest(
@@ -46,10 +44,10 @@ sealed interface SignRequest {
 
         val payload: BagOfBytes = bagOfBytesOf(
             byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) +
-                    challengeHex.hexToBagOfBytes().toByteArray() +
-                    dAppDefinitionAddress.length.toUByte().toByte() +
-                    dAppDefinitionAddress.toByteArray() +
-                    origin.removeTrailingSlash().toByteArray()
+                challengeHex.hexToBagOfBytes().toByteArray() +
+                dAppDefinitionAddress.length.toUByte().toByte() +
+                dAppDefinitionAddress.toByteArray() +
+                origin.removeTrailingSlash().toByteArray()
         )
 
         override fun intoHash(): Hash = payload.hash()
@@ -57,6 +55,5 @@ sealed interface SignRequest {
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52
         }
-
     }
 }

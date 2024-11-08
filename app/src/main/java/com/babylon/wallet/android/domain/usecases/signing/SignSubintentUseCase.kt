@@ -63,7 +63,6 @@ class SignSubintentUseCase @Inject constructor(
         }
     }
 
-
     private suspend fun createSubintent(
         manifest: SubintentManifest,
         message: String?,

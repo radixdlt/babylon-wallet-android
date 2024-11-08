@@ -55,7 +55,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
         val epochRange = transactionRepository.getLedgerEpoch().getOrElse {
             return Result.failure(RadixWalletException.DappRequestException.GetEpoch)
         }.let { epoch ->
-            epoch ..< epoch + TransactionConfig.EPOCH_WINDOW
+            epoch..<epoch + TransactionConfig.EPOCH_WINDOW
         }
 
         return sign(

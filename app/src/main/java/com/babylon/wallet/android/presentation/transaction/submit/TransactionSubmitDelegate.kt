@@ -28,7 +28,6 @@ import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.SignedSubintent
 import com.radixdlt.sargon.SubintentManifest
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees

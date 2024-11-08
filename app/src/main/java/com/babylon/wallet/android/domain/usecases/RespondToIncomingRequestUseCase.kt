@@ -12,13 +12,11 @@ import com.radixdlt.sargon.SessionId
 import com.radixdlt.sargon.SignedSubintent
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
-import com.radixdlt.sargon.WalletToDappInteractionPreAuthorizationResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSendTransactionResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionTransactionResponseItems
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toJson
 import com.radixdlt.sargon.newWalletToDappInteractionPreAuthorizationResponseItems
 import kotlinx.coroutines.CoroutineDispatcher
@@ -135,7 +133,6 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         )
         respondWithForAnyTransaction(request = request, payload = payload)
     }
-
 
     private suspend fun respondWithForAnyTransaction(
         request: DappToWalletInteraction,

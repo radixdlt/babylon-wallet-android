@@ -5,14 +5,10 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
-import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
-import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
