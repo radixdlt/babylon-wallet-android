@@ -392,6 +392,8 @@
   <string name="dAppRequest_validationOutcome_invalidRequestTitle">Invalid Request.</string>
   <string name="dAppRequest_validationOutcome_invalidRequestMessage">Could not validate the dApp.</string>
   <string name="dAppRequest_validationOutcome_invalidPersonaOrAccoubts">dApp specified an invalid Persona or Account</string>
+  <string name="dAppRequest_validationOutcome_preAuthorizationExpirationTooClose">Pre-authorization request was rejected because you weren\'t given enough time to review it.</string>
+  <string name="dAppRequest_validationOutcome_preAuthorizationExpired">Pre-authorization request was rejected because it has already expired.</string>
   <string name="dAppRequest_requestMalformedAlert_message">Request received from dApp is invalid.</string>
   <string name="dAppRequest_requestPersonaNotFoundAlert_message">dApp specified an invalid Persona.</string>
   <string name="dAppRequest_requestWrongNetworkAlert_message">dApp made a request intended for network %s, but you are currently connected to %s.</string>
@@ -1249,6 +1251,8 @@ Code: %s</string>
   <string name="homePageCarousel_continueOnDapp_text">You can now connect with your Radix Wallet. Tap to dismiss.</string>
   <string name="homePageCarousel_useDappsOnDesktop_title">Use dApps on Desktop</string>
   <string name="homePageCarousel_useDappsOnDesktop_text">Connect to dApps on the big screen with Radix Connector.</string>
+  <string name="homePageCarousel_discoverRadixDapps_title">Discover Radix dApps</string>
+  <string name="homePageCarousel_discoverRadixDapps_text">Start digging into Web3 dApps on the Radix Ecosystem directory.</string>
   <string name="scanQR_connectorExtension_instructions">Scan the QR code in the Radix Connector browser extension.</string>
   <string name="scanQR_connectorExtension_disclosureTitle">Don\'t have the Radix Connector browser extension?</string>
   <string name="scanQR_connectorExtension_disclosureItem1">Go to **wallet.radixdlt.com** in your desktop browser.</string>
