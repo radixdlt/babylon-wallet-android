@@ -262,7 +262,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
 
                 is RadixWalletException.LedgerCommunicationException,
-                is RadixWalletException.SignatureCancelled,
                 is RadixWalletException.DappRequestException.RejectedByUser -> {}
 
                 else -> {

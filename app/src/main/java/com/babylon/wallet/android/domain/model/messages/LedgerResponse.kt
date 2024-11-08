@@ -66,6 +66,11 @@ sealed class LedgerResponse(val id: String) : IncomingMessage {
         val signatures: List<SignatureOfSigner>
     ) : LedgerResponse(interactionId)
 
+    data class SignSubintentHashResponse(
+        val interactionId: String,
+        val signatures: List<SignatureOfSigner>
+    ) : LedgerResponse(interactionId)
+
     data class SignChallengeResponse(
         val interactionId: String,
         val signatures: List<SignatureOfSigner>

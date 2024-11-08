@@ -53,7 +53,7 @@ open class BuildDappResponseUseCase(private val accessFactorSourcesProxy: Access
 
         var allEntitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = entitiesWithSignatures
         if (challenge != null && entitiesWithSignatures.isEmpty()) {
-            val signRequest = SignRequest.SignAuthChallengeRequest(
+            val signRequest = SignRequest.RolaSignRequest(
                 challengeHex = challenge.hex,
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
@@ -266,7 +266,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
         metadata: DappToWalletInteraction.RequestMetadata,
         entities: List<ProfileEntity>
     ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
-        val signRequest = SignRequest.SignAuthChallengeRequest(
+        val signRequest = SignRequest.RolaSignRequest(
             challengeHex = challenge.hex,
             origin = metadata.origin,
             dAppDefinitionAddress = metadata.dAppDefinitionAddress
@@ -292,7 +292,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
         var entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap()
 
         if (request.oneTimeAccountsRequestItem?.challenge != null) {
-            val signRequest = SignRequest.SignAuthChallengeRequest(
+            val signRequest = SignRequest.RolaSignRequest(
                 challengeHex = request.oneTimeAccountsRequestItem.challenge.hex,
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = request.metadata.dAppDefinitionAddress

@@ -1,17 +1,17 @@
 package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.model.CountedAmount
@@ -26,15 +26,20 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.SignedSubintent
+import com.radixdlt.sargon.SubintentManifest
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
-import kotlinx.coroutines.CoroutineScope
+import com.radixdlt.sargon.extensions.then
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.logNonFatalException
+import rdx.works.core.mapError
+import rdx.works.core.toUnitResult
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -47,7 +52,8 @@ interface TransactionSubmitDelegate {
 
 @Suppress("LongParameterList")
 class TransactionSubmitDelegateImpl @Inject constructor(
-    private val signTransactionUseCase: SignTransactionUseCase,
+    private val signAndNotarizeTransactionUseCase: SignAndNotariseTransactionUseCase,
+    private val signSubintentUseCase: SignSubintentUseCase,
     private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -56,7 +62,6 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private val appEventBus: AppEventBus,
     private val transactionStatusClient: TransactionStatusClient,
     private val exceptionMessageProvider: ExceptionMessageProvider,
-    @ApplicationScope private val applicationScope: CoroutineScope
 ) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
     TransactionSubmitDelegate {
 
@@ -70,43 +75,31 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         // Do not re-submit while submission is in progress
         if (approvalJob != null) return
 
-        approvalJob = applicationScope.launch {
+        approvalJob = viewModelScope.launch {
             val currentNetworkId = getCurrentGatewayUseCase().network.id
             val manifestNetworkId = data.value.summary.networkId
 
             if (currentNetworkId != manifestNetworkId) {
-                approvalJob = null
-                val failure = RadixWalletException.DappRequestException.WrongNetwork(
-                    currentNetworkId = currentNetworkId,
-                    requestNetworkId = manifestNetworkId
+                onDismiss(
+                    exception = RadixWalletException.DappRequestException.WrongNetwork(
+                        currentNetworkId = currentNetworkId,
+                        requestNetworkId = manifestNetworkId
+                    )
                 )
-                onDismiss(exception = failure)
                 return@launch
             }
 
-            runCatching {
-                when (val summary = data.value.summary) {
-                    is Summary.FromExecution -> {
-                        val transactionPreviewType = (_state.value.previewType as? PreviewType.Transaction)
-                        val transactionManifest = (summary.manifest as? SummarizedManifest.Transaction)?.manifest
-                        if (transactionPreviewType != null && transactionManifest != null) {
-                            summary.copy(
-                                manifest = SummarizedManifest.Transaction(
-                                    transactionManifest.addAssertions(deposits = transactionPreviewType.to)
-                                )
-                            )
-                        } else {
-                            summary
-                        }
-                    }
-                    else -> summary
+            prepareSummary()
+                .then { summary ->
+                    signAndSubmit(summary = summary)
+                }.onSuccess {
+                    approvalJob = null
+
+                    val previewType = _state.value.previewType as? PreviewType.Transaction ?: return@onSuccess
+                    clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTs)
+                }.onFailure { error ->
+                    handleSignAndSubmitFailure(error)
                 }
-            }.onSuccess { summaryWithPotentialAssertions ->
-                // signAndSubmit(manifestToSubmit)
-            }.onFailure { error ->
-                logger.e(error)
-                return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
-            }
         }
     }
 
@@ -127,131 +120,173 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }
     }
 
-    private suspend fun signAndSubmit(manifest: TransactionManifest) {
-        val fees = _state.value.fees ?: return
+    private fun prepareSummary(): Result<Summary> = runCatching {
+        when (val summary = data.value.summary) {
+            is Summary.FromExecution -> {
+                val transactionPreviewType = (_state.value.previewType as? PreviewType.Transaction)
+                val transactionManifest = (summary.manifest as? SummarizedManifest.Transaction)?.manifest
+                if (transactionPreviewType != null && transactionManifest != null) {
+                    summary.copy(
+                        manifest = SummarizedManifest.Transaction(
+                            transactionManifest.addAssertions(deposits = transactionPreviewType.to)
+                        )
+                    )
+                } else {
+                    summary
+                }
+            }
+
+            else -> summary
+        }
+    }.mapError { RadixWalletException.PrepareTransactionException.ConvertManifest }
+
+    private suspend fun signAndSubmit(summary: Summary): Result<Unit> {
+        _state.update { it.copy(isSubmitting = true) }
+
+        return when (summary) {
+            is Summary.FromExecution -> when (summary.manifest) {
+                is SummarizedManifest.Subintent -> signAndSubmit(subintentManifest = summary.manifest.manifest)
+                is SummarizedManifest.Transaction -> signAndSubmit(transactionManifest = summary.manifest.manifest)
+            }
+            is Summary.FromStaticAnalysis -> signAndSubmit(subintentManifest = summary.manifest.manifest)
+        }.toUnitResult()
+    }
+
+    private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
+        val fees = _state.value.fees ?: error("Fees were not resolved")
         val transactionRequest = data.value.request
         val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
-        _state.update { it.copy(isSubmitting = true) }
+        return signAndNotarizeTransactionUseCase(
+            manifest = transactionManifest,
+            networkId = transactionRequest.unvalidatedManifestData.networkId,
+            message = transactionRequest.unvalidatedManifestData.message,
+            lockFee = fees.transactionFees.transactionFeeToLock,
+            tipPercentage = fees.transactionFees.tipPercentageForTransaction,
+            notarySecretKey = data.value.ephemeralNotaryPrivateKey,
+            feePayerAddress = feePayerAddress
+        ).then { notarizationResult ->
+            transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
+        }.onSuccess { notarization ->
+            _state.update { it.copy(isSubmitting = false) }
 
-//        signTransactionUseCase(
-//            request = SignTransactionUseCase.Request(
-//                manifest = manifest,
-//                networkId = data.value.transactionToReviewData.networkId,
-//                message = data.value.transactionToReviewData.message,
-//                lockFee = fees.transactionFees.transactionFeeToLock,
-//                tipPercentage = fees.transactionFees.tipPercentageForTransaction,
-//                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey,
-//                feePayerAddress = feePayerAddress
-//            )
-//        ).then { notarizationResult ->
-//            transactionRepository.submitTransaction(notarizationResult.notarizedTransaction)
-//                .map { notarizationResult }
-//        }.onSuccess { notarization ->
-//            data.update { it.copy(endEpoch = notarization.endEpoch) }
-//            _state.update { it.copy(isSubmitting = false) }
-//
-//            appEventBus.sendEvent(
-//                AppEvent.Status.Transaction.InProgress(
-//                    requestId = transactionRequest.interactionId,
-//                    transactionId = notarization.intentHash.bech32EncodedTxId,
-//                    isInternal = transactionRequest.isInternal,
-//                    blockUntilComplete = transactionRequest.blockUntilComplete,
-//                    isMobileConnect = transactionRequest.isMobileConnectRequest,
-//                    dAppName = _state.value.proposingDApp?.name
-//                )
-//            )
-//            transactionStatusClient.pollTransactionStatus(
-//                intentHash = notarization.intentHash,
-//                requestId = transactionRequest.interactionId,
-//                transactionType = transactionRequest.transactionType,
-//                endEpoch = notarization.endEpoch
-//            )
-//            // Send confirmation to the dApp that tx was submitted before status polling
-//            if (!transactionRequest.isInternal) {
-//                respondToIncomingRequestUseCase.respondWithSuccess(
-//                    request = transactionRequest,
-//                    txId = notarization.intentHash.bech32EncodedTxId
-//                )
-//            }
-//            val previewType = _state.value.previewType
-//            if (previewType is PreviewType.Transaction) {
-//                clearCachedNewlyCreatedEntitiesUseCase(previewType.newlyCreatedNFTs)
-//            }
-//        }.onFailure { throwable ->
-//            throwable.asRadixWalletException()?.let { radixWalletException ->
-//                handleSubmitFailure(transactionRequest, radixWalletException)
-//            }
-//        }
+            appEventBus.sendEvent(
+                AppEvent.Status.Transaction.InProgress(
+                    requestId = transactionRequest.interactionId,
+                    transactionId = notarization.intentHash.bech32EncodedTxId,
+                    isInternal = transactionRequest.isInternal,
+                    blockUntilComplete = transactionRequest.blockUntilComplete,
+                    isMobileConnect = transactionRequest.isMobileConnectRequest,
+                    dAppName = _state.value.proposingDApp?.name
+                )
+            )
+
+            transactionStatusClient.startPollingForTransactionStatus(
+                intentHash = notarization.intentHash,
+                requestId = data.value.request.interactionId,
+                transactionType = data.value.request.transactionType,
+                endEpoch = notarization.endEpoch
+            )
+
+            // Respond to dApp
+            if (!data.value.request.isInternal) {
+                respondToIncomingRequestUseCase.respondWithSuccessTransactionIntent(
+                    request = data.value.request,
+                    intentHash = notarization.intentHash
+                )
+            }
+        }.toUnitResult()
     }
 
-    private suspend fun handleSubmitFailure(
-        transactionRequest: TransactionRequest,
-        radixWalletException: RadixWalletException
-    ) {
-        if (radixWalletException.cause is ProfileException.SecureStorageAccess) {
-            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+    private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<SignedSubintent> {
+        val transactionRequest = data.value.request
+
+        return signSubintentUseCase(
+            manifest = subintentManifest,
+            message = transactionRequest.unvalidatedManifestData.plainMessage,
+            expiration = (transactionRequest.transactionType as TransactionType.PreAuthorized).expiration
+        ).onSuccess { signedSubintent ->
+            _state.update { it.copy(isSubmitting = false) }
+
+            // TODO poll subintent & send event
+
+            // Respond to dApp
+            if (!data.value.request.isInternal) {
+                respondToIncomingRequestUseCase.respondWithSuccessSubintent(
+                    request = data.value.request,
+                    signedSubintent = signedSubintent
+                )
+            }
         }
-        when (radixWalletException) {
-            // if signing rejected by user do not show any error dialog
-            is RadixWalletException.DappRequestException.RejectedByUser -> {
+    }
+
+    // TODO what about errors from sargon such as SubintentExpired.
+    private suspend fun handleSignAndSubmitFailure(error: Throwable) {
+        logger.e(error)
+        approvalJob = null
+
+        when (error) {
+            is ProfileException.SecureStorageAccess -> {
+                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                 _state.update { it.copy(isSubmitting = false) }
-                approvalJob = null
-                return
             }
 
-            is RadixWalletException.SignatureCancelled,
-            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent,
-            is RadixWalletException.LedgerCommunicationException -> {
-                logNonFatalException(radixWalletException)
+            // When rejected by user (signing with Ledger), we just need to stop the submit process.
+            // No need to report back to dApp, as the user can retry and no need to show an error.
+            // TODO what if user rejects locally, shouldn't we send back the status?
+            is RadixWalletException.DappRequestException.RejectedByUser -> {
+                _state.update { it.copy(isSubmitting = false) }
+            }
+
+            // These two kinds of errors should not report back to the dApp. The user can recover.
+            // Although the error should appear.
+            is RadixWalletException.LedgerCommunicationException,
+            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> {
+                logNonFatalException(error)
                 _state.update {
                     it.copy(
                         isSubmitting = false,
-                        error = TransactionErrorMessage(radixWalletException)
+                        error = TransactionErrorMessage(error)
                     )
                 }
-                approvalJob = null
-                return
             }
 
+            // Errors that need to be reported both to the user and back to the dApp. The user cannot recover.
+            // A fail event is fired.
             else -> {
-                reportFailure(radixWalletException)
+                _state.update {
+                    it.copy(
+                        isSubmitting = false,
+                        error = TransactionErrorMessage(error)
+                    )
+                }
+
+                if (!data.value.request.isInternal) {
+                    error.asRadixWalletException()?.let { radixWalletException ->
+                        radixWalletException.toDappWalletInteractionErrorType()?.let { walletErrorType ->
+                            respondToIncomingRequestUseCase.respondWithFailure(
+                                request = data.value.request,
+                                dappWalletInteractionErrorType = walletErrorType,
+                                message = radixWalletException.getDappMessage()
+                            )
+                        }
+                    }
+                }
+
                 appEventBus.sendEvent(
                     AppEvent.Status.Transaction.Fail(
-                        requestId = transactionRequest.interactionId,
+                        requestId = data.value.request.interactionId,
                         transactionId = "",
-                        isInternal = transactionRequest.isInternal,
-                        errorMessage = exceptionMessageProvider.throwableMessage(radixWalletException),
-                        blockUntilComplete = transactionRequest.blockUntilComplete,
-                        walletErrorType = radixWalletException.toDappWalletInteractionErrorType(),
-                        isMobileConnect = transactionRequest.isMobileConnectRequest,
+                        isInternal = data.value.request.isInternal,
+                        errorMessage = exceptionMessageProvider.throwableMessage(error),
+                        blockUntilComplete = data.value.request.blockUntilComplete,
+                        walletErrorType = error.toDappWalletInteractionErrorType(),
+                        isMobileConnect = data.value.request.isMobileConnectRequest,
                         dAppName = _state.value.proposingDApp?.name
                     )
                 )
             }
         }
-    }
-
-    private suspend fun reportFailure(error: Throwable) {
-        logNonFatalException(error)
-        logger.w(error)
-        _state.update {
-            it.copy(isSubmitting = false, error = TransactionErrorMessage(error))
-        }
-
-        if (data.value.request.isInternal) {
-            return
-        }
-        error.asRadixWalletException()?.let { radixWalletException ->
-            radixWalletException.toDappWalletInteractionErrorType()?.let { walletErrorType ->
-                respondToIncomingRequestUseCase.respondWithFailure(
-                    request = data.value.request,
-                    dappWalletInteractionErrorType = walletErrorType,
-                    message = radixWalletException.getDappMessage()
-                )
-            }
-        }
-        approvalJob = null
     }
 
     @Throws(CommonException::class)

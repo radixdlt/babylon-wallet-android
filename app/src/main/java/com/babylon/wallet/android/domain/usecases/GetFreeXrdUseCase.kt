@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig.TIP_PERCENTAGE
@@ -12,7 +12,6 @@ import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
-import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +25,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 class GetFreeXrdUseCase @Inject constructor(
-    private val signTransactionUseCase: SignTransactionUseCase,
+    private val signAndNotarizeTransactionUseCase: SignAndNotariseTransactionUseCase,
     private val transactionRepository: TransactionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
@@ -47,14 +46,8 @@ class GetFreeXrdUseCase @Inject constructor(
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
-                signTransactionUseCase(
-                    request = SignTransactionUseCase.Request(
-                        manifest = manifest,
-                        networkId = manifest.networkId,
-                        message = Message.None,
-                        lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
-                        tipPercentage = TIP_PERCENTAGE
-                    )
+                signAndNotarizeTransactionUseCase(
+                    manifest = manifest,
                 ).then { notarization ->
                     transactionRepository.submitTransaction(notarization.notarizedTransaction)
                         .map { notarization }

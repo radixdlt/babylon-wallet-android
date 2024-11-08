@@ -81,6 +81,17 @@ data class SignTransactionResponse(
 ) : LedgerInteractionResponse
 
 @Serializable
+@SerialName("signSubintentHash")
+data class SignSubintentHashResponse(
+    @SerialName("interactionId")
+    val interactionId: String,
+    @SerialName("success")
+    val success: List<SignatureOfSigner>? = null,
+    @SerialName("error")
+    val error: Error? = null
+) : LedgerInteractionResponse
+
+@Serializable
 @SerialName("signChallenge")
 data class SignChallengeResponse(
     @SerialName("interactionId")
@@ -172,6 +183,7 @@ fun LedgerInteractionResponse.toDomainModel(): IncomingMessage {
             is SignChallengeResponse -> toDomainModel()
             is SignTransactionResponse -> toDomainModel()
             is DeriveAndDisplayAddressResponse -> toDomainModel()
+            is SignSubintentHashResponse -> toDomainModel()
         }
     } catch (e: Exception) {
         throw RadixWalletException.IncomingMessageException.LedgerResponseParse(e)
@@ -181,6 +193,20 @@ fun LedgerInteractionResponse.toDomainModel(): IncomingMessage {
 private fun SignTransactionResponse.toDomainModel() =
     if (success != null) {
         LedgerResponse.SignTransactionResponse(
+            interactionId,
+            success.map { it.toDomainModel() }
+        )
+    } else {
+        LedgerResponse.LedgerErrorResponse(
+            interactionId = interactionId,
+            code = error?.code ?: LedgerErrorCode.Generic,
+            message = error?.message.orEmpty()
+        )
+    }
+
+private fun SignSubintentHashResponse.toDomainModel() =
+    if (success != null) {
+        LedgerResponse.SignSubintentHashResponse(
             interactionId,
             success.map { it.toDomainModel() }
         )

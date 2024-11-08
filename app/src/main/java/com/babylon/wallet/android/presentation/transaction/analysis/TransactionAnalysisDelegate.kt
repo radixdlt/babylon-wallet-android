@@ -19,7 +19,7 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.PreAuthToReview
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.secureRandom
+import com.radixdlt.sargon.extensions.random
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.flow.update
 import rdx.works.core.sargon.formatted
@@ -72,7 +72,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             instructions = manifestData.instructions,
             blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
             areInstructionsOriginatingFromHost = isInternal,
-            nonce = Nonce.secureRandom(),
+            nonce = Nonce.random(),
             notaryPublicKey = notary.toPublicKey()
         )
 
@@ -96,7 +96,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         val preAuthToReview = sargonOsManager.sargonOs.analysePreAuthPreview(
             instructions = manifestData.instructions,
             blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-            nonce = Nonce.secureRandom(),
+            nonce = Nonce.random(),
         )
 
         val profile = getProfileUseCase()

@@ -196,7 +196,7 @@ class TransactionReviewViewModel @Inject constructor(
                         _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
                         seconds -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
-                    } while (seconds > 0.seconds)
+                    } while (seconds >= 0.seconds)
                 }
             }
             is SubintentExpiration.DelayAfterSign -> {
@@ -207,11 +207,6 @@ class TransactionReviewViewModel @Inject constructor(
                             startsAfterSign = true
                         )
                     )
-                }
-            }
-            else -> {
-                _state.update {
-                    it.copy(expiration = null)
                 }
             }
         }
@@ -261,7 +256,6 @@ class TransactionReviewViewModel @Inject constructor(
         private val txSummary: Summary? = null,
         val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val signers: List<ProfileEntity> = emptyList(),
-        val endEpoch: ULong? = null,
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,
         val transactionFees: TransactionFees? = null
