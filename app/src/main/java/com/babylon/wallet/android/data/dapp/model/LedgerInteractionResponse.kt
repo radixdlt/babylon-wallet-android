@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException

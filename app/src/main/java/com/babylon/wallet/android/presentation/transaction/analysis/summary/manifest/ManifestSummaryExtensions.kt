@@ -207,64 +207,8 @@ private fun ManifestSummary.resolveDeposits(
 ): List<AccountWithTransferables> = accountDeposits.map { entry ->
     val specifiedTransferables = entry.value.specifiedResources.map { specifier ->
         when (specifier) {
-            is SimpleResourceBounds.Fungible -> {
-                val asset = onLedgerAssets.find { it.resource.address == specifier.resourceAddress } as? Asset.Fungible
-                    ?: throw ResourceCouldNotBeResolvedInTransaction(specifier.resourceAddress)
-
-                val amount = specifier.resolveAmount()
-
-                when (asset) {
-                    is Token -> Transferable.FungibleType.Token(
-                        asset = asset,
-                        amount = amount,
-                    )
-
-                    is LiquidStakeUnit -> Transferable.FungibleType.LSU(
-                        asset = asset,
-                        amount = amount,
-                        xrdWorth = amount.calculateWith { decimal ->
-                            asset.stakeValueXRD(lsu = decimal).orZero()
-                        }
-                    )
-
-                    is PoolUnit -> Transferable.FungibleType.PoolUnit(
-                        asset = asset,
-                        amount = amount
-                    )
-                }
-            }
-
-            is SimpleResourceBounds.NonFungible -> {
-                val asset = onLedgerAssets.find { it.resource.address == specifier.resourceAddress } as? Asset.NonFungible
-                    ?: throw ResourceCouldNotBeResolvedInTransaction(specifier.resourceAddress)
-
-                val certainItems = specifier.bounds.certainIds.map { id ->
-                    asset.resource.items.find { it.localId == id } ?: throw ResourceCouldNotBeResolvedInTransaction(
-                        specifier.resourceAddress,
-                        id
-                    )
-                }
-
-                val amount = when (val additionalAmount = specifier.resolveAmount()) {
-                    null -> NonFungibleAmount(certainItems)
-                    else -> NonFungibleAmount(
-                        certain = certainItems,
-                        additional = additionalAmount
-                    )
-                }
-
-                when (asset) {
-                    is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
-                        asset = asset,
-                        amount = amount
-                    )
-
-                    is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
-                        asset = asset,
-                        amount = amount
-                    )
-                }
-            }
+            is SimpleResourceBounds.Fungible -> specifier.resolve(onLedgerAssets)
+            is SimpleResourceBounds.NonFungible -> specifier.resolve(onLedgerAssets)
         }
     }
 
@@ -273,6 +217,69 @@ private fun ManifestSummary.resolveDeposits(
         transferables = specifiedTransferables,
         additionalTransferablesPresent = entry.value.unspecifiedResources == UnspecifiedResources.MAY_BE_PRESENT
     )
+}
+
+private fun SimpleResourceBounds.Fungible.resolve(
+    onLedgerAssets: List<Asset>,
+): Transferable.FungibleType {
+    val asset = onLedgerAssets.find { it.resource.address == resourceAddress } as? Asset.Fungible
+        ?: throw ResourceCouldNotBeResolvedInTransaction(resourceAddress)
+
+    val amount = resolveAmount()
+
+    return when (asset) {
+        is Token -> Transferable.FungibleType.Token(
+            asset = asset,
+            amount = amount,
+        )
+
+        is LiquidStakeUnit -> Transferable.FungibleType.LSU(
+            asset = asset,
+            amount = amount,
+            xrdWorth = amount.calculateWith { decimal ->
+                asset.stakeValueXRD(lsu = decimal).orZero()
+            }
+        )
+
+        is PoolUnit -> Transferable.FungibleType.PoolUnit(
+            asset = asset,
+            amount = amount
+        )
+    }
+}
+
+private fun SimpleResourceBounds.NonFungible.resolve(
+    onLedgerAssets: List<Asset>
+): Transferable.NonFungibleType {
+    val asset = onLedgerAssets.find { it.resource.address == resourceAddress } as? Asset.NonFungible
+        ?: throw ResourceCouldNotBeResolvedInTransaction(resourceAddress)
+
+    val certainItems = bounds.certainIds.map { id ->
+        asset.resource.items.find { it.localId == id } ?: throw ResourceCouldNotBeResolvedInTransaction(
+            resourceAddress,
+            id
+        )
+    }
+
+    val amount = when (val additionalAmount = resolveAmount()) {
+        null -> NonFungibleAmount(certainItems)
+        else -> NonFungibleAmount(
+            certain = certainItems,
+            additional = additionalAmount
+        )
+    }
+
+    return when (asset) {
+        is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
+            asset = asset,
+            amount = amount
+        )
+
+        is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
+            asset = asset,
+            amount = amount
+        )
+    }
 }
 
 private fun SimpleResourceBounds.Fungible.resolveAmount() = when (val bounds = bounds) {

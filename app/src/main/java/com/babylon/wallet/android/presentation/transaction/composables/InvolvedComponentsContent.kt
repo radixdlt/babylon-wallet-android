@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.animation.AnimatedVisibility

@@ -43,6 +43,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
 ) {
 
+    @Suppress("LongParameterList")
     suspend operator fun invoke(
         manifest: TransactionManifest,
         networkId: NetworkId = manifest.networkId,
@@ -81,6 +82,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     private suspend fun sign(
         networkId: NetworkId,
         manifest: TransactionManifest,
@@ -139,6 +141,7 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
         PrepareTransactionException.PrepareNotarizedTransaction(error)
     }
 
+    @Suppress("LongParameterList")
     private fun TransactionIntent.Companion.from(
         networkId: NetworkId,
         manifest: TransactionManifest,

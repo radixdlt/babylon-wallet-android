@@ -220,6 +220,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     }
 
     // TODO what about errors from sargon such as SubintentExpired.
+    @Suppress("NestedBlockDepth")
     private suspend fun handleSignAndSubmitFailure(error: Throwable) {
         logger.e(error)
         approvalJob = null

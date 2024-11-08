@@ -43,7 +43,7 @@ internal class ROLAPayloadTest {
                     (0 until 10).map { seed ->
                         val challenge = (origin.toByteArray() + accountAddress.toByteArray() + seed.toUByte().toByte()).toBagOfBytes()
                             .hash().bytes.bytes.toByteArray()
-                        val payloadHex = SignRequest.SignAuthChallengeRequest(challenge.toHexString(), origin, accountAddress).dataToSign.hex
+                        val payloadHex = SignRequest.RolaSignRequest(challenge.toHexString(), origin, accountAddress).payload.hex
                         val blakeHashOfPayload = payloadHex.hexToBagOfBytes().hash().hex
                         TestVector(payloadHex, blakeHashOfPayload, accountAddress, origin, challenge.toHexString())
                     }
@@ -57,14 +57,14 @@ internal class ROLAPayloadTest {
     fun `run tests for test vectors`() {
         testVectors.forEach { testVector ->
             Log.d("Test vector", testVector.toString())
-            val signRequest = SignRequest.SignAuthChallengeRequest(
+            val signRequest = SignRequest.RolaSignRequest(
                 challengeHex = testVector.challenge,
                 dAppDefinitionAddress = testVector.dAppDefinitionAddress,
                 origin = testVector.origin
             )
 
-            Assert.assertEquals(testVector.payloadToHash, signRequest.dataToSign.hex)
-            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.hashedDataToSign.hex)
+            Assert.assertEquals(testVector.payloadToHash, signRequest.payload.hex)
+            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.intoHash().hex)
         }
     }
 
