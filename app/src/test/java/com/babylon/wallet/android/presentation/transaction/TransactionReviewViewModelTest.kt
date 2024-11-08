@@ -280,7 +280,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 getProfileUseCase = getProfileUseCase,
                 manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser,
-                sargonOsManager = sargonOsManager
+                sargonOsManager = sargonOsManager,
+                dispatcher = coroutineDispatcher
             ),
             guarantees = TransactionGuaranteesDelegateImpl(),
             fees = TransactionFeesDelegateImpl(

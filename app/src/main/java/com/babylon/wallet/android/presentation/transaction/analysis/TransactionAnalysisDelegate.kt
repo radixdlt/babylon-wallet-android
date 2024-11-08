@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -21,7 +22,9 @@ import com.radixdlt.sargon.PreAuthToReview
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.random
 import com.radixdlt.sargon.os.SargonOsManager
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.formatted
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -33,7 +36,8 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val manifestSummaryToPreviewTypeAnalyser: ManifestSummaryToPreviewTypeAnalyser,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val sargonOsManager: SargonOsManager,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
@@ -68,13 +72,15 @@ class TransactionAnalysisDelegate @Inject constructor(
         isInternal: Boolean
     ): Result<Analysis> = runCatching {
         val notary = data.value.ephemeralNotaryPrivateKey
-        val transactionToReview = sargonOsManager.sargonOs.analyseTransactionPreview(
-            instructions = manifestData.instructions,
-            blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-            areInstructionsOriginatingFromHost = isInternal,
-            nonce = Nonce.random(),
-            notaryPublicKey = notary.toPublicKey()
-        )
+        val transactionToReview = withContext(dispatcher) {
+            sargonOsManager.sargonOs.analyseTransactionPreview(
+                instructions = manifestData.instructions,
+                blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
+                areInstructionsOriginatingFromHost = isInternal,
+                nonce = Nonce.random(),
+                notaryPublicKey = notary.toPublicKey()
+            )
+        }
 
         val profile = getProfileUseCase()
         val summary = Summary.FromExecution(
@@ -93,11 +99,13 @@ class TransactionAnalysisDelegate @Inject constructor(
     private suspend fun analysePreAuthTransaction(
         manifestData: UnvalidatedManifestData,
     ): Result<Analysis> = runCatching {
-        val preAuthToReview = sargonOsManager.sargonOs.analysePreAuthPreview(
-            instructions = manifestData.instructions,
-            blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-            nonce = Nonce.random(),
-        )
+        val preAuthToReview = withContext(dispatcher) {
+            sargonOsManager.sargonOs.analysePreAuthPreview(
+                instructions = manifestData.instructions,
+                blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
+                nonce = Nonce.random(),
+            )
+        }
 
         val profile = getProfileUseCase()
 
