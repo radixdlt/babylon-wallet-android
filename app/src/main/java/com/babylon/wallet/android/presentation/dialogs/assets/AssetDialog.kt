@@ -107,7 +107,7 @@ fun AssetDialog(
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
-                    val args = state.args as? AssetDialogArgs.NFT
+                    val args = state.args as? AssetDialogArgs.NonFungible
                     NonFungibleAssetDialogContent(
                         resourceAddress = state.args.resourceAddress,
                         localId = args?.localId,
@@ -117,6 +117,7 @@ fun AssetDialog(
                         accountContext = state.accountContext,
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
                         isLoadingBalance = isLoadingBalance,
+                        boundedAmount = args?.amount,
                         canBeHidden = state.canBeHidden,
                         onInfoClick = onInfoClick,
                         onClaimClick = viewModel::onClaimClick,
@@ -135,7 +136,7 @@ fun AssetDialog(
                         onInfoClick = onInfoClick
                     )
 
-                    is AssetDialogArgs.NFT -> NonFungibleAssetDialogContent(
+                    is AssetDialogArgs.NonFungible -> NonFungibleAssetDialogContent(
                         resourceAddress = state.args.resourceAddress,
                         localId = args.localId,
                         asset = null,

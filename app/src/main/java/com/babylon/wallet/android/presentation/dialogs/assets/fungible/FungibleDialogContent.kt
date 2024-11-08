@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,13 +33,14 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
@@ -46,10 +48,10 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
 import com.radixdlt.sargon.samples.sample
-import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
@@ -72,7 +74,8 @@ fun FungibleDialogContent(
 ) {
     val resourceAddress = args.resourceAddress
     val isNewlyCreated = args.isNewlyCreated
-    val amount = args.fungibleAmountOf(resourceAddress) ?: token?.resource?.ownedAmount
+    val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
+        ?: remember(token) { token?.resource?.ownedAmount?.let { BoundedAmount.Exact(it) } }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -89,12 +92,12 @@ fun FungibleDialogContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             if (amount != null) {
-                TokenBalance(
+                LargeBoundedAmountSection(
                     modifier = Modifier
-                        .fillMaxWidth(fraction = if (token?.resource == null) 0.5f else 1f)
-                        .radixPlaceholder(visible = token?.resource == null),
-                    amount = amount,
-                    symbol = token?.resource?.symbol.orEmpty(),
+                        .widthIn(min = if (token == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
+                        .radixPlaceholder(visible = token == null),
+                    boundedAmount = amount,
+                    symbol = token?.resource?.symbol
                 )
 
                 val fiatPrice = tokenPrice?.price
@@ -254,7 +257,7 @@ private fun FungibleIconSection(
 @UsesSampleValues
 @Preview(showBackground = false)
 @Composable
-private fun InfoPreview() {
+private fun FungibleDialogContentPreview() {
     RadixWalletPreviewTheme {
         FungibleDialogContent(
             token = Token(
@@ -269,7 +272,7 @@ private fun InfoPreview() {
                             values = listOf(),
                         )
                     )
-                ),
+                )
             ),
             tokenPrice = AssetPrice.TokenPrice(
                 asset = Token(
@@ -284,7 +287,7 @@ private fun InfoPreview() {
                 resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
                 isNewlyCreated = false,
                 underAccountAddress = null,
-                amounts = mapOf(ResourceAddress.sampleMainnet.xrd.toString() to Decimal192.sample.invoke())
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()))
             ),
             isLoadingBalance = false,
             canBeHidden = true,

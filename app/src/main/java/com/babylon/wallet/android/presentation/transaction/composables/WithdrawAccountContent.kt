@@ -22,8 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.radixdlt.sargon.ResourceIdentifier
@@ -34,10 +35,11 @@ import rdx.works.core.domain.resources.Resource
 @Composable
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
-    from: ImmutableList<AccountWithTransferableResources>,
+    from: ImmutableList<AccountWithTransferables>,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, BoundedAmount) -> Unit
 ) {
     if (from.isNotEmpty()) {
         Row(
@@ -80,7 +82,8 @@ fun WithdrawAccountContent(
                     hiddenResourceIds = hiddenResourceIds,
                     hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
                     onTransferableFungibleClick = onTransferableFungibleClick,
-                    onTransferableNonFungibleClick = onNonTransferableFungibleClick
+                    onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                    onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
                 )
 
                 if (index != from.lastIndex) {

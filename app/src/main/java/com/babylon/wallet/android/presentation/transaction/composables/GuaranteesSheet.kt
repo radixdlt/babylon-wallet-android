@@ -19,10 +19,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
+import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -31,6 +33,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
@@ -40,9 +43,9 @@ fun GuaranteesSheet(
     state: State.Sheet.CustomizeGuarantees,
     onClose: () -> Unit,
     onApplyClick: () -> Unit,
-    onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
-    onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
-    onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
+    onGuaranteeValueChanged: (GuaranteeItem, String) -> Unit,
+    onGuaranteeValueIncreased: (GuaranteeItem) -> Unit,
+    onGuaranteeValueDecreased: (GuaranteeItem) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     Column(
@@ -93,28 +96,27 @@ fun GuaranteesSheet(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
             }
-            items(state.accountsWithPredictedGuarantees) { accountWithCustomizableGuarantee ->
+            items(state.guarantees) { guaranteeItem ->
                 GrayBackgroundWrapper {
                     TransactionAccountWithGuaranteesCard(
                         modifier = Modifier
                             .padding(top = RadixTheme.dimensions.paddingLarge)
                             .padding(bottom = RadixTheme.dimensions.paddingSmall)
                             .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                        accountWithGuarantee = accountWithCustomizableGuarantee,
+                        guaranteeItem = guaranteeItem,
                         onGuaranteePercentChanged = {
-                            onGuaranteeValueChanged(accountWithCustomizableGuarantee, it)
+                            onGuaranteeValueChanged(guaranteeItem, it)
                         },
                         onGuaranteePercentIncreased = {
-                            onGuaranteeValueIncreased(accountWithCustomizableGuarantee)
+                            onGuaranteeValueIncreased(guaranteeItem)
                         },
                         onGuaranteePercentDecreased = {
-                            onGuaranteeValueDecreased(accountWithCustomizableGuarantee)
+                            onGuaranteeValueDecreased(guaranteeItem)
                         },
                     )
                 }
             }
             item {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 RadixPrimaryButton(
                     text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guarantees_applyButtonText),
                     onClick = {
@@ -122,8 +124,8 @@ fun GuaranteesSheet(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    enabled = true
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    enabled = state.isSubmitEnabled
                 )
             }
         }
@@ -138,15 +140,18 @@ private fun GuaranteesSheetPreview() {
         GuaranteesSheet(
             state = State.Sheet.CustomizeGuarantees(
                 listOf(
-                    AccountWithPredictedGuarantee.Owned(
-                        account = Account.sampleMainnet(),
-                        transferable = TransferableAsset.Fungible.Token(
-                            amount = 10.toDecimal192(),
-                            resource = Resource.FungibleResource.sampleMainnet(),
+                    GuaranteeItem(
+                        account = InvolvedAccount.Owned(Account.sampleMainnet()),
+                        transferable = Transferable.FungibleType.Token(
+                            asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                            amount = BoundedAmount.Predicted(
+                                estimated = 10.toDecimal192(),
+                                instructionIndex = 1L,
+                                offset = 1.toDecimal192()
+                            ),
                             isNewlyCreated = false
                         ),
-                        instructionIndex = 1L,
-                        guaranteeAmountString = "100"
+                        typedPercent = "90"
                     )
                 )
             ),

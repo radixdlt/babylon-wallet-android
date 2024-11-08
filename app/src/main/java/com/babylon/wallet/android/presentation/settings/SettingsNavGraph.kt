@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
+import com.babylon.wallet.android.presentation.dialogs.assets.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
@@ -64,7 +64,7 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.fungibleAssetDialog(resourceAddress = resource.address)
             },
             onNonFungibleClick = { resource ->
-                navController.nftAssetDialog(resourceAddress = resource.address)
+                navController.nonFungibleAssetDialog(resourceAddress = resource.address)
             }
         )
         preferencesNavGraph(navController)

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -31,9 +32,10 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.GuaranteeAssertion
-import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.radixdlt.sargon.Account
@@ -49,11 +51,12 @@ import rdx.works.core.domain.resources.Resource
 @Composable
 fun DepositAccountContent(
     modifier: Modifier = Modifier,
-    to: ImmutableList<AccountWithTransferableResources>,
+    to: ImmutableList<AccountWithTransferables>,
     hiddenResourceIds: PersistentList<ResourceIdentifier>,
     onEditGuaranteesClick: () -> Unit,
-    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
-    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
+    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
+    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit,
+    onTransferableNonFungibleByAmountClick: (asset: Transferable.NonFungibleType, BoundedAmount) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Column(modifier = modifier) {
@@ -99,7 +102,8 @@ fun DepositAccountContent(
                         hiddenResourceIds = hiddenResourceIds,
                         hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_deposit),
                         onTransferableFungibleClick = onTransferableFungibleClick,
-                        onTransferableNonFungibleClick = onNonTransferableFungibleClick
+                        onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+                        onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
                     )
 
                     if (!lastItem) {
@@ -107,7 +111,10 @@ fun DepositAccountContent(
                     }
                 }
 
-                if (to.hasCustomizableGuarantees()) {
+                val hasCustomisableGuarantees = remember(to) {
+                    to.any { it.hasCustomisableGuarantees() }
+                }
+                if (hasCustomisableGuarantees) {
                     RadixTextButton(
                         modifier = Modifier
                             .padding(top = RadixTheme.dimensions.paddingXSmall),
@@ -118,10 +125,6 @@ fun DepositAccountContent(
             }
         }
     }
-}
-
-private fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->
-    accountWithTransferableResources.resources.any { it.guaranteeAssertion is GuaranteeAssertion.ForAmount }
 }
 
 @Composable
@@ -157,15 +160,16 @@ fun DepositAccountPreview() {
     RadixWalletTheme {
         DepositAccountContent(
             to = listOf(
-                AccountWithTransferableResources.Owned(
-                    account = Account.sampleMainnet(),
-                    resources = emptyList()
+                AccountWithTransferables(
+                    account = InvolvedAccount.Owned(Account.sampleMainnet()),
+                    transferables = emptyList()
                 )
             ).toPersistentList(),
             hiddenResourceIds = persistentListOf(),
             onEditGuaranteesClick = {},
             onTransferableFungibleClick = { },
-            onNonTransferableFungibleClick = { _, _ -> }
+            onTransferableNonFungibleItemClick = { _, _ -> },
+            onTransferableNonFungibleByAmountClick = { _, _ -> }
         )
     }
 }

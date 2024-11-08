@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.resourceAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
@@ -17,6 +16,7 @@ import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
+import rdx.works.core.sargon.resourceAddress
 import javax.inject.Inject
 
 class ResolveAssetsFromAddressUseCase @Inject constructor(

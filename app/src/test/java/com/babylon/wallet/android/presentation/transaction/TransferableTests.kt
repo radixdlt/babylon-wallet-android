@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
@@ -22,43 +23,43 @@ class TransferableTests {
     fun `test ordering of transferable accounts with assets`() {
         val ownedAccounts = listOf(account1, account2)
         val input = listOf(
-            AccountWithTransferableResources.Other(
-                address = other[1],
-                resources = listOf()
+            AccountWithTransferables(
+                account = InvolvedAccount.Other(other[1]),
+                transferables = listOf()
             ),
-            AccountWithTransferableResources.Other(
-                address = other[0],
-                resources = listOf()
+            AccountWithTransferables(
+                account = InvolvedAccount.Other(other[0]),
+                transferables = listOf()
             ),
-            AccountWithTransferableResources.Owned(
-                ownedAccounts[1],
-                resources = listOf()
+            AccountWithTransferables(
+                account = InvolvedAccount.Owned(ownedAccounts[1]),
+                transferables = listOf()
             ),
-            AccountWithTransferableResources.Owned(
-                ownedAccounts[0],
-                resources = listOf()
+            AccountWithTransferables(
+                account = InvolvedAccount.Owned(ownedAccounts[0]),
+                transferables = listOf()
             )
         )
 
-        val output = input.sortedWith(AccountWithTransferableResources.Companion.Sorter(ownedAccounts))
+        val output = input.sortedWith(AccountWithTransferables.Companion.Sorter(ownedAccounts))
 
         assertEquals(
             listOf(
-                AccountWithTransferableResources.Owned(
-                    ownedAccounts[0],
-                    resources = listOf()
+                AccountWithTransferables(
+                    account = InvolvedAccount.Owned(ownedAccounts[0]),
+                    transferables = listOf()
                 ),
-                AccountWithTransferableResources.Owned(
-                    ownedAccounts[1],
-                    resources = listOf()
+                AccountWithTransferables(
+                    account = InvolvedAccount.Owned(ownedAccounts[1]),
+                    transferables = listOf()
                 ),
-                AccountWithTransferableResources.Other(
-                    address = other[1],
-                    resources = listOf()
+                AccountWithTransferables(
+                    account = InvolvedAccount.Other(other[1]),
+                    transferables = listOf()
                 ),
-                AccountWithTransferableResources.Other(
-                    address = other[0],
-                    resources = listOf()
+                AccountWithTransferables(
+                    account = InvolvedAccount.Other(other[0]),
+                    transferables = listOf()
                 )
             ),
             output

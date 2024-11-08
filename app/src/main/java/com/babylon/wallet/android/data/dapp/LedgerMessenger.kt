@@ -31,6 +31,13 @@ interface LedgerMessenger {
         displayHashOnLedgerDisplay: Boolean = true
     ): Result<LedgerResponse.SignTransactionResponse>
 
+    suspend fun signSubintentHashRequest(
+        interactionId: String,
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
+        subintentHash: String,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice
+    ): Result<LedgerResponse.SignSubintentHashResponse>
+
     suspend fun sendDerivePublicKeyRequest(
         interactionId: String,
         keyParameters: List<LedgerInteractionRequest.KeyParameters>,
@@ -102,6 +109,28 @@ class LedgerMessengerImpl @Inject constructor(
             displayHash = displayHashOnLedgerDisplay,
             compiledTransactionIntent = compiledTransactionIntent,
             mode = LedgerInteractionRequest.SignTransaction.Mode.Summary
+        )
+        return makeLedgerRequest(request = ledgerRequest, onError = {
+            RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code)
+        })
+    }
+
+    override suspend fun signSubintentHashRequest(
+        interactionId: String,
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
+        subintentHash: String,
+        ledgerDevice: LedgerInteractionRequest.LedgerDevice,
+    ): Result<LedgerResponse.SignSubintentHashResponse> {
+        val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignSubintentHash(
+            interactionId = interactionId,
+            signers = hdPublicKeys.map {
+                LedgerInteractionRequest.KeyParameters(
+                    Curve.from(it.publicKey),
+                    it.derivationPath.string
+                )
+            },
+            ledgerDevice = ledgerDevice,
+            subintentHash = subintentHash
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
             RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(it.code)

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,42 +49,22 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 @Composable
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
-    transactionType: State.TransactionType,
-    isRawManifestToggleVisible: Boolean,
+    isPreAuthorization: Boolean,
+    isRawManifestPreviewable: Boolean,
     isRawManifestVisible: Boolean,
     proposingDApp: State.ProposingDApp?,
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
-    TransactionPreviewHeader(
-        modifier = modifier,
-        title = stringResource(id = transactionType.titleRes()),
-        proposingDApp = proposingDApp,
-        actions = {
-            if (transactionType == State.TransactionType.Regular) {
-                TransactionRawManifestToggle(
-                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
-                    isToggleVisible = isRawManifestToggleVisible,
-                    isToggleOn = isRawManifestVisible,
-                    onRawManifestClick = onRawManifestClick
-                )
-            }
-        },
-        onBackClick = onBackClick,
-        scrollBehavior = scrollBehavior
+    val title = stringResource(
+        id = if (isPreAuthorization) {
+            R.string.preAuthorizationReview_title
+        } else {
+            R.string.transactionReview_title
+        }
     )
-}
-
-@Composable
-private fun TransactionPreviewHeader(
-    modifier: Modifier = Modifier,
-    title: String,
-    proposingDApp: State.ProposingDApp?,
-    actions: @Composable RowScope.() -> Unit,
-    onBackClick: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior
-) {
+    val isToggleButtonVisible = !isPreAuthorization && isRawManifestPreviewable
     TwoRowsTopAppBar(
         modifier = modifier,
         title = {
@@ -179,7 +158,18 @@ private fun TransactionPreviewHeader(
                 )
             }
         },
-        actions = actions,
+        actions = {
+            if (isToggleButtonVisible) {
+                TransactionRawManifestToggle(
+                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
+                    isToggleOn = isRawManifestVisible,
+                    onRawManifestClick = onRawManifestClick
+                )
+            } else {
+                // Need to add the same space as the navigation icon to center the title
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault + 40.dp))
+            }
+        },
         colors = TopAppBarDefaults.largeTopAppBarColors(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
@@ -192,20 +182,13 @@ private fun TransactionPreviewHeader(
     )
 }
 
-private fun State.TransactionType.titleRes(): Int {
-    return when (this) {
-        State.TransactionType.PreAuthorized -> R.string.preAuthorizationReview_title
-        State.TransactionType.Regular -> R.string.transactionReview_title
-    }
-}
-
 @Preview(showBackground = true)
 @UsesSampleValues
 @Composable
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
-            transactionType = State.TransactionType.Regular,
+            isPreAuthorization = false,
             proposingDApp = State.ProposingDApp.Some(
                 dApp = DApp(
                     dAppAddress = AccountAddress.sampleMainnet(),
@@ -218,7 +201,7 @@ fun TransactionPreviewHeaderPreview() {
                     )
                 )
             ),
-            isRawManifestToggleVisible = true,
+            isRawManifestPreviewable = true,
             isRawManifestVisible = false,
             onBackClick = {},
             onRawManifestClick = {},

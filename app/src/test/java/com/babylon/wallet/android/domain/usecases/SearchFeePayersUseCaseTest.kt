@@ -108,7 +108,7 @@ class SearchFeePayersUseCaseTest {
     companion object {
         private fun feePayerCandidates(
             account: Account
-        ) = listOf(
+        ) = setOf(
             account.address
         )
     }

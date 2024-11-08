@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.domain.usecases.signing
 
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.ManifestSummary
 import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.SignedTransactionIntentHash
@@ -35,6 +37,35 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
             signers = it,
             ephemeralNotaryPrivateKey = notary
         )
+    }
+}
+
+class ResolveSignersUseCase @Inject constructor(
+    private val profileUseCase: GetProfileUseCase
+) {
+
+    suspend operator fun invoke(summary: ManifestSummary): Result<List<ProfileEntity>> = runCatching {
+        val profile = profileUseCase()
+        val accounts = profile.activeAccountsOnCurrentNetwork
+        val personas = profile.activePersonasOnCurrentNetwork
+
+        summary.addressesOfAccountsRequiringAuth.mapNotNull { address ->
+            accounts.find { it.address == address }?.asProfileEntity()
+        } + summary.addressesOfPersonasRequiringAuth.mapNotNull { address ->
+            personas.find { it.address == address }?.asProfileEntity()
+        }
+    }
+
+    suspend operator fun invoke(summary: ExecutionSummary): Result<List<ProfileEntity>> = runCatching {
+        val profile = profileUseCase()
+        val accounts = profile.activeAccountsOnCurrentNetwork
+        val personas = profile.activePersonasOnCurrentNetwork
+
+        summary.addressesOfAccountsRequiringAuth.mapNotNull { address ->
+            accounts.find { it.address == address }?.asProfileEntity()
+        } + summary.addressesOfIdentitiesRequiringAuth.mapNotNull { address ->
+            personas.find { it.address == address }?.asProfileEntity()
+        }
     }
 }
 

@@ -10,6 +10,10 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.utils.replaceDoublePercent
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.domain.ProfileException
@@ -31,11 +35,6 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         data class NetworkError(override val cause: Throwable? = null) : GatewayException(cause)
     }
-
-    data object DappMetadataEmpty : RadixWalletException()
-    data object SignatureCancelled : RadixWalletException()
-    data object FailedToCollectLedgerSignature : RadixWalletException()
-    data object FailedToCollectSigners : RadixWalletException()
 
     sealed class IncomingMessageException(cause: Throwable? = null) : RadixWalletException(cause = cause) {
         data class MessageParse(override val cause: Throwable? = null) : IncomingMessageException(cause)
@@ -213,6 +212,22 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     data class CloudBackupException(
         val error: BackupServiceException
     ) : RadixWalletException()
+
+    data class ResourceCouldNotBeResolvedInTransaction(
+        val address: ResourceOrNonFungible
+    ) : RadixWalletException() {
+
+        constructor(resourceAddress: ResourceAddress) : this(ResourceOrNonFungible.Resource(value = resourceAddress))
+
+        constructor(resourceAddress: ResourceAddress, localId: NonFungibleLocalId) : this(
+            ResourceOrNonFungible.NonFungible(
+                NonFungibleGlobalId(
+                    resourceAddress = resourceAddress,
+                    nonFungibleLocalId = localId
+                )
+            )
+        )
+    }
 }
 
 interface DappWalletInteractionThrowable {
@@ -416,18 +431,11 @@ fun RadixWalletException.CloudBackupException.toUserFriendlyMessage(): String = 
 
 fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
-        RadixWalletException.FailedToCollectLedgerSignature -> context.getString(
-            R.string.common_somethingWentWrong
-        ) // TODO consider different copy
-        RadixWalletException.FailedToCollectSigners -> context.getString(
-            R.string.common_somethingWentWrong
-        ) // TODO consider different copy
-        RadixWalletException.DappMetadataEmpty -> context.getString(R.string.common_somethingWentWrong)
-        RadixWalletException.SignatureCancelled -> context.getString(R.string.common_somethingWentWrong)
-
+        is RadixWalletException.ResourceCouldNotBeResolvedInTransaction,
         is RadixWalletException.IncomingMessageException -> context.getString(
             R.string.common_somethingWentWrong
-        ) // TODO consider different copy
+        )
+
         is RadixWalletException.DappRequestException -> toUserFriendlyMessage(context)
         is RadixWalletException.DappVerificationException -> toUserFriendlyMessage(context)
         is RadixWalletException.LedgerCommunicationException -> toUserFriendlyMessage(context)

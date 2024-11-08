@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toMinutes
@@ -64,7 +65,7 @@ class AssetDialogViewModel @Inject constructor(
             resolveAssetsFromAddressUseCase(
                 addresses = when (args) {
                     is AssetDialogArgs.Fungible -> setOf(ResourceOrNonFungible.Resource(args.resourceAddress))
-                    is AssetDialogArgs.NFT -> if (args.localId != null) {
+                    is AssetDialogArgs.NonFungible -> if (args.localId != null) {
                         setOf(
                             ResourceOrNonFungible.NonFungible(
                                 NonFungibleGlobalId(
@@ -79,14 +80,14 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 withAllMetadata = true
             ).mapCatching { assets ->
-                when (val asset = assets.first()) {
-                    // In case we receive a fungible asset, let's copy the custom amount
+                val asset = when (val asset = assets.first()) {
                     is Asset.Fungible -> {
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
+                        val amount = fungibleArgs.fungibleAmountOf(asset.resource.address)
+                        val resourceWithAmount = (amount as? BoundedAmount.Exact)?.amount?.let {
+                            asset.resource.copy(ownedAmount = it)
+                        } ?: asset.resource
 
-                        val resourceWithAmount = asset.resource.copy(
-                            ownedAmount = fungibleArgs.fungibleAmountOf(asset.resource.address)
-                        )
                         when (asset) {
                             is LiquidStakeUnit -> asset.copy(fungibleResource = resourceWithAmount)
                             is PoolUnit -> asset.copy(stake = resourceWithAmount)
@@ -98,7 +99,7 @@ class AssetDialogViewModel @Inject constructor(
                         asset
                     }
                 }
-            }.mapCatching { asset ->
+
                 _state.update {
                     it.copy(
                         asset = asset,

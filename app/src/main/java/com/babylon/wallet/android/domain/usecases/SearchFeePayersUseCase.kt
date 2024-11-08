@@ -16,7 +16,7 @@ class SearchFeePayersUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        feePayerCandidates: List<AccountAddress>,
+        feePayerCandidates: Set<AccountAddress>,
         lockFee: Decimal192
     ): Result<TransactionFeePayers> {
         val allAccounts = profileUseCase().activeAccountsOnCurrentNetwork

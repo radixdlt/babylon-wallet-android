@@ -1,23 +1,28 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
-import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
+import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toUnit
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
@@ -62,19 +67,24 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
     private val logger = Timber.tag("TransactionFees")
 
-    suspend fun resolveFees() {
+    suspend fun resolveFees(analysis: Analysis): Result<Unit> {
+        val executionSummary = (analysis.summary as? Summary.FromExecution)?.summary ?: error(
+            "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
+        )
         _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
-        val executionSummary = data.value.transactionToReviewData.transactionToReview.executionSummary
 
-        val transactionFees = FeesResolver.resolve(
+        val transactionFees = TransactionFees.from(
             summary = executionSummary,
-            notaryAndSigners = data.value.notaryAndSigners,
+            notaryAndSigners = NotaryAndSigners(
+                signers = analysis.signers,
+                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey
+            ),
             previewType = _state.value.previewType
         )
         observeFeesChanges()
 
-        searchFeePayersUseCase(
-            feePayerCandidates = data.value.feePayerCandidates,
+        return searchFeePayersUseCase(
+            feePayerCandidates = executionSummary.feePayerCandidates(),
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayers ->
             _state.update { state ->
@@ -99,7 +109,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
                     error = TransactionErrorMessage(throwable)
                 )
             }
-        }
+        }.toUnit()
     }
 
     override fun onCustomizeClick() {
@@ -181,7 +191,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val selectedFeePayerAccount = feesState.selectedFeePayerInput?.preselectedCandidate?.account ?: return
         val feePayers = data.value.feePayers ?: return
 
-        val signersCount = data.value.notaryAndSigners.signers.count()
+        val signersCount = data.value.signers.count()
 
         val updatedFeePayers = feePayers.copy(
             selectedAccountAddress = selectedFeePayerAccount.address,
@@ -334,7 +344,6 @@ class TransactionFeesDelegateImpl @Inject constructor(
                                 transactionFees = transactionFees,
                                 properties = properties
                             ) ?: state.sheetState,
-                            isSubmitEnabled = state.previewType != PreviewType.None && !properties.isBalanceInsufficientToPayTheFee
                         )
                     }
                 }
@@ -356,32 +365,41 @@ class TransactionFeesDelegateImpl @Inject constructor(
         // In cases were it is not a transfer type, then it means the user
         // will not spend any other XRD rather than the ones spent for the fees
         val xrdUsed = when (val previewType = _state.value.previewType) {
-            is PreviewType.Transfer.GeneralTransfer -> {
-                val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
+            is PreviewType.Transaction -> {
+                val candidateAddressWithdrawn = previewType.from.find { it.account.address == candidateAddress }
                 if (candidateAddressWithdrawn != null) {
-                    val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
-                        it.transferable
-                    }.filterIsInstance<TransferableAsset.Fungible.Token>().find { it.resource.isXrd }
+                    val xrdAmount = candidateAddressWithdrawn
+                        .transferables
+                        .filterIsInstance<Transferable.FungibleType.Token>()
+                        .find { it.asset.resource.isXrd }?.amount
 
-                    xrdResourceWithdrawn?.amount.orZero()
+                    when (xrdAmount) {
+                        null -> 0.toDecimal192()
+                        is BoundedAmount.Exact -> xrdAmount.amount
+                        is BoundedAmount.Predicted -> xrdAmount.estimated
+                        else -> 0.toDecimal192() // Should not go through these cases. Fees are calculated only on regular transactions.
+                    }
                 } else {
                     0.toDecimal192()
                 }
             }
             // On-purpose made this check exhaustive, future types may involve accounts spending XRD
-            is PreviewType.AccountsDepositSettings -> 0.toDecimal192()
-            is PreviewType.NonConforming -> 0.toDecimal192()
-            is PreviewType.None -> 0.toDecimal192()
+            is PreviewType.AccountsDepositSettings,
+            is PreviewType.NonConforming,
+            is PreviewType.None,
             is PreviewType.UnacceptableManifest -> 0.toDecimal192()
-            is PreviewType.Transfer.Pool -> 0.toDecimal192()
-            is PreviewType.Transfer.Staking -> 0.toDecimal192()
         }
 
         return xrdInCandidateAccount - xrdUsed < feeToLock
     }
 
     private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
-        return selectedAccountAddress?.let { data.value.feePayerCandidates.contains(it) } ?: true
+        val executionSummary = (data.value.summary as? Summary.FromExecution)?.summary ?: error(
+            "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
+        )
+
+        val candidates = executionSummary.feePayerCandidates()
+        return selectedAccountAddress?.let { candidates.contains(it) } ?: true
     }
 
     private fun switchToFeePayerSelection() {
@@ -401,4 +419,8 @@ class TransactionFeesDelegateImpl @Inject constructor(
             )
         }
     }
+
+    private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
+        deposits.keys +
+        addressesOfAccountsRequiringAuth.toSet()
 }

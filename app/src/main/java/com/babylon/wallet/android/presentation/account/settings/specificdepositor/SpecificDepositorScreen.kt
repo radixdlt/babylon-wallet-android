@@ -54,7 +54,6 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.model.displayTitleAsNFTCollection
 import com.babylon.wallet.android.presentation.model.displayTitleAsToken
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.resourceAddress
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -77,6 +76,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.sargon.resourceAddress
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
