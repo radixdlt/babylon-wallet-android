@@ -3,9 +3,12 @@ package com.babylon.wallet.android.presentation.account.settings.delete
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.radixdlt.sargon.Account
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 interface DeleteAccountDelegate {
+
+    fun onDeleteAccountRequest()
 
     fun onDeleteConfirm()
 
@@ -18,9 +21,12 @@ interface DeleteAccountDelegate {
 class DeleteAccountDelegateImpl @Inject constructor(
 
 ) : DeleteAccountDelegate, ViewModelDelegate<AccountSettingsViewModel.State>() {
+    override fun onDeleteAccountRequest() {
+        _state.update { it.copy(bottomSheetContent = AccountSettingsViewModel.State.BottomSheetContent.DeleteAccount) }
+    }
 
     override fun onDeleteConfirm() {
-        TODO("Not yet implemented")
+        _state.update { it.copy(bottomSheetContent = AccountSettingsViewModel.State.BottomSheetContent.None) }
     }
 
     override fun onPickAccountToTransferResources(account: Account) {

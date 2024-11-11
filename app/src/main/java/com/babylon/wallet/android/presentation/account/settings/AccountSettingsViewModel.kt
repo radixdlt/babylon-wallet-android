@@ -56,6 +56,8 @@ class AccountSettingsViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
+        deleteAccountDelegate(viewModelScope, _state)
+
         loadAccount()
         viewModelScope.launch {
             if (!BuildConfig.DEBUG_MODE) return@launch
@@ -135,13 +137,26 @@ class AccountSettingsViewModel @Inject constructor(
                     newDisplayName = DisplayName(newAccountName)
                 )
                 _state.update { state -> state.copy(isAccountNameUpdated = true) }
+                onDismissBottomSheet()
             } ?: Timber.d("Couldn't find account to rename the display name!")
         }
     }
 
-    fun setBottomSheetContent(content: State.BottomSheetContent) {
+    fun onDismissBottomSheet() {
         _state.update {
-            it.copy(bottomSheetContent = content)
+            it.copy(bottomSheetContent = State.BottomSheetContent.None)
+        }
+    }
+
+    fun onRenameAccountRequest() {
+        _state.update {
+            it.copy(bottomSheetContent = State.BottomSheetContent.RenameAccount)
+        }
+    }
+
+    fun onHideAccountRequest() {
+        _state.update {
+            it.copy(bottomSheetContent = State.BottomSheetContent.HideAccount)
         }
     }
 
@@ -172,7 +187,8 @@ class AccountSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val account = state.value.account ?: return@launch
             changeEntityVisibilityUseCase.changeAccountVisibility(entityAddress = account.address, hide = true)
-            setBottomSheetContent(State.BottomSheetContent.None)
+
+            onDismissBottomSheet()
             sendEvent(Event.AccountHidden)
         }
     }

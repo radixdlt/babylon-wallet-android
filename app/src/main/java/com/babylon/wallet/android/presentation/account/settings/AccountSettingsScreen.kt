@@ -83,10 +83,8 @@ fun AccountSettingsScreen(
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     SyncSheetState(
         sheetState = bottomSheetState,
-        isSheetVisible = state.bottomSheetContent != State.BottomSheetContent.None,
-        onSheetClosed = {
-            viewModel.setBottomSheetContent(State.BottomSheetContent.None)
-        }
+        isSheetVisible = state.isBottomSheetVisible,
+        onSheetClosed = viewModel::onDismissBottomSheet
     )
 
     AccountSettingsContent(
@@ -95,9 +93,7 @@ fun AccountSettingsScreen(
         onMessageShown = viewModel::onMessageShown,
         error = state.error,
         account = state.account,
-        onShowRenameAccountClick = {
-            viewModel.setBottomSheetContent(State.BottomSheetContent.RenameAccount)
-        },
+        onShowRenameAccountClick = viewModel::onRenameAccountRequest,
         settingsSections = state.settingsSections,
         onSettingClick = { item ->
             state.account?.address?.let { accountAddress ->
@@ -107,14 +103,10 @@ fun AccountSettingsScreen(
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
         faucetState = state.faucetState,
         isXrdLoading = state.isFreeXRDLoading,
-        onHideAccount = {
-            viewModel.setBottomSheetContent(State.BottomSheetContent.HideAccount)
-        },
+        onHideAccount = viewModel::onHideAccountRequest,
         isAccountNameUpdated = state.isAccountNameUpdated,
         onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
-        onDeleteAccount = {
-            viewModel.setBottomSheetContent(State.BottomSheetContent.DeleteAccount)
-        }
+        onDeleteAccount = viewModel::onDeleteAccountRequest
     )
 
     if (state.isBottomSheetVisible) {
@@ -133,34 +125,26 @@ fun AccountSettingsScreen(
                             onRenameAccountNameClick = {
                                 viewModel.onRenameAccountNameConfirm()
                             },
-                            onClose = {
-                                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
-                            }
+                            onClose = viewModel::onDismissBottomSheet
                         )
                     }
 
                     State.BottomSheetContent.HideAccount -> {
                         HideAccountSheet(
                             onHideAccountClick = viewModel::onHideAccount,
-                            onClose = {
-                                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
-                            }
+                            onClose = viewModel::onDismissBottomSheet
                         )
                     }
 
                     State.BottomSheetContent.DeleteAccount -> AccountDeleteSheet(
-                        onClose = {
-                            viewModel.setBottomSheetContent(State.BottomSheetContent.None)
-                        },
+                        onClose = viewModel::onDismissBottomSheet,
                         onDeleteAccount = viewModel::onDeleteConfirm
                     )
                     State.BottomSheetContent.None -> {}
                 }
             },
             showDragHandle = true,
-            onDismissRequest = {
-                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
-            }
+            onDismissRequest = viewModel::onDismissBottomSheet
         )
     }
 }
