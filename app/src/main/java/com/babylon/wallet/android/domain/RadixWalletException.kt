@@ -56,8 +56,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
             DappRequestException(cause = cause)
         data class PreviewError(override val cause: Throwable?) : DappRequestException()
-        data object InvalidPreAuthorizationExpirationTooClose: DappRequestException()
-        data object InvalidPreAuthorizationExpired: DappRequestException()
+        data object InvalidPreAuthorizationExpirationTooClose : DappRequestException()
+        data object InvalidPreAuthorizationExpired : DappRequestException()
 
         data class WrongNetwork(
             val currentNetworkId: NetworkId,
@@ -318,8 +318,12 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
             R.string.common_somethingWentWrong
         )
         is RadixWalletException.DappRequestException.PreviewError -> context.getString(R.string.error_transactionFailure_reviewFailure)
-        is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose -> context.getString(R.string.dAppRequest_validationOutcome_preAuthorizationExpirationTooClose)
-        is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired -> context.getString(R.string.dAppRequest_validationOutcome_preAuthorizationExpired)
+        is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose -> context.getString(
+            R.string.dAppRequest_validationOutcome_preAuthorizationExpirationTooClose
+        )
+        is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired -> context.getString(
+            R.string.dAppRequest_validationOutcome_preAuthorizationExpired
+        )
     }
 }
 

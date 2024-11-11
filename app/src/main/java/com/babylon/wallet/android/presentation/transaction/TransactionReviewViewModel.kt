@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
