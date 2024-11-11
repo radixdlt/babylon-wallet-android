@@ -430,6 +430,8 @@
   <string name="transactionReview_submitTransaction_txID">Transaction ID</string>
   <string name="transactionReview_nonConformingManifestWarning_title">Warning</string>
   <string name="transactionReview_nonConformingManifestWarning_message">This is a complex transaction that cannot be summarized - the raw transaction manifest will be shown. Do not submit unless you understand the contents.</string>
+  <string name="transactionReview_networkFee_congestedText">The network is currently congested. Add a tip to speed up your transfer.</string>
+  <string name="transactionReview_unacceptableManifest_rejected">A proposed transaction was rejected because it contains one or more reserved instructions.</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
