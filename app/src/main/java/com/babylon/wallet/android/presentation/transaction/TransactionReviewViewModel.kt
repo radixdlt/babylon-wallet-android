@@ -189,14 +189,14 @@ class TransactionReviewViewModel @Inject constructor(
     private fun processExpiration(expiration: SubintentExpiration) {
         when (expiration) {
             is SubintentExpiration.AtTime -> {
-                var seconds = expiration.timestamp.toEpochSecond().seconds
+                var expirationDuration = expiration.expirationDuration()
 
                 viewModelScope.launch {
                     do {
-                        _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
-                        seconds -= 1.seconds
+                        _state.update { it.copy(expiration = State.Expiration(duration = expirationDuration, startsAfterSign = false)) }
+                        expirationDuration -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
-                    } while (seconds >= 0.seconds)
+                    } while (expirationDuration >= 0.seconds)
                 }
             }
             is SubintentExpiration.DelayAfterSign -> {
