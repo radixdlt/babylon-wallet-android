@@ -175,7 +175,7 @@ private fun PredictedAmount(
         horizontalAlignment = horizontalAlignment
     ) {
         QualifierText(
-            text = stringResource(id = R.string.transactionReview_estimated),
+            text = stringResource(id = R.string.interactionReview_estimated),
             style = estimatedTitleStyle,
             color = RadixTheme.colors.gray1
         )
@@ -189,7 +189,7 @@ private fun PredictedAmount(
 
         if (!isCompact) {
             QualifierText(
-                text = stringResource(id = R.string.transactionReview_guaranteed),
+                text = stringResource(id = R.string.interactionReview_guaranteed),
                 style = guaranteedTitleStyle,
                 color = RadixTheme.colors.gray2
             )
