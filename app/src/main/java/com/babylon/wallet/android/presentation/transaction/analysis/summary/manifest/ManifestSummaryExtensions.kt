@@ -137,6 +137,7 @@ private fun AccountAddress.toInvolvedAccount(profile: Profile): InvolvedAccount 
     }
 }
 
+@Suppress("LongMethod")
 private fun ManifestSummary.resolveWithdraws(
     onLedgerAssets: List<Asset>,
     profile: Profile
