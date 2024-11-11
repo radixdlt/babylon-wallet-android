@@ -33,7 +33,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun TransactionPreAuthorizationInfo(
+fun TransactionExpirationInfo(
     modifier: Modifier = Modifier,
     expiration: TransactionReviewViewModel.State.Expiration,
     proposingDApp: TransactionReviewViewModel.State.ProposingDApp,
@@ -52,7 +52,7 @@ fun TransactionPreAuthorizationInfo(
 
         val context = LocalContext.current
         val time = remember(expiration) {
-            TimeFormatter.format(context, expiration.duration)
+            TimeFormatter.format(context, expiration.duration, expiration.truncateSeconds)
         }
 
         Text(
@@ -121,7 +121,7 @@ fun PreAuthorizationFeesHint(
 @Preview
 private fun TransactionPreAuthorizationInfoAfterDelayPreview() {
     RadixWalletPreviewTheme {
-        TransactionPreAuthorizationInfo(
+        TransactionExpirationInfo(
             expiration = TransactionReviewViewModel.State.Expiration(
                 duration = 5.hours + 23.minutes,
                 startsAfterSign = true
@@ -137,7 +137,7 @@ private fun TransactionPreAuthorizationInfoAfterDelayPreview() {
 @Preview
 private fun TransactionPreAuthorizationInfoTimePreview() {
     RadixWalletPreviewTheme {
-        TransactionPreAuthorizationInfo(
+        TransactionExpirationInfo(
             expiration = TransactionReviewViewModel.State.Expiration(
                 duration = 5.hours + 23.minutes,
                 startsAfterSign = false
@@ -153,7 +153,7 @@ private fun TransactionPreAuthorizationInfoTimePreview() {
 @Preview
 private fun TransactionPreAuthorizationInfoExpiredPreview() {
     RadixWalletPreviewTheme {
-        TransactionPreAuthorizationInfo(
+        TransactionExpirationInfo(
             expiration = TransactionReviewViewModel.State.Expiration(
                 duration = 0.seconds,
                 startsAfterSign = false

@@ -334,6 +334,9 @@ class TransactionReviewViewModel @Inject constructor(
 
             val isExpired: Boolean
                 get() = duration == 0.seconds
+
+            val truncateSeconds: Boolean
+                get() = duration >= 60.seconds
         }
 
         val isSubmitEnabled: Boolean
