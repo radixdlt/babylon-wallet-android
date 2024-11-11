@@ -204,19 +204,25 @@ private fun ManifestSummary.resolveWithdraws(
 private fun ManifestSummary.resolveDeposits(
     onLedgerAssets: List<Asset>,
     profile: Profile
-): List<AccountWithTransferables> = accountDeposits.map { entry ->
+): List<AccountWithTransferables> = accountDeposits.mapNotNull { entry ->
     val specifiedTransferables = entry.value.specifiedResources.map { specifier ->
         when (specifier) {
             is SimpleResourceBounds.Fungible -> specifier.resolve(onLedgerAssets)
             is SimpleResourceBounds.NonFungible -> specifier.resolve(onLedgerAssets)
         }
     }
+    val additionalTransferablesPresent = entry.value.unspecifiedResources == UnspecifiedResources.MAY_BE_PRESENT
 
-    AccountWithTransferables(
-        account = entry.key.toInvolvedAccount(profile),
-        transferables = specifiedTransferables,
-        additionalTransferablesPresent = entry.value.unspecifiedResources == UnspecifiedResources.MAY_BE_PRESENT
-    )
+    // Filter out account with no deposits
+    if (specifiedTransferables.isEmpty() && !additionalTransferablesPresent) {
+        null
+    } else {
+        AccountWithTransferables(
+            account = entry.key.toInvolvedAccount(profile),
+            transferables = specifiedTransferables,
+            additionalTransferablesPresent = additionalTransferablesPresent
+        )
+    }
 }
 
 private fun SimpleResourceBounds.Fungible.resolve(
