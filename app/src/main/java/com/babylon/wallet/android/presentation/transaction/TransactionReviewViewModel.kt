@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
@@ -36,6 +36,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.DappToWalletInteractionSubintentExpirationStatus
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
@@ -43,6 +44,7 @@ import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -139,6 +141,28 @@ class TransactionReviewViewModel @Inject constructor(
             sendEvent(Event.Dismiss)
         } else {
             data.update { it.copy(txRequest = request) }
+
+            if (request.transactionType is TransactionType.PreAuthorized) {
+                when (request.transactionType.expiration.toDAppInteraction().status) {
+                    DappToWalletInteractionSubintentExpirationStatus.EXPIRATION_TOO_CLOSE -> {
+                        _state.update {
+                            it.copy(error = TransactionErrorMessage(DappRequestException.InvalidPreAuthorizationExpirationTooClose))
+                        }
+                        return@launch
+                    }
+
+                    DappToWalletInteractionSubintentExpirationStatus.EXPIRED -> {
+                        _state.update {
+                            it.copy(error = TransactionErrorMessage(DappRequestException.InvalidPreAuthorizationExpired))
+                        }
+                        return@launch
+                    }
+
+                    DappToWalletInteractionSubintentExpirationStatus.VALID -> {
+                        // Nothing to do. Transaction is valid to be analysed.
+                    }
+                }
+            }
             _state.update {
                 it.copy(
                     isPreAuthorization = request.transactionType is TransactionType.PreAuthorized,
@@ -146,7 +170,6 @@ class TransactionReviewViewModel @Inject constructor(
                     message = request.unvalidatedManifestData.plainMessage
                 )
             }
-
             withContext(defaultDispatcher) {
                 analysis.analyse()
                     .onSuccess { analysis ->
@@ -189,16 +212,17 @@ class TransactionReviewViewModel @Inject constructor(
     private fun processExpiration(expiration: SubintentExpiration) {
         when (expiration) {
             is SubintentExpiration.AtTime -> {
-                var seconds = expiration.timestamp.toEpochSecond().seconds
+                var expirationDuration = expiration.expirationDuration()
 
                 viewModelScope.launch {
                     do {
-                        _state.update { it.copy(expiration = State.Expiration(duration = seconds, startsAfterSign = false)) }
-                        seconds -= 1.seconds
+                        _state.update { it.copy(expiration = State.Expiration(duration = expirationDuration, startsAfterSign = false)) }
+                        expirationDuration -= 1.seconds
                         delay(EXPIRATION_COUNTDOWN_PERIOD_MS)
-                    } while (seconds >= 0.seconds)
+                    } while (expirationDuration >= 0.seconds)
                 }
             }
+
             is SubintentExpiration.DelayAfterSign -> {
                 _state.update {
                     it.copy(
@@ -217,7 +241,7 @@ class TransactionReviewViewModel @Inject constructor(
             _state.update { it.copy(sheetState = Sheet.None) }
         } else {
             viewModelScope.launch {
-                submit.onDismiss(exception = RadixWalletException.DappRequestException.RejectedByUser)
+                submit.onDismiss(exception = DappRequestException.RejectedByUser)
             }
         }
     }
@@ -241,7 +265,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun dismissTerminalErrorDialog() {
-        (state.value.error?.error as? RadixWalletException.DappRequestException)?.let { exception ->
+        (state.value.error?.error as? DappRequestException)?.let { exception ->
             viewModelScope.launch { submit.onDismiss(exception) }
         }
         _state.update { it.copy(error = null) }
@@ -310,6 +334,9 @@ class TransactionReviewViewModel @Inject constructor(
 
             val isExpired: Boolean
                 get() = duration == 0.seconds
+
+            val truncateSeconds: Boolean
+                get() = duration >= 60.seconds
         }
 
         val isSubmitEnabled: Boolean
