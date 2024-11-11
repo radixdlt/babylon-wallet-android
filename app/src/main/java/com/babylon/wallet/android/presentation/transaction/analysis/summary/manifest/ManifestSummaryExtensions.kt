@@ -144,7 +144,7 @@ private fun ManifestSummary.resolveWithdraws(
     val transferables = entry.value.map { withdraw ->
         when (withdraw) {
             is AccountWithdraw.Amount -> {
-                val asset = onLedgerAssets.find { it.resource.address == withdraw.resourceAddress } as? Asset.Fungible
+                val asset = onLedgerAssets.find { it.resource.address == withdraw.resourceAddress }
                     ?: throw ResourceCouldNotBeResolvedInTransaction(withdraw.resourceAddress)
                 val amount = BoundedAmount.Exact(withdraw.amount)
 
@@ -163,6 +163,28 @@ private fun ManifestSummary.resolveWithdraws(
                     is PoolUnit -> Transferable.FungibleType.PoolUnit(
                         asset = asset,
                         amount = amount
+                    )
+                    is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
+                        asset = asset.copy(
+                            collection = asset.resource.copy(
+                                items = emptyList()
+                            )
+                        ),
+                        amount = NonFungibleAmount(
+                            certain = emptyList(),
+                            additional = amount
+                        )
+                    )
+                    is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
+                        asset = asset.copy(
+                            nonFungibleResource = asset.resource.copy(
+                                items = emptyList()
+                            )
+                        ),
+                        amount = NonFungibleAmount(
+                            certain = emptyList(),
+                            additional = amount
+                        )
                     )
                 }
             }
@@ -271,12 +293,20 @@ private fun SimpleResourceBounds.NonFungible.resolve(
 
     return when (asset) {
         is NonFungibleCollection -> Transferable.NonFungibleType.NFTCollection(
-            asset = asset,
+            asset = asset.copy(
+                collection = asset.resource.copy(
+                    items = asset.resource.items.filter { it.localId in bounds.certainIds }
+                )
+            ),
             amount = amount
         )
 
         is StakeClaim -> Transferable.NonFungibleType.StakeClaim(
-            asset = asset,
+            asset = asset.copy(
+                nonFungibleResource = asset.resource.copy(
+                    items = asset.resource.items.filter { it.localId in bounds.certainIds }
+                )
+            ),
             amount = amount
         )
     }
