@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.account.settings
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
@@ -61,7 +60,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,10 +71,6 @@ fun AccountSettingsScreen(
     onHideAccountClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
@@ -86,18 +80,14 @@ fun AccountSettingsScreen(
         }
     }
 
-    val hideSheetAction: () -> Unit = remember {
-        {
-            scope.launch {
-                bottomSheetState.hide()
-                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
-            }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    SyncSheetState(
+        sheetState = bottomSheetState,
+        isSheetVisible = state.bottomSheetContent != State.BottomSheetContent.None,
+        onSheetClosed = {
+            viewModel.setBottomSheetContent(State.BottomSheetContent.None)
         }
-    }
-
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        hideSheetAction()
-    }
+    )
 
     AccountSettingsContent(
         modifier = modifier,
@@ -106,10 +96,7 @@ fun AccountSettingsScreen(
         error = state.error,
         account = state.account,
         onShowRenameAccountClick = {
-            scope.launch {
-                viewModel.setBottomSheetContent(State.BottomSheetContent.RenameAccount)
-                bottomSheetState.show()
-            }
+            viewModel.setBottomSheetContent(State.BottomSheetContent.RenameAccount)
         },
         settingsSections = state.settingsSections,
         onSettingClick = { item ->
@@ -121,18 +108,12 @@ fun AccountSettingsScreen(
         faucetState = state.faucetState,
         isXrdLoading = state.isFreeXRDLoading,
         onHideAccount = {
-            scope.launch {
-                viewModel.setBottomSheetContent(State.BottomSheetContent.HideAccount)
-                bottomSheetState.show()
-            }
+            viewModel.setBottomSheetContent(State.BottomSheetContent.HideAccount)
         },
         isAccountNameUpdated = state.isAccountNameUpdated,
         onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
         onDeleteAccount = {
-            scope.launch {
-                viewModel.setBottomSheetContent(State.BottomSheetContent.DeleteAccount)
-                bottomSheetState.show()
-            }
+            viewModel.setBottomSheetContent(State.BottomSheetContent.DeleteAccount)
         }
     )
 
@@ -151,28 +132,35 @@ fun AccountSettingsScreen(
                             isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
                             onRenameAccountNameClick = {
                                 viewModel.onRenameAccountNameConfirm()
-                                hideSheetAction()
                             },
-                            onClose = hideSheetAction
+                            onClose = {
+                                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
+                            }
                         )
                     }
 
                     State.BottomSheetContent.HideAccount -> {
                         HideAccountSheet(
                             onHideAccountClick = viewModel::onHideAccount,
-                            onClose = hideSheetAction
+                            onClose = {
+                                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
+                            }
                         )
                     }
 
                     State.BottomSheetContent.DeleteAccount -> AccountDeleteSheet(
-                        onClose = hideSheetAction,
+                        onClose = {
+                            viewModel.setBottomSheetContent(State.BottomSheetContent.None)
+                        },
                         onDeleteAccount = viewModel::onDeleteConfirm
                     )
                     State.BottomSheetContent.None -> {}
                 }
             },
             showDragHandle = true,
-            onDismissRequest = hideSheetAction
+            onDismissRequest = {
+                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
+            }
         )
     }
 }
