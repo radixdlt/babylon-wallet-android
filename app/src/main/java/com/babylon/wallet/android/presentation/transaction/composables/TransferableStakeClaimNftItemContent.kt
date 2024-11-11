@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -62,85 +62,92 @@ fun TransferableStakeClaimNftItemContent(
             )
             .padding(vertical = RadixTheme.dimensions.paddingMedium)
     ) {
-        TransferableStakeClaimItemHeader(
-            transferableStakeClaim = transferableStakeClaim,
-            additionalAmount = null
-        )
-
-        Column(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                text = stringResource(id = R.string.interactionReview_toBeClaimed).uppercase(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2,
-                maxLines = 1
-            )
-
-            transferableStakeClaim.asset.resource.items.forEachIndexed { index, item ->
-                val addSpacer = index != transferableStakeClaim.asset.resource.items.lastIndex
+        transferableStakeClaim.asset.resource.items.forEachIndexed { index, item ->
+            Column(
+                modifier = Modifier.throttleClickable {
+                    onClick(
+                        transferableStakeClaim,
+                        item
+                    )
+                }
+            ) {
+                TransferableStakeClaimItemHeader(
+                    transferableStakeClaim = transferableStakeClaim,
+                    additionalAmount = null
+                )
 
                 Column(
                     modifier = Modifier
-                        .clip(RadixTheme.shapes.roundedRectSmall)
-                        .throttleClickable {
-                            onClick(
-                                transferableStakeClaim,
-                                item
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                        text = stringResource(id = R.string.interactionReview_toBeClaimed).uppercase(),
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                width = 1.dp,
+                                color = RadixTheme.colors.gray3,
+                                shape = RadixTheme.shapes.roundedRectSmall
+                            )
+                            .padding(RadixTheme.dimensions.paddingMedium)
+                    ) {
+                        Row(
+                            verticalAlignment = CenterVertically,
+                        ) {
+                            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+                            Icon(
+                                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(RadixTheme.shapes.circle),
+                                tint = Color.Unspecified
+                            )
+
+                            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+                            Text(
+                                text = XrdResource.SYMBOL,
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.gray1,
+                                maxLines = 2
+                            )
+
+                            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Text(
+                                modifier = Modifier.weight(1f),
+                                text = item.claimAmountXrd?.formatted().orEmpty(),
+                                style = RadixTheme.typography.body1HighImportance,
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.End,
+                                maxLines = 2
                             )
                         }
-                        .fillMaxWidth()
-                        .border(
-                            1.dp,
-                            RadixTheme.colors.gray3,
-                            shape = RadixTheme.shapes.roundedRectSmall
-                        )
-                        .padding(RadixTheme.dimensions.paddingMedium)
-                ) {
-                    Row(
-                        verticalAlignment = CenterVertically,
-                    ) {
-                        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
-                        Icon(
-                            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clip(RadixTheme.shapes.circle),
-                            tint = Color.Unspecified
-                        )
-
-                        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
-                        Text(
-                            text = XrdResource.SYMBOL,
-                            style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1,
-                            maxLines = 2
-                        )
-
-                        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = item.claimAmountXrd?.formatted().orEmpty(),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1,
-                            textAlign = TextAlign.End,
-                            maxLines = 2
-                        )
                     }
                 }
+            }
 
-                if (addSpacer) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-                }
+            val addDivider = remember(index) { index != transferableStakeClaim.asset.resource.items.lastIndex }
+
+            if (addDivider) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         }
     }
@@ -202,9 +209,7 @@ fun TransferableStakeClaimItemHeader(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-private fun TransferableStakeClaimNftItemPreview(
-    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) amount: BoundedAmount
-) {
+private fun TransferableStakeClaimNftItemPreview() {
     RadixWalletTheme {
         val asset = remember {
             StakeClaim(
@@ -214,8 +219,7 @@ private fun TransferableStakeClaimNftItemPreview(
         }
         val nonFungibleAmount = remember(asset) {
             NonFungibleAmount(
-                certain = asset.nonFungibleResource.items,
-                additional = amount
+                certain = asset.nonFungibleResource.items
             )
         }
         TransferableStakeClaimNftItemContent(

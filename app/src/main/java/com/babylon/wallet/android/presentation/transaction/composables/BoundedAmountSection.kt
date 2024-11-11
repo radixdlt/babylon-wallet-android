@@ -17,7 +17,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -34,29 +33,43 @@ import com.radixdlt.sargon.samples.sample
 fun BoundedAmountSection(
     modifier: Modifier = Modifier,
     boundedAmount: BoundedAmount?,
-    amountStyle: TextStyle = RadixTheme.typography.body1Header,
+    amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
     isCompact: Boolean = false
 ) {
-    BoundedAmountSection(
-        modifier = modifier,
-        boundedAmount = boundedAmount,
-        horizontalAlignment = Alignment.End,
-        qualifier = { text, style, color ->
-            QualifierText(
-                text = text,
-                fontSize = 12.sp,
-                style = style,
-                color = color
-            )
-        },
-        amount = { amount ->
-            AmountText(
-                amount = amount,
-                amountStyle = amountStyle
-            )
-        },
-        isCompact = isCompact
-    )
+    if (boundedAmount is BoundedAmount.Predicted) {
+        PredictedAmount(
+            modifier = modifier,
+            amount = boundedAmount,
+            isCompact = isCompact,
+            horizontalAlignment = Alignment.End,
+            estimatedTitleStyle = RadixTheme.typography.body2HighImportance,
+            estimatedAmountStyle = RadixTheme.typography.secondaryHeader,
+            guaranteedTitleStyle = RadixTheme.typography.body2Regular,
+            guaranteedAmountStyle = RadixTheme.typography.body1Header.copy(
+                fontSize = 14.sp
+            ),
+            guaranteedAmountColor = RadixTheme.colors.gray2
+        )
+    } else {
+        BoundedAmountSection(
+            modifier = modifier,
+            boundedAmount = boundedAmount,
+            horizontalAlignment = Alignment.End,
+            qualifier = { text ->
+                QualifierText(
+                    text = text,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            amount = { amount ->
+                AmountText(
+                    amount = amount,
+                    amountStyle = amountStyle
+                )
+            }
+        )
+    }
 }
 
 @Composable
@@ -65,28 +78,42 @@ fun LargeBoundedAmountSection(
     boundedAmount: BoundedAmount?,
     symbol: String? = null
 ) {
-    BoundedAmountSection(
-        modifier = modifier,
-        boundedAmount = boundedAmount,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        qualifier = { text, style, color ->
-            QualifierText(
-                text = text,
-                fontSize = 16.sp,
-                style = style,
-                color = color
-            )
-        },
-        amount = { amount ->
-            AmountText(
-                amount = amount,
-                amountStyle = RadixTheme.typography.title,
-                symbol = symbol,
-                symbolStyle = RadixTheme.typography.secondaryHeader
-            )
-        },
-        isCompact = false
-    )
+    if (boundedAmount is BoundedAmount.Predicted) {
+        PredictedAmount(
+            modifier = modifier,
+            amount = boundedAmount,
+            symbol = symbol,
+            isCompact = false,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            estimatedTitleStyle = RadixTheme.typography.body1HighImportance,
+            estimatedAmountStyle = RadixTheme.typography.title,
+            guaranteedTitleStyle = RadixTheme.typography.body2HighImportance,
+            guaranteedAmountStyle = RadixTheme.typography.secondaryHeader,
+            guaranteedAmountColor = RadixTheme.colors.gray2,
+            symbolStyle = RadixTheme.typography.body2Link
+        )
+    } else {
+        BoundedAmountSection(
+            modifier = modifier,
+            boundedAmount = boundedAmount,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            qualifier = { text ->
+                QualifierText(
+                    text = text,
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            },
+            amount = { amount ->
+                AmountText(
+                    amount = amount,
+                    amountStyle = RadixTheme.typography.title,
+                    symbol = symbol,
+                    symbolStyle = RadixTheme.typography.secondaryHeader
+                )
+            }
+        )
+    }
 }
 
 @Composable
@@ -94,9 +121,8 @@ fun BoundedAmountSection(
     modifier: Modifier,
     boundedAmount: BoundedAmount?,
     horizontalAlignment: Alignment.Horizontal,
-    qualifier: @Composable (String, TextStyle, Color) -> Unit,
-    amount: @Composable (Decimal192) -> Unit,
-    isCompact: Boolean
+    qualifier: @Composable (String) -> Unit,
+    amount: @Composable (Decimal192) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -107,60 +133,75 @@ fun BoundedAmountSection(
                 amount(boundedAmount.amount)
             }
             is BoundedAmount.Max -> {
-                qualifier(
-                    stringResource(id = R.string.interactionReview_noMoreThan),
-                    RadixTheme.typography.body1Regular,
-                    RadixTheme.colors.gray1
-                )
+                qualifier(stringResource(id = R.string.interactionReview_noMoreThan))
 
                 amount(boundedAmount.amount)
             }
             is BoundedAmount.Min -> {
-                qualifier(
-                    stringResource(id = R.string.interactionReview_atLeast),
-                    RadixTheme.typography.body1Regular,
-                    RadixTheme.colors.gray1
-                )
+                qualifier(stringResource(id = R.string.interactionReview_atLeast))
 
                 amount(boundedAmount.amount)
             }
             is BoundedAmount.Range -> {
-                qualifier(
-                    stringResource(id = R.string.interactionReview_atLeast),
-                    RadixTheme.typography.body1Regular,
-                    RadixTheme.colors.gray1
-                )
+                qualifier(stringResource(id = R.string.interactionReview_atLeast))
 
                 amount(boundedAmount.minAmount)
 
-                qualifier(
-                    stringResource(id = R.string.interactionReview_noMoreThan),
-                    RadixTheme.typography.body1Regular,
-                    RadixTheme.colors.gray1
-                )
+                qualifier(stringResource(id = R.string.interactionReview_noMoreThan))
 
                 amount(boundedAmount.maxAmount)
             }
-            is BoundedAmount.Predicted -> {
-                qualifier(
-                    stringResource(id = R.string.transactionReview_estimated),
-                    RadixTheme.typography.body2Link,
-                    RadixTheme.colors.gray1
-                )
-
-                amount(boundedAmount.estimated)
-
-                if (!isCompact) {
-                    qualifier(
-                        stringResource(id = R.string.transactionReview_guaranteed),
-                        RadixTheme.typography.body2Regular,
-                        RadixTheme.colors.gray2
-                    )
-
-                    amount(boundedAmount.guaranteed)
-                }
-            }
             else -> {}
+        }
+    }
+}
+
+@Composable
+private fun PredictedAmount(
+    modifier: Modifier = Modifier,
+    amount: BoundedAmount.Predicted,
+    isCompact: Boolean,
+    horizontalAlignment: Alignment.Horizontal,
+    estimatedTitleStyle: TextStyle,
+    estimatedAmountStyle: TextStyle,
+    guaranteedTitleStyle: TextStyle,
+    guaranteedAmountStyle: TextStyle,
+    guaranteedAmountColor: Color,
+    symbol: String? = null,
+    symbolStyle: TextStyle = RadixTheme.typography.body2Link,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = horizontalAlignment
+    ) {
+        QualifierText(
+            text = stringResource(id = R.string.transactionReview_estimated),
+            style = estimatedTitleStyle,
+            color = RadixTheme.colors.gray1
+        )
+
+        AmountText(
+            amount = amount.estimated,
+            amountStyle = estimatedAmountStyle,
+            symbol = symbol,
+            symbolStyle = symbolStyle
+        )
+
+        if (!isCompact) {
+            QualifierText(
+                text = stringResource(id = R.string.transactionReview_guaranteed),
+                style = guaranteedTitleStyle,
+                color = RadixTheme.colors.gray2
+            )
+
+            AmountText(
+                amount = amount.guaranteed,
+                amountStyle = guaranteedAmountStyle,
+                amountColor = guaranteedAmountColor,
+                symbol = symbol,
+                symbolStyle = symbolStyle,
+                symbolColor = guaranteedAmountColor
+            )
         }
     }
 }
@@ -185,9 +226,11 @@ fun UnknownAmount(
 private fun AmountText(
     modifier: Modifier = Modifier,
     amount: Decimal192,
-    symbol: String? = null,
     amountStyle: TextStyle = RadixTheme.typography.secondaryHeader,
-    symbolStyle: TextStyle = RadixTheme.typography.secondaryHeader
+    amountColor: Color = RadixTheme.colors.gray1,
+    symbol: String? = null,
+    symbolStyle: TextStyle = RadixTheme.typography.secondaryHeader,
+    symbolColor: Color = RadixTheme.colors.gray1
 ) {
     Row(
         modifier = modifier,
@@ -197,7 +240,7 @@ private fun AmountText(
         Text(
             text = amount.formatted(),
             style = amountStyle,
-            color = RadixTheme.colors.gray1,
+            color = amountColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -207,7 +250,7 @@ private fun AmountText(
                 modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXSmall),
                 text = it,
                 style = symbolStyle,
-                color = RadixTheme.colors.gray1
+                color = symbolColor
             )
         }
     }
@@ -216,16 +259,14 @@ private fun AmountText(
 @Composable
 private fun QualifierText(
     text: String,
-    fontSize: TextUnit,
     modifier: Modifier = Modifier,
-    style: TextStyle = RadixTheme.typography.body1Regular,
+    style: TextStyle = RadixTheme.typography.body2Regular,
     color: Color = RadixTheme.colors.gray1
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = style,
-        fontSize = fontSize,
         color = color,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis

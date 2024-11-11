@@ -15,7 +15,7 @@ object TimeFormatter {
      * - `34 seconds` / `1 second`
      */
     @Suppress("MagicNumber")
-    fun format(context: Context, duration: Duration): String {
+    fun format(context: Context, duration: Duration, truncateSeconds: Boolean): String {
         val seconds = duration.inWholeSeconds
         val minutes = seconds / 60
         val hours = minutes / 60
@@ -37,7 +37,7 @@ object TimeFormatter {
             }
         } else if (minutes > 0) {
             val remainingSeconds = seconds % 60
-            val minutesFormatted = "%d:%02d".format(minutes, remainingSeconds)
+            val minutesFormatted = if (truncateSeconds) "%d".format(minutes) else "%d:%02d".format(minutes, remainingSeconds)
             if (minutes == 1L) {
                 context.getString(R.string.preAuthorizationReview_timeFormat_minute, minutesFormatted)
             } else {
