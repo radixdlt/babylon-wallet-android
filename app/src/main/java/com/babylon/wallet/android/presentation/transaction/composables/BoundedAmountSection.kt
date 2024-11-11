@@ -143,7 +143,7 @@ fun BoundedAmountSection(
             }
             is BoundedAmount.Predicted -> {
                 qualifier(
-                    stringResource(id = R.string.transactionReview_estimated),
+                    stringResource(id = R.string.interactionReview_estimated),
                     RadixTheme.typography.body2Link,
                     RadixTheme.colors.gray1
                 )
@@ -152,7 +152,7 @@ fun BoundedAmountSection(
 
                 if (!isCompact) {
                     qualifier(
-                        stringResource(id = R.string.transactionReview_guaranteed),
+                        stringResource(id = R.string.interactionReview_guaranteed),
                         RadixTheme.typography.body2Regular,
                         RadixTheme.colors.gray2
                     )

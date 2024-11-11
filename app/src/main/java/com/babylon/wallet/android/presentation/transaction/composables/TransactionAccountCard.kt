@@ -330,7 +330,7 @@ fun TransactionAccountCardWithTokenPreview() {
                 )
             ),
             hiddenResourceIds = persistentListOf(),
-            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+            hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleItemClick = { _, _ -> },
             onTransferableNonFungibleByAmountClick = { _, _ -> }
