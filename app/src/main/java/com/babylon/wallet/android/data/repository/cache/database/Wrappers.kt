@@ -15,8 +15,8 @@ import java.time.Instant
 data class AccountPortfolioResponse(
     @ColumnInfo("account_address")
     val address: AccountAddress,
-    @ColumnInfo("account_type")
-    val accountType: AccountType?,
+    @ColumnInfo("account_metadata")
+    val accountMetadata: MetadataColumn?,
     @ColumnInfo("account_synced")
     val accountSynced: Instant?,
     @ColumnInfo("state_version")
@@ -46,7 +46,7 @@ data class AccountPortfolioResponse(
     val details: AccountDetails? = stateVersion?.let { version ->
         AccountDetails(
             stateVersion = version,
-            accountType = accountType,
+            metadata = accountMetadata?.metadata.orEmpty(),
             firstTransactionDate = firstTransactionDate
         )
     }

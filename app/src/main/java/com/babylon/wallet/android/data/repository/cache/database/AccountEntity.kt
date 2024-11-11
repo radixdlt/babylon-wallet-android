@@ -9,8 +9,7 @@ import java.time.Instant
 @Entity(primaryKeys = ["address"])
 data class AccountEntity(
     val address: AccountAddress,
-    @ColumnInfo("account_type")
-    val accountType: AccountType?,
+    val metadata: MetadataColumn?,
     val synced: Instant?,
     @ColumnInfo("state_version")
     val stateVersion: Long?,

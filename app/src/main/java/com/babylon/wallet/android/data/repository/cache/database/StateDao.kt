@@ -30,8 +30,8 @@ interface StateDao {
     @Query(
         """
         SELECT 
-            A.address AS account_address, 
-            A.account_type AS account_type,
+            A.address AS account_address,
+            A.metadata AS account_metadata,
             A.synced AS account_synced,
             A.first_transaction_date AS first_transaction_date,
             A.state_version,
@@ -104,7 +104,10 @@ interface StateDao {
             insertAccountDetails(
                 AccountEntity(
                     address = accountAddress,
-                    accountType = accountMetadata?.accountType(),
+                    metadata = MetadataColumn.from(
+                        explicitMetadata = item.explicitMetadata,
+                        implicitMetadata = item.metadata
+                    ),
                     synced = syncInfo.synced,
                     stateVersion = syncInfo.accountStateVersion
                 )
