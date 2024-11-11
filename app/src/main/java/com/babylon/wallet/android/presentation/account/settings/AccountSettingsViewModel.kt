@@ -6,6 +6,8 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
+import com.babylon.wallet.android.presentation.account.settings.delete.DeleteAccountDelegate
+import com.babylon.wallet.android.presentation.account.settings.delete.DeleteAccountDelegateImpl
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -43,12 +45,15 @@ class AccountSettingsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus
-) : StateViewModel<AccountPreferenceUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+    private val appEventBus: AppEventBus,
+    private val deleteAccountDelegate: DeleteAccountDelegateImpl
+) : StateViewModel<AccountSettingsViewModel.State>(),
+    OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl(),
+    DeleteAccountDelegate by deleteAccountDelegate {
 
     private val args = AccountSettingsArgs(savedStateHandle)
 
-    override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState()
+    override fun initialState(): State = State()
 
     init {
         loadAccount()
@@ -134,7 +139,7 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
-    fun setBottomSheetContent(content: AccountPreferenceUiState.BottomSheetContent) {
+    fun setBottomSheetContent(content: State.BottomSheetContent) {
         _state.update {
             it.copy(bottomSheetContent = content)
         }
@@ -167,7 +172,7 @@ class AccountSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val account = state.value.account ?: return@launch
             changeEntityVisibilityUseCase.changeAccountVisibility(entityAddress = account.address, hide = true)
-            setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.None)
+            setBottomSheetContent(State.BottomSheetContent.None)
             sendEvent(Event.AccountHidden)
         }
     }
@@ -175,38 +180,40 @@ class AccountSettingsViewModel @Inject constructor(
     fun onSnackbarMessageShown() {
         _state.update { state -> state.copy(isAccountNameUpdated = false) }
     }
-}
 
-sealed interface Event : OneOffEvent {
-    data object AccountHidden : Event
-}
+    data class State(
+        val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
+        val account: Account? = null,
+        val accountNameChanged: String = "",
+        val isNewNameValid: Boolean = false,
+        val isNewNameLengthMoreThanTheMaximum: Boolean = false,
+        val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
+        val error: UiMessage? = null,
+        val faucetState: FaucetState = FaucetState.Unavailable,
+        val isAccountNameUpdated: Boolean = false,
+        val isFreeXRDLoading: Boolean = false
+    ) : UiState {
 
-data class AccountPreferenceUiState(
-    val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
-    val account: Account? = null,
-    val accountNameChanged: String = "",
-    val isNewNameValid: Boolean = false,
-    val isNewNameLengthMoreThanTheMaximum: Boolean = false,
-    val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
-    val error: UiMessage? = null,
-    val faucetState: FaucetState = FaucetState.Unavailable,
-    val isAccountNameUpdated: Boolean = false,
-    val isFreeXRDLoading: Boolean = false
-) : UiState {
+        val isBottomSheetVisible: Boolean
+            get() = bottomSheetContent != BottomSheetContent.None
 
-    val isBottomSheetVisible: Boolean
-        get() = bottomSheetContent != BottomSheetContent.None
+        enum class BottomSheetContent {
+            None, RenameAccount, HideAccount, DeleteAccount
+        }
 
-    enum class BottomSheetContent {
-        None, RenameAccount, HideAccount
-    }
-
-    companion object {
-        val defaultSettings = persistentListOf(
-            AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
-            AccountSettingsSection.AccountSection(
-                listOf(AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL))
+        companion object {
+            val defaultSettings = persistentListOf(
+                AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
+                AccountSettingsSection.AccountSection(
+                    listOf(AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL))
+                )
             )
-        )
+        }
+    }
+
+    sealed interface Event : OneOffEvent {
+        data object AccountHidden : Event
     }
 }
+
+

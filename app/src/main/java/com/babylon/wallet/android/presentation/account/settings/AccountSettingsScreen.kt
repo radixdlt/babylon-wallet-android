@@ -41,6 +41,9 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.State
+import com.babylon.wallet.android.presentation.account.settings.delete.AccountDeleteSheet
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
@@ -49,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -86,7 +90,7 @@ fun AccountSettingsScreen(
         {
             scope.launch {
                 bottomSheetState.hide()
-                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.None)
+                viewModel.setBottomSheetContent(State.BottomSheetContent.None)
             }
         }
     }
@@ -103,7 +107,7 @@ fun AccountSettingsScreen(
         account = state.account,
         onShowRenameAccountClick = {
             scope.launch {
-                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.RenameAccount)
+                viewModel.setBottomSheetContent(State.BottomSheetContent.RenameAccount)
                 bottomSheetState.show()
             }
         },
@@ -118,12 +122,18 @@ fun AccountSettingsScreen(
         isXrdLoading = state.isFreeXRDLoading,
         onHideAccount = {
             scope.launch {
-                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.HideAccount)
+                viewModel.setBottomSheetContent(State.BottomSheetContent.HideAccount)
                 bottomSheetState.show()
             }
         },
         isAccountNameUpdated = state.isAccountNameUpdated,
-        onSnackbarMessageShown = viewModel::onSnackbarMessageShown
+        onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
+        onDeleteAccount = {
+            scope.launch {
+                viewModel.setBottomSheetContent(State.BottomSheetContent.DeleteAccount)
+                bottomSheetState.show()
+            }
+        }
     )
 
     if (state.isBottomSheetVisible) {
@@ -133,7 +143,7 @@ fun AccountSettingsScreen(
             sheetState = bottomSheetState,
             sheetContent = {
                 when (state.bottomSheetContent) {
-                    AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
+                    State.BottomSheetContent.RenameAccount -> {
                         RenameAccountSheet(
                             accountNameChanged = state.accountNameChanged,
                             onNewAccountNameChange = viewModel::onRenameAccountNameChange,
@@ -147,14 +157,18 @@ fun AccountSettingsScreen(
                         )
                     }
 
-                    AccountPreferenceUiState.BottomSheetContent.HideAccount -> {
+                    State.BottomSheetContent.HideAccount -> {
                         HideAccountSheet(
                             onHideAccountClick = viewModel::onHideAccount,
                             onClose = hideSheetAction
                         )
                     }
 
-                    AccountPreferenceUiState.BottomSheetContent.None -> {}
+                    State.BottomSheetContent.DeleteAccount -> AccountDeleteSheet(
+                        onClose = hideSheetAction,
+                        onDeleteAccount = viewModel::onDeleteConfirm
+                    )
+                    State.BottomSheetContent.None -> {}
                 }
             },
             showDragHandle = true,
@@ -177,6 +191,7 @@ private fun AccountSettingsContent(
     faucetState: FaucetState,
     isXrdLoading: Boolean,
     onHideAccount: () -> Unit,
+    onDeleteAccount: () -> Unit,
     isAccountNameUpdated: Boolean,
     onSnackbarMessageShown: () -> Unit,
 ) {
@@ -309,13 +324,21 @@ private fun AccountSettingsContent(
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(
-                            start = RadixTheme.dimensions.paddingLarge,
-                            end = RadixTheme.dimensions.paddingLarge,
-                            bottom = RadixTheme.dimensions.paddingDefault
-                        ),
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .padding(bottom = RadixTheme.dimensions.paddingSmall),
                     text = stringResource(R.string.accountSettings_hideAccount_button),
                     onClick = onHideAccount
+                )
+            }
+
+            item {
+                WarningButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    text = "Delete Account", // TODO crowdin
+                    onClick = onDeleteAccount
                 )
             }
         }
@@ -449,6 +472,7 @@ fun AccountSettingsPreview() {
             faucetState = FaucetState.Available(isEnabled = true),
             isXrdLoading = false,
             onHideAccount = {},
+            onDeleteAccount = {},
             isAccountNameUpdated = false,
             onSnackbarMessageShown = {}
         )
