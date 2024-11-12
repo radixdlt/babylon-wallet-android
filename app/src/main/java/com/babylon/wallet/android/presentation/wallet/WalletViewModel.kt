@@ -25,7 +25,6 @@ import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLocker
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.HomeCard
@@ -302,21 +301,11 @@ class WalletViewModel @Inject constructor(
     }
 
     fun onCardClick(card: HomeCard) {
-        viewModelScope.launch {
-            when (card) {
-                HomeCard.Connector -> {
-                    sendEvent(Event.NavigateToLinkConnector)
-                }
-
-                HomeCard.StartRadQuest -> {
-                    sendEvent(Event.OpenUrl(RAD_QUEST_URL))
-                }
-
-                else -> {}
-            }
-            // Currently all the cards should be dismissed on tap
-            homeCards.dismissCard(card)
-        }
+        homeCards.onCardClick(
+            card = card,
+            navigateToLinkConnector = { sendEvent(Event.NavigateToLinkConnector) },
+            openUrl = { url -> sendEvent(Event.OpenUrl(url)) }
+        )
     }
 
     fun onCardClose(card: HomeCard) {
