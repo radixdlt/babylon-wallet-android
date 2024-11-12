@@ -14,4 +14,5 @@ object Constants {
     const val RADIX_SUPPORT_EMAIL_SUBJECT = "Customer Support Case"
 
     const val RAD_QUEST_URL = "https://radquest.io?wallet=ready"
+    const val RADIX_ECOSYSTEM_URL = "https://www.radixdlt.com/ecosystem-directory"
 }
