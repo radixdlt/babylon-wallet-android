@@ -24,6 +24,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -31,6 +32,7 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 @Composable
 fun AccountDeleteSheet(
     modifier: Modifier = Modifier,
+    state: AccountSettingsViewModel.State.BottomSheetContent.DeleteAccount,
     onClose: () -> Unit,
     onDeleteAccount: () -> Unit
 ) {
@@ -97,7 +99,12 @@ fun AccountDeleteSheet(
             RadixPrimaryButton(
                 modifier = Modifier.height(50.dp).weight(1.5f),
                 text = "Continue",
-                onClick = onDeleteAccount
+                onClick = {
+                    if (!state.isFetchingAssets) {
+                        onDeleteAccount()
+                    }
+                },
+                isLoading = state.isFetchingAssets
             )
         }
     }
@@ -110,6 +117,7 @@ fun AccountDeleteSheet(
 fun AccountDeleteSheetPreview() {
     RadixWalletPreviewTheme {
         AccountDeleteSheet(
+            state = AccountSettingsViewModel.State.BottomSheetContent.DeleteAccount(isFetchingAssets = false),
             onClose = {},
             onDeleteAccount = {}
         )

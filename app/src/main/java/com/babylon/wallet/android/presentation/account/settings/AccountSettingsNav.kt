@@ -37,6 +37,7 @@ fun NavController.accountSettings(
 fun NavGraphBuilder.accountSettings(
     onBackClick: () -> Unit,
     onAccountSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
+    onMoveAssetsToAccountForDelete: (AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit
 ) {
     composable(
@@ -61,6 +62,7 @@ fun NavGraphBuilder.accountSettings(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onSettingItemClick = onAccountSettingItemClick,
+            onMoveAssetsToAccountForDelete = onMoveAssetsToAccountForDelete,
             onHideAccountClick = onHideAccountClick
         )
     }

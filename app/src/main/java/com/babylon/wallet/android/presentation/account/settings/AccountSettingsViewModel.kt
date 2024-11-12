@@ -20,6 +20,7 @@ import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -28,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.assets.Asset
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
@@ -56,7 +58,7 @@ class AccountSettingsViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
-        deleteAccountDelegate(viewModelScope, _state)
+        deleteAccountDelegate(viewModelScope, _state, this)
 
         loadAccount()
         viewModelScope.launch {
@@ -213,8 +215,13 @@ class AccountSettingsViewModel @Inject constructor(
         val isBottomSheetVisible: Boolean
             get() = bottomSheetContent != BottomSheetContent.None
 
-        enum class BottomSheetContent {
-            None, RenameAccount, HideAccount, DeleteAccount
+        sealed interface BottomSheetContent {
+            data object None: BottomSheetContent
+            data object RenameAccount: BottomSheetContent
+            data object HideAccount: BottomSheetContent
+            data class DeleteAccount(
+                val isFetchingAssets: Boolean = false
+            ): BottomSheetContent
         }
 
         companion object {
@@ -229,6 +236,11 @@ class AccountSettingsViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data object AccountHidden : Event
+
+        data class ChooseAccountToTransferAssetsBeforeDelete(
+            val deletingAccount: Account,
+            val assets: List<Asset>
+        ): Event
     }
 }
 

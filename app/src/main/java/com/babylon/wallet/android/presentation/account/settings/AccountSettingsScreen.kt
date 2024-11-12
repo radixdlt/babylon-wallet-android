@@ -70,6 +70,7 @@ fun AccountSettingsScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
+    onMoveAssetsToAccountForDelete: (AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -78,6 +79,7 @@ fun AccountSettingsScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 Event.AccountHidden -> onHideAccountClick()
+                is Event.ChooseAccountToTransferAssetsBeforeDelete -> onMoveAssetsToAccountForDelete(event.deletingAccount.address)
             }
         }
     }
@@ -117,7 +119,7 @@ fun AccountSettingsScreen(
             enableImePadding = true,
             sheetState = bottomSheetState,
             sheetContent = {
-                when (state.bottomSheetContent) {
+                when (val sheetState = state.bottomSheetContent) {
                     State.BottomSheetContent.RenameAccount -> {
                         RenameAccountSheet(
                             accountNameChanged = state.accountNameChanged,
@@ -138,11 +140,12 @@ fun AccountSettingsScreen(
                         )
                     }
 
-                    State.BottomSheetContent.DeleteAccount -> AccountDeleteSheet(
+                    State.BottomSheetContent.None -> {}
+                    is State.BottomSheetContent.DeleteAccount -> AccountDeleteSheet(
+                        state = sheetState,
                         onClose = viewModel::onDismissBottomSheet,
                         onDeleteAccount = viewModel::onDeleteConfirm
                     )
-                    State.BottomSheetContent.None -> {}
                 }
             },
             showDragHandle = true,
