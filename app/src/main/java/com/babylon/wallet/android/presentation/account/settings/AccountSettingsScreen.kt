@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -195,6 +197,46 @@ private fun AccountSettingsContent(
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
         },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .padding(WindowInsets.navigationBars.asPaddingValues())
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                if (faucetState is FaucetState.Available) {
+                    RadixSecondaryButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                        onClick = onGetFreeXrdClick,
+                        isLoading = isXrdLoading,
+                        enabled = !isXrdLoading && faucetState.isEnabled
+                    )
+                    if (isXrdLoading) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                            text = stringResource(R.string.accountSettings_loadingPrompt),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                    }
+                }
+
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.accountSettings_hideAccount_button),
+                    onClick = onHideAccount
+                )
+
+                WarningButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Delete Account", // TODO crowdin
+                    onClick = onDeleteAccount
+                )
+            }
+        },
         snackbarHost = {
             RadixSnackbarHost(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
@@ -254,64 +296,6 @@ private fun AccountSettingsContent(
                         }
                     }
                 }
-            }
-            item {
-                if (faucetState is FaucetState.Available) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = RadixTheme.dimensions.paddingLarge,
-                                end = RadixTheme.dimensions.paddingLarge,
-                                top = RadixTheme.dimensions.paddingDefault
-                            ),
-                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                        onClick = onGetFreeXrdClick,
-                        isLoading = isXrdLoading,
-                        enabled = !isXrdLoading && faucetState.isEnabled
-                    )
-
-                    if (isXrdLoading) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingXXXXLarge,
-                                    vertical = RadixTheme.dimensions.paddingSmall
-                                ),
-                            text = stringResource(R.string.accountSettings_loadingPrompt),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                } else {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-            }
-            item {
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                        .padding(bottom = RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(R.string.accountSettings_hideAccount_button),
-                    onClick = onHideAccount
-                )
-            }
-
-            item {
-                WarningButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                    text = "Delete Account", // TODO crowdin
-                    onClick = onDeleteAccount
-                )
             }
         }
     }
