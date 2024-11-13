@@ -392,6 +392,10 @@ private fun TransactionPreviewContent(
                             )
                         }
                     }
+
+                    if (state.showReceiptEdges) {
+                        ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+                    }
                 }
 
                 Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
@@ -473,10 +477,6 @@ private fun TransactionPreviewContent(
                     )
                 }
             }
-        }
-
-        if (state.showReceiptEdges) {
-            ReceiptEdge(color = RadixTheme.colors.defaultBackground)
         }
     }
 
