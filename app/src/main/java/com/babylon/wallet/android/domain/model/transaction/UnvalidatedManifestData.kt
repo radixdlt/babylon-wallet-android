@@ -50,6 +50,9 @@ fun UnvalidatedManifestData.prepareInternalTransactionRequest(
     remoteEntityId = RemoteEntityID.ConnectorId(""),
     interactionId = requestId,
     unvalidatedManifestData = this,
-    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(networkId, blockUntilCompleted),
+    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(
+        networkId = networkId,
+        blockUntilCompleted = blockUntilCompleted
+    ),
     transactionType = transactionType
 )

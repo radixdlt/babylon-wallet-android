@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.dapp.model.TransactionType
+import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
@@ -66,6 +68,7 @@ class MainViewModel @Inject constructor(
     p2PLinksRepository: P2PLinksRepository,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val transactionStatusClient: TransactionStatusClient,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDAppUseCase,
     private val appEventBus: AppEventBus,
@@ -121,6 +124,10 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.AddressDetails>()
 
+    val accountDeletedEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.AccountDeleted>()
+
     val accessFactorSourcesEvents = appEventBus
         .events
         .filterIsInstance<AppEvent.AccessFactorSources>()
@@ -164,6 +171,7 @@ class MainViewModel @Inject constructor(
             }.collect()
         }
         observeAppLockState()
+        observeAccountDeletionTransactions()
         handleAllIncomingRequests()
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
@@ -181,6 +189,19 @@ class MainViewModel @Inject constructor(
                 .collect { isAppLocked ->
                     _state.update { state ->
                         state.copy(isAppLocked = isAppLocked)
+                    }
+                }
+        }
+    }
+
+    private fun observeAccountDeletionTransactions() {
+        viewModelScope.launch {
+            transactionStatusClient.listenForPollStatusByTransactionType(TransactionType.DeleteAccount::class)
+                .collect { status ->
+                    val deletedAccountAddress = (status.transactionType as? TransactionType.DeleteAccount)?.accountAddress ?: return@collect
+
+                    status.result.onSuccess {
+                        appEventBus.sendEvent(AppEvent.AccountDeleted(deletedAccountAddress))
                     }
                 }
         }
@@ -226,7 +247,7 @@ class MainViewModel @Inject constructor(
                                 val requestId = dappToWalletInteraction.interactionId
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
-                                        "remote connector $remoteConnectorId with id $requestId"
+                                            "remote connector $remoteConnectorId with id $requestId"
                                 )
                                 verifyIncomingRequest(dappToWalletInteraction)
                             }

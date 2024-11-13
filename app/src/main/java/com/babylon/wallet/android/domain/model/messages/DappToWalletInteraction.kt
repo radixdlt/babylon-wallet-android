@@ -36,11 +36,14 @@ sealed class DappToWalletInteraction(
         val origin: String,
         val dAppDefinitionAddress: String,
         val isInternal: Boolean, // Indicates that the request is made from the wallet app itself.
-        val blockUntilCompleted: Boolean = false
+        val blockUntilCompleted: Boolean = false,
     ) {
 
         companion object {
-            fun internal(networkId: NetworkId, blockUntilCompleted: Boolean = false) = RequestMetadata(
+            fun internal(
+                networkId: NetworkId,
+                blockUntilCompleted: Boolean = false
+            ) = RequestMetadata(
                 networkId = networkId,
                 origin = "",
                 dAppDefinitionAddress = "",

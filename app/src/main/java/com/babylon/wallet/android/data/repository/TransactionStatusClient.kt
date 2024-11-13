@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.withLock
 import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.reflect.KClass
 
 @Singleton
 class TransactionStatusClient @Inject constructor(
@@ -46,7 +47,7 @@ class TransactionStatusClient @Inject constructor(
         }.filterNotNull().cancellable()
     }
 
-    fun <T : TransactionType> listenForPollStatusByTransactionType(type: Class<T>): Flow<TransactionStatusData> = transactionStatuses
+    fun <T : TransactionType> listenForPollStatusByTransactionType(type: KClass<T>): Flow<TransactionStatusData> = transactionStatuses
         .map { statuses ->
             statuses.find { type.isInstance(it.transactionType) }
         }.filterNotNull().cancellable()

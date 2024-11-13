@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.delay
@@ -43,6 +44,8 @@ sealed interface AppEvent {
     data object ProcessBufferedDeepLinkRequest : AppEvent
 
     data class AddressDetails(val address: ActionableAddress) : AppEvent
+
+    data class AccountDeleted(val address: AccountAddress): AppEvent
 
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {

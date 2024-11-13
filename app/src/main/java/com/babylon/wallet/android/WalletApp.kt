@@ -28,6 +28,7 @@ import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.account.settings.delete.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -130,6 +131,10 @@ fun WalletApp(
         HandleAddressDetailsEvents(
             navController = navController,
             addressDetailsEvents = mainViewModel.addressDetailsEvents
+        )
+        HandleAccountDeletedEvent(
+            navController = navController,
+            accountDeletedEvents = mainViewModel.accountDeletedEvents
         )
         ObserveHighPriorityScreens(
             navController = navController,
@@ -261,6 +266,18 @@ private fun HandleAddressDetailsEvents(
     LaunchedEffect(Unit) {
         addressDetailsEvents.collect { event ->
             navController.addressDetails(actionableAddress = event.address)
+        }
+    }
+}
+
+@Composable
+private fun HandleAccountDeletedEvent(
+    navController: NavController,
+    accountDeletedEvents: Flow<AppEvent.AccountDeleted>
+) {
+    LaunchedEffect(Unit) {
+        accountDeletedEvents.collect { event ->
+            navController.deletedAccountSuccess(deletedAccountAddress = event.address)
         }
     }
 }

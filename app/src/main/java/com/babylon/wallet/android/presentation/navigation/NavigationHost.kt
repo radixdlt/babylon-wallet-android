@@ -21,6 +21,7 @@ import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
 import com.babylon.wallet.android.presentation.account.settings.delete.deleteAccount
+import com.babylon.wallet.android.presentation.account.settings.delete.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.account.settings.delete.deletingAccountMoveAssets
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
@@ -511,6 +512,11 @@ fun NavigationHost(
         deletingAccountMoveAssets(
             onDismiss = {
                 navController.popBackStack()
+            }
+        )
+        deletedAccountSuccess(
+            onGotoHomescreen = {
+                navController.popBackStack(MAIN_ROUTE, inclusive = false)
             }
         )
         devSettings(onBackClick = {
