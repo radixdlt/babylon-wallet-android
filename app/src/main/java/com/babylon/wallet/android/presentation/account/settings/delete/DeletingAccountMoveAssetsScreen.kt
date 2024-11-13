@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +38,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.Account
@@ -61,6 +64,7 @@ fun DeletingAccountMoveAssetsScreen(
         onSkipCancel = viewModel::onSkipCancelled,
         onSkipConfirm = viewModel::onSkipConfirmed,
         onAccountSelected = viewModel::onAccountSelected,
+        onMessageShown = viewModel::onMessageShown,
         onSubmit = viewModel::onSubmit,
         onDismiss = onDismiss
     )
@@ -74,6 +78,7 @@ private fun DeletingAccountMoveAssetsContent(
     onSkipConfirm: () -> Unit,
     onSkipCancel: () -> Unit,
     onAccountSelected: (Account) -> Unit,
+    onMessageShown: () -> Unit,
     onSubmit: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -87,6 +92,13 @@ private fun DeletingAccountMoveAssetsContent(
             onCancelClick = onDismiss
         )
     }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
 
     Scaffold(
         modifier = modifier,
@@ -122,6 +134,12 @@ private fun DeletingAccountMoveAssetsContent(
                         onClick = onSkipRequested
                     )
                 },
+            )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -308,6 +326,7 @@ fun DeletingAccountMoveAssetsFetchingBalancesPreview() {
             onSkipConfirm = {},
             onSkipCancel = {},
             onAccountSelected = {},
+            onMessageShown = {},
             onSubmit = {},
             onDismiss = {}
         )
@@ -334,6 +353,7 @@ fun DeletingAccountMoveAssetsWithAccountsPreview() {
             onSkipConfirm = {},
             onSkipCancel = {},
             onAccountSelected = {},
+            onMessageShown = {},
             onSubmit = {},
             onDismiss = {}
         )
@@ -359,6 +379,7 @@ fun DeletingAccountMoveAssetsWithWarningPreview() {
             onSkipConfirm = {},
             onSkipCancel = {},
             onAccountSelected = {},
+            onMessageShown = {},
             onSubmit = {},
             onDismiss = {}
         )
@@ -385,6 +406,7 @@ fun DeletingAccountMoveAssetsWithSkipDialogPreview() {
             onSkipConfirm = {},
             onSkipCancel = {},
             onAccountSelected = {},
+            onMessageShown = {},
             onSubmit = {},
             onDismiss = {}
         )
@@ -412,6 +434,7 @@ fun DeletingAccountMoveAssetsWithCannotDeleteAccountDialogPreview() {
             onSkipConfirm = {},
             onSkipCancel = {},
             onAccountSelected = {},
+            onMessageShown = {},
             onSubmit = {},
             onDismiss = {}
         )
