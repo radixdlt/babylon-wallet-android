@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -55,7 +54,6 @@ import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
-import com.babylon.wallet.android.presentation.transaction.composables.DeleteAccountTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
@@ -70,6 +68,7 @@ import com.babylon.wallet.android.presentation.transaction.model.AccountWithTran
 import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
 import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -337,13 +336,6 @@ private fun TransactionPreviewContent(
                                 preview = preview
                             )
 
-                            is PreviewType.DeleteAccount -> DeleteAccountTypeContent(
-                                preview = preview,
-                                hiddenResourceIds = state.hiddenResourceIds,
-                                onTransferableFungibleClick = onTransferableFungibleClick,
-                                onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick
-                            )
-
                             else -> {}
                         }
                     }
@@ -602,7 +594,7 @@ private fun BottomSheetContent(
 private fun TransactionPreviewContentPreview(
     @PreviewParameter(TransactionReviewPreviewProvider::class) state: State
 ) {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         TransactionPreviewContent(
             state = state,
             onBackClick = {},
@@ -736,19 +728,25 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
             ),
             State(
                 isLoading = false,
-                previewType = PreviewType.DeleteAccount(
-                    account = Account.sampleMainnet(),
-                    deposit = AccountWithTransferables(
-                        account = InvolvedAccount.Owned(Account.sampleMainnet()),
-                        transferables = listOf(
-                            Transferable.FungibleType.Token(
-                                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                                amount = BoundedAmount.Exact("745".toDecimal192()),
-                                isNewlyCreated = true
+                previewType = PreviewType.Transaction(
+                    from = emptyList(),
+                    to = listOf(
+                        AccountWithTransferables(
+                            account = InvolvedAccount.Owned(Account.sampleMainnet()),
+                            transferables = listOf(
+                                Transferable.FungibleType.Token(
+                                    asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                    amount = BoundedAmount.Exact("745".toDecimal192()),
+                                    isNewlyCreated = true
+                                )
                             )
                         )
-                    )
-                )
+                    ),
+                    badges = emptyList(),
+                    involvedComponents = PreviewType.Transaction.InvolvedComponents.None,
+                    newlyCreatedGlobalIds = emptyList()
+                ),
+                accountToDelete = Account.sampleMainnet()
             ),
             State(
                 isLoading = true,

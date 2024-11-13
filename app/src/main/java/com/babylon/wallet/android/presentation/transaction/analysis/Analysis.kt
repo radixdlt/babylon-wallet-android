@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -12,13 +13,15 @@ import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 class Analysis private constructor(
     val previewType: PreviewType,
     val summary: Summary,
-    val signers: List<ProfileEntity>
+    val signers: List<ProfileEntity>,
+    val accountToDelete: Account?
 ) {
 
     constructor(
         previewType: PreviewType,
         summary: Summary,
-        profile: Profile
+        profile: Profile,
+        accountToDelete: Account? = null
     ) : this(
         previewType = previewType,
         summary = summary,
@@ -31,6 +34,7 @@ class Analysis private constructor(
                     it.address == address.v1
                 }?.asProfileEntity()
             }
-        }
+        },
+        accountToDelete = accountToDelete
     )
 }

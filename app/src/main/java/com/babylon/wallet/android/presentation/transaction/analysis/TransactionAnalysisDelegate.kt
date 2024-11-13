@@ -13,18 +13,23 @@ import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summ
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressFormat
+import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.PreAuthToReview
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.random
+import com.radixdlt.sargon.newTransactionManifestSample
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.formatted
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -45,9 +50,13 @@ class TransactionAnalysisDelegate @Inject constructor(
     /**
      * Runs analysis on each transaction type received. Resolves the preview type and returns the signers involved.
      */
-    suspend fun analyse(): Result<Analysis> = when (data.value.request.transactionType) {
+    suspend fun analyse(): Result<Analysis> = when (val txType = data.value.request.transactionType) {
         is TransactionType.PreAuthorized -> analysePreAuthTransaction(
             manifestData = data.value.request.unvalidatedManifestData
+        )
+
+        is TransactionType.DeleteAccount -> analyseDeleteAccountTransaction(
+            accountAddress = txType.accountAddress
         )
 
         else -> analyseTransaction(
@@ -71,22 +80,13 @@ class TransactionAnalysisDelegate @Inject constructor(
         manifestData: UnvalidatedManifestData,
         isInternal: Boolean
     ): Result<Analysis> = runCatching {
-        val notary = data.value.ephemeralNotaryPrivateKey
-        val transactionToReview = withContext(dispatcher) {
-            sargonOsManager.sargonOs.analyseTransactionPreview(
-                instructions = manifestData.instructions,
-                blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
-                areInstructionsOriginatingFromHost = isInternal,
-                nonce = Nonce.random(),
-                notaryPublicKey = notary.toPublicKey()
-            )
-        }
+        val summary = getExecutionSummary(
+            instructions = manifestData.instructions,
+            blobs = manifestData.blobs,
+            isInternal = isInternal
+        )
 
         val profile = getProfileUseCase()
-        val summary = Summary.FromExecution(
-            manifest = SummarizedManifest.Transaction(transactionToReview.transactionManifest),
-            summary = transactionToReview.executionSummary
-        )
         val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
 
         Analysis(
@@ -138,6 +138,54 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
         }
+    }
+
+    private suspend fun analyseDeleteAccountTransaction(
+        accountAddress: AccountAddress,
+    ): Result<Analysis> {
+        val profile = getProfileUseCase()
+        val account = profile.activeAccountOnCurrentNetwork(accountAddress)
+            ?: return Result.failure(IllegalStateException("Account $accountAddress not found in profile"))
+
+        // TODO call SargonOS to get the TransactionManifest
+        val transactionManifest = newTransactionManifestSample()
+        val summary = getExecutionSummary(
+            instructions = transactionManifest.instructionsString,
+            blobs = emptyList(),
+            isInternal = true
+        )
+        val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
+
+        return Result.success(
+            Analysis(
+                previewType = previewType,
+                summary = summary,
+                profile = profile,
+                accountToDelete = account
+            )
+        )
+    }
+
+    private suspend fun getExecutionSummary(
+        instructions: String,
+        blobs: List<BagOfBytes>,
+        isInternal: Boolean
+    ): Summary.FromExecution {
+        val notary = data.value.ephemeralNotaryPrivateKey
+        val transactionToReview = withContext(dispatcher) {
+            sargonOsManager.sargonOs.analyseTransactionPreview(
+                instructions = instructions,
+                blobs = Blobs.init(blobs = blobs.map { Blob.init(it) }),
+                areInstructionsOriginatingFromHost = isInternal,
+                nonce = Nonce.random(),
+                notaryPublicKey = notary.toPublicKey()
+            )
+        }
+
+        return Summary.FromExecution(
+            manifest = SummarizedManifest.Transaction(transactionToReview.transactionManifest),
+            summary = transactionToReview.executionSummary
+        )
     }
 
     private suspend fun cacheNewlyCreatedResources(previewType: PreviewType) {

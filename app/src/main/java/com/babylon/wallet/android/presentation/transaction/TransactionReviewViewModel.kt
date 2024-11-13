@@ -282,7 +282,8 @@ class TransactionReviewViewModel @Inject constructor(
         val expiration: Expiration? = null,
         val error: TransactionErrorMessage? = null,
         val hiddenResourceIds: PersistentList<ResourceIdentifier> = persistentListOf(),
-        val isSubmitting: Boolean = false
+        val isSubmitting: Boolean = false,
+        val accountToDelete: Account? = null
     ) : UiState {
 
         val rawManifestIsPreviewable: Boolean
@@ -507,12 +508,5 @@ sealed interface PreviewType {
 
             data object None : InvolvedComponents
         }
-    }
-
-    data class DeleteAccount(
-        val account: Account,
-        val deposit: AccountWithTransferables?
-    ): PreviewType {
-        override val badges: List<Badge> = emptyList()
     }
 }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -23,35 +21,18 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.DSR
-import com.babylon.wallet.android.presentation.model.BoundedAmount
-import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
-import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
-import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.ResourceIdentifier
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
-fun DeleteAccountTypeContent(
+fun DeleteAccountContent(
     modifier: Modifier = Modifier,
-    preview: PreviewType.DeleteAccount,
-    hiddenResourceIds: PersistentList<ResourceIdentifier>,
-    onTransferableFungibleClick: (asset: Transferable.FungibleType) -> Unit,
-    onTransferableNonFungibleItemClick: (asset: Transferable.NonFungibleType, Resource.NonFungibleResource.Item) -> Unit
+    account: Account
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(RadixTheme.dimensions.paddingDefault)
     ) {
         SectionTitle(
             titleRes = R.string.transactionReview_deletingAccountHeading,
@@ -71,8 +52,8 @@ fun DeleteAccountTypeContent(
                 .padding(RadixTheme.dimensions.paddingMedium),
         ) {
             AccountCardHeader(
-                displayName = preview.account.displayName.value,
-                address = preview.account.address
+                displayName = account.displayName.value,
+                address = account.address
             )
 
             Row(
@@ -103,19 +84,6 @@ fun DeleteAccountTypeContent(
                 )
             }
         }
-
-        if (preview.deposit != null) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-
-            DepositAccountContent(
-                to = remember(preview.deposit) { persistentListOf(preview.deposit) },
-                hiddenResourceIds = hiddenResourceIds,
-                onEditGuaranteesClick = {},
-                onTransferableFungibleClick = onTransferableFungibleClick,
-                onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
-                onTransferableNonFungibleByAmountClick = { _, _ -> }
-            )
-        }
     }
 }
 
@@ -124,23 +92,8 @@ fun DeleteAccountTypeContent(
 @UsesSampleValues
 private fun DeleteAccountTypePreview() {
     RadixWalletPreviewTheme {
-        DeleteAccountTypeContent(
-            preview = PreviewType.DeleteAccount(
-                account = Account.sampleMainnet(),
-                deposit = AccountWithTransferables(
-                    account = InvolvedAccount.Owned(Account.sampleMainnet()),
-                    transferables = listOf(
-                        Transferable.FungibleType.Token(
-                            asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
-                            amount = BoundedAmount.Exact("745".toDecimal192()),
-                            isNewlyCreated = true
-                        )
-                    )
-                )
-            ),
-            hiddenResourceIds = persistentListOf(),
-            onTransferableFungibleClick = {},
-            onTransferableNonFungibleItemClick = { _, _ -> }
+        DeleteAccountContent(
+            account = Account.sampleMainnet()
         )
     }
 }
