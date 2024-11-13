@@ -20,6 +20,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.withledger.
 import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
+import com.babylon.wallet.android.presentation.account.settings.delete.deleteAccount
 import com.babylon.wallet.android.presentation.account.settings.delete.deletingAccountMoveAssets
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
@@ -492,11 +493,19 @@ fun NavigationHost(
                     else -> {}
                 }
             },
-            onMoveAssetsToAccountForDelete = {
-                navController.deletingAccountMoveAssets(deletingAccountAddress = it)
-            },
             onHideAccountClick = {
                 navController.popBackStack(MAIN_ROUTE, inclusive = false)
+            },
+            onDeleteAccountClick = {
+                navController.deleteAccount(accountAddress = it)
+            }
+        )
+        deleteAccount(
+            onMoveAssetsToAnotherAccount = { accountAddress ->
+                navController.deletingAccountMoveAssets(deletingAccountAddress = accountAddress)
+            },
+            onDismiss = {
+                navController.popBackStack()
             }
         )
         deletingAccountMoveAssets(

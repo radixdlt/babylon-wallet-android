@@ -43,7 +43,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.State
-import com.babylon.wallet.android.presentation.account.settings.delete.AccountDeleteSheet
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
@@ -70,16 +69,16 @@ fun AccountSettingsScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
-    onMoveAssetsToAccountForDelete: (AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
+    onDeleteAccountClick: (AccountAddress) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                Event.AccountHidden -> onHideAccountClick()
-                is Event.ChooseAccountToTransferAssetsBeforeDelete -> onMoveAssetsToAccountForDelete(event.deletingAccount.address)
+                is Event.AccountHidden -> onHideAccountClick()
+                is Event.OpenDeleteAccount -> onDeleteAccountClick(event.accountAddress)
             }
         }
     }
@@ -141,11 +140,6 @@ fun AccountSettingsScreen(
                     }
 
                     State.BottomSheetContent.None -> {}
-                    is State.BottomSheetContent.DeleteAccount -> AccountDeleteSheet(
-                        state = sheetState,
-                        onClose = viewModel::onDismissBottomSheet,
-                        onDeleteAccount = viewModel::onDeleteConfirm
-                    )
                 }
             },
             showDragHandle = true,

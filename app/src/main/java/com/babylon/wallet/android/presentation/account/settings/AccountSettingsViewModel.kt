@@ -6,8 +6,6 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
-import com.babylon.wallet.android.presentation.account.settings.delete.DeleteAccountDelegate
-import com.babylon.wallet.android.presentation.account.settings.delete.DeleteAccountDelegateImpl
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -18,6 +16,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.Event
@@ -29,7 +28,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.assets.Asset
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
@@ -48,18 +46,14 @@ class AccountSettingsViewModel @Inject constructor(
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
     private val appEventBus: AppEventBus,
-    private val deleteAccountDelegate: DeleteAccountDelegateImpl
 ) : StateViewModel<AccountSettingsViewModel.State>(),
-    OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl(),
-    DeleteAccountDelegate by deleteAccountDelegate {
+    OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
 
     override fun initialState(): State = State()
 
     init {
-        deleteAccountDelegate(viewModelScope, _state, this)
-
         loadAccount()
         viewModelScope.launch {
             if (!BuildConfig.DEBUG_MODE) return@launch
@@ -199,6 +193,13 @@ class AccountSettingsViewModel @Inject constructor(
         _state.update { state -> state.copy(isAccountNameUpdated = false) }
     }
 
+    fun onDeleteAccountRequest() {
+        val account = state.value.account ?: return
+        viewModelScope.launch {
+            sendEvent(Event.OpenDeleteAccount(accountAddress = account.address))
+        }
+    }
+
     data class State(
         val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
         val account: Account? = null,
@@ -219,9 +220,6 @@ class AccountSettingsViewModel @Inject constructor(
             data object None: BottomSheetContent
             data object RenameAccount: BottomSheetContent
             data object HideAccount: BottomSheetContent
-            data class DeleteAccount(
-                val isFetchingAssets: Boolean = false
-            ): BottomSheetContent
         }
 
         companion object {
@@ -237,10 +235,7 @@ class AccountSettingsViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data object AccountHidden : Event
 
-        data class ChooseAccountToTransferAssetsBeforeDelete(
-            val deletingAccount: Account,
-            val assets: List<Asset>
-        ): Event
+        data class OpenDeleteAccount(val accountAddress: AccountAddress): Event
     }
 }
 

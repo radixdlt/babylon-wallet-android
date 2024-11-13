@@ -37,8 +37,8 @@ fun NavController.accountSettings(
 fun NavGraphBuilder.accountSettings(
     onBackClick: () -> Unit,
     onAccountSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
-    onMoveAssetsToAccountForDelete: (AccountAddress) -> Unit,
-    onHideAccountClick: () -> Unit
+    onHideAccountClick: () -> Unit,
+    onDeleteAccountClick: (AccountAddress) -> Unit
 ) {
     composable(
         route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
@@ -62,8 +62,8 @@ fun NavGraphBuilder.accountSettings(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onSettingItemClick = onAccountSettingItemClick,
-            onMoveAssetsToAccountForDelete = onMoveAssetsToAccountForDelete,
-            onHideAccountClick = onHideAccountClick
+            onHideAccountClick = onHideAccountClick,
+            onDeleteAccountClick = onDeleteAccountClick
         )
     }
 }
