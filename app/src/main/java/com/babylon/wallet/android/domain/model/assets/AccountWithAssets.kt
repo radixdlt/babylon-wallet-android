@@ -13,4 +13,7 @@ data class AccountWithAssets(
 
     val isDappDefinitionAccountType: Boolean
         get() = details?.accountType == AccountType.DAPP_DEFINITION
+
+    val isAccountDeleted: Boolean
+        get() = false
 }

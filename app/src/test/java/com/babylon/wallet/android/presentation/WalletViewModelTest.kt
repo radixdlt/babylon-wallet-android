@@ -129,7 +129,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         advanceUntilIdle()
         val accounts = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty()
         coEvery {
-            getWalletAssetsUseCase(
+            getWalletAssetsUseCase.observe(
                 accounts = accounts,
                 isRefreshing = false
             )

@@ -36,8 +36,8 @@ class DeleteAccountViewModel @Inject constructor(
                 getProfileUseCase().activeAccountsOnCurrentNetwork.find { it.address == state.value.accountAddress } ?: return@launch
 
             _state.update { it.copy(isFetchingAssets = true) }
-            getWalletAssetsUseCase.collect(listOf(account), isRefreshing = false).onSuccess { accountsWithAssets ->
-                val assets = accountsWithAssets.firstOrNull()?.assets?.ownedAssets.orEmpty()
+            getWalletAssetsUseCase.collect(account, isRefreshing = false).onSuccess { accountWithAssets ->
+                val assets = accountWithAssets.assets?.ownedAssets.orEmpty()
 
                 if (assets.isEmpty()) {
                     _state.update { it.copy(isFetchingAssets = false, isPreparingManifest = true) }

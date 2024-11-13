@@ -42,7 +42,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -122,7 +121,7 @@ class AccountViewModel @Inject constructor(
             _state.update { it.onAccount(account, refreshEvent) }
             account
         }.flatMapLatest { account ->
-            getWalletAssetsUseCase(
+            getWalletAssetsUseCase.observe(
                 accounts = listOf(account),
                 isRefreshing = _state.value.refreshType.overrideCache
             ).catch { error ->
