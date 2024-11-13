@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.settings.delete
+package com.babylon.wallet.android.presentation.account.settings.delete.success
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.presentation.common.StateViewModel

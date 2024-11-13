@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.settings.delete
+package com.babylon.wallet.android.presentation.account.settings.delete.moveassets
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope

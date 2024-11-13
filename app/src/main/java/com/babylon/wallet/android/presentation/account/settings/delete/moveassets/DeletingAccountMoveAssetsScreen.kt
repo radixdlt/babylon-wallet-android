@@ -1,6 +1,6 @@
 @file:JvmName("DeletingAccountMoveAssetsViewModelKt")
 
-package com.babylon.wallet.android.presentation.account.settings.delete
+package com.babylon.wallet.android.presentation.account.settings.delete.moveassets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

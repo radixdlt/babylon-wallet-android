@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.settings.delete
+package com.babylon.wallet.android.presentation.account.settings.delete.success
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition

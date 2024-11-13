@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.settings.delete
+package com.babylon.wallet.android.presentation.account.settings.delete.success
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
