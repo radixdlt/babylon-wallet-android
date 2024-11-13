@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.settings.delete
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.usecases.PrepareTransactionForAccountDeletionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -23,6 +24,7 @@ class DeleteAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val prepareTransactionForAccountDeletionUseCase: PrepareTransactionForAccountDeletionUseCase
 ) : StateViewModel<DeleteAccountViewModel.State>(),
     OneOffEventHandler<DeleteAccountViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -37,10 +39,11 @@ class DeleteAccountViewModel @Inject constructor(
             getWalletAssetsUseCase.collect(listOf(account), isRefreshing = false).onSuccess { accountsWithAssets ->
                 val assets = accountsWithAssets.firstOrNull()?.assets?.ownedAssets.orEmpty()
 
-                _state.update { it.copy(isFetchingAssets = false) }
                 if (assets.isEmpty()) {
-                    // TODO create manifest without resources
+                    _state.update { it.copy(isFetchingAssets = false, isPreparingManifest = true) }
+                    prepareTransaction()
                 } else {
+                    _state.update { it.copy(isFetchingAssets = false, isPreparingManifest = false) }
                     sendEvent(Event.MoveAssetsToAnotherAccount(deletingAccountAddress = state.value.accountAddress))
                 }
             }.onFailure { error ->
@@ -58,11 +61,27 @@ class DeleteAccountViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    private suspend fun prepareTransaction() {
+        prepareTransactionForAccountDeletionUseCase(
+            deletingAccountAddress = state.value.accountAddress,
+        ).onSuccess {
+            _state.update { it.copy(isPreparingManifest = false) }
+        }.onFailure { error ->
+            _state.update { it.copy(isPreparingManifest = false, uiMessage = UiMessage.ErrorMessage(error)) }
+        }
+    }
+
     data class State(
         val accountAddress: AccountAddress,
-        val isFetchingAssets: Boolean = false,
+        private val isFetchingAssets: Boolean = false,
+        private val isPreparingManifest: Boolean = false,
         val uiMessage: UiMessage? = null
-    ) : UiState
+    ) : UiState {
+
+        val isContinueLoading: Boolean
+            get() = isFetchingAssets || isPreparingManifest
+
+    }
 
     sealed interface Event : OneOffEvent {
         data class MoveAssetsToAnotherAccount(val deletingAccountAddress: AccountAddress) : Event

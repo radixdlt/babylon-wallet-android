@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.account.settings.delete
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.babylon.wallet.android.domain.usecases.PrepareTransactionForAccountDeletionUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -10,8 +11,6 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
-import com.radixdlt.sargon.extensions.isZero
-import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -24,6 +23,7 @@ import javax.inject.Inject
 class DeletingAccountMoveAssetsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val stateRepository: StateRepository,
+    private val prepareTransactionForAccountDeletionUseCase: PrepareTransactionForAccountDeletionUseCase,
     private val savedStateHandle: SavedStateHandle
 ) : StateViewModel<DeletingAccountMoveAssetsViewModel.State>() {
 
@@ -58,7 +58,11 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
     }
 
     fun onSkipConfirmed() {
-        _state.update { it.copy(isSkipDialogVisible = false) }
+        _state.update {
+            it.copy(isSkipDialogVisible = false, isPreparingManifest = true, isSkipSelected = true)
+        }
+
+        viewModelScope.launch { prepareTransaction() }
     }
 
     fun onSkipCancelled() {
@@ -76,25 +80,42 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
     }
 
     fun onSubmit() {
-        _state.update { it.copy(isFetchingAssetsForDeletingAccount = true) }
+        _state.update { it.copy(isPreparingManifest = true, isSkipSelected = false) }
 
-        // TODO
-        // 1. Request for manifest
-        // 2. On Success show transaction
-        // 3. Check error if resources too many
-        // 4. Any other error
+        viewModelScope.launch { prepareTransaction() }
+    }
+
+    private suspend fun prepareTransaction() {
+        prepareTransactionForAccountDeletionUseCase(
+            deletingAccountAddress = state.value.deletingAccountAddress,
+            accountAddressToTransferResources = if (state.value.isSkipSelected) null else state.value.selectedAccount?.address
+        ).onSuccess {
+            _state.update { it.copy(isPreparingManifest = false, isSkipSelected = false) }
+        }.onFailure { error ->
+            _state.update { it.copy(isPreparingManifest = false, isSkipSelected = false, uiMessage = UiMessage.ErrorMessage(error)) }
+        }
     }
 
     data class State(
         val deletingAccountAddress: AccountAddress,
-        val isFetchingBalances: Boolean = true,
-        val isFetchingAssetsForDeletingAccount: Boolean = false,
         val selectedAccount: Account? = null,
-        val isSkipDialogVisible: Boolean = false,
         val isCannotDeleteAccountVisible: Boolean = false,
-        private val accountsWithBalances: Map<Account, Decimal192> = emptyMap(),
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val isSkipSelected: Boolean = false,
+        val isSkipDialogVisible: Boolean = false,
+        private val isFetchingBalances: Boolean = true,
+        private val isPreparingManifest: Boolean = false,
+        private val accountsWithBalances: Map<Account, Decimal192> = emptyMap()
     ) : UiState {
+
+        val isAccountsLoading: Boolean
+            get() = isFetchingBalances
+
+        val isContinueLoading: Boolean
+            get() = isPreparingManifest && !isSkipSelected
+
+        val isSkipLoading: Boolean
+            get() = isPreparingManifest && isSkipSelected
 
         fun accounts(): List<Account> = accountsWithBalances.keys.toList()
 

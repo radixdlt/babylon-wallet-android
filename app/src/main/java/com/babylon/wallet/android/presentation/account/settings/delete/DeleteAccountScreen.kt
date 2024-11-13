@@ -91,9 +91,9 @@ private fun DeleteAccountContent(
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_continue),
-                        isLoading = state.isFetchingAssets,
+                        isLoading = state.isContinueLoading,
                         onClick = {
-                            if (!state.isFetchingAssets) {
+                            if (!state.isContinueLoading) {
                                 onDeleteConfirm()
                             }
                         }
@@ -106,7 +106,7 @@ private fun DeleteAccountContent(
                             .padding(top = RadixTheme.dimensions.paddingSmall)
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_cancel),
-                        enabled = !state.isFetchingAssets,
+                        enabled = !state.isContinueLoading,
                         onClick = onDismiss
                     )
                 },

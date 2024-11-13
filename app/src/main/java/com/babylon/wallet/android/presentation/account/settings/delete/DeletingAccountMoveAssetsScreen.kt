@@ -106,7 +106,7 @@ private fun DeletingAccountMoveAssetsContent(
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_continue),
-                        isLoading = state.isFetchingAssetsForDeletingAccount,
+                        isLoading = state.isContinueLoading,
                         enabled = state.selectedAccount != null,
                         onClick = onSubmit
                     )
@@ -118,7 +118,7 @@ private fun DeletingAccountMoveAssetsContent(
                             .padding(top = RadixTheme.dimensions.paddingSmall)
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = "Skip",
-                        enabled = !state.isFetchingAssetsForDeletingAccount,
+                        enabled = !state.isContinueLoading,
                         onClick = onSkipRequested
                     )
                 },
@@ -186,7 +186,7 @@ private fun DeletingAccountMoveAssetsContent(
             }
 
             item {
-                if (state.isFetchingBalances) {
+                if (state.isAccountsLoading) {
                     Box(
                         modifier = Modifier
                             .height(140.dp)

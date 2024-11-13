@@ -46,6 +46,11 @@ class TransactionStatusClient @Inject constructor(
         }.filterNotNull().cancellable()
     }
 
+    fun <T : TransactionType> listenForPollStatusByTransactionType(type: Class<T>): Flow<TransactionStatusData> = transactionStatuses
+        .map { statuses ->
+            statuses.find { type.isInstance(it.transactionType) }
+        }.filterNotNull().cancellable()
+
     fun startPollingForTransactionStatus(
         intentHash: TransactionIntentHash,
         requestId: String,
