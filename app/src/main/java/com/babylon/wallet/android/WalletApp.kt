@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -135,6 +136,9 @@ fun WalletApp(
         HandleAccountDeletedEvent(
             navController = navController,
             accountDeletedEvents = mainViewModel.accountDeletedEvents
+        )
+        HandleAccountsDetectedDeletedEvent(
+            viewModel = mainViewModel
         )
         ObserveHighPriorityScreens(
             navController = navController,
@@ -276,9 +280,35 @@ private fun HandleAccountDeletedEvent(
     accountDeletedEvents: Flow<AppEvent.AccountDeleted>
 ) {
     LaunchedEffect(Unit) {
-        accountDeletedEvents.collect { event ->
-            navController.deletedAccountSuccess(deletedAccountAddress = event.address)
+        accountDeletedEvents.collect {
+            navController.deletedAccountSuccess()
         }
+    }
+}
+
+@Composable
+private fun HandleAccountsDetectedDeletedEvent(
+    viewModel: MainViewModel
+) {
+    var isAccountsPreviouslyDeletedDetected by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        viewModel.accountsDetectedDeletedEvents.collect {
+            isAccountsPreviouslyDeletedDetected = true
+        }
+    }
+
+    if (isAccountsPreviouslyDeletedDetected) {
+        BasicPromptAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    isAccountsPreviouslyDeletedDetected = false
+                }
+            },
+            titleText = "Previously Deleted Account Detected",
+            messageText = "Your Radix Wallet is syncing, and removing the Account from view.",
+            dismissText = null,
+            confirmText = stringResource(R.string.common_continue)
+        )
     }
 }
 

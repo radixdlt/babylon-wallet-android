@@ -205,7 +205,7 @@ class WalletViewModel @Inject constructor(
 
             accounts
         }.flatMapLatest { accounts ->
-            getWalletAssetsUseCase(
+            getWalletAssetsUseCase.observe(
                 accounts = accounts,
                 isRefreshing = _state.value.refreshType.overrideCache
             ).catch { error ->

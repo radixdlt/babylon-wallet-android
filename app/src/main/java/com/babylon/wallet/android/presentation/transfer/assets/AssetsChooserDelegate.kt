@@ -44,7 +44,7 @@ class AssetsChooserDelegate @Inject constructor(
             it.copy(sheet = Sheet.ChooseAssets.init(forTargetAccount = targetAccount))
         }
 
-        getWalletAssetsUseCase(accounts = listOf(fromAccount), isRefreshing = false)
+        getWalletAssetsUseCase.observe(accounts = listOf(fromAccount), isRefreshing = false)
             .catch { error ->
                 updateSheetState {
                     it.copy(

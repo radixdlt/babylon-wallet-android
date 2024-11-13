@@ -25,7 +25,6 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 @Composable
 fun DeleteAccountSuccessScreen(
     modifier: Modifier = Modifier,
-    viewModel: DeletedAccountSuccessViewModel,
     onGotoHomescreen: () -> Unit
 ) {
     DeleteAccountSuccessContent(
