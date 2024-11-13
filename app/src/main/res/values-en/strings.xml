@@ -1383,4 +1383,7 @@ Code: %s</string>
   <string name="interactionReview_unknown_amount">Amount of deposit is unknown</string>
   <string name="interactionReview_atLeast">At least</string>
   <string name="interactionReview_noMoreThan">No more than</string>
+
+  <string name="transactionReview_deletingAccountHeading">Deleting Account</string>
+  <string name="transactionReview_deletingAccountDescription">Deleting Account. Permanently removing access and preventing future deposits.</string>
 </resources>

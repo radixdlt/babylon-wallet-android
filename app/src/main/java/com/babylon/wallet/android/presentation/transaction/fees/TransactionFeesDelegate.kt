@@ -387,7 +387,8 @@ class TransactionFeesDelegateImpl @Inject constructor(
             is PreviewType.AccountsDepositSettings,
             is PreviewType.NonConforming,
             is PreviewType.None,
-            is PreviewType.UnacceptableManifest -> 0.toDecimal192()
+            is PreviewType.UnacceptableManifest,
+            is PreviewType.DeleteAccount -> 0.toDecimal192()
         }
 
         return xrdInCandidateAccount - xrdUsed < feeToLock

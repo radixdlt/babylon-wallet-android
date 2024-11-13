@@ -55,6 +55,7 @@ import com.babylon.wallet.android.presentation.model.NonFungibleAmount
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.DeleteAccountTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeePayerSelectionSheet
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
@@ -336,6 +337,13 @@ private fun TransactionPreviewContent(
                                 preview = preview
                             )
 
+                            is PreviewType.DeleteAccount -> DeleteAccountTypeContent(
+                                preview = preview,
+                                hiddenResourceIds = state.hiddenResourceIds,
+                                onTransferableFungibleClick = onTransferableFungibleClick,
+                                onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick
+                            )
+
                             else -> {}
                         }
                     }
@@ -391,6 +399,10 @@ private fun TransactionPreviewContent(
                                 onRawManifestClick = onRawManifestToggle
                             )
                         }
+                    }
+
+                    if (state.showReceiptEdges) {
+                        ReceiptEdge(color = RadixTheme.colors.defaultBackground)
                     }
                 }
 
@@ -473,10 +485,6 @@ private fun TransactionPreviewContent(
                     )
                 }
             }
-        }
-
-        if (state.showReceiptEdges) {
-            ReceiptEdge(color = RadixTheme.colors.defaultBackground)
         }
     }
 
@@ -725,6 +733,22 @@ class TransactionReviewPreviewProvider : PreviewParameterProvider<State> {
                     badges = listOf(Badge.sample())
                 ),
                 fees = null
+            ),
+            State(
+                isLoading = false,
+                previewType = PreviewType.DeleteAccount(
+                    account = Account.sampleMainnet(),
+                    deposit = AccountWithTransferables(
+                        account = InvolvedAccount.Owned(Account.sampleMainnet()),
+                        transferables = listOf(
+                            Transferable.FungibleType.Token(
+                                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                                amount = BoundedAmount.Exact("745".toDecimal192()),
+                                isNewlyCreated = true
+                            )
+                        )
+                    )
+                )
             ),
             State(
                 isLoading = true,
