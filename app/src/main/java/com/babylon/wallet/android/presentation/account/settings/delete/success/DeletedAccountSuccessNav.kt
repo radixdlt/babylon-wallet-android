@@ -18,7 +18,7 @@ private const val ROUTE = "deleted_account_success"
 private const val ARG_DELETED_ACCOUNT_ADDRESS = "deleted_account_address"
 
 internal class DeletedAccountSuccessArgs(val deletedAccountAddress: AccountAddress) {
-    constructor(savedStateHandle: SavedStateHandle): this(
+    constructor(savedStateHandle: SavedStateHandle) : this(
         deletedAccountAddress = AccountAddress.init(checkNotNull(savedStateHandle[ARG_DELETED_ACCOUNT_ADDRESS]))
     )
 }
@@ -52,4 +52,3 @@ fun NavGraphBuilder.deletedAccountSuccess(
         )
     }
 }
-

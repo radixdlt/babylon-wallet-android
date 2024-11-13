@@ -9,7 +9,6 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.Divisibility
-import rdx.works.core.domain.resources.metadata.AccountType
 import java.time.Instant
 
 data class AccountPortfolioResponse(

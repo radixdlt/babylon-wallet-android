@@ -13,5 +13,4 @@ data class AccountDetails(
 
     val accountType: AccountType?
         get() = metadata.accountType()
-
 }

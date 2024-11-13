@@ -45,7 +45,7 @@ sealed interface AppEvent {
 
     data class AddressDetails(val address: ActionableAddress) : AppEvent
 
-    data class AccountDeleted(val address: AccountAddress): AppEvent
+    data class AccountDeleted(val address: AccountAddress) : AppEvent
 
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {

@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.common
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Suppress("VariableNaming")
@@ -21,7 +19,7 @@ open class ViewModelDelegate<T : UiState> {
 }
 
 @Suppress("VariableNaming")
-open class ViewModelDelegateWithEvents<T : UiState, E: OneOffEvent> {
+open class ViewModelDelegateWithEvents<T : UiState, E : OneOffEvent> {
 
     lateinit var viewModelScope: CoroutineScope
     lateinit var _state: MutableStateFlow<T>

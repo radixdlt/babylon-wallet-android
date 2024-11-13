@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
@@ -18,7 +17,6 @@ import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
-import rdx.works.core.domain.resources.metadata.accountType
 import java.time.Instant
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -100,7 +98,6 @@ interface StateDao {
                 nonFungibleItem.asAccountResourceJoin(accountAddress, syncInfo)
             }.orEmpty()
 
-            val accountMetadata = item.explicitMetadata?.toMetadata()
             insertAccountDetails(
                 AccountEntity(
                     address = accountAddress,

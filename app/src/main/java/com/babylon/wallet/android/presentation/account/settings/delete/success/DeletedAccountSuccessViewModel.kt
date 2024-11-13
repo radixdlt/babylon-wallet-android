@@ -10,7 +10,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DeletedAccountSuccessViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
-): StateViewModel<DeletedAccountSuccessViewModel.State>() {
+) : StateViewModel<DeletedAccountSuccessViewModel.State>() {
 
     override fun initialState(): State = State(
         deletedAccountAddress = DeletedAccountSuccessArgs(savedStateHandle).deletedAccountAddress
@@ -22,5 +22,5 @@ class DeletedAccountSuccessViewModel @Inject constructor(
 
     data class State(
         val deletedAccountAddress: AccountAddress
-    ): UiState
+    ) : UiState
 }

@@ -90,7 +90,7 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
             deletingAccountAddress = state.value.deletingAccountAddress,
             accountAddressToTransferResources = if (state.value.isSkipSelected) null else state.value.selectedAccount?.address
         ).onSuccess {
-            _state.update { it.copy(isPreparingManifest = false, isSkipSelected = false) }
+            _state.update { state -> state.copy(isPreparingManifest = false, isSkipSelected = false) }
         }.onFailure { error ->
             _state.update { it.copy(isPreparingManifest = false, isSkipSelected = false, uiMessage = UiMessage.ErrorMessage(error)) }
         }

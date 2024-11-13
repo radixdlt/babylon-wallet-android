@@ -37,7 +37,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class AccountSettingsViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
@@ -217,9 +217,9 @@ class AccountSettingsViewModel @Inject constructor(
             get() = bottomSheetContent != BottomSheetContent.None
 
         sealed interface BottomSheetContent {
-            data object None: BottomSheetContent
-            data object RenameAccount: BottomSheetContent
-            data object HideAccount: BottomSheetContent
+            data object None : BottomSheetContent
+            data object RenameAccount : BottomSheetContent
+            data object HideAccount : BottomSheetContent
         }
 
         companion object {
@@ -235,8 +235,6 @@ class AccountSettingsViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data object AccountHidden : Event
 
-        data class OpenDeleteAccount(val accountAddress: AccountAddress): Event
+        data class OpenDeleteAccount(val accountAddress: AccountAddress) : Event
     }
 }
-
-

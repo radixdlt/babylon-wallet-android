@@ -65,7 +65,7 @@ class DeleteAccountViewModel @Inject constructor(
         prepareTransactionForAccountDeletionUseCase(
             deletingAccountAddress = state.value.accountAddress,
         ).onSuccess {
-            _state.update { it.copy(isPreparingManifest = false) }
+            _state.update { state -> state.copy(isPreparingManifest = false) }
         }.onFailure { error ->
             _state.update { it.copy(isPreparingManifest = false, uiMessage = UiMessage.ErrorMessage(error)) }
         }
@@ -80,7 +80,6 @@ class DeleteAccountViewModel @Inject constructor(
 
         val isContinueLoading: Boolean
             get() = isFetchingAssets || isPreparingManifest
-
     }
 
     sealed interface Event : OneOffEvent {

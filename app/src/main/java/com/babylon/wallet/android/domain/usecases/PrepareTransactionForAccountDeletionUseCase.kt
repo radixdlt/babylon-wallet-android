@@ -65,5 +65,4 @@ class PrepareTransactionForAccountDeletionUseCase @Inject constructor(
         incomingRequestRepository.add(transactionRequest)
         return Result.success(Unit)
     }
-
 }

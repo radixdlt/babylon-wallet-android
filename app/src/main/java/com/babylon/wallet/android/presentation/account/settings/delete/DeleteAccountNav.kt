@@ -18,7 +18,7 @@ private const val ROUTE = "delete_account"
 private const val ARG_ACCOUNT_ADDRESS = "account_address"
 
 internal class DeleteAccountArgs(val accountAddress: AccountAddress) {
-    constructor(savedStateHandle: SavedStateHandle): this(
+    constructor(savedStateHandle: SavedStateHandle) : this(
         accountAddress = AccountAddress.init(requireNotNull(savedStateHandle[ARG_ACCOUNT_ADDRESS]))
     )
 }
