@@ -61,7 +61,7 @@ fun NavController.nonFungibleAssetDialog(
         Serializer.kotlinxSerializationJson.encodeToString(
             BoundedAmounts(amounts = mapOf(resourceAddress.string to it))
         )
-    }?.let { "&$ARG_AMOUNTS=$it" }
+    }?.let { "&$ARG_AMOUNTS=$it" }.orEmpty()
 
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
