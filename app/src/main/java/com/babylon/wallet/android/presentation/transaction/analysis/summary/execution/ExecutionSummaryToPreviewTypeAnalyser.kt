@@ -16,7 +16,8 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val poolRedemptionProcessor: PoolRedemptionProcessor,
     private val validatorStakeProcessor: ValidatorStakeProcessor,
     private val validatorClaimProcessor: ValidatorClaimProcessor,
-    private val validatorUnstakeProcessor: ValidatorUnstakeProcessor
+    private val validatorUnstakeProcessor: ValidatorUnstakeProcessor,
+    private val accountDeletionProcessor: AccountDeletionProcessor
 ) : SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
@@ -24,7 +25,15 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
         val manifestClass = executionSummary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
-            is DetailedManifestClass.General -> generalTransferProcessor.process(executionSummary, manifestClass)
+            is DetailedManifestClass.General -> {
+                if (summary.deletingAccount != null) {
+                    // TODO Not sure if this falls under the General classification,
+                    // TODO need to double-check when the implementation is ready in Sargon
+                    accountDeletionProcessor.process(executionSummary, summary.deletingAccount)
+                } else {
+                    generalTransferProcessor.process(executionSummary, manifestClass)
+                }
+            }
             is DetailedManifestClass.Transfer -> transferProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.PoolContribution -> poolContributionProcessor.process(executionSummary, manifestClass)
             is DetailedManifestClass.PoolRedemption -> poolRedemptionProcessor.process(executionSummary, manifestClass)

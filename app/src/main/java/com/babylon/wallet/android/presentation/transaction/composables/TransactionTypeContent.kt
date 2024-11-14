@@ -68,15 +68,6 @@ fun TransactionTypeContent(
             onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick
         )
 
-        state.accountToDelete?.let { account ->
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-            DeleteAccountContent(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                account = account
-            )
-        }
-
         Column(
             modifier = Modifier
                 .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())

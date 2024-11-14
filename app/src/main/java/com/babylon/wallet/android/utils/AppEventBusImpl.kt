@@ -54,7 +54,7 @@ sealed interface AppEvent {
     /**
      * Some accounts were detected to have been deleted and need to sync with profile. The user will be presented to a simple modal.
      */
-    data object AccountsPreviouslyDeletedDetected: AppEvent
+    data object AccountsPreviouslyDeletedDetected : AppEvent
 
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {
