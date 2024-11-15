@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.dialogs.info.DSR
 import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -71,6 +72,13 @@ fun DeleteAccountTypeContent(
                 .padding(RadixTheme.dimensions.paddingMedium),
         ) {
             AccountCardHeader(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = preview.deletingAccount.appearanceId.gradient(),
+                        shape = RadixTheme.shapes.roundedRectTopMedium
+                    )
+                    .padding(RadixTheme.dimensions.paddingMedium),
                 displayName = preview.deletingAccount.displayName.value,
                 address = preview.deletingAccount.address
             )

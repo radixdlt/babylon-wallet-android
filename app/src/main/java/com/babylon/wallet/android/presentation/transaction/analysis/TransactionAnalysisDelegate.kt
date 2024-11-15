@@ -45,7 +45,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     /**
      * Runs analysis on each transaction type received. Resolves the preview type and returns the signers involved.
      */
-    suspend fun analyse(): Result<Analysis> = when (val txType = data.value.request.transactionType) {
+    suspend fun analyse(): Result<Analysis> = when (data.value.request.transactionType) {
         is TransactionType.PreAuthorized -> analysePreAuthTransaction(
             manifestData = data.value.request.unvalidatedManifestData
         )

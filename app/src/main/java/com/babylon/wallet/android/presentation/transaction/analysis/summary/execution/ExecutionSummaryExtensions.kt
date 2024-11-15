@@ -123,10 +123,13 @@ fun ExecutionSummary.involvedProofAddresses(): Set<ResourceOrNonFungible> = pres
  * @return [AccountWithTransferables].
  */
 fun ExecutionSummary.resolveAccountDeletion(
+    deletingAccountAddress: AccountAddress,
     onLedgerAssets: List<Asset>,
     profile: Profile
 ): AccountWithTransferables? {
-    val depositEntry = deposits.entries.firstOrNull() ?: return null
+    val depositEntry = deposits.entries
+        .filterNot { it.key == deletingAccountAddress } // Exclude the badge swallowing deposit
+        .firstOrNull() ?: return null
     val accountAddress = depositEntry.key
     val account = profile.activeAccountsOnCurrentNetwork.asIdentifiable().getBy(accountAddress) ?: return null
 

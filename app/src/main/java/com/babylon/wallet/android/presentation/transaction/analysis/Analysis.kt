@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -19,8 +18,7 @@ class Analysis private constructor(
     constructor(
         previewType: PreviewType,
         summary: Summary,
-        profile: Profile,
-        accountToDelete: Account? = null
+        profile: Profile
     ) : this(
         previewType = previewType,
         summary = summary,

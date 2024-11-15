@@ -20,10 +20,12 @@ class AccountDeletionProcessor @Inject constructor(
     ): PreviewType {
         val profile = getProfileUseCase()
         val assets = resolveAssetsFromAddressUseCase(addresses = summary.involvedAddresses()).getOrThrow()
-        val deletingAccount = profile.activeAccountsOnCurrentNetwork.asIdentifiable()
-            .getBy(classification.accountAddresses.first())
-            ?: throw IllegalStateException("Account not found")
+        val deletingAccount = requireNotNull(
+            profile.activeAccountsOnCurrentNetwork.asIdentifiable()
+                .getBy(classification.accountAddresses.first())
+        )
         val deposit = summary.resolveAccountDeletion(
+            deletingAccountAddress = deletingAccount.address,
             onLedgerAssets = assets,
             profile = profile
         )
