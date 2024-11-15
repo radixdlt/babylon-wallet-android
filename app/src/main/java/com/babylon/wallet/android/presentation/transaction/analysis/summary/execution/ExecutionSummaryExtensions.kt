@@ -217,13 +217,20 @@ private fun NewlyCreatedResource.toMetadata(): List<Metadata> {
     return metadata
 }
 
-private fun ResourceIndicator.Fungible.amount(defaultGuaranteeOffset: Decimal192) = when (val fungibleIndicator = indicator) {
+private fun ResourceIndicator.Fungible.amount(
+    isResourceNewlyCreated: Boolean,
+    defaultGuaranteeOffset: Decimal192
+) = when (val fungibleIndicator = indicator) {
     is FungibleResourceIndicator.Guaranteed -> BoundedAmount.Exact(fungibleIndicator.decimal)
-    is FungibleResourceIndicator.Predicted -> BoundedAmount.Predicted(
-        estimated = fungibleIndicator.predictedDecimal.value,
-        instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
-        offset = defaultGuaranteeOffset
-    )
+    is FungibleResourceIndicator.Predicted -> if (isResourceNewlyCreated) {
+        BoundedAmount.Exact(fungibleIndicator.predictedDecimal.value)
+    } else {
+        BoundedAmount.Predicted(
+            estimated = fungibleIndicator.predictedDecimal.value,
+            instructionIndex = fungibleIndicator.predictedDecimal.instructionIndex.toLong(),
+            offset = defaultGuaranteeOffset
+        )
+    }
 }
 
 private fun ResourceIndicator.NonFungible.amount(asset: Asset.NonFungible): NonFungibleAmount {
@@ -344,13 +351,13 @@ private fun ExecutionSummary.resolveTransferable(
     return when (asset) {
         is Token -> Transferable.FungibleType.Token(
             asset = asset,
-            amount = (resourceIndicator as ResourceIndicator.Fungible).amount(defaultDepositGuarantee),
+            amount = (resourceIndicator as ResourceIndicator.Fungible).amount(isNewlyCreated, defaultDepositGuarantee),
             isNewlyCreated = isNewlyCreated
         )
 
         is LiquidStakeUnit -> {
             val fungibleResourceIndicator = resourceIndicator as ResourceIndicator.Fungible
-            val amount = fungibleResourceIndicator.amount(defaultDepositGuarantee)
+            val amount = fungibleResourceIndicator.amount(isNewlyCreated, defaultDepositGuarantee)
             Transferable.FungibleType.LSU(
                 asset = asset,
                 amount = amount,
@@ -366,7 +373,7 @@ private fun ExecutionSummary.resolveTransferable(
 
             Transferable.FungibleType.PoolUnit(
                 asset = asset,
-                amount = fungibleResourceIndicator.amount(defaultDepositGuarantee),
+                amount = fungibleResourceIndicator.amount(isNewlyCreated, defaultDepositGuarantee),
                 isNewlyCreated = isNewlyCreated,
             )
         }
