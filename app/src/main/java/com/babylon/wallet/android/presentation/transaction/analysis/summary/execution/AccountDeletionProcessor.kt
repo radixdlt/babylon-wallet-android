@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis.summary.exe
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.asIdentifiable
