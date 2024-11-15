@@ -364,9 +364,9 @@ fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: 
                     predicate = { it.address == identityAddress },
                     mutation = { persona ->
                         val updatedFlags = if (isHidden) {
-                            persona.flags + EntityFlag.DELETED_BY_USER
+                            persona.flags + EntityFlag.HIDDEN_BY_USER
                         } else {
-                            persona.flags - EntityFlag.DELETED_BY_USER
+                            persona.flags - EntityFlag.HIDDEN_BY_USER
                         }
                         persona.copy(flags = EntityFlags(updatedFlags).asList())
                     }
@@ -408,9 +408,9 @@ fun Profile.changeAccountVisibility(accountAddress: AccountAddress, hide: Boolea
             predicate = { it.address == accountAddress },
             mutation = { account ->
                 val updatedFlags = if (hide) {
-                    account.flags + EntityFlag.DELETED_BY_USER
+                    account.flags + EntityFlag.HIDDEN_BY_USER
                 } else {
-                    account.flags - EntityFlag.DELETED_BY_USER
+                    account.flags - EntityFlag.HIDDEN_BY_USER
                 }
                 account.copy(flags = EntityFlags(updatedFlags).asList())
             }
@@ -431,12 +431,12 @@ fun Profile.unHideAllEntities(): Profile {
         network.copy(
             personas = Personas(
                 network.personas.map { persona ->
-                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.DELETED_BY_USER).asList())
+                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.HIDDEN_BY_USER).asList())
                 }
             ).asList(),
             accounts = Accounts(
                 network.accounts.map { persona ->
-                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.DELETED_BY_USER).asList())
+                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.HIDDEN_BY_USER).asList())
                 }
             ).asList()
         )

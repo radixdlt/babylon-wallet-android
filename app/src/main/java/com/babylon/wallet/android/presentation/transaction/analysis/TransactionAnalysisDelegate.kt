@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summ
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
@@ -22,12 +21,10 @@ import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.PreAuthToReview
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.random
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.formatted
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -51,10 +48,6 @@ class TransactionAnalysisDelegate @Inject constructor(
     suspend fun analyse(): Result<Analysis> = when (val txType = data.value.request.transactionType) {
         is TransactionType.PreAuthorized -> analysePreAuthTransaction(
             manifestData = data.value.request.unvalidatedManifestData
-        )
-
-        is TransactionType.DeleteAccount -> analyseDeleteAccountTransaction(
-            accountAddress = txType.accountAddress
         )
 
         else -> analyseTransaction(
@@ -145,72 +138,6 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
         }
-    }
-
-    private suspend fun analyseDeleteAccountTransaction(
-        accountAddress: AccountAddress,
-    ): Result<Analysis> = runCatching {
-        val profile = getProfileUseCase()
-        val account = profile.activeAccountOnCurrentNetwork(accountAddress)
-            ?: return Result.failure(IllegalStateException("Account $accountAddress not found in profile"))
-
-        // TODO call SargonOS to get the TransactionManifest
-        val instructions = """
-                CALL_METHOD
-                Address("${accountAddress.string}")
-                "securify"
-                ;
-                TAKE_ALL_FROM_WORKTOP
-                Address("resource_tdx_2_1nfxxxxxxxxxxaccwnrxxxxxxxxx006664022062xxxxxxxxx4vczzk")
-                Bucket("bucket1")
-                ;
-                CREATE_PROOF_FROM_BUCKET_OF_ALL
-                Bucket("bucket1")
-                Proof("proof1")
-                ;
-                PUSH_TO_AUTH_ZONE
-                Proof("proof1")
-                ;
-                CALL_METHOD
-                Address("${accountAddress.string}")
-                "set_resource_preference"
-                Address("resource_tdx_2_1nfxxxxxxxxxxaccwnrxxxxxxxxx006664022062xxxxxxxxx4vczzk")
-                Enum<0u8>()
-                ;
-                DROP_AUTH_ZONE_PROOFS;
-                CALL_METHOD
-                Address("${accountAddress.string}")
-                "try_deposit_or_abort"
-                Bucket("bucket1")
-                Enum<0u8>()
-                ;
-        """.trimIndent()
-        val notary = data.value.ephemeralNotaryPrivateKey
-        val transactionToReview = withContext(dispatcher) {
-            sargonOsManager.sargonOs.analyseTransactionPreview(
-                instructions = instructions,
-                blobs = Blobs.init(emptyList()),
-                areInstructionsOriginatingFromHost = true,
-                nonce = Nonce.random(),
-                notaryPublicKey = notary.toPublicKey()
-            )
-        }
-
-        val summary = Summary.FromExecution(
-            manifest = SummarizedManifest.Transaction(transactionToReview.transactionManifest),
-            summary = transactionToReview.executionSummary,
-            deletingAccount = account
-        )
-        val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
-
-        return Result.success(
-            Analysis(
-                previewType = previewType,
-                summary = summary,
-                profile = profile,
-                accountToDelete = account
-            )
-        )
     }
 
     private suspend fun cacheNewlyCreatedResources(previewType: PreviewType) {

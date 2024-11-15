@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.summary
 
-import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ManifestSummary
@@ -13,8 +12,7 @@ sealed interface Summary {
 
     data class FromExecution(
         val manifest: SummarizedManifest,
-        val summary: ExecutionSummary,
-        val deletingAccount: Account? = null
+        val summary: ExecutionSummary
     ) : Summary {
 
         override val entitiesRequiringAuth: List<AddressOfAccountOrPersona>

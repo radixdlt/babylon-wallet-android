@@ -13,8 +13,7 @@ import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 class Analysis private constructor(
     val previewType: PreviewType,
     val summary: Summary,
-    val signers: List<ProfileEntity>,
-    val accountToDelete: Account?
+    val signers: List<ProfileEntity>
 ) {
 
     constructor(
@@ -34,7 +33,6 @@ class Analysis private constructor(
                     it.address == address.v1
                 }?.asProfileEntity()
             }
-        },
-        accountToDelete = accountToDelete
+        }
     )
 }
