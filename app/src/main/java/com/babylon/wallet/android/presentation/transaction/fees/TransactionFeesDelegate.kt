@@ -11,11 +11,13 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
 import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
@@ -85,6 +87,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
         return searchFeePayersUseCase(
             feePayerCandidates = executionSummary.feePayerCandidates(),
+            xrdWithdrawals = _state.value.previewType.xrdWithdrawals(),
             lockFee = transactionFees.defaultTransactionFee
         ).onSuccess { feePayers ->
             _state.update { state ->
@@ -367,31 +370,34 @@ class TransactionFeesDelegateImpl @Inject constructor(
         val xrdUsed = when (val previewType = _state.value.previewType) {
             is PreviewType.Transaction -> {
                 val candidateAddressWithdrawn = previewType.from.find { it.account.address == candidateAddress }
-                if (candidateAddressWithdrawn != null) {
-                    val xrdAmount = candidateAddressWithdrawn
-                        .transferables
-                        .filterIsInstance<Transferable.FungibleType.Token>()
-                        .find { it.asset.resource.isXrd }?.amount
-
-                    when (xrdAmount) {
-                        null -> 0.toDecimal192()
-                        is BoundedAmount.Exact -> xrdAmount.amount
-                        is BoundedAmount.Predicted -> xrdAmount.estimated
-                        else -> 0.toDecimal192() // Should not go through these cases. Fees are calculated only on regular transactions.
-                    }
-                } else {
-                    0.toDecimal192()
-                }
+                getUsedXrdAmount(candidateAddressWithdrawn)
+            }
+            is PreviewType.DeleteAccount -> {
+                getUsedXrdAmount(previewType.to)
             }
             // On-purpose made this check exhaustive, future types may involve accounts spending XRD
             is PreviewType.AccountsDepositSettings,
             is PreviewType.NonConforming,
             is PreviewType.None,
-            is PreviewType.UnacceptableManifest,
-            is PreviewType.DeleteAccount -> 0.toDecimal192()
+            is PreviewType.UnacceptableManifest -> 0.toDecimal192()
         }
 
         return xrdInCandidateAccount - xrdUsed < feeToLock
+    }
+
+    private fun getUsedXrdAmount(candidateAddressWithdrawn: AccountWithTransferables?): Decimal192 {
+        return candidateAddressWithdrawn
+            ?.transferables
+            ?.filterIsInstance<Transferable.FungibleType.Token>()
+            ?.find { it.asset.resource.isXrd }?.amount
+            .let { xrdAmount ->
+                when (xrdAmount) {
+                    null -> 0.toDecimal192()
+                    is BoundedAmount.Exact -> xrdAmount.amount
+                    is BoundedAmount.Predicted -> xrdAmount.estimated
+                    else -> 0.toDecimal192() // Should not go through these cases. Fees are calculated only on regular transactions.
+                }
+            }
     }
 
     private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
@@ -424,4 +430,17 @@ class TransactionFeesDelegateImpl @Inject constructor(
     private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
         deposits.keys +
         addressesOfAccountsRequiringAuth.toSet()
+
+    private fun PreviewType.xrdWithdrawals(): Map<AccountAddress, Decimal192> {
+        return when (this) {
+            is PreviewType.Transaction -> from.associate {
+                it.account.address to getUsedXrdAmount(it)
+            }
+            is PreviewType.DeleteAccount -> mapOf(deletingAccount.address to to?.let { getUsedXrdAmount(it) }.orZero())
+            is PreviewType.AccountsDepositSettings,
+            is PreviewType.NonConforming,
+            is PreviewType.None,
+            is PreviewType.UnacceptableManifest -> emptyMap()
+        }
+    }
 }
