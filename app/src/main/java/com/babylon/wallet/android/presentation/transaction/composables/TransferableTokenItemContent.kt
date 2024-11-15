@@ -188,7 +188,7 @@ private fun TransferableTokenWithUnknownAmountPreview() {
             ),
             shape = RectangleShape,
             isHidden = true,
-            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw)
+            hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw)
         )
     }
 }

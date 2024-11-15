@@ -120,7 +120,7 @@ fun TransactionPreviewHeader(
                             }
 
                             Text(
-                                text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
+                                text = stringResource(id = R.string.interactionReview_subtitle, dAppName),
                                 style = RadixTheme.typography.body2HighImportance,
                                 color = RadixTheme.colors.gray1,
                                 textAlign = TextAlign.Start,

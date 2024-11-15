@@ -13,7 +13,6 @@ import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
-import com.radixdlt.sargon.DappToWalletInteractionSubintentExpiration
 import com.radixdlt.sargon.DappToWalletInteractionSubintentRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
@@ -23,7 +22,6 @@ import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.mapError
-import kotlin.time.Duration.Companion.seconds
 
 fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntityID) = runCatching {
     val metadata = DappToWalletInteraction.RequestMetadata(
@@ -91,16 +89,7 @@ private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
         blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
     ),
     requestMetadata = metadata,
-    transactionType = TransactionType.PreAuthorized(
-        expiration = when (val expiration = expiration) {
-            is DappToWalletInteractionSubintentExpiration.AtTime -> SubintentExpiration.AtTime(
-                timestamp = expiration.v1.unixTimestampSeconds
-            )
-            is DappToWalletInteractionSubintentExpiration.AfterDelay -> SubintentExpiration.DelayAfterSign(
-                delay = expiration.v1.expireAfterSeconds.toLong().seconds
-            )
-        }
-    )
+    transactionType = TransactionType.PreAuthorized(expiration = SubintentExpiration.from(expiration))
 )
 
 private fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(
