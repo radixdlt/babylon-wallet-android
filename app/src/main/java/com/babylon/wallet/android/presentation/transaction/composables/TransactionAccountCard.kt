@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,17 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -277,9 +272,9 @@ private fun UnknownDeposits() {
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
-        HorizontalStrokeLine(modifier = Modifier.width(48.dp))
+        HorizontalStrokeLine()
 
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
 
         WarningText(
             text = AnnotatedString(stringResource(id = R.string.interactionReview_unknown_deposits)),
@@ -291,24 +286,14 @@ private fun UnknownDeposits() {
 
 @Composable
 private fun HorizontalStrokeLine(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
-    val strokeColor = RadixTheme.colors.gray4
-    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
-    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
-    val lineHeight = with(LocalDensity.current) { 1.dp.toPx() }
-    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
-    Canvas(
-        modifier.height(1.dp)
-    ) {
-        drawLine(
-            color = strokeColor,
-            start = Offset(0f, 0f),
-            end = Offset(size.width, lineHeight),
-            strokeWidth = strokeWidth,
-            pathEffect = pathEffect
-        )
-    }
+    Text(
+        modifier = modifier,
+        text = "----",
+        style = RadixTheme.typography.body2HighImportance,
+        color = RadixTheme.colors.gray4
+    )
 }
 
 @UsesSampleValues
@@ -330,7 +315,7 @@ fun TransactionAccountCardWithTokenPreview() {
                 )
             ),
             hiddenResourceIds = persistentListOf(),
-            hiddenResourceWarning = stringResource(id = R.string.transactionReview_hiddenAsset_withdraw),
+            hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleItemClick = { _, _ -> },
             onTransferableNonFungibleByAmountClick = { _, _ -> }

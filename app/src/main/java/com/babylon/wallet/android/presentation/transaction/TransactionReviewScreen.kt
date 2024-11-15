@@ -60,7 +60,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
-import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreAuthorizationInfo
+import com.babylon.wallet.android.presentation.transaction.composables.TransactionExpirationInfo
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionRawManifestToggle
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionTypeContent
@@ -392,6 +392,10 @@ private fun TransactionPreviewContent(
                             )
                         }
                     }
+
+                    if (state.showReceiptEdges) {
+                        ReceiptEdge(color = RadixTheme.colors.defaultBackground)
+                    }
                 }
 
                 Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
@@ -439,7 +443,7 @@ private fun TransactionPreviewContent(
                     }
 
                     state.expiration?.let { expiration ->
-                        TransactionPreAuthorizationInfo(
+                        TransactionExpirationInfo(
                             modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
                             expiration = expiration,
                             proposingDApp = state.proposingDApp ?: State.ProposingDApp.None,
@@ -473,10 +477,6 @@ private fun TransactionPreviewContent(
                     )
                 }
             }
-        }
-
-        if (state.showReceiptEdges) {
-            ReceiptEdge(color = RadixTheme.colors.defaultBackground)
         }
     }
 

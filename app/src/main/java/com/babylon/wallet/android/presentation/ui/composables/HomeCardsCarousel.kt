@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -185,10 +186,13 @@ private fun CardView(
                         placeholder = Placeholder(
                             width = titleStyle.fontSize,
                             height = titleStyle.fontSize,
-                            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+                            placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom
                         )
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .width(14.dp)
+                                .height(12.dp),
                             painter = painterResource(id = R.drawable.ic_external_link),
                             contentDescription = null,
                             tint = RadixTheme.colors.gray2
@@ -255,6 +259,7 @@ private fun HomeCard.title() = buildAnnotatedString {
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
         is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
+        HomeCard.DiscoverRadixDapps -> stringResource(id = R.string.homePageCarousel_discoverRadixDapps_title)
     }
     append(title)
 
@@ -270,14 +275,13 @@ private fun HomeCard.description() = when (this) {
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
     is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
+    HomeCard.DiscoverRadixDapps -> stringResource(id = R.string.homePageCarousel_discoverRadixDapps_text)
 }
 
 @Composable
 private fun HomeCard.EndIcon(
     modifier: Modifier = Modifier
 ) = when (this) {
-    HomeCard.Connector -> {}
-    HomeCard.ContinueRadQuest -> {}
     is HomeCard.Dapp -> {
         val uri = remember(iconUrl) {
             iconUrl?.let { Uri.parse(it.toString()) }
@@ -290,7 +294,11 @@ private fun HomeCard.EndIcon(
         )
     }
 
-    HomeCard.StartRadQuest -> {}
+    HomeCard.StartRadQuest,
+    HomeCard.Connector,
+    HomeCard.ContinueRadQuest,
+    HomeCard.DiscoverRadixDapps -> {
+    }
 }
 
 @Composable
@@ -299,6 +307,7 @@ private fun HomeCard.EndGraphicRes() = when (this) {
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
     is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
+    HomeCard.DiscoverRadixDapps -> painterResource(id = R.drawable.ic_homecarousel_discover_dapps)
 }
 
 private const val INLINE_LINK_ICON = "link_icon"
@@ -381,7 +390,7 @@ private fun HorizontalPagerIndicator(
     }
 }
 
-private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest
+private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.DiscoverRadixDapps
 
 @Preview
 @Composable
@@ -392,7 +401,8 @@ fun HomeCardsCarouselContinueRadQuestPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -413,7 +423,8 @@ fun HomeCardsCarouselStartRadQuestPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -435,7 +446,8 @@ fun HomeCardsCarouselDAppPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -457,7 +469,8 @@ fun HomeCardsCarouselConnectorPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -479,7 +492,8 @@ fun HomeCardsCarouselScaledFontPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(

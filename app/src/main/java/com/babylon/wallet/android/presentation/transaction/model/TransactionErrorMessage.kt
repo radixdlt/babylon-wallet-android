@@ -21,7 +21,9 @@ data class TransactionErrorMessage(
             error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
             error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction ||
             error is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ||
-            error is RadixWalletException.DappRequestException.PreviewError
+            error is RadixWalletException.DappRequestException.PreviewError ||
+            error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose ||
+            error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired
 
     val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
 

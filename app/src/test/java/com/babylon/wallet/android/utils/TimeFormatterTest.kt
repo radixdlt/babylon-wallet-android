@@ -53,7 +53,7 @@ class TimeFormatterTest(val vector: TestVector) {
     fun test() {
         assertEquals(
             vector.output,
-            TimeFormatter.format(context, vector.duration),
+            TimeFormatter.format(context, vector.duration, false),
         )
     }
 
