@@ -16,7 +16,8 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
     private val poolRedemptionProcessor: PoolRedemptionProcessor,
     private val validatorStakeProcessor: ValidatorStakeProcessor,
     private val validatorClaimProcessor: ValidatorClaimProcessor,
-    private val validatorUnstakeProcessor: ValidatorUnstakeProcessor
+    private val validatorUnstakeProcessor: ValidatorUnstakeProcessor,
+    private val accountDeletionProcessor: AccountDeletionProcessor
 ) : SummaryToPreviewTypeAnalyzer<Summary.FromExecution> {
 
     override suspend fun analyze(summary: Summary.FromExecution): PreviewType {
@@ -35,6 +36,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
                 executionSummary,
                 manifestClass
             )
+            is DetailedManifestClass.DeleteAccounts -> accountDeletionProcessor.process(executionSummary, manifestClass)
         }
     }
 
@@ -48,6 +50,7 @@ class ExecutionSummaryToPreviewTypeAnalyser @Inject constructor(
             is DetailedManifestClass.ValidatorClaim -> true
             is DetailedManifestClass.ValidatorStake -> true
             is DetailedManifestClass.ValidatorUnstake -> true
+            is DetailedManifestClass.DeleteAccounts -> true
             else -> false
         }
 }

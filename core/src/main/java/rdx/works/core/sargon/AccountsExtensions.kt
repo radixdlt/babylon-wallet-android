@@ -48,7 +48,7 @@ val Account.usesSECP256k1: Boolean
     get() = securityState.usesSECP256k1
 
 val Account.isHidden: Boolean
-    get() = EntityFlag.DELETED_BY_USER in flags
+    get() = EntityFlag.HIDDEN_BY_USER in flags
 
 val Account.isOlympia: Boolean
     get() = usesSECP256k1

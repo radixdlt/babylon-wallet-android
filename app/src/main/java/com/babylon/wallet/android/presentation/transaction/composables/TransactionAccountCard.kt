@@ -230,7 +230,7 @@ fun AccountDepositAccountCardHeader(account: Account, modifier: Modifier = Modif
 }
 
 @Composable
-private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: AccountAddress) {
+fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: AccountAddress) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier,

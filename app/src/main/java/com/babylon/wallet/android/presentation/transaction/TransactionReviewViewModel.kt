@@ -535,4 +535,11 @@ sealed interface PreviewType {
             data object None : InvolvedComponents
         }
     }
+
+    data class DeleteAccount(
+        val deletingAccount: Account,
+        val to: AccountWithTransferables?
+    ) : PreviewType {
+        override val badges: List<Badge> = emptyList()
+    }
 }

@@ -11,5 +11,4 @@ class TombstoneAccountsUseCase @Inject constructor(
     suspend operator fun invoke(accountAddresses: Set<AccountAddress>) {
         // TODO invoke sargon
     }
-
 }

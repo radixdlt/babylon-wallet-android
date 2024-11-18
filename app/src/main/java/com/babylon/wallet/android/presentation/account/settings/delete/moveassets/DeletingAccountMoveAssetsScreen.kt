@@ -25,6 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -82,15 +84,19 @@ private fun DeletingAccountMoveAssetsContent(
     onSubmit: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    if (state.isSkipDialogVisible) {
-        SkipMoveAssetsDialog(
+    when (state.warning) {
+        DeletingAccountMoveAssetsViewModel.State.Warning.SkipMovingAssets -> SkipMoveAssetsDialog(
             onCancelClick = onSkipCancel,
             onContinueClick = onSkipConfirm
         )
-    } else if (state.isCannotDeleteAccountVisible) {
-        CannotDeleteAccountDialog(
+        DeletingAccountMoveAssetsViewModel.State.Warning.CannotDeleteAccount -> CannotDeleteAccountDialog(
             onCancelClick = onDismiss
         )
+        DeletingAccountMoveAssetsViewModel.State.Warning.CannotTransferSomeAssets -> CannotTransferSomeAssetsDialog(
+            onCancelClick = onSkipCancel,
+            onContinueClick = onSkipConfirm
+        )
+        null -> {}
     }
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -263,7 +269,7 @@ private fun SkipMoveAssetsDialog(
         },
         title = {
             Text(
-                text = "Access Will Be Lost",
+                text = "Assets Will Be Lost",
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
@@ -307,8 +313,43 @@ private fun CannotDeleteAccountDialog(
                 color = RadixTheme.colors.gray1
             )
         },
-        confirmText = stringResource(id = R.string.common_continue),
+        confirmText = stringResource(id = R.string.common_cancel),
         dismissText = null,
+        confirmTextColor = RadixTheme.colors.red1
+    )
+}
+
+@Composable
+private fun CannotTransferSomeAssetsDialog(
+    modifier: Modifier = Modifier,
+    onCancelClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    BasicPromptAlertDialog(
+        modifier = modifier,
+        finish = { accepted ->
+            if (accepted) {
+                onContinueClick()
+            } else {
+                onCancelClick()
+            }
+        },
+        title = {
+            Text(
+                text = "Assets Will Be Lost",
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        message = {
+            Text(
+                text = "Some of your assets are not transferable, and will be lost.",
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        confirmText = stringResource(id = R.string.common_continue),
+        dismissText = stringResource(id = R.string.common_cancel),
         confirmTextColor = RadixTheme.colors.red1
     )
 }
@@ -316,12 +357,12 @@ private fun CannotDeleteAccountDialog(
 @UsesSampleValues
 @Composable
 @Preview
-fun DeletingAccountMoveAssetsFetchingBalancesPreview() {
+private fun DeletingAccountMoveAssetsFetchingBalancesPreview(
+    @PreviewParameter(DeletingAccountMoveAssetsPreviewProvider::class) state: DeletingAccountMoveAssetsViewModel.State
+) {
     RadixWalletPreviewTheme {
         DeletingAccountMoveAssetsContent(
-            state = DeletingAccountMoveAssetsViewModel.State(
-                deletingAccountAddress = AccountAddress.sampleMainnet()
-            ),
+            state = state,
             onSkipRequested = {},
             onSkipConfirm = {},
             onSkipCancel = {},
@@ -334,12 +375,14 @@ fun DeletingAccountMoveAssetsFetchingBalancesPreview() {
 }
 
 @UsesSampleValues
-@Composable
-@Preview
-fun DeletingAccountMoveAssetsWithAccountsPreview() {
-    RadixWalletPreviewTheme {
-        DeletingAccountMoveAssetsContent(
-            state = DeletingAccountMoveAssetsViewModel.State(
+class DeletingAccountMoveAssetsPreviewProvider : PreviewParameterProvider<DeletingAccountMoveAssetsViewModel.State> {
+
+    override val values: Sequence<DeletingAccountMoveAssetsViewModel.State>
+        get() = sequenceOf(
+            DeletingAccountMoveAssetsViewModel.State(
+                deletingAccountAddress = AccountAddress.sampleMainnet()
+            ),
+            DeletingAccountMoveAssetsViewModel.State(
                 deletingAccountAddress = AccountAddress.sampleMainnet(),
                 isFetchingBalances = false,
                 accountsWithBalances = mapOf(
@@ -349,24 +392,7 @@ fun DeletingAccountMoveAssetsWithAccountsPreview() {
                 ),
                 selectedAccount = AccountMainnetSample.bob
             ),
-            onSkipRequested = {},
-            onSkipConfirm = {},
-            onSkipCancel = {},
-            onAccountSelected = {},
-            onMessageShown = {},
-            onSubmit = {},
-            onDismiss = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Composable
-@Preview
-fun DeletingAccountMoveAssetsWithWarningPreview() {
-    RadixWalletPreviewTheme {
-        DeletingAccountMoveAssetsContent(
-            state = DeletingAccountMoveAssetsViewModel.State(
+            DeletingAccountMoveAssetsViewModel.State(
                 deletingAccountAddress = AccountAddress.sampleMainnet(),
                 isFetchingBalances = false,
                 accountsWithBalances = mapOf(
@@ -375,24 +401,7 @@ fun DeletingAccountMoveAssetsWithWarningPreview() {
                     AccountMainnetSample.carol to 0.toDecimal192(),
                 )
             ),
-            onSkipRequested = {},
-            onSkipConfirm = {},
-            onSkipCancel = {},
-            onAccountSelected = {},
-            onMessageShown = {},
-            onSubmit = {},
-            onDismiss = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Composable
-@Preview
-fun DeletingAccountMoveAssetsWithSkipDialogPreview() {
-    RadixWalletPreviewTheme {
-        DeletingAccountMoveAssetsContent(
-            state = DeletingAccountMoveAssetsViewModel.State(
+            DeletingAccountMoveAssetsViewModel.State(
                 deletingAccountAddress = AccountAddress.sampleMainnet(),
                 isFetchingBalances = false,
                 accountsWithBalances = mapOf(
@@ -400,26 +409,9 @@ fun DeletingAccountMoveAssetsWithSkipDialogPreview() {
                     AccountMainnetSample.alice to 0.toDecimal192(),
                     AccountMainnetSample.carol to 1.toDecimal192(),
                 ),
-                isSkipDialogVisible = true
+                warning = DeletingAccountMoveAssetsViewModel.State.Warning.SkipMovingAssets,
             ),
-            onSkipRequested = {},
-            onSkipConfirm = {},
-            onSkipCancel = {},
-            onAccountSelected = {},
-            onMessageShown = {},
-            onSubmit = {},
-            onDismiss = {}
-        )
-    }
-}
-
-@UsesSampleValues
-@Composable
-@Preview
-fun DeletingAccountMoveAssetsWithCannotDeleteAccountDialogPreview() {
-    RadixWalletPreviewTheme {
-        DeletingAccountMoveAssetsContent(
-            state = DeletingAccountMoveAssetsViewModel.State(
+            DeletingAccountMoveAssetsViewModel.State(
                 deletingAccountAddress = AccountAddress.sampleMainnet(),
                 isFetchingBalances = false,
                 accountsWithBalances = mapOf(
@@ -427,16 +419,17 @@ fun DeletingAccountMoveAssetsWithCannotDeleteAccountDialogPreview() {
                     AccountMainnetSample.alice to 0.toDecimal192(),
                     AccountMainnetSample.carol to 1.toDecimal192(),
                 ),
-                isSkipDialogVisible = false,
-                isCannotDeleteAccountVisible = true
+                warning = DeletingAccountMoveAssetsViewModel.State.Warning.CannotDeleteAccount
             ),
-            onSkipRequested = {},
-            onSkipConfirm = {},
-            onSkipCancel = {},
-            onAccountSelected = {},
-            onMessageShown = {},
-            onSubmit = {},
-            onDismiss = {}
+            DeletingAccountMoveAssetsViewModel.State(
+                deletingAccountAddress = AccountAddress.sampleMainnet(),
+                isFetchingBalances = false,
+                accountsWithBalances = mapOf(
+                    AccountMainnetSample.bob to 10.toDecimal192(),
+                    AccountMainnetSample.alice to 0.toDecimal192(),
+                    AccountMainnetSample.carol to 1.toDecimal192(),
+                ),
+                warning = DeletingAccountMoveAssetsViewModel.State.Warning.CannotTransferSomeAssets
+            )
         )
-    }
 }

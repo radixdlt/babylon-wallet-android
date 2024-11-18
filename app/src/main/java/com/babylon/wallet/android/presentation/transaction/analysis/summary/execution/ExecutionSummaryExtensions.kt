@@ -118,6 +118,36 @@ fun ExecutionSummary.involvedProofAddresses(): Set<ResourceOrNonFungible> = pres
 }.flatten().toSet()
 
 /**
+ * Extracts information for the transferables being involved in the account deletion transaction.
+ *
+ * @return [AccountWithTransferables].
+ */
+fun ExecutionSummary.resolveAccountDeletion(
+    deletingAccountAddress: AccountAddress,
+    onLedgerAssets: List<Asset>,
+    profile: Profile
+): AccountWithTransferables? {
+    val depositEntry = deposits.entries
+        .filterNot { it.key == deletingAccountAddress } // Exclude the badge swallowing deposit
+        .firstOrNull() ?: return null
+    val accountAddress = depositEntry.key
+    val account = profile.activeAccountsOnCurrentNetwork.asIdentifiable().getBy(accountAddress) ?: return null
+
+    val transferables = depositEntry.value.map { indicator ->
+        resolveTransferable(
+            resourceIndicator = indicator,
+            onLedgerAssets = onLedgerAssets,
+            defaultDepositGuarantee = 0.toDecimal192()
+        )
+    }
+
+    return AccountWithTransferables(
+        account = InvolvedAccount.Owned(account),
+        transferables = transferables
+    )
+}
+
+/**
  * Extracts information for all accounts and the transferables being involved in the transaction.
  *
  * @return A pair of withdraws and deposits.
