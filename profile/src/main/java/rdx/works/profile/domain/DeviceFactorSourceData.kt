@@ -3,8 +3,8 @@ package rdx.works.profile.domain
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Persona
+import rdx.works.core.sargon.active
 import rdx.works.core.sargon.isHidden
-import rdx.works.core.sargon.notHiddenAccounts
 
 data class DeviceFactorSourceData(
     val deviceFactorSource: FactorSource.Device,
@@ -17,7 +17,7 @@ data class DeviceFactorSourceData(
         BackedUp, NotBackedUp, NeedRecover
     }
 
-    val notHiddenAccounts = allAccounts.notHiddenAccounts()
+    val activeAccounts = allAccounts.active()
 
     val hasOnlyHiddenAccounts = allAccounts.isNotEmpty() && allAccounts.all { it.isHidden }
 }

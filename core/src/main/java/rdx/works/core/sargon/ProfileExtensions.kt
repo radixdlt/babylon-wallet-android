@@ -91,7 +91,7 @@ val Profile.allEntitiesOnCurrentNetwork: List<ProfileEntity>
         allPersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
-    get() = currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
+    get() = currentNetwork?.accounts?.active().orEmpty()
 
 fun Profile.activeAccountOnCurrentNetwork(withAddress: AccountAddress): Account? =
     activeAccountsOnCurrentNetwork.firstOrNull { account ->
@@ -99,13 +99,13 @@ fun Profile.activeAccountOnCurrentNetwork(withAddress: AccountAddress): Account?
     }
 
 val Profile.hiddenAccountsOnCurrentNetwork: List<Account>
-    get() = currentNetwork?.accounts?.hiddenAccounts().orEmpty()
+    get() = currentNetwork?.accounts?.filter { it.isHidden }.orEmpty()
 
 val Profile.activePersonasOnCurrentNetwork: List<Persona>
-    get() = currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+    get() = currentNetwork?.personas?.active().orEmpty()
 
 val Profile.hiddenPersonasOnCurrentNetwork: List<Persona>
-    get() = currentNetwork?.personas?.hiddenPersonas().orEmpty()
+    get() = currentNetwork?.personas?.filter { it.isHidden }.orEmpty()
 
 fun Profile.activePersonaOnCurrentNetwork(withAddress: IdentityAddress): Persona? =
     activePersonasOnCurrentNetwork.firstOrNull { persona ->
@@ -697,8 +697,8 @@ private fun Profile.withUpdatedContentHint() = copy(
     header = header.copy(
         contentHint = ContentHint(
             numberOfNetworks = networks.size.toUShort(),
-            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.notHiddenAccounts().size }.toUShort(),
-            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.notHiddenPersonas().size }.toUShort()
+            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.active().size }.toUShort(),
+            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.active().size }.toUShort()
         )
     )
 )

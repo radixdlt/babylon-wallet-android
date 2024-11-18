@@ -26,8 +26,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.path
 import com.radixdlt.sargon.extensions.toBabylonAddress
 
-fun Collection<Account>.notHiddenAccounts(): List<Account> = filterNot { it.isHidden }
-fun Collection<Account>.hiddenAccounts(): List<Account> = filter { it.isHidden }
+fun Collection<Account>.active(): List<Account> = filterNot { it.isHidden || it.isDeleted }
 
 val Account.factorSourceId: FactorSourceId
     get() = securityState.factorSourceId
@@ -49,6 +48,9 @@ val Account.usesSECP256k1: Boolean
 
 val Account.isHidden: Boolean
     get() = EntityFlag.HIDDEN_BY_USER in flags
+
+val Account.isDeleted: Boolean
+    get() = EntityFlag.TOMBSTONED_BY_USER in flags
 
 val Account.isOlympia: Boolean
     get() = usesSECP256k1

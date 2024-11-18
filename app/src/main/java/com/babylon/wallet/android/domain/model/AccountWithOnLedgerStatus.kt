@@ -4,12 +4,26 @@ import com.radixdlt.sargon.Account
 
 data class AccountWithOnLedgerStatus(
     val account: Account,
-    val status: Status = Status.Inactive
+    val status: Status
 ) {
     /**
-     * Active: account had at least one transaction
+     * Active: account had at least one transaction,
+     *
      */
     enum class Status {
-        Active, Inactive
+        /**
+         * An account is active if it had at least one transaction and is not deleted
+         */
+        Active,
+
+        /**
+         * An account is inactive if it had no transactions and was not deleted
+         */
+        Inactive,
+
+        /**
+         * The user has deleted this account by swallowing its badge.
+         */
+        Deleted
     }
 }

@@ -15,8 +15,7 @@ import com.radixdlt.sargon.extensions.EntityFlags
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.path
 
-fun Collection<Persona>.notHiddenPersonas(): List<Persona> = filter { !it.isHidden }
-fun Collection<Persona>.hiddenPersonas(): List<Persona> = filter { it.isHidden }
+fun Collection<Persona>.active(): List<Persona> = filterNot { it.isHidden || it.isDeleted }
 
 val Persona.factorSourceId: FactorSourceId
     get() = securityState.factorSourceId
@@ -35,6 +34,11 @@ val Persona.usesEd25519: Boolean
 
 val Persona.isHidden: Boolean
     get() = EntityFlag.HIDDEN_BY_USER in flags
+
+// Not implemented, the user cannot delete a persona.
+// Keeping this for parity with account.
+val Persona.isDeleted: Boolean
+    get() = EntityFlag.TOMBSTONED_BY_USER in flags
 
 @Suppress("LongParameterList")
 fun Persona.Companion.init(
