@@ -130,7 +130,7 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
 
         companion object {
             private val zero = 0.toDecimal192()
-            private val xrdThreshold = zero
+            private val xrdThreshold = 2.toDecimal192()
         }
     }
 }

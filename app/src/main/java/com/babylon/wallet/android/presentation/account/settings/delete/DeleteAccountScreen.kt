@@ -21,7 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
@@ -85,7 +84,7 @@ private fun DeleteAccountContent(
         },
         bottomBar = {
             RadixBottomBar(
-                additionalContent = {
+                button = {
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -97,17 +96,6 @@ private fun DeleteAccountContent(
                                 onDeleteConfirm()
                             }
                         }
-                    )
-                },
-                button = {
-                    RadixTextButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = RadixTheme.dimensions.paddingSmall)
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(R.string.common_cancel),
-                        enabled = !state.isContinueLoading,
-                        onClick = onDismiss
                     )
                 },
             )
