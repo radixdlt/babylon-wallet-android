@@ -181,9 +181,9 @@
   <string name="accountSettings_deleteAccount_message">You’re about to permanently delete this Account. Once this is done, you will not be able to recover access.</string>
   <string name="accountSettings_moveAssets_title">Move Assets to Another Account</string>
   <string name="accountSettings_moveAssets_message">Before deleting this Account, choose another one to transfer your assets to.</string>
-  <string name="accountSettings_deleteAccount_note">The new Account must hold enough XRD to pay the transaction fee.</string>
-  <string name="accountSettings_deleteAccount_noAccountsWarning">You don’t have any other accounts with enough XRD.</string>
-  <string name="accountSettings_deleteAccount_skipButton">Skip</string>
+  <string name="accountSettings_moveAssets_note">The new Account must hold enough XRD to pay the transaction fee.</string>
+  <string name="accountSettings_moveAssets_noAccountsWarning">You don’t have any other accounts with enough XRD.</string>
+  <string name="accountSettings_moveAssets_skipButton">Skip</string>
   <string name="accountSettings_assetsWillBeLostWarning_title">Assets Will Be Lost</string>
   <string name="accountSettings_assetsWillBeLostWarning_message">If you do not transfer your assets out of this Account, they will be lost forever.</string>
   <string name="accountSettings_cannotDeleteAccountWarning_title">Cannot Delete Account</string>
