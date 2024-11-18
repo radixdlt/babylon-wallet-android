@@ -55,7 +55,7 @@ fun DeleteAccountTypeContent(
             .padding(RadixTheme.dimensions.paddingDefault)
     ) {
         SectionTitle(
-            titleRes = R.string.transactionReview_deletingAccountHeading,
+            titleRes = R.string.transactionReview_deletingAccount_title,
             iconRes = DSR.ic_account_delete_small
         )
 
@@ -72,7 +72,7 @@ fun DeleteAccountTypeContent(
                 .padding(RadixTheme.dimensions.paddingMedium),
         ) {
             AccountCardHeader(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         brush = preview.deletingAccount.appearanceId.gradient(),
@@ -105,7 +105,7 @@ fun DeleteAccountTypeContent(
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
 
                 Text(
-                    text = stringResource(id = R.string.transactionReview_deletingAccountDescription),
+                    text = stringResource(id = R.string.transactionReview_deletingAccount_message),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.red1
                 )

@@ -12,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -59,7 +61,7 @@ private fun DeleteAccountSuccessContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = "Go to Homescreen",
+                        text = stringResource(id = R.string.accountSettings_accountDeleted_button),
                         onClick = onGotoHomescreen
                     )
                 },
@@ -82,7 +84,7 @@ private fun DeleteAccountSuccessContent(
                     .align(Alignment.CenterHorizontally)
                     .padding(top = RadixTheme.dimensions.paddingXXXLarge)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = "Account Deleted",
+                text = stringResource(id = R.string.accountSettings_accountDeleted_title),
                 style = RadixTheme.typography.title,
                 textAlign = TextAlign.Center
             )
@@ -92,7 +94,7 @@ private fun DeleteAccountSuccessContent(
                     .fillMaxWidth()
                     .padding(top = RadixTheme.dimensions.paddingLarge)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                text = "Your Account has been permanently deleted. Your wallet settings have been updated.",
+                text = stringResource(id = R.string.accountSettings_accountDeleted_message),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular
             )

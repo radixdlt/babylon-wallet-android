@@ -135,7 +135,7 @@ private fun DeletingAccountMoveAssetsContent(
                             .fillMaxWidth()
                             .padding(top = RadixTheme.dimensions.paddingSmall)
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = "Skip",
+                        text = stringResource(id = R.string.accountSettings_deleteAccount_skipButton),
                         enabled = !state.isContinueLoading,
                         onClick = onSkipRequested
                     )
@@ -161,7 +161,7 @@ private fun DeletingAccountMoveAssetsContent(
                         .padding(top = RadixTheme.dimensions.paddingSemiLarge)
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .fillMaxWidth(),
-                    text = "Move Assets to Another Account",
+                    text = stringResource(id = R.string.accountSettings_moveAssets_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.title,
                     color = RadixTheme.colors.gray1
@@ -174,7 +174,7 @@ private fun DeletingAccountMoveAssetsContent(
                         .padding(top = RadixTheme.dimensions.paddingLarge)
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .fillMaxWidth(),
-                    text = "Before deleting this Account, choose another one to transfer your assets to",
+                    text = stringResource(id = R.string.accountSettings_moveAssets_message),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1
@@ -187,7 +187,7 @@ private fun DeletingAccountMoveAssetsContent(
                         .padding(top = RadixTheme.dimensions.paddingLarge)
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .fillMaxWidth(),
-                    text = "The new Account must hold enough XRD to pay the transaction fee.",
+                    text = stringResource(id = R.string.accountSettings_deleteAccount_note),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
@@ -202,7 +202,7 @@ private fun DeletingAccountMoveAssetsContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(RadixTheme.dimensions.paddingLarge),
-                        text = AnnotatedString(text = "You don’t have any other accounts with enough XRD.")
+                        text = AnnotatedString(text = stringResource(id = R.string.accountSettings_deleteAccount_noAccountsWarning))
                     )
                 } else {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -269,14 +269,14 @@ private fun SkipMoveAssetsDialog(
         },
         title = {
             Text(
-                text = "Assets Will Be Lost",
+                text = stringResource(id = R.string.accountSettings_assetsWillBeLostWarning_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
         },
         message = {
             Text(
-                text = "If you do not transfer your assets out of this Account, they will be lost forever.",
+                text = stringResource(id = R.string.accountSettings_assetsWillBeLostWarning_message),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -301,14 +301,14 @@ private fun CannotDeleteAccountDialog(
         },
         title = {
             Text(
-                text = "Cannot Delete Account",
+                text = stringResource(id = R.string.accountSettings_cannotDeleteAccountWarning_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
         },
         message = {
             Text(
-                text = "Too many assets currently held in Account to perform deletion. Move some and try again.",
+                text = stringResource(id = R.string.accountSettings_cannotDeleteAccountWarning_message),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -336,14 +336,14 @@ private fun CannotTransferSomeAssetsDialog(
         },
         title = {
             Text(
-                text = "Assets Will Be Lost",
+                text = stringResource(id = R.string.accountSettings_nonTransferableAssetsWarning_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
         },
         message = {
             Text(
-                text = "Some of your assets are not transferable, and will be lost.",
+                text = stringResource(id = R.string.accountSettings_nonTransferableAssetsWarning_message),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )

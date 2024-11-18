@@ -229,7 +229,7 @@ private fun AccountSettingsContent(
 
                 WarningButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Delete Account", // TODO crowdin
+                    text = stringResource(id = R.string.accountSettings_deleteAccount),
                     onClick = onDeleteAccount
                 )
             }

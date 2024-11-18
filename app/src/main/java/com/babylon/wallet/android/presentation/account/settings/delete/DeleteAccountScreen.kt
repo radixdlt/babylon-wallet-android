@@ -123,7 +123,7 @@ private fun DeleteAccountContent(
                     .align(Alignment.CenterHorizontally)
                     .padding(top = RadixTheme.dimensions.paddingXXXLarge)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
-                text = "Delete This Account?",
+                text = stringResource(id = R.string.accountSettings_deleteAccount_title),
                 style = RadixTheme.typography.title,
                 textAlign = TextAlign.Center
             )
@@ -133,7 +133,7 @@ private fun DeleteAccountContent(
                     .fillMaxWidth()
                     .padding(top = RadixTheme.dimensions.paddingLarge)
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                text = "You’re about to permanently delete this Account. Once this is done, you will not be able to recover access.",
+                text = stringResource(id = R.string.accountSettings_deleteAccount_message),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1HighImportance
             )

@@ -22,5 +22,4 @@ class CheckAccountsDeletedOnLedgerUseCase @Inject constructor(
             accountAddresses = accountAddresses
         )
     }
-
 }
