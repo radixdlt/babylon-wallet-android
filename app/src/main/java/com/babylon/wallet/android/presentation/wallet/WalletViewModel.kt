@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
+import com.babylon.wallet.android.domain.usecases.CheckAccountsDeletedOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.accountPrompts
@@ -77,6 +78,7 @@ private const val DELAY_BETWEEN_POP_UP_SCREENS_MS = 1000L
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
+    private val checkAccountsDeletedOnLedgerUseCase: CheckAccountsDeletedOnLedgerUseCase,
     getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
@@ -204,9 +206,14 @@ class WalletViewModel @Inject constructor(
 
             accounts
         }.flatMapLatest { accounts ->
+            val isRefreshing = _state.value.refreshType.overrideCache
+            if (isRefreshing) {
+                syncDeletedAccounts()
+            }
+
             getWalletAssetsUseCase.observe(
                 accounts = accounts,
-                isRefreshing = _state.value.refreshType.overrideCache
+                isRefreshing = isRefreshing
             ).catch { error ->
                 _state.update { it.assetsError(error) }
                 Timber.w(error)
@@ -245,6 +252,14 @@ class WalletViewModel @Inject constructor(
                 }
                 .flowOn(defaultDispatcher)
                 .collect()
+        }
+    }
+
+    private fun syncDeletedAccounts() {
+        viewModelScope.launch {
+            if (checkAccountsDeletedOnLedgerUseCase.sync()) {
+                appEventBus.sendEvent(AppEvent.AccountsPreviouslyDeletedDetected)
+            }
         }
     }
 

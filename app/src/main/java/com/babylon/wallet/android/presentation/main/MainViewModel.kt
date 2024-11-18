@@ -11,7 +11,7 @@ import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
-import com.babylon.wallet.android.domain.usecases.TombstoneAccountsUseCase
+import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
@@ -80,8 +80,8 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val tombstoneAccountsUseCase: TombstoneAccountsUseCase,
     private val appLockStateProvider: AppLockStateProvider,
+    private val tombstoneAccountUseCase: TombstoneAccountUseCase,
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -208,7 +208,7 @@ class MainViewModel @Inject constructor(
 
                     status.result.onSuccess {
                         appEventBus.sendEvent(AppEvent.AccountDeleted(deletedAccountAddress))
-                        tombstoneAccountsUseCase(setOf(deletedAccountAddress))
+                        tombstoneAccountUseCase(deletedAccountAddress)
                     }
                 }
         }
