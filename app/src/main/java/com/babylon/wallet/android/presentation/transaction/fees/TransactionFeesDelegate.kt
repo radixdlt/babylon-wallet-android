@@ -17,11 +17,9 @@ import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
-import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
-import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.toUnit
@@ -354,35 +352,33 @@ class TransactionFeesDelegateImpl @Inject constructor(
     }
 
     private fun isBalanceInsufficientToPayTheFee(feePayers: TransactionFeePayers, feeToLock: Decimal192): Boolean {
-        val candidateAddress = feePayers.selectedAccountAddress ?: return true
+        val candidateAddress = feePayers.selectedAccountAddress ?: return false
 
         if (feeToLock.isZero) {
             return false
         }
 
-        val xrdInCandidateAccount = feePayers.candidates.find {
+        return feePayers.candidates.find {
             it.account.address == candidateAddress
-        }?.xrdAmount.orZero()
+        }?.hasEnoughBalance?.not() ?: false
+    }
 
-        // Calculate how many XRD have been used from accounts withdrawn from
-        // In cases were it is not a transfer type, then it means the user
-        // will not spend any other XRD rather than the ones spent for the fees
-        val xrdUsed = when (val previewType = _state.value.previewType) {
-            is PreviewType.Transaction -> {
-                val candidateAddressWithdrawn = previewType.from.find { it.account.address == candidateAddress }
-                getUsedXrdAmount(candidateAddressWithdrawn)
+    /**
+     * Calculate how many XRD have been used from accounts withdrawn from
+     * In cases were it is not a transfer type, then it means the user
+     * will not spend any other XRD rather than the ones spent for the fees
+     */
+    private fun PreviewType.xrdWithdrawals(): Map<AccountAddress, Decimal192> {
+        return when (this) {
+            is PreviewType.Transaction -> from.associate {
+                it.account.address to getUsedXrdAmount(it)
             }
-            is PreviewType.DeleteAccount -> {
-                getUsedXrdAmount(previewType.to)
-            }
-            // On-purpose made this check exhaustive, future types may involve accounts spending XRD
+            is PreviewType.DeleteAccount -> mapOf(deletingAccount.address to to?.let { getUsedXrdAmount(it) }.orZero())
             is PreviewType.AccountsDepositSettings,
             is PreviewType.NonConforming,
             is PreviewType.None,
-            is PreviewType.UnacceptableManifest -> 0.toDecimal192()
+            is PreviewType.UnacceptableManifest -> emptyMap()
         }
-
-        return xrdInCandidateAccount - xrdUsed < feeToLock
     }
 
     private fun getUsedXrdAmount(candidateAddressWithdrawn: AccountWithTransferables?): Decimal192 {
@@ -430,17 +426,4 @@ class TransactionFeesDelegateImpl @Inject constructor(
     private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
         deposits.keys +
         addressesOfAccountsRequiringAuth.toSet()
-
-    private fun PreviewType.xrdWithdrawals(): Map<AccountAddress, Decimal192> {
-        return when (this) {
-            is PreviewType.Transaction -> from.associate {
-                it.account.address to getUsedXrdAmount(it)
-            }
-            is PreviewType.DeleteAccount -> mapOf(deletingAccount.address to to?.let { getUsedXrdAmount(it) }.orZero())
-            is PreviewType.AccountsDepositSettings,
-            is PreviewType.NonConforming,
-            is PreviewType.None,
-            is PreviewType.UnacceptableManifest -> emptyMap()
-        }
-    }
 }
