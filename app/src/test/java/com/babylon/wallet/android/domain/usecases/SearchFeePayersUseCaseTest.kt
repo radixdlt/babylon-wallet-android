@@ -39,7 +39,7 @@ class SearchFeePayersUseCaseTest {
         testScope.runTest {
             val manifestData = feePayerCandidates(account1)
 
-            val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
+            val result = useCase(manifestData, emptyMap(), TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
@@ -58,7 +58,7 @@ class SearchFeePayersUseCaseTest {
             val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.1)
-            val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
+            val result = useCase(manifestData, emptyMap(), TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
@@ -72,12 +72,31 @@ class SearchFeePayersUseCaseTest {
         }
 
     @Test
+    fun `when account with not enough xrd after withdrawal exists, returns null fee payer and hasEnoughBalance false`() =
+        testScope.runTest {
+            val manifestData = feePayerCandidates(account1)
+
+            useCase = createUseCase(firstAccountBalance = 100.0)
+            val result = useCase(manifestData, mapOf(account1.address to 90.toDecimal192()), TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
+
+            assertEquals(
+                TransactionFeePayers(
+                    selectedAccountAddress = null,
+                    candidates = listOf(
+                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192(), false)
+                    )
+                ),
+                result
+            )
+        }
+
+    @Test
     fun `when account with xrd does not exist, returns null fee payer and no candidates`() =
         testScope.runTest {
             val manifestData = feePayerCandidates(account1)
 
             useCase = createUseCase(firstAccountBalance = 0.0)
-            val result = useCase(manifestData, 200.toDecimal192()).getOrThrow()
+            val result = useCase(manifestData, emptyMap(), 200.toDecimal192()).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(

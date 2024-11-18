@@ -89,6 +89,7 @@ import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDeletionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.radixdlt.sargon.SargonOs
 import com.radixdlt.sargon.os.SargonOsManager
@@ -173,6 +174,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         validatorClaimProcessor = ValidatorClaimProcessor(
             getProfileUseCase = getProfileUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+        ),
+        accountDeletionProcessor = AccountDeletionProcessor(
+            getProfileUseCase = getProfileUseCase,
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
@@ -244,7 +249,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
+        coEvery { searchFeePayersUseCase(any(), any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
         coEvery { transactionStatusClient.startPollingForTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
