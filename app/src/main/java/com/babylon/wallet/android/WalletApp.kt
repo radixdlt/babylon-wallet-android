@@ -137,7 +137,7 @@ fun WalletApp(
             navController = navController,
             accountDeletedEvents = mainViewModel.accountDeletedEvents
         )
-        HandleAccountsDetectedDeletedEvent(
+        HandleDeletedAccountsDetectedEvent(
             viewModel = mainViewModel
         )
         ObserveHighPriorityScreens(
@@ -287,7 +287,7 @@ private fun HandleAccountDeletedEvent(
 }
 
 @Composable
-private fun HandleAccountsDetectedDeletedEvent(
+private fun HandleDeletedAccountsDetectedEvent(
     viewModel: MainViewModel
 ) {
     var isAccountsPreviouslyDeletedDetected by remember { mutableStateOf(false) }

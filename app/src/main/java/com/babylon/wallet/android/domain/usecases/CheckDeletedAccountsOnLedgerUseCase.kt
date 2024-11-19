@@ -5,7 +5,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.os.SargonOsManager
 import javax.inject.Inject
 
-class CheckAccountsDeletedOnLedgerUseCase @Inject constructor(
+class CheckDeletedAccountsOnLedgerUseCase @Inject constructor(
     private val sargonOsManager: SargonOsManager
 ) {
 

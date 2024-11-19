@@ -353,7 +353,6 @@ class TransactionReviewViewModel @Inject constructor(
             }
         }
 
-
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,
             val properties: Properties = Properties(),

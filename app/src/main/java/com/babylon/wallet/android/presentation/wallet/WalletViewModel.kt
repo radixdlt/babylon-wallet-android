@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.CheckAccountsDeletedOnLedgerUseCase
+import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.accountPrompts
@@ -78,7 +78,7 @@ private const val DELAY_BETWEEN_POP_UP_SCREENS_MS = 1000L
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
-    private val checkAccountsDeletedOnLedgerUseCase: CheckAccountsDeletedOnLedgerUseCase,
+    private val checkDeletedAccountsOnLedgerUseCase: CheckDeletedAccountsOnLedgerUseCase,
     getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
@@ -256,7 +256,7 @@ class WalletViewModel @Inject constructor(
 
     private fun syncDeletedAccounts() {
         viewModelScope.launch {
-            if (checkAccountsDeletedOnLedgerUseCase.sync()) {
+            if (checkDeletedAccountsOnLedgerUseCase.sync()) {
                 appEventBus.sendEvent(AppEvent.AccountsPreviouslyDeletedDetected)
             }
         }
@@ -347,17 +347,17 @@ class WalletViewModel @Inject constructor(
             override val showRefreshIndicator: Boolean = false
         }
 
-        data object Initial: RefreshType {
+        data object Initial : RefreshType {
             override val overrideCache: Boolean = false
             override val showRefreshIndicator: Boolean = false
         }
 
-        data object WalletRefresh: RefreshType {
+        data object WalletRefresh : RefreshType {
             override val overrideCache: Boolean = true
             override val showRefreshIndicator: Boolean = true
         }
 
-        data object RestoredMnemonic: RefreshType {
+        data object RestoredMnemonic : RefreshType {
             override val overrideCache: Boolean = false
             override val showRefreshIndicator: Boolean = false
         }
