@@ -76,7 +76,7 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val appLockStateProvider: AppLockStateProvider,
+    private val appLockStateProvider: AppLockStateProvider
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -120,6 +120,14 @@ class MainViewModel @Inject constructor(
     val addressDetailsEvents = appEventBus
         .events
         .filterIsInstance<AppEvent.AddressDetails>()
+
+    val accountDeletedEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.AccountDeleted>()
+
+    val accountsDetectedDeletedEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.AccountsPreviouslyDeletedDetected>()
 
     val accessFactorSourcesEvents = appEventBus
         .events

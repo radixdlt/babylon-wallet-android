@@ -1,6 +1,5 @@
-package com.babylon.wallet.android.presentation.account.settings
+package com.babylon.wallet.android.presentation.account.settings.delete.moveassets
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -15,35 +14,26 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 
-@VisibleForTesting
-internal const val ARG_ACCOUNT_SETTINGS_ADDRESS = "arg_account_settings_address"
+private const val ROUTE = "deleting_account_move_assets"
+private const val ARG_DELETING_ACCOUNT_ADDRESS = "deleting_account_address"
 
-internal class AccountSettingsArgs(
-    val address: AccountAddress
-) {
+internal class DeletingAccountMoveAssetsArgs(val deletingAccountAddress: AccountAddress) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        AccountAddress.init(checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_ADDRESS]) as String)
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_DELETING_ACCOUNT_ADDRESS]))
     )
 }
 
-fun NavController.accountSettings(
-    address: AccountAddress
-) {
-    navigate("account_settings_route/${address.string}") {
-        launchSingleTop = true
-    }
+fun NavController.deletingAccountMoveAssets(deletingAccountAddress: AccountAddress) {
+    navigate(route = "$ROUTE?$ARG_DELETING_ACCOUNT_ADDRESS=${deletingAccountAddress.string}")
 }
 
-fun NavGraphBuilder.accountSettings(
-    onBackClick: () -> Unit,
-    onAccountSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
-    onHideAccountClick: () -> Unit,
-    onDeleteAccountClick: (AccountAddress) -> Unit
+fun NavGraphBuilder.deletingAccountMoveAssets(
+    onDismiss: () -> Unit
 ) {
     composable(
-        route = "account_settings_route/{$ARG_ACCOUNT_SETTINGS_ADDRESS}",
+        route = "$ROUTE?$ARG_DELETING_ACCOUNT_ADDRESS={$ARG_DELETING_ACCOUNT_ADDRESS}",
         arguments = listOf(
-            navArgument(ARG_ACCOUNT_SETTINGS_ADDRESS) { type = NavType.StringType }
+            navArgument(ARG_DELETING_ACCOUNT_ADDRESS) { type = NavType.StringType }
         ),
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
@@ -58,12 +48,9 @@ fun NavGraphBuilder.accountSettings(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        AccountSettingsScreen(
+        DeletingAccountMoveAssetsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = onBackClick,
-            onSettingItemClick = onAccountSettingItemClick,
-            onHideAccountClick = onHideAccountClick,
-            onDeleteAccountClick = onDeleteAccountClick
+            onDismiss = onDismiss
         )
     }
 }

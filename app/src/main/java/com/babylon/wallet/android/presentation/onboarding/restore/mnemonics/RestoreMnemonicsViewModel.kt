@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.KeystoreManager
+import rdx.works.core.sargon.active
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
@@ -323,8 +324,8 @@ data class RecoverableFactorSource(
     val associatedAccounts: List<Account>,
     val factorSource: FactorSource.Device
 ) {
-    val nonHiddenAccountsToDisplay: List<Account>
-        get() = associatedAccounts.filter { it.isHidden.not() }
+    val activeAccountsToDisplay: List<Account>
+        get() = associatedAccounts.active()
 
     val areAllAccountsHidden: Boolean
         get() = associatedAccounts.isNotEmpty() && associatedAccounts.all { it.isHidden }

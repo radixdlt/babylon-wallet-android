@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.data.repository.locker.AccountLockersRepository
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -69,6 +70,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val homeCardsRepository = mockk<HomeCardsRepository>()
     private val accountLockersObserver = mockk<AccountLockersObserver>()
     private val accountLockersRepository = mock<AccountLockersRepository>()
+    private val checkDeletedAccountsOnLedgerUseCase = mockk<CheckDeletedAccountsOnLedgerUseCase>()
 
     private val sampleProfile = Profile.sample()
     private val sampleXrdResource = Resource.FungibleResource(
@@ -82,6 +84,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     override fun initVM(): WalletViewModel = WalletViewModel(
         getWalletAssetsUseCase,
         getFiatValueUseCase,
+        checkDeletedAccountsOnLedgerUseCase,
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
         changeBalanceVisibilityUseCase,
@@ -129,7 +132,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         advanceUntilIdle()
         val accounts = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty()
         coEvery {
-            getWalletAssetsUseCase(
+            getWalletAssetsUseCase.observe(
                 accounts = accounts,
                 isRefreshing = false
             )

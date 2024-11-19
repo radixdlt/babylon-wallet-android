@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
@@ -130,6 +132,13 @@ fun WalletApp(
         HandleAddressDetailsEvents(
             navController = navController,
             addressDetailsEvents = mainViewModel.addressDetailsEvents
+        )
+        HandleAccountDeletedEvent(
+            navController = navController,
+            accountDeletedEvents = mainViewModel.accountDeletedEvents
+        )
+        HandleDeletedAccountsDetectedEvent(
+            viewModel = mainViewModel
         )
         ObserveHighPriorityScreens(
             navController = navController,
@@ -262,6 +271,44 @@ private fun HandleAddressDetailsEvents(
         addressDetailsEvents.collect { event ->
             navController.addressDetails(actionableAddress = event.address)
         }
+    }
+}
+
+@Composable
+private fun HandleAccountDeletedEvent(
+    navController: NavController,
+    accountDeletedEvents: Flow<AppEvent.AccountDeleted>
+) {
+    LaunchedEffect(Unit) {
+        accountDeletedEvents.collect {
+            navController.deletedAccountSuccess()
+        }
+    }
+}
+
+@Composable
+private fun HandleDeletedAccountsDetectedEvent(
+    viewModel: MainViewModel
+) {
+    var isAccountsPreviouslyDeletedDetected by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        viewModel.accountsDetectedDeletedEvents.collect {
+            isAccountsPreviouslyDeletedDetected = true
+        }
+    }
+
+    if (isAccountsPreviouslyDeletedDetected) {
+        BasicPromptAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    isAccountsPreviouslyDeletedDetected = false
+                }
+            },
+            titleText = stringResource(id = R.string.homePage_deletedAccountWarning_title),
+            messageText = stringResource(id = R.string.homePage_deletedAccountWarning_message),
+            dismissText = null,
+            confirmText = stringResource(R.string.common_continue)
+        )
     }
 }
 

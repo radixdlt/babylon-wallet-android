@@ -343,7 +343,7 @@ private fun EntitiesView(
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                     contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
                 ) {
-                    items(recoverable.nonHiddenAccountsToDisplay) { account ->
+                    items(recoverable.activeAccountsToDisplay) { account ->
                         SimpleAccountCard(
                             modifier = Modifier.fillMaxWidth(),
                             account = account

@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
 import kotlinx.coroutines.delay
@@ -43,6 +44,17 @@ sealed interface AppEvent {
     data object ProcessBufferedDeepLinkRequest : AppEvent
 
     data class AddressDetails(val address: ActionableAddress) : AppEvent
+
+    /**
+     * An account was just deleted. This event is fired when a transaction of [TransactionType.DeleteAccount] succeeds. The user
+     * should pre presented with the [DeletedAccountScreen]
+     */
+    data class AccountDeleted(val address: AccountAddress) : AppEvent
+
+    /**
+     * Some accounts were detected to have been deleted and need to sync with profile. The user will be presented to a simple modal.
+     */
+    data object AccountsPreviouslyDeletedDetected : AppEvent
 
     // events that trigger the access factor sources bottom sheet dialogs
     sealed interface AccessFactorSources : AppEvent {

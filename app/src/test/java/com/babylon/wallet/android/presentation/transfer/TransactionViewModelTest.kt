@@ -98,7 +98,7 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
         super.setUp()
         coEvery { getAccountDepositResourceRulesUseCase.invoke(any()) } returns emptySet()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address.string
-        every { getWalletAssetsUseCase(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
+        every { getWalletAssetsUseCase.observe(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
     }
 
     @Test

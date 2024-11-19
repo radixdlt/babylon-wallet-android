@@ -81,12 +81,12 @@ class TransactionAnalysisDelegate @Inject constructor(
                 notaryPublicKey = notary.toPublicKey()
             )
         }
-
-        val profile = getProfileUseCase()
         val summary = Summary.FromExecution(
             manifest = SummarizedManifest.Transaction(transactionToReview.transactionManifest),
             summary = transactionToReview.executionSummary
         )
+
+        val profile = getProfileUseCase()
         val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
 
         Analysis(

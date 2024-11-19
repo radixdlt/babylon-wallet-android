@@ -339,16 +339,19 @@ class TransactionReviewViewModel @Inject constructor(
                 get() = duration >= 60.seconds
         }
 
-        val isSubmitEnabled: Boolean
-            get() {
-                if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) return false
-
-                return if (isPreAuthorization) {
-                    expiration?.isExpired?.not() ?: false
-                } else {
-                    fees?.properties?.isBalanceInsufficientToPayTheFee?.not() ?: false
+        val isSubmitEnabled: Boolean = if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) {
+            false
+        } else {
+            when {
+                isPreAuthorization -> expiration?.isExpired?.not() ?: false
+                fees == null || fees.isNetworkFeeLoading -> false
+                else -> {
+                    val isFeePayerSelected = fees.properties.noFeePayerSelected.not()
+                    val isBalanceSufficient = fees.properties.isBalanceInsufficientToPayTheFee.not()
+                    isFeePayerSelected && isBalanceSufficient
                 }
             }
+        }
 
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,
@@ -534,5 +537,12 @@ sealed interface PreviewType {
 
             data object None : InvolvedComponents
         }
+    }
+
+    data class DeleteAccount(
+        val deletingAccount: Account,
+        val to: AccountWithTransferables?
+    ) : PreviewType {
+        override val badges: List<Badge> = emptyList()
     }
 }
