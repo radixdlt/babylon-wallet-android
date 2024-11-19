@@ -5,13 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
-import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
@@ -69,7 +66,6 @@ class MainViewModel @Inject constructor(
     p2PLinksRepository: P2PLinksRepository,
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val transactionStatusClient: TransactionStatusClient,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
     private val verifyDappUseCase: VerifyDAppUseCase,
     private val appEventBus: AppEventBus,
@@ -80,8 +76,7 @@ class MainViewModel @Inject constructor(
     private val observeAccountsAndSyncWithConnectorExtensionUseCase: ObserveAccountsAndSyncWithConnectorExtensionUseCase,
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val processDeepLinkUseCase: ProcessDeepLinkUseCase,
-    private val appLockStateProvider: AppLockStateProvider,
-    private val tombstoneAccountUseCase: TombstoneAccountUseCase,
+    private val appLockStateProvider: AppLockStateProvider
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -177,7 +172,6 @@ class MainViewModel @Inject constructor(
             }.collect()
         }
         observeAppLockState()
-        observeAccountDeletionTransactions()
         handleAllIncomingRequests()
         viewModelScope.launch {
             observeAccountsAndSyncWithConnectorExtensionUseCase()
@@ -195,20 +189,6 @@ class MainViewModel @Inject constructor(
                 .collect { isAppLocked ->
                     _state.update { state ->
                         state.copy(isAppLocked = isAppLocked)
-                    }
-                }
-        }
-    }
-
-    private fun observeAccountDeletionTransactions() {
-        viewModelScope.launch {
-            transactionStatusClient.listenForPollStatusByTransactionType(TransactionType.DeleteAccount::class)
-                .collect { status ->
-                    val deletedAccountAddress = (status.transactionType as? TransactionType.DeleteAccount)?.accountAddress ?: return@collect
-
-                    status.result.onSuccess {
-                        appEventBus.sendEvent(AppEvent.AccountDeleted(deletedAccountAddress))
-                        tombstoneAccountUseCase(deletedAccountAddress)
                     }
                 }
         }

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -21,13 +22,13 @@ import kotlinx.coroutines.sync.withLock
 import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.reflect.KClass
 
 @Singleton
 class TransactionStatusClient @Inject constructor(
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
+    private val tombstoneAccountUseCase: TombstoneAccountUseCase,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
@@ -47,11 +48,6 @@ class TransactionStatusClient @Inject constructor(
         }.filterNotNull().cancellable()
     }
 
-    fun <T : TransactionType> listenForPollStatusByTransactionType(type: KClass<T>): Flow<TransactionStatusData> = transactionStatuses
-        .map { statuses ->
-            statuses.find { type.isInstance(it.transactionType) }
-        }.filterNotNull().cancellable()
-
     fun startPollingForTransactionStatus(
         intentHash: TransactionIntentHash,
         requestId: String,
@@ -60,11 +56,28 @@ class TransactionStatusClient @Inject constructor(
     ) {
         appScope.launch {
             val pollResult = pollTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
+
+            pollResult.result.onSuccess {
+                if (transactionType is TransactionType.DeleteAccount) {
+                    // When a delete account transaction is successful, the first thing to do is to tombstone the account.
+                    // Before any other update takes place in wallet.
+                    tombstoneAccountUseCase(transactionType.accountAddress)
+                }
+            }
+
+            updateTransactionStatus(pollResult)
+
             pollResult.result.onSuccess {
                 preferencesManager.incrementTransactionCompleteCounter()
+
+                if (transactionType is TransactionType.DeleteAccount) {
+                    // Now that the success dialog has already been previewed, it is safe to show the deleted account success screen
+                    appEventBus.sendEvent(AppEvent.AccountDeleted(transactionType.accountAddress))
+                }
+
+                // After all are done, it is safe to refresh the wallet.
                 appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
             }
-            updateTransactionStatus(pollResult)
         }
     }
 
