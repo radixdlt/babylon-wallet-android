@@ -135,7 +135,7 @@ private fun DeletingAccountMoveAssetsContent(
                             .fillMaxWidth()
                             .padding(top = RadixTheme.dimensions.paddingSmall)
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.accountSettings_deleteAccount_skipButton),
+                        text = stringResource(id = R.string.accountSettings_moveAssets_skipButton),
                         enabled = !state.isContinueLoading,
                         onClick = onSkipRequested
                     )
@@ -187,7 +187,7 @@ private fun DeletingAccountMoveAssetsContent(
                         .padding(top = RadixTheme.dimensions.paddingLarge)
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .fillMaxWidth(),
-                    text = stringResource(id = R.string.accountSettings_deleteAccount_note),
+                    text = stringResource(id = R.string.accountSettings_moveAssets_note),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
@@ -202,7 +202,7 @@ private fun DeletingAccountMoveAssetsContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(RadixTheme.dimensions.paddingLarge),
-                        text = AnnotatedString(text = stringResource(id = R.string.accountSettings_deleteAccount_noAccountsWarning))
+                        text = AnnotatedString(text = stringResource(id = R.string.accountSettings_moveAssets_noAccountsWarning))
                     )
                 } else {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))

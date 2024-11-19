@@ -304,8 +304,8 @@ private fun HandleAccountsDetectedDeletedEvent(
                     isAccountsPreviouslyDeletedDetected = false
                 }
             },
-            titleText = "Previously Deleted Account Detected",
-            messageText = "Your Radix Wallet is syncing, and removing the Account from view.",
+            titleText = stringResource(id = R.string.homePage_deletedAccountWarning_title),
+            messageText = stringResource(id = R.string.homePage_deletedAccountWarning_message),
             dismissText = null,
             confirmText = stringResource(R.string.common_continue)
         )
