@@ -344,7 +344,7 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             when {
                 isPreAuthorization -> expiration?.isExpired?.not() ?: false
-                fees == null -> false
+                fees == null || fees.isNetworkFeeLoading -> false
                 else -> {
                     val isFeePayerSelected = fees.properties.noFeePayerSelected.not()
                     val isBalanceSufficient = fees.properties.isBalanceInsufficientToPayTheFee.not()
