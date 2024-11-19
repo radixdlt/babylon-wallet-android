@@ -339,24 +339,20 @@ class TransactionReviewViewModel @Inject constructor(
                 get() = duration >= 60.seconds
         }
 
-        val isSubmitEnabled: Boolean
-            get() {
-                if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) return false
-
-                return when {
-                    isPreAuthorization -> {
-                        expiration?.isExpired?.not() ?: false
-                    }
-                    fees == null -> {
-                        false
-                    }
-                    else -> {
-                        val isFeePayerSelected = fees.properties.noFeePayerSelected.not()
-                        val isBalanceSufficient = fees.properties.isBalanceInsufficientToPayTheFee.not()
-                        isFeePayerSelected && isBalanceSufficient
-                    }
+        val isSubmitEnabled: Boolean = if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) {
+            false
+        } else {
+            when {
+                isPreAuthorization -> expiration?.isExpired?.not() ?: false
+                fees == null -> false
+                else -> {
+                    val isFeePayerSelected = fees.properties.noFeePayerSelected.not()
+                    val isBalanceSufficient = fees.properties.isBalanceInsufficientToPayTheFee.not()
+                    isFeePayerSelected && isBalanceSufficient
                 }
             }
+        }
+
 
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,
