@@ -132,7 +132,7 @@ class WalletViewModel @Inject constructor(
     override fun initialState() = State()
 
     fun onStart() {
-        loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+        loadAssets(refreshType = RefreshType.Initial)
     }
 
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
@@ -204,16 +204,15 @@ class WalletViewModel @Inject constructor(
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
-            accounts
-        }.flatMapLatest { accounts ->
-            val isRefreshing = _state.value.refreshType.overrideCache
-            if (isRefreshing) {
+            if (refreshType.shouldSyncWithAccountStateWithLedger) {
                 syncDeletedAccounts()
             }
 
+            accounts
+        }.flatMapLatest { accounts ->
             getWalletAssetsUseCase.observe(
                 accounts = accounts,
-                isRefreshing = isRefreshing
+                isRefreshing = _state.value.refreshType.overrideCache
             ).catch { error ->
                 _state.update { it.assetsError(error) }
                 Timber.w(error)
@@ -267,14 +266,8 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             appEventBus.events.collect { event ->
                 when (event) {
-                    AppEvent.RefreshAssetsNeeded -> loadAssets(
-                        refreshType = RefreshType.Manual(
-                            overrideCache = true,
-                            showRefreshIndicator = true
-                        )
-                    )
-
-                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+                    AppEvent.RefreshAssetsNeeded -> loadAssets(refreshType = RefreshType.WalletRefresh)
+                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
                     }
@@ -295,7 +288,7 @@ class WalletViewModel @Inject constructor(
     }
 
     fun onRefresh() {
-        loadAssets(refreshType = RefreshType.Manual(overrideCache = true, showRefreshIndicator = true))
+        loadAssets(refreshType = RefreshType.WalletRefresh)
         refreshAccountLockers()
     }
 
@@ -346,15 +339,28 @@ class WalletViewModel @Inject constructor(
         val overrideCache: Boolean
         val showRefreshIndicator: Boolean
 
+        val shouldSyncWithAccountStateWithLedger: Boolean
+            get() = overrideCache || this is Initial
+
         data object None : RefreshType {
             override val overrideCache: Boolean = false
             override val showRefreshIndicator: Boolean = false
         }
 
-        data class Manual(
-            override val overrideCache: Boolean,
-            override val showRefreshIndicator: Boolean
-        ) : RefreshType
+        data object Initial: RefreshType {
+            override val overrideCache: Boolean = false
+            override val showRefreshIndicator: Boolean = false
+        }
+
+        data object WalletRefresh: RefreshType {
+            override val overrideCache: Boolean = true
+            override val showRefreshIndicator: Boolean = true
+        }
+
+        data object RestoredMnemonic: RefreshType {
+            override val overrideCache: Boolean = false
+            override val showRefreshIndicator: Boolean = false
+        }
 
         data object Automatic : RefreshType {
             override val overrideCache: Boolean = true
