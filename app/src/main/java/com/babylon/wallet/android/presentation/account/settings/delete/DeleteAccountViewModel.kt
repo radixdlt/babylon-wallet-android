@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.settings.delete
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.usecases.PrepareTransactionForAccountDeletionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -24,7 +25,8 @@ class DeleteAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
-    private val prepareTransactionForAccountDeletionUseCase: PrepareTransactionForAccountDeletionUseCase
+    private val prepareTransactionForAccountDeletionUseCase: PrepareTransactionForAccountDeletionUseCase,
+    private val incomingRequestRepository: IncomingRequestRepository
 ) : StateViewModel<DeleteAccountViewModel.State>(),
     OneOffEventHandler<DeleteAccountViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -63,8 +65,9 @@ class DeleteAccountViewModel @Inject constructor(
 
     private suspend fun prepareTransaction() {
         prepareTransactionForAccountDeletionUseCase(
-            deletingAccountAddress = state.value.accountAddress,
+            deletingAccountAddress = state.value.accountAddress
         ).onSuccess {
+            incomingRequestRepository.add(it.transactionRequest)
             _state.update { state -> state.copy(isPreparingManifest = false) }
         }.onFailure { error ->
             _state.update { it.copy(isPreparingManifest = false, uiMessage = UiMessage.ErrorMessage(error)) }

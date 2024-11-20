@@ -65,6 +65,7 @@ fun DeletingAccountMoveAssetsScreen(
         onSkipRequested = viewModel::onSkipRequested,
         onSkipCancel = viewModel::onSkipCancelled,
         onSkipConfirm = viewModel::onSkipConfirmed,
+        onSkipNonTransferableAssets = viewModel::onSkipNonTransferableAssets,
         onAccountSelected = viewModel::onAccountSelected,
         onMessageShown = viewModel::onMessageShown,
         onSubmit = viewModel::onSubmit,
@@ -79,6 +80,7 @@ private fun DeletingAccountMoveAssetsContent(
     onSkipRequested: () -> Unit,
     onSkipConfirm: () -> Unit,
     onSkipCancel: () -> Unit,
+    onSkipNonTransferableAssets: () -> Unit,
     onAccountSelected: (Account) -> Unit,
     onMessageShown: () -> Unit,
     onSubmit: () -> Unit,
@@ -94,7 +96,7 @@ private fun DeletingAccountMoveAssetsContent(
         )
         DeletingAccountMoveAssetsViewModel.State.Warning.CannotTransferSomeAssets -> CannotTransferSomeAssetsDialog(
             onCancelClick = onSkipCancel,
-            onContinueClick = onSkipConfirm
+            onContinueClick = onSkipNonTransferableAssets
         )
         null -> {}
     }
@@ -366,6 +368,7 @@ private fun DeletingAccountMoveAssetsFetchingBalancesPreview(
             onSkipRequested = {},
             onSkipConfirm = {},
             onSkipCancel = {},
+            onSkipNonTransferableAssets = {},
             onAccountSelected = {},
             onMessageShown = {},
             onSubmit = {},
