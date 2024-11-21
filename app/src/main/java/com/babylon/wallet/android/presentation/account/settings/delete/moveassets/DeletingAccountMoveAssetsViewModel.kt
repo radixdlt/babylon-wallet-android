@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.account.settings.delete.moveasse
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.PrepareTransactionForAccountDeletionUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -26,6 +28,7 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val stateRepository: StateRepository,
     private val prepareTransactionForAccountDeletionUseCase: PrepareTransactionForAccountDeletionUseCase,
+    private val incomingRequestRepository: IncomingRequestRepository,
     private val savedStateHandle: SavedStateHandle
 ) : StateViewModel<DeletingAccountMoveAssetsViewModel.State>() {
 
@@ -67,6 +70,20 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
         viewModelScope.launch { prepareTransaction() }
     }
 
+    fun onSkipNonTransferableAssets() {
+        viewModelScope.launch {
+            _state.value.transactionRequest?.let { transactionRequest ->
+                incomingRequestRepository.add(transactionRequest)
+                _state.update {
+                    it.copy(
+                        warning = null,
+                        transactionRequest = null
+                    )
+                }
+            }
+        }
+    }
+
     fun onSkipCancelled() {
         _state.update { it.copy(warning = null) }
     }
@@ -91,13 +108,23 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
         prepareTransactionForAccountDeletionUseCase(
             deletingAccountAddress = state.value.deletingAccountAddress,
             accountAddressToTransferResources = if (state.value.isSkipSelected) null else state.value.selectedAccount?.address
-        ).onSuccess {
-            _state.update { state -> state.copy(isPreparingManifest = false, isSkipSelected = false) }
+        ).onSuccess { outcome ->
+            _state.update { state ->
+                state.copy(
+                    isPreparingManifest = false,
+                    isSkipSelected = false,
+                    warning = State.Warning.CannotTransferSomeAssets.takeIf { outcome.hasNonTransferableResources },
+                    transactionRequest = outcome.transactionRequest.takeIf { outcome.hasNonTransferableResources }
+                )
+            }
+
+            if (!outcome.hasNonTransferableResources) {
+                incomingRequestRepository.add(outcome.transactionRequest)
+            }
         }.onFailure { error ->
             Timber.w(error.message)
             val warning = when (error) {
                 is CommonException.MaxTransfersPerTransactionReached -> State.Warning.CannotDeleteAccount
-                // TODO handle the error for not transferable assets
                 else -> null
             }
 
@@ -118,6 +145,7 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
         val warning: Warning? = null,
         val uiMessage: UiMessage? = null,
         val isSkipSelected: Boolean = false,
+        val transactionRequest: TransactionRequest? = null,
         private val isFetchingBalances: Boolean = true,
         private val isPreparingManifest: Boolean = false,
         private val accountsWithBalances: Map<Account, Decimal192> = emptyMap()
