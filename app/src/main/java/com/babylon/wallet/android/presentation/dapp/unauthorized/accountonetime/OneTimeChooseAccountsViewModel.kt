@@ -155,7 +155,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
         selectedAccountEntities: List<ProfileEntity.AccountEntity>,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        val signRequest = SignRequest.SignAuthChallengeRequest(
+        val signRequest = SignRequest.RolaSignRequest(
             challengeHex = challenge.hex,
             origin = metadata.origin,
             dAppDefinitionAddress = metadata.dAppDefinitionAddress

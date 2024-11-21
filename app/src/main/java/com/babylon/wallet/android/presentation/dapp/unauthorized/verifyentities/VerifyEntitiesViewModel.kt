@@ -88,7 +88,7 @@ class VerifyEntitiesViewModel @Inject constructor(
             viewModelScope.launch {
                 setSigningInProgress(true)
                 val signRequest = request.proofOfOwnershipRequestItem?.challenge?.hex?.let { challengeHex ->
-                    SignRequest.SignAuthChallengeRequest(
+                    SignRequest.RolaSignRequest(
                         challengeHex = challengeHex,
                         origin = request.metadata.origin,
                         dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
