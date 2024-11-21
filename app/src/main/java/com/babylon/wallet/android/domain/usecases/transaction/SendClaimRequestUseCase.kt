@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
+import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.TransactionManifest
@@ -18,7 +18,8 @@ import javax.inject.Inject
 private typealias SargonStakeClaim = com.radixdlt.sargon.StakeClaim
 
 class SendClaimRequestUseCase @Inject constructor(
-    val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase
 ) {
 
     suspend operator fun invoke(
@@ -42,7 +43,7 @@ class SendClaimRequestUseCase @Inject constructor(
                 }
             )
         }.mapCatching { manifest ->
-            UnvalidatedManifestData.from(manifest).prepareInternalTransactionRequest()
+            prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
         }.onSuccess { request ->
             incomingRequestRepository.add(request)
         }
@@ -69,7 +70,7 @@ class SendClaimRequestUseCase @Inject constructor(
                 )
             )
         }.mapCatching { manifest ->
-            UnvalidatedManifestData.from(manifest).prepareInternalTransactionRequest()
+            prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
         }.onSuccess { request ->
             incomingRequestRepository.add(request)
         }

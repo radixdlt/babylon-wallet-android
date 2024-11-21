@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
+import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
@@ -13,6 +13,7 @@ import javax.inject.Inject
 
 class PrepareTransactionForAccountDeletionUseCase @Inject constructor(
     private val sargonOsManager: SargonOsManager,
+    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
     @IoDispatcher private val coroutineDispatcher: CoroutineDispatcher
 ) {
 
@@ -25,7 +26,8 @@ class PrepareTransactionForAccountDeletionUseCase @Inject constructor(
                 accountAddress = deletingAccountAddress,
                 recipientAccountAddress = accountAddressToTransferResources
             )
-            val transactionRequest = UnvalidatedManifestData.from(outcome.manifest).prepareInternalTransactionRequest(
+            val transactionRequest = prepareInternalTransactionUseCase(
+                unvalidatedManifestData = UnvalidatedManifestData.from(outcome.manifest),
                 blockUntilCompleted = true,
                 transactionType = TransactionType.DeleteAccount(deletingAccountAddress)
             )

@@ -63,6 +63,7 @@ interface PeerdroidClient {
 }
 
 class PeerdroidClientImpl @Inject constructor(
+    private val dAppToWalletInteractionProcessor: DAppToWalletInteractionProcessor,
     private val peerdroidConnector: PeerdroidConnector,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
@@ -152,7 +153,10 @@ class PeerdroidClientImpl @Inject constructor(
                         requestId = dappInteraction.interactionId
                     )
                 }
-                dappInteraction.toDomainModel(remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()
+                dAppToWalletInteractionProcessor.process(
+                    remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId),
+                    unvalidatedInteraction = dappInteraction
+                ).getOrThrow()
             } else {
                 val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
                 interaction.toDomainModel()

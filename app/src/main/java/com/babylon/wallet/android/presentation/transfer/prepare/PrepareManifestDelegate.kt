@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
+import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -27,7 +27,8 @@ import javax.inject.Inject
 
 class PrepareManifestDelegate @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val mnemonicRepository: MnemonicRepository
+    private val mnemonicRepository: MnemonicRepository,
+    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onSubmit() {
@@ -43,13 +44,15 @@ class PrepareManifestDelegate @Inject constructor(
                 )
             )
         }.map { manifest ->
-            UnvalidatedManifestData.from(
-                manifest = manifest,
-                message = (_state.value.messageState as? TransferViewModel.State.Message.Added)?.message
-            ).prepareInternalTransactionRequest()
+            prepareInternalTransactionUseCase(
+                UnvalidatedManifestData.from(
+                    manifest = manifest,
+                    message = (_state.value.messageState as? TransferViewModel.State.Message.Added)?.message
+                )
+            )
         }.onSuccess { request ->
             _state.update { it.copy(transferRequestId = request.interactionId) }
-            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.unvalidatedManifestData.instructions}")
+            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.instructions}")
             incomingRequestRepository.add(request)
         }.onFailure { error ->
             _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }

@@ -46,7 +46,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
@@ -107,6 +106,17 @@ class MainViewModel @Inject constructor(
             oneOffEventHandler = this
         )
 
+        observeProfileState()
+        observeAppLockState()
+        viewModelScope.launch { observeAccountsAndSyncWithConnectorExtensionUseCase() }
+        processBufferedDeepLinkRequest()
+    }
+
+    override fun initialState(): State {
+        return State(isDeviceSecure = deviceCapabilityHelper.isDeviceSecure)
+    }
+
+    private fun observeProfileState() {
         viewModelScope.launch {
             combine(
                 getProfileUseCase.state,
@@ -132,11 +142,6 @@ class MainViewModel @Inject constructor(
                 }
             }.collect()
         }
-        observeAppLockState()
-        viewModelScope.launch {
-            observeAccountsAndSyncWithConnectorExtensionUseCase()
-        }
-        processBufferedDeepLinkRequest()
     }
 
     private fun observeAppLockState() {
@@ -162,10 +167,6 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    override fun initialState(): State {
-        return State(isDeviceSecure = deviceCapabilityHelper.isDeviceSecure)
     }
 
     fun onHighPriorityScreen() = viewModelScope.launch {

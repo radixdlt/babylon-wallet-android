@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
-import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
@@ -40,10 +39,10 @@ import com.radixdlt.sargon.DappToWalletInteractionSubintentExpirationStatus
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
-import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -71,7 +70,6 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val EXPIRATION_COUNTDOWN_PERIOD_MS = 1000L
 
-@Suppress("TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
@@ -93,11 +91,6 @@ class TransactionReviewViewModel @Inject constructor(
     private val args = TransactionReviewArgs(savedStateHandle)
     private val data = MutableStateFlow(Data())
 
-    override fun initialState(): State = State(
-        isLoading = true,
-        previewType = PreviewType.None
-    )
-
     init {
         initHiddenResources()
 
@@ -110,6 +103,11 @@ class TransactionReviewViewModel @Inject constructor(
         observeDeferredRequests()
         processIncomingRequest()
     }
+
+    override fun initialState(): State = State(
+        isLoading = true,
+        previewType = PreviewType.None
+    )
 
     private fun initHiddenResources() {
         viewModelScope.launch {
@@ -142,8 +140,8 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             data.update { it.copy(txRequest = request) }
 
-            if (request.transactionType is TransactionType.PreAuthorized) {
-                when (request.transactionType.expiration.toDAppInteraction().status) {
+            if (request.kind is TransactionRequest.Kind.PreAuthorized) {
+                when (request.kind.expiration.toDAppInteraction().status) {
                     DappToWalletInteractionSubintentExpirationStatus.EXPIRATION_TOO_CLOSE -> {
                         _state.update {
                             it.copy(error = TransactionErrorMessage(DappRequestException.InvalidPreAuthorizationExpirationTooClose))
@@ -165,9 +163,9 @@ class TransactionReviewViewModel @Inject constructor(
             }
             _state.update {
                 it.copy(
-                    isPreAuthorization = request.transactionType is TransactionType.PreAuthorized,
-                    rawManifest = request.unvalidatedManifestData.instructions,
-                    message = request.unvalidatedManifestData.plainMessage
+                    isPreAuthorization = request.kind.isPreAuthorized,
+                    rawManifest = request.instructions,
+                    message = request.message.plaintext
                 )
             }
             withContext(defaultDispatcher) {
@@ -176,10 +174,9 @@ class TransactionReviewViewModel @Inject constructor(
                         data.update { it.copy(txSummary = analysis.summary) }
                     }
                     .then { analysis ->
-                        if (!request.transactionType.isPreAuthorized) {
-                            fees.resolveFees(analysis)
-                        } else {
-                            Result.success(Unit)
+                        when (request.kind) {
+                            is TransactionRequest.Kind.PreAuthorized -> Result.success(Unit)
+                            is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis, request.kind.ephemeralNotaryPrivateKey)
                         }
                     }
             }
@@ -188,9 +185,9 @@ class TransactionReviewViewModel @Inject constructor(
                 processDApp(request)
             }
 
-            if (request.transactionType is TransactionType.PreAuthorized) {
+            if (request.kind is TransactionRequest.Kind.PreAuthorized) {
                 viewModelScope.launch(defaultDispatcher) {
-                    processExpiration(request.transactionType.expiration)
+                    processExpiration(request.kind.expiration)
                 }
             }
         }
@@ -278,7 +275,6 @@ class TransactionReviewViewModel @Inject constructor(
     data class Data(
         private val txRequest: TransactionRequest? = null,
         private val txSummary: Summary? = null,
-        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val signers: List<ProfileEntity> = emptyList(),
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,

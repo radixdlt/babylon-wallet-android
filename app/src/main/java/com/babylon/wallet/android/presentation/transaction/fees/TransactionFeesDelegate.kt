@@ -17,6 +17,7 @@ import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
@@ -67,7 +68,10 @@ class TransactionFeesDelegateImpl @Inject constructor(
 
     private val logger = Timber.tag("TransactionFees")
 
-    suspend fun resolveFees(analysis: Analysis): Result<Unit> {
+    suspend fun resolveFees(
+        analysis: Analysis,
+        ephemeralNotaryPrivateKey: Curve25519SecretKey
+    ): Result<Unit> {
         val executionSummary = (analysis.summary as? Summary.FromExecution)?.summary ?: error(
             "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
         )
@@ -77,7 +81,7 @@ class TransactionFeesDelegateImpl @Inject constructor(
             summary = executionSummary,
             notaryAndSigners = NotaryAndSigners(
                 signers = analysis.signers,
-                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey
+                ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
             ),
             previewType = _state.value.previewType
         )

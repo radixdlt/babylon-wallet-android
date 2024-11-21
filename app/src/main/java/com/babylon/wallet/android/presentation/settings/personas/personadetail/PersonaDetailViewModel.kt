@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.settings.personas.personadetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -47,8 +47,9 @@ class PersonaDetailViewModel @Inject constructor(
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getDAppsUseCase: GetDAppsUseCase,
-    savedStateHandle: SavedStateHandle,
-    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
+    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
+    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
+    savedStateHandle: SavedStateHandle
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
@@ -132,7 +133,8 @@ class PersonaDetailViewModel @Inject constructor(
                         val interactionId = UUID.randomUUID().toString()
                         uploadAuthKeyInteractionId = interactionId
                         incomingRequestRepository.add(
-                            manifest.prepareInternalTransactionRequest(
+                            prepareInternalTransactionUseCase(
+                                unvalidatedManifestData = manifest,
                                 requestId = interactionId
                             )
                         )

@@ -6,8 +6,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
+import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -44,7 +44,6 @@ import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
@@ -52,6 +51,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val transactionStatusClient: TransactionStatusClient,
     private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
+    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
@@ -143,7 +143,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
                 val requestId = UUID.randomUUID().toString()
                 incomingRequestRepository.add(
-                    manifest.prepareInternalTransactionRequest(
+                    prepareInternalTransactionUseCase(
+                        unvalidatedManifestData = manifest,
                         requestId = requestId,
                         transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
                         blockUntilCompleted = true

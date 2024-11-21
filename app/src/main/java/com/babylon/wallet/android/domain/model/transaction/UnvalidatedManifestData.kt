@@ -1,20 +1,14 @@
 package com.babylon.wallet.android.domain.model.transaction
 
-import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
-import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
-import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.toList
-import java.util.UUID
 
 data class UnvalidatedManifestData(
     val instructions: String,
@@ -39,20 +33,3 @@ data class UnvalidatedManifestData(
         )
     }
 }
-
-fun UnvalidatedManifestData.prepareInternalTransactionRequest(
-    requestId: WalletInteractionId = UUID.randomUUID().toString(),
-    blockUntilCompleted: Boolean = false,
-    transactionType: TransactionType = TransactionType.Generic
-) = TransactionRequest(
-    // Since we mock this request as a dApp request from the wallet app, the dApp's id is empty. Should never be invoked as we always
-    // check if a request is not internal before sending message to the dApp
-    remoteEntityId = RemoteEntityID.ConnectorId(""),
-    interactionId = requestId,
-    unvalidatedManifestData = this,
-    requestMetadata = DappToWalletInteraction.RequestMetadata.internal(
-        networkId = networkId,
-        blockUntilCompleted = blockUntilCompleted
-    ),
-    transactionType = transactionType
-)

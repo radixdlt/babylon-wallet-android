@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
+import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
@@ -28,13 +28,13 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class DevSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
+    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
     private val transactionStatusClient: TransactionStatusClient,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
@@ -83,14 +83,15 @@ class DevSettingsViewModel @Inject constructor(
                     Timber.d("Approving: \n$manifest")
                     val interactionId = UUID.randomUUID().toString()
                     incomingRequestRepository.add(
-                        manifest.prepareInternalTransactionRequest(
+                        prepareInternalTransactionUseCase(
+                            unvalidatedManifestData = manifest,
                             requestId = interactionId,
                             blockUntilCompleted = true,
                             transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
                         )
                     )
                     _state.update { it.copy(isLoading = false) }
-                    listenForRolaKeyUploadTransactionResult(interactionId.toString())
+                    listenForRolaKeyUploadTransactionResult(interactionId)
                 }.onFailure {
                     if (it is ProfileException.SecureStorageAccess) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)

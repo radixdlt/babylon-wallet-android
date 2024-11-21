@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
@@ -27,10 +27,14 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.SignedSubintent
+import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
+import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.then
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
@@ -154,15 +158,16 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
         val fees = _state.value.fees ?: error("Fees were not resolved")
         val transactionRequest = data.value.request
+        val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.Regular ?: error("Wrong kind: ${transactionRequest.kind}")
         val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
         return signAndNotarizeTransactionUseCase(
             manifest = transactionManifest,
-            networkId = transactionRequest.unvalidatedManifestData.networkId,
-            message = transactionRequest.unvalidatedManifestData.message,
+            networkId = transactionRequest.networkId,
+            message = transactionRequest.message,
             lockFee = fees.transactionFees.transactionFeeToLock,
             tipPercentage = fees.transactionFees.tipPercentageForTransaction,
-            notarySecretKey = data.value.ephemeralNotaryPrivateKey,
+            notarySecretKey = transactionRequestKind.ephemeralNotaryPrivateKey,
             feePayerAddress = feePayerAddress
         ).then { notarizationResult ->
             transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
@@ -183,7 +188,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             transactionStatusClient.startPollingForTransactionStatus(
                 intentHash = notarization.intentHash,
                 requestId = data.value.request.interactionId,
-                transactionType = data.value.request.transactionType,
+                transactionType = transactionRequestKind.transactionType,
                 endEpoch = notarization.endEpoch
             )
 
@@ -199,11 +204,12 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
     private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<SignedSubintent> {
         val transactionRequest = data.value.request
+        val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.PreAuthorized ?: error("Wrong kind: ${transactionRequest.kind}")
 
         return signSubintentUseCase(
             manifest = subintentManifest,
-            message = transactionRequest.unvalidatedManifestData.plainMessage,
-            expiration = (transactionRequest.transactionType as TransactionType.PreAuthorized).expiration
+            message = transactionRequest.message.plaintext,
+            expiration = transactionRequestKind.expiration
         ).onSuccess { signedSubintent ->
             _state.update { it.copy(isSubmitting = false) }
 

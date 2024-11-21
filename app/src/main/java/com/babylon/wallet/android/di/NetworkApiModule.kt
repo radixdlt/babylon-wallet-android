@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.di
 
 import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.data.dapp.DAppToWalletInteractionProcessor
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
 import com.babylon.wallet.android.data.gateway.apis.StateApi
@@ -40,10 +41,12 @@ object NetworkApiModule {
     @Provides
     @Singleton
     fun providePeerdroidClient(
+        dAppToWalletInteractionProcessor: DAppToWalletInteractionProcessor,
         peerdroidConnector: PeerdroidConnector,
         @IoDispatcher ioDispatcher: CoroutineDispatcher,
         json: Json
     ): PeerdroidClient = PeerdroidClientImpl(
+        dAppToWalletInteractionProcessor = dAppToWalletInteractionProcessor,
         peerdroidConnector = peerdroidConnector,
         ioDispatcher = ioDispatcher,
         json = json
