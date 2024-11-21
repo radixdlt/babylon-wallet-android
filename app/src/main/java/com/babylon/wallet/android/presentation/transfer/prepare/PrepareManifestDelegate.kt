@@ -21,6 +21,7 @@ import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.then
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -43,7 +44,7 @@ class PrepareManifestDelegate @Inject constructor(
                     nonFungibleResources = _state.value.toNonFungibleTransfers(accountsAbleToSign)
                 )
             )
-        }.map { manifest ->
+        }.then { manifest ->
             prepareInternalTransactionUseCase(
                 UnvalidatedManifestData.from(
                     manifest = manifest,

@@ -13,6 +13,7 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.then
 import javax.inject.Inject
 
 private typealias SargonStakeClaim = com.radixdlt.sargon.StakeClaim
@@ -42,7 +43,7 @@ class SendClaimRequestUseCase @Inject constructor(
                     )
                 }
             )
-        }.mapCatching { manifest ->
+        }.then { manifest ->
             prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
         }.onSuccess { request ->
             incomingRequestRepository.add(request)
@@ -69,7 +70,7 @@ class SendClaimRequestUseCase @Inject constructor(
                     )
                 )
             )
-        }.mapCatching { manifest ->
+        }.then { manifest ->
             prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
         }.onSuccess { request ->
             incomingRequestRepository.add(request)

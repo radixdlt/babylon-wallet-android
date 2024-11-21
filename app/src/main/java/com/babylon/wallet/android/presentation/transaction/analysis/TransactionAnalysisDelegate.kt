@@ -12,7 +12,6 @@ import com.babylon.wallet.android.presentation.transaction.analysis.summary.exec
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
 import com.radixdlt.sargon.AddressFormat
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.PreAuthToReview
 import com.radixdlt.sargon.TransactionToReview
 import kotlinx.coroutines.flow.update
@@ -126,10 +125,10 @@ class TransactionAnalysisDelegate @Inject constructor(
         logger.w(error)
 
         when (error) {
-            is CommonException.ReservedInstructionsNotAllowedInManifest -> {
+            is RadixWalletException.DappRequestException.UnacceptableManifest -> {
                 _state.update {
                     it.copy(
-                        error = TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest),
+                        error = TransactionErrorMessage(error),
                         isRawManifestVisible = false,
                         showRawTransactionWarning = false,
                         isLoading = false,
@@ -157,8 +156,8 @@ class TransactionAnalysisDelegate @Inject constructor(
                 }
             }
 
-            is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
-                reportFailure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
+            is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits -> {
+                reportFailure(error)
             }
 
             else -> {

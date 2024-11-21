@@ -22,13 +22,14 @@ class PrepareInternalTransactionUseCase @Inject constructor(
         requestId: WalletInteractionId = UUID.randomUUID().toString(),
         blockUntilCompleted: Boolean = false,
         transactionType: TransactionType = TransactionType.Generic
-    ): TransactionRequest {
+    ): Result<TransactionRequest> = runCatching {
         val transactionToReviewOutcome = interactionPreviewProvider.analyseTransactionPreview(
             instructions = unvalidatedManifestData.instructions,
             blobs = Blobs.init(unvalidatedManifestData.blobs.map { Blob.init(it) }),
             isInternal = true
-        )
-        return TransactionRequest(
+        ).getOrThrow()
+
+        TransactionRequest(
             // Since we mock this request as a dApp request from the wallet app, the dApp's id is empty.
             // Should never be invoked as we always check if a request is not internal before sending message to the dApp
             remoteEntityId = RemoteEntityID.ConnectorId(""),

@@ -9,6 +9,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import rdx.works.core.then
 import javax.inject.Inject
 
 class PrepareTransactionForAccountDeletionUseCase @Inject constructor(
@@ -22,20 +23,21 @@ class PrepareTransactionForAccountDeletionUseCase @Inject constructor(
         accountAddressToTransferResources: AccountAddress? = null
     ): Result<Outcome> = withContext(coroutineDispatcher) {
         runCatching {
-            val outcome = sargonOsManager.sargonOs.createDeleteAccountManifest(
+            sargonOsManager.sargonOs.createDeleteAccountManifest(
                 accountAddress = deletingAccountAddress,
                 recipientAccountAddress = accountAddressToTransferResources
             )
-            val transactionRequest = prepareInternalTransactionUseCase(
+        }.then { outcome ->
+            prepareInternalTransactionUseCase(
                 unvalidatedManifestData = UnvalidatedManifestData.from(outcome.manifest),
                 blockUntilCompleted = true,
                 transactionType = TransactionType.DeleteAccount(deletingAccountAddress)
-            )
-
-            Outcome(
-                transactionRequest = transactionRequest,
-                hasNonTransferableResources = outcome.nonTransferableResources.isNotEmpty()
-            )
+            ).mapCatching { transactionRequest ->
+                Outcome(
+                    transactionRequest = transactionRequest,
+                    hasNonTransferableResources = outcome.nonTransferableResources.isNotEmpty()
+                )
+            }
         }
     }
 

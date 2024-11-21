@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.model.messages
 
 import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
-import com.babylon.wallet.android.data.dapp.model.TransactionToReviewOutcome
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.radixdlt.sargon.PreAuthToReview

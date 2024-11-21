@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegateWithEvents
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.main.MainViewModel.Event
@@ -71,13 +72,9 @@ class IncomingRequestsDelegate @Inject constructor(
                 }
             }.onFailure { error ->
                 if (error is RadixWalletException.DappRequestException) {
-                    _state.update {
-                        it.copy(dappRequestFailure = error)
-                    }
+                    reportFailure(error)
                 } else {
-                    _state.update {
-                        it.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequest)
-                    }
+                    reportFailure(RadixWalletException.DappRequestException.InvalidRequest)
                 }
             }
         }
@@ -106,9 +103,7 @@ class IncomingRequestsDelegate @Inject constructor(
                                 RadixWalletException.DappRequestException.InvalidPersona,
                                 RadixWalletException.DappRequestException.InvalidRequest -> {
                                     incomingRequestRepository.requestHandled(request.interactionId)
-                                    _state.update { state ->
-                                        state.copy(dappRequestFailure = dappRequestFailure)
-                                    }
+                                    reportFailure(dappRequestFailure)
                                 }
 
                                 else -> {
@@ -178,10 +173,8 @@ class IncomingRequestsDelegate @Inject constructor(
                         peerdroidClient
                             .listenForIncomingRequestErrors()
                             .cancellable()
-                            .collect {
-                                _state.update { state ->
-                                    state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequestChallenge)
-                                }
+                            .collect { error ->
+                                reportFailure(error.exception)
                             }
                     }
                 }
@@ -201,6 +194,13 @@ class IncomingRequestsDelegate @Inject constructor(
         incomingDappRequestErrorsJob = null
         peerdroidClient.terminate()
         incomingRequestRepository.removeAll()
+    }
+
+    private fun reportFailure(error: Throwable) {
+        Timber.w(error)
+        _state.update {
+            it.copy(dappRequestFailure = UiMessage.ErrorMessage(error))
+        }
     }
 
     companion object {

@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
@@ -13,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.main.p2plinks.IncomingRequestsDelegate
 import com.babylon.wallet.android.utils.AppEvent
@@ -261,7 +261,7 @@ class MainViewModel @Inject constructor(
     data class State(
         val initialAppState: AppState = AppState.Loading,
         val showDeviceRootedWarning: Boolean = false,
-        val dappRequestFailure: RadixWalletException.DappRequestException? = null,
+        val dappRequestFailure: UiMessage.ErrorMessage? = null,
         val olympiaErrorState: OlympiaErrorState? = null,
         val claimedByAnotherDeviceError: ClaimedByAnotherDevice? = null,
         val showMobileConnectWarning: Boolean = false,

@@ -27,12 +27,9 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.SignedSubintent
-import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.hash
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.then
@@ -158,7 +155,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
     private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
         val fees = _state.value.fees ?: error("Fees were not resolved")
         val transactionRequest = data.value.request
-        val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.Regular ?: error("Wrong kind: ${transactionRequest.kind}")
+        val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.Regular
+            ?: error("Wrong kind: ${transactionRequest.kind}")
         val feePayerAddress = data.value.feePayers?.selectedAccountAddress
 
         return signAndNotarizeTransactionUseCase(
@@ -204,7 +202,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
     private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<SignedSubintent> {
         val transactionRequest = data.value.request
-        val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.PreAuthorized ?: error("Wrong kind: ${transactionRequest.kind}")
+        val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.PreAuthorized
+            ?: error("Wrong kind: ${transactionRequest.kind}")
 
         return signSubintentUseCase(
             manifest = subintentManifest,

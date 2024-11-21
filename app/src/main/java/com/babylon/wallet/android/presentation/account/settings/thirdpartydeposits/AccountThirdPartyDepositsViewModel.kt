@@ -39,6 +39,7 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.resourceAddress
+import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import java.util.UUID
@@ -118,6 +119,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onUpdateThirdPartyDeposits() {
         viewModelScope.launch {
             val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits ?: return@launch
+            val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@launch
 
             val newDepositRule = state.value.updatedThirdPartyDepositSettings?.depositRule ?: currentThirdPartyDeposits.depositRule
             val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty()
@@ -139,18 +141,18 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 )
             }.mapCatching {
                 UnvalidatedManifestData.from(it)
-            }.onSuccess { manifest ->
-                val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
+            }.then { manifest ->
                 val requestId = UUID.randomUUID().toString()
-                incomingRequestRepository.add(
-                    prepareInternalTransactionUseCase(
-                        unvalidatedManifestData = manifest,
-                        requestId = requestId,
-                        transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
-                        blockUntilCompleted = true
-                    )
+
+                prepareInternalTransactionUseCase(
+                    unvalidatedManifestData = manifest,
+                    requestId = requestId,
+                    transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
+                    blockUntilCompleted = true
                 )
-                handleRequestStatus(requestId)
+            }.onSuccess { transactionRequest ->
+                incomingRequestRepository.add(transactionRequest)
+                handleRequestStatus(transactionRequest.interactionId)
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage(t))

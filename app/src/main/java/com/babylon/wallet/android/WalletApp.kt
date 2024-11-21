@@ -25,7 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
@@ -185,7 +184,7 @@ fun WalletApp(
                     mainViewModel.onInvalidRequestMessageShown()
                 },
                 titleText = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-                messageText = it.userFriendlyMessage(),
+                messageText = it.getMessage(),
                 confirmText = stringResource(
                     id = R.string.common_ok
                 ),

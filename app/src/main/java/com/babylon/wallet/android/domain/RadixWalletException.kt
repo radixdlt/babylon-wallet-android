@@ -37,9 +37,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     }
 
     sealed class IncomingMessageException(cause: Throwable? = null) : RadixWalletException(cause = cause) {
-        data class MessageParse(override val cause: Throwable? = null) : IncomingMessageException(cause)
         data class LedgerResponseParse(override val cause: Throwable? = null) : IncomingMessageException(cause)
-        data class Unknown(override val cause: Throwable? = null) : IncomingMessageException(cause)
     }
 
     sealed class DappRequestException(cause: Throwable? = null) :

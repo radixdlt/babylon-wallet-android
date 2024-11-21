@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
@@ -24,17 +25,21 @@ import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
 import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDeletionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDepositSettingsProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
 import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorUnstakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
@@ -53,6 +58,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.SargonOs
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.TransactionToReview
@@ -61,6 +67,7 @@ import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
@@ -75,7 +82,6 @@ import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -86,13 +92,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
-import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDeletionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
-import com.radixdlt.sargon.SargonOs
-import com.radixdlt.sargon.os.SargonOsManager
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.transaction.NotarizationResult
@@ -133,9 +132,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val sargonOs = mockk<SargonOs>()
-    private val sargonOsManager = mockk<SargonOsManager>().also {
-        every { it.sargonOs } returns sargonOs
-    }
     private val manifestSummaryToPreviewTypeAnalyser = ManifestSummaryToPreviewTypeAnalyser(
         resolveAssetsFromAddressUseCase,
         getProfileUseCase,
@@ -193,23 +189,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { blobs } returns emptyList()
         every { message } returns Message.None
     }
-    private val sampleRequest = TransactionRequest(
-        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = sampleRequestId,
-        unvalidatedManifestData = sampleUnvalidatedManifestData,
-        requestMetadata = DappToWalletInteraction.RequestMetadata(
-            networkId = NetworkId.MAINNET,
-            origin = "https://test.origin.com",
-            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
-            isInternal = false
-        ),
-        transactionType = TransactionType.Generic
-    )
-
-    private val profile = Profile.sample()
-        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
-        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
-
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
             lock = 0.toDecimal192(),
@@ -234,6 +213,29 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         presentedProofs = listOf(),
         newlyCreatedNonFungibles = listOf()
     )
+    private val sampleRequest = TransactionRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = sampleRequestId,
+        unvalidatedManifestData = sampleUnvalidatedManifestData,
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
+            networkId = NetworkId.MAINNET,
+            origin = "https://test.origin.com",
+            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
+            isInternal = false
+        ),
+        kind = TransactionRequest.Kind.Regular(
+            transactionType = TransactionType.Generic,
+            transactionToReview = TransactionToReview(
+                transactionManifest = TransactionManifest.sample(),
+                executionSummary = emptyExecutionSummary
+            ),
+            ephemeralNotaryPrivateKey = Curve25519SecretKey.secureRandom()
+        )
+    )
+
+    private val profile = Profile.sample()
+        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
 
     @Before
     override fun setUp() = runTest {
@@ -284,9 +286,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 getProfileUseCase = getProfileUseCase,
-                manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser,
-                sargonOsManager = sargonOsManager,
-                dispatcher = coroutineDispatcher
+                manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser
             ),
             guarantees = TransactionGuaranteesDelegateImpl(),
             fees = TransactionFeesDelegateImpl(

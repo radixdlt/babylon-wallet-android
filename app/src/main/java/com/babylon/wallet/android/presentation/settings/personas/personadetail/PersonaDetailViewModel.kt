@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
+import rdx.works.core.then
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -122,7 +123,7 @@ class PersonaDetailViewModel @Inject constructor(
                 _state.update { it.copy(loading = true) }
                 val entity = persona.asProfileEntity()
                 rolaClient.generateAuthSigningFactorInstance(entity)
-                    .onSuccess { authSigningFactorInstance ->
+                    .then { authSigningFactorInstance ->
                         this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
                         val manifest = rolaClient
                             .createAuthKeyManifest(entity, authSigningFactorInstance)
@@ -132,12 +133,13 @@ class PersonaDetailViewModel @Inject constructor(
                             }
                         val interactionId = UUID.randomUUID().toString()
                         uploadAuthKeyInteractionId = interactionId
-                        incomingRequestRepository.add(
-                            prepareInternalTransactionUseCase(
-                                unvalidatedManifestData = manifest,
-                                requestId = interactionId
-                            )
+                        prepareInternalTransactionUseCase(
+                            unvalidatedManifestData = manifest,
+                            requestId = interactionId
                         )
+                    }
+                    .onSuccess { transactionRequest ->
+                        incomingRequestRepository.add(transactionRequest)
                     }
             }
         }

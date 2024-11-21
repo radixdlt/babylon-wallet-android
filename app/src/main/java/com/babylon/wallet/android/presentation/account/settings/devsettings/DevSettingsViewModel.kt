@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
+import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
@@ -71,35 +72,37 @@ class DevSettingsViewModel @Inject constructor(
             state.value.account?.let { account ->
                 val entity = account.asProfileEntity()
                 _state.update { it.copy(isLoading = true) }
-                rolaClient.generateAuthSigningFactorInstance(entity).onSuccess { authSigningFactorInstance ->
-                    val manifest = rolaClient
-                        .createAuthKeyManifest(entity, authSigningFactorInstance)
-                        .getOrElse {
-                            _state.update { state ->
-                                state.copy(isLoading = false)
+                rolaClient.generateAuthSigningFactorInstance(entity)
+                    .then { authSigningFactorInstance ->
+                        val manifest = rolaClient
+                            .createAuthKeyManifest(entity, authSigningFactorInstance)
+                            .getOrElse {
+                                _state.update { state ->
+                                    state.copy(isLoading = false)
+                                }
+                                return@launch
                             }
-                            return@launch
-                        }
-                    Timber.d("Approving: \n$manifest")
-                    val interactionId = UUID.randomUUID().toString()
-                    incomingRequestRepository.add(
+                        Timber.d("Approving: \n$manifest")
+                        val interactionId = UUID.randomUUID().toString()
                         prepareInternalTransactionUseCase(
                             unvalidatedManifestData = manifest,
                             requestId = interactionId,
                             blockUntilCompleted = true,
                             transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
                         )
-                    )
-                    _state.update { it.copy(isLoading = false) }
-                    listenForRolaKeyUploadTransactionResult(interactionId)
-                }.onFailure {
-                    if (it is ProfileException.SecureStorageAccess) {
-                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     }
-                    _state.update { state ->
-                        state.copy(isLoading = false)
+                    .onSuccess { transactionRequest ->
+                        incomingRequestRepository.add(transactionRequest)
+                        _state.update { it.copy(isLoading = false) }
+                        listenForRolaKeyUploadTransactionResult(transactionRequest.interactionId)
+                    }.onFailure {
+                        if (it is ProfileException.SecureStorageAccess) {
+                            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                        }
+                        _state.update { state ->
+                            state.copy(isLoading = false)
+                        }
                     }
-                }
             }
         }
     }
