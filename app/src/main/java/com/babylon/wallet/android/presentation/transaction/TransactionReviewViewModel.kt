@@ -71,7 +71,7 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val EXPIRATION_COUNTDOWN_PERIOD_MS = 1000L
 
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val appEventBus: AppEventBus,

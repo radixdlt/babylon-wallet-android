@@ -36,7 +36,6 @@ import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
@@ -80,7 +79,7 @@ fun WalletApp(
         LaunchedEffect(Unit) {
             mainViewModel.oneOffEvent.collect { event ->
                 when (event) {
-                    is MainEvent.IncomingRequestEvent -> {
+                    is MainViewModel.Event.IncomingRequestEvent -> {
                         if (event.request.needVerification) {
                             navController.mobileConnect(event.request.interactionId)
                             return@collect
