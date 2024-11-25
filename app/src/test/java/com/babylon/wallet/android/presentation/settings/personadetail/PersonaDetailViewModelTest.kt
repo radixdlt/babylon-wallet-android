@@ -61,8 +61,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             rolaClient,
             incomingRequestRepository,
             getDAppsUseCase,
-            changeEntityVisibilityUseCase,
-            savedStateHandle
+            savedStateHandle,
+            changeEntityVisibilityUseCase
         )
     }
 

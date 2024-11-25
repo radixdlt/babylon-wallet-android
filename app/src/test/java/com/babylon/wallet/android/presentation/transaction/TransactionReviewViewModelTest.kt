@@ -192,6 +192,21 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { blobs } returns emptyList()
         every { message } returns Message.None
     }
+    private val sampleRequest = TransactionRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = sampleRequestId,
+        unvalidatedManifestData = sampleUnvalidatedManifestData,
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
+            networkId = NetworkId.MAINNET,
+            origin = "https://test.origin.com",
+            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
+            isInternal = false
+        ),
+        kind = TransactionRequest.Kind.Regular(
+            transactionType = TransactionType.Generic
+        )
+    )
+
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
             lock = 0.toDecimal192(),
@@ -215,20 +230,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         ),
         presentedProofs = listOf(),
         newlyCreatedNonFungibles = listOf()
-    )
-    private val sampleRequest = TransactionRequest(
-        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
-        interactionId = sampleRequestId,
-        unvalidatedManifestData = sampleUnvalidatedManifestData,
-        requestMetadata = DappToWalletInteraction.RequestMetadata(
-            networkId = NetworkId.MAINNET,
-            origin = "https://test.origin.com",
-            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
-            isInternal = false
-        ),
-        kind = TransactionRequest.Kind.Regular(
-            transactionType = TransactionType.Generic
-        )
     )
 
     private val profile = Profile.sample()
@@ -284,9 +285,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 getProfileUseCase = getProfileUseCase,
+                manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser,
                 sargonOsManager = sargonOsManager,
-                dispatcher = coroutineDispatcher,
-                manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser
+                dispatcher = coroutineDispatcher
             ),
             guarantees = TransactionGuaranteesDelegateImpl(),
             fees = TransactionFeesDelegateImpl(

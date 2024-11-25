@@ -165,7 +165,18 @@ class PeerdroidClientImpl @Inject constructor(
         }
 
         // Process the unvalidated dApp to wallet interaction
-        return parseDAppToWalletInteraction(remoteConnectorId, dAppInteraction)
+        return dAppInteraction.toDomainModel(
+            remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)
+        ).fold(
+            onSuccess = { it },
+            onFailure = { error ->
+                Timber.e("failed to parse incoming message: ${error.localizedMessage}")
+                when (error) {
+                    is RadixWalletException -> IncomingMessage.Error(error)
+                    else -> IncomingMessage.ParsingError
+                }
+            }
+        )
     }
 
     private fun parseLedgerInteraction(messageInJsonString: String): IncomingMessage = runCatching {
@@ -187,21 +198,6 @@ class PeerdroidClientImpl @Inject constructor(
                     Timber.e("Failed to parse incoming message: ${error.localizedMessage}")
                     IncomingMessage.Error.invalidRequestChallenge()
                 }
-            }
-        }
-    )
-
-    private fun parseDAppToWalletInteraction(
-        remoteConnectorId: String,
-        dAppInteraction: DappToWalletInteractionUnvalidated
-    ): IncomingMessage = dAppInteraction.toDomainModel(
-        remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)
-    ).fold(
-        onSuccess = { it },
-        onFailure = { error ->
-            when (error) {
-                is RadixWalletException -> IncomingMessage.Error(error)
-                else -> IncomingMessage.Error.invalidRequestChallenge()
             }
         }
     )

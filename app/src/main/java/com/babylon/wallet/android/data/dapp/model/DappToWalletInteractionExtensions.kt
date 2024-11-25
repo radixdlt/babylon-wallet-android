@@ -56,7 +56,7 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
         )
     }
 }.mapError {
-    RadixWalletException.IncomingMessageException.MessageParse(it)
+    RadixWalletException.DappRequestException.InvalidRequestChallenge
 }
 
 private fun DappToWalletInteractionSendTransactionItem.toDomainModel(

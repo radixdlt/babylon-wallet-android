@@ -47,8 +47,8 @@ class PersonaDetailViewModel @Inject constructor(
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getDAppsUseCase: GetDAppsUseCase,
+    savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
-    savedStateHandle: SavedStateHandle
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
@@ -121,7 +121,7 @@ class PersonaDetailViewModel @Inject constructor(
                 _state.update { it.copy(loading = true) }
                 val entity = persona.asProfileEntity()
                 rolaClient.generateAuthSigningFactorInstance(entity)
-                    .mapCatching { authSigningFactorInstance ->
+                    .onSuccess { authSigningFactorInstance ->
                         this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
                         val manifest = rolaClient
                             .createAuthKeyManifest(entity, authSigningFactorInstance)
@@ -131,12 +131,11 @@ class PersonaDetailViewModel @Inject constructor(
                             }
                         val interactionId = UUID.randomUUID().toString()
                         uploadAuthKeyInteractionId = interactionId
-                        manifest.prepareInternalTransactionRequest(
-                            requestId = interactionId
+                        incomingRequestRepository.add(
+                            manifest.prepareInternalTransactionRequest(
+                                requestId = interactionId
+                            )
                         )
-                    }
-                    .onSuccess { transactionRequest ->
-                        incomingRequestRepository.add(transactionRequest)
                     }
             }
         }
