@@ -12,7 +12,6 @@ import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
@@ -59,7 +58,6 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val getAccountDepositResourceRulesUseCase = mockk<GetAccountDepositResourceRulesUseCase>()
-    private val prepareInternalTransactionUseCase = mockk<PrepareInternalTransactionUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     private val fromAccount = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
@@ -88,8 +86,7 @@ class TransactionViewModelTest : StateViewModelTest<TransferViewModel>() {
             ),
             prepareManifestDelegate = PrepareManifestDelegate(
                 incomingRequestRepository = incomingRequestRepository,
-                mnemonicRepository = mnemonicRepository,
-                prepareInternalTransactionUseCase = prepareInternalTransactionUseCase
+                mnemonicRepository = mnemonicRepository
             ),
             savedStateHandle = savedStateHandle,
             getAccountDepositResourceRulesUseCase = getAccountDepositResourceRulesUseCase

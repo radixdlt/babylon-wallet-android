@@ -31,7 +31,6 @@ import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
-import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.then
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
@@ -207,7 +206,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
         return signSubintentUseCase(
             manifest = subintentManifest,
-            message = transactionRequest.unvalidatedManifestData.message.plaintext,
+            message = transactionRequest.unvalidatedManifestData.plainMessage,
             expiration = transactionRequestKind.expiration
         ).onSuccess { signedSubintent ->
             _state.update { it.copy(isSubmitting = false) }

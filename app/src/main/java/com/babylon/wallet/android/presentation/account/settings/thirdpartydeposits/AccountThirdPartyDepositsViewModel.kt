@@ -117,7 +117,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onUpdateThirdPartyDeposits() {
         viewModelScope.launch {
             val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits ?: return@launch
-            val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@launch
 
             val newDepositRule = state.value.updatedThirdPartyDepositSettings?.depositRule ?: currentThirdPartyDeposits.depositRule
             val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty()
@@ -138,14 +137,18 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 )
             }.mapCatching {
-                UnvalidatedManifestData.from(it).prepareInternalTransactionRequest(
-                    requestId = UUID.randomUUID().toString(),
-                    transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
-                    blockUntilCompleted = true
+                UnvalidatedManifestData.from(it)
+            }.onSuccess { manifest ->
+                val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
+                val requestId = UUID.randomUUID().toString()
+                incomingRequestRepository.add(
+                    manifest.prepareInternalTransactionRequest(
+                        requestId = requestId,
+                        transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
+                        blockUntilCompleted = true
+                    )
                 )
-            }.onSuccess { transactionRequest ->
-                incomingRequestRepository.add(transactionRequest)
-                handleRequestStatus(transactionRequest.interactionId)
+                handleRequestStatus(requestId)
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage(t))

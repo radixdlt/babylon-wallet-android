@@ -35,8 +35,8 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val manifestSummaryToPreviewTypeAnalyser: ManifestSummaryToPreviewTypeAnalyser,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val sargonOsManager: SargonOsManager,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")

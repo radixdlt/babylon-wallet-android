@@ -29,6 +29,7 @@ class PrepareTransactionForAccountDeletionUseCase @Inject constructor(
                 blockUntilCompleted = true,
                 transactionType = TransactionType.DeleteAccount(deletingAccountAddress)
             )
+
             Outcome(
                 transactionRequest = transactionRequest,
                 hasNonTransferableResources = outcome.nonTransferableResources.isNotEmpty()

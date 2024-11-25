@@ -43,7 +43,6 @@ import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -166,7 +165,7 @@ class TransactionReviewViewModel @Inject constructor(
                 it.copy(
                     isPreAuthorization = request.kind.isPreAuthorized,
                     rawManifest = request.unvalidatedManifestData.instructions,
-                    message = request.unvalidatedManifestData.message.plaintext
+                    message = request.unvalidatedManifestData.plainMessage
                 )
             }
             withContext(defaultDispatcher) {
@@ -175,9 +174,10 @@ class TransactionReviewViewModel @Inject constructor(
                         data.update { it.copy(txSummary = analysis.summary) }
                     }
                     .then { analysis ->
-                        when (request.kind) {
-                            is TransactionRequest.Kind.PreAuthorized -> Result.success(Unit)
-                            is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis, data.value.ephemeralNotaryPrivateKey)
+                        if (!request.kind.isPreAuthorized) {
+                            fees.resolveFees(analysis)
+                        } else {
+                            Result.success(Unit)
                         }
                     }
             }

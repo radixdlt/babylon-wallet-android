@@ -70,35 +70,34 @@ class DevSettingsViewModel @Inject constructor(
             state.value.account?.let { account ->
                 val entity = account.asProfileEntity()
                 _state.update { it.copy(isLoading = true) }
-                rolaClient.generateAuthSigningFactorInstance(entity)
-                    .onSuccess { authSigningFactorInstance ->
-                        val manifest = rolaClient
-                            .createAuthKeyManifest(entity, authSigningFactorInstance)
-                            .getOrElse {
-                                _state.update { state ->
-                                    state.copy(isLoading = false)
-                                }
-                                return@launch
+                rolaClient.generateAuthSigningFactorInstance(entity).onSuccess { authSigningFactorInstance ->
+                    val manifest = rolaClient
+                        .createAuthKeyManifest(entity, authSigningFactorInstance)
+                        .getOrElse {
+                            _state.update { state ->
+                                state.copy(isLoading = false)
                             }
-                        Timber.d("Approving: \n$manifest")
-                        val interactionId = UUID.randomUUID().toString()
-                        incomingRequestRepository.add(
-                            manifest.prepareInternalTransactionRequest(
-                                requestId = interactionId,
-                                blockUntilCompleted = true,
-                                transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
-                            )
+                            return@launch
+                        }
+                    Timber.d("Approving: \n$manifest")
+                    val interactionId = UUID.randomUUID().toString()
+                    incomingRequestRepository.add(
+                        manifest.prepareInternalTransactionRequest(
+                            requestId = interactionId,
+                            blockUntilCompleted = true,
+                            transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
                         )
-                        _state.update { it.copy(isLoading = false) }
-                        listenForRolaKeyUploadTransactionResult(interactionId)
-                    }.onFailure {
-                        if (it is ProfileException.SecureStorageAccess) {
-                            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                        }
-                        _state.update { state ->
-                            state.copy(isLoading = false)
-                        }
+                    )
+                    _state.update { it.copy(isLoading = false) }
+                    listenForRolaKeyUploadTransactionResult(interactionId)
+                }.onFailure {
+                    if (it is ProfileException.SecureStorageAccess) {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     }
+                    _state.update { state ->
+                        state.copy(isLoading = false)
+                    }
+                }
             }
         }
     }

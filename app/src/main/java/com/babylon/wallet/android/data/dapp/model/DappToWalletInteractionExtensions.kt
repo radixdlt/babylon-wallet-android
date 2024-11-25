@@ -59,7 +59,7 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
     RadixWalletException.IncomingMessageException.MessageParse(it)
 }
 
-fun DappToWalletInteractionSendTransactionItem.toDomainModel(
+private fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     remoteConnectorId: RemoteEntityID,
     requestId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata
@@ -78,7 +78,7 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     )
 )
 
-fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
+private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
     remoteConnectorId: RemoteEntityID,
     requestId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata
@@ -97,7 +97,7 @@ fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
     )
 )
 
-fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(
+private fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(
     remoteEntityId: RemoteEntityID,
     requestId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata
@@ -156,7 +156,7 @@ private fun RequestedQuantity.toDomainModel(): DappToWalletInteraction.NumberOfV
     }
 }
 
-fun DappToWalletInteractionAuthorizedRequestItems.toDomainModel(
+private fun DappToWalletInteractionAuthorizedRequestItems.toDomainModel(
     remoteEntityId: RemoteEntityID,
     interactionId: WalletInteractionId,
     metadata: DappToWalletInteraction.RequestMetadata

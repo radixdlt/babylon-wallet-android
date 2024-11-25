@@ -132,6 +132,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val sargonOs = mockk<SargonOs>()
+    private val sargonOsManager = mockk<SargonOsManager>().also {
+        every { it.sargonOs } returns sargonOs
+    }
     private val manifestSummaryToPreviewTypeAnalyser = ManifestSummaryToPreviewTypeAnalyser(
         resolveAssetsFromAddressUseCase,
         getProfileUseCase,
@@ -224,12 +227,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             isInternal = false
         ),
         kind = TransactionRequest.Kind.Regular(
-            transactionType = TransactionType.Generic,
-            transactionToReview = TransactionToReview(
-                transactionManifest = TransactionManifest.sample(),
-                executionSummary = emptyExecutionSummary
-            ),
-            ephemeralNotaryPrivateKey = Curve25519SecretKey.secureRandom()
+            transactionType = TransactionType.Generic
         )
     )
 
@@ -286,6 +284,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 getProfileUseCase = getProfileUseCase,
+                sargonOsManager = sargonOsManager,
+                dispatcher = coroutineDispatcher,
                 manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser
             ),
             guarantees = TransactionGuaranteesDelegateImpl(),
