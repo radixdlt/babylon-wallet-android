@@ -39,6 +39,7 @@ import com.radixdlt.sargon.DappToWalletInteractionSubintentExpirationStatus
 import com.radixdlt.sargon.ManifestEncounteredComponentAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIdentifier
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hiddenResources
 import com.radixdlt.sargon.extensions.init
@@ -164,8 +165,8 @@ class TransactionReviewViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isPreAuthorization = request.kind.isPreAuthorized,
-                    rawManifest = request.instructions,
-                    message = request.message.plaintext
+                    rawManifest = request.unvalidatedManifestData.instructions,
+                    message = request.unvalidatedManifestData.message.plaintext
                 )
             }
             withContext(defaultDispatcher) {
@@ -176,7 +177,7 @@ class TransactionReviewViewModel @Inject constructor(
                     .then { analysis ->
                         when (request.kind) {
                             is TransactionRequest.Kind.PreAuthorized -> Result.success(Unit)
-                            is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis, request.kind.ephemeralNotaryPrivateKey)
+                            is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis, data.value.ephemeralNotaryPrivateKey)
                         }
                     }
             }
@@ -275,6 +276,7 @@ class TransactionReviewViewModel @Inject constructor(
     data class Data(
         private val txRequest: TransactionRequest? = null,
         private val txSummary: Summary? = null,
+        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val signers: List<ProfileEntity> = emptyList(),
         val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val feePayers: TransactionFeePayers? = null,

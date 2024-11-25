@@ -5,7 +5,6 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
@@ -47,7 +46,6 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
-    private val prepareInternalTransactionUseCase = mockk<PrepareInternalTransactionUseCase>()
     private val rolaClient = mockk<ROLAClient>()
     private val eventBus = mockk<AppEventBus>()
 
@@ -64,7 +62,6 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             incomingRequestRepository,
             getDAppsUseCase,
             changeEntityVisibilityUseCase,
-            prepareInternalTransactionUseCase,
             savedStateHandle
         )
     }

@@ -65,7 +65,6 @@ interface PeerdroidClient {
 
 @Suppress("TooManyFunctions")
 class PeerdroidClientImpl @Inject constructor(
-    private val dAppToWalletInteractionProcessor: DAppToWalletInteractionProcessor,
     private val peerdroidConnector: PeerdroidConnector,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val json: Json
@@ -194,27 +193,16 @@ class PeerdroidClientImpl @Inject constructor(
         }
     )
 
-    private suspend fun parseDAppToWalletInteraction(
+    private fun parseDAppToWalletInteraction(
         remoteConnectorId: String,
         dAppInteraction: DappToWalletInteractionUnvalidated
-    ): IncomingMessage = dAppToWalletInteractionProcessor.process(
-        remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId),
-        unvalidatedInteraction = dAppInteraction
+    ): IncomingMessage = dAppInteraction.toDomainModel(
+        remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)
     ).fold(
         onSuccess = { it },
         onFailure = { error ->
             when (error) {
-                is RadixWalletException -> {
-                    error.toDappWalletInteractionErrorType()?.let {
-                        sendFailureResponseToDApp(
-                            requestId = dAppInteraction.interactionId,
-                            remoteConnectorId = remoteConnectorId,
-                            dAppWalletInteractionErrorType = it,
-                            message = error.getDappMessage()
-                        )
-                    }
-                    IncomingMessage.Error(error)
-                }
+                is RadixWalletException -> IncomingMessage.Error(error)
                 else -> IncomingMessage.Error.invalidRequestChallenge()
             }
         }

@@ -12,7 +12,7 @@ import com.babylon.wallet.android.data.repository.cache.database.locker.AccountL
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.TransactionManifest
@@ -23,7 +23,6 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.then
 import javax.inject.Inject
 
 interface AccountLockersRepository {
@@ -43,7 +42,6 @@ class AccountLockersRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val accountLockerDao: AccountLockerDao,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : AccountLockersRepository {
 
@@ -127,8 +125,9 @@ class AccountLockersRepositoryImpl @Inject constructor(
                     claimant = accountAddress,
                     claimableResources = cachedVaultItems.map { it.into() }
                 )
-            }.then { manifest ->
-                prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
+            }.mapCatching { manifest ->
+                UnvalidatedManifestData.from(manifest)
+                    .prepareInternalTransactionRequest()
             }.onSuccess { request ->
                 incomingRequestRepository.add(request)
             }

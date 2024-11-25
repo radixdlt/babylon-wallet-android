@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
@@ -9,22 +10,59 @@ import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestDa
 import com.radixdlt.sargon.DappToWalletInteractionAccountsRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionAuthorizedRequestItems
+import com.radixdlt.sargon.DappToWalletInteractionItems
 import com.radixdlt.sargon.DappToWalletInteractionPersonaDataRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionSendTransactionItem
 import com.radixdlt.sargon.DappToWalletInteractionSubintentRequestItem
 import com.radixdlt.sargon.DappToWalletInteractionUnauthorizedRequestItems
-import com.radixdlt.sargon.PreAuthToReview
+import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.WalletInteractionId
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.toList
+import rdx.works.core.mapError
+
+fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntityID) = runCatching {
+    val metadata = DappToWalletInteraction.RequestMetadata(
+        networkId = metadata.networkId,
+        origin = metadata.origin,
+        dAppDefinitionAddress = metadata.dappDefinitionAddress,
+        isInternal = false
+    )
+    when (val itemsTemp = items) {
+        is DappToWalletInteractionItems.AuthorizedRequest -> itemsTemp.v1.toDomainModel(
+            remoteEntityId = remoteEntityId,
+            interactionId = interactionId,
+            metadata = metadata
+        )
+
+        is DappToWalletInteractionItems.Transaction -> itemsTemp.v1.send.toDomainModel(
+            remoteConnectorId = remoteEntityId,
+            requestId = interactionId,
+            metadata = metadata
+        )
+
+        is DappToWalletInteractionItems.UnauthorizedRequest -> itemsTemp.v1.toDomainModel(
+            remoteEntityId = remoteEntityId,
+            requestId = interactionId,
+            metadata = metadata
+        )
+
+        is DappToWalletInteractionItems.PreAuthorization -> itemsTemp.v1.request.toDomainModel(
+            remoteConnectorId = remoteEntityId,
+            requestId = interactionId,
+            metadata = metadata
+        )
+    }
+}.mapError {
+    RadixWalletException.IncomingMessageException.MessageParse(it)
+}
 
 fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     remoteConnectorId: RemoteEntityID,
     requestId: WalletInteractionId,
-    metadata: DappToWalletInteraction.RequestMetadata,
-    transactionToReviewOutcome: TransactionToReviewOutcome
+    metadata: DappToWalletInteraction.RequestMetadata
 ) = TransactionRequest(
     remoteEntityId = remoteConnectorId,
     interactionId = requestId,
@@ -36,17 +74,14 @@ fun DappToWalletInteractionSendTransactionItem.toDomainModel(
     ),
     requestMetadata = metadata,
     kind = TransactionRequest.Kind.Regular(
-        transactionType = TransactionType.Generic,
-        transactionToReview = transactionToReviewOutcome.transactionToReview,
-        ephemeralNotaryPrivateKey = transactionToReviewOutcome.ephemeralNotaryPrivateKey
+        transactionType = TransactionType.Generic
     )
 )
 
 fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
     remoteConnectorId: RemoteEntityID,
     requestId: WalletInteractionId,
-    metadata: DappToWalletInteraction.RequestMetadata,
-    preAuthToReview: PreAuthToReview
+    metadata: DappToWalletInteraction.RequestMetadata
 ) = TransactionRequest(
     remoteEntityId = remoteConnectorId,
     interactionId = requestId,
@@ -58,8 +93,7 @@ fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
     ),
     requestMetadata = metadata,
     kind = TransactionRequest.Kind.PreAuthorized(
-        expiration = SubintentExpiration.from(expiration),
-        preAuthToReview = preAuthToReview
+        expiration = SubintentExpiration.from(expiration)
     )
 )
 

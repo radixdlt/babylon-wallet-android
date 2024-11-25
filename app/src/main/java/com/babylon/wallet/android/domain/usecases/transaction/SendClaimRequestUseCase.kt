@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.TransactionManifest
@@ -13,14 +13,12 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.then
 import javax.inject.Inject
 
 private typealias SargonStakeClaim = com.radixdlt.sargon.StakeClaim
 
 class SendClaimRequestUseCase @Inject constructor(
-    private val incomingRequestRepository: IncomingRequestRepository,
-    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase
+    private val incomingRequestRepository: IncomingRequestRepository
 ) {
 
     suspend operator fun invoke(
@@ -43,8 +41,8 @@ class SendClaimRequestUseCase @Inject constructor(
                     )
                 }
             )
-        }.then { manifest ->
-            prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
+        }.mapCatching { manifest ->
+            UnvalidatedManifestData.from(manifest).prepareInternalTransactionRequest()
         }.onSuccess { request ->
             incomingRequestRepository.add(request)
         }
@@ -70,8 +68,8 @@ class SendClaimRequestUseCase @Inject constructor(
                     )
                 )
             )
-        }.then { manifest ->
-            prepareInternalTransactionUseCase(UnvalidatedManifestData.from(manifest))
+        }.mapCatching { manifest ->
+            UnvalidatedManifestData.from(manifest).prepareInternalTransactionRequest()
         }.onSuccess { request ->
             incomingRequestRepository.add(request)
         }

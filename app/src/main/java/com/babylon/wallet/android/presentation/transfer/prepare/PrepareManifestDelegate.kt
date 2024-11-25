@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -21,15 +21,13 @@ import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.then
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject
 
 class PrepareManifestDelegate @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val mnemonicRepository: MnemonicRepository,
-    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase
+    private val mnemonicRepository: MnemonicRepository
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onSubmit() {
@@ -44,16 +42,14 @@ class PrepareManifestDelegate @Inject constructor(
                     nonFungibleResources = _state.value.toNonFungibleTransfers(accountsAbleToSign)
                 )
             )
-        }.then { manifest ->
-            prepareInternalTransactionUseCase(
-                UnvalidatedManifestData.from(
-                    manifest = manifest,
-                    message = (_state.value.messageState as? TransferViewModel.State.Message.Added)?.message
-                )
-            )
+        }.map { manifest ->
+            UnvalidatedManifestData.from(
+                manifest = manifest,
+                message = (_state.value.messageState as? TransferViewModel.State.Message.Added)?.message
+            ).prepareInternalTransactionRequest()
         }.onSuccess { request ->
             _state.update { it.copy(transferRequestId = request.interactionId) }
-            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.instructions}")
+            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.unvalidatedManifestData.instructions}")
             incomingRequestRepository.add(request)
         }.onFailure { error ->
             _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }

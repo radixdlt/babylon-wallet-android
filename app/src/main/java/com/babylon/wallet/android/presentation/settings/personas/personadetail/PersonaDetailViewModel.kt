@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.settings.personas.personadetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -30,7 +30,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
-import rdx.works.core.then
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -49,7 +48,6 @@ class PersonaDetailViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getDAppsUseCase: GetDAppsUseCase,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
-    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -123,7 +121,7 @@ class PersonaDetailViewModel @Inject constructor(
                 _state.update { it.copy(loading = true) }
                 val entity = persona.asProfileEntity()
                 rolaClient.generateAuthSigningFactorInstance(entity)
-                    .then { authSigningFactorInstance ->
+                    .mapCatching { authSigningFactorInstance ->
                         this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
                         val manifest = rolaClient
                             .createAuthKeyManifest(entity, authSigningFactorInstance)
@@ -133,8 +131,7 @@ class PersonaDetailViewModel @Inject constructor(
                             }
                         val interactionId = UUID.randomUUID().toString()
                         uploadAuthKeyInteractionId = interactionId
-                        prepareInternalTransactionUseCase(
-                            unvalidatedManifestData = manifest,
+                        manifest.prepareInternalTransactionRequest(
                             requestId = interactionId
                         )
                     }

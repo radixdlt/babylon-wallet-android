@@ -161,11 +161,11 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
         return signAndNotarizeTransactionUseCase(
             manifest = transactionManifest,
-            networkId = transactionRequest.networkId,
-            message = transactionRequest.message,
+            networkId = transactionRequest.unvalidatedManifestData.networkId,
+            message = transactionRequest.unvalidatedManifestData.message,
             lockFee = fees.transactionFees.transactionFeeToLock,
             tipPercentage = fees.transactionFees.tipPercentageForTransaction,
-            notarySecretKey = transactionRequestKind.ephemeralNotaryPrivateKey,
+            notarySecretKey = data.value.ephemeralNotaryPrivateKey,
             feePayerAddress = feePayerAddress
         ).then { notarizationResult ->
             transactionRepository.submitTransaction(notarizationResult.notarizedTransaction).map { notarizationResult }
@@ -207,7 +207,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
         return signSubintentUseCase(
             manifest = subintentManifest,
-            message = transactionRequest.message.plaintext,
+            message = transactionRequest.unvalidatedManifestData.message.plaintext,
             expiration = transactionRequestKind.expiration
         ).onSuccess { signedSubintent ->
             _state.update { it.copy(isSubmitting = false) }

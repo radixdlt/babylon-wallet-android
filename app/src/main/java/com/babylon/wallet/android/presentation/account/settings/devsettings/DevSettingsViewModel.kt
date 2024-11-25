@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.domain.usecases.interaction.PrepareInternalTransactionUseCase
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
-import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
@@ -35,7 +34,6 @@ class DevSettingsViewModel @Inject constructor(
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
-    private val prepareInternalTransactionUseCase: PrepareInternalTransactionUseCase,
     private val transactionStatusClient: TransactionStatusClient,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
@@ -73,7 +71,7 @@ class DevSettingsViewModel @Inject constructor(
                 val entity = account.asProfileEntity()
                 _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(entity)
-                    .then { authSigningFactorInstance ->
+                    .onSuccess { authSigningFactorInstance ->
                         val manifest = rolaClient
                             .createAuthKeyManifest(entity, authSigningFactorInstance)
                             .getOrElse {
@@ -84,17 +82,15 @@ class DevSettingsViewModel @Inject constructor(
                             }
                         Timber.d("Approving: \n$manifest")
                         val interactionId = UUID.randomUUID().toString()
-                        prepareInternalTransactionUseCase(
-                            unvalidatedManifestData = manifest,
-                            requestId = interactionId,
-                            blockUntilCompleted = true,
-                            transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
+                        incomingRequestRepository.add(
+                            manifest.prepareInternalTransactionRequest(
+                                requestId = interactionId,
+                                blockUntilCompleted = true,
+                                transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)
+                            )
                         )
-                    }
-                    .onSuccess { transactionRequest ->
-                        incomingRequestRepository.add(transactionRequest)
                         _state.update { it.copy(isLoading = false) }
-                        listenForRolaKeyUploadTransactionResult(transactionRequest.interactionId)
+                        listenForRolaKeyUploadTransactionResult(interactionId)
                     }.onFailure {
                         if (it is ProfileException.SecureStorageAccess) {
                             appEventBus.sendEvent(AppEvent.SecureFolderWarning)

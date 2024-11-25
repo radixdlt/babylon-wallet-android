@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.deeplink
 
-import com.babylon.wallet.android.data.dapp.DAppToWalletInteractionProcessor
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.RadixConnectMobile
@@ -12,20 +12,18 @@ import javax.inject.Inject
 class ProcessDeepLinkUseCase @Inject constructor(
     private val radixConnectMobile: RadixConnectMobile,
     private val getProfileUseCase: GetProfileUseCase,
-    private val incomingRequestRepository: IncomingRequestRepository,
-    private val dAppToWalletInteractionProcessor: DAppToWalletInteractionProcessor
+    private val incomingRequestRepository: IncomingRequestRepository
 ) {
 
     suspend operator fun invoke(deepLink: String): Result<DeepLinkProcessingResult> {
         return runCatching {
             val profileFinishedOnboarding = getProfileUseCase.finishedOnboardingProfile() != null
             val sessionRequest = radixConnectMobile.handleDeepLink(deepLink)
-            val request = dAppToWalletInteractionProcessor.process(
+            val request = sessionRequest.interaction.toDomainModel(
                 remoteEntityId = RemoteEntityID.RadixMobileConnectRemoteSession(
                     id = sessionRequest.sessionId.toString(),
                     originVerificationUrl = if (sessionRequest.originRequiresValidation) sessionRequest.origin else null
-                ),
-                unvalidatedInteraction = sessionRequest.interaction
+                )
             ).getOrThrow()
             if (!profileFinishedOnboarding) {
                 incomingRequestRepository.setBufferedRequest(request)
