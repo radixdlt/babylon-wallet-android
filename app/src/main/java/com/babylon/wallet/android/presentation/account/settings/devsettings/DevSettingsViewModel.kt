@@ -104,7 +104,7 @@ class DevSettingsViewModel @Inject constructor(
 
     private fun listenForRolaKeyUploadTransactionResult(requestId: String) {
         viewModelScope.launch {
-            transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
+            transactionStatusClient.listenForTransactionPollStatusByRequestId(requestId).collect { status ->
                 status.result.onSuccess {
                     transactionStatusClient.statusHandled(status.txId)
                     when (val type = status.transactionType) {

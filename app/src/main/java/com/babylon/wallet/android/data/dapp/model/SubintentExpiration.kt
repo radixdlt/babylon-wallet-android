@@ -14,6 +14,7 @@ sealed interface SubintentExpiration {
     data class AtTime(
         private val expireAt: Duration
     ) : SubintentExpiration {
+
         override fun toDAppInteraction(): DappToWalletInteractionSubintentExpiration = DappToWalletInteractionSubintentExpiration.AtTime(
             DappToWalletInteractionSubintentExpireAtTime(unixTimestampSeconds = expireAt.inWholeSeconds.toULong())
         )
@@ -21,7 +22,10 @@ sealed interface SubintentExpiration {
         fun expirationDuration(): Duration = (expireAt.inWholeSeconds - Instant.now().epochSecond).coerceAtLeast(0L).seconds
     }
 
-    data class DelayAfterSign(val delay: Duration) : SubintentExpiration {
+    data class DelayAfterSign(
+        val delay: Duration
+    ) : SubintentExpiration {
+
         override fun toDAppInteraction(): DappToWalletInteractionSubintentExpiration =
             DappToWalletInteractionSubintentExpiration.AfterDelay(
                 DappToWalletInteractionSubintentExpireAfterDelay(expireAfterSeconds = delay.inWholeSeconds.toULong())

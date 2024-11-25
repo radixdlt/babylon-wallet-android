@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import javax.inject.Inject
+import kotlin.time.Duration
 
 interface AppEventBus {
 
@@ -69,7 +70,9 @@ sealed interface AppEvent {
     }
 
     sealed class Status : AppEvent {
+
         abstract val requestId: String
+
         data class DappInteraction(
             override val requestId: String,
             val dAppName: String?,
@@ -112,6 +115,36 @@ sealed interface AppEvent {
                 override val isMobileConnect: Boolean,
                 override val dAppName: String?
             ) : Transaction()
+        }
+
+        sealed class PreAuthorization : Status() {
+
+            abstract val preAuthorizationId: String
+            abstract val isMobileConnect: Boolean
+            abstract val dAppName: String?
+
+            data class Sent(
+                override val requestId: String,
+                override val preAuthorizationId: String,
+                override val isMobileConnect: Boolean,
+                override val dAppName: String?,
+                val remainingTime: Duration
+            ) : PreAuthorization()
+
+            data class Success(
+                override val requestId: String,
+                override val preAuthorizationId: String,
+                override val isMobileConnect: Boolean,
+                override val dAppName: String?,
+                val transactionId: String
+            ) : PreAuthorization()
+
+            data class Expired(
+                override val requestId: String,
+                override val preAuthorizationId: String,
+                override val isMobileConnect: Boolean,
+                override val dAppName: String?
+            ) : PreAuthorization()
         }
     }
 }

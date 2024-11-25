@@ -78,7 +78,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     private fun pollTransactionStatus(status: TransactionStatus.Completing) {
         pollJob?.cancel()
         pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForPollStatus(status.transactionId).collectLatest { pollResult ->
+            transactionStatusClient.listenForTransactionPollStatus(status.transactionId).collectLatest { pollResult ->
                 pollResult.result.onSuccess {
                     // Notify the system and this particular dialog that the transaction is completed
                     appEventBus.sendEvent(

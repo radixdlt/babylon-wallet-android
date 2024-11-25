@@ -27,7 +27,6 @@ import com.radixdlt.sargon.WalletToDappInteractionAuthProof
 import com.radixdlt.sargon.WalletToDappInteractionAuthRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionAuthUsePersonaRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionAuthorizedRequestResponseItems
-import com.radixdlt.sargon.WalletToDappInteractionProofOfOwnershipRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
@@ -231,7 +230,8 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                                 oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                                 ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
                                 ongoingPersonaData = ongoingSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
-                                oneTimePersonaData = onetimeSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem()
+                                oneTimePersonaData = onetimeSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
+                                proofOfOwnership = TODO("Not yet implemented")
                             ),
                         )
                     )
@@ -331,13 +331,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
                         v1 = WalletToDappInteractionUnauthorizedRequestResponseItems(
                             oneTimeAccounts = oneTimeAccountsResponseItem.getOrNull(),
                             oneTimePersonaData = oneTimePersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
-                            // TODO this should be replaced when merging the proof of ownership feature
-                            proofOfOwnership = WalletToDappInteractionProofOfOwnershipRequestResponseItem(
-                                challenge = request.proofOfOwnershipRequestItem?.challenge
-                                    ?: return Result.failure(Throwable("No challenge provided")),
-                                proofs = emptyList()
-                            )
-                        ),
+                        )
                     )
                 )
             )

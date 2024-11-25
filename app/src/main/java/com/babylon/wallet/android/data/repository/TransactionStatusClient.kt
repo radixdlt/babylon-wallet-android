@@ -3,16 +3,20 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.PollPreAuthorizationStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.DappToWalletInteractionSubintentExpiration
 import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -26,26 +30,29 @@ import javax.inject.Singleton
 @Singleton
 class TransactionStatusClient @Inject constructor(
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val pollPreAuthorizationStatusUseCase: PollPreAuthorizationStatusUseCase,
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
-    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionStatusData>())
+    private val _transactionPollResult = MutableStateFlow(emptyList<InteractionStatusData>())
     private val transactionStatuses = _transactionPollResult.asSharedFlow()
     private val mutex = Mutex()
 
-    fun listenForPollStatus(txId: String): Flow<TransactionStatusData> {
-        return transactionStatuses.map { statuses ->
-            statuses.find { it.txId == txId }
-        }.filterNotNull().cancellable()
+    fun listenForTransactionPollStatus(txId: String): Flow<TransactionStatusData> {
+        return listenForPollStatus(txId).filterIsInstance()
     }
 
-    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionStatusData> {
+    fun listenForPreAuthorizationPollStatus(preAuthorizationId: String): Flow<PreAuthorizationStatusData> {
+        return listenForPollStatus(preAuthorizationId).filterIsInstance()
+    }
+
+    fun listenForTransactionPollStatusByRequestId(requestId: String): Flow<TransactionStatusData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.requestId == requestId }
-        }.filterNotNull().cancellable()
+        }.filterNotNull().cancellable().filterIsInstance()
     }
 
     fun startPollingForTransactionStatus(
@@ -81,6 +88,23 @@ class TransactionStatusClient @Inject constructor(
         }
     }
 
+    fun startPollingForPreAuthorizationStatus(
+        intentHash: SubintentHash,
+        requestId: String,
+        expiration: DappToWalletInteractionSubintentExpiration
+    ) {
+        appScope.launch {
+            val pollResult = pollPreAuthorizationStatusUseCase(intentHash, requestId, expiration)
+
+            updateTransactionStatus(pollResult)
+
+            if (pollResult.result is PreAuthorizationStatusData.Status.Success) {
+                preferencesManager.incrementTransactionCompleteCounter()
+                appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
+            }
+        }
+    }
+
     fun statusHandled(txId: String) {
         appScope.launch {
             mutex.withLock {
@@ -91,7 +115,13 @@ class TransactionStatusClient @Inject constructor(
         }
     }
 
-    private suspend fun updateTransactionStatus(data: TransactionStatusData) {
+    private fun listenForPollStatus(txId: String): Flow<InteractionStatusData> {
+        return transactionStatuses.map { statuses ->
+            statuses.find { it.txId == txId }
+        }.filterNotNull().cancellable()
+    }
+
+    private suspend fun updateTransactionStatus(data: InteractionStatusData) {
         mutex.withLock {
             _transactionPollResult.update { statuses ->
                 if (statuses.any { data.txId == it.txId }) {
@@ -110,9 +140,31 @@ class TransactionStatusClient @Inject constructor(
     }
 }
 
+sealed interface InteractionStatusData {
+
+    val txId: String
+    val requestId: String
+}
+
 data class TransactionStatusData(
-    val txId: String,
-    val requestId: String,
+    override val txId: String,
+    override val requestId: String,
     val result: Result<Unit>,
     val transactionType: TransactionType = TransactionType.Generic
-)
+) : InteractionStatusData
+
+data class PreAuthorizationStatusData(
+    override val txId: String,
+    override val requestId: String,
+    val result: Status
+) : InteractionStatusData {
+
+    sealed interface Status {
+
+        data class Success(
+            val txIntentHash: TransactionIntentHash
+        ) : Status
+
+        data object Expired : Status
+    }
+}

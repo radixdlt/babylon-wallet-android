@@ -66,7 +66,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private fun handleRequestStatus(requestId: String) {
         pollJob?.cancel()
         pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
+            transactionStatusClient.listenForTransactionPollStatusByRequestId(requestId).collect { status ->
                 status.result.onSuccess {
                     when (val type = status.transactionType) {
                         is TransactionType.UpdateThirdPartyDeposits -> {

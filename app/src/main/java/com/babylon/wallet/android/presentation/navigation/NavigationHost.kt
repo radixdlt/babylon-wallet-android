@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.dialogs.assets.nonFungibleAssetDi
 import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
+import com.babylon.wallet.android.presentation.dialogs.preauthorization.preAuthorizationStatusDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
@@ -655,6 +656,11 @@ fun NavigationHost(
                 navController.transactionReview(it) {
                     popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
                 }
+            }
+        )
+        preAuthorizationStatusDialog(
+            onClose = {
+                navController.popBackStack()
             }
         )
     }
