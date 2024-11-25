@@ -323,7 +323,7 @@ class TransactionReviewViewModel @Inject constructor(
             }
 
         val showReceiptEdges: Boolean
-            get() = !isPreAuthorization && previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
+            get() = !isPreAuthorization && isPreviewDisplayable
 
         data class Expiration(
             val duration: Duration,

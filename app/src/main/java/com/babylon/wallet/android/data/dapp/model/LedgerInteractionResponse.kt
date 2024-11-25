@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.radixdlt.sargon.Exactly32Bytes
@@ -176,19 +175,14 @@ fun List<DerivedPublicKey>.toDomainModel() = map { derivedPublicKey ->
     derivedPublicKey.toDomainModel()
 }
 
-@Suppress("SwallowedException")
 fun LedgerInteractionResponse.toDomainModel(): IncomingMessage {
-    try {
-        return when (this) {
-            is DerivePublicKeyResponse -> toDomainModel()
-            is GetDeviceInfoResponse -> toDomainModel()
-            is SignChallengeResponse -> toDomainModel()
-            is SignTransactionResponse -> toDomainModel()
-            is DeriveAndDisplayAddressResponse -> toDomainModel()
-            is SignSubintentHashResponse -> toDomainModel()
-        }
-    } catch (e: Exception) {
-        throw RadixWalletException.IncomingMessageException.LedgerResponseParse(e)
+    return when (this) {
+        is DerivePublicKeyResponse -> toDomainModel()
+        is GetDeviceInfoResponse -> toDomainModel()
+        is SignChallengeResponse -> toDomainModel()
+        is SignTransactionResponse -> toDomainModel()
+        is DeriveAndDisplayAddressResponse -> toDomainModel()
+        is SignSubintentHashResponse -> toDomainModel()
     }
 }
 

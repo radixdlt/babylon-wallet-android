@@ -190,12 +190,8 @@ class PeerdroidClientImpl @Inject constructor(
                     Timber.e("Failed to parse incoming message with serialization exception: ${error.localizedMessage}")
                     IncomingMessage.ParsingError
                 }
-                is RadixWalletException.IncomingMessageException.LedgerResponseParse -> {
-                    Timber.e("Failed to parse ledger response: ${error.localizedMessage}")
-                    IncomingMessage.Error(RadixWalletException.DappRequestException.InvalidRequestChallenge)
-                }
                 else -> {
-                    Timber.e("Failed to parse incoming message: ${error.localizedMessage}")
+                    Timber.e("Failed to parse ledger response: ${error.localizedMessage}")
                     IncomingMessage.Error(RadixWalletException.DappRequestException.InvalidRequestChallenge)
                 }
             }
