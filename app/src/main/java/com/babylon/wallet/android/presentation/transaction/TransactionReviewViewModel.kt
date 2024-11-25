@@ -174,6 +174,10 @@ class TransactionReviewViewModel @Inject constructor(
                         data.update { it.copy(txSummary = analysis.summary) }
                     }
                     .then { analysis ->
+                        when (request.kind) {
+                            is TransactionRequest.Kind.PreAuthorized -> processExpiration(request.kind.expiration)
+                            is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis)
+                        }
                         if (!request.kind.isPreAuthorized) {
                             fees.resolveFees(analysis)
                         } else {
@@ -184,12 +188,6 @@ class TransactionReviewViewModel @Inject constructor(
 
             viewModelScope.launch(defaultDispatcher) {
                 processDApp(request)
-            }
-
-            if (request.kind is TransactionRequest.Kind.PreAuthorized) {
-                viewModelScope.launch(defaultDispatcher) {
-                    processExpiration(request.kind.expiration)
-                }
             }
         }
     }
@@ -307,6 +305,8 @@ class TransactionReviewViewModel @Inject constructor(
         val isSubmitting: Boolean = false
     ) : UiState {
 
+        val isPreviewDisplayable: Boolean = previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
+
         val rawManifestIsPreviewable: Boolean
             get() = previewType is PreviewType.Transaction
 
@@ -323,7 +323,7 @@ class TransactionReviewViewModel @Inject constructor(
             }
 
         val showReceiptEdges: Boolean
-            get() = !isPreAuthorization
+            get() = !isPreAuthorization && previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
 
         data class Expiration(
             val duration: Duration,
@@ -337,9 +337,7 @@ class TransactionReviewViewModel @Inject constructor(
                 get() = duration >= 60.seconds
         }
 
-        val isSubmitEnabled: Boolean = if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) {
-            false
-        } else {
+        val isSubmitEnabled: Boolean = if (isPreviewDisplayable) {
             when {
                 isPreAuthorization -> expiration?.isExpired?.not() ?: false
                 fees == null || fees.isNetworkFeeLoading -> false
@@ -349,7 +347,11 @@ class TransactionReviewViewModel @Inject constructor(
                     isFeePayerSelected && isBalanceSufficient
                 }
             }
+        } else {
+            false
         }
+
+        val isSubmitVisible: Boolean = isPreviewDisplayable
 
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,

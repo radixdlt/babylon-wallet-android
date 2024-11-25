@@ -157,19 +157,11 @@ class TransactionAnalysisDelegate @Inject constructor(
 
         when (error) {
             is RadixWalletException.DappRequestException.UnacceptableManifest -> {
-                _state.update {
-                    it.copy(
-                        error = TransactionErrorMessage(error),
-                        isRawManifestVisible = false,
-                        showRawTransactionWarning = false,
-                        isLoading = false,
-                        previewType = PreviewType.UnacceptableManifest
-                    )
-                }
+                reportFailure(error, PreviewType.UnacceptableManifest)
             }
 
             is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> {
-                Timber.w(
+                logger.w(
                     "Resource address ${
                         error.address.formatted(
                             AddressFormat.RAW
@@ -197,14 +189,18 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
-    private fun reportFailure(error: Throwable) {
+    private fun reportFailure(
+        error: Throwable,
+        previewType: PreviewType = PreviewType.None
+    ) {
         logger.w(error)
 
         _state.update {
             it.copy(
                 isLoading = false,
-                previewType = PreviewType.None,
-                error = TransactionErrorMessage(error)
+                previewType = previewType,
+                error = TransactionErrorMessage(error),
+                expiration = null
             )
         }
     }
