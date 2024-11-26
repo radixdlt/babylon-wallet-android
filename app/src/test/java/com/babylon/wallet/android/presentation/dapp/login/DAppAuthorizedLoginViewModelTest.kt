@@ -16,6 +16,7 @@ import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
@@ -29,6 +30,7 @@ import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -208,9 +210,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.SavedDapp
         val vm = vm.value
         advanceUntilIdle()
-        vm.onSelectPersona(samplePersona)
         advanceUntilIdle()
-        vm.personaSelectionConfirmed()
+        vm.onPersonaAuthorized(samplePersona.asProfileEntity(), null)
         advanceUntilIdle()
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is Event.DisplayPermission)
