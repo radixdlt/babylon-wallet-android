@@ -2,10 +2,13 @@ package com.babylon.wallet.android.presentation.dapp.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
+import com.babylon.wallet.android.presentation.AccessFactorSourcesProxyFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
 import com.radixdlt.sargon.AuthorizedDappPreferences
@@ -48,6 +51,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
+    private val incomingRequestRepository = IncomingRequestRepositoryImpl(AppEventBusImpl())
 
     private val dApp = DApp.sampleMainnet()
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
@@ -92,7 +96,9 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
             savedStateHandle,
             dAppConnectionRepository,
             getProfileUseCase,
-            preferencesManager
+            preferencesManager,
+            incomingRequestRepository,
+            AccessFactorSourcesProxyFake()
         )
     }
 

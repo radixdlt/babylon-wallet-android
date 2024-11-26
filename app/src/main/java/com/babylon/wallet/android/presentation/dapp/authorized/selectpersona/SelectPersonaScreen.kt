@@ -70,11 +70,13 @@ fun SelectPersonaScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     if (sharedState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             sharedViewModel.dismissNoMnemonicError()
         }
     }
+
     HandleOneOffEvents(
         oneOffEvent = sharedViewModel.oneOffEvent,
         onBackClick = onBackClick,
@@ -85,16 +87,15 @@ fun SelectPersonaScreen(
         onPersonaDataOnetime = onPersonaDataOnetime
     )
 
-    LaunchedEffect(state.selectedPersona?.address) {
-        state.selectedPersona?.let {
-            sharedViewModel.onSelectPersona(it)
-        }
-    }
-
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is CreatePersona -> createNewPersona(event.firstPersonaCreated)
+                SelectPersonaViewModel.Event.TerminateFlow -> sharedViewModel.onAbortDappLogin()
+                is SelectPersonaViewModel.Event.PersonaAuthorized -> sharedViewModel.onPersonaAuthorized(
+                    authorizedPersona = event.persona,
+                    signature = event.signature
+                )
             }
         }
     }
@@ -106,11 +107,12 @@ fun SelectPersonaScreen(
             onBackClick()
         }
     }
+
     SelectPersonaContent(
         modifier = modifier,
         onCancelClick = sharedViewModel::onAbortDappLogin,
-        onContinueClick = sharedViewModel::personaSelectionConfirmed,
-        onSelectPersona = { viewModel.onSelectPersona(it.address) },
+        onContinueClick = viewModel::onContinueClick,
+        onPersonaSelected = { viewModel.onPersonaSelected(it.address) },
         createNewPersona = viewModel::onCreatePersona,
         dapp = sharedState.dapp,
         state = state
@@ -136,6 +138,7 @@ private fun HandleOneOffEvents(
                 is Event.DisplayPermission -> onDisplayPermission(event)
                 is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                else -> {} // no verify entities in the login request
             }
         }
     }
@@ -146,7 +149,7 @@ private fun SelectPersonaContent(
     modifier: Modifier = Modifier,
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
-    onSelectPersona: (Persona) -> Unit,
+    onPersonaSelected: (Persona) -> Unit,
     createNewPersona: () -> Unit,
     dapp: DApp?,
     state: SelectPersonaViewModel.State,
@@ -243,10 +246,10 @@ private fun SelectPersonaContent(
                             )
                             .clip(RadixTheme.shapes.roundedRectMedium)
                             .throttleClickable {
-                                onSelectPersona(personaItem.persona)
+                                onPersonaSelected(personaItem.persona)
                             },
                         persona = personaItem,
-                        onSelectPersona = onSelectPersona
+                        onSelectPersona = onPersonaSelected
                     )
                     if (addSpacer) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -295,7 +298,7 @@ fun SelectPersonaPreview() {
         SelectPersonaContent(
             onCancelClick = {},
             onContinueClick = {},
-            onSelectPersona = {},
+            onPersonaSelected = {},
             createNewPersona = {},
             dapp = DApp.sampleMainnet(),
             state = SelectPersonaViewModel.State(
@@ -315,7 +318,7 @@ fun SelectPersonaFirstTimePreview() {
         SelectPersonaContent(
             onCancelClick = {},
             onContinueClick = {},
-            onSelectPersona = {},
+            onPersonaSelected = {},
             createNewPersona = {},
             dapp = DApp.sampleMainnet(),
             state = SelectPersonaViewModel.State(
