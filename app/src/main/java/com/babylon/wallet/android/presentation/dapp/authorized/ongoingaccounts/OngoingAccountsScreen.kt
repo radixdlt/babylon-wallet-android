@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.authorized.permission
+package com.babylon.wallet.android.presentation.dapp.authorized.ongoingaccounts
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -42,17 +42,26 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.DApp
 
 @Composable
-fun LoginPermissionScreen(
+fun OngoingAccountsScreen(
     viewModel: DAppAuthorizedLoginViewModel,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit,
     onBackClick: () -> Unit,
-    oneTime: Boolean,
+    isOneTimeRequest: Boolean,
     showBack: Boolean
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    BackHandler {
+        if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts) {
+            viewModel.onAbortDappLogin()
+        } else {
+            onBackClick()
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -62,20 +71,18 @@ fun LoginPermissionScreen(
             }
         }
     }
-    BackHandler {
-        if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
-            viewModel.onAbortDappLogin()
-        } else {
-            onBackClick()
-        }
-    }
-    LoginPermissionContent(
+
+    OngoingAccountsContent(
         onContinueClick = {
-            viewModel.onPermissionGranted(numberOfAccounts, isExactAccountsCount, oneTime)
+            viewModel.onAccountPermissionGranted(
+                isOneTimeRequest = isOneTimeRequest,
+                isExactAccountsCount = isExactAccountsCount,
+                numberOfAccounts = numberOfAccounts
+            )
         },
         dapp = state.dapp,
         onBackClick = {
-            if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+            if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts) {
                 viewModel.onAbortDappLogin()
             } else {
                 onBackClick()
@@ -88,7 +95,7 @@ fun LoginPermissionScreen(
 }
 
 @Composable
-private fun LoginPermissionContent(
+private fun OngoingAccountsContent(
     onContinueClick: () -> Unit,
     dapp: DApp?,
     onBackClick: () -> Unit,
@@ -222,9 +229,9 @@ private fun PermissionRequestHeader(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentPreview() {
+fun OngoingAccountsContentPreview() {
     RadixWalletPreviewTheme {
-        LoginPermissionContent(
+        OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
@@ -239,9 +246,9 @@ fun LoginPermissionContentPreview() {
 @UsesSampleValues
 @Preview(showBackground = true, device = "id:Nexus S")
 @Composable
-fun LoginPermissionContentSmallDevicePreview() {
+fun OngoingAccountsContentSmallDevicePreview() {
     RadixWalletPreviewTheme {
-        LoginPermissionContent(
+        OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
@@ -256,9 +263,9 @@ fun LoginPermissionContentSmallDevicePreview() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentFirstTimePreview() {
+fun OngoingAccountsContentFirstTimePreview() {
     RadixWalletPreviewTheme {
-        LoginPermissionContent(
+        OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
