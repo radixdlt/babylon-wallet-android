@@ -379,7 +379,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val numberOfAccounts = oneTimeAccountsRequestItem.numberOfValues.quantity
         val isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly()
         sendEvent(
-            Event.ChooseAccounts(
+            Event.NavigateToChooseAccounts(
                 authorizedRequestInteractionId = args.interactionId,
                 isOneTimeRequest = true,
                 isExactAccountsCount = isExactAccountsCount,
@@ -453,7 +453,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dataAccessAlreadyGranted = personaDataAccessAlreadyGranted(requestItem, personaAddress)
         if (request.resetRequestItem?.personaData == true || !dataAccessAlreadyGranted) {
             sendEvent(
-                Event.PersonaDataOngoing(
+                Event.NavigateToOngoingPersonaData(
                     personaAddress,
                     requestItem.toRequiredFields()
                 )
@@ -511,7 +511,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private fun handleOneTimePersonaDataRequestItem(oneTimePersonaDataRequestItem: DappToWalletInteraction.PersonaDataRequestItem) {
         viewModelScope.launch {
             sendEvent(
-                Event.PersonaDataOnetime(
+                Event.NavigateToOneTimePersonaData(
                     oneTimePersonaDataRequestItem.toRequiredFields()
                 )
             )
@@ -533,7 +533,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
         if (request.resetRequestItem?.accounts == true || potentialOngoingAddresses.isEmpty()) {
             sendEvent(
-                event = Event.DisplayPermission(
+                event = Event.NavigateToOngoingAccounts(
                     isExactAccountsCount = isExactAccountsCount,
                     numberOfAccounts = numberOfAccounts
                 )
@@ -630,7 +630,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             sendEvent(
-                Event.ChooseAccounts(
+                Event.NavigateToChooseAccounts(
                     authorizedRequestInteractionId = args.interactionId,
                     isOneTimeRequest = isOneTimeRequest,
                     isExactAccountsCount = isExactAccountsCount,
@@ -831,20 +831,20 @@ sealed interface Event : OneOffEvent {
 
     data object LoginFlowCompleted : Event
 
-    data class DisplayPermission(
+    data class NavigateToOngoingAccounts(
         val isOneTimeRequest: Boolean = false,
         val isExactAccountsCount: Boolean,
         val numberOfAccounts: Int
     ) : Event
 
-    data class PersonaDataOngoing(
+    data class NavigateToOngoingPersonaData(
         val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields
     ) : Event
 
-    data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
+    data class NavigateToOneTimePersonaData(val requiredPersonaFields: RequiredPersonaFields) : Event
 
-    data class ChooseAccounts(
+    data class NavigateToChooseAccounts(
         val authorizedRequestInteractionId: String,
         val isOneTimeRequest: Boolean = false,
         val isExactAccountsCount: Boolean,

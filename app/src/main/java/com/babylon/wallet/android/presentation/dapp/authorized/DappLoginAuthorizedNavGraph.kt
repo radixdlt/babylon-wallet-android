@@ -31,10 +31,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             onBackClick = {
                 navController.popBackStack()
             },
-            navigateToSelectPersona = { authorizedRequestInteractionId, dappDefinitionAddress ->
+            onNavigateToSelectPersona = { authorizedRequestInteractionId, dappDefinitionAddress ->
                 navController.selectPersona(authorizedRequestInteractionId, dappDefinitionAddress)
             },
-            navigateToOneTimeAccounts = { interactionId, isOneTimeRequest, isExactAccountsCount, numberOfAccounts, showBack ->
+            onNavigateToOneTimeAccounts = { interactionId, isOneTimeRequest, isExactAccountsCount, numberOfAccounts, showBack ->
                 navController.chooseAccounts(
                     authorizedRequestInteractionId = interactionId,
                     isOneTimeRequest = isOneTimeRequest,
@@ -43,7 +43,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                     showBack = showBack
                 )
             },
-            navigateToOngoingAccounts = { isOneTimeRequest, isExactAccountsCount, numberOfAccounts, showBack ->
+            onNavigateToOngoingAccounts = { isOneTimeRequest, isExactAccountsCount, numberOfAccounts, showBack ->
                 navController.ongoingAccounts(
                     isOneTimeRequest = isOneTimeRequest,
                     isExactAccountsCount = isExactAccountsCount,
@@ -51,7 +51,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                     showBack = showBack
                 )
             },
-            navigateToOneTimePersonaData = {
+            onNavigateToOneTimePersonaData = {
                 navController.personaDataOnetimeAuthorized(it, false)
             },
             onNavigateToVerifyPersona = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
@@ -71,7 +71,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH, true)
             },
-            navigateToOngoingPersonaData = { personaAddress, requiredFields ->
+            onNavigateToOngoingPersonaData = { personaAddress, requiredFields ->
                 navController.personaDataOngoing(personaAddress, requiredFields, false)
             }
         )
@@ -100,7 +100,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                     navController.personaInfoScreen(CreatePersonaRequestSource.DappRequest)
                 }
             },
-            onDisplayPermission = { event ->
+            onNavigateToOngoingAccounts = { event ->
                 navController.ongoingAccounts(
                     isOneTimeRequest = event.isOneTimeRequest,
                     isExactAccountsCount = event.isExactAccountsCount,
@@ -108,10 +108,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
                     showBack = true
                 )
             },
-            onPersonaDataOngoing = {
+            onNavigateToOngoingPersonaData = {
                 navController.personaDataOngoing(it.personaAddress, it.requiredPersonaFields, true)
             },
-            onPersonaDataOnetime = {
+            onNavigateToOneTimePersonaData = {
                 navController.personaDataOnetimeAuthorized(it.requiredPersonaFields, true)
             }
         )
@@ -138,7 +138,7 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
             },
-            onChooseAccounts = { event ->
+            onNavigateToChooseAccounts = { event ->
                 navController.chooseAccounts(
                     authorizedRequestInteractionId = event.authorizedRequestInteractionId,
                     isOneTimeRequest = event.isOneTimeRequest,
@@ -154,10 +154,10 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             onBackClick = {
                 navController.popBackStack()
             },
-            onPersonaOngoingData = {
+            onNavigateToOngoingPersonaData = {
                 navController.personaDataOngoing(it.personaAddress, it.requiredPersonaFields, true)
             },
-            onPersonaDataOnetime = {
+            onNavigateToOneTimePersonaData = {
                 navController.personaDataOnetimeAuthorized(it.requiredPersonaFields, true)
             },
             onNavigateToVerifyPersona = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->

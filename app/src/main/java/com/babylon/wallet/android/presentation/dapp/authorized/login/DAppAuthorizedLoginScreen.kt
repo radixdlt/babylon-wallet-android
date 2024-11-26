@@ -39,22 +39,22 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun DappAuthorizedLoginScreen(
     viewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    navigateToSelectPersona: (authorizedRequestInteractionId: String, dappDefinitionAddress: AccountAddress) -> Unit,
-    navigateToOneTimeAccounts: (
+    onNavigateToSelectPersona: (authorizedRequestInteractionId: String, dappDefinitionAddress: AccountAddress) -> Unit,
+    onNavigateToOneTimeAccounts: (
         authorizedRequestInteractionId: String,
         isOneTimeRequest: Boolean,
         isExactAccountsCount: Boolean,
         numberOfAccounts: Int,
         showBacK: Boolean
     ) -> Unit,
-    navigateToOngoingAccounts: (
+    onNavigateToOngoingAccounts: (
         isOneTimeRequest: Boolean,
         isExactAccountsCount: Boolean,
         numberOfAccounts: Int,
         showBacK: Boolean
     ) -> Unit,
-    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
-    navigateToOngoingPersonaData: (IdentityAddress, RequiredPersonaFields) -> Unit,
+    onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onNavigateToOngoingPersonaData: (IdentityAddress, RequiredPersonaFields) -> Unit,
     onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
@@ -90,12 +90,12 @@ fun DappAuthorizedLoginScreen(
 
     LaunchedEffect(state.initialAuthorizedLoginRoute) {
         when (val route = state.initialAuthorizedLoginRoute) {
-            is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(
+            is InitialAuthorizedLoginRoute.SelectPersona -> onNavigateToSelectPersona(
                 route.authorizedRequestInteractionId,
                 route.dappDefinitionAddress
             )
 
-            is InitialAuthorizedLoginRoute.OneTimeAccounts -> navigateToOneTimeAccounts(
+            is InitialAuthorizedLoginRoute.OneTimeAccounts -> onNavigateToOneTimeAccounts(
                 route.authorizedRequestInteractionId,
                 route.isOneTimeRequest,
                 route.isExactAccountsCount,
@@ -103,13 +103,13 @@ fun DappAuthorizedLoginScreen(
                 route.showBack
             )
 
-            is InitialAuthorizedLoginRoute.OneTimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
-            is InitialAuthorizedLoginRoute.OngoingPersonaData -> navigateToOngoingPersonaData(
+            is InitialAuthorizedLoginRoute.OneTimePersonaData -> onNavigateToOneTimePersonaData(route.requiredPersonaFields)
+            is InitialAuthorizedLoginRoute.OngoingPersonaData -> onNavigateToOngoingPersonaData(
                 route.personaAddress,
                 route.requiredPersonaFields
             )
 
-            is InitialAuthorizedLoginRoute.OngoingAccounts -> navigateToOngoingAccounts(
+            is InitialAuthorizedLoginRoute.OngoingAccounts -> onNavigateToOngoingAccounts(
                 route.isOneTimeRequest,
                 route.isExactAccountsCount,
                 route.numberOfAccounts,

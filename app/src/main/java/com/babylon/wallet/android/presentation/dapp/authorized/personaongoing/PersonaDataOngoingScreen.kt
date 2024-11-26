@@ -55,8 +55,8 @@ fun PersonaDataOngoingScreen(
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
+    onPersonaDataOnetime: (Event.NavigateToOneTimePersonaData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -79,8 +79,8 @@ fun PersonaDataOngoingScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.NavigateToChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToOneTimePersonaData -> onPersonaDataOnetime(event)
                 is Event.CloseLoginFlow -> onLoginFlowComplete()
                 else -> {}
             }

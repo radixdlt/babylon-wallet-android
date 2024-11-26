@@ -214,7 +214,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         vm.onPersonaAuthorized(samplePersona.asProfileEntity(), null)
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is Event.DisplayPermission)
+            assert(expectMostRecentItem() is Event.NavigateToOngoingAccounts)
         }
     }
 

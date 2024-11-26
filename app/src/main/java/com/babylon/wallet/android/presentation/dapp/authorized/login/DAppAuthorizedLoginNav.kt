@@ -33,22 +33,22 @@ fun NavController.dAppLoginAuthorized(requestId: String, navOptionsBuilder: NavO
 fun NavGraphBuilder.dAppLoginAuthorized(
     navController: NavController,
     onBackClick: () -> Unit,
-    navigateToSelectPersona: (authorizedRequestInteractionId: String, dappDefinitionAddress: AccountAddress) -> Unit,
-    navigateToOneTimeAccounts: (
+    onNavigateToSelectPersona: (authorizedRequestInteractionId: String, dappDefinitionAddress: AccountAddress) -> Unit,
+    onNavigateToOneTimeAccounts: (
         walletAuthorizedRequest: String,
         isOneTimeRequest: Boolean,
         isExactAccountsCount: Boolean,
         numberOfAccounts: Int,
         showBacK: Boolean
     ) -> Unit,
-    navigateToOngoingAccounts: (
+    onNavigateToOngoingAccounts: (
         isOneTimeRequest: Boolean,
         isExactAccountsCount: Boolean,
         numberOfAccounts: Int,
         showBacK: Boolean
     ) -> Unit,
-    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
-    navigateToOngoingPersonaData: (IdentityAddress, RequiredPersonaFields) -> Unit,
+    onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onNavigateToOngoingPersonaData: (IdentityAddress, RequiredPersonaFields) -> Unit,
     onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
@@ -68,11 +68,11 @@ fun NavGraphBuilder.dAppLoginAuthorized(
         DappAuthorizedLoginScreen(
             viewModel = vm,
             onBackClick = onBackClick,
-            navigateToSelectPersona = navigateToSelectPersona,
-            navigateToOneTimeAccounts = navigateToOneTimeAccounts,
-            navigateToOngoingAccounts = navigateToOngoingAccounts,
-            navigateToOneTimePersonaData = navigateToOneTimePersonaData,
-            navigateToOngoingPersonaData = navigateToOngoingPersonaData,
+            onNavigateToSelectPersona = onNavigateToSelectPersona,
+            onNavigateToOneTimeAccounts = onNavigateToOneTimeAccounts,
+            onNavigateToOngoingAccounts = onNavigateToOngoingAccounts,
+            onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData,
+            onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
             onNavigateToVerifyPersona = onNavigateToVerifyPersona,
             onNavigateToVerifyAccounts = onNavigateToVerifyAccounts,
             onLoginFlowComplete = onLoginFlowComplete

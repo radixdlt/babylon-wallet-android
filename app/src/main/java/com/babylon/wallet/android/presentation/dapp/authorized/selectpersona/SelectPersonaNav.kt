@@ -48,12 +48,12 @@ fun NavController.selectPersona(
 fun NavGraphBuilder.selectPersona(
     navController: NavController,
     onBackClick: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onDisplayPermission: (Event.DisplayPermission) -> Unit,
-    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
+    onNavigateToOngoingAccounts: (Event.NavigateToOngoingAccounts) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit
 ) {
     composable(
         route = ROUTE_SELECT_PERSONA,
@@ -89,9 +89,9 @@ fun NavGraphBuilder.selectPersona(
             onChooseAccounts = onChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
             createNewPersona = createNewPersona,
-            onDisplayPermission = onDisplayPermission,
-            onPersonaDataOngoing = onPersonaDataOngoing,
-            onPersonaDataOnetime = onPersonaDataOnetime
+            onNavigateToOngoingAccounts = onNavigateToOngoingAccounts,
+            onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
+            onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData
         )
     }
 }

@@ -44,7 +44,7 @@ import rdx.works.core.domain.DApp
 @Composable
 fun OngoingAccountsScreen(
     viewModel: DAppAuthorizedLoginViewModel,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit,
@@ -65,7 +65,7 @@ fun OngoingAccountsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToChooseAccounts -> onChooseAccounts(event)
                 is Event.CloseLoginFlow -> onCompleteFlow()
                 else -> {}
             }

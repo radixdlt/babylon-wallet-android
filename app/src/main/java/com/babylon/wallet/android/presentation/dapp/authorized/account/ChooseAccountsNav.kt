@@ -69,11 +69,11 @@ fun NavController.chooseAccounts(
 @Suppress("LongParameterList")
 fun NavGraphBuilder.chooseAccounts(
     onAccountCreationClick: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onNavigateToChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     onBackClick: () -> Boolean,
-    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
     onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     navController: NavController,
@@ -126,11 +126,11 @@ fun NavGraphBuilder.chooseAccounts(
             viewModel = hiltViewModel(),
             sharedViewModel = sharedVM,
             onAccountCreationClick = onAccountCreationClick,
-            onChooseAccounts = onChooseAccounts,
+            onNavigateToChooseAccounts = onNavigateToChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
             onBackClick = onBackClick,
-            onPersonaOngoingData = onPersonaOngoingData,
-            onPersonaDataOnetime = onPersonaDataOnetime,
+            onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
+            onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData,
             onNavigateToVerifyPersona = onNavigateToVerifyPersona,
             onNavigateToVerifyAccounts = onNavigateToVerifyAccounts
         )

@@ -27,11 +27,11 @@ fun ChooseAccountsScreen(
     viewModel: ChooseAccountsViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onAccountCreationClick: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onNavigateToChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     onBackClick: () -> Boolean,
-    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
     onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     modifier: Modifier = Modifier
@@ -69,10 +69,10 @@ fun ChooseAccountsScreen(
 
     HandleOneOffEvents(
         oneOffEvent = sharedViewModel.oneOffEvent,
-        onChooseAccounts = onChooseAccounts,
+        onNavigateToChooseAccounts = onNavigateToChooseAccounts,
         onLoginFlowComplete = onLoginFlowComplete,
-        onPersonaOngoingData = onPersonaOngoingData,
-        onPersonaDataOnetime = onPersonaDataOnetime,
+        onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
+        onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData,
         onNavigateToVerifyPersona = onNavigateToVerifyPersona,
         onNavigateToVerifyAccounts = onNavigateToVerifyAccounts
     )
@@ -109,20 +109,20 @@ fun ChooseAccountsScreen(
 @Composable
 private fun HandleOneOffEvents(
     oneOffEvent: Flow<Event>,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onNavigateToChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
     onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
             when (event) {
-                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToChooseAccounts -> onNavigateToChooseAccounts(event)
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.NavigateToOngoingPersonaData -> onNavigateToOngoingPersonaData(event)
+                is Event.NavigateToOneTimePersonaData -> onNavigateToOneTimePersonaData(event)
                 is Event.NavigateToVerifyPersona -> onNavigateToVerifyPersona(
                     event.walletUnauthorizedRequestInteractionId,
                     event.entitiesForProofWithSignatures

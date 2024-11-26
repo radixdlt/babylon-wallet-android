@@ -42,7 +42,7 @@ fun NavController.ongoingAccounts(
 
 fun NavGraphBuilder.ongoingAccounts(
     navController: NavController,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onCompleteFlow: () -> Unit,
     onBackClick: () -> Unit
 ) {

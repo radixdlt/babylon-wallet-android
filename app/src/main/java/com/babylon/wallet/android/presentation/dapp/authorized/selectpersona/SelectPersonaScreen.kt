@@ -60,12 +60,12 @@ fun SelectPersonaScreen(
     viewModel: SelectPersonaViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onDisplayPermission: (Event.DisplayPermission) -> Unit,
-    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToOngoingAccounts: (Event.NavigateToOngoingAccounts) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -82,9 +82,9 @@ fun SelectPersonaScreen(
         onBackClick = onBackClick,
         onLoginFlowComplete = onLoginFlowComplete,
         onChooseAccounts = onChooseAccounts,
-        onDisplayPermission = onDisplayPermission,
-        onPersonaDataOngoing = onPersonaDataOngoing,
-        onPersonaDataOnetime = onPersonaDataOnetime
+        onNavigateToOngoingAccounts = onNavigateToOngoingAccounts,
+        onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
+        onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData
     )
 
     LaunchedEffect(Unit) {
@@ -124,20 +124,20 @@ private fun HandleOneOffEvents(
     oneOffEvent: Flow<Event>,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onDisplayPermission: (Event.DisplayPermission) -> Unit,
-    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
+    onNavigateToOngoingAccounts: (Event.NavigateToOngoingAccounts) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
             when (event) {
                 Event.CloseLoginFlow -> onBackClick()
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.DisplayPermission -> onDisplayPermission(event)
-                is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.NavigateToChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToOngoingAccounts -> onNavigateToOngoingAccounts(event)
+                is Event.NavigateToOngoingPersonaData -> onNavigateToOngoingPersonaData(event)
+                is Event.NavigateToOneTimePersonaData -> onNavigateToOneTimePersonaData(event)
                 else -> {} // no verify entities in the login request
             }
         }
