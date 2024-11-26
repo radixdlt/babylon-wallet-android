@@ -1,17 +1,25 @@
 package com.babylon.wallet.android.presentation.dapp.authorized
 
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 
 sealed interface InitialAuthorizedLoginRoute {
+
     data object CompleteRequest : InitialAuthorizedLoginRoute
-    data class SelectPersona(val dappDefinitionAddress: AccountAddress) : InitialAuthorizedLoginRoute
-    data class Permission(
-        val numberOfAccounts: Int,
+
+    data class SelectPersona(
+        val authorizedRequestInteractionId: String,
+        val dappDefinitionAddress: AccountAddress
+    ) : InitialAuthorizedLoginRoute
+
+    data class OngoingAccounts(
+        val authorizedRequestInteractionId: String,
+        val isOneTimeRequest: Boolean = false,
         val isExactAccountsCount: Boolean,
-        val showBack: Boolean = false,
-        val oneTime: Boolean = false
+        val numberOfAccounts: Int,
+        val showBack: Boolean = false
     ) : InitialAuthorizedLoginRoute
 
     data class OngoingPersonaData(
@@ -23,10 +31,21 @@ sealed interface InitialAuthorizedLoginRoute {
         val requiredPersonaFields: RequiredPersonaFields
     ) : InitialAuthorizedLoginRoute
 
-    data class ChooseAccount(
-        val numberOfAccounts: Int,
+    data class OneTimeAccounts(
+        val authorizedRequestInteractionId: String,
+        val isOneTimeRequest: Boolean = false,
         val isExactAccountsCount: Boolean,
-        val oneTime: Boolean = false,
+        val numberOfAccounts: Int,
         val showBack: Boolean = false
+    ) : InitialAuthorizedLoginRoute
+
+    data class VerifyPersona(
+        val walletAuthorizedRequestInteractionId: String,
+        val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
+    ) : InitialAuthorizedLoginRoute
+
+    data class VerifyAccounts(
+        val walletAuthorizedRequestInteractionId: String,
+        val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
     ) : InitialAuthorizedLoginRoute
 }
