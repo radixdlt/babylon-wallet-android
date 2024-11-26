@@ -240,7 +240,7 @@ data class ChooseAccountUiState(
     val showProgress: Boolean = true,
     val showBackButton: Boolean = false,
     val selectedAccounts: List<AccountItemUiModel> = emptyList(),
-    val isSigningInProgress: Boolean = false // TODO
+    val isSigningInProgress: Boolean = false
 ) : UiState {
 
     fun selectedAccounts(): List<AccountItemUiModel> {

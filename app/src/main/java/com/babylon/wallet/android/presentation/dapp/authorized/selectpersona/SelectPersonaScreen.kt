@@ -168,7 +168,8 @@ private fun SelectPersonaContent(
             RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = state.isContinueButtonEnabled,
-                text = stringResource(id = R.string.dAppRequest_login_continue)
+                text = stringResource(id = R.string.dAppRequest_login_continue),
+                isLoading = state.isSigningInProgress
             )
         },
         containerColor = RadixTheme.colors.defaultBackground

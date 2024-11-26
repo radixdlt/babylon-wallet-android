@@ -96,7 +96,7 @@ fun ChooseAccountsScreen(
         isOneTimeRequest = state.isOneTimeRequest,
         isSingleChoice = state.isSingleChoice,
         showBackButton = state.showBackButton,
-        isSigningInProgress = false, // TODO update when refactoring
+        isSigningInProgress = state.isSigningInProgress,
         modifier = modifier
     )
 
