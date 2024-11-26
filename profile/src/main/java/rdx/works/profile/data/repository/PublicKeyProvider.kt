@@ -32,7 +32,8 @@ class PublicKeyProvider @Inject constructor(
     suspend fun getNextDerivationPathForFactorSource(
         forNetworkId: NetworkId,
         factorSource: FactorSource,
-        entityKind: EntityKind = EntityKind.ACCOUNT
+        entityKind: EntityKind = EntityKind.ACCOUNT,
+        keyKind: Cap26KeyKind = Cap26KeyKind.TRANSACTION_SIGNING,
     ): DerivationPath {
         val profile = profileRepository.profile.first()
         return when (entityKind) {
@@ -45,7 +46,7 @@ class PublicKeyProvider @Inject constructor(
 
                 AccountPath.init(
                     networkId = forNetworkId,
-                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                    keyKind = keyKind,
                     index = accountIndex.asHardened()
                 ).asGeneral()
             }
@@ -59,7 +60,7 @@ class PublicKeyProvider @Inject constructor(
 
                 IdentityPath.init(
                     networkId = forNetworkId,
-                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                    keyKind = keyKind,
                     index = identityIndex.asHardened()
                 ).asGeneral()
             }
