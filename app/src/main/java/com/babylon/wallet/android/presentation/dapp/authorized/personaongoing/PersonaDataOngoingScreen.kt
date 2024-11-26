@@ -48,7 +48,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 
-@Suppress("CyclomaticComplexMethod")
 @Composable
 fun PersonaDataOngoingScreen(
     viewModel: PersonaDataOngoingViewModel,
@@ -95,7 +94,7 @@ fun PersonaDataOngoingScreen(
         }
     }
     PersonaDataOngoingPermissionContent(
-        onContinueClick = sharedViewModel::onGrantedPersonaDataOngoing,
+        onContinueClick = sharedViewModel::onGrantedOngoingPersonaData,
         dapp = sharedState.dapp,
         onBackClick = {
             if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
@@ -215,7 +214,7 @@ private fun PermissionRequestHeader(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentPreview() {
+fun PersonaDataOngoingPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOngoingPermissionContent(
             onContinueClick = {},

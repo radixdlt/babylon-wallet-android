@@ -18,6 +18,7 @@ import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializ
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
 import kotlinx.serialization.encodeToString
 
@@ -50,8 +51,10 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
     navController: NavController,
-    onLoginFlowComplete: () -> Unit,
-    onCreatePersona: (Boolean) -> Unit
+    onCreatePersona: (Boolean) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onLoginFlowComplete: () -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DATA_ONETIME_AUTHORIZED,
@@ -93,8 +96,10 @@ fun NavGraphBuilder.personaDataOnetimeAuthorized(
             onEdit = onEdit,
             onBackClick = onBackClick,
             viewModel = hiltViewModel(),
-            onLoginFlowComplete = onLoginFlowComplete,
-            onCreatePersona = onCreatePersona
+            onCreatePersona = onCreatePersona,
+            onNavigateToVerifyPersona = onNavigateToVerifyPersona,
+            onNavigateToVerifyAccounts = onNavigateToVerifyAccounts,
+            onLoginFlowComplete = onLoginFlowComplete
         )
     }
 }
