@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.persona
+package com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.accounts
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
@@ -6,19 +6,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.VerifyEntitiesContent
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.VerifyEntitiesViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
+import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.VerifyEntitiesContent
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.VerifyEntitiesViewModel
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
-fun VerifyPersonaScreen(
+fun VerifyAccountsScreen(
     modifier: Modifier = Modifier,
     viewModel: VerifyEntitiesViewModel,
-    sharedViewModel: DAppUnauthorizedLoginViewModel,
-    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
+    sharedViewModel: DAppAuthorizedLoginViewModel,
     onVerificationFlowComplete: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -29,22 +27,22 @@ fun VerifyPersonaScreen(
         if (state.canNavigateBack) {
             onBackClick()
         } else {
-            sharedViewModel.onUserRejectedRequest()
+            sharedViewModel.onAbortDappLogin()
         }
     }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is VerifyEntitiesViewModel.Event.NavigateToVerifyAccounts -> onNavigateToVerifyAccounts(
-                    event.walletUnauthorizedRequestInteractionId,
-                    event.entitiesForProofWithSignatures
-                )
                 VerifyEntitiesViewModel.Event.EntitiesVerified -> {
                     sharedViewModel.onRequestedEntitiesVerified(state.signatures)
                 }
                 VerifyEntitiesViewModel.Event.TerminateVerification -> {
-                    sharedViewModel.onUserRejectedRequest()
+                    sharedViewModel.onAbortDappLogin()
+                }
+
+                is VerifyEntitiesViewModel.Event.NavigateToVerifyAccounts -> {
+                    // do nothing here
                 }
             }
         }
@@ -72,7 +70,7 @@ fun VerifyPersonaScreen(
             if (state.canNavigateBack) {
                 onBackClick()
             } else {
-                sharedViewModel.onUserRejectedRequest()
+                sharedViewModel.onAbortDappLogin()
             }
         }
     )

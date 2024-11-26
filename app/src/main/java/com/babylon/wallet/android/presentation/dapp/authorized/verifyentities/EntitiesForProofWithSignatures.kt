@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities
+package com.babylon.wallet.android.presentation.dapp.authorized.verifyentities
 
 import androidx.lifecycle.SavedStateHandle
 import com.radixdlt.sargon.AccountAddress
@@ -27,18 +27,18 @@ data class EntitiesForProofWithSignatures(
         > = emptyMap()
 )
 
-internal const val ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID = "unauthorized_request_interaction_id_arg"
+internal const val ARG_AUTHORIZED_REQUEST_INTERACTION_ID = "authorized_request_interaction_id_arg"
 internal const val ARG_ENTITIES_FOR_PROOF = "entities_for_proof_arg"
 internal const val ARG_CAN_NAVIGATE_BACK = "can_navigate_back_arg"
 
 class VerifyEntitiesArgs(
-    val unauthorizedRequestInteractionId: String,
+    val authorizedRequestInteractionId: String,
     val entitiesForProofWithSignatures: EntitiesForProofWithSignatures,
     val canNavigateBack: Boolean
 ) {
 
     constructor(savedStateHandle: SavedStateHandle) : this(
-        unauthorizedRequestInteractionId = checkNotNull(savedStateHandle[ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID]) as String,
+        authorizedRequestInteractionId = checkNotNull(savedStateHandle[ARG_AUTHORIZED_REQUEST_INTERACTION_ID]) as String,
         entitiesForProofWithSignatures = Json.decodeFromString(checkNotNull(savedStateHandle[ARG_ENTITIES_FOR_PROOF]) as String),
         canNavigateBack = checkNotNull(savedStateHandle[ARG_CAN_NAVIGATE_BACK]) as Boolean
     )

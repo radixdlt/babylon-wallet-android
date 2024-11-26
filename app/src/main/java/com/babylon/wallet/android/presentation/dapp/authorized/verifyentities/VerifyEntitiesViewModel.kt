@@ -1,10 +1,10 @@
-package com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities
+package com.babylon.wallet.android.presentation.dapp.authorized.verifyentities
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -43,23 +43,23 @@ class VerifyEntitiesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(defaultDispatcher) {
-            getUnauthorizedRequest()
+            getAuthorizedRequest()
             getRequestedEntitiesToVerify()
         }
     }
 
-    private suspend fun getUnauthorizedRequest() {
-        val interactionId = args.unauthorizedRequestInteractionId
+    private suspend fun getAuthorizedRequest() {
+        val interactionId = args.authorizedRequestInteractionId
         interactionId.let {
-            val requestToHandle = incomingRequestRepository.getRequest(interactionId) as? WalletUnauthorizedRequest
+            val requestToHandle = incomingRequestRepository.getRequest(interactionId) as? WalletAuthorizedRequest
             if (requestToHandle == null) { // should never happen because
-                // the validation first occurs in the initialization of the DAppUnauthorizedLoginViewModel
+                // the validation first occurs in the initialization of the DAppAuthorizedLoginViewModel
                 sendEvent(Event.TerminateVerification)
                 return@let
             } else {
                 _state.update { state ->
                     state.copy(
-                        walletUnauthorizedRequest = requestToHandle,
+                        walletAuthorizedRequest = requestToHandle,
                         canNavigateBack = args.canNavigateBack
                     )
                 }
@@ -84,7 +84,7 @@ class VerifyEntitiesViewModel @Inject constructor(
     }
 
     fun onContinueClick() {
-        state.value.walletUnauthorizedRequest?.let { request ->
+        state.value.walletAuthorizedRequest?.let { request ->
             viewModelScope.launch {
                 setSigningInProgress(true)
                 val signRequest = request.proofOfOwnershipRequestItem?.challenge?.hex?.let { challengeHex ->
@@ -111,7 +111,7 @@ class VerifyEntitiesViewModel @Inject constructor(
                         if (isPersona && state.value.requestedAccounts.isNotEmpty()) {
                             sendEvent(
                                 Event.NavigateToVerifyAccounts(
-                                    walletUnauthorizedRequestInteractionId = request.interactionId,
+                                    walletAuthorizedRequestInteractionId = request.interactionId,
                                     entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
                                         accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
                                         signatures = result.signersWithSignatures.mapKeys { it.key.address }
@@ -133,7 +133,7 @@ class VerifyEntitiesViewModel @Inject constructor(
     private fun setSigningInProgress(isEnabled: Boolean) = _state.update { it.copy(isSigningInProgress = isEnabled) }
 
     data class State(
-        val walletUnauthorizedRequest: WalletUnauthorizedRequest? = null,
+        val walletAuthorizedRequest: WalletAuthorizedRequest? = null,
         val requestedPersona: ProfileEntity.PersonaEntity? = null,
         val requestedAccounts: List<ProfileEntity.AccountEntity> = emptyList(),
         val signatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
@@ -169,7 +169,7 @@ class VerifyEntitiesViewModel @Inject constructor(
         data object EntitiesVerified : Event
 
         data class NavigateToVerifyAccounts(
-            val walletUnauthorizedRequestInteractionId: String,
+            val walletAuthorizedRequestInteractionId: String,
             val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
         ) : Event
     }

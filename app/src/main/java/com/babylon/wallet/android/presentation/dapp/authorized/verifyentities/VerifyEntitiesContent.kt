@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities
+package com.babylon.wallet.android.presentation.dapp.authorized.verifyentities
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
