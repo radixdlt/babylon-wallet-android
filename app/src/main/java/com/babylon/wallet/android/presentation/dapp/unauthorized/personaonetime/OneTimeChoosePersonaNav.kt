@@ -18,7 +18,6 @@ import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializ
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
 import kotlinx.serialization.encodeToString
 
@@ -52,9 +51,7 @@ fun NavGraphBuilder.oneTimeChoosePersona(
     onLoginFlowComplete: () -> Unit,
     onCreatePersona: (Boolean) -> Unit,
     navController: NavController,
-    onLoginFlowCancelled: () -> Unit,
-    onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
-    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
+    onLoginFlowCancelled: () -> Unit
 ) {
     composable(
         route = ONE_TIME_CHOOSE_PERSONA_ROUTE,
@@ -99,8 +96,6 @@ fun NavGraphBuilder.oneTimeChoosePersona(
             viewModel = hiltViewModel(),
             onLoginFlowComplete = onLoginFlowComplete,
             onCreatePersona = onCreatePersona,
-            onNavigateToVerifyPersona = onNavigateToVerifyPersona,
-            onNavigateToVerifyAccounts = onNavigateToVerifyAccounts,
             onLoginFlowCancelled = onLoginFlowCancelled
         )
     }

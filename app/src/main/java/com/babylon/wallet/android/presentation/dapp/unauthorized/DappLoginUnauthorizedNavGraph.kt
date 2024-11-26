@@ -10,19 +10,13 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAP
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime.oneTimeChoosePersona
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.accounts.verifyAccounts
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.persona.verifyPersona
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaRequestSource
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 
-@Suppress("LongMethod")
 fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) {
-    navigation(
-        startDestination = ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN,
-        route = ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
-    ) {
+    navigation(startDestination = ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN, route = ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH) {
         dAppLoginUnauthorized(
             navController,
             onNavigateToChooseAccount = { unauthorizedRequestInteractionId, numberOfAccounts, isExactAccountsCount ->
@@ -34,20 +28,6 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             },
             onNavigateToOneTimePersonaData = {
                 navController.oneTimeChoosePersona(it, false)
-            },
-            onNavigateToVerifyPersona = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyPersona(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = false
-                )
-            },
-            onNavigateToVerifyAccounts = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyAccounts(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = false
-                )
             },
             onLoginFlowComplete = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
@@ -66,20 +46,6 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             },
             onNavigateToChoosePersonaOnetime = {
                 navController.oneTimeChoosePersona(it, true)
-            },
-            onNavigateToVerifyPersona = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyPersona(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = true
-                )
-            },
-            onNavigateToVerifyAccounts = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyAccounts(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = true
-                )
             },
             navController = navController
         )
@@ -102,49 +68,8 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
                     navController.personaInfoScreen(CreatePersonaRequestSource.DappRequest)
                 }
             },
-            onNavigateToVerifyPersona = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyPersona(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = true
-                )
-            },
-            onNavigateToVerifyAccounts = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyAccounts(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = true
-                )
-            },
             onLoginFlowCancelled = {
                 navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
-            }
-        )
-
-        verifyPersona(
-            navController = navController,
-            onNavigateToVerifyAccounts = { walletUnauthorizedRequestInteractionId, entitiesForProofWithSignatures ->
-                navController.verifyAccounts(
-                    walletUnauthorizedRequestInteractionId = walletUnauthorizedRequestInteractionId,
-                    entitiesForProofWithSignatures = entitiesForProofWithSignatures,
-                    canNavigateBack = true
-                )
-            },
-            onVerificationFlowComplete = {
-                navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
-            },
-            onBackClick = {
-                navController.navigateUp()
-            }
-        )
-
-        verifyAccounts(
-            navController = navController,
-            onVerificationFlowComplete = {
-                navController.popBackStack(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH, true)
-            },
-            onBackClick = {
-                navController.navigateUp()
             }
         )
     }

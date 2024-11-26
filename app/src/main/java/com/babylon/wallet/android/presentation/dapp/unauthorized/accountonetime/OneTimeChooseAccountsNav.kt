@@ -15,7 +15,6 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 
 @VisibleForTesting
 internal const val ARG_NUMBER_OF_ACCOUNTS = "arg_number_of_accounts"
@@ -51,14 +50,11 @@ fun NavController.oneTimeChooseAccounts(
     navigate("choose_accounts_onetime_route/$unauthorizedRequestInteractionId/$numberOfAccounts/$isExactAccountsCount")
 }
 
-@Suppress("LongParameterList")
 fun NavGraphBuilder.oneTimeChooseAccounts(
     exitRequestFlow: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
     onNavigateToChoosePersonaOnetime: (RequiredPersonaFields) -> Unit,
-    onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
-    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
     navController: NavController
 ) {
     composable(
@@ -97,9 +93,7 @@ fun NavGraphBuilder.oneTimeChooseAccounts(
             onAccountCreationClick = onAccountCreationClick,
             sharedViewModel = sharedVM,
             onLoginFlowComplete = onLoginFlowComplete,
-            onNavigateToChoosePersonaOnetime = onNavigateToChoosePersonaOnetime,
-            onNavigateToVerifyPersona = onNavigateToVerifyPersona,
-            onNavigateToVerifyAccounts = onNavigateToVerifyAccounts
+            onNavigateToChoosePersonaOnetime = onNavigateToChoosePersonaOnetime
         )
     }
 }

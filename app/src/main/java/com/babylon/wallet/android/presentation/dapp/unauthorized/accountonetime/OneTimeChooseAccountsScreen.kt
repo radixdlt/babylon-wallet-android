@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.radixdlt.sargon.AccountAddress
@@ -31,8 +30,6 @@ fun OneTimeChooseAccountsScreen(
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onLoginFlowComplete: () -> Unit,
     onNavigateToChoosePersonaOnetime: (RequiredPersonaFields) -> Unit,
-    onNavigateToVerifyPersona: (String, EntitiesForProofWithSignatures) -> Unit,
-    onNavigateToVerifyAccounts: (String, EntitiesForProofWithSignatures) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sharedViewModelState by sharedViewModel.state.collectAsStateWithLifecycle()
@@ -48,14 +45,6 @@ fun OneTimeChooseAccountsScreen(
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 is Event.NavigateToOneTimeChoosePersona -> onNavigateToChoosePersonaOnetime(event.requiredPersonaFields)
-                is Event.NavigateToVerifyPersona -> onNavigateToVerifyPersona(
-                    event.walletUnauthorizedRequestInteractionId,
-                    event.entitiesForProofWithSignatures
-                )
-                is Event.NavigateToVerifyAccounts -> onNavigateToVerifyAccounts(
-                    event.walletUnauthorizedRequestInteractionId,
-                    event.entitiesForProofWithSignatures
-                )
                 Event.CloseLoginFlow -> onLoginFlowComplete()
             }
         }
@@ -87,7 +76,7 @@ fun OneTimeChooseAccountsScreen(
         onAccountSelected = viewModel::onAccountSelected,
         onCreateNewAccount = onAccountCreationClick,
         dapp = sharedState.dapp,
-        isOneTime = true,
+        isOneTimeRequest = true,
         isSingleChoice = state.isSingleChoice,
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
@@ -128,7 +117,7 @@ fun OneTimeAccountContentPreview() {
             onAccountSelected = {},
             onCreateNewAccount = {},
             dapp = DApp.sampleMainnet(),
-            isOneTime = true,
+            isOneTimeRequest = true,
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,

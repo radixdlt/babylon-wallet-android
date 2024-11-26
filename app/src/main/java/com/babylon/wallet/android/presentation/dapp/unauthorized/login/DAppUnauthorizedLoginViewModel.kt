@@ -11,8 +11,8 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
+import com.babylon.wallet.android.domain.usecases.login.BuildUnauthorizedDappResponseUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -23,12 +23,10 @@ import com.babylon.wallet.android.presentation.dapp.FailureDialogState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
-import com.babylon.wallet.android.presentation.dapp.unauthorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
-import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.SignatureWithPublicKey
@@ -42,27 +40,12 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
-import rdx.works.core.sargon.allAccountsOnCurrentNetwork
-import rdx.works.core.sargon.allPersonasOnCurrentNetwork
 import rdx.works.core.sargon.fields
 import rdx.works.core.sargon.toPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
-/**
- * The order of presenting the screens for a [WalletUnauthorizedRequest],
- * regardless of whether all the *RequestItems are present, is as follows:
- *
- * 1. oneTimeAccountsRequestItem: AccountsRequestItem -> OneTimeChooseAccountsScreen
- * 2. oneTimePersonaDataRequestItem: PersonaDataRequestItem -> OneTimeChoosePersonaScreen
- * 3. proofOfOwnershipRequestItem: ProofOfOwnershipRequestItem
- *      a. personaAddress: IdentityAddress -> VerifyPersonaScreen
- *      b. accountAddresses: List<AccountAddress> -> VerifyAccountsScreen
- *
- * For each screen wallet asks for signature(s) IF a challenge is present in the *RequestItem.
- *
- */
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class DAppUnauthorizedLoginViewModel @Inject constructor(
@@ -72,6 +55,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
+    private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<DAppUnauthorizedLoginUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -117,27 +101,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 getDappDetails(dAppDefinitionAddress = dAppDefinitionAddress)
             }
 
-            // check if request contains proofOfOwnershipRequestItem
-            // and if yes then validate the requested entities from this request item
-            val proofOfOwnershipRequestItem = request.proofOfOwnershipRequestItem
-            if (proofOfOwnershipRequestItem != null) {
-                val areRequestedAddressesValid = validateRequestedAddressesForProofOfOwnership(
-                    requestedPersonaAddress = proofOfOwnershipRequestItem.personaAddress,
-                    requestedAccountAddresses = proofOfOwnershipRequestItem.accountAddresses
-                )
-                if (areRequestedAddressesValid) {
-                    _state.update { state ->
-                        state.copy(
-                            personaRequiredProofOfOwnership = proofOfOwnershipRequestItem.personaAddress,
-                            accountsRequiredProofOfOwnership = proofOfOwnershipRequestItem.accountAddresses
-                        )
-                    }
-                } else {
-                    handleRequestError(RadixWalletException.DappRequestException.InvalidPersonaOrAccounts)
-                    return@launch
-                }
-            }
-
             setInitialDappLoginRoute()
         }
     }
@@ -153,25 +116,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }.onFailure { error ->
             _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
         }
-    }
-
-    private suspend fun validateRequestedAddressesForProofOfOwnership(
-        requestedPersonaAddress: IdentityAddress?,
-        requestedAccountAddresses: List<AccountAddress>?
-    ): Boolean {
-        // if requestedPersonaAddress is present, then check if it exists in the allPersonasOnCurrentNetwork
-        val isIdentityValid = requestedPersonaAddress?.let { address ->
-            getProfileUseCase().allPersonasOnCurrentNetwork.any { it.address == address }
-        } ?: true // if requestedPersonaAddress is null, assume it's valid (no need to check)
-
-        // if requestedAccountAddresses are present, then check if all of them exist in the existingAccounts
-        val areAccountsValid = requestedAccountAddresses?.let { addresses ->
-            addresses.all { address ->
-                getProfileUseCase().allAccountsOnCurrentNetwork.any { it.address == address }
-            }
-        } ?: true // if requestedAccountAddresses is null, assume it's valid (no need to check)
-
-        return isIdentityValid && areAccountsValid
     }
 
     private fun setInitialDappLoginRoute() {
@@ -200,35 +144,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 }
             }
 
-            request.proofOfOwnershipRequestItem != null -> {
-                if (request.proofOfOwnershipRequestItem.personaAddress != null) {
-                    _state.update { state ->
-                        state.copy(
-                            initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.VerifyPersona(
-                                walletUnauthorizedRequestInteractionId = args.interactionId,
-                                EntitiesForProofWithSignatures(
-                                    personaAddress = state.personaRequiredProofOfOwnership,
-                                    accountAddresses = state.accountsRequiredProofOfOwnership.orEmpty()
-                                )
-                            )
-                        )
-                    }
-                } else if (request.proofOfOwnershipRequestItem.accountAddresses != null) {
-                    _state.update { state ->
-                        state.copy(
-                            initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.VerifyAccounts(
-                                walletUnauthorizedRequestInteractionId = args.interactionId,
-                                EntitiesForProofWithSignatures(
-                                    accountAddresses = state.accountsRequiredProofOfOwnership.orEmpty()
-                                )
-                            )
-                        )
-                    }
-                } else {
-                    onUserRejectedRequest()
-                }
-            }
-
             else -> onUserRejectedRequest()
         }
     }
@@ -239,8 +154,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             val request = request
             if (request.oneTimePersonaDataRequestItem != null) {
                 sendEvent(Event.NavigateToOneTimeChoosePersona(request.oneTimePersonaDataRequestItem.toRequiredFields()))
-            } else if (request.proofOfOwnershipRequestItem != null) {
-                navigateToVerifyEntities(proofOfOwnershipRequestItem = request.proofOfOwnershipRequestItem)
             } else {
                 sendResponseToDapp()
             }
@@ -268,21 +181,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     )
                 }
             }
-
-            val request = request
-            if (request.proofOfOwnershipRequestItem != null) {
-                navigateToVerifyEntities(proofOfOwnershipRequestItem = request.proofOfOwnershipRequestItem)
-            } else {
-                sendResponseToDapp()
-            }
+            sendResponseToDapp()
         }
-    }
-
-    fun onRequestedEntitiesVerified(entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>) {
-        _state.update { state ->
-            state.copy(verifiedEntities = entitiesWithSignatures)
-        }
-        sendResponseToDapp()
     }
 
     fun onUserRejectedRequest() {
@@ -311,39 +211,18 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
 
-    private suspend fun navigateToVerifyEntities(proofOfOwnershipRequestItem: WalletUnauthorizedRequest.ProofOfOwnershipRequestItem) {
-        if (proofOfOwnershipRequestItem.personaAddress != null) {
-            sendEvent(
-                Event.NavigateToVerifyPersona(
-                    walletUnauthorizedRequestInteractionId = request.interactionId,
-                    entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
-                        personaAddress = state.value.personaRequiredProofOfOwnership,
-                        accountAddresses = state.value.accountsRequiredProofOfOwnership.orEmpty()
-                    )
-                )
-            )
-        } else if (proofOfOwnershipRequestItem.accountAddresses != null) {
-            sendEvent(
-                Event.NavigateToVerifyAccounts(
-                    walletUnauthorizedRequestInteractionId = request.interactionId,
-                    entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
-                        accountAddresses = state.value.accountsRequiredProofOfOwnership.orEmpty()
-                    )
-                )
-            )
-        }
-    }
-
     private fun sendResponseToDapp() {
         viewModelScope.launch {
-            BuildUnauthorizedDappResponseUseCase().invoke(
+            val walletToDappInteractionResponse = buildUnauthorizedDappResponseUseCase(
                 request = request,
                 oneTimeAccountsWithSignatures = state.value.oneTimeAccountsWithSignatures,
                 oneTimePersonaData = state.value.selectedPersonaData,
-                verifiedEntities = state.value.verifiedEntities
-            ).mapCatching {
-                respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
-            }.onSuccess { result ->
+            )
+
+            respondToIncomingRequestUseCase.respondWithSuccess(
+                request = request,
+                response = walletToDappInteractionResponse
+            ).onSuccess { result ->
                 sendEvent(Event.LoginFlowCompleted)
                 if (!request.isInternal) {
                     appEventBus.sendEvent(
@@ -373,7 +252,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 }
 
                 is RadixWalletException.LedgerCommunicationException,
-                is RadixWalletException.DappRequestException.RejectedByUser -> {}
+                is RadixWalletException.DappRequestException.RejectedByUser -> {
+                }
 
                 else -> {
                     respondToIncomingRequestUseCase.respondWithFailure(
@@ -395,16 +275,6 @@ sealed interface Event : OneOffEvent {
     data object LoginFlowCompleted : Event
 
     data class NavigateToOneTimeChoosePersona(val requiredPersonaFields: RequiredPersonaFields) : Event
-
-    data class NavigateToVerifyPersona(
-        val walletUnauthorizedRequestInteractionId: String,
-        val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
-    ) : Event
-
-    data class NavigateToVerifyAccounts(
-        val walletUnauthorizedRequestInteractionId: String,
-        val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
-    ) : Event
 }
 
 data class DAppUnauthorizedLoginUiState(
@@ -415,8 +285,5 @@ data class DAppUnauthorizedLoginUiState(
     val selectedPersonaData: PersonaData? = null,
     val selectedPersona: PersonaUiModel? = null,
     val oneTimeAccountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?> = emptyMap(),
-    val personaRequiredProofOfOwnership: IdentityAddress? = null,
-    val accountsRequiredProofOfOwnership: List<AccountAddress>? = null,
-    val verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
     val isNoMnemonicErrorVisible: Boolean = false
 ) : UiState
