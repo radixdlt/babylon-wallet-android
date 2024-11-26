@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.model.messages
 
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.IdentityAddress
@@ -14,12 +15,21 @@ data class WalletAuthorizedRequest(
     val ongoingAccountsRequestItem: AccountsRequestItem? = null,
     val oneTimePersonaDataRequestItem: PersonaDataRequestItem? = null,
     val ongoingPersonaDataRequestItem: PersonaDataRequestItem? = null,
-    val resetRequestItem: DappToWalletInteractionResetRequestItem? = null
+    val resetRequestItem: DappToWalletInteractionResetRequestItem? = null,
+    val proofOfOwnershipRequestItem: ProofOfOwnershipRequestItem? = null
 ) : DappToWalletInteraction(remoteEntityId, interactionId, requestMetadata) {
 
     override val isInternal: Boolean
         get() {
             return requestMetadata.isInternal || remoteEntityId.id.isEmpty()
+        }
+
+    val loginWithChallenge: Exactly32Bytes?
+        get() {
+            return when (authRequestItem) {
+                is AuthRequestItem.LoginRequest.WithChallenge -> this.authRequestItem.challenge
+                else -> null
+            }
         }
 
     fun needSignatures(): Boolean {
@@ -45,7 +55,7 @@ data class WalletAuthorizedRequest(
         return resetRequestItem?.personaData != true && resetRequestItem?.accounts != true
     }
 
-    fun hasOnlyAuthItem(): Boolean {
+    fun isOnlyLoginRequest(): Boolean {
         return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
             oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
     }
@@ -63,4 +73,10 @@ data class WalletAuthorizedRequest(
 
         data class UsePersonaRequest(val identityAddress: IdentityAddress) : AuthRequestItem
     }
+
+    data class ProofOfOwnershipRequestItem(
+        val challenge: Exactly32Bytes,
+        val accountAddresses: List<AccountAddress>? = null,
+        val personaAddress: IdentityAddress? = null
+    )
 }

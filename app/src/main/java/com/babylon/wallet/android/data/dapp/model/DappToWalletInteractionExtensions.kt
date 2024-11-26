@@ -103,13 +103,12 @@ private fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(
         interactionId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(false),
-        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false),
-        proofOfOwnershipRequestItem = proofOfOwnership?.toDomainModel()
+        oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(false)
     )
 }
 
-private fun DappToWalletInteractionProofOfOwnershipRequestItem.toDomainModel(): WalletUnauthorizedRequest.ProofOfOwnershipRequestItem {
-    return WalletUnauthorizedRequest.ProofOfOwnershipRequestItem(
+private fun DappToWalletInteractionProofOfOwnershipRequestItem.toDomainModel(): WalletAuthorizedRequest.ProofOfOwnershipRequestItem {
+    return WalletAuthorizedRequest.ProofOfOwnershipRequestItem(
         challenge = challenge,
         accountAddresses = accountAddresses,
         personaAddress = identityAddress
@@ -192,6 +191,7 @@ private fun DappToWalletInteractionAuthorizedRequestItems.toDomainModel(
         ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(isOngoing = true),
         oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(isOngoing = false),
         ongoingPersonaDataRequestItem = ongoingPersonaData?.toDomainModel(isOngoing = true),
-        resetRequestItem = reset
+        resetRequestItem = reset,
+        proofOfOwnershipRequestItem = proofOfOwnership?.toDomainModel()
     )
 }
