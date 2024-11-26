@@ -15,6 +15,8 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_REVIEW
 import com.babylon.wallet.android.utils.AppEvent
+import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.extensions.init
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -112,7 +114,7 @@ fun AppEvent.Status.PreAuthorization.toStatusFields(): PreAuthorizationStatusFie
         isMobileConnect = isMobileConnect,
         dAppName = dAppName,
         transactionId = when (this) {
-            is AppEvent.Status.PreAuthorization.Success -> transactionId
+            is AppEvent.Status.PreAuthorization.Success -> transactionId.bech32EncodedTxId
             else -> null
         },
         remainingTime = when (this) {
@@ -137,7 +139,7 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.PreAuthorization {
             preAuthorizationId = checkNotNull(statusFields.preAuthorizationId),
             isMobileConnect = checkNotNull(statusFields.isMobileConnect),
             dAppName = statusFields.dAppName,
-            transactionId = checkNotNull(statusFields.transactionId)
+            transactionId = TransactionIntentHash.init(checkNotNull(statusFields.transactionId))
         )
 
         VALUE_STATUS_SENT -> AppEvent.Status.PreAuthorization.Sent(

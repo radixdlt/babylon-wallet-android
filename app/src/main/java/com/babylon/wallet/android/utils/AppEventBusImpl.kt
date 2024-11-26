@@ -4,6 +4,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -136,7 +137,7 @@ sealed interface AppEvent {
                 override val preAuthorizationId: String,
                 override val isMobileConnect: Boolean,
                 override val dAppName: String?,
-                val transactionId: String
+                val transactionId: TransactionIntentHash
             ) : PreAuthorization()
 
             data class Expired(

@@ -10,8 +10,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dialogs.address.AddressDetailsDialogViewModel.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.TransactionIntentHash
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -74,7 +76,7 @@ class PreAuthorizationStatusViewModel @Inject constructor(
                                 preAuthorizationId = args.event.preAuthorizationId,
                                 isMobileConnect = args.event.isMobileConnect,
                                 dAppName = status.dAppName,
-                                transactionId = pollResult.result.txIntentHash.bech32EncodedTxId
+                                transactionId = pollResult.result.txIntentHash
                             )
                         )
                         markRequestAsHandled()
@@ -94,6 +96,12 @@ class PreAuthorizationStatusViewModel @Inject constructor(
 
                 transactionStatusClient.statusHandled(args.event.preAuthorizationId)
             }
+        }
+    }
+
+    fun onCopyClick() {
+        viewModelScope.launch {
+            sendEvent(Event.PerformCopy(valueToCopy = "")) // todo
         }
     }
 
@@ -124,7 +132,7 @@ class PreAuthorizationStatusViewModel @Inject constructor(
             ) : Status
 
             data class Success(
-                val transactionId: String,
+                val transactionId: TransactionIntentHash,
                 val isMobileConnect: Boolean
             ) : Status
 
@@ -140,6 +148,9 @@ class PreAuthorizationStatusViewModel @Inject constructor(
 
                     val isExpired: Boolean
                         get() = duration == 0.seconds
+
+                    val isCheckingOneLastTime: Boolean
+                        get() = duration < 1.seconds
 
                     val truncateSeconds: Boolean
                         get() = duration >= 60.seconds
@@ -169,6 +180,9 @@ class PreAuthorizationStatusViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
+
+        data class PerformCopy(val valueToCopy: String) : Event
+
         data object Dismiss : Event
     }
 }

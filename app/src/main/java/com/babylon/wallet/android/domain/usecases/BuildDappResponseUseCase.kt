@@ -231,7 +231,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                                 ongoingAccounts = ongoingAccountsResponseItem.getOrNull(),
                                 ongoingPersonaData = ongoingSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
                                 oneTimePersonaData = onetimeSharedPersonaData?.toWalletToDappInteractionPersonaDataRequestResponseItem(),
-                                proofOfOwnership = TODO("Not yet implemented")
+                                proofOfOwnership = null
                             ),
                         )
                     )
