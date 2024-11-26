@@ -9,6 +9,7 @@ import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.IdentityPath
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.asHardened
@@ -34,24 +35,35 @@ class PublicKeyProvider @Inject constructor(
         entityKind: EntityKind = EntityKind.ACCOUNT
     ): DerivationPath {
         val profile = profileRepository.profile.first()
-        val accountIndex = when (entityKind) {
-            EntityKind.ACCOUNT -> profile.nextAccountIndex(
-                forNetworkId = forNetworkId,
-                factorSourceId = factorSource.id,
-                derivationPathScheme = DerivationPathScheme.CAP26
-            )
+        return when (entityKind) {
+            EntityKind.ACCOUNT -> {
+                val accountIndex = profile.nextAccountIndex(
+                    forNetworkId = forNetworkId,
+                    factorSourceId = factorSource.id,
+                    derivationPathScheme = DerivationPathScheme.CAP26
+                )
 
-            EntityKind.PERSONA -> profile.nextPersonaIndex(
-                forNetworkId = forNetworkId,
-                derivationPathScheme = DerivationPathScheme.CAP26,
-                factorSourceId = factorSource.id
-            )
+                AccountPath.init(
+                    networkId = forNetworkId,
+                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                    index = accountIndex.asHardened()
+                ).asGeneral()
+            }
+
+            EntityKind.PERSONA -> {
+                val identityIndex = profile.nextPersonaIndex(
+                    forNetworkId = forNetworkId,
+                    derivationPathScheme = DerivationPathScheme.CAP26,
+                    factorSourceId = factorSource.id
+                )
+
+                IdentityPath.init(
+                    networkId = forNetworkId,
+                    keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+                    index = identityIndex.asHardened()
+                ).asGeneral()
+            }
         }
-        return AccountPath.init(
-            networkId = forNetworkId,
-            keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-            index = accountIndex.asHardened()
-        ).asGeneral()
     }
 
     fun getDerivationPathsForIndices(
