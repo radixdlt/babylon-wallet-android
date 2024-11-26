@@ -187,7 +187,7 @@ class PeerdroidClientImpl @Inject constructor(
         onFailure = { error ->
             when (error) {
                 is SerializationException -> {
-                    Timber.e("Failed to parse incoming message with serialization exception: ${error.localizedMessage}")
+                    Timber.e("Failed to parse incoming ledger interaction with serialization exception: ${error.localizedMessage}")
                     IncomingMessage.ParsingError
                 }
                 else -> {
