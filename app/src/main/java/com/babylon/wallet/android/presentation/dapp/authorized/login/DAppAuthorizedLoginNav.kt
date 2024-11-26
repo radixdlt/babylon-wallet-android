@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 
@@ -32,11 +33,24 @@ fun NavController.dAppLoginAuthorized(requestId: String, navOptionsBuilder: NavO
 fun NavGraphBuilder.dAppLoginAuthorized(
     navController: NavController,
     onBackClick: () -> Unit,
-    navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
-    navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
+    navigateToSelectPersona: (authorizedRequestInteractionId: String, dappDefinitionAddress: AccountAddress) -> Unit,
+    navigateToOneTimeAccounts: (
+        walletAuthorizedRequest: String,
+        isOneTimeRequest: Boolean,
+        isExactAccountsCount: Boolean,
+        numberOfAccounts: Int,
+        showBacK: Boolean
+    ) -> Unit,
+    navigateToOngoingAccounts: (
+        isOneTimeRequest: Boolean,
+        isExactAccountsCount: Boolean,
+        numberOfAccounts: Int,
+        showBacK: Boolean
+    ) -> Unit,
     navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
-    navigateToSelectPersona: (AccountAddress) -> Unit,
     navigateToOngoingPersonaData: (IdentityAddress, RequiredPersonaFields) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
 ) {
     composable(
@@ -54,11 +68,13 @@ fun NavGraphBuilder.dAppLoginAuthorized(
         DappAuthorizedLoginScreen(
             viewModel = vm,
             onBackClick = onBackClick,
-            navigateToChooseAccount = navigateToChooseAccount,
-            navigateToPermissions = navigateToPermissions,
-            navigateToOneTimePersonaData = navigateToOneTimePersonaData,
             navigateToSelectPersona = navigateToSelectPersona,
+            navigateToOneTimeAccounts = navigateToOneTimeAccounts,
+            navigateToOngoingAccounts = navigateToOngoingAccounts,
+            navigateToOneTimePersonaData = navigateToOneTimePersonaData,
             navigateToOngoingPersonaData = navigateToOngoingPersonaData,
+            onNavigateToVerifyPersona = onNavigateToVerifyPersona,
+            onNavigateToVerifyAccounts = onNavigateToVerifyAccounts,
             onLoginFlowComplete = onLoginFlowComplete
         )
     }

@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
-import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.login.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
-import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
@@ -226,7 +225,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts)
         }
     }
 
@@ -253,7 +252,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.ChooseAccount)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimeAccounts)
         }
     }
 

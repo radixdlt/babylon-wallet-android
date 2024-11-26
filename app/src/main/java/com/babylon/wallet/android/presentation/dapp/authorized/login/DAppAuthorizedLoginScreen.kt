@@ -24,6 +24,7 @@ import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -38,20 +39,41 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 fun DappAuthorizedLoginScreen(
     viewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
-    navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
+    navigateToSelectPersona: (authorizedRequestInteractionId: String, dappDefinitionAddress: AccountAddress) -> Unit,
+    navigateToOneTimeAccounts: (
+        authorizedRequestInteractionId: String,
+        isOneTimeRequest: Boolean,
+        isExactAccountsCount: Boolean,
+        numberOfAccounts: Int,
+        showBacK: Boolean
+    ) -> Unit,
+    navigateToOngoingAccounts: (
+        isOneTimeRequest: Boolean,
+        isExactAccountsCount: Boolean,
+        numberOfAccounts: Int,
+        showBacK: Boolean
+    ) -> Unit,
     navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
-    navigateToSelectPersona: (AccountAddress) -> Unit,
     navigateToOngoingPersonaData: (IdentityAddress, RequiredPersonaFields) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    HandleOneOffEvents(viewModel.oneOffEvent, onBackClick, onLoginFlowComplete)
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by viewModel.state.collectAsStateWithLifecycle()
     val initialRoute = sharedState.initialAuthorizedLoginRoute
+
+    HandleOneOffEvents(
+        events = viewModel.oneOffEvent,
+        onBackClick = onBackClick,
+        onLoginFlowComplete = onLoginFlowComplete
+    )
+
     BackHandler {
         viewModel.onAbortDappLogin()
     }
+
     LaunchedEffect(initialRoute) {
         snapshotFlow { initialRoute }.distinctUntilChanged().collect { route ->
             if (route == InitialAuthorizedLoginRoute.CompleteRequest) {
@@ -59,18 +81,25 @@ fun DappAuthorizedLoginScreen(
             }
         }
     }
+
     if (sharedState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             viewModel.dismissNoMnemonicError()
         }
     }
-    val state by viewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(state.initialAuthorizedLoginRoute) {
         when (val route = state.initialAuthorizedLoginRoute) {
-            is InitialAuthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
-                route.numberOfAccounts,
+            is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(
+                route.authorizedRequestInteractionId,
+                route.dappDefinitionAddress
+            )
+
+            is InitialAuthorizedLoginRoute.OneTimeAccounts -> navigateToOneTimeAccounts(
+                route.authorizedRequestInteractionId,
+                route.isOneTimeRequest,
                 route.isExactAccountsCount,
-                route.oneTime,
+                route.numberOfAccounts,
                 route.showBack
             )
 
@@ -80,14 +109,23 @@ fun DappAuthorizedLoginScreen(
                 route.requiredPersonaFields
             )
 
-            is InitialAuthorizedLoginRoute.Permission -> navigateToPermissions(
-                route.numberOfAccounts,
+            is InitialAuthorizedLoginRoute.OngoingAccounts -> navigateToOngoingAccounts(
+                route.isOneTimeRequest,
                 route.isExactAccountsCount,
-                route.oneTime,
+                route.numberOfAccounts,
                 route.showBack
             )
 
-            is InitialAuthorizedLoginRoute.SelectPersona -> navigateToSelectPersona(route.dappDefinitionAddress)
+            is InitialAuthorizedLoginRoute.VerifyPersona -> onNavigateToVerifyPersona(
+                route.walletAuthorizedRequestInteractionId,
+                route.entitiesForProofWithSignatures
+            )
+
+            is InitialAuthorizedLoginRoute.VerifyAccounts -> onNavigateToVerifyAccounts(
+                route.walletAuthorizedRequestInteractionId,
+                route.entitiesForProofWithSignatures
+            )
+
             else -> {}
         }
     }
