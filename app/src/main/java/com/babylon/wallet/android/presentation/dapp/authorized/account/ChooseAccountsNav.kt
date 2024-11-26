@@ -16,46 +16,57 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
+
+@VisibleForTesting
+internal const val ARG_AUTHORIZED_REQUEST_INTERACTION_ID = "arg_authorized_request_interaction_id"
 
 @VisibleForTesting
 internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
 
 @VisibleForTesting
-internal const val ARG_EXACT_ACCOUNT_COUNT = "exact_account_count"
+internal const val ARG_IS_EXACT_ACCOUNT_COUNT = "exact_account_count"
 
 @VisibleForTesting
-internal const val ARG_ONE_TIME = "one_time"
+internal const val ARG_IS_ONE_TIME_REQUEST = "one_time"
 
 @VisibleForTesting
 internal const val ARG_SHOW_BACK = "show_back"
 
-internal const val ROUTE_CHOOSE_ACCOUNTS =
-    "choose_accounts_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}/{$ARG_SHOW_BACK}"
+internal const val ROUTE_CHOOSE_ACCOUNTS = "choose_accounts_route/" +
+    "{$ARG_AUTHORIZED_REQUEST_INTERACTION_ID}/" +
+    "{$ARG_NUMBER_OF_ACCOUNTS}/" +
+    "{$ARG_IS_EXACT_ACCOUNT_COUNT}/" +
+    "{$ARG_IS_ONE_TIME_REQUEST}/" +
+    "{$ARG_SHOW_BACK}"
 
 internal class ChooseAccountsArgs(
+    val authorizedRequestInteractionId: String,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
     val isOneTimeRequest: Boolean,
     val showBack: Boolean
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
+        checkNotNull(savedStateHandle[ARG_AUTHORIZED_REQUEST_INTERACTION_ID]) as String,
         checkNotNull(savedStateHandle[ARG_NUMBER_OF_ACCOUNTS]) as Int,
-        checkNotNull(savedStateHandle[ARG_EXACT_ACCOUNT_COUNT]) as Boolean,
-        checkNotNull(savedStateHandle[ARG_ONE_TIME]) as Boolean,
+        checkNotNull(savedStateHandle[ARG_IS_EXACT_ACCOUNT_COUNT]) as Boolean,
+        checkNotNull(savedStateHandle[ARG_IS_ONE_TIME_REQUEST]) as Boolean,
         checkNotNull(savedStateHandle[ARG_SHOW_BACK]) as Boolean
     )
 }
 
 fun NavController.chooseAccounts(
-    numberOfAccounts: Int,
+    authorizedRequestInteractionId: String,
+    isOneTimeRequest: Boolean,
     isExactAccountsCount: Boolean,
-    oneTime: Boolean = false,
+    numberOfAccounts: Int,
     showBack: Boolean = false
 ) {
-    navigate("choose_accounts_route/$numberOfAccounts/$isExactAccountsCount/$oneTime/$showBack")
+    navigate("choose_accounts_route/$authorizedRequestInteractionId/$numberOfAccounts/$isExactAccountsCount/$isOneTimeRequest/$showBack")
 }
 
-@Suppress("LongParameterList", "MagicNumber")
+@Suppress("LongParameterList")
 fun NavGraphBuilder.chooseAccounts(
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
@@ -63,18 +74,23 @@ fun NavGraphBuilder.chooseAccounts(
     onBackClick: () -> Boolean,
     onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     navController: NavController,
 ) {
     composable(
         route = ROUTE_CHOOSE_ACCOUNTS,
         arguments = listOf(
+            navArgument(ARG_AUTHORIZED_REQUEST_INTERACTION_ID) {
+                type = NavType.StringType
+            },
             navArgument(ARG_NUMBER_OF_ACCOUNTS) {
                 type = NavType.IntType
             },
-            navArgument(ARG_EXACT_ACCOUNT_COUNT) {
+            navArgument(ARG_IS_EXACT_ACCOUNT_COUNT) {
                 type = NavType.BoolType
             },
-            navArgument(ARG_ONE_TIME) {
+            navArgument(ARG_IS_ONE_TIME_REQUEST) {
                 type = NavType.BoolType
             },
             navArgument(ARG_SHOW_BACK) {
@@ -114,7 +130,9 @@ fun NavGraphBuilder.chooseAccounts(
             onLoginFlowComplete = onLoginFlowComplete,
             onBackClick = onBackClick,
             onPersonaOngoingData = onPersonaOngoingData,
-            onPersonaDataOnetime = onPersonaDataOnetime
+            onPersonaDataOnetime = onPersonaDataOnetime,
+            onNavigateToVerifyPersona = onNavigateToVerifyPersona,
+            onNavigateToVerifyAccounts = onNavigateToVerifyAccounts
         )
     }
 }
