@@ -30,7 +30,7 @@ class ChooseAccountsViewModel @Inject constructor(
     override fun initialState(): ChooseAccountUiState = ChooseAccountUiState(
         numberOfAccounts = args.numberOfAccounts,
         isExactAccountsCount = args.isExactAccountsCount,
-        oneTimeRequest = args.oneTime,
+        isOneTimeRequest = args.isOneTimeRequest,
         showBackButton = args.showBack
     )
 
@@ -123,7 +123,7 @@ data class ChooseAccountUiState(
     val isExactAccountsCount: Boolean,
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
-    val oneTimeRequest: Boolean = false,
+    val isOneTimeRequest: Boolean = false,
     val isSingleChoice: Boolean = false,
     val showProgress: Boolean = true,
     val showBackButton: Boolean = false,

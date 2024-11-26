@@ -35,7 +35,7 @@ internal const val ROUTE_CHOOSE_ACCOUNTS =
 internal class ChooseAccountsArgs(
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
-    val oneTime: Boolean,
+    val isOneTimeRequest: Boolean,
     val showBack: Boolean
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
