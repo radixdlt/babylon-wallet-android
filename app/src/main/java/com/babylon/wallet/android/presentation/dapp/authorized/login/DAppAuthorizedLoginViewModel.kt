@@ -51,10 +51,10 @@ import kotlinx.coroutines.sync.withLock
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.addOrUpdateAuthorizedDAppPersona
-import rdx.works.core.sargon.allAccountsOnCurrentNetwork
-import rdx.works.core.sargon.allPersonasOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthorizedPersona
 import rdx.works.core.sargon.updateAuthorizedDAppPersonaFields
 import rdx.works.core.sargon.updateAuthorizedDAppPersonas
@@ -198,13 +198,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     ): Boolean {
         // if requestedPersonaAddress is present, then check if it exists in the allPersonasOnCurrentNetwork
         val isIdentityValid = requestedPersonaAddress?.let { address ->
-            getProfileUseCase().allPersonasOnCurrentNetwork.any { it.address == address }
+            getProfileUseCase().activePersonasOnCurrentNetwork.any { it.address == address }
         } ?: true // if requestedPersonaAddress is null, assume it's valid (no need to check)
 
         // if requestedAccountAddresses are present, then check if all of them exist in the existingAccounts
         val areAccountsValid = requestedAccountAddresses?.let { addresses ->
             addresses.all { address ->
-                getProfileUseCase().allAccountsOnCurrentNetwork.any { it.address == address }
+                getProfileUseCase().activeAccountsOnCurrentNetwork.any { it.address == address }
             }
         } ?: true // if requestedAccountAddresses is null, assume it's valid (no need to check)
 
