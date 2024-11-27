@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.Account
@@ -73,6 +75,42 @@ fun SimpleAccountCard(
 
 @Composable
 fun SimpleAccountCard(
+    modifier: Modifier = Modifier,
+    account: Account
+) {
+    Row(
+        modifier = modifier
+            .background(
+                account.appearanceId.gradient(),
+                RadixTheme.shapes.roundedRectSmall
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingLarge,
+                vertical = RadixTheme.dimensions.paddingDefault
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = account.displayName.value,
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            color = RadixTheme.colors.white,
+            overflow = TextOverflow.Ellipsis
+        )
+        ActionableAddressView(
+            address = remember(account.address) {
+                Address.Account(account.address)
+            },
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+fun SimpleAccountCardWithAddress(
     modifier: Modifier = Modifier,
     account: Account
 ) {
