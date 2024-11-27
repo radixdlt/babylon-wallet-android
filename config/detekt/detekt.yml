@@ -138,7 +138,7 @@ complexity:
     ignoreDefaultParameters: false
     ignoreDataClasses: true
     ignoreAnnotatedParameter: []
-    ignoreAnnotated: ['Composable']
+    ignoreAnnotated: ['Composable', 'HiltViewModel']
   MethodOverloading:
     active: false
     threshold: 6
@@ -178,6 +178,7 @@ complexity:
     ignoreDeprecated: false
     ignorePrivate: false
     ignoreOverridden: false
+    ignoreAnnotated: ['Composable', 'HiltViewModel']
 
 coroutines:
   active: true

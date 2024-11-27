@@ -25,7 +25,6 @@ import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
@@ -36,7 +35,6 @@ import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
@@ -74,13 +72,13 @@ fun WalletApp(
             modifier = Modifier.fillMaxSize(),
             startDestination = MAIN_ROUTE,
             navController = navController,
-            mainUiState = mainViewModel.state,
+            state = mainViewModel.state,
             onCloseApp = onCloseApp
         )
         LaunchedEffect(Unit) {
             mainViewModel.oneOffEvent.collect { event ->
                 when (event) {
-                    is MainEvent.IncomingRequestEvent -> {
+                    is MainViewModel.Event.IncomingRequestEvent -> {
                         if (event.request.needVerification) {
                             navController.mobileConnect(event.request.interactionId)
                             return@collect
@@ -186,7 +184,7 @@ fun WalletApp(
                     mainViewModel.onInvalidRequestMessageShown()
                 },
                 titleText = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-                messageText = it.userFriendlyMessage(),
+                messageText = it.getMessage(),
                 confirmText = stringResource(
                     id = R.string.common_ok
                 ),

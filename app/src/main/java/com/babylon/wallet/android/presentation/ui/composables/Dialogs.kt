@@ -62,7 +62,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.main.OlympiaErrorState
+import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
@@ -316,7 +316,7 @@ fun BDFSErrorDialog(
     finish: (accepted: Boolean) -> Unit,
     title: String,
     message: String,
-    state: OlympiaErrorState
+    state: MainViewModel.OlympiaErrorState
 ) {
     BasicAlertDialog(modifier = modifier.clip(RadixTheme.shapes.roundedRectMedium), onDismissRequest = { finish(false) }) {
         Column(

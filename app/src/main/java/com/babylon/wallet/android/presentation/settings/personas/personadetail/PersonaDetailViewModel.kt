@@ -48,7 +48,7 @@ class PersonaDetailViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getDAppsUseCase: GetDAppsUseCase,
     savedStateHandle: SavedStateHandle,
-    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
+    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)

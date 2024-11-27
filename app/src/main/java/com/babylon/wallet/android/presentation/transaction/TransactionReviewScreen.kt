@@ -276,8 +276,9 @@ private fun TransactionPreviewContent(
             ) {
                 Box(
                     modifier = Modifier
-                        .then(
-                            if (state.isPreAuthorization) {
+                        .applyIf(
+                            condition = state.isPreviewDisplayable,
+                            modifier = if (state.isPreAuthorization) {
                                 Modifier
                                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
                                     .background(
@@ -459,30 +460,32 @@ private fun TransactionPreviewContent(
                         )
                     }
 
-                    SlideToSignButton(
-                        modifier = Modifier
-                            .padding(
-                                horizontal = if (state.isPreAuthorization) {
-                                    RadixTheme.dimensions.paddingDefault
+                    if (state.isSubmitVisible) {
+                        SlideToSignButton(
+                            modifier = Modifier
+                                .padding(
+                                    horizontal = if (state.isPreAuthorization) {
+                                        RadixTheme.dimensions.paddingDefault
+                                    } else {
+                                        RadixTheme.dimensions.paddingXXLarge
+                                    }
+                                )
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingDefault,
+                                    bottom = RadixTheme.dimensions.paddingXXLarge
+                                ),
+                            title = stringResource(
+                                id = if (state.isPreAuthorization) {
+                                    R.string.preAuthorizationReview_slideToSign
                                 } else {
-                                    RadixTheme.dimensions.paddingXXLarge
+                                    R.string.interactionReview_slideToSign
                                 }
-                            )
-                            .padding(
-                                top = RadixTheme.dimensions.paddingDefault,
-                                bottom = RadixTheme.dimensions.paddingXXLarge
                             ),
-                        title = stringResource(
-                            id = if (state.isPreAuthorization) {
-                                R.string.preAuthorizationReview_slideToSign
-                            } else {
-                                R.string.interactionReview_slideToSign
-                            }
-                        ),
-                        enabled = state.isSubmitEnabled,
-                        isSubmitting = state.isSubmitting,
-                        onSwipeComplete = onApproveTransaction
-                    )
+                            enabled = state.isSubmitEnabled,
+                            isSubmitting = state.isSubmitting,
+                            onSwipeComplete = onApproveTransaction
+                        )
+                    }
                 }
             }
         }

@@ -54,5 +54,7 @@ fun UnvalidatedManifestData.prepareInternalTransactionRequest(
         networkId = networkId,
         blockUntilCompleted = blockUntilCompleted
     ),
-    transactionType = transactionType
+    kind = TransactionRequest.Kind.Regular(
+        transactionType = transactionType
+    )
 )

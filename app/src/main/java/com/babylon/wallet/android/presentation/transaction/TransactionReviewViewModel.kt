@@ -4,7 +4,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
-import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
@@ -71,7 +70,6 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val EXPIRATION_COUNTDOWN_PERIOD_MS = 1000L
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
@@ -93,11 +91,6 @@ class TransactionReviewViewModel @Inject constructor(
     private val args = TransactionReviewArgs(savedStateHandle)
     private val data = MutableStateFlow(Data())
 
-    override fun initialState(): State = State(
-        isLoading = true,
-        previewType = PreviewType.None
-    )
-
     init {
         initHiddenResources()
 
@@ -110,6 +103,11 @@ class TransactionReviewViewModel @Inject constructor(
         observeDeferredRequests()
         processIncomingRequest()
     }
+
+    override fun initialState(): State = State(
+        isLoading = true,
+        previewType = PreviewType.None
+    )
 
     private fun initHiddenResources() {
         viewModelScope.launch {
@@ -142,8 +140,8 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             data.update { it.copy(txRequest = request) }
 
-            if (request.transactionType is TransactionType.PreAuthorized) {
-                when (request.transactionType.expiration.toDAppInteraction().status) {
+            if (request.kind is TransactionRequest.Kind.PreAuthorized) {
+                when (request.kind.expiration.toDAppInteraction().status) {
                     DappToWalletInteractionSubintentExpirationStatus.EXPIRATION_TOO_CLOSE -> {
                         _state.update {
                             it.copy(error = TransactionErrorMessage(DappRequestException.InvalidPreAuthorizationExpirationTooClose))
@@ -165,7 +163,7 @@ class TransactionReviewViewModel @Inject constructor(
             }
             _state.update {
                 it.copy(
-                    isPreAuthorization = request.transactionType is TransactionType.PreAuthorized,
+                    isPreAuthorization = request.kind.isPreAuthorized,
                     rawManifest = request.unvalidatedManifestData.instructions,
                     message = request.unvalidatedManifestData.plainMessage
                 )
@@ -176,7 +174,11 @@ class TransactionReviewViewModel @Inject constructor(
                         data.update { it.copy(txSummary = analysis.summary) }
                     }
                     .then { analysis ->
-                        if (!request.transactionType.isPreAuthorized) {
+                        when (request.kind) {
+                            is TransactionRequest.Kind.PreAuthorized -> processExpiration(request.kind.expiration)
+                            is TransactionRequest.Kind.Regular -> fees.resolveFees(analysis)
+                        }
+                        if (!request.kind.isPreAuthorized) {
                             fees.resolveFees(analysis)
                         } else {
                             Result.success(Unit)
@@ -186,12 +188,6 @@ class TransactionReviewViewModel @Inject constructor(
 
             viewModelScope.launch(defaultDispatcher) {
                 processDApp(request)
-            }
-
-            if (request.transactionType is TransactionType.PreAuthorized) {
-                viewModelScope.launch(defaultDispatcher) {
-                    processExpiration(request.transactionType.expiration)
-                }
             }
         }
     }
@@ -309,6 +305,8 @@ class TransactionReviewViewModel @Inject constructor(
         val isSubmitting: Boolean = false
     ) : UiState {
 
+        val isPreviewDisplayable: Boolean = previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
+
         val rawManifestIsPreviewable: Boolean
             get() = previewType is PreviewType.Transaction
 
@@ -325,7 +323,7 @@ class TransactionReviewViewModel @Inject constructor(
             }
 
         val showReceiptEdges: Boolean
-            get() = !isPreAuthorization
+            get() = !isPreAuthorization && isPreviewDisplayable
 
         data class Expiration(
             val duration: Duration,
@@ -339,9 +337,7 @@ class TransactionReviewViewModel @Inject constructor(
                 get() = duration >= 60.seconds
         }
 
-        val isSubmitEnabled: Boolean = if (previewType == PreviewType.None || previewType == PreviewType.UnacceptableManifest) {
-            false
-        } else {
+        val isSubmitEnabled: Boolean = if (isPreviewDisplayable) {
             when {
                 isPreAuthorization -> expiration?.isExpired?.not() ?: false
                 fees == null || fees.isNetworkFeeLoading -> false
@@ -351,7 +347,11 @@ class TransactionReviewViewModel @Inject constructor(
                     isFeePayerSelected && isBalanceSufficient
                 }
             }
+        } else {
+            false
         }
+
+        val isSubmitVisible: Boolean = isPreviewDisplayable
 
         data class Fees(
             val isNetworkFeeLoading: Boolean = true,

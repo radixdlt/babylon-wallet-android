@@ -18,7 +18,7 @@ import javax.inject.Inject
 private typealias SargonStakeClaim = com.radixdlt.sargon.StakeClaim
 
 class SendClaimRequestUseCase @Inject constructor(
-    val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository
 ) {
 
     suspend operator fun invoke(

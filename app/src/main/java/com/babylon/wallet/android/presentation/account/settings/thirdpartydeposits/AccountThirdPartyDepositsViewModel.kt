@@ -44,7 +44,6 @@ import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,

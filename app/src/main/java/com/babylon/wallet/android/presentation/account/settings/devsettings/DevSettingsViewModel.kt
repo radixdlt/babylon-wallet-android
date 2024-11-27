@@ -28,7 +28,6 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class DevSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
@@ -90,7 +89,7 @@ class DevSettingsViewModel @Inject constructor(
                         )
                     )
                     _state.update { it.copy(isLoading = false) }
-                    listenForRolaKeyUploadTransactionResult(interactionId.toString())
+                    listenForRolaKeyUploadTransactionResult(interactionId)
                 }.onFailure {
                     if (it is ProfileException.SecureStorageAccess) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)

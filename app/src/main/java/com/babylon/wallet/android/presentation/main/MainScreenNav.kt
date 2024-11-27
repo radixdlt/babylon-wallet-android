@@ -11,7 +11,7 @@ const val MAIN_ROUTE = "main"
 
 @Suppress("LongParameterList")
 fun NavGraphBuilder.main(
-    mainUiState: StateFlow<MainUiState>,
+    mainUiState: StateFlow<MainViewModel.State>,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit,
     onNavigateToSecurityCenter: () -> Unit,
