@@ -10,12 +10,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dialogs.address.AddressDetailsDialogViewModel.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AddressFormat
 import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.extensions.formatted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -50,12 +52,14 @@ class PreAuthorizationStatusViewModel @Inject constructor(
 
                     if (event is AppEvent.Status.PreAuthorization.Sent) {
                         pollTransactionStatus(event)
+                        processExpiration(event.remainingTime)
                     }
                 }
         }
 
         if (args.event is AppEvent.Status.PreAuthorization.Sent) {
             pollTransactionStatus(args.event)
+            processExpiration(args.event.remainingTime)
         }
     }
 
@@ -66,7 +70,7 @@ class PreAuthorizationStatusViewModel @Inject constructor(
     private fun pollTransactionStatus(status: AppEvent.Status.PreAuthorization) {
         pollJob?.cancel()
         pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForPreAuthorizationPollStatus(args.event.preAuthorizationId).collectLatest { pollResult ->
+            transactionStatusClient.listenForPreAuthorizationPollStatus(args.event.encodedPreAuthorizationId).collectLatest { pollResult ->
                 when (pollResult.result) {
                     is PreAuthorizationStatusData.Status.Success -> {
                         // Notify the system and this particular dialog that the transaction is completed
@@ -94,14 +98,32 @@ class PreAuthorizationStatusViewModel @Inject constructor(
                     }
                 }
 
-                transactionStatusClient.statusHandled(args.event.preAuthorizationId)
+                transactionStatusClient.statusHandled(args.event.encodedPreAuthorizationId)
             }
         }
     }
 
-    fun onCopyClick() {
+    private fun processExpiration(remainingTime: Duration) {
+        var expirationDuration = remainingTime
+
         viewModelScope.launch {
-            sendEvent(Event.PerformCopy(valueToCopy = "")) // todo
+            do {
+                _state.update {
+                    it.copy(
+                        status = (it.status as? State.Status.Sent)?.copy(
+                            expiration = State.Status.Sent.Expiration(duration = expirationDuration)
+                        ) ?: it.status
+                    )
+                }
+                expirationDuration -= 1.seconds
+                delay(1.seconds)
+            } while (remainingTime >= 0.seconds && state.value.status is State.Status.Sent)
+        }
+    }
+
+    fun onCopyPreAuthorizationIdClick() {
+        viewModelScope.launch {
+            sendEvent(Event.PerformCopy(valueToCopy = args.event.encodedPreAuthorizationId))
         }
     }
 
@@ -127,15 +149,6 @@ class PreAuthorizationStatusViewModel @Inject constructor(
 
         sealed interface Status {
 
-            data class Expired(
-                val isMobileConnect: Boolean
-            ) : Status
-
-            data class Success(
-                val transactionId: TransactionIntentHash,
-                val isMobileConnect: Boolean
-            ) : Status
-
             data class Sent(
                 val preAuthorizationId: String,
                 val dAppName: String?,
@@ -146,9 +159,6 @@ class PreAuthorizationStatusViewModel @Inject constructor(
                     val duration: Duration
                 ) {
 
-                    val isExpired: Boolean
-                        get() = duration == 0.seconds
-
                     val isCheckingOneLastTime: Boolean
                         get() = duration < 1.seconds
 
@@ -157,6 +167,15 @@ class PreAuthorizationStatusViewModel @Inject constructor(
                 }
             }
 
+            data class Success(
+                val transactionId: TransactionIntentHash,
+                val isMobileConnect: Boolean
+            ) : Status
+
+            data class Expired(
+                val isMobileConnect: Boolean
+            ) : Status
+
             companion object {
 
                 fun from(event: AppEvent.Status.PreAuthorization) = when (event) {
@@ -164,7 +183,7 @@ class PreAuthorizationStatusViewModel @Inject constructor(
                         isMobileConnect = event.isMobileConnect
                     )
                     is AppEvent.Status.PreAuthorization.Sent -> Sent(
-                        preAuthorizationId = event.preAuthorizationId,
+                        preAuthorizationId = event.preAuthorizationId.formatted(AddressFormat.DEFAULT),
                         dAppName = event.dAppName,
                         expiration = Sent.Expiration(
                             duration = event.remainingTime

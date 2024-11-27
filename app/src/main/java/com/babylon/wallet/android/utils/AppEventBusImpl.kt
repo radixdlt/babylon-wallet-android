@@ -4,6 +4,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -120,13 +121,13 @@ sealed interface AppEvent {
 
         sealed class PreAuthorization : Status() {
 
-            abstract val preAuthorizationId: String
+            abstract val preAuthorizationId: SubintentHash
             abstract val isMobileConnect: Boolean
             abstract val dAppName: String?
 
             data class Sent(
                 override val requestId: String,
-                override val preAuthorizationId: String,
+                override val preAuthorizationId: SubintentHash,
                 override val isMobileConnect: Boolean,
                 override val dAppName: String?,
                 val remainingTime: Duration
@@ -134,7 +135,7 @@ sealed interface AppEvent {
 
             data class Success(
                 override val requestId: String,
-                override val preAuthorizationId: String,
+                override val preAuthorizationId: SubintentHash,
                 override val isMobileConnect: Boolean,
                 override val dAppName: String?,
                 val transactionId: TransactionIntentHash
@@ -142,10 +143,13 @@ sealed interface AppEvent {
 
             data class Expired(
                 override val requestId: String,
-                override val preAuthorizationId: String,
+                override val preAuthorizationId: SubintentHash,
                 override val isMobileConnect: Boolean,
                 override val dAppName: String?
             ) : PreAuthorization()
+
+            val encodedPreAuthorizationId: String
+                get() = preAuthorizationId.bech32EncodedTxId
         }
     }
 }

@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.dialogs.preauthorization
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,9 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -27,14 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -83,7 +77,7 @@ fun PreAuthorizationStatusDialog(
     PreAuthorizationStatusContent(
         modifier = modifier,
         state = state,
-        onPreAuthorizationIdClick = viewModel::onCopyClick,
+        onPreAuthorizationIdClick = viewModel::onCopyPreAuthorizationIdClick,
         onDismiss = dismissHandler
     )
 }
@@ -102,46 +96,23 @@ private fun PreAuthorizationStatusContent(
         showDragHandle = true,
         isDismissible = false,
         content = {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = remember(state.status) { state.status is PreAuthorizationStatusViewModel.State.Status.Sent },
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                val status = remember(state.status) { state.status as PreAuthorizationStatusViewModel.State.Status.Sent }
-
-                SentContent(
-                    status = status,
+            when (state.status) {
+                is PreAuthorizationStatusViewModel.State.Status.Sent -> SentContent(
+                    status = state.status,
                     onPreAuthorizationIdClick = onPreAuthorizationIdClick
                 )
-            }
-
-            androidx.compose.animation.AnimatedVisibility(
-                visible = remember(state.status) { state.status is PreAuthorizationStatusViewModel.State.Status.Expired },
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                val status = remember(state.status) { state.status as PreAuthorizationStatusViewModel.State.Status.Expired }
-
-                FailureDialogContent(
+                is PreAuthorizationStatusViewModel.State.Status.Success -> SuccessContent(
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
+                    transactionId = state.status.transactionId,
+                    isMobileConnect = state.status.isMobileConnect,
+                    title = stringResource(id = R.string.transactionStatus_success_title),
+                    subtitle = stringResource(R.string.transactionStatus_success_text)
+                )
+                is PreAuthorizationStatusViewModel.State.Status.Expired -> FailureDialogContent(
                     title = stringResource(id = R.string.preAuthorizationReview_expiredStatus_title),
                     subtitle = stringResource(id = R.string.preAuthorizationReview_expiredStatus_subtitle),
                     transactionId = null,
-                    isMobileConnect = status.isMobileConnect
-                )
-            }
-
-            androidx.compose.animation.AnimatedVisibility(
-                visible = remember(state.status) { state.status is PreAuthorizationStatusViewModel.State.Status.Success },
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                val status = remember(state.status) { state.status as PreAuthorizationStatusViewModel.State.Status.Success }
-
-                SuccessContent(
-                    transactionId = status.transactionId,
-                    isMobileConnect = status.isMobileConnect,
-                    title = stringResource(id = R.string.transactionStatus_success_title),
-                    subtitle = stringResource(R.string.transactionStatus_success_text)
+                    isMobileConnect = state.status.isMobileConnect
                 )
             }
         }
@@ -207,26 +178,24 @@ private fun SentContent(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-        if (!status.expiration.isExpired) {
-            HorizontalDivider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.gray4)
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = RadixTheme.colors.gray4)
-                    .padding(
-                        start = RadixTheme.dimensions.paddingLarge,
-                        end = RadixTheme.dimensions.paddingLarge,
-                        top = RadixTheme.dimensions.paddingMedium,
-                        bottom = RadixTheme.dimensions.paddingLarge
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                ExpirationContent(
-                    dAppName = dAppName,
-                    expiration = status.expiration
-                )
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = RadixTheme.colors.gray4)
+                .padding(
+                    start = RadixTheme.dimensions.paddingLarge,
+                    end = RadixTheme.dimensions.paddingLarge,
+                    top = RadixTheme.dimensions.paddingMedium,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ExpirationContent(
+                dAppName = dAppName,
+                expiration = status.expiration
+            )
         }
     }
 }
@@ -279,33 +248,26 @@ private fun PreAuthorizationId(
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
 
-        Text(
+        Row(
             modifier = Modifier.throttleClickable { onClick() },
-            text = buildAnnotatedString {
-                append(id)
-                append(" ")
-                appendInlineContent(id = "icon")
-            },
-            color = RadixTheme.colors.blue1,
-            maxLines = 1,
-            style = RadixTheme.typography.body1HighImportance,
-            overflow = TextOverflow.Clip,
-            inlineContent = mapOf(
-                "icon" to InlineTextContent(
-                    Placeholder(
-                        width = RadixTheme.typography.body1HighImportance.fontSize,
-                        height = RadixTheme.typography.body1HighImportance.fontSize,
-                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_copy),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray2
-                    )
-                }
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = id,
+                color = RadixTheme.colors.blue1,
+                maxLines = 1,
+                style = RadixTheme.typography.body1HighImportance
             )
-        )
+
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+
+            Icon(
+                modifier = Modifier.size(14.dp),
+                painter = painterResource(id = R.drawable.ic_copy),
+                contentDescription = null,
+                tint = RadixTheme.colors.gray2
+            )
+        }
     }
 }
 
@@ -334,7 +296,7 @@ class PreAuthorizationStatusPreviewProvider : PreviewParameterProvider<PreAuthor
                     preAuthorizationId = "PAid...0runll",
                     dAppName = "Collabo.Fi",
                     expiration = PreAuthorizationStatusViewModel.State.Status.Sent.Expiration(
-                        duration = 30.seconds
+                        duration = 0.seconds
                     )
                 )
             ),

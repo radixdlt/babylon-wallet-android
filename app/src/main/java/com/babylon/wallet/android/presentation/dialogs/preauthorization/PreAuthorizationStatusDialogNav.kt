@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.presentation.transaction.ROUTE_TRANSACTION_REVIEW
 import com.babylon.wallet.android.utils.AppEvent
+import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.extensions.init
 import kotlinx.parcelize.Parcelize
@@ -110,7 +111,7 @@ fun AppEvent.Status.PreAuthorization.toStatusFields(): PreAuthorizationStatusFie
     return PreAuthorizationStatusFields(
         status = toStatus(),
         requestId = requestId,
-        preAuthorizationId = preAuthorizationId,
+        preAuthorizationId = encodedPreAuthorizationId,
         isMobileConnect = isMobileConnect,
         dAppName = dAppName,
         transactionId = when (this) {
@@ -129,14 +130,14 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.PreAuthorization {
     return when (checkNotNull(statusFields.status)) {
         VALUE_STATUS_EXPIRED -> AppEvent.Status.PreAuthorization.Expired(
             requestId = checkNotNull(statusFields.requestId),
-            preAuthorizationId = checkNotNull(statusFields.preAuthorizationId),
+            preAuthorizationId = SubintentHash.init(checkNotNull(statusFields.preAuthorizationId)),
             isMobileConnect = checkNotNull(statusFields.isMobileConnect),
             dAppName = statusFields.dAppName
         )
 
         VALUE_STATUS_SUCCESS -> AppEvent.Status.PreAuthorization.Success(
             requestId = checkNotNull(statusFields.requestId),
-            preAuthorizationId = checkNotNull(statusFields.preAuthorizationId),
+            preAuthorizationId = SubintentHash.init(checkNotNull(statusFields.preAuthorizationId)),
             isMobileConnect = checkNotNull(statusFields.isMobileConnect),
             dAppName = statusFields.dAppName,
             transactionId = TransactionIntentHash.init(checkNotNull(statusFields.transactionId))
@@ -144,7 +145,7 @@ private fun SavedStateHandle.toStatus(): AppEvent.Status.PreAuthorization {
 
         VALUE_STATUS_SENT -> AppEvent.Status.PreAuthorization.Sent(
             requestId = checkNotNull(statusFields.requestId),
-            preAuthorizationId = checkNotNull(statusFields.preAuthorizationId),
+            preAuthorizationId = SubintentHash.init(checkNotNull(statusFields.preAuthorizationId)),
             isMobileConnect = checkNotNull(statusFields.isMobileConnect),
             dAppName = statusFields.dAppName,
             remainingTime = checkNotNull(statusFields.remainingTime?.seconds)

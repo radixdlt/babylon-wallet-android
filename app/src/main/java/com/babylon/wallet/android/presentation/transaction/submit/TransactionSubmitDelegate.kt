@@ -27,7 +27,6 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.SignedSubintent
 import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
@@ -150,7 +149,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 is SummarizedManifest.Transaction -> signAndSubmit(transactionManifest = summary.manifest.manifest)
             }
             is Summary.FromStaticAnalysis -> signAndSubmit(subintentManifest = summary.manifest.manifest)
-        }.toUnitResult()
+        }
     }
 
     private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
@@ -201,7 +200,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }.toUnitResult()
     }
 
-    private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<SignedSubintent> {
+    private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<Unit> {
         val transactionRequest = data.value.request
         val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.PreAuthorized
             ?: error("Wrong kind: ${transactionRequest.kind}")
@@ -211,12 +210,16 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             message = transactionRequest.unvalidatedManifestData.plainMessage,
             expiration = transactionRequestKind.expiration
         ).onSuccess { signedSubintent ->
-            _state.update { it.copy(isSubmitting = false) }
+            // Respond to dApp
+            respondToIncomingRequestUseCase.respondWithSuccessSubintent(
+                request = data.value.request,
+                signedSubintent = signedSubintent
+            )
 
             appEventBus.sendEvent(
                 AppEvent.Status.PreAuthorization.Sent(
                     requestId = transactionRequest.interactionId,
-                    preAuthorizationId = signedSubintent.subintent.hash().bech32EncodedTxId,
+                    preAuthorizationId = signedSubintent.subintent.hash(),
                     isMobileConnect = transactionRequest.isMobileConnectRequest,
                     dAppName = _state.value.proposingDApp?.name,
                     remainingTime = when (val expiration = transactionRequestKind.expiration) {
@@ -232,13 +235,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 expiration = transactionRequestKind.expiration.toDAppInteraction()
             )
 
-            // Respond to dApp
-            if (!data.value.request.isInternal) {
-                respondToIncomingRequestUseCase.respondWithSuccessSubintent(
-                    request = data.value.request,
-                    signedSubintent = signedSubintent
-                )
-            }
+            _state.update { it.copy(isSubmitting = false) }
         }.onFailure { error ->
             _state.update {
                 it.copy(
@@ -246,7 +243,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                     error = TransactionErrorMessage(error)
                 )
             }
-        }
+        }.toUnitResult()
     }
 
     @Suppress("NestedBlockDepth")
