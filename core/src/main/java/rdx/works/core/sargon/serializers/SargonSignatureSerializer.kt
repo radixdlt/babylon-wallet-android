@@ -63,13 +63,13 @@ class SignatureWithPublicKeySerializer : KSerializer<SignatureWithPublicKey> {
         encoder.encodeStructure(descriptor) {
             when (value) {
                 is SignatureWithPublicKey.Secp256k1 -> {
-                    encodeStringElement(descriptor, 0, "Secp256k1")
+                    encodeStringElement(descriptor, 0, Secp256k1)
                     encodeSerializableElement(descriptor, 1, SargonPublicKeySerializer(), value.publicKey.asGeneral())
                     encodeSerializableElement(descriptor, 2, SargonSignatureSerializer(), value.signature.asGeneral())
                 }
 
                 is SignatureWithPublicKey.Ed25519 -> {
-                    encodeStringElement(descriptor, 0, "Ed25519")
+                    encodeStringElement(descriptor, 0, Ed25519)
                     encodeSerializableElement(descriptor, 1, SargonPublicKeySerializer(), value.publicKey.asGeneral())
                     encodeSerializableElement(descriptor, 2, SargonSignatureSerializer(), value.signature.asGeneral())
                 }
@@ -87,16 +87,16 @@ class SignatureWithPublicKeySerializer : KSerializer<SignatureWithPublicKey> {
                     0 -> type = decodeStringElement(descriptor, 0)
                     1 -> {
                         publicKey = when (type) {
-                            "Secp256k1" -> decodeSerializableElement(descriptor, 1, SargonPublicKeySerializer())
-                            "Ed25519" -> decodeSerializableElement(descriptor, 1, SargonPublicKeySerializer())
+                            Secp256k1 -> decodeSerializableElement(descriptor, 1, SargonPublicKeySerializer())
+                            Ed25519 -> decodeSerializableElement(descriptor, 1, SargonPublicKeySerializer())
                             else -> throw SerializationException("Unknown type $type")
                         }
                     }
 
                     2 -> {
                         signature = when (type) {
-                            "Secp256k1" -> decodeSerializableElement(descriptor, 2, SargonSignatureSerializer())
-                            "Ed25519" -> decodeSerializableElement(descriptor, 2, SargonSignatureSerializer())
+                            Secp256k1 -> decodeSerializableElement(descriptor, 2, SargonSignatureSerializer())
+                            Ed25519 -> decodeSerializableElement(descriptor, 2, SargonSignatureSerializer())
                             else -> throw SerializationException("Unknown type $type")
                         }
                     }
@@ -106,12 +106,12 @@ class SignatureWithPublicKeySerializer : KSerializer<SignatureWithPublicKey> {
                 }
             }
             when (type) {
-                "Secp256k1" -> SignatureWithPublicKey.Secp256k1(
+                Secp256k1 -> SignatureWithPublicKey.Secp256k1(
                     publicKey = (publicKey as PublicKey.Secp256k1).v1,
                     signature = (signature as Signature.Secp256k1).value
                 )
 
-                "Ed25519" -> SignatureWithPublicKey.Ed25519(
+                Ed25519 -> SignatureWithPublicKey.Ed25519(
                     publicKey = (publicKey as PublicKey.Ed25519).v1,
                     signature = (signature as Signature.Ed25519).value
                 )
