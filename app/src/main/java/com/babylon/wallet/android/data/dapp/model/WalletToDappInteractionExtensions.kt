@@ -50,14 +50,7 @@ fun Map<ProfileEntity, SignatureWithPublicKey>.toWalletToDappInteractionProofOfO
                 WalletToDappInteractionProofOfOwnership.Persona(
                     v1 = WalletToDappInteractionPersonaProof(
                         identityAddress = profileEntity.identityAddress,
-                        proof = WalletToDappInteractionAuthProof(
-                            publicKey = signatureWithPublicKey.publicKey,
-                            curve = when (signatureWithPublicKey.publicKey) {
-                                is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
-                                is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
-                            },
-                            signature = signatureWithPublicKey.signature
-                        )
+                        proof = signatureWithPublicKey.toWalletToDappInteractionAuthProof()
                     )
                 )
             }
@@ -66,14 +59,7 @@ fun Map<ProfileEntity, SignatureWithPublicKey>.toWalletToDappInteractionProofOfO
                 WalletToDappInteractionProofOfOwnership.Account(
                     v1 = WalletToDappInteractionAccountProof(
                         accountAddress = profileEntity.accountAddress,
-                        proof = WalletToDappInteractionAuthProof(
-                            publicKey = signatureWithPublicKey.publicKey,
-                            curve = when (signatureWithPublicKey.publicKey) {
-                                is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
-                                is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
-                            },
-                            signature = signatureWithPublicKey.signature
-                        )
+                        proof = signatureWithPublicKey.toWalletToDappInteractionAuthProof()
                     )
                 )
             }
@@ -85,3 +71,12 @@ fun Map<ProfileEntity, SignatureWithPublicKey>.toWalletToDappInteractionProofOfO
         proofs = entitiesWithProofs
     )
 }
+
+fun SignatureWithPublicKey.toWalletToDappInteractionAuthProof() = WalletToDappInteractionAuthProof(
+    publicKey = this.publicKey,
+    curve = when (this.publicKey) {
+        is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
+        is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
+    },
+    signature = this.signature
+)

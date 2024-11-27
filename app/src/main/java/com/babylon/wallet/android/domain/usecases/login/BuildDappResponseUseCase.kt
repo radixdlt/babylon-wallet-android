@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.login
 
+import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionAuthProof
 import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionPersonaDataRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.toWalletToDappInteractionProofOfOwnershipRequestResponseItem
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -8,15 +9,12 @@ import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedReques
 import com.radixdlt.sargon.DappWalletInteractionPersona
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.WalletInteractionWalletAccount
 import com.radixdlt.sargon.WalletToDappInteractionAccountProof
 import com.radixdlt.sargon.WalletToDappInteractionAccountsRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionAuthLoginWithoutChallengeRequestResponseItem
-import com.radixdlt.sargon.WalletToDappInteractionAuthProof
 import com.radixdlt.sargon.WalletToDappInteractionAuthRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionAuthUsePersonaRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionAuthorizedRequestResponseItems
@@ -25,8 +23,6 @@ import com.radixdlt.sargon.WalletToDappInteractionResponseItems
 import com.radixdlt.sargon.WalletToDappInteractionSuccessResponse
 import com.radixdlt.sargon.WalletToDappInteractionUnauthorizedRequestResponseItems
 import com.radixdlt.sargon.extensions.ProfileEntity
-import com.radixdlt.sargon.extensions.publicKey
-import com.radixdlt.sargon.extensions.signature
 import javax.inject.Inject
 
 class BuildAuthorizedDappResponseUseCase @Inject constructor() {
@@ -57,14 +53,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor() {
                         v1 = WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem(
                             persona = dappWalletInteractionPersona,
                             challenge = authRequest.challenge,
-                            proof = WalletToDappInteractionAuthProof(
-                                publicKey = signatureForAuthorizedPersona.publicKey,
-                                curve = when (signatureForAuthorizedPersona.publicKey) {
-                                    is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
-                                    is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
-                                },
-                                signature = signatureForAuthorizedPersona.signature
-                            )
+                            proof = signatureForAuthorizedPersona.toWalletToDappInteractionAuthProof()
                         )
                     )
                 }
@@ -155,14 +144,7 @@ private fun buildAccountsRequestResponseItem(
             accountsWithSignatures.map { (accountEntity, signatureWithPublicKey) ->
                 WalletToDappInteractionAccountProof(
                     accountAddress = accountEntity.accountAddress,
-                    proof = WalletToDappInteractionAuthProof(
-                        publicKey = signatureWithPublicKey!!.publicKey,
-                        curve = when (signatureWithPublicKey.publicKey) {
-                            is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
-                            is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
-                        },
-                        signature = signatureWithPublicKey.signature
-                    )
+                    proof = signatureWithPublicKey!!.toWalletToDappInteractionAuthProof()
                 )
             }
         } else {
