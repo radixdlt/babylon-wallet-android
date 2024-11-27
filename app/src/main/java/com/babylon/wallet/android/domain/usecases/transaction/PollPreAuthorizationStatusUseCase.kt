@@ -28,18 +28,14 @@ class PollPreAuthorizationStatusUseCase @Inject constructor(
                 expiration = expiration
             )
 
-            when (status) {
-                PreAuthorizationStatus.Expired -> PreAuthorizationStatusData(
-                    txId = txId,
-                    requestId = requestId,
-                    result = PreAuthorizationStatusData.Status.Expired
-                )
-                is PreAuthorizationStatus.Success -> PreAuthorizationStatusData(
-                    txId = txId,
-                    requestId = requestId,
-                    result = PreAuthorizationStatusData.Status.Success(status.intentHash)
-                )
-            }
+            PreAuthorizationStatusData(
+                txId = txId,
+                requestId = requestId,
+                result = when (status) {
+                    PreAuthorizationStatus.Expired -> PreAuthorizationStatusData.Status.Expired
+                    is PreAuthorizationStatus.Success -> PreAuthorizationStatusData.Status.Success(status.intentHash)
+                }
+            )
         }
     }
 }
