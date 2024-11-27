@@ -22,7 +22,6 @@ sealed interface SubintentExpiration {
     }
 
     data class DelayAfterSign(val delay: Duration) : SubintentExpiration {
-
         override fun toDAppInteraction(): DappToWalletInteractionSubintentExpiration =
             DappToWalletInteractionSubintentExpiration.AfterDelay(
                 DappToWalletInteractionSubintentExpireAfterDelay(expireAfterSeconds = delay.inWholeSeconds.toULong())
