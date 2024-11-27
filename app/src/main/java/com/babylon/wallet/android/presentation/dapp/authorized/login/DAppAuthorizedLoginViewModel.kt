@@ -51,6 +51,7 @@ import kotlinx.coroutines.sync.withLock
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
@@ -146,7 +147,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             is WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest -> {
                 if (authorizedDapp != null && authorizedDapp?.hasAuthorizedPersona(authRequest.identityAddress) == true) {
                     checkForProofOfOwnershipRequest().onSuccess {
-                        setInitialDappLoginRouteForUsePersonaRequest(authRequest)
+                        setInitialDappLoginRouteForUsePersonaRequest(
+                            usePersonaRequest = authRequest,
+                            dappDefinitionAddress = dAppDefinitionAddress
+                        )
                     }.onFailure {
                         onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS)
                     }
@@ -213,9 +217,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
-        authRequestItem: WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest
+        usePersonaRequest: WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest,
+        dappDefinitionAddress: AccountAddress
     ) {
-        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(authRequestItem.identityAddress))
+        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(usePersonaRequest.identityAddress))
         _state.update { it.copy(personaWithSignature = persona.asProfileEntity() to null) }
 
         val resetAccounts = request.resetRequestItem?.accounts == true
@@ -225,7 +230,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
         val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
         val ongoingAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
-            personaAddress = authRequestItem.identityAddress,
+            personaAddress = usePersonaRequest.identityAddress,
             accountsRequestItem = ongoingAccountsRequestItem
         )
         val ongoingDataAlreadyGranted = personaDataAccessAlreadyGranted(
@@ -252,7 +257,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                            authRequestItem.identityAddress,
+                            usePersonaRequest.identityAddress,
                             ongoingPersonaDataRequestItem.toRequiredFields()
                         )
                     )
@@ -311,7 +316,28 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
             else -> {
                 _state.update {
-                    it.copy(initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.CompleteRequest)
+                    val selectedOngoingAccounts = ongoingAccountsRequestItem?.let { ongoingAccountsRequest ->
+                        dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+                            dAppDefinitionAddress = dappDefinitionAddress,
+                            personaAddress = persona.address,
+                            numberOfAccounts = ongoingAccountsRequest.numberOfValues.quantity,
+                            quantifier = ongoingAccountsRequest.numberOfValues.toRequestedNumberQuantifier()
+                        ).mapNotNull { address ->
+                            getProfileUseCase().activeAccountOnCurrentNetwork(address)?.asProfileEntity()
+                        }
+                    }.orEmpty()
+
+                    val selectedOngoingPersonaData = ongoingPersonaDataRequestItem?.let { personaDataRequest ->
+                        persona.getPersonaDataForFieldKinds(
+                            personaDataRequest.toRequiredFields().fields
+                        )
+                    }
+
+                    it.copy(
+                        ongoingAccountsWithSignatures = selectedOngoingAccounts.associateWith { null },
+                        selectedOngoingPersonaData = selectedOngoingPersonaData,
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.CompleteRequest
+                    )
                 }
             }
         }
@@ -539,6 +565,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 )
             )
         } else {
+            val selectedAccounts = potentialOngoingAddresses.mapNotNull {
+                getProfileUseCase().activeAccountOnCurrentNetwork(it) // ?.toUiModel(true)
+            }.map { it.asProfileEntity() }
+            _state.update { it.copy(ongoingAccountsWithSignatures = selectedAccounts.associateWith { null }) }
             mutex.withLock {
                 editedDapp =
                     editedDapp?.updateAuthorizedDAppPersonas(
