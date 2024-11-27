@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    mainUiState: StateFlow<MainUiState>,
+    mainUiState: StateFlow<MainViewModel.State>,
     onMenuClick: () -> Unit,
     onAccountClick: (Account) -> Unit = { },
     onNavigateToSecurityCenter: () -> Unit,

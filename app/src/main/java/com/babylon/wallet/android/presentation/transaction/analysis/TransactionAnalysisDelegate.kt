@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
@@ -20,6 +20,7 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.PreAuthToReview
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.mapError
 import com.radixdlt.sargon.extensions.random
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,7 +31,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
     private val executionSummaryToPreviewTypeAnalyser: ExecutionSummaryToPreviewTypeAnalyser,
     private val manifestSummaryToPreviewTypeAnalyser: ManifestSummaryToPreviewTypeAnalyser,
@@ -45,12 +45,12 @@ class TransactionAnalysisDelegate @Inject constructor(
     /**
      * Runs analysis on each transaction type received. Resolves the preview type and returns the signers involved.
      */
-    suspend fun analyse(): Result<Analysis> = when (data.value.request.transactionType) {
-        is TransactionType.PreAuthorized -> analysePreAuthTransaction(
+    suspend fun analyse(): Result<Analysis> = when (data.value.request.kind) {
+        is TransactionRequest.Kind.PreAuthorized -> analysePreAuthTransaction(
             manifestData = data.value.request.unvalidatedManifestData
         )
 
-        else -> analyseTransaction(
+        is TransactionRequest.Kind.Regular -> analyseTransaction(
             manifestData = data.value.request.unvalidatedManifestData,
             isInternal = data.value.request.isInternal
         )
@@ -94,10 +94,10 @@ class TransactionAnalysisDelegate @Inject constructor(
             summary = summary,
             profile = profile
         )
-    }
+    }.mapError(::mapPreviewError)
 
     private suspend fun analysePreAuthTransaction(
-        manifestData: UnvalidatedManifestData,
+        manifestData: UnvalidatedManifestData
     ): Result<Analysis> = runCatching {
         val preAuthToReview = withContext(dispatcher) {
             sargonOsManager.sargonOs.analysePreAuthPreview(
@@ -138,6 +138,20 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
         }
+    }.mapError(::mapPreviewError)
+
+    private fun mapPreviewError(error: Throwable): RadixWalletException {
+        return when (error) {
+            is CommonException.ReservedInstructionsNotAllowedInManifest -> {
+                RadixWalletException.DappRequestException.UnacceptableManifest
+            }
+            is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
+                RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits
+            }
+            else -> {
+                RadixWalletException.DappRequestException.PreviewError(error)
+            }
+        }
     }
 
     private suspend fun cacheNewlyCreatedResources(previewType: PreviewType) {
@@ -157,20 +171,8 @@ class TransactionAnalysisDelegate @Inject constructor(
         logger.w(error)
 
         when (error) {
-            is CommonException.ReservedInstructionsNotAllowedInManifest -> {
-                _state.update {
-                    it.copy(
-                        error = TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest),
-                        isRawManifestVisible = false,
-                        showRawTransactionWarning = false,
-                        isLoading = false,
-                        previewType = PreviewType.UnacceptableManifest
-                    )
-                }
-            }
-
             is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> {
-                Timber.w(
+                logger.w(
                     "Resource address ${
                         error.address.formatted(
                             AddressFormat.RAW
@@ -188,24 +190,31 @@ class TransactionAnalysisDelegate @Inject constructor(
                 }
             }
 
-            is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
-                reportFailure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
-            }
-
             else -> {
-                reportFailure(RadixWalletException.DappRequestException.PreviewError(error))
+                reportFailure(
+                    error = error,
+                    previewType = if (error is RadixWalletException.DappRequestException.UnacceptableManifest) {
+                        PreviewType.UnacceptableManifest
+                    } else {
+                        PreviewType.None
+                    }
+                )
             }
         }
     }
 
-    private fun reportFailure(error: Throwable) {
+    private fun reportFailure(
+        error: Throwable,
+        previewType: PreviewType = PreviewType.None
+    ) {
         logger.w(error)
 
         _state.update {
             it.copy(
                 isLoading = false,
-                previewType = PreviewType.None,
-                error = TransactionErrorMessage(error)
+                previewType = previewType,
+                error = TransactionErrorMessage(error),
+                expiration = null
             )
         }
     }

@@ -57,7 +57,7 @@ fun DappToWalletInteractionUnvalidated.toDomainModel(remoteEntityId: RemoteEntit
         )
     }
 }.mapError {
-    RadixWalletException.IncomingMessageException.MessageParse(it)
+    RadixWalletException.DappRequestException.InvalidRequestChallenge
 }
 
 private fun DappToWalletInteractionSendTransactionItem.toDomainModel(
@@ -73,7 +73,10 @@ private fun DappToWalletInteractionSendTransactionItem.toDomainModel(
         plainMessage = message,
         blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
     ),
-    requestMetadata = metadata
+    requestMetadata = metadata,
+    kind = TransactionRequest.Kind.Regular(
+        transactionType = TransactionType.Generic
+    )
 )
 
 private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
@@ -90,7 +93,9 @@ private fun DappToWalletInteractionSubintentRequestItem.toDomainModel(
         blobs = unvalidatedManifest.blobs.toList().map { it.bytes },
     ),
     requestMetadata = metadata,
-    transactionType = TransactionType.PreAuthorized(expiration = SubintentExpiration.from(expiration))
+    kind = TransactionRequest.Kind.PreAuthorized(
+        expiration = SubintentExpiration.from(expiration)
+    )
 )
 
 private fun DappToWalletInteractionUnauthorizedRequestItems.toDomainModel(

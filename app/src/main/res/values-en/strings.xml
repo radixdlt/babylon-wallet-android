@@ -419,6 +419,7 @@
   <string name="dAppRequest_responseFailureAlert_message">Failed to send request response to dApp.</string>
   <string name="dAppRequest_completion_title">Success</string>
   <string name="dAppRequest_completion_subtitle">Request from %s complete</string>
+  <string name="dAppRequest_completion_subtitlePreAuthorization">Your pre-authorization has been included in a successful transaction.</string>
   <string name="dAppRequest_metadataLoadingAlert_message">Danger! Bad dApp configuration, or you\'re being spoofed!</string>
   <string name="dAppRequest_metadataLoadingPrompt">Loading…</string>
   <string name="dAppRequest_metadata_unknownName">Unknown dApp</string>
@@ -1320,6 +1321,14 @@ Code: %s</string>
   <string name="preAuthorizationReview_slideToSign">Slide to Sign and Return</string>
   <string name="preAuthorizationReview_rawManifestAlert_title">Warning</string>
   <string name="preAuthorizationReview_rawManifestAlert_message">This is a complex pre-authorization that cannot be summarized - the raw pre-authorization manifest will be shown. Do not sign and return unless you understand the contents.</string>
+  <string name="preAuthorizationReview_unknownStatus_title">Pre-Authorization Sent</string>
+  <string name="preAuthorizationReview_unknownStatus_subtitle">Your pre-authorization has been sent to %s</string>
+  <string name="preAuthorizationReview_unknownStatus_identifier">Pre-Authorization ID</string>
+  <string name="preAuthorizationReview_unknownStatus_expiration">%s has **%s** to use this pre-authorization</string>
+  <string name="preAuthorizationReview_unknownStatus_lastCheck">Checking one last time..</string>
+  <string name="preAuthorizationReview_expiredStatus_title">Pre-Authorization Timed Out</string>
+  <string name="preAuthorizationReview_expiredStatus_subtitle">Your pre-authorization has expired and can no longer be used.</string>
+  <string name="preAuthorizationReview_expiredStatus_retryInBrowser">Switch back to your browser to try again</string>
   <string name="interactionReview_subtitle">Proposed by %s</string>
   <string name="interactionReview_possibleDappCalls">Possible dApp calls</string>
   <string name="interactionReview_customizeGuaranteesButtonTitle">Customize Guarantees</string>

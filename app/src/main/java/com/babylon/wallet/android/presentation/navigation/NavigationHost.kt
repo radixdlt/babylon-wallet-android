@@ -42,7 +42,7 @@ import com.babylon.wallet.android.presentation.dialogs.transaction.transactionSt
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.main.MainUiState
+import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
@@ -95,7 +95,7 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
-    mainUiState: StateFlow<MainUiState>,
+    state: StateFlow<MainViewModel.State>,
     startDestination: String,
     navController: NavHostController,
     onCloseApp: () -> Unit,
@@ -214,7 +214,7 @@ fun NavigationHost(
             navController.popBackStack()
         })
         main(
-            mainUiState = mainUiState,
+            mainUiState = state,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
