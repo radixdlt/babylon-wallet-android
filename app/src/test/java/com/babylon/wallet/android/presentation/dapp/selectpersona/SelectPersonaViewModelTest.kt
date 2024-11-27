@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.AccessFactorSourcesProxyFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_AUTHORIZED_REQUEST_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
 import com.babylon.wallet.android.utils.AppEventBusImpl
@@ -106,6 +107,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
     override fun setUp() {
         super.setUp()
         coEvery { preferencesManager.firstPersonaCreated } returns flowOf(true)
+        every { savedStateHandle.get<String>(ARG_AUTHORIZED_REQUEST_INTERACTION_ID) } returns dApp.dAppAddress.string
         every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns dApp.dAppAddress.string
         coEvery { getProfileUseCase() } returns profile
         every { getProfileUseCase.flow } returns flowOf(profile)
