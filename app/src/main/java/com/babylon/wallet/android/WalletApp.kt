@@ -73,7 +73,7 @@ fun WalletApp(
             modifier = Modifier.fillMaxSize(),
             startDestination = MAIN_ROUTE,
             navController = navController,
-            mainUiState = mainViewModel.state,
+            state = mainViewModel.state,
             onCloseApp = onCloseApp
         )
         LaunchedEffect(Unit) {

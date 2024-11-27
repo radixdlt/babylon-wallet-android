@@ -96,7 +96,7 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
-    mainUiState: StateFlow<MainViewModel.State>,
+    state: StateFlow<MainViewModel.State>,
     startDestination: String,
     navController: NavHostController,
     onCloseApp: () -> Unit,
@@ -215,7 +215,7 @@ fun NavigationHost(
             navController.popBackStack()
         })
         main(
-            mainUiState = mainUiState,
+            mainUiState = state,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
