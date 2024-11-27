@@ -5,10 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.AppLockStateProvider
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
-import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.domain.usecases.deeplink.DeepLinkProcessingResult
 import com.babylon.wallet.android.domain.usecases.deeplink.ProcessDeepLinkUseCase
-import com.babylon.wallet.android.domain.usecases.login.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.p2plink.ObserveAccountsAndSyncWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
