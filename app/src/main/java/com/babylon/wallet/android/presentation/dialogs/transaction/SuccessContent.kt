@@ -33,6 +33,32 @@ internal fun SuccessContent(
     isInternal: Boolean,
     dAppName: String?
 ) {
+    SuccessContent(
+        modifier = modifier,
+        transactionId = transactionId,
+        isMobileConnect = isMobileConnect,
+        title = stringResource(id = R.string.transactionStatus_success_title),
+        subtitle = if (isInternal) {
+            stringResource(R.string.transactionStatus_success_text)
+        } else {
+            stringResource(
+                id = R.string.dAppRequest_completion_subtitle,
+                dAppName.orEmpty().ifEmpty {
+                    stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                }
+            )
+        }
+    )
+}
+
+@Composable
+internal fun SuccessContent(
+    modifier: Modifier = Modifier,
+    transactionId: TransactionIntentHash?,
+    isMobileConnect: Boolean,
+    title: String,
+    subtitle: String
+) {
     Column {
         Column(
             modifier
@@ -49,22 +75,12 @@ internal fun SuccessContent(
                 contentDescription = null
             )
             Text(
-                text = stringResource(id = R.string.transactionStatus_success_title),
+                text = title,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
 
-            val subtitle = if (isInternal) {
-                stringResource(R.string.transactionStatus_success_text)
-            } else {
-                stringResource(
-                    id = R.string.dAppRequest_completion_subtitle,
-                    dAppName.orEmpty().ifEmpty {
-                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                    }
-                )
-            }
             Text(
                 text = subtitle,
                 style = RadixTheme.typography.body1Regular,

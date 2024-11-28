@@ -104,6 +104,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 instructions = manifestData.instructions,
                 blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
                 nonce = Nonce.random(),
+                notaryPublicKey = data.value.ephemeralNotaryPrivateKey.toPublicKey()
             )
         }
 

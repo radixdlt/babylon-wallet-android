@@ -13,6 +13,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.SharedConstants
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -179,7 +180,7 @@ class DeletingAccountMoveAssetsViewModel @Inject constructor(
 
         companion object {
             private val zero = 0.toDecimal192()
-            private val xrdThreshold = 2.toDecimal192()
+            private val xrdThreshold = SharedConstants.minRequiredXrdForAccountDeletion.toDecimal192()
         }
     }
 }

@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAu
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.dialogs.preauthorization.preAuthorizationStatusDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainViewModel
@@ -254,6 +255,10 @@ private fun HandleStatusEvents(
 
                 is AppEvent.Status.DappInteraction -> {
                     navController.dappInteractionDialog(event)
+                }
+
+                is AppEvent.Status.PreAuthorization -> {
+                    navController.preAuthorizationStatusDialog(event)
                 }
             }
         }

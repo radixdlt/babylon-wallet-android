@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
@@ -25,7 +25,7 @@ class GetFreeXrdUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val getTransactionStatusUseCase: GetTransactionStatusUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
@@ -48,7 +48,7 @@ class GetFreeXrdUseCase @Inject constructor(
                     transactionRepository.submitTransaction(notarization.notarizedTransaction)
                         .map { notarization }
                 }.onSuccess { notarization ->
-                    pollTransactionStatusUseCase(
+                    getTransactionStatusUseCase(
                         intentHash = notarization.intentHash,
                         requestId = "",
                         endEpoch = notarization.endEpoch

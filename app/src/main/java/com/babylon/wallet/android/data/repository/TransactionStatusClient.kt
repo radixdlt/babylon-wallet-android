@@ -2,17 +2,22 @@ package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.SubintentHash
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -25,39 +30,43 @@ import javax.inject.Singleton
 
 @Singleton
 class TransactionStatusClient @Inject constructor(
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
+    private val getTransactionStatusUseCase: GetTransactionStatusUseCase,
+    private val getPreAuthorizationStatusUseCase: GetPreAuthorizationStatusUseCase,
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
-    private val _transactionPollResult = MutableStateFlow(emptyList<TransactionStatusData>())
-    private val transactionStatuses = _transactionPollResult.asSharedFlow()
+    private val transactionResult = MutableStateFlow(emptyList<InteractionStatusData>())
+    private val transactionStatuses = transactionResult.asSharedFlow()
     private val mutex = Mutex()
 
-    fun listenForPollStatus(txId: String): Flow<TransactionStatusData> {
-        return transactionStatuses.map { statuses ->
-            statuses.find { it.txId == txId }
-        }.filterNotNull().cancellable()
+    fun listenForTransactionStatus(txId: String): Flow<TransactionStatusData> {
+        return listenForStatus(txId).filterIsInstance()
     }
 
-    fun listenForPollStatusByRequestId(requestId: String): Flow<TransactionStatusData> {
+    fun listenForPreAuthorizationStatus(preAuthorizationId: String): Flow<PreAuthorizationStatusData> {
+        return listenForStatus(preAuthorizationId).filterIsInstance()
+    }
+
+    fun listenForTransactionStatusByRequestId(requestId: String): Flow<TransactionStatusData> {
         return transactionStatuses.map { statuses ->
             statuses.find { it.requestId == requestId }
-        }.filterNotNull().cancellable()
+        }.filterNotNull().cancellable().filterIsInstance()
     }
 
-    fun startPollingForTransactionStatus(
+    fun observeTransactionStatus(
         intentHash: TransactionIntentHash,
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: Epoch
     ) {
         appScope.launch {
-            val pollResult = pollTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
+            val result = getTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
+            val isSuccess = result.result is TransactionStatusData.Status.Success
 
-            pollResult.result.onSuccess {
+            if (isSuccess) {
                 if (transactionType is TransactionType.DeleteAccount) {
                     // When a delete account transaction is successful, the first thing to do is to tombstone the account.
                     // Before any other update takes place in wallet.
@@ -65,9 +74,9 @@ class TransactionStatusClient @Inject constructor(
                 }
             }
 
-            updateTransactionStatus(pollResult)
+            updateTransactionStatus(result)
 
-            pollResult.result.onSuccess {
+            if (isSuccess) {
                 preferencesManager.incrementTransactionCompleteCounter()
 
                 if (transactionType is TransactionType.DeleteAccount) {
@@ -81,19 +90,42 @@ class TransactionStatusClient @Inject constructor(
         }
     }
 
+    fun observePreAuthorizationStatus(
+        intentHash: SubintentHash,
+        requestId: String,
+        expiration: Timestamp
+    ) {
+        appScope.launch {
+            val result = getPreAuthorizationStatusUseCase(intentHash, requestId, expiration)
+
+            updateTransactionStatus(result)
+
+            if (result.result is PreAuthorizationStatusData.Status.Success) {
+                preferencesManager.incrementTransactionCompleteCounter()
+                appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
+            }
+        }
+    }
+
     fun statusHandled(txId: String) {
         appScope.launch {
             mutex.withLock {
-                _transactionPollResult.update { statuses ->
+                transactionResult.update { statuses ->
                     statuses.filter { it.txId != txId }
                 }
             }
         }
     }
 
-    private suspend fun updateTransactionStatus(data: TransactionStatusData) {
+    private fun listenForStatus(txId: String): Flow<InteractionStatusData> {
+        return transactionStatuses.map { statuses ->
+            statuses.find { it.txId == txId }
+        }.filterNotNull().cancellable()
+    }
+
+    private suspend fun updateTransactionStatus(data: InteractionStatusData) {
         mutex.withLock {
-            _transactionPollResult.update { statuses ->
+            transactionResult.update { statuses ->
                 if (statuses.any { data.txId == it.txId }) {
                     statuses.map {
                         if (data.txId == it.txId) {
@@ -110,9 +142,53 @@ class TransactionStatusClient @Inject constructor(
     }
 }
 
+sealed interface InteractionStatusData {
+
+    val txId: String
+    val requestId: String
+}
+
 data class TransactionStatusData(
-    val txId: String,
-    val requestId: String,
-    val result: Result<Unit>,
+    override val txId: String,
+    override val requestId: String,
+    val result: Status,
     val transactionType: TransactionType = TransactionType.Generic
-)
+) : InteractionStatusData {
+
+    sealed interface Status {
+
+        data object Success : Status
+
+        data class Failed(val error: RadixWalletException) : Status
+
+        suspend fun onSuccess(action: suspend () -> Unit): Status {
+            if (this is Success) {
+                action()
+            }
+            return this
+        }
+
+        suspend fun onFailure(action: suspend (RadixWalletException) -> Unit): Status {
+            if (this is Failed) {
+                action(error)
+            }
+            return this
+        }
+    }
+}
+
+data class PreAuthorizationStatusData(
+    override val txId: String,
+    override val requestId: String,
+    val result: Status
+) : InteractionStatusData {
+
+    sealed interface Status {
+
+        data class Success(
+            val txIntentHash: TransactionIntentHash
+        ) : Status
+
+        data object Expired : Status
+    }
+}
