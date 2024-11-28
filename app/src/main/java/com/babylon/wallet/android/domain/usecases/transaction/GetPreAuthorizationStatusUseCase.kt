@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class PollPreAuthorizationStatusUseCase @Inject constructor(
+class GetPreAuthorizationStatusUseCase @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) {

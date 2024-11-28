@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
@@ -110,7 +109,7 @@ class CreateAccountViewModel @Inject constructor(
 
         return runCatching {
             sargonOs.newWallet(
-                shouldPreDeriveInstances = BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
+                shouldPreDeriveInstances = false
             )
         }.onFailure { profileCreationError ->
             if (profileCreationError is CommonException.SecureStorageAccessException) {

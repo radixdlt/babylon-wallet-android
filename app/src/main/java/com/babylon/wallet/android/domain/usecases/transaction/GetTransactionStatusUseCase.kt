@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class PollTransactionStatusUseCase @Inject constructor(
+class GetTransactionStatusUseCase @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) {
@@ -33,7 +33,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                 is TransactionStatus.Failed -> TransactionStatusData(
                     txId = txId,
                     requestId = requestId,
-                    result = Result.failure(
+                    result = TransactionStatusData.Status.Failed(
                         if (transactionStatus.reason == TransactionStatusReason.WORKTOP_ERROR) {
                             RadixWalletException.TransactionSubmitException.TransactionCommitted.AssertionFailed(txId)
                         } else {
@@ -45,19 +45,21 @@ class PollTransactionStatusUseCase @Inject constructor(
                 is TransactionStatus.PermanentlyRejected -> TransactionStatusData(
                     txId = txId,
                     requestId = requestId,
-                    result = Result.failure(RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently(txId)),
+                    result = TransactionStatusData.Status.Failed(
+                        RadixWalletException.TransactionSubmitException.TransactionRejected.Permanently(txId)
+                    ),
                     transactionType = transactionType
                 )
                 TransactionStatus.Success -> TransactionStatusData(
                     txId = txId,
                     requestId = requestId,
-                    result = Result.success(Unit),
+                    result = TransactionStatusData.Status.Success,
                     transactionType = transactionType
                 )
                 is TransactionStatus.TemporarilyRejected -> TransactionStatusData(
                     txId = txId,
                     requestId = requestId,
-                    result = Result.failure(
+                    result = TransactionStatusData.Status.Failed(
                         RadixWalletException.TransactionSubmitException.TransactionRejected.Temporary(
                             txId = txId,
                             txProcessingTime = (endEpoch - transactionStatus.currentEpoch).toMinutes().toString()

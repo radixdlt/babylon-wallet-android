@@ -37,28 +37,14 @@ class PreAuthorizationStatusViewModel @Inject constructor(
     OneOffEventHandler<PreAuthorizationStatusViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = PreAuthorizationStatusDialogArgs(savedStateHandle)
-    private var pollJob: Job? = null
+    private var observeStatusJob: Job? = null
     private var isRequestHandled = false
 
     init {
-        viewModelScope.launch {
-            appEventBus.events
-                .filterIsInstance<AppEvent.Status.PreAuthorization>()
-                .filter {
-                    it.requestId == args.event.requestId
-                }.collect { event ->
-                    val status = State.Status.from(event)
-                    _state.update { it.copy(status = status) }
-
-                    if (event is AppEvent.Status.PreAuthorization.Sent) {
-                        pollTransactionStatus(event)
-                        processExpiration(event.remainingTime)
-                    }
-                }
-        }
+        observePreAuthorizationStatusEvents()
 
         if (args.event is AppEvent.Status.PreAuthorization.Sent) {
-            pollTransactionStatus(args.event)
+            observeTransactionStatus(args.event)
             processExpiration(args.event.remainingTime)
         }
     }
@@ -67,9 +53,9 @@ class PreAuthorizationStatusViewModel @Inject constructor(
         return State(status = State.Status.from(args.event))
     }
 
-    private fun pollTransactionStatus(status: AppEvent.Status.PreAuthorization) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
+    private fun observeTransactionStatus(status: AppEvent.Status.PreAuthorization) {
+        observeStatusJob?.cancel()
+        observeStatusJob = viewModelScope.launch {
             transactionStatusClient.listenForPreAuthorizationPollStatus(args.event.encodedPreAuthorizationId).collectLatest { pollResult ->
                 when (pollResult.result) {
                     is PreAuthorizationStatusData.Status.Success -> {
@@ -131,6 +117,24 @@ class PreAuthorizationStatusViewModel @Inject constructor(
         viewModelScope.launch {
             markRequestAsHandled()
             sendEvent(Event.Dismiss)
+        }
+    }
+
+    private fun observePreAuthorizationStatusEvents() {
+        viewModelScope.launch {
+            appEventBus.events
+                .filterIsInstance<AppEvent.Status.PreAuthorization>()
+                .filter {
+                    it.requestId == args.event.requestId
+                }.collect { event ->
+                    val status = State.Status.from(event)
+                    _state.update { it.copy(status = status) }
+
+                    if (event is AppEvent.Status.PreAuthorization.Sent) {
+                        observeTransactionStatus(event)
+                        processExpiration(event.remainingTime)
+                    }
+                }
         }
     }
 

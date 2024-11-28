@@ -2,9 +2,10 @@ package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.TombstoneAccountUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollPreAuthorizationStatusUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetPreAuthorizationStatusUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.DappToWalletInteractionSubintentExpiration
@@ -29,8 +30,8 @@ import javax.inject.Singleton
 
 @Singleton
 class TransactionStatusClient @Inject constructor(
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
-    private val pollPreAuthorizationStatusUseCase: PollPreAuthorizationStatusUseCase,
+    private val getTransactionStatusUseCase: GetTransactionStatusUseCase,
+    private val getPreAuthorizationStatusUseCase: GetPreAuthorizationStatusUseCase,
     private val appEventBus: AppEventBus,
     private val preferencesManager: PreferencesManager,
     private val tombstoneAccountUseCase: TombstoneAccountUseCase,
@@ -62,9 +63,10 @@ class TransactionStatusClient @Inject constructor(
         endEpoch: Epoch
     ) {
         appScope.launch {
-            val pollResult = pollTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
+            val pollResult = getTransactionStatusUseCase(intentHash, requestId, transactionType, endEpoch)
+            val isSuccess = pollResult.result is TransactionStatusData.Status.Success
 
-            pollResult.result.onSuccess {
+            if (isSuccess) {
                 if (transactionType is TransactionType.DeleteAccount) {
                     // When a delete account transaction is successful, the first thing to do is to tombstone the account.
                     // Before any other update takes place in wallet.
@@ -74,7 +76,7 @@ class TransactionStatusClient @Inject constructor(
 
             updateTransactionStatus(pollResult)
 
-            pollResult.result.onSuccess {
+            if (isSuccess) {
                 preferencesManager.incrementTransactionCompleteCounter()
 
                 if (transactionType is TransactionType.DeleteAccount) {
@@ -94,7 +96,7 @@ class TransactionStatusClient @Inject constructor(
         expiration: DappToWalletInteractionSubintentExpiration
     ) {
         appScope.launch {
-            val pollResult = pollPreAuthorizationStatusUseCase(intentHash, requestId, expiration)
+            val pollResult = getPreAuthorizationStatusUseCase(intentHash, requestId, expiration)
 
             updateTransactionStatus(pollResult)
 
@@ -149,9 +151,31 @@ sealed interface InteractionStatusData {
 data class TransactionStatusData(
     override val txId: String,
     override val requestId: String,
-    val result: Result<Unit>,
+    val result: Status,
     val transactionType: TransactionType = TransactionType.Generic
-) : InteractionStatusData
+) : InteractionStatusData {
+
+    sealed interface Status {
+
+        data object Success : Status
+
+        data class Failed(val error: RadixWalletException) : Status
+
+        suspend fun onSuccess(action: suspend () -> Unit): Status {
+            if (this is Success) {
+                action()
+            }
+            return this
+        }
+
+        suspend fun onFailure(action: suspend (RadixWalletException) -> Unit): Status {
+            if (this is Failed) {
+                action(error)
+            }
+            return this
+        }
+    }
+}
 
 data class PreAuthorizationStatusData(
     override val txId: String,

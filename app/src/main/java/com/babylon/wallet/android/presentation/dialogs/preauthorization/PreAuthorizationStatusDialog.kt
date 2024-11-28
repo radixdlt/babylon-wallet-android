@@ -183,7 +183,7 @@ private fun SentContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = RadixTheme.colors.gray4)
+                .background(color = RadixTheme.colors.gray5)
                 .padding(
                     start = RadixTheme.dimensions.paddingLarge,
                     end = RadixTheme.dimensions.paddingLarge,
