@@ -160,15 +160,17 @@ fun DappAuthorizedLoginScreen(
                 onAcknowledgeFailureDialog = viewModel::onAcknowledgeFailureDialog
             )
 
-            BasicPromptAlertDialog(
-                finish = {
-                    viewModel.onAbortDappLogin()
-                },
-                titleText = stringResource(id = R.string.error_dappRequest_invalidRequest),
-                messageText = state.uiMessage?.getMessage(),
-                confirmText = stringResource(id = R.string.common_cancel),
-                dismissText = null
-            )
+            state.uiMessage?.let {
+                BasicPromptAlertDialog(
+                    finish = {
+                        viewModel.onAbortDappLogin()
+                    },
+                    titleText = stringResource(id = R.string.error_dappRequest_invalidRequest),
+                    messageText = state.uiMessage?.getMessage(),
+                    confirmText = stringResource(id = R.string.common_cancel),
+                    dismissText = null
+                )
+            }
         }
     }
 }
