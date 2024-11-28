@@ -25,7 +25,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.En
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedDappPreferenceDeposits
@@ -45,7 +44,6 @@ import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -150,8 +148,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(uiMessage = UiMessage.ErrorMessage(InvalidPersonaOrAccounts))
             }
-            delay(Constants.SNACKBAR_SHOW_DURATION_MS)
-            onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS)
             return
         }
         when (val authRequest = request.authRequestItem) {

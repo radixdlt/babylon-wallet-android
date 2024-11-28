@@ -8,7 +8,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -26,9 +25,9 @@ import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
@@ -155,15 +154,20 @@ fun DappAuthorizedLoginScreen(
             ) {
                 FullscreenCircularProgressContent()
             }
+
             DappInteractionFailureDialog(
                 dialogState = state.failureDialog,
                 onAcknowledgeFailureDialog = viewModel::onAcknowledgeFailureDialog
             )
 
-            SnackbarUiMessageHandler(
-                message = state.uiMessage,
-                onMessageShown = viewModel::onMessageShown,
-                modifier = Modifier.imePadding()
+            BasicPromptAlertDialog(
+                finish = {
+                    viewModel.onAbortDappLogin()
+                },
+                titleText = stringResource(id = R.string.error_dappRequest_invalidRequest),
+                messageText = state.uiMessage?.getMessage(),
+                confirmText = stringResource(id = R.string.common_cancel),
+                dismissText = null
             )
         }
     }
