@@ -143,17 +143,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun setInitialDappLoginRoute(dAppDefinitionAddress: AccountAddress) {
+        checkForProofOfOwnershipRequest().onFailure {
+            onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS)
+            return
+        }
         when (val authRequest = request.authRequestItem) {
             is WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest -> {
                 if (authorizedDapp != null && authorizedDapp?.hasAuthorizedPersona(authRequest.identityAddress) == true) {
-                    checkForProofOfOwnershipRequest().onSuccess {
-                        setInitialDappLoginRouteForUsePersonaRequest(
-                            usePersonaRequest = authRequest,
-                            dappDefinitionAddress = dAppDefinitionAddress
-                        )
-                    }.onFailure {
-                        onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS)
-                    }
+                    setInitialDappLoginRouteForUsePersonaRequest(
+                        usePersonaRequest = authRequest,
+                        dappDefinitionAddress = dAppDefinitionAddress
+                    )
                 } else {
                     onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
                 }
@@ -253,7 +253,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
 
             ongoingPersonaDataRequestItem != null &&
-                ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
