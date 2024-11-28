@@ -138,7 +138,6 @@ private fun buildAccountsRequestResponseItem(
     accountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?>,
     challenge: Exactly32Bytes?
 ): WalletToDappInteractionAccountsRequestResponseItem? {
-
     return if (accountsWithSignatures.isNotEmpty()) {
         val accountsWithProofs = if (accountsWithSignatures.all { it.value != null }) {
             accountsWithSignatures.map { (accountEntity, signatureWithPublicKey) ->
