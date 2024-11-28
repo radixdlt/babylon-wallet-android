@@ -102,13 +102,14 @@ private fun PreAuthorizationStatusContent(
                     onPreAuthorizationIdClick = onPreAuthorizationIdClick
                 )
                 is PreAuthorizationStatusViewModel.State.Status.Success -> SuccessContent(
-                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                     transactionId = state.status.transactionId,
                     isMobileConnect = state.status.isMobileConnect,
                     title = stringResource(id = R.string.transactionStatus_success_title),
                     subtitle = stringResource(R.string.transactionStatus_success_text)
                 )
                 is PreAuthorizationStatusViewModel.State.Status.Expired -> FailureDialogContent(
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                     title = stringResource(id = R.string.preAuthorizationReview_expiredStatus_title),
                     subtitle = stringResource(id = R.string.preAuthorizationReview_expiredStatus_subtitle),
                     transactionId = null,

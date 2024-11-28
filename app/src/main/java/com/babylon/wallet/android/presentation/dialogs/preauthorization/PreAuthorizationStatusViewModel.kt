@@ -56,8 +56,8 @@ class PreAuthorizationStatusViewModel @Inject constructor(
     private fun observeTransactionStatus(status: AppEvent.Status.PreAuthorization) {
         observeStatusJob?.cancel()
         observeStatusJob = viewModelScope.launch {
-            transactionStatusClient.listenForPreAuthorizationPollStatus(args.event.encodedPreAuthorizationId).collectLatest { pollResult ->
-                when (pollResult.result) {
+            transactionStatusClient.listenForPreAuthorizationStatus(args.event.encodedPreAuthorizationId).collectLatest { result ->
+                when (result.result) {
                     is PreAuthorizationStatusData.Status.Success -> {
                         // Notify the system and this particular dialog that the transaction is completed
                         appEventBus.sendEvent(
@@ -66,7 +66,7 @@ class PreAuthorizationStatusViewModel @Inject constructor(
                                 preAuthorizationId = args.event.preAuthorizationId,
                                 isMobileConnect = args.event.isMobileConnect,
                                 dAppName = status.dAppName,
-                                transactionId = pollResult.result.txIntentHash
+                                transactionId = result.result.txIntentHash
                             )
                         )
                         markRequestAsHandled()

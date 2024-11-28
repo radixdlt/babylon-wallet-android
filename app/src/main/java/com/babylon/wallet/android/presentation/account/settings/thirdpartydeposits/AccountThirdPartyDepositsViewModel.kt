@@ -54,7 +54,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
-    private var pollJob: Job? = null
+    private var observeStatusJob: Job? = null
     private val args = AccountThirdPartyDepositsArgs(savedStateHandle)
 
     override fun initialState(): AccountThirdPartyDepositsUiState = AccountThirdPartyDepositsUiState(accountAddress = args.address)
@@ -64,9 +64,9 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     }
 
     private fun handleRequestStatus(requestId: String) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForTransactionPollStatusByRequestId(requestId).collect { status ->
+        observeStatusJob?.cancel()
+        observeStatusJob = viewModelScope.launch {
+            transactionStatusClient.listenForTransactionStatusByRequestId(requestId).collect { status ->
                 status.result.onSuccess {
                     when (val type = status.transactionType) {
                         is TransactionType.UpdateThirdPartyDeposits -> {

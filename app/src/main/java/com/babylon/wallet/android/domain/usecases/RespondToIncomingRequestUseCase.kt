@@ -10,6 +10,7 @@ import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.RadixConnectMobileWalletResponse
 import com.radixdlt.sargon.SessionId
 import com.radixdlt.sargon.SignedSubintent
+import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
@@ -121,13 +122,17 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
     suspend fun respondWithSuccessSubintent(
         request: DappToWalletInteraction,
-        signedSubintent: SignedSubintent
+        signedSubintent: SignedSubintent,
+        expirationTimestamp: Timestamp
     ) = withContext(ioDispatcher) {
         val payload = WalletToDappInteractionResponse.Success(
             v1 = WalletToDappInteractionSuccessResponse(
                 interactionId = request.interactionId,
                 items = WalletToDappInteractionResponseItems.PreAuthorization(
-                    v1 = newWalletToDappInteractionPreAuthorizationResponseItems(signedSubintent = signedSubintent)
+                    v1 = newWalletToDappInteractionPreAuthorizationResponseItems(
+                        signedSubintent = signedSubintent,
+                        expirationTimestamp = expirationTimestamp
+                    )
                 )
             )
         )

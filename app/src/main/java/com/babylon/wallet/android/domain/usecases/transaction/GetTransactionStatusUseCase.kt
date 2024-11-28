@@ -12,6 +12,7 @@ import com.radixdlt.sargon.TransactionStatusReason
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import rdx.works.core.mapError
 import javax.inject.Inject
 
 class GetTransactionStatusUseCase @Inject constructor(
@@ -24,10 +25,11 @@ class GetTransactionStatusUseCase @Inject constructor(
         requestId: String,
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: Epoch
-    ): TransactionStatusData {
-        return withContext(dispatcher) {
+    ): TransactionStatusData = withContext(dispatcher) {
+        val txId = intentHash.bech32EncodedTxId
+
+        runCatching {
             val sargonOs = sargonOsManager.sargonOs
-            val txId = intentHash.bech32EncodedTxId
 
             when (val transactionStatus = sargonOs.pollTransactionStatus(intentHash)) {
                 is TransactionStatus.Failed -> TransactionStatusData(
@@ -68,6 +70,6 @@ class GetTransactionStatusUseCase @Inject constructor(
                     transactionType = transactionType
                 )
             }
-        }
+        }.mapError { RadixWalletException.TransactionSubmitException.FailedToPollTXStatus(txId) }.getOrThrow()
     }
 }

@@ -45,7 +45,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     }
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
-    private var pollJob: Job? = null
+    private var observeStatusJob: Job? = null
     private var isRequestHandled = false
 
     init {
@@ -64,22 +64,22 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     }
 
                     if (status is TransactionStatus.Completing) {
-                        pollTransactionStatus(status)
+                        observeTransactionStatus(status)
                     }
                 }
         }
 
         val initialStatus = state.value.status
         if (initialStatus is TransactionStatus.Completing) {
-            pollTransactionStatus(initialStatus)
+            observeTransactionStatus(initialStatus)
         }
     }
 
-    private fun pollTransactionStatus(status: TransactionStatus.Completing) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForTransactionPollStatus(status.transactionId).collectLatest { pollResult ->
-                pollResult.result.onSuccess {
+    private fun observeTransactionStatus(status: TransactionStatus.Completing) {
+        observeStatusJob?.cancel()
+        observeStatusJob = viewModelScope.launch {
+            transactionStatusClient.listenForTransactionStatus(status.transactionId).collectLatest { result ->
+                result.result.onSuccess {
                     // Notify the system and this particular dialog that the transaction is completed
                     appEventBus.sendEvent(
                         AppEvent.Status.Transaction.Success(

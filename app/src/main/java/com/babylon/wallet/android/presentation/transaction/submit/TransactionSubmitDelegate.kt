@@ -183,7 +183,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 )
             )
 
-            transactionStatusClient.startPollingForTransactionStatus(
+            transactionStatusClient.observeTransactionStatus(
                 intentHash = notarization.intentHash,
                 requestId = data.value.request.interactionId,
                 transactionType = transactionRequestKind.transactionType,
@@ -213,7 +213,8 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             // Respond to dApp
             respondToIncomingRequestUseCase.respondWithSuccessSubintent(
                 request = data.value.request,
-                signedSubintent = signedSubintent
+                signedSubintent = signedSubintent,
+                expirationTimestamp = transactionRequestKind.expiration.expirationTimestamp()
             )
 
             appEventBus.sendEvent(
@@ -229,10 +230,10 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 )
             )
 
-            transactionStatusClient.startPollingForPreAuthorizationStatus(
+            transactionStatusClient.observePreAuthorizationStatus(
                 intentHash = signedSubintent.subintent.hash(),
                 requestId = data.value.request.interactionId,
-                expiration = transactionRequestKind.expiration.toDAppInteraction()
+                expiration = transactionRequestKind.expiration.expirationTimestamp()
             )
 
             _state.update { it.copy(isSubmitting = false) }
