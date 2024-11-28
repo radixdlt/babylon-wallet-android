@@ -321,7 +321,7 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
             R.string.dAppRequest_validationOutcome_preAuthorizationExpired
         )
         RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(
-            R.string.dAppRequest_requestPersonaNotFoundAlert_message
+            R.string.dAppRequest_validationOutcome_invalidPersonaOrAccoubts
         )
     }
 }
