@@ -99,9 +99,12 @@ fun PreAuthorizationFeesHint(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(R.string.preAuthorizationReview_fees_title, proposingDApp.name.orEmpty().ifEmpty {
-                    stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                }),
+                text = stringResource(
+                    R.string.preAuthorizationReview_fees_title,
+                    proposingDApp.name.orEmpty().ifEmpty {
+                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                    }
+                ),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )
