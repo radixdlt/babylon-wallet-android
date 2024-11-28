@@ -108,7 +108,9 @@ class CreateAccountViewModel @Inject constructor(
         keystoreManager.resetMnemonicKeySpecWhenInvalidated()
 
         return runCatching {
-            sargonOs.newWallet()
+            sargonOs.newWallet(
+                shouldPreDeriveInstances = false
+            )
         }.onFailure { profileCreationError ->
             if (profileCreationError is CommonException.SecureStorageAccessException) {
                 if (!profileCreationError.errorKind.isManualCancellation()) {

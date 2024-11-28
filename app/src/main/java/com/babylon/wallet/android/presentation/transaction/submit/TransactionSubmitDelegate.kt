@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -26,10 +27,10 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.CommonException
-import com.radixdlt.sargon.SignedSubintent
 import com.radixdlt.sargon.SubintentManifest
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import com.radixdlt.sargon.extensions.then
 import kotlinx.coroutines.Job
@@ -148,7 +149,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 is SummarizedManifest.Transaction -> signAndSubmit(transactionManifest = summary.manifest.manifest)
             }
             is Summary.FromStaticAnalysis -> signAndSubmit(subintentManifest = summary.manifest.manifest)
-        }.toUnitResult()
+        }
     }
 
     private suspend fun signAndSubmit(transactionManifest: TransactionManifest): Result<Unit> {
@@ -182,7 +183,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 )
             )
 
-            transactionStatusClient.startPollingForTransactionStatus(
+            transactionStatusClient.observeTransactionStatus(
                 intentHash = notarization.intentHash,
                 requestId = data.value.request.interactionId,
                 transactionType = transactionRequestKind.transactionType,
@@ -199,7 +200,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
         }.toUnitResult()
     }
 
-    private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<SignedSubintent> {
+    private suspend fun signAndSubmit(subintentManifest: SubintentManifest): Result<Unit> {
         val transactionRequest = data.value.request
         val transactionRequestKind = transactionRequest.kind as? TransactionRequest.Kind.PreAuthorized
             ?: error("Wrong kind: ${transactionRequest.kind}")
@@ -209,21 +210,43 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             message = transactionRequest.unvalidatedManifestData.plainMessage,
             expiration = transactionRequestKind.expiration
         ).onSuccess { signedSubintent ->
-            _state.update { it.copy(isSubmitting = false) }
-
-            // TODO poll subintent & send event
-
             // Respond to dApp
-            if (!data.value.request.isInternal) {
-                respondToIncomingRequestUseCase.respondWithSuccessSubintent(
-                    request = data.value.request,
-                    signedSubintent = signedSubintent
+            respondToIncomingRequestUseCase.respondWithSuccessSubintent(
+                request = data.value.request,
+                signedSubintent = signedSubintent,
+                expirationTimestamp = transactionRequestKind.expiration.expirationTimestamp()
+            )
+
+            appEventBus.sendEvent(
+                AppEvent.Status.PreAuthorization.Sent(
+                    requestId = transactionRequest.interactionId,
+                    preAuthorizationId = signedSubintent.subintent.hash(),
+                    isMobileConnect = transactionRequest.isMobileConnectRequest,
+                    dAppName = _state.value.proposingDApp?.name,
+                    remainingTime = when (val expiration = transactionRequestKind.expiration) {
+                        is SubintentExpiration.AtTime -> expiration.expirationDuration()
+                        is SubintentExpiration.DelayAfterSign -> expiration.delay
+                    }
+                )
+            )
+
+            transactionStatusClient.observePreAuthorizationStatus(
+                intentHash = signedSubintent.subintent.hash(),
+                requestId = data.value.request.interactionId,
+                expiration = transactionRequestKind.expiration.expirationTimestamp()
+            )
+
+            _state.update { it.copy(isSubmitting = false) }
+        }.onFailure { error ->
+            _state.update {
+                it.copy(
+                    isSubmitting = false,
+                    error = TransactionErrorMessage(error)
                 )
             }
-        }
+        }.toUnitResult()
     }
 
-    // TODO what about errors from sargon such as SubintentExpired.
     @Suppress("NestedBlockDepth")
     private suspend fun handleSignAndSubmitFailure(error: Throwable) {
         logger.e(error)
@@ -237,7 +260,6 @@ class TransactionSubmitDelegateImpl @Inject constructor(
 
             // When rejected by user (signing with Ledger), we just need to stop the submit process.
             // No need to report back to dApp, as the user can retry and no need to show an error.
-            // TODO what if user rejects locally, shouldn't we send back the status?
             is RadixWalletException.DappRequestException.RejectedByUser -> {
                 _state.update { it.copy(isSubmitting = false) }
             }

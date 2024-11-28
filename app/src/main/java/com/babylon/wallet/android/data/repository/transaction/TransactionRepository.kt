@@ -13,7 +13,6 @@ import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionIntentHash
-import com.radixdlt.sargon.TransactionStatus
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.mapError
 import com.radixdlt.sargon.extensions.string
@@ -25,8 +24,6 @@ import javax.inject.Inject
 interface TransactionRepository {
 
     suspend fun submitTransaction(notarizedTransaction: NotarizedTransaction): Result<TransactionIntentHash>
-
-    suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus
 
     suspend fun getLedgerEpoch(): Result<Epoch>
 
@@ -59,13 +56,6 @@ class TransactionRepositoryImpl @Inject constructor(
                     RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction(error)
                 }
             }
-        }
-    }
-
-    override suspend fun pollTransactionStatus(intentHash: TransactionIntentHash): TransactionStatus {
-        return withContext(dispatcher) {
-            val sargonOs = sargonOsManager.sargonOs
-            sargonOs.pollTransactionStatus(intentHash)
         }
     }
 
