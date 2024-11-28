@@ -26,13 +26,13 @@ import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class PersonaDataOnetimeViewModel @Inject constructor(
+class OneTimeChoosePersonaViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager
-) : StateViewModel<PersonaDataOnetimeUiState>(), OneOffEventHandler<PersonaDataOnetimeEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<PersonaDataOnetimeUiState>(), OneOffEventHandler<OneTimeChoosePersonaEvent> by OneOffEventHandlerImpl() {
 
-    private val args = PersonaDataOnetimeUnauthorizedArgs(savedStateHandle)
+    private val args = OneTimeChoosePersonaArgs(savedStateHandle)
 
     override fun initialState(): PersonaDataOnetimeUiState {
         return PersonaDataOnetimeUiState(showBack = args.showBack)
@@ -73,24 +73,24 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 
     fun onEditClick(persona: Persona) {
         viewModelScope.launch {
-            sendEvent(PersonaDataOnetimeEvent.OnEditPersona(persona.address, args.requiredPersonaFields))
+            sendEvent(OneTimeChoosePersonaEvent.OnEditPersona(persona.address, args.requiredPersonaFields))
         }
     }
 
     fun onCreatePersona() {
         viewModelScope.launch {
-            sendEvent(PersonaDataOnetimeEvent.CreatePersona(preferencesManager.firstPersonaCreated.first()))
+            sendEvent(OneTimeChoosePersonaEvent.CreatePersona(preferencesManager.firstPersonaCreated.first()))
         }
     }
 }
 
-sealed interface PersonaDataOnetimeEvent : OneOffEvent {
+sealed interface OneTimeChoosePersonaEvent : OneOffEvent {
     data class OnEditPersona(
         val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields? = null
-    ) : PersonaDataOnetimeEvent
+    ) : OneTimeChoosePersonaEvent
 
-    data class CreatePersona(val firstPersonaCreated: Boolean) : PersonaDataOnetimeEvent
+    data class CreatePersona(val firstPersonaCreated: Boolean) : OneTimeChoosePersonaEvent
 }
 
 data class PersonaDataOnetimeUiState(

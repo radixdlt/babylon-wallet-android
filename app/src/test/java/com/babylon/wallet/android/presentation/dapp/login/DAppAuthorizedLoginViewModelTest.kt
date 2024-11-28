@@ -7,14 +7,13 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
-import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.login.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
@@ -31,6 +30,7 @@ import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -210,12 +210,11 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.SavedDapp
         val vm = vm.value
         advanceUntilIdle()
-        vm.onSelectPersona(samplePersona)
         advanceUntilIdle()
-        vm.personaSelectionConfirmed()
+        vm.onPersonaAuthorized(samplePersona.asProfileEntity(), null)
         advanceUntilIdle()
         vm.oneOffEvent.test {
-            assert(expectMostRecentItem() is Event.DisplayPermission)
+            assert(expectMostRecentItem() is Event.NavigateToOngoingAccounts)
         }
     }
 
@@ -227,7 +226,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts)
         }
     }
 
@@ -254,7 +253,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.ChooseAccount)
+            assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OneTimeAccounts)
         }
     }
 

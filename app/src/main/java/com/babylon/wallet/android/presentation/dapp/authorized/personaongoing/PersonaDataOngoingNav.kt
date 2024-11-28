@@ -60,8 +60,8 @@ fun NavGraphBuilder.personaDataOngoing(
     onBackClick: () -> Unit,
     navController: NavController,
     onLoginFlowComplete: () -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit
+    onPersonaDataOnetime: (Event.NavigateToOneTimePersonaData) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DATA_ONGOING,

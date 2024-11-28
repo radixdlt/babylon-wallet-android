@@ -45,6 +45,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object InvalidRequest : DappRequestException()
         data object UnacceptableManifest : DappRequestException()
         data object InvalidPersona : DappRequestException()
+        data object InvalidPersonaOrAccounts : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
         data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
@@ -75,6 +76,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 UnacceptableManifest -> DappWalletInteractionErrorType.INVALID_REQUEST
                 is WrongNetwork -> DappWalletInteractionErrorType.WRONG_NETWORK
                 is PreviewError -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+                InvalidPersonaOrAccounts -> DappWalletInteractionErrorType.INVALID_PERSONA_OR_ACCOUNTS
                 is InvalidPreAuthorizationExpirationTooClose -> DappWalletInteractionErrorType.SUBINTENT_EXPIRATION_TOO_CLOSE
                 is InvalidPreAuthorizationExpired -> DappWalletInteractionErrorType.EXPIRED_SUBINTENT
             }
@@ -317,6 +319,9 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         )
         is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired -> context.getString(
             R.string.dAppRequest_validationOutcome_preAuthorizationExpired
+        )
+        RadixWalletException.DappRequestException.InvalidPersonaOrAccounts -> context.getString(
+            R.string.dAppRequest_validationOutcome_invalidPersonaOrAccoubts
         )
     }
 }

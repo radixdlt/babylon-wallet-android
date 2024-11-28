@@ -109,6 +109,39 @@ fun SimpleAccountCard(
     }
 }
 
+@Composable
+fun SimpleAccountCardWithAddress(
+    modifier: Modifier = Modifier,
+    account: Account
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(top = RadixTheme.dimensions.paddingLarge),
+            text = account.displayName.value,
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            color = RadixTheme.colors.white,
+            overflow = TextOverflow.Ellipsis
+        )
+        ActionableAddressView(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+            address = remember(account.address) {
+                Address.Account(account.address)
+            },
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+        )
+    }
+}
+
 @UsesSampleValues
 @Preview
 @Composable

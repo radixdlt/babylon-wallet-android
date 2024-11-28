@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
@@ -26,27 +27,24 @@ fun ChooseAccountsScreen(
     viewModel: ChooseAccountsViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onAccountCreationClick: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onNavigateToChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     onBackClick: () -> Boolean,
-    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     if (sharedState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             sharedViewModel.dismissNoMnemonicError()
         }
     }
-    HandleOneOffEvents(
-        oneOffEvent = sharedViewModel.oneOffEvent,
-        onChooseAccounts = onChooseAccounts,
-        onLoginFlowComplete = onLoginFlowComplete,
-        onPersonaOngoingData = onPersonaOngoingData,
-        onPersonaDataOnetime = onPersonaDataOnetime
-    )
+
     BackHandler {
         if (state.showBackButton) {
             onBackClick()
@@ -54,6 +52,30 @@ fun ChooseAccountsScreen(
             sharedViewModel.onAbortDappLogin()
         }
     }
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is ChooseAccountsEvent.AccountsCollected -> {
+                    sharedViewModel.onAccountsCollected(
+                        accountsWithSignatures = event.accountsWithSignatures,
+                        isOneTimeRequest = event.isOneTimeRequest
+                    )
+                }
+                ChooseAccountsEvent.TerminateFlow -> sharedViewModel.onAbortDappLogin()
+            }
+        }
+    }
+
+    HandleOneOffEvents(
+        oneOffEvent = sharedViewModel.oneOffEvent,
+        onNavigateToChooseAccounts = onNavigateToChooseAccounts,
+        onLoginFlowComplete = onLoginFlowComplete,
+        onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
+        onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData,
+        onNavigateToVerifyPersona = onNavigateToVerifyPersona,
+        onNavigateToVerifyAccounts = onNavigateToVerifyAccounts
+    )
 
     ChooseAccountContent(
         onBackClick = {
@@ -63,19 +85,18 @@ fun ChooseAccountsScreen(
                 sharedViewModel.onAbortDappLogin()
             }
         },
-        onContinueClick = {
-            sharedViewModel.onAccountsSelected(state.selectedAccounts, state.oneTimeRequest)
-        },
+        onContinueClick = viewModel::onContinueClick,
         isContinueButtonEnabled = state.isContinueButtonEnabled,
         accountItems = state.availableAccountItems,
         numberOfAccounts = state.numberOfAccounts,
         isExactAccountsCount = state.isExactAccountsCount,
-        onAccountSelect = viewModel::onAccountSelect,
+        onAccountSelected = viewModel::onAccountSelected,
         onCreateNewAccount = onAccountCreationClick,
         dapp = sharedState.dapp,
-        isOneTime = state.oneTimeRequest,
+        isOneTimeRequest = state.isOneTimeRequest,
         isSingleChoice = state.isSingleChoice,
         showBackButton = state.showBackButton,
+        isSigningInProgress = state.isSigningInProgress,
         modifier = modifier
     )
 
@@ -88,18 +109,28 @@ fun ChooseAccountsScreen(
 @Composable
 private fun HandleOneOffEvents(
     oneOffEvent: Flow<Event>,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onNavigateToChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onPersonaOngoingData: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
             when (event) {
-                is Event.ChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToChooseAccounts -> onNavigateToChooseAccounts(event)
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.NavigateToOngoingPersonaData -> onNavigateToOngoingPersonaData(event)
+                is Event.NavigateToOneTimePersonaData -> onNavigateToOneTimePersonaData(event)
+                is Event.NavigateToVerifyPersona -> onNavigateToVerifyPersona(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
+                is Event.NavigateToVerifyAccounts -> onNavigateToVerifyAccounts(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
                 is Event.CloseLoginFlow -> onLoginFlowComplete()
                 else -> {}
             }
@@ -130,13 +161,14 @@ fun ChooseAccountsScreenPreview() {
                     isSelected = false
                 )
             ),
-            onAccountSelect = {},
+            onAccountSelected = {},
             onCreateNewAccount = {},
             dapp = DApp.sampleMainnet(),
-            isOneTime = false,
+            isOneTimeRequest = false,
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
+            isSigningInProgress = false,
             showBackButton = true
         )
     }

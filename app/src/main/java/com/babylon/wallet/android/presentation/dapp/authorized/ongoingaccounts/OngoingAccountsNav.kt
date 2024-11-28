@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.authorized.permission
+package com.babylon.wallet.android.presentation.dapp.authorized.ongoingaccounts
 
 import android.os.Bundle
 import androidx.annotation.VisibleForTesting
@@ -31,18 +31,18 @@ internal const val ARG_SHOW_BACK = "show_back"
 const val ROUTE_DAPP_PERMISSION =
     "dapp_permission/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}/{$ARG_ONE_TIME}/{$ARG_SHOW_BACK}"
 
-fun NavController.loginPermission(
-    numberOfAccounts: Int,
+fun NavController.ongoingAccounts(
+    isOneTimeRequest: Boolean,
     isExactAccountsCount: Boolean,
-    oneTime: Boolean,
+    numberOfAccounts: Int,
     showBack: Boolean
 ) {
-    navigate("dapp_permission/$numberOfAccounts/$isExactAccountsCount/$oneTime/$showBack")
+    navigate("dapp_permission/$numberOfAccounts/$isExactAccountsCount/$isOneTimeRequest/$showBack")
 }
 
-fun NavGraphBuilder.loginPermission(
+fun NavGraphBuilder.ongoingAccounts(
     navController: NavController,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onCompleteFlow: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -91,14 +91,14 @@ fun NavGraphBuilder.loginPermission(
         val quantifier = checkNotNull(entry.arguments?.getBoolean(ARG_EXACT_ACCOUNT_COUNT))
         val oneTime = checkNotNull(entry.arguments?.getBoolean(ARG_ONE_TIME))
         val showBack = checkNotNull(entry.arguments?.getBoolean(ARG_SHOW_BACK))
-        LoginPermissionScreen(
+        OngoingAccountsScreen(
             viewModel = sharedVM,
             onChooseAccounts = onChooseAccounts,
             numberOfAccounts = numberOfAccounts,
             isExactAccountsCount = quantifier,
             onCompleteFlow = onCompleteFlow,
             onBackClick = onBackClick,
-            oneTime = oneTime,
+            isOneTimeRequest = oneTime,
             showBack = showBack
         )
     }

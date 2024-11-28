@@ -45,15 +45,16 @@ fun ChooseAccountContent(
     onContinueClick: () -> Unit,
     isContinueButtonEnabled: Boolean,
     accountItems: ImmutableList<AccountItemUiModel>,
-    onAccountSelect: (Int) -> Unit,
+    onAccountSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onCreateNewAccount: () -> Unit,
     dapp: DApp?,
-    isOneTime: Boolean,
+    isOneTimeRequest: Boolean,
     isSingleChoice: Boolean,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     showBackButton: Boolean,
+    isSigningInProgress: Boolean
 ) {
     Scaffold(
         modifier = modifier,
@@ -69,7 +70,8 @@ fun ChooseAccountContent(
             RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = isContinueButtonEnabled,
-                text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue)
+                text = stringResource(id = R.string.dAppRequest_chooseAccounts_continue),
+                isLoading = isSigningInProgress
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -86,7 +88,7 @@ fun ChooseAccountContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
-                    text = if (isOneTime) {
+                    text = if (isOneTimeRequest) {
                         stringResource(id = R.string.dAppRequest_chooseAccountsOneTime_title)
                     } else {
                         stringResource(id = R.string.dAppRequest_chooseAccountsOngoing_title)
@@ -99,7 +101,7 @@ fun ChooseAccountContent(
                 ChooseAccountsSubtitle(
                     dappName = dapp?.name.orEmpty()
                         .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) },
-                    isOneTime = isOneTime,
+                    isOneTime = isOneTimeRequest,
                     numberOfAccounts = numberOfAccounts,
                     isExactAccountsCount = isExactAccountsCount
                 )
@@ -114,14 +116,14 @@ fun ChooseAccountContent(
                         )
                         .clip(RadixTheme.shapes.roundedRectSmall)
                         .clickable {
-                            onAccountSelect(index)
+                            onAccountSelected(index)
                         },
                     accountName = accountItem.displayName.orEmpty(),
                     address = accountItem.address,
                     checked = accountItem.isSelected,
                     isSingleChoice = isSingleChoice,
                     radioButtonClicked = {
-                        onAccountSelect(index)
+                        onAccountSelected(index)
                     }
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -206,14 +208,15 @@ fun ChooseAccountContentPreview() {
                     isSelected = false
                 )
             ),
-            onAccountSelect = {},
+            onAccountSelected = {},
             onCreateNewAccount = {},
             dapp = DApp.sampleMainnet(),
-            isOneTime = false,
+            isOneTimeRequest = false,
             isSingleChoice = false,
             numberOfAccounts = 1,
             isExactAccountsCount = false,
-            showBackButton = true
+            showBackButton = true,
+            isSigningInProgress = false
         )
     }
 }

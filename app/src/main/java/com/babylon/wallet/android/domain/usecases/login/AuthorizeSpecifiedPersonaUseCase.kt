@@ -1,9 +1,10 @@
-package com.babylon.wallet.android.domain.usecases
+package com.babylon.wallet.android.domain.usecases.login
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
@@ -14,6 +15,7 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.WalletInteractionId
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.TimestampGenerator
@@ -201,14 +203,14 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     ): Result<String?> {
         return buildAuthorizedDappResponseUseCase(
             request = request,
-            selectedPersona = persona,
-            oneTimeAccounts = emptyList(),
-            ongoingAccounts = selectedAccounts.map { it.data },
+            authorizedPersona = persona.asProfileEntity() to null,
+            oneTimeAccountsWithSignatures = emptyMap(),
+            ongoingAccountsWithSignatures = selectedAccounts.map { it.data }.associate { it.asProfileEntity() to null },
             ongoingSharedPersonaData = selectedPersonaData
-        ).mapCatching { response ->
+        ).mapCatching { walletToDappInteractionResponse ->
             return respondToIncomingRequestUseCase.respondWithSuccess(
                 request = request,
-                response = response
+                response = walletToDappInteractionResponse
             ).getOrNull()?.let {
                 val updatedDApp = updateDAppPersonaWithLastUsedTimestamp(authorizedDApp, persona.address)
                 dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDApp)

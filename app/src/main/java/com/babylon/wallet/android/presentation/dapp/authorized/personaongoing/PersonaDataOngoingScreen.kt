@@ -31,7 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -48,7 +48,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 
-@Suppress("CyclomaticComplexMethod")
 @Composable
 fun PersonaDataOngoingScreen(
     viewModel: PersonaDataOngoingViewModel,
@@ -56,8 +55,8 @@ fun PersonaDataOngoingScreen(
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
+    onPersonaDataOnetime: (Event.NavigateToOneTimePersonaData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -80,8 +79,8 @@ fun PersonaDataOngoingScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.NavigateToChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToOneTimePersonaData -> onPersonaDataOnetime(event)
                 is Event.CloseLoginFlow -> onLoginFlowComplete()
                 else -> {}
             }
@@ -95,7 +94,7 @@ fun PersonaDataOngoingScreen(
         }
     }
     PersonaDataOngoingPermissionContent(
-        onContinueClick = sharedViewModel::onGrantedPersonaDataOngoing,
+        onContinueClick = sharedViewModel::onGrantedOngoingPersonaData,
         dapp = sharedState.dapp,
         onBackClick = {
             if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingPersonaData) {
@@ -215,7 +214,7 @@ private fun PermissionRequestHeader(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentPreview() {
+fun PersonaDataOngoingPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOngoingPermissionContent(
             onContinueClick = {},

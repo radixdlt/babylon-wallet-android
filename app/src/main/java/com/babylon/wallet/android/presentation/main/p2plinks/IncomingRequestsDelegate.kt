@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
-import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
+import com.babylon.wallet.android.domain.usecases.login.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegateWithEvents

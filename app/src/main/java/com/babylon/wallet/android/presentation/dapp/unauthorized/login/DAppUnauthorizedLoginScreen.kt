@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalAnimationApi::class, ExperimentalAnimationApi::class, ExperimentalAnimationApi::class)
-
 package com.babylon.wallet.android.presentation.dapp.unauthorized.login
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -25,7 +22,7 @@ import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.FailureDialogState
-import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.unauthorized.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.coroutines.flow.filterIsInstance
@@ -33,20 +30,25 @@ import kotlinx.coroutines.flow.filterIsInstance
 @Composable
 fun DappUnauthorizedLoginScreen(
     viewModel: DAppUnauthorizedLoginViewModel,
-    navigateToChooseAccount: (Int, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onNavigateToChooseAccount: (String, Int, Boolean) -> Unit,
+    onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    when (val route = state.initialUnauthorizedLoginRoute) {
-        is InitialUnauthorizedLoginRoute.ChooseAccount -> navigateToChooseAccount(
-            route.numberOfAccounts,
-            route.isExactAccountsCount
-        )
-        is InitialUnauthorizedLoginRoute.OnetimePersonaData -> navigateToOneTimePersonaData(route.requiredPersonaFields)
-        null -> {}
+
+    LaunchedEffect(state.initialUnauthorizedLoginRoute) {
+        when (val route = state.initialUnauthorizedLoginRoute) {
+            is InitialUnauthorizedLoginRoute.ChooseAccount -> onNavigateToChooseAccount(
+                route.walletUnauthorizedRequestInteractionId,
+                route.numberOfAccounts,
+                route.isExactAccountsCount
+            )
+            is InitialUnauthorizedLoginRoute.OnetimePersonaData -> onNavigateToOneTimePersonaData(route.requiredPersonaFields)
+            null -> {}
+        }
     }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.filterIsInstance<Event.CloseLoginFlow>().collect {
             onLoginFlowComplete()

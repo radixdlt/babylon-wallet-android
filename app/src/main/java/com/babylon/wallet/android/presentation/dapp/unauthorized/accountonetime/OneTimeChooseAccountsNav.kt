@@ -17,38 +17,52 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnaut
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
 
 @VisibleForTesting
-internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
+internal const val ARG_NUMBER_OF_ACCOUNTS = "arg_number_of_accounts"
 
 @VisibleForTesting
-internal const val ARG_EXACT_ACCOUNT_COUNT = "exact_account_count"
+internal const val ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID = "arg_unauthorized_request_interaction_id"
 
-internal const val ROUTE_CHOOSE_ACCOUNTS_ONETIME = "choose_accounts_onetime_route/{$ARG_NUMBER_OF_ACCOUNTS}/{$ARG_EXACT_ACCOUNT_COUNT}"
+@VisibleForTesting
+internal const val ARG_EXACT_ACCOUNT_COUNT = "arg_exact_account_count"
+
+private const val ROUTE_CHOOSE_ACCOUNTS_ONETIME = "choose_accounts_onetime_route/" +
+    "{$ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID}/" +
+    "{$ARG_NUMBER_OF_ACCOUNTS}/" +
+    "{$ARG_EXACT_ACCOUNT_COUNT}"
 
 internal class OneTimeChooseAccountsArgs(
+    val unauthorizedRequestInteractionId: String,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_NUMBER_OF_ACCOUNTS]) as Int,
-        checkNotNull(savedStateHandle[ARG_EXACT_ACCOUNT_COUNT]) as Boolean
+        unauthorizedRequestInteractionId = checkNotNull(savedStateHandle[ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID]) as String,
+        numberOfAccounts = checkNotNull(savedStateHandle[ARG_NUMBER_OF_ACCOUNTS]) as Int,
+        isExactAccountsCount = checkNotNull(savedStateHandle[ARG_EXACT_ACCOUNT_COUNT]) as Boolean
     )
 }
 
-fun NavController.chooseAccountsOneTime(numberOfAccounts: Int, isExactAccountsCount: Boolean) {
-    navigate("choose_accounts_onetime_route/$numberOfAccounts/$isExactAccountsCount")
+fun NavController.oneTimeChooseAccounts(
+    unauthorizedRequestInteractionId: String,
+    numberOfAccounts: Int,
+    isExactAccountsCount: Boolean
+) {
+    navigate("choose_accounts_onetime_route/$unauthorizedRequestInteractionId/$numberOfAccounts/$isExactAccountsCount")
 }
 
-@Suppress("LongParameterList")
-fun NavGraphBuilder.chooseAccountsOneTime(
+fun NavGraphBuilder.oneTimeChooseAccounts(
     exitRequestFlow: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onPersonaOnetime: (RequiredPersonaFields) -> Unit,
+    onNavigateToChoosePersonaOnetime: (RequiredPersonaFields) -> Unit,
     navController: NavController
 ) {
     composable(
         route = ROUTE_CHOOSE_ACCOUNTS_ONETIME,
         arguments = listOf(
+            navArgument(ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID) {
+                type = NavType.StringType
+            },
             navArgument(ARG_NUMBER_OF_ACCOUNTS) {
                 type = NavType.IntType
             },
@@ -79,7 +93,7 @@ fun NavGraphBuilder.chooseAccountsOneTime(
             onAccountCreationClick = onAccountCreationClick,
             sharedViewModel = sharedVM,
             onLoginFlowComplete = onLoginFlowComplete,
-            onPersonaOnetime = onPersonaOnetime
+            onNavigateToChoosePersonaOnetime = onNavigateToChoosePersonaOnetime
         )
     }
 }

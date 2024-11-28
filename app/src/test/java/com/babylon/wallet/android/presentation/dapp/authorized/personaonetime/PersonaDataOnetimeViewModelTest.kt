@@ -5,7 +5,6 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.messages.IncomingMessage
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId

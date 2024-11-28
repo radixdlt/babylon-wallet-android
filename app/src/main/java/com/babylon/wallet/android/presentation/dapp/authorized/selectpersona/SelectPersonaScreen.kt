@@ -34,7 +34,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event.CreatePersona
@@ -60,41 +60,42 @@ fun SelectPersonaScreen(
     viewModel: SelectPersonaViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onBackClick: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
     createNewPersona: (Boolean) -> Unit,
-    onDisplayPermission: (Event.DisplayPermission) -> Unit,
-    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
+    onNavigateToOngoingAccounts: (Event.NavigateToOngoingAccounts) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     if (sharedState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             sharedViewModel.dismissNoMnemonicError()
         }
     }
+
     HandleOneOffEvents(
         oneOffEvent = sharedViewModel.oneOffEvent,
         onBackClick = onBackClick,
         onLoginFlowComplete = onLoginFlowComplete,
         onChooseAccounts = onChooseAccounts,
-        onDisplayPermission = onDisplayPermission,
-        onPersonaDataOngoing = onPersonaDataOngoing,
-        onPersonaDataOnetime = onPersonaDataOnetime
+        onNavigateToOngoingAccounts = onNavigateToOngoingAccounts,
+        onNavigateToOngoingPersonaData = onNavigateToOngoingPersonaData,
+        onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData
     )
-
-    LaunchedEffect(state.selectedPersona?.address) {
-        state.selectedPersona?.let {
-            sharedViewModel.onSelectPersona(it)
-        }
-    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is CreatePersona -> createNewPersona(event.firstPersonaCreated)
+                SelectPersonaViewModel.Event.TerminateFlow -> sharedViewModel.onAbortDappLogin()
+                is SelectPersonaViewModel.Event.PersonaAuthorized -> sharedViewModel.onPersonaAuthorized(
+                    authorizedPersona = event.persona,
+                    signature = event.signature
+                )
             }
         }
     }
@@ -106,11 +107,12 @@ fun SelectPersonaScreen(
             onBackClick()
         }
     }
+
     SelectPersonaContent(
         modifier = modifier,
         onCancelClick = sharedViewModel::onAbortDappLogin,
-        onContinueClick = sharedViewModel::personaSelectionConfirmed,
-        onSelectPersona = { viewModel.onSelectPersona(it.address) },
+        onContinueClick = viewModel::onContinueClick,
+        onPersonaSelected = { viewModel.onPersonaSelected(it.address) },
         createNewPersona = viewModel::onCreatePersona,
         dapp = sharedState.dapp,
         state = state
@@ -122,20 +124,21 @@ private fun HandleOneOffEvents(
     oneOffEvent: Flow<Event>,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
-    onDisplayPermission: (Event.DisplayPermission) -> Unit,
-    onPersonaDataOngoing: (Event.PersonaDataOngoing) -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
+    onNavigateToOngoingAccounts: (Event.NavigateToOngoingAccounts) -> Unit,
+    onNavigateToOngoingPersonaData: (Event.NavigateToOngoingPersonaData) -> Unit,
+    onNavigateToOneTimePersonaData: (Event.NavigateToOneTimePersonaData) -> Unit
 ) {
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
             when (event) {
                 Event.CloseLoginFlow -> onBackClick()
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.DisplayPermission -> onDisplayPermission(event)
-                is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
-                is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
+                is Event.NavigateToChooseAccounts -> onChooseAccounts(event)
+                is Event.NavigateToOngoingAccounts -> onNavigateToOngoingAccounts(event)
+                is Event.NavigateToOngoingPersonaData -> onNavigateToOngoingPersonaData(event)
+                is Event.NavigateToOneTimePersonaData -> onNavigateToOneTimePersonaData(event)
+                else -> {} // no verify entities in the login request
             }
         }
     }
@@ -146,7 +149,7 @@ private fun SelectPersonaContent(
     modifier: Modifier = Modifier,
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
-    onSelectPersona: (Persona) -> Unit,
+    onPersonaSelected: (Persona) -> Unit,
     createNewPersona: () -> Unit,
     dapp: DApp?,
     state: SelectPersonaViewModel.State,
@@ -165,7 +168,8 @@ private fun SelectPersonaContent(
             RadixBottomBar(
                 onClick = onContinueClick,
                 enabled = state.isContinueButtonEnabled,
-                text = stringResource(id = R.string.dAppRequest_login_continue)
+                text = stringResource(id = R.string.dAppRequest_login_continue),
+                isLoading = state.isSigningInProgress
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -243,10 +247,10 @@ private fun SelectPersonaContent(
                             )
                             .clip(RadixTheme.shapes.roundedRectMedium)
                             .throttleClickable {
-                                onSelectPersona(personaItem.persona)
+                                onPersonaSelected(personaItem.persona)
                             },
                         persona = personaItem,
-                        onSelectPersona = onSelectPersona
+                        onSelectPersona = onPersonaSelected
                     )
                     if (addSpacer) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -295,7 +299,7 @@ fun SelectPersonaPreview() {
         SelectPersonaContent(
             onCancelClick = {},
             onContinueClick = {},
-            onSelectPersona = {},
+            onPersonaSelected = {},
             createNewPersona = {},
             dapp = DApp.sampleMainnet(),
             state = SelectPersonaViewModel.State(
@@ -315,7 +319,7 @@ fun SelectPersonaFirstTimePreview() {
         SelectPersonaContent(
             onCancelClick = {},
             onContinueClick = {},
-            onSelectPersona = {},
+            onPersonaSelected = {},
             createNewPersona = {},
             dapp = DApp.sampleMainnet(),
             state = SelectPersonaViewModel.State(

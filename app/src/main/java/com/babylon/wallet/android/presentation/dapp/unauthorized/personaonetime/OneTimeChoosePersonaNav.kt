@@ -22,12 +22,12 @@ import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsP
 import kotlinx.serialization.encodeToString
 
 @VisibleForTesting
-internal const val ARG_REQUIRED_FIELDS = "required_fields"
+private const val ARG_REQUIRED_FIELDS = "required_fields"
 
 @VisibleForTesting
-internal const val ARG_SHOW_BACK = "show_back"
+private const val ARG_SHOW_BACK = "show_back"
 
-internal class PersonaDataOnetimeUnauthorizedArgs(
+internal class OneTimeChoosePersonaArgs(
     val requiredPersonaFields: RequiredPersonaFields,
     val showBack: Boolean
 ) {
@@ -37,17 +37,16 @@ internal class PersonaDataOnetimeUnauthorizedArgs(
     )
 }
 
-const val ROUTE_PERSONA_DATA_ONETIME_UNAUTHORIZED =
-    "route_persona_data_onetime_unauthorized/{$ARG_REQUIRED_FIELDS}/{$ARG_SHOW_BACK}"
+const val ONE_TIME_CHOOSE_PERSONA_ROUTE = "route_persona_data_onetime_unauthorized/{$ARG_REQUIRED_FIELDS}/{$ARG_SHOW_BACK}"
 
-fun NavController.personaDataOnetimeUnauthorized(requiredPersonaFields: RequiredPersonaFields, showBack: Boolean) {
+fun NavController.oneTimeChoosePersona(requiredPersonaFields: RequiredPersonaFields, showBack: Boolean) {
     val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(requiredPersonaFields))
     navigate("route_persona_data_onetime_unauthorized/$argument/$showBack")
 }
 
 @Suppress("LongParameterList")
-fun NavGraphBuilder.personaDataOnetimeUnauthorized(
-    onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
+fun NavGraphBuilder.oneTimeChoosePersona(
+    onEdit: (OneTimeChoosePersonaEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
     onCreatePersona: (Boolean) -> Unit,
@@ -55,7 +54,7 @@ fun NavGraphBuilder.personaDataOnetimeUnauthorized(
     onLoginFlowCancelled: () -> Unit
 ) {
     composable(
-        route = ROUTE_PERSONA_DATA_ONETIME_UNAUTHORIZED,
+        route = ONE_TIME_CHOOSE_PERSONA_ROUTE,
         arguments = listOf(
             navArgument(ARG_REQUIRED_FIELDS) {
                 type = RequiredPersonaFieldsParameterType
@@ -89,7 +88,8 @@ fun NavGraphBuilder.personaDataOnetimeUnauthorized(
             navController.getBackStackEntry(ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH)
         }
         val sharedVM = hiltViewModel<DAppUnauthorizedLoginViewModel>(parentEntry)
-        PersonaDataOnetimeScreen(
+
+        OneTimeChoosePersonaScreen(
             sharedViewModel = sharedVM,
             onEdit = onEdit,
             onBackClick = onBackClick,

@@ -2,11 +2,23 @@ package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.signing.SignPurpose
+import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asProfileEntity
+import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -14,6 +26,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import java.util.Collections.emptyList
@@ -22,7 +35,9 @@ import javax.inject.Inject
 @HiltViewModel
 class ChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
 ) : StateViewModel<ChooseAccountUiState>(), OneOffEventHandler<ChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
     private val args = ChooseAccountsArgs(savedStateHandle)
@@ -30,14 +45,16 @@ class ChooseAccountsViewModel @Inject constructor(
     override fun initialState(): ChooseAccountUiState = ChooseAccountUiState(
         numberOfAccounts = args.numberOfAccounts,
         isExactAccountsCount = args.isExactAccountsCount,
-        oneTimeRequest = args.oneTime,
+        isOneTimeRequest = args.isOneTimeRequest,
         showBackButton = args.showBack
     )
 
     init {
         viewModelScope.launch {
+            getAuthorizedRequest()
+
             getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.collect { accounts ->
-                // Check if single or multiple choice (radio or chechbox)
+                // Check if single or multiple choice (radio or checkbox)
                 val isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
                 _state.update { it.copy(isSingleChoice = isSingleChoice) }
 
@@ -63,7 +80,23 @@ class ChooseAccountsViewModel @Inject constructor(
         }
     }
 
-    fun onAccountSelect(index: Int) {
+    private suspend fun getAuthorizedRequest() {
+        val interactionId = args.authorizedRequestInteractionId
+        interactionId.let {
+            val requestToHandle = incomingRequestRepository.getRequest(interactionId) as? WalletAuthorizedRequest
+            if (requestToHandle == null) { // should never happen because
+                // the validation first occurs in the initialization of the DAppAuthorizedLoginViewModel
+                sendEvent(ChooseAccountsEvent.TerminateFlow)
+                return@let
+            } else {
+                _state.update { state ->
+                    state.copy(walletAuthorizedRequest = requestToHandle)
+                }
+            }
+        }
+    }
+
+    fun onAccountSelected(index: Int) {
         // update the isSelected property of the AccountItemUiModel based on index
         if (_state.value.isExactAccountsCount && _state.value.numberOfAccounts == 1) {
             // Radio buttons selection unselects the previous one
@@ -92,15 +125,13 @@ class ChooseAccountsViewModel @Inject constructor(
             }
         }
         val isContinueButtonEnabled = if (_state.value.isExactAccountsCount) {
-            _state
-                .value
+            _state.value
                 .availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
                 } == args.numberOfAccounts
         } else {
-            _state
-                .value
+            _state.value
                 .availableAccountItems
                 .count { accountItem ->
                     accountItem.isSelected
@@ -114,18 +145,108 @@ class ChooseAccountsViewModel @Inject constructor(
             )
         }
     }
+
+    fun onContinueClick() {
+        state.value.walletAuthorizedRequest?.let { request ->
+            setSigningInProgress(true)
+
+            viewModelScope.launch {
+                val selectedAccountEntities = state.value.selectedAccounts().mapNotNull {
+                    getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
+                }.map { it.asProfileEntity() }
+
+                val challenge = if (state.value.isOneTimeRequest) {
+                    request.oneTimeAccountsRequestItem?.challenge
+                } else {
+                    request.ongoingAccountsRequestItem?.challenge
+                }
+
+                // check if signature is required
+                if (challenge != null) {
+                    collectSignatures(
+                        challenge = challenge,
+                        selectedAccountEntities = selectedAccountEntities,
+                        metadata = request.metadata
+                    )
+                } else { // otherwise return the collected accounts without signatures
+                    sendEvent(
+                        ChooseAccountsEvent.AccountsCollected(
+                            accountsWithSignatures = selectedAccountEntities.associateWith { null },
+                            isOneTimeRequest = state.value.isOneTimeRequest
+                        )
+                    )
+                    setSigningInProgress(false)
+                }
+            }
+        }
+    }
+
+    private suspend fun collectSignatures(
+        challenge: Exactly32Bytes,
+        selectedAccountEntities: List<ProfileEntity.AccountEntity>,
+        metadata: DappToWalletInteraction.RequestMetadata
+    ) {
+        val signRequest = SignRequest.RolaSignRequest(
+            challengeHex = challenge.hex,
+            origin = metadata.origin,
+            dAppDefinitionAddress = metadata.dAppDefinitionAddress
+        )
+
+        accessFactorSourcesProxy.getSignatures(
+            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                signPurpose = SignPurpose.SignAuth,
+                signRequest = signRequest,
+                signers = selectedAccountEntities
+            )
+        ).onSuccess { result ->
+            sendEvent(
+                ChooseAccountsEvent.AccountsCollected(
+                    accountsWithSignatures = result.signersWithSignatures
+                        .filterKeys {
+                            it is ProfileEntity.AccountEntity
+                        }.mapKeys {
+                            it.key as ProfileEntity.AccountEntity
+                        },
+                    isOneTimeRequest = state.value.isOneTimeRequest
+                )
+            )
+            setSigningInProgress(false)
+        }.onFailure {
+            setSigningInProgress(false)
+        }
+    }
+
+    private fun setSigningInProgress(isEnabled: Boolean) = _state.update { it.copy(isSigningInProgress = isEnabled) }
 }
 
-sealed interface ChooseAccountsEvent : OneOffEvent
+sealed interface ChooseAccountsEvent : OneOffEvent {
+
+    data object TerminateFlow : ChooseAccountsEvent
+
+    data class AccountsCollected(
+        val accountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?>,
+        val isOneTimeRequest: Boolean = false
+    ) : ChooseAccountsEvent
+}
 
 data class ChooseAccountUiState(
+    val walletAuthorizedRequest: WalletAuthorizedRequest? = null,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
-    val oneTimeRequest: Boolean = false,
+    val isOneTimeRequest: Boolean = false,
     val isSingleChoice: Boolean = false,
     val showProgress: Boolean = true,
     val showBackButton: Boolean = false,
-    val selectedAccounts: List<AccountItemUiModel> = emptyList()
-) : UiState
+    val selectedAccounts: List<AccountItemUiModel> = emptyList(),
+    val isSigningInProgress: Boolean = false
+) : UiState {
+
+    fun selectedAccounts(): List<AccountItemUiModel> {
+        return availableAccountItems
+            .filter { accountItem ->
+                accountItem.isSelected
+            }
+    }
+}

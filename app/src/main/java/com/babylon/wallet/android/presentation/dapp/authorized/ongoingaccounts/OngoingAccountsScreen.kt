@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.dapp.authorized.permission
+package com.babylon.wallet.android.presentation.dapp.authorized.ongoingaccounts
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -42,40 +42,47 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.DApp
 
 @Composable
-fun LoginPermissionScreen(
+fun OngoingAccountsScreen(
     viewModel: DAppAuthorizedLoginViewModel,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
     onCompleteFlow: () -> Unit,
     onBackClick: () -> Unit,
-    oneTime: Boolean,
+    isOneTimeRequest: Boolean,
     showBack: Boolean
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect { event ->
-            when (event) {
-                is Event.ChooseAccounts -> onChooseAccounts(event)
-                is Event.CloseLoginFlow -> onCompleteFlow()
-                else -> {}
-            }
-        }
-    }
+
     BackHandler {
-        if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+        if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts) {
             viewModel.onAbortDappLogin()
         } else {
             onBackClick()
         }
     }
-    LoginPermissionContent(
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                is Event.NavigateToChooseAccounts -> onChooseAccounts(event)
+                is Event.CloseLoginFlow -> onCompleteFlow()
+                else -> {}
+            }
+        }
+    }
+
+    OngoingAccountsContent(
         onContinueClick = {
-            viewModel.onPermissionGranted(numberOfAccounts, isExactAccountsCount, oneTime)
+            viewModel.onAccountPermissionGranted(
+                isOneTimeRequest = isOneTimeRequest,
+                isExactAccountsCount = isExactAccountsCount,
+                numberOfAccounts = numberOfAccounts
+            )
         },
         dapp = state.dapp,
         onBackClick = {
-            if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
+            if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts) {
                 viewModel.onAbortDappLogin()
             } else {
                 onBackClick()
@@ -88,7 +95,7 @@ fun LoginPermissionScreen(
 }
 
 @Composable
-private fun LoginPermissionContent(
+private fun OngoingAccountsContent(
     onContinueClick: () -> Unit,
     dapp: DApp?,
     onBackClick: () -> Unit,
@@ -222,9 +229,9 @@ private fun PermissionRequestHeader(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentPreview() {
+fun OngoingAccountsContentPreview() {
     RadixWalletPreviewTheme {
-        LoginPermissionContent(
+        OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
@@ -239,9 +246,9 @@ fun LoginPermissionContentPreview() {
 @UsesSampleValues
 @Preview(showBackground = true, device = "id:Nexus S")
 @Composable
-fun LoginPermissionContentSmallDevicePreview() {
+fun OngoingAccountsContentSmallDevicePreview() {
     RadixWalletPreviewTheme {
-        LoginPermissionContent(
+        OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
@@ -256,9 +263,9 @@ fun LoginPermissionContentSmallDevicePreview() {
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentFirstTimePreview() {
+fun OngoingAccountsContentFirstTimePreview() {
     RadixWalletPreviewTheme {
-        LoginPermissionContent(
+        OngoingAccountsContent(
             onContinueClick = {},
             dapp = DApp.sampleMainnet(),
             onBackClick = {},
