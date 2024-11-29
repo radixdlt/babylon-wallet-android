@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -148,8 +149,7 @@ private fun OngoingAccountsContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             PermissionRequestHeader(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                dappName = dapp?.name.orEmpty()
-                    .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                dappName = dapp.displayName()
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
             RequestedPermissionsList(

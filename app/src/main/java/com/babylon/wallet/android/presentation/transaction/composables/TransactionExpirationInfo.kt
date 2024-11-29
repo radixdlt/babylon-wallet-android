@@ -24,6 +24,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.utils.TimeFormatter
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -101,9 +102,7 @@ fun PreAuthorizationFeesHint(
             Text(
                 text = stringResource(
                     R.string.preAuthorizationReview_fees_title,
-                    proposingDApp.name.orEmpty().ifEmpty {
-                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                    }
+                    proposingDApp.name.dAppDisplayName()
                 ),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1

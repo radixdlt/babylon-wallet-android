@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDia
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -190,8 +191,7 @@ private fun PersonaDataOnetimeContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 PermissionRequestHeader(
-                    dappName = dapp?.name.orEmpty()
-                        .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                    dappName = dapp.displayName()
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(

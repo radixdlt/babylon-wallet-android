@@ -72,6 +72,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewD
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.Account
@@ -459,9 +460,7 @@ private fun AccountHeader(
                             onClick = { onLockerDepositClick(deposit) },
                             text = stringResource(
                                 id = R.string.homePage_accountLockerClaim,
-                                deposit.dAppName.ifEmpty {
-                                    stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                                }
+                                deposit.dAppName.dAppDisplayName()
                             ),
                             iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_notifications
                         )
