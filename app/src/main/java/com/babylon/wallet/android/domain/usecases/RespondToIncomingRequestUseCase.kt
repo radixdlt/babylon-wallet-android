@@ -6,11 +6,11 @@ import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.DappWalletInteractionErrorType
+import com.radixdlt.sargon.Instant
 import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.RadixConnectMobileWalletResponse
 import com.radixdlt.sargon.SessionId
 import com.radixdlt.sargon.SignedSubintent
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.WalletToDappInteractionFailureResponse
 import com.radixdlt.sargon.WalletToDappInteractionResponse
@@ -122,21 +122,22 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 
     suspend fun respondWithSuccessSubintent(
         request: DappToWalletInteraction,
-        signedSubintent: SignedSubintent,
-        expirationTimestamp: Timestamp
-    ) = withContext(ioDispatcher) {
+        signedSubintent: SignedSubintent
+    ): Result<Instant> = withContext(ioDispatcher) {
+        val responseItems = newWalletToDappInteractionPreAuthorizationResponseItems(
+            signedSubintent = signedSubintent
+        )
         val payload = WalletToDappInteractionResponse.Success(
             v1 = WalletToDappInteractionSuccessResponse(
                 interactionId = request.interactionId,
                 items = WalletToDappInteractionResponseItems.PreAuthorization(
-                    v1 = newWalletToDappInteractionPreAuthorizationResponseItems(
-                        signedSubintent = signedSubintent,
-                        expirationTimestamp = expirationTimestamp
-                    )
+                    v1 = responseItems
                 )
             )
         )
+
         respondWithForAnyTransaction(request = request, payload = payload)
+            .map { responseItems.response.expirationTimestamp }
     }
 
     private suspend fun respondWithForAnyTransaction(

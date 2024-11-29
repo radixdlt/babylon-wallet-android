@@ -9,8 +9,8 @@ import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStat
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.Instant
 import com.radixdlt.sargon.SubintentHash
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.TransactionIntentHash
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -93,7 +93,7 @@ class TransactionStatusClient @Inject constructor(
     fun observePreAuthorizationStatus(
         intentHash: SubintentHash,
         requestId: String,
-        expiration: Timestamp
+        expiration: Instant
     ) {
         appScope.launch {
             val result = getPreAuthorizationStatusUseCase(intentHash, requestId, expiration)
