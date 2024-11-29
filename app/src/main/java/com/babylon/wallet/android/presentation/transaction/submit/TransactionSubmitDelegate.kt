@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -43,7 +42,9 @@ import rdx.works.core.toUnitResult
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 interface TransactionSubmitDelegate {
 
@@ -210,12 +211,11 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             message = transactionRequest.unvalidatedManifestData.plainMessage,
             expiration = transactionRequestKind.expiration
         ).onSuccess { signedSubintent ->
-            // Respond to dApp
-            respondToIncomingRequestUseCase.respondWithSuccessSubintent(
+            // Respond to dApp or throw an error if it fails, preventing the transaction status polling
+            val expiration = respondToIncomingRequestUseCase.respondWithSuccessSubintent(
                 request = data.value.request,
-                signedSubintent = signedSubintent,
-                expirationTimestamp = transactionRequestKind.expiration.expirationTimestamp()
-            )
+                signedSubintent = signedSubintent
+            ).getOrThrow()
 
             appEventBus.sendEvent(
                 AppEvent.Status.PreAuthorization.Sent(
@@ -223,17 +223,14 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                     preAuthorizationId = signedSubintent.subintent.hash(),
                     isMobileConnect = transactionRequest.isMobileConnectRequest,
                     dAppName = _state.value.proposingDApp?.name,
-                    remainingTime = when (val expiration = transactionRequestKind.expiration) {
-                        is SubintentExpiration.AtTime -> expiration.expirationDuration()
-                        is SubintentExpiration.DelayAfterSign -> expiration.delay
-                    }
+                    remainingTime = (expiration.secondsSinceUnixEpoch - Instant.now().epochSecond).seconds
                 )
             )
 
             transactionStatusClient.observePreAuthorizationStatus(
                 intentHash = signedSubintent.subintent.hash(),
                 requestId = data.value.request.interactionId,
-                expiration = transactionRequestKind.expiration.expirationTimestamp()
+                expiration = expiration
             )
 
             _state.update { it.copy(isSubmitting = false) }
