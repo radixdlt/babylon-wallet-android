@@ -45,6 +45,8 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     private val appEventBus: AppEventBus
 ) : IncomingRequestRepository {
 
+    private val logger = Timber.tag("IncomingRequestRepository")
+
     private val requestQueue = LinkedList<QueueItem>()
 
     /**
@@ -84,7 +86,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
                 requestQueue.add(requestItem)
             }
             handleNextRequest()
-            Timber.d(
+            logger.d(
                 "🗂 new incoming request with id ${dappToWalletInteraction.interactionId} added in list, " +
                     "so size now is ${getAmountOfRequests()}"
             )
@@ -106,7 +108,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             val handlingPaused = requestQueue.contains(QueueItem.HighPriorityScreen)
             when {
                 currentRequest != null -> {
-                    Timber.d("🗂 Deferring request with id ${currentRequest.interactionId}")
+                    logger.d("🗂 Deferring request with id ${currentRequest.interactionId}")
                     appEventBus.sendEvent(AppEvent.DeferRequestHandling(currentRequest.interactionId))
                 }
 
@@ -124,7 +126,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             requestQueue.removeIf { it is QueueItem.RequestItem && it.dappToWalletInteraction.interactionId == requestId }
             clearCurrent(requestId)
             handleNextRequest()
-            Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
+            logger.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
     }
 
@@ -132,7 +134,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         mutex.withLock {
             clearCurrent(requestId)
             handleNextRequest()
-            Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
+            logger.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
     }
 
@@ -159,7 +161,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             } else {
                 requestQueue.addFirst(QueueItem.HighPriorityScreen)
             }
-            Timber.d("🗂 Temporarily pausing incoming message queue")
+            logger.d("🗂 Temporarily pausing incoming message queue")
         }
     }
 
@@ -168,7 +170,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             val removed = requestQueue.removeIf { it is QueueItem.HighPriorityScreen }
             if (removed) {
                 handleNextRequest()
-                Timber.d("🗂 Resuming incoming message queue")
+                logger.d("🗂 Resuming incoming message queue")
             }
         }
     }
@@ -178,9 +180,9 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             it is QueueItem.RequestItem && it.dappToWalletInteraction.interactionId == requestId
         }
         if (queueItem == null) {
-            Timber.w("Request with id $requestId is null")
+            logger.w("Request with id $requestId is null")
         }
-        Timber.d("\uD83D\uDDC2 get request $requestId")
+        logger.d("\uD83D\uDDC2 get request $requestId")
         return (queueItem as? QueueItem.RequestItem)?.dappToWalletInteraction
     }
 
