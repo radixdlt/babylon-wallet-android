@@ -504,7 +504,7 @@ class TransferViewModel @Inject constructor(
                             nonFungibles = assets.nonFungibles.mapWhen(
                                 predicate = {
                                     it.collection.address == forResource.address &&
-                                        it.collection.items.size < forResource.items.size
+                                            it.collection.items.size < forResource.items.size
                                 },
                                 mutation = { NonFungibleCollection(forResource) }
                             )
@@ -610,9 +610,16 @@ sealed class TargetAccount {
         }
     }
 
-    fun removeAsset(asset: SpendingAsset): TargetAccount {
+    fun removeAsset(removingAsset: SpendingAsset): TargetAccount {
         val newSpendingAssets = spendingAssets.toMutableSet().apply {
-            removeIf { it.resourceAddress == asset.resourceAddress }
+            removeIf { asset ->
+                when (asset) {
+                    is SpendingAsset.Fungible -> removingAsset is SpendingAsset.Fungible &&
+                            removingAsset.resourceAddress == asset.resourceAddress
+                    is SpendingAsset.NFT -> removingAsset is SpendingAsset.NFT &&
+                            removingAsset.item.globalId == asset.item.globalId
+                }
+            }
         }.toPersistentSet()
 
         return when (this) {
