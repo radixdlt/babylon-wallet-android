@@ -81,6 +81,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
             transactionStatusClient.listenForTransactionStatus(status.transactionId).collectLatest { result ->
                 result.result.onSuccess {
                     // Notify the system and this particular dialog that the transaction is completed
+                    markRequestAsHandled()
                     appEventBus.sendEvent(
                         AppEvent.Status.Transaction.Success(
                             requestId = status.requestId,
@@ -91,8 +92,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             dAppName = status.dAppName
                         )
                     )
-                    markRequestAsHandled()
                 }.onFailure { error ->
+                    markRequestAsHandled()
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
                             incomingRequestRepository.getRequest(status.requestId)?.let { transactionRequest ->
