@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaSelectableCard
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
@@ -218,11 +219,7 @@ private fun SelectPersonaContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     LoginRequestHeader(
-                        dappName = dapp?.name.orEmpty().ifEmpty {
-                            stringResource(
-                                id = R.string.dAppRequest_metadata_unknownName
-                            )
-                        },
+                        dappName = dapp.displayName(),
                         firstTimeLogin = state.isFirstTimeLogin,
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     )

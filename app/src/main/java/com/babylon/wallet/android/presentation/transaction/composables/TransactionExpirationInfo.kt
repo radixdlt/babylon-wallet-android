@@ -24,6 +24,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.utils.TimeFormatter
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -83,20 +84,26 @@ fun PreAuthorizationFeesHint(
     proposingDApp: TransactionReviewViewModel.State.ProposingDApp
 ) {
     Row(
-        modifier = modifier.background(
-            color = RadixTheme.colors.gray5,
-            shape = RadixTheme.shapes.roundedRectMedium
-        ).clickable {
-            onClick()
-        }.padding(
-            vertical = RadixTheme.dimensions.paddingDefault,
-            horizontal = RadixTheme.dimensions.paddingSemiLarge
-        ),
+        modifier = modifier
+            .background(
+                color = RadixTheme.colors.gray5,
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
+            .clickable {
+                onClick()
+            }
+            .padding(
+                vertical = RadixTheme.dimensions.paddingDefault,
+                horizontal = RadixTheme.dimensions.paddingSemiLarge
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(R.string.preAuthorizationReview_fees_title, proposingDApp.name.orEmpty()),
+                text = stringResource(
+                    R.string.preAuthorizationReview_fees_title,
+                    proposingDApp.name.dAppDisplayName()
+                ),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1
             )

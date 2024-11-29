@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.dialogs.transaction.FailureDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.SuccessContent
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.TimeFormatter
 import com.babylon.wallet.android.utils.copyToClipboard
@@ -126,9 +127,7 @@ private fun SentContent(
     status: PreAuthorizationStatusViewModel.State.Status.Sent,
     onPreAuthorizationIdClick: () -> Unit
 ) {
-    val dAppName = status.dAppName.orEmpty().ifEmpty {
-        stringResource(id = R.string.dAppRequest_metadata_unknownName)
-    }
+    val dAppName = status.dAppName.dAppDisplayName()
 
     Column(
         modifier

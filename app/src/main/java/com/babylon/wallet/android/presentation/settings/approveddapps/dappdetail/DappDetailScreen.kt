@@ -62,6 +62,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.AccountAddress
@@ -189,9 +190,7 @@ private fun DappDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = state.dAppWithResources?.dApp?.name.orEmpty().ifEmpty {
-                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                    },
+                    title = state.dAppWithResources?.dApp.displayName(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )

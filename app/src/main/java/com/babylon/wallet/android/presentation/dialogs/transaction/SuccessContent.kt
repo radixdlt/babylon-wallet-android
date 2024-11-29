@@ -21,6 +21,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
@@ -43,9 +44,7 @@ internal fun SuccessContent(
         } else {
             stringResource(
                 id = R.string.dAppRequest_completion_subtitle,
-                dAppName.orEmpty().ifEmpty {
-                    stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                }
+                dAppName.dAppDisplayName()
             )
         }
     )

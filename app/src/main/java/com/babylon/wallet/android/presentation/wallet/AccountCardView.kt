@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel.State.AccountTag
@@ -240,9 +241,7 @@ fun AccountCardView(
                     onClick = { onLockerDepositClick(accountWithAssets, deposit) },
                     text = stringResource(
                         id = R.string.homePage_accountLockerClaim,
-                        deposit.dAppName.ifEmpty {
-                            stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                        }
+                        deposit.dAppName.dAppDisplayName()
                     ),
                     iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_notifications
                 )
