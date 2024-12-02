@@ -224,8 +224,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         if (requestedAccountAddresses.isEmpty()) return false
 
         // validate requestedAccountAddresses if present and non-empty
-        val areAccountsValid = profile.activeAccountsOnCurrentNetwork.all { account ->
-            requestedAccountAddresses.any { it == account.address }
+        val profileAccountAddresses = profile.activeAccountsOnCurrentNetwork.map { it.address }
+        val areAccountsValid = requestedAccountAddresses.all { address ->
+            address in profileAccountAddresses
         }
 
         return areAccountsValid
