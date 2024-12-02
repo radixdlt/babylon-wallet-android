@@ -145,9 +145,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun setInitialDappLoginRoute(dAppDefinitionAddress: AccountAddress) {
         checkForProofOfOwnershipRequest().onFailure {
-            _state.update { state ->
-                state.copy(uiMessage = UiMessage.ErrorMessage(InvalidPersonaOrAccounts))
-            }
+            handleRequestError(InvalidPersonaOrAccounts)
             return
         }
         when (val authRequest = request.authRequestItem) {
