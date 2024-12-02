@@ -207,9 +207,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         // if both requestedPersonaAddress and requestedAccountAddresses are null then return false
         if (requestedPersonaAddress == null && requestedAccountAddresses == null) return false
 
+        val profile = getProfileUseCase()
+
         // validate requestedPersonaAddress if present
         val isIdentityValid = requestedPersonaAddress?.let { address ->
-            getProfileUseCase().activePersonasOnCurrentNetwork.any { it.address == address }
+            profile.activePersonasOnCurrentNetwork.any { it.address == address }
         } ?: true // if requestedPersonaAddress is null then it's considered valid
 
         // if requestedPersonaAddress is not present then return false
@@ -223,7 +225,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
         // validate requestedAccountAddresses if present and non-empty
         val areAccountsValid = requestedAccountAddresses.all { address ->
-            getProfileUseCase().activeAccountsOnCurrentNetwork.any { it.address == address }
+            profile.activeAccountsOnCurrentNetwork.any { it.address == address }
         }
 
         return areAccountsValid
