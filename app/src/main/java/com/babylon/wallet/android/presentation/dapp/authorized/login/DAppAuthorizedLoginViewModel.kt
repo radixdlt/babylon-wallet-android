@@ -193,29 +193,43 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
                 return Result.success(Unit)
             } else {
-                return Result.failure(RadixWalletException.DappRequestException.InvalidPersonaOrAccounts)
+                return Result.failure(InvalidPersonaOrAccounts)
             }
         }
         return Result.success(Unit)
     }
 
+    @Suppress("ReturnCount")
     private suspend fun validateRequestedAddressesForProofOfOwnership(
         requestedPersonaAddress: IdentityAddress?,
         requestedAccountAddresses: List<AccountAddress>?
     ): Boolean {
-        // if requestedPersonaAddress is present, then check if it exists in the allPersonasOnCurrentNetwork
+        // if both requestedPersonaAddress and requestedAccountAddresses are null then return false
+        if (requestedPersonaAddress == null && requestedAccountAddresses == null) return false
+
+        val profile = getProfileUseCase()
+
+        // validate requestedPersonaAddress if present
         val isIdentityValid = requestedPersonaAddress?.let { address ->
-            getProfileUseCase().activePersonasOnCurrentNetwork.any { it.address == address }
-        } ?: true // if requestedPersonaAddress is null, assume it's valid (no need to check)
+            profile.activePersonasOnCurrentNetwork.any { it.address == address }
+        } ?: true // if requestedPersonaAddress is null then it's considered valid
 
-        // if requestedAccountAddresses are present, then check if all of them exist in the existingAccounts
-        val areAccountsValid = requestedAccountAddresses?.let { addresses ->
-            addresses.all { address ->
-                getProfileUseCase().activeAccountsOnCurrentNetwork.any { it.address == address }
-            }
-        } ?: true // if requestedAccountAddresses is null, assume it's valid (no need to check)
+        // if requestedPersonaAddress is not present then return false
+        if (!isIdentityValid) return false
 
-        return isIdentityValid && areAccountsValid
+        // if requestedPersonaAddress is valid and requestedAccountAddresses is null then return true
+        if (requestedAccountAddresses == null) return true
+
+        // if requestedPersonaAddress is valid but requestedAccountAddresses is empty then return false
+        if (requestedAccountAddresses.isEmpty()) return false
+
+        // validate requestedAccountAddresses if present and non-empty
+        val profileAccountAddresses = profile.activeAccountsOnCurrentNetwork.map { it.address }
+        val areAccountsValid = requestedAccountAddresses.all { address ->
+            address in profileAccountAddresses
+        }
+
+        return areAccountsValid
     }
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
