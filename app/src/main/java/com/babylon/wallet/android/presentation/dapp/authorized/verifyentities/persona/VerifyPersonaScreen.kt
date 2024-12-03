@@ -46,6 +46,10 @@ fun VerifyPersonaScreen(
                 VerifyEntitiesViewModel.Event.TerminateVerification -> {
                     sharedViewModel.onAbortDappLogin()
                 }
+
+                is VerifyEntitiesViewModel.Event.AuthorizationFailed -> {
+                    sharedViewModel.handleRequestError(exception = event.throwable)
+                }
             }
         }
     }
