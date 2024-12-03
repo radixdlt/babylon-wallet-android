@@ -97,6 +97,7 @@ fun SelectPersonaScreen(
                     authorizedPersona = event.persona,
                     signature = event.signature
                 )
+                is SelectPersonaViewModel.Event.AuthorizationFailed -> sharedViewModel.handleRequestError(exception = event.throwable)
             }
         }
     }

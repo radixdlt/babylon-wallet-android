@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
@@ -122,7 +123,12 @@ class VerifyEntitiesViewModel @Inject constructor(
                             sendEvent(Event.EntitiesVerified)
                         }
                         setSigningInProgress(false)
-                    }.onFailure {
+                    }.onFailure { exception ->
+                        sendEvent(
+                            Event.AuthorizationFailed(
+                                throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception)
+                            )
+                        )
                         setSigningInProgress(false)
                     }
                 }
@@ -172,5 +178,7 @@ class VerifyEntitiesViewModel @Inject constructor(
             val walletAuthorizedRequestInteractionId: String,
             val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
         ) : Event
+
+        data class AuthorizationFailed(val throwable: RadixWalletException) : Event
     }
 }

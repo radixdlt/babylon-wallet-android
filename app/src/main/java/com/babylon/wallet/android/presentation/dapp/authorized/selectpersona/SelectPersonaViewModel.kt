@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dapp.authorized.selectpersona
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
@@ -156,6 +157,9 @@ class SelectPersonaViewModel @Inject constructor(
             )
             setSigningInProgress(false)
         }.onFailure {
+            sendEvent(
+                Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it))
+            )
             setSigningInProgress(false)
         }
     }
@@ -172,6 +176,8 @@ class SelectPersonaViewModel @Inject constructor(
             val persona: ProfileEntity.PersonaEntity,
             val signature: SignatureWithPublicKey? = null
         ) : Event
+
+        data class AuthorizationFailed(val throwable: RadixWalletException) : Event
     }
 
     data class State(

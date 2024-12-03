@@ -57,6 +57,9 @@ fun OneTimeChooseAccountsScreen(
                     sharedViewModel.onOneTimeAccountsCollected(accountsWithSignatures = event.accountsWithSignatures)
                 }
                 OneTimeChooseAccountsEvent.TerminateFlow -> exitRequestFlow()
+                is OneTimeChooseAccountsEvent.AuthorizationFailed -> {
+                    sharedViewModel.handleRequestError(exception = event.throwable)
+                }
             }
         }
     }

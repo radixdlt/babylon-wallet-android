@@ -798,7 +798,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun completeRequestHandling() {
         viewModelScope.launch {
-            val selectedPersona = state.value.personaWithSignature?.first // state.value.selectedPersona?.persona
+            val selectedPersona = state.value.personaWithSignature?.first
             requireNotNull(selectedPersona)
             if (request.isInternal) {
                 mutex.withLock {
@@ -841,29 +841,31 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: Throwable) {
-        if (exception is RadixWalletException.DappRequestException) {
-            logNonFatalException(exception)
-            when (exception.cause) {
-                is ProfileException.SecureStorageAccess -> {
-                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                }
+    fun handleRequestError(exception: Throwable) {
+        viewModelScope.launch {
+            if (exception is RadixWalletException.DappRequestException) {
+                logNonFatalException(exception)
+                when (exception.cause) {
+                    is ProfileException.SecureStorageAccess -> {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    }
 
-                is ProfileException.NoMnemonic -> {
-                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-                }
+                    is ProfileException.NoMnemonic -> {
+                        _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                    }
 
-                is RadixWalletException.LedgerCommunicationException,
-                is RadixWalletException.DappRequestException.RejectedByUser -> {
-                }
+                    is RadixWalletException.LedgerCommunicationException,
+                    is RadixWalletException.DappRequestException.RejectedByUser -> {
+                    }
 
-                else -> {
-                    respondToIncomingRequestUseCase.respondWithFailure(
-                        request,
-                        exception.dappWalletInteractionErrorType,
-                        exception.getDappMessage()
-                    )
-                    _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
+                    else -> {
+                        respondToIncomingRequestUseCase.respondWithFailure(
+                            request,
+                            exception.dappWalletInteractionErrorType,
+                            exception.getDappMessage()
+                        )
+                        _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
+                    }
                 }
             }
         }

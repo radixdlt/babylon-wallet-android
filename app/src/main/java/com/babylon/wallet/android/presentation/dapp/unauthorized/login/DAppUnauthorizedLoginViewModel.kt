@@ -239,29 +239,31 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: Throwable) {
-        if (exception is RadixWalletException.DappRequestException) {
-            logNonFatalException(exception)
-            when (exception.cause) {
-                is ProfileException.SecureStorageAccess -> {
-                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                }
+    fun handleRequestError(exception: Throwable) {
+        viewModelScope.launch {
+            if (exception is RadixWalletException.DappRequestException) {
+                logNonFatalException(exception)
+                when (exception.cause) {
+                    is ProfileException.SecureStorageAccess -> {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    }
 
-                is ProfileException.NoMnemonic -> {
-                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-                }
+                    is ProfileException.NoMnemonic -> {
+                        _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                    }
 
-                is RadixWalletException.LedgerCommunicationException,
-                is RadixWalletException.DappRequestException.RejectedByUser -> {
-                }
+                    is RadixWalletException.LedgerCommunicationException,
+                    is RadixWalletException.DappRequestException.RejectedByUser -> {
+                    }
 
-                else -> {
-                    respondToIncomingRequestUseCase.respondWithFailure(
-                        request = request,
-                        dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
-                        message = exception.getDappMessage()
-                    )
-                    _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
+                    else -> {
+                        respondToIncomingRequestUseCase.respondWithFailure(
+                            request = request,
+                            dappWalletInteractionErrorType = exception.dappWalletInteractionErrorType,
+                            message = exception.getDappMessage()
+                        )
+                        _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
+                    }
                 }
             }
         }
