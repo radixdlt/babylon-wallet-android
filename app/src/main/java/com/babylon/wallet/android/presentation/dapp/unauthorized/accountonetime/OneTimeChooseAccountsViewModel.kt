@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
@@ -180,6 +181,11 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
             )
             setSigningInProgress(false)
         }.onFailure {
+            sendEvent(
+                OneTimeChooseAccountsEvent.AuthorizationFailed(
+                    throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it)
+                )
+            )
             setSigningInProgress(false)
         }
     }
@@ -188,10 +194,14 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
 }
 
 sealed interface OneTimeChooseAccountsEvent : OneOffEvent {
+
     data object TerminateFlow : OneTimeChooseAccountsEvent
+
     data class AccountsCollected(
         val accountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?>
     ) : OneTimeChooseAccountsEvent
+
+    data class AuthorizationFailed(val throwable: RadixWalletException) : OneTimeChooseAccountsEvent
 }
 
 data class OneTimeChooseAccountUiState(
