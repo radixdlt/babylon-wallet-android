@@ -28,24 +28,27 @@ import com.radixdlt.sargon.newPersonaSampleStokenetConnor
 import com.radixdlt.sargon.newPersonaSampleStokenetHermione
 import com.radixdlt.sargon.newPersonaSampleStokenetLeiaSkywalker
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<SecurityFactorSamplesViewModel.State>() {
 
+    @Suppress("LongMethod")
     override fun initialState(): State = State(
-        displayOnlyItems = listOf(
+        displayOnlyItems = persistentListOf(
             newLedgerHardwareWalletFactorSourceSample().toCard(
-                accounts = listOf(newAccountSampleStokenetNadia()),
-                personas = listOf(newPersonaSampleStokenetLeiaSkywalker())
+                accounts = persistentListOf(newAccountSampleStokenetNadia()),
+                personas = persistentListOf(newPersonaSampleStokenetLeiaSkywalker())
             ),
             newLedgerHardwareWalletFactorSourceSample().toCard(
-                accounts = listOf(
+                accounts = persistentListOf(
                     newAccountSampleMainnetAlice(),
                     newAccountSampleMainnetBob(),
                     newAccountSampleMainnetCarol(),
@@ -53,7 +56,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     newAccountSampleStokenetOlivia(),
                     newAccountSampleStokenetPaige()
                 ),
-                personas = listOf(
+                personas = persistentListOf(
                     newPersonaSampleMainnetSatoshi(),
                     newPersonaSampleMainnetBatman(),
                     newPersonaSampleMainnetRipley(),
@@ -63,7 +66,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 )
             ),
             newLedgerHardwareWalletFactorSourceSample().toCard(
-                accounts = listOf(
+                accounts = persistentListOf(
                     newAccountSampleMainnetAlice(),
                     newAccountSampleMainnetBob(),
                     newAccountSampleMainnetCarol(),
@@ -73,7 +76,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 )
             ),
             newLedgerHardwareWalletFactorSourceSample().toCard(
-                personas = listOf(
+                personas = persistentListOf(
                     newPersonaSampleMainnetSatoshi(),
                     newPersonaSampleMainnetBatman(),
                     newPersonaSampleMainnetRipley(),
@@ -85,7 +88,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             FactorSourceCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 header = FactorSourceCard.Header.New,
-                messages = listOf(
+                messages = persistentListOf(
                     StatusMessage(
                         message = "Some warning",
                         type = StatusMessage.Type.WARNING
@@ -95,11 +98,11 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                         type = StatusMessage.Type.SUCCESS
                     )
                 ),
-                accounts = emptyList(),
-                personas = emptyList()
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             newDeviceFactorSourceSample().toCard(
-                messages = listOf(
+                messages = persistentListOf(
                     StatusMessage(
                         message = "Some error",
                         type = StatusMessage.Type.ERROR
@@ -112,39 +115,39 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 item = FactorSourceCard(
                     kind = it,
                     header = FactorSourceCard.Header.New,
-                    messages = emptyList(),
-                    accounts = emptyList(),
-                    personas = emptyList()
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf()
                 ),
                 isSelected = false
             )
-        },
+        }.toPersistentList(),
         multiChoiceItems = getSupportedKinds().map {
             SelectableFactorSourceCard(
                 item = FactorSourceCard(
                     kind = it,
                     header = FactorSourceCard.Header.New,
-                    messages = emptyList(),
-                    accounts = emptyList(),
-                    personas = emptyList()
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf()
                 ),
                 isSelected = false
             )
-        },
-        removableItems = listOf(
+        }.toPersistentList(),
+        removableItems = persistentListOf(
             FactorSourceCard(
                 kind = FactorSourceKind.DEVICE,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.ARCULUS_CARD,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             )
         )
     )
@@ -156,7 +159,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     selectableItem.copy(
                         isSelected = selectableItem.item.kind == item.kind
                     )
-                }
+                }.toPersistentList()
             )
         }
     }
@@ -167,7 +170,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 multiChoiceItems = state.multiChoiceItems.mapWhen(
                     predicate = { it.item.kind == item.kind },
                     mutation = { it.copy(isSelected = isChecked) }
-                )
+                ).toPersistentList()
             )
         }
     }
@@ -185,9 +188,9 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     }
 
     private fun DeviceFactorSource.toCard(
-        messages: List<StatusMessage> = emptyList(),
-        accounts: List<Account> = emptyList(),
-        personas: List<Persona> = emptyList()
+        messages: PersistentList<StatusMessage> = persistentListOf(),
+        accounts: PersistentList<Account> = persistentListOf(),
+        personas: PersistentList<Persona> = persistentListOf()
     ): FactorSourceCard {
         return FactorSourceCard(
             kind = kind,
@@ -203,9 +206,9 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     }
 
     private fun LedgerHardwareWalletFactorSource.toCard(
-        messages: List<StatusMessage> = emptyList(),
-        accounts: List<Account> = emptyList(),
-        personas: List<Persona> = emptyList()
+        messages: PersistentList<StatusMessage> = persistentListOf(),
+        accounts: PersistentList<Account> = persistentListOf(),
+        personas: PersistentList<Persona> = persistentListOf()
     ): FactorSourceCard {
         return FactorSourceCard(
             kind = kind,
@@ -231,10 +234,10 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     )
 
     data class State(
-        val displayOnlyItems: List<FactorSourceCard> = emptyList(),
-        val singleChoiceItems: List<SelectableFactorSourceCard> = emptyList(),
-        val multiChoiceItems: List<SelectableFactorSourceCard> = emptyList(),
-        val removableItems: List<FactorSourceCard> = emptyList()
+        val displayOnlyItems: PersistentList<FactorSourceCard> = persistentListOf(),
+        val singleChoiceItems: PersistentList<SelectableFactorSourceCard> = persistentListOf(),
+        val multiChoiceItems: PersistentList<SelectableFactorSourceCard> = persistentListOf(),
+        val removableItems: PersistentList<FactorSourceCard> = persistentListOf()
     ) : UiState
 
     companion object {

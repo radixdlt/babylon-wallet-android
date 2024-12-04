@@ -21,6 +21,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SelectableSingleChoiceFactorSourceCard(
@@ -162,9 +163,9 @@ private fun SelectableSingleChoiceFactorSourceCardPreview() {
             item = FactorSourceCard(
                 kind = FactorSourceKind.DEVICE,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             isSelected = false,
             onSelect = {}
@@ -180,9 +181,9 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
             item = FactorSourceCard(
                 kind = FactorSourceKind.ARCULUS_CARD,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             isChecked = true,
             onCheckedChange = { _, _ -> }
@@ -213,9 +214,9 @@ private fun RemovableFactorSourceCardPreview() {
             item = FactorSourceCard(
                 kind = FactorSourceKind.DEVICE,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             onRemoveClick = {}
         )

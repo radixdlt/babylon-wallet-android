@@ -51,6 +51,8 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun FactorSourceCardView(
@@ -90,9 +92,9 @@ fun FactorSourceCardView(
     title: String,
     subtitle: String?,
     lastUsedOn: String?,
-    messages: List<StatusMessage>,
-    accounts: List<Account>,
-    personas: List<Persona>,
+    messages: PersistentList<StatusMessage>,
+    accounts: PersistentList<Account>,
+    personas: PersistentList<Persona>,
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
@@ -211,8 +213,8 @@ fun SimpleFactorSourceCard(
 
 @Composable
 private fun LinkedEntitiesView(
-    accounts: List<Account>,
-    personas: List<Persona>
+    accounts: PersistentList<Account>,
+    personas: PersistentList<Persona>
 ) {
     val accountsText = when {
         accounts.isEmpty() -> null
@@ -382,7 +384,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     name = "My Phone",
                     lastUsedOn = "Today"
                 ),
-                messages = listOf(
+                messages = persistentListOf(
                     StatusMessage(
                         message = "Choosing a passphrase is only recommended for advanced users",
                         type = StatusMessage.Type.WARNING
@@ -392,10 +394,10 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                         type = StatusMessage.Type.WARNING
                     )
                 ),
-                accounts = listOf(
+                accounts = persistentListOf(
                     Account.sampleMainnet()
                 ),
-                personas = listOf(
+                personas = persistentListOf(
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
                 )
@@ -403,35 +405,35 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
             FactorSourceCard(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.ARCULUS_CARD,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.PASSPHRASE,
                 header = FactorSourceCard.Header.New,
-                messages = emptyList(),
-                accounts = emptyList(),
-                personas = emptyList()
+                messages = persistentListOf(),
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 header = FactorSourceCard.Header.New,
-                messages = listOf(
+                messages = persistentListOf(
                     StatusMessage(
                         message = "This seed phrase has been written down",
                         type = StatusMessage.Type.SUCCESS
                     )
                 ),
-                accounts = emptyList(),
-                personas = emptyList()
+                accounts = persistentListOf(),
+                personas = persistentListOf()
             )
         )
 }

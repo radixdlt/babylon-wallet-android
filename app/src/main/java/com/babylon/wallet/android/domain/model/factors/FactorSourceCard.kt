@@ -4,13 +4,14 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Persona
+import kotlinx.collections.immutable.PersistentList
 
 data class FactorSourceCard(
     val kind: FactorSourceKind,
     val header: Header,
-    val messages: List<StatusMessage>,
-    val accounts: List<Account>,
-    val personas: List<Persona>
+    val messages: PersistentList<StatusMessage>,
+    val accounts: PersistentList<Account>,
+    val personas: PersistentList<Persona>
 ) {
 
     sealed interface Header {
