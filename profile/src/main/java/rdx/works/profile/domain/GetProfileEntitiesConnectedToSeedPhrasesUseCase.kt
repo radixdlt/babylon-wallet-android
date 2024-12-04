@@ -28,7 +28,7 @@ class GetProfileEntitiesConnectedToSeedPhrasesUseCase @Inject constructor(
 
             val deviceFactorSources = profile.factorSources.filterIsInstance<FactorSource.Device>()
             val allAccountsOnNetwork = profile.currentNetwork?.accounts?.filterNot { it.isDeleted }.orEmpty()
-            val allPersonasOnNetwork = profile.currentNetwork?.personas?.filter { it.isDeleted }.orEmpty()
+            val allPersonasOnNetwork = profile.currentNetwork?.personas?.filterNot { it.isDeleted }.orEmpty()
 
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
