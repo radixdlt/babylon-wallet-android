@@ -97,7 +97,7 @@ class GetSignaturesViewModel @Inject constructor(
                     is FactorSource.TrustedContact -> {
                         // Not implemented yet
                     }
-                    is FactorSource.Passphrase -> TODO("Passphrase is not yet supported.")
+                    is FactorSource.Password -> error("Password factor source is not yet supported.")
                 }
             }
 

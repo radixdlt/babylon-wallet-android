@@ -14,6 +14,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.allEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.isDeleted
 import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -34,9 +35,11 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         getBackupStateUseCase(),
         checkKeystoreIntegrityUseCase.didMnemonicIntegrityChange
     ) { entities, backedUpFactorSourceIds, cloudBackupState, _ ->
-        entities.mapNotNull { entity ->
-            mapToEntityWithSecurityPrompt(entity, backedUpFactorSourceIds, cloudBackupState)
-        }
+        entities
+            .filterNot { it.isDeleted() }
+            .mapNotNull { entity ->
+                mapToEntityWithSecurityPrompt(entity, backedUpFactorSourceIds, cloudBackupState)
+            }
     }
 
     @Suppress("NestedBlockDepth")

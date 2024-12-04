@@ -144,7 +144,7 @@ private fun GetSignaturesBottomSheetContent(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.ledgerFactorSource.value.hint.name)
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.ledgerFactorSource.value.hint.label)
                 }
 
                 State.ShowContentForFactorSource.None -> { /* nothing */ }

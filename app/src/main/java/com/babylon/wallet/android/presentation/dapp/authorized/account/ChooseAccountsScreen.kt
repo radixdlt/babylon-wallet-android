@@ -63,6 +63,7 @@ fun ChooseAccountsScreen(
                     )
                 }
                 ChooseAccountsEvent.TerminateFlow -> sharedViewModel.onAbortDappLogin()
+                is ChooseAccountsEvent.AuthorizationFailed -> sharedViewModel.handleRequestError(exception = event.throwable)
             }
         }
     }

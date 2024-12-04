@@ -77,7 +77,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 hdPublicKeys = signersWithPublicKeys.values.toList(),
                 compiledTransactionIntent = request.compiledTransactionIntent.bytes.hex,
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice(
-                    name = ledgerFactorSource.value.hint.name,
+                    name = ledgerFactorSource.value.hint.label,
                     model = deviceModel,
                     id = ledgerFactorSource.value.id.body.hex
                 )
@@ -105,7 +105,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 hdPublicKeys = signersWithPublicKeys.values.toList(),
                 subintentHash = request.intoHash().hex,
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice(
-                    name = ledgerFactorSource.value.hint.name,
+                    name = ledgerFactorSource.value.hint.label,
                     model = deviceModel,
                     id = ledgerFactorSource.value.id.body.hex
                 )
@@ -131,7 +131,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             ledgerMessenger.signChallengeRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice(
-                    name = ledgerFactorSource.value.hint.name,
+                    name = ledgerFactorSource.value.hint.label,
                     model = deviceModel,
                     id = ledgerFactorSource.value.id.body.hex
                 ),

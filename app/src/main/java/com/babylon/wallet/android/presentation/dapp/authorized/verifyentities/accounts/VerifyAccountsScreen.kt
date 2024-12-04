@@ -44,6 +44,10 @@ fun VerifyAccountsScreen(
                 is VerifyEntitiesViewModel.Event.NavigateToVerifyAccounts -> {
                     // do nothing here
                 }
+
+                is VerifyEntitiesViewModel.Event.AuthorizationFailed -> {
+                    sharedViewModel.handleRequestError(exception = event.throwable)
+                }
             }
         }
     }
