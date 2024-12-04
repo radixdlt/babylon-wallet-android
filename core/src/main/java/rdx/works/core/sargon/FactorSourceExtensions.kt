@@ -1,6 +1,5 @@
 package rdx.works.core.sargon
 
-import android.bluetooth.BluetoothClass.Device
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DeviceFactorSource
