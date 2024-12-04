@@ -210,7 +210,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             manifest = subintentManifest,
             message = transactionRequest.unvalidatedManifestData.plainMessage,
             expiration = transactionRequestKind.expiration
-        ).onSuccess { signedSubintent ->
+        ).mapCatching { signedSubintent ->
             // Respond to dApp or throw an error if it fails, preventing the transaction status polling
             val expiration = respondToIncomingRequestUseCase.respondWithSuccessSubintent(
                 request = data.value.request,
@@ -232,16 +232,19 @@ class TransactionSubmitDelegateImpl @Inject constructor(
                 requestId = data.value.request.interactionId,
                 expiration = expiration
             )
-
-            _state.update { it.copy(isSubmitting = false) }
-        }.onFailure { error ->
-            _state.update {
-                it.copy(
+        }.onSuccess {
+            _state.update { state ->
+                state.copy(isSubmitting = false)
+            }
+        }.recover { error ->
+            logger.e(error)
+            _state.update { state ->
+                state.copy(
                     isSubmitting = false,
                     error = TransactionErrorMessage(error)
                 )
             }
-        }.toUnitResult()
+        }
     }
 
     @Suppress("NestedBlockDepth")
