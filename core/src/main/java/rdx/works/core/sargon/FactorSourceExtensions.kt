@@ -84,7 +84,7 @@ fun FactorSource.Device.Companion.device(
     require((isMain && isOlympia).not()) {
         "Olympia Device factor source should never be marked 'main'."
     }
-    // TODO: Replace with the initializer from Sargon
+    // TODO Replace with the initializer from Sargon
     return DeviceFactorSource(
         id = FactorSourceId.Hash.init(
             kind = FactorSourceKind.DEVICE,
