@@ -49,7 +49,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.sample
-import rdx.works.profile.domain.DeviceFactorSourceData
+import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
 @Composable
 fun SeedPhrasesScreen(
@@ -89,9 +89,9 @@ fun SeedPhrasesScreen(
 
 @Composable
 private fun SeedPhraseContent(
-    deviceFactorSourceData: PersistentList<DeviceFactorSourceData>,
+    deviceFactorSourceData: PersistentList<DeviceFactorSourceWithEntities>,
     onBackClick: () -> Unit,
-    onSeedPhraseClick: (DeviceFactorSourceData) -> Unit,
+    onSeedPhraseClick: (DeviceFactorSourceWithEntities) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -159,9 +159,9 @@ private fun SeedPhraseContent(
 @Composable
 fun SeedPhraseCard(
     modifier: Modifier,
-    data: DeviceFactorSourceData
+    data: DeviceFactorSourceWithEntities
 ) {
-    val mnemonicNeedsRecovery = data.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover
+    val mnemonicNeedsRecovery = data.mnemonicState == DeviceFactorSourceWithEntities.MnemonicState.NeedRecover
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
@@ -224,7 +224,7 @@ fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
         }
-        if (data.mnemonicState == DeviceFactorSourceData.MnemonicState.NotBackedUp) {
+        if (data.mnemonicState == DeviceFactorSourceWithEntities.MnemonicState.NotBackedUp) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
             WarningText(
                 text = AnnotatedString(stringResource(id = R.string.securityProblems_no3_seedPhrases)),
@@ -263,12 +263,12 @@ fun SeedPhrasesWithAccountsAndPersonasPreview() {
         SeedPhraseContent(
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample(),
                     allAccounts = Account.sampleMainnet.all,
                     personas = Persona.sampleMainnet.all
                 ),
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample.other(),
                     allAccounts = persistentListOf(Account.sampleMainnet())
                 )
@@ -286,10 +286,10 @@ fun SeedPhrasesWithoutAccountsAndPersonasPreview() {
         SeedPhraseContent(
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample(),
                 ),
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample.other(),
                     allAccounts = persistentListOf(Account.sampleMainnet())
                 )
