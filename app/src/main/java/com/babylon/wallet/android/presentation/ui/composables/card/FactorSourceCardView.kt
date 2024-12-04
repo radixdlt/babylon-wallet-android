@@ -42,9 +42,13 @@ import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
 
@@ -54,17 +58,30 @@ fun FactorSourceCardView(
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
-    FactorSourceCardView(
-        iconRes = item.kind.iconRes(),
-        title = item.kind.title(),
-        subtitle = item.kind.subtitle(),
-        lastUsedOn = item.lastUsedOn,
-        messages = item.messages,
-        accounts = item.accounts,
-        personas = item.personas,
-        modifier = modifier,
-        endContent = endContent
-    )
+    when (item.header) {
+        is FactorSourceCard.Header.Added -> FactorSourceCardView(
+            iconRes = item.kind.iconRes(),
+            title = item.header.name,
+            subtitle = null,
+            lastUsedOn = item.header.lastUsedOn,
+            messages = item.messages,
+            accounts = item.accounts,
+            personas = item.personas,
+            modifier = modifier,
+            endContent = endContent
+        )
+        FactorSourceCard.Header.New -> FactorSourceCardView(
+            iconRes = item.kind.iconRes(),
+            title = item.kind.title(),
+            subtitle = item.kind.subtitle(),
+            lastUsedOn = null,
+            messages = item.messages,
+            accounts = item.accounts,
+            personas = item.personas,
+            modifier = modifier,
+            endContent = endContent
+        )
+    }
 }
 
 @Composable
@@ -213,8 +230,8 @@ private fun LinkedEntitiesView(
             accountsText,
             personasText
         )
-        accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accounts)
-        personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personas)
+        accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
+        personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
         else -> ""
     }
 
@@ -266,7 +283,7 @@ private fun LinkedEntitiesView(
                     .padding(
                         start = RadixTheme.dimensions.paddingDefault,
                         end = RadixTheme.dimensions.paddingDefault,
-                        top = RadixTheme.dimensions.paddingXSmall,
+                        top = RadixTheme.dimensions.paddingSmall,
                         bottom = RadixTheme.dimensions.paddingDefault
                     ),
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
@@ -357,7 +374,14 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
         get() = sequenceOf(
             FactorSourceCard(
                 kind = FactorSourceKind.DEVICE,
-                lastUsedOn = "Today",
+                header = FactorSourceCard.Header.Added(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.DEVICE,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "My Phone",
+                    lastUsedOn = "Today"
+                ),
                 messages = listOf(
                     StatusMessage(
                         message = "Choosing a passphrase is only recommended for advanced users",
@@ -378,28 +402,28 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                lastUsedOn = "Today",
+                header = FactorSourceCard.Header.New,
                 messages = emptyList(),
                 accounts = emptyList(),
                 personas = emptyList()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.ARCULUS_CARD,
-                lastUsedOn = "Today",
+                header = FactorSourceCard.Header.New,
                 messages = emptyList(),
                 accounts = emptyList(),
                 personas = emptyList()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.PASSPHRASE,
-                lastUsedOn = "Today",
+                header = FactorSourceCard.Header.New,
                 messages = emptyList(),
                 accounts = emptyList(),
                 personas = emptyList()
             ),
             FactorSourceCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                lastUsedOn = null,
+                header = FactorSourceCard.Header.New,
                 messages = listOf(
                     StatusMessage(
                         message = "This seed phrase has been written down",

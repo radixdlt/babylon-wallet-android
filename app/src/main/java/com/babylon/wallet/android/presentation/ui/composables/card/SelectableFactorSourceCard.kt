@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -24,21 +23,38 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
-fun SelectableFactorSourceCard(
+fun SelectableSingleChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
     item: FactorSourceCard,
     isSelected: Boolean,
-    isSingleChoice: Boolean,
-    onSelectedChange: (Boolean) -> Unit
+    onSelect: (FactorSourceCard) -> Unit
 ) {
     FactorSourceCardView(
         modifier = modifier,
         item = item,
         endContent = {
-            SelectorView(
+            RadioButtonSelectorView(
                 isSelected = isSelected,
-                isSingleChoice = isSingleChoice,
-                onSelectedChange = onSelectedChange
+                onSelectedChange = { onSelect(item) }
+            )
+        }
+    )
+}
+
+@Composable
+fun SelectableMultiChoiceFactorSourceCard(
+    modifier: Modifier = Modifier,
+    item: FactorSourceCard,
+    isChecked: Boolean,
+    onCheckedChange: (FactorSourceCard, Boolean) -> Unit
+) {
+    FactorSourceCardView(
+        modifier = modifier,
+        item = item,
+        endContent = {
+            CheckboxSelectorView(
+                isChecked = isChecked,
+                onCheckedChange = { onCheckedChange(item, it) }
             )
         }
     )
@@ -48,7 +64,7 @@ fun SelectableFactorSourceCard(
 fun RemovableFactorSourceCard(
     modifier: Modifier = Modifier,
     item: FactorSourceCard,
-    onRemoveClick: () -> Unit
+    onRemoveClick: (FactorSourceCard) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -59,7 +75,9 @@ fun RemovableFactorSourceCard(
             item = item
         )
 
-        IconButton(onClick = onRemoveClick) {
+        IconButton(
+            onClick = { onRemoveClick(item) }
+        ) {
             Icon(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
                 contentDescription = null,
@@ -70,13 +88,12 @@ fun RemovableFactorSourceCard(
 }
 
 @Composable
-fun SimpleSelectableFactorSourceCard(
+fun SimpleSelectableMultiChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
     @DrawableRes iconRes: Int,
     title: String,
-    isSelected: Boolean,
-    isSingleChoice: Boolean,
-    onSelectedChange: (Boolean) -> Unit
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
 ) {
     SimpleFactorSourceCard(
         modifier = modifier
@@ -87,64 +104,88 @@ fun SimpleSelectableFactorSourceCard(
         iconRes = iconRes,
         title = title,
         endContent = {
-            SelectorView(
-                isSelected = isSelected,
-                isSingleChoice = isSingleChoice,
-                onSelectedChange = onSelectedChange
+            CheckboxSelectorView(
+                isChecked = isChecked,
+                onCheckedChange = onCheckedChange
             )
         }
     )
 }
 
 @Composable
-private fun SelectorView(
+private fun RadioButtonSelectorView(
     isSelected: Boolean,
-    isSingleChoice: Boolean,
-    onSelectedChange: (Boolean) -> Unit
+    onSelectedChange: () -> Unit
 ) {
     Row {
-        if (isSingleChoice) {
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
 
-            RadixRadioButton(
-                selected = isSelected,
-                onClick = { onSelectedChange(true) }
-            )
+        RadixRadioButton(
+            selected = isSelected,
+            onClick = onSelectedChange
+        )
 
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
-        } else {
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
+    }
+}
 
-            Checkbox(
-                checked = isSelected,
-                colors = CheckboxDefaults.colors().copy(
-                    checkedCheckmarkColor = RadixTheme.colors.white,
-                    checkedBorderColor = RadixTheme.colors.gray1,
-                    checkedBoxColor = RadixTheme.colors.gray1,
-                    uncheckedCheckmarkColor = Color.Transparent,
-                    uncheckedBorderColor = RadixTheme.colors.gray2,
-                    uncheckedBoxColor = RadixTheme.colors.gray5
-                ),
-                onCheckedChange = onSelectedChange
-            )
+@Composable
+private fun CheckboxSelectorView(
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row {
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
 
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-        }
+        Checkbox(
+            checked = isChecked,
+            colors = CheckboxDefaults.colors().copy(
+                checkedCheckmarkColor = RadixTheme.colors.white,
+                checkedBorderColor = RadixTheme.colors.gray1,
+                checkedBoxColor = RadixTheme.colors.gray1,
+                uncheckedCheckmarkColor = Color.Transparent,
+                uncheckedBorderColor = RadixTheme.colors.gray2,
+                uncheckedBoxColor = RadixTheme.colors.gray5
+            ),
+            onCheckedChange = onCheckedChange
+        )
+
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
     }
 }
 
 @Composable
 @Preview
-@UsesSampleValues
-private fun SelectableFactorSourceCardPreview(
-    @PreviewParameter(FactorSourceCardPreviewProvider::class) item: FactorSourceCard
-) {
+private fun SelectableSingleChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
-        SelectableFactorSourceCard(
-            item = item,
+        SelectableSingleChoiceFactorSourceCard(
+            item = FactorSourceCard(
+                kind = FactorSourceKind.DEVICE,
+                header = FactorSourceCard.Header.New,
+                messages = emptyList(),
+                accounts = emptyList(),
+                personas = emptyList()
+            ),
             isSelected = false,
-            isSingleChoice = true,
-            onSelectedChange = {}
+            onSelect = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun SelectableMultiChoiceFactorSourceCardPreview() {
+    RadixWalletPreviewTheme {
+        SelectableMultiChoiceFactorSourceCard(
+            item = FactorSourceCard(
+                kind = FactorSourceKind.ARCULUS_CARD,
+                header = FactorSourceCard.Header.New,
+                messages = emptyList(),
+                accounts = emptyList(),
+                personas = emptyList()
+            ),
+            isChecked = true,
+            onCheckedChange = { _, _ -> }
         )
     }
 }
@@ -154,12 +195,11 @@ private fun SelectableFactorSourceCardPreview(
 @UsesSampleValues
 private fun SimpleSelectableFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
-        SimpleSelectableFactorSourceCard(
+        SimpleSelectableMultiChoiceFactorSourceCard(
             iconRes = FactorSourceKind.DEVICE.iconRes(),
             title = "My Phone",
-            isSelected = false,
-            isSingleChoice = false,
-            onSelectedChange = {}
+            isChecked = false,
+            onCheckedChange = {}
         )
     }
 }
@@ -172,7 +212,7 @@ private fun RemovableFactorSourceCardPreview() {
         RemovableFactorSourceCard(
             item = FactorSourceCard(
                 kind = FactorSourceKind.DEVICE,
-                lastUsedOn = null,
+                header = FactorSourceCard.Header.New,
                 messages = emptyList(),
                 accounts = emptyList(),
                 personas = emptyList()

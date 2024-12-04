@@ -55,6 +55,7 @@ fun NavGraphBuilder.debugSettings(
                         InspectProfile -> navController.inspectProfile()
                         SettingsItem.DebugSettingsItem.LinkConnectionStatusIndicator -> {}
                         SettingsItem.DebugSettingsItem.InspectCloudBackups -> navController.inspectGoogleBackups()
+                        SettingsItem.DebugSettingsItem.SecurityFactorSamples -> navController.securityFactorSamples()
                     }
                 }
             )
