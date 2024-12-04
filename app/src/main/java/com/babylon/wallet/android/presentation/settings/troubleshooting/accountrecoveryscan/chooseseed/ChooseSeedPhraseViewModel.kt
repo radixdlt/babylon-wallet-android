@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.babylonFactorSourcesWithAccounts
 import rdx.works.core.sargon.olympiaFactorSourcesWithAccounts
-import rdx.works.profile.domain.DeviceFactorSourceData
+import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -47,7 +47,7 @@ class ChooseSeedPhraseViewModel @Inject constructor(
             }.collect { factorSources ->
                 val existing = _state.value.factorSources
                 var updated = factorSources.map { entry ->
-                    val data = DeviceFactorSourceData(
+                    val data = DeviceFactorSourceWithEntities(
                         deviceFactorSource = entry.key,
                         allAccounts = entry.value.toPersistentList()
                     )
@@ -79,7 +79,7 @@ class ChooseSeedPhraseViewModel @Inject constructor(
     }
 
     data class State(
-        val factorSources: ImmutableList<Selectable<DeviceFactorSourceData>> = persistentListOf(),
+        val factorSources: ImmutableList<Selectable<DeviceFactorSourceWithEntities>> = persistentListOf(),
         val uiMessage: UiMessage? = null,
         val mnemonicType: MnemonicType = MnemonicType.Babylon
     ) : UiState {
