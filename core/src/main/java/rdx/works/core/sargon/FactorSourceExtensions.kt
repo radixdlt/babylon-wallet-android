@@ -1,5 +1,6 @@
 package rdx.works.core.sargon
 
+import android.bluetooth.BluetoothClass.Device
 import com.radixdlt.sargon.ArculusCardFactorSource
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DeviceFactorSource
@@ -83,6 +84,7 @@ fun FactorSource.Device.Companion.device(
     require((isMain && isOlympia).not()) {
         "Olympia Device factor source should never be marked 'main'."
     }
+    // TODO: Replace with the initializer from Sargon
     return DeviceFactorSource(
         id = FactorSourceId.Hash.init(
             kind = FactorSourceKind.DEVICE,
@@ -100,7 +102,8 @@ fun FactorSource.Device.Companion.device(
         ),
         hint = DeviceFactorSourceHint(
             model = hostInfo.description.model,
-            name = hostInfo.description.name,
+            deviceName = hostInfo.description.name,
+            label = "My Phone",
             mnemonicWordCount = mnemonicWithPassphrase.mnemonic.wordCount,
             systemVersion = hostInfo.hostOs.version,
             hostAppVersion = hostInfo.hostOs.version,
@@ -123,7 +126,7 @@ fun FactorSource.Ledger.Companion.init(
         flags = emptyList()
     ),
     hint = LedgerHardwareWalletHint(
-        name = name,
+        label = name,
         model = model
     )
 ).asGeneral()
@@ -157,8 +160,9 @@ val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
                     flags = emptyList()
                 ),
                 hint = DeviceFactorSourceHint(
-                    name = "Babylon",
+                    deviceName = "Babylon",
                     model = "Device 1",
+                    label = "My Phone",
                     mnemonicWordCount = Bip39WordCount.TWENTY_FOUR,
                     systemVersion = "Android 14 (API 34)",
                     hostAppVersion = "1.0.0",
@@ -180,8 +184,9 @@ val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
                     flags = emptyList()
                 ),
                 hint = DeviceFactorSourceHint(
-                    name = "Olympia",
+                    deviceName = "Olympia",
                     model = "Device 1",
+                    label = "My Phone",
                     mnemonicWordCount = Bip39WordCount.TWENTY_FOUR,
                     systemVersion = "Android 14 (API 34)",
                     hostAppVersion = "1.0.0",

@@ -145,7 +145,7 @@ private fun DerivePublicKeyBottomSheetContent(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.name)
+                    RoundLedgerItem(ledgerName = contentType.selectedLedgerDevice.value.hint.label)
                 }
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

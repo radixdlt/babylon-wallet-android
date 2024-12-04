@@ -33,7 +33,7 @@ fun LedgerListItem(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = ledgerFactorSource.value.hint.name,
+                text = ledgerFactorSource.value.hint.label,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1
             )

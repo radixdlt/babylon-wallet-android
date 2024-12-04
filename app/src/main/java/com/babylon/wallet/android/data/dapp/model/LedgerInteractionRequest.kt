@@ -109,7 +109,7 @@ sealed interface LedgerInteractionRequest {
         companion object {
             fun from(factorSource: FactorSource.Ledger): LedgerDevice = LedgerDevice(
                 id = factorSource.value.id.body.hex,
-                name = factorSource.value.hint.name,
+                name = factorSource.value.hint.label,
                 model = LedgerDeviceModel.from(factorSource.value.hint.model),
             )
         }
