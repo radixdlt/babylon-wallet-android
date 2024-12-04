@@ -136,7 +136,7 @@ private fun DeriveAccountsBottomSheetContent(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.label)
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixTextButton(
                         modifier = Modifier.fillMaxWidth(),

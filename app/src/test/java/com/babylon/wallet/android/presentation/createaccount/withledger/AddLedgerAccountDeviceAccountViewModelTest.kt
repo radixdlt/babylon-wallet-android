@@ -120,7 +120,7 @@ class AddLedgerAccountDeviceAccountViewModelTest : StateViewModelTest<AddLedgerD
             addLedgerFactorSourceUseCaseMock(
                 ledgerId = ledgerDeviceToAdd.value.id.asGeneral(),
                 model = LedgerHardwareWalletModel.NANO_S,
-                name = ledgerDeviceToAdd.value.hint.name
+                name = ledgerDeviceToAdd.value.hint.label
             )
         } returns AddLedgerFactorSourceResult.Added(
             ledgerFactorSource = ledgerDeviceToAdd
