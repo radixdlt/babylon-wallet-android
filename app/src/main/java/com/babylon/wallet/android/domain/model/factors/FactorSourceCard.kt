@@ -18,7 +18,7 @@ data class FactorSourceCard(
 
         data object New : Header
 
-        data class Added(
+        data class Instance(
             val id: FactorSourceId.Hash,
             val name: String,
             val lastUsedOn: String?

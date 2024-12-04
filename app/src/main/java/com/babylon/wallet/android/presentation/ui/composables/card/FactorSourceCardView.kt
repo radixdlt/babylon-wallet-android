@@ -61,7 +61,7 @@ fun FactorSourceCardView(
     endContent: (@Composable () -> Unit)? = null
 ) {
     when (item.header) {
-        is FactorSourceCard.Header.Added -> FactorSourceCardView(
+        is FactorSourceCard.Header.Instance -> FactorSourceCardView(
             iconRes = item.kind.iconRes(),
             title = item.header.name,
             subtitle = null,
@@ -320,7 +320,7 @@ fun FactorSourceKind.iconRes(): Int {
         FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_ledger_hardware
         FactorSourceKind.OFF_DEVICE_MNEMONIC -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_passphrase
         FactorSourceKind.ARCULUS_CARD -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_arculus
-        FactorSourceKind.PASSPHRASE -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_password
+        FactorSourceKind.PASSWORD -> com.babylon.wallet.android.designsystem.R.drawable.ic_factor_password
         FactorSourceKind.TRUSTED_CONTACT,
         FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
     }
@@ -334,7 +334,7 @@ fun FactorSourceKind.title(): String {
             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> R.string.factorSources_card_ledgerTitle
             FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_passphraseTitle
             FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_card_arculusCardTitle
-            FactorSourceKind.PASSPHRASE -> R.string.factorSources_card_passwordTitle
+            FactorSourceKind.PASSWORD -> R.string.factorSources_card_passwordTitle
             FactorSourceKind.TRUSTED_CONTACT,
             FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
         }
@@ -349,7 +349,7 @@ fun FactorSourceKind.subtitle(): String {
             FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> R.string.factorSources_card_ledgerDescription
             FactorSourceKind.OFF_DEVICE_MNEMONIC -> R.string.factorSources_card_passphraseDescription
             FactorSourceKind.ARCULUS_CARD -> R.string.factorSources_card_arculusCardDescription
-            FactorSourceKind.PASSPHRASE -> R.string.factorSources_card_passwordDescription
+            FactorSourceKind.PASSWORD -> R.string.factorSources_card_passwordDescription
             FactorSourceKind.TRUSTED_CONTACT,
             FactorSourceKind.SECURITY_QUESTIONS -> error("Not supported yet")
         }
@@ -376,7 +376,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
         get() = sequenceOf(
             FactorSourceCard(
                 kind = FactorSourceKind.DEVICE,
-                header = FactorSourceCard.Header.Added(
+                header = FactorSourceCard.Header.Instance(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -417,7 +417,7 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                 personas = persistentListOf()
             ),
             FactorSourceCard(
-                kind = FactorSourceKind.PASSPHRASE,
+                kind = FactorSourceKind.PASSWORD,
                 header = FactorSourceCard.Header.New,
                 messages = persistentListOf(),
                 accounts = persistentListOf(),

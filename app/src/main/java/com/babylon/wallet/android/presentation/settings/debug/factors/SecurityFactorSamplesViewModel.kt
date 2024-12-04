@@ -194,9 +194,9 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     ): FactorSourceCard {
         return FactorSourceCard(
             kind = kind,
-            header = FactorSourceCard.Header.Added(
+            header = FactorSourceCard.Header.Instance(
                 id = id.asGeneral(),
-                name = hint.name,
+                name = hint.label,
                 lastUsedOn = common.lastUsedOn.formatted()
             ),
             messages = messages,
@@ -212,9 +212,9 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     ): FactorSourceCard {
         return FactorSourceCard(
             kind = kind,
-            header = FactorSourceCard.Header.Added(
+            header = FactorSourceCard.Header.Instance(
                 id = id.asGeneral(),
-                name = hint.name,
+                name = hint.label,
                 lastUsedOn = common.lastUsedOn.formatted()
             ),
             messages = messages,
