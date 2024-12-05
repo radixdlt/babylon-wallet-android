@@ -46,6 +46,8 @@ class SecurityCenterViewModel @Inject constructor(
 
             val hasSecurityProblems = securityProblems.isNotEmpty()
 
+            val hasSecurityShieldsProblems = true
+
             val hasSecurityRelatedProblems = securityProblems.any { it.isSecurityFactorRelated }
 
             val hasCloudBackupProblems = securityProblems.any { it.hasCloudBackupProblems }

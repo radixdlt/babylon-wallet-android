@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -47,6 +49,7 @@ fun SecurityCenterScreen(
     modifier: Modifier = Modifier,
     securityCenterViewModel: SecurityCenterViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
+    onSecurityShieldsClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
     onRecoverEntitiesClick: () -> Unit,
@@ -57,6 +60,7 @@ fun SecurityCenterScreen(
         modifier = modifier,
         state = state,
         onBackClick = onBackClick,
+        onSecurityShieldsClick = onSecurityShieldsClick,
         onSecurityFactorsClick = onSecurityFactorsClick,
         onBackupConfigurationClick = onBackupConfigurationClick,
         onRecoverEntitiesClick = onRecoverEntitiesClick,
@@ -69,6 +73,7 @@ private fun SecurityCenterContent(
     modifier: Modifier = Modifier,
     state: SecurityCenterViewModel.SecurityCenterUiState,
     onBackClick: () -> Unit,
+    onSecurityShieldsClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
     onRecoverEntitiesClick: () -> Unit,
@@ -170,15 +175,38 @@ private fun SecurityCenterContent(
                     if (!state.hasSecurityProblems) {
                         RecoverableStatusCard(text = stringResource(id = R.string.securityCenter_goodState_heading))
                     }
-                    SecurityFactorsCard(
-                        onSecurityFactorsClick = onSecurityFactorsClick,
-                        needsAction = state.hasSecurityRelatedProblems
+
+                    SecurityCenterCard(
+                        modifier = modifier,
+                        onClick = onSecurityShieldsClick,
+                        title = stringResource(id = R.string.securityCenter_securityShieldsItem_title),
+                        subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
+                        iconRes = DSR.ic_security_shields,
+                        needsAction = state.hasSecurityShieldsProblems,
+                        positiveStatus = stringResource(id = R.string.securityCenter_securityShieldsItem_shieldedStatus)
                     )
-                    BackupConfigurationCard(
+
+                    SecurityCenterCard(
+                        modifier = modifier,
+                        onClick = onSecurityFactorsClick,
+                        title = stringResource(id = R.string.securityCenter_securityFactorsItem_title),
+                        subtitle = stringResource(id = R.string.securityCenter_securityFactorsItem_subtitle),
+                        iconRes = DSR.ic_security_factors,
+                        needsAction = state.hasSecurityRelatedProblems,
+                        positiveStatus = stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
+                    )
+
+                    SecurityCenterCard(
+                        modifier = modifier,
+                        onClick = onBackupConfigurationClick,
+                        iconRes = DSR.ic_configuration_backup,
+                        title = stringResource(id = R.string.securityCenter_configurationBackupItem_title),
+                        subtitle = stringResource(id = R.string.securityCenter_configurationBackupItem_subtitle),
                         needsAction = state.hasCloudBackupProblems,
-                        onBackupConfigurationClick = onBackupConfigurationClick
+                        positiveStatus = stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
                     )
-                    Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 }
                 SecurityCenterViewModel.SecurityCenterUiState.Loading -> {}
             }
@@ -246,121 +274,76 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
 }
 
 @Composable
-private fun SecurityFactorsCard(
+private fun SecurityCenterCard(
     modifier: Modifier = Modifier,
-    onSecurityFactorsClick: () -> Unit,
-    needsAction: Boolean
+    onClick: () -> Unit,
+    @DrawableRes iconRes: Int,
+    title: String,
+    subtitle: String,
+    needsAction: Boolean,
+    positiveStatus: String
 ) {
     Row(
         modifier = modifier
-            .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
-            .clip(RadixTheme.shapes.roundedRectMedium)
-            .clickable {
-                onSecurityFactorsClick()
-            }
-            .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
+            .shadow(
+                elevation = 6.dp,
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
+            .clip(
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
+            .clickable { onClick() }
+            .background(
+                color = RadixTheme.colors.defaultBackground,
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingLarge
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
     ) {
         Icon(
             modifier = Modifier.size(80.dp),
-            painter = painterResource(id = DSR.ic_security_factors),
+            painter = painterResource(id = iconRes),
             contentDescription = null,
             tint = Color.Unspecified
         )
+
         Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(
+                space = RadixTheme.dimensions.paddingSmall,
+                alignment = Alignment.CenterVertically
+            )
         ) {
             Text(
-                text = stringResource(id = R.string.securityCenter_securityFactorsItem_title),
+                text = title,
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
-            Text(
-                text = stringResource(id = R.string.securityCenter_securityFactorsItem_subtitle),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
-                val color = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
-                val text = if (needsAction) {
-                    stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
-                } else {
-                    stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
-                }
-                Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    tint = color
-                )
-                Text(
-                    text = text,
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = color
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
-            .clip(RadixTheme.shapes.roundedRectMedium)
-            .clickable {
-                onBackupConfigurationClick()
-            }
-            .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
-    ) {
-        Icon(
-            modifier = Modifier.size(80.dp),
-            painter = painterResource(id = DSR.ic_configuration_backup),
-            contentDescription = null,
-            tint = Color.Unspecified
-        )
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
-        ) {
             Text(
-                text = stringResource(id = R.string.securityCenter_configurationBackupItem_title),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1
-            )
-            Text(
-                text = stringResource(id = R.string.securityCenter_configurationBackupItem_subtitle),
+                text = subtitle,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
 
-            val securityPromptColor = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
+            val promptColor = if (needsAction) RadixTheme.colors.orange3 else RadixTheme.colors.green1
 
             PromptLabel(
                 modifier = Modifier.fillMaxWidth(),
                 text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
                 } else {
-                    stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
+                    positiveStatus
                 },
-                textColor = securityPromptColor,
+                textColor = promptColor,
                 iconRes = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle,
-                iconTint = securityPromptColor
+                iconTint = promptColor
             )
         }
     }
@@ -375,6 +358,7 @@ fun SecurityCenterNoProblemsPreview() {
                 securityProblems = emptySet()
             ),
             onBackClick = {},
+            onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
@@ -395,6 +379,7 @@ fun SecurityCenterWithSecurityProblem5Preview() {
                 )
             ),
             onBackClick = {},
+            onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
@@ -415,6 +400,7 @@ fun SecurityCenterWithSecurityProblem9Preview() {
                 )
             ),
             onBackClick = {},
+            onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
@@ -441,6 +427,7 @@ fun SecurityCenterWithSecurityProblems2And7Preview() {
                 )
             ),
             onBackClick = {},
+            onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
@@ -468,6 +455,7 @@ fun SecurityCenterWithSecurityProblems2And7And9AndOnlyHiddenEntitiesPreview() {
                 )
             ),
             onBackClick = {},
+            onSecurityShieldsClick = {},
             onSecurityFactorsClick = {},
             onBackupConfigurationClick = {},
             onRecoverEntitiesClick = {},
