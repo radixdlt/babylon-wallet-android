@@ -4,16 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.Bios
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HostInteractor
-import com.radixdlt.sargon.KeyDerivationRequest
-import com.radixdlt.sargon.KeyDerivationResponse
-import com.radixdlt.sargon.SignRequestOfAuthIntent
-import com.radixdlt.sargon.SignRequestOfSubintent
-import com.radixdlt.sargon.SignRequestOfTransactionIntent
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfAuthIntentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfSubintentHash
-import com.radixdlt.sargon.SignWithFactorsOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidEventBusDriver
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
@@ -82,31 +73,13 @@ object CoreProvider {
     @Singleton
     fun provideSargonOsManager(
         bios: Bios,
+        hostInteractor: HostInteractor,
         @ApplicationScope applicationScope: CoroutineScope,
         @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
     ): SargonOsManager = SargonOsManager.factory(
         bios = bios,
-        hostInteractor = HostInteractorStub(),
+        hostInteractor = hostInteractor,
         applicationScope = applicationScope,
         defaultDispatcher = defaultDispatcher
     )
-}
-
-private class HostInteractorStub : HostInteractor {
-
-    override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
-        throw CommonException.Unknown()
-    }
-
-    override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash {
-        throw CommonException.Unknown()
-    }
-
-    override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignWithFactorsOutcomeOfTransactionIntentHash {
-        throw CommonException.Unknown()
-    }
-
-    override suspend fun signAuth(request: SignRequestOfAuthIntent): SignWithFactorsOutcomeOfAuthIntentHash {
-        throw CommonException.Unknown()
-    }
 }
