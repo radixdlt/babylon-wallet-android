@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.factors
+package com.babylon.wallet.android.presentation.ui.model.factors
 
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId

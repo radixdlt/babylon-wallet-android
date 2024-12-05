@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.factors.StatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 
 @Composable
 fun StatusMessageText(

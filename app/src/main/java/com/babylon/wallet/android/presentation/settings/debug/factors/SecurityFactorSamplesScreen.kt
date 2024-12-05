@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
@@ -23,6 +22,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFact
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 
 @Composable
 fun SecurityFactorSamplesScreen(

@@ -1,32 +1,22 @@
 package com.babylon.wallet.android.presentation.settings.debug.factors
 
 import android.text.format.DateUtils
-import com.babylon.wallet.android.domain.model.factors.FactorSourceCard
-import com.babylon.wallet.android.domain.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.kind
-import com.radixdlt.sargon.newAccountSampleMainnetAlice
-import com.radixdlt.sargon.newAccountSampleMainnetBob
-import com.radixdlt.sargon.newAccountSampleMainnetCarol
-import com.radixdlt.sargon.newAccountSampleStokenetNadia
-import com.radixdlt.sargon.newAccountSampleStokenetOlivia
-import com.radixdlt.sargon.newAccountSampleStokenetPaige
-import com.radixdlt.sargon.newDeviceFactorSourceSample
-import com.radixdlt.sargon.newLedgerHardwareWalletFactorSourceSample
-import com.radixdlt.sargon.newPersonaSampleMainnetBatman
-import com.radixdlt.sargon.newPersonaSampleMainnetRipley
-import com.radixdlt.sargon.newPersonaSampleMainnetSatoshi
-import com.radixdlt.sargon.newPersonaSampleStokenetConnor
-import com.radixdlt.sargon.newPersonaSampleStokenetHermione
-import com.radixdlt.sargon.newPersonaSampleStokenetLeiaSkywalker
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sampleStokenet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -41,48 +31,49 @@ import kotlin.time.Duration.Companion.seconds
 class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<SecurityFactorSamplesViewModel.State>() {
 
     @Suppress("LongMethod")
+    @OptIn(UsesSampleValues::class)
     override fun initialState(): State = State(
         displayOnlyItems = persistentListOf(
-            newLedgerHardwareWalletFactorSourceSample().toCard(
-                accounts = persistentListOf(newAccountSampleStokenetNadia()),
-                personas = persistentListOf(newPersonaSampleStokenetLeiaSkywalker())
+            LedgerHardwareWalletFactorSource.sample().toCard(
+                accounts = persistentListOf(Account.sampleStokenet.nadia),
+                personas = persistentListOf(Persona.sampleStokenet.leiaSkywalker)
             ),
-            newLedgerHardwareWalletFactorSourceSample().toCard(
+            LedgerHardwareWalletFactorSource.sample().toCard(
                 accounts = persistentListOf(
-                    newAccountSampleMainnetAlice(),
-                    newAccountSampleMainnetBob(),
-                    newAccountSampleMainnetCarol(),
-                    newAccountSampleStokenetNadia(),
-                    newAccountSampleStokenetOlivia(),
-                    newAccountSampleStokenetPaige()
+                    Account.sampleMainnet.alice,
+                    Account.sampleMainnet.bob,
+                    Account.sampleMainnet.carol,
+                    Account.sampleStokenet.nadia,
+                    Account.sampleStokenet.olivia,
+                    Account.sampleStokenet.paige
                 ),
                 personas = persistentListOf(
-                    newPersonaSampleMainnetSatoshi(),
-                    newPersonaSampleMainnetBatman(),
-                    newPersonaSampleMainnetRipley(),
-                    newPersonaSampleStokenetLeiaSkywalker(),
-                    newPersonaSampleStokenetHermione(),
-                    newPersonaSampleStokenetConnor()
+                    Persona.sampleMainnet.satoshi,
+                    Persona.sampleMainnet.batman,
+                    Persona.sampleMainnet.ripley,
+                    Persona.sampleStokenet.leiaSkywalker,
+                    Persona.sampleStokenet.hermione,
+                    Persona.sampleStokenet.connor
                 )
             ),
-            newLedgerHardwareWalletFactorSourceSample().toCard(
+            LedgerHardwareWalletFactorSource.sample().toCard(
                 accounts = persistentListOf(
-                    newAccountSampleMainnetAlice(),
-                    newAccountSampleMainnetBob(),
-                    newAccountSampleMainnetCarol(),
-                    newAccountSampleStokenetNadia(),
-                    newAccountSampleStokenetOlivia(),
-                    newAccountSampleStokenetPaige()
+                    Account.sampleMainnet.alice,
+                    Account.sampleMainnet.bob,
+                    Account.sampleMainnet.carol,
+                    Account.sampleStokenet.nadia,
+                    Account.sampleStokenet.olivia,
+                    Account.sampleStokenet.paige
                 )
             ),
-            newLedgerHardwareWalletFactorSourceSample().toCard(
+            LedgerHardwareWalletFactorSource.sample().toCard(
                 personas = persistentListOf(
-                    newPersonaSampleMainnetSatoshi(),
-                    newPersonaSampleMainnetBatman(),
-                    newPersonaSampleMainnetRipley(),
-                    newPersonaSampleStokenetLeiaSkywalker(),
-                    newPersonaSampleStokenetHermione(),
-                    newPersonaSampleStokenetConnor()
+                    Persona.sampleMainnet.satoshi,
+                    Persona.sampleMainnet.batman,
+                    Persona.sampleMainnet.ripley,
+                    Persona.sampleStokenet.leiaSkywalker,
+                    Persona.sampleStokenet.hermione,
+                    Persona.sampleStokenet.connor
                 )
             ),
             FactorSourceCard(
@@ -101,7 +92,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 accounts = persistentListOf(),
                 personas = persistentListOf()
             ),
-            newDeviceFactorSourceSample().toCard(
+            DeviceFactorSource.sample().toCard(
                 messages = persistentListOf(
                     StatusMessage(
                         message = "Some error",
