@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.radixdlt.sargon.Bios
+import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.os.driver.AndroidEventBusDriver
 import com.radixdlt.sargon.os.driver.AndroidProfileStateChangeDriver
@@ -72,10 +73,12 @@ object CoreProvider {
     @Singleton
     fun provideSargonOsManager(
         bios: Bios,
+        hostInteractor: HostInteractor,
         @ApplicationScope applicationScope: CoroutineScope,
         @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
     ): SargonOsManager = SargonOsManager.factory(
         bios = bios,
+        hostInteractor = hostInteractor,
         applicationScope = applicationScope,
         defaultDispatcher = defaultDispatcher
     )
