@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,25 +48,35 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 @Composable
 fun SecurityCenterScreen(
     modifier: Modifier = Modifier,
-    securityCenterViewModel: SecurityCenterViewModel = hiltViewModel(),
+    viewModel: SecurityCenterViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
-    onSecurityShieldsClick: () -> Unit,
+    toSecurityShields: () -> Unit,
+    toSecurityShieldsOnboarding: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
     onRecoverEntitiesClick: () -> Unit,
     onBackupEntities: () -> Unit,
 ) {
-    val state by securityCenterViewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     SecurityCenterContent(
         modifier = modifier,
         state = state,
         onBackClick = onBackClick,
-        onSecurityShieldsClick = onSecurityShieldsClick,
+        onSecurityShieldsClick = viewModel::onSecurityShieldsClick,
         onSecurityFactorsClick = onSecurityFactorsClick,
         onBackupConfigurationClick = onBackupConfigurationClick,
         onRecoverEntitiesClick = onRecoverEntitiesClick,
         onBackupEntities = onBackupEntities
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                SecurityCenterViewModel.Event.ToSecurityShields -> toSecurityShields()
+                SecurityCenterViewModel.Event.ToSecurityShieldsOnboarding -> toSecurityShieldsOnboarding()
+            }
+        }
+    }
 }
 
 @Composable
@@ -177,7 +188,6 @@ private fun SecurityCenterContent(
                     }
 
                     SecurityCenterCard(
-                        modifier = modifier,
                         onClick = onSecurityShieldsClick,
                         title = stringResource(id = R.string.securityCenter_securityShieldsItem_title),
                         subtitle = stringResource(id = R.string.securityCenter_securityShieldsItem_subtitle),
@@ -187,7 +197,6 @@ private fun SecurityCenterContent(
                     )
 
                     SecurityCenterCard(
-                        modifier = modifier,
                         onClick = onSecurityFactorsClick,
                         title = stringResource(id = R.string.securityCenter_securityFactorsItem_title),
                         subtitle = stringResource(id = R.string.securityCenter_securityFactorsItem_subtitle),
@@ -197,7 +206,6 @@ private fun SecurityCenterContent(
                     )
 
                     SecurityCenterCard(
-                        modifier = modifier,
                         onClick = onBackupConfigurationClick,
                         iconRes = DSR.ic_configuration_backup,
                         title = stringResource(id = R.string.securityCenter_configurationBackupItem_title),

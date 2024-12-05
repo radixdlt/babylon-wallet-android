@@ -9,7 +9,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.ROUTE_SECURITY_SHIELD_ONBOARDING
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 
 const val ROUTE_SECURITY_SHIELDS = "security_shields"
@@ -19,16 +18,12 @@ fun NavGraphBuilder.securityShieldsNavGraph(
     navController: NavController
 ) {
     navigation(
-        startDestination = ROUTE_SECURITY_SHIELD_ONBOARDING,
+        startDestination = ROUTE_SECURITY_SHIELDS,
         route = ROUTE_SECURITY_SHIELDS_GRAPH
     ) {
         securityShieldsScreen(navController)
 
-        securityShieldOnboardingScreen(
-            onBackClick = {
-                navController.popBackStack()
-            }
-        )
+        securityShieldOnboardingScreen(navController)
     }
 }
 
@@ -48,7 +43,8 @@ fun NavGraphBuilder.securityShieldsScreen(
     ) {
         SecurityShieldsScreen(
             viewModel = hiltViewModel(),
-            onBackClick = { navController.navigateUp() }
+            onBackClick = { navController.navigateUp() },
+            onCreateShieldClick = { navController.securityShieldOnboardingScreen() }
         )
     }
 }

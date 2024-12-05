@@ -11,6 +11,6 @@ class SecurityShieldsViewModel @Inject constructor() : StateViewModel<SecuritySh
     override fun initialState(): State = State()
 
     data class State(
-        val isLoading: Boolean = false
+        val isLoading: Boolean = true
     ) : UiState
 }
