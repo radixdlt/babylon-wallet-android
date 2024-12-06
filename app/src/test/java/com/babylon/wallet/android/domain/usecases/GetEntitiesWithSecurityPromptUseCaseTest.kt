@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.domain.usecases.securityproblems.EntityWithSecurityPrompt
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.fakes.FakePreferenceManager
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.TestDispatcherRule

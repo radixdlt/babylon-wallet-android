@@ -55,7 +55,7 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem

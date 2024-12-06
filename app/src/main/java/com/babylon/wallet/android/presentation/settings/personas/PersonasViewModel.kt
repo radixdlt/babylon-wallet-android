@@ -1,9 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
-import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.usecases.securityproblems.EntityWithSecurityPrompt
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -16,8 +17,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,7 +35,8 @@ import javax.inject.Inject
 class PersonasViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase
+    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<PersonasViewModel.PersonasUiState>(),
     OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
@@ -51,7 +56,9 @@ class PersonasViewModel @Inject constructor(
                         babylonFactorSource = babylonFactorSource
                     )
                 }
-            }.collect {}
+            }
+                .flowOn(defaultDispatcher)
+                .collect()
         }
     }
 

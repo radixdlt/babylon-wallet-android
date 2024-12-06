@@ -28,7 +28,7 @@ import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.AccountPromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
