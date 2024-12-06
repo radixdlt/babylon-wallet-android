@@ -34,16 +34,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WalletInteractor @Inject constructor(): HostInteractor {
+class WalletInteractor @Inject constructor(
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
+): HostInteractor {
 
-    private var accessFactorSourcesProxy: AccessFactorSourcesProxy? = null
     private var getProfileUseCase: GetProfileUseCase? = null
 
     fun register(
-        accessFactorSourcesProxy: AccessFactorSourcesProxy,
         getProfileUseCase: GetProfileUseCase
     ) {
-        this.accessFactorSourcesProxy = accessFactorSourcesProxy
         this.getProfileUseCase = getProfileUseCase
     }
 
@@ -75,7 +74,7 @@ class WalletInteractor @Inject constructor(): HostInteractor {
                     }
                 }
 
-                val entitiesWithSignatures = accessFactorSourcesProxy?.getSignatures(
+                val entitiesWithSignatures = accessFactorSourcesProxy.getSignatures(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                         signPurpose = SignPurpose.SignTransaction,
                         signers = signers,
@@ -83,13 +82,13 @@ class WalletInteractor @Inject constructor(): HostInteractor {
                             transactionIntent = signRequest.payload.decompile()
                         )
                     )
-                )?.mapError { error ->
+                ).mapError { error ->
                     throw if (error is RejectedByUser || (error is FailedToSignTransaction && error.reason == UserRejectedSigningOfTransaction)) {
                         CommonException.SigningRejected()
                     } else {
                         CommonException.Unknown()
                     }
-                }?.getOrThrow() ?: throw CommonException.SigningRejected()
+                }.getOrThrow()
 
                 entitiesWithSignatures.signersWithSignatures.map { signerWithSignature ->
                     val input = HdSignatureInputOfTransactionIntentHash(

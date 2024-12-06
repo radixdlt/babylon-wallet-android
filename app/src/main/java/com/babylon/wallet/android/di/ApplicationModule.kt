@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.interactor.WalletInteractor
 import com.radixdlt.sargon.HomeCardsManager
 import com.radixdlt.sargon.HostInteractor
@@ -100,7 +101,9 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWalletInteractor(): WalletInteractor = WalletInteractor()
+    fun provideWalletInteractor(
+        accessFactorSourcesProxy: AccessFactorSourcesProxy
+    ): WalletInteractor = WalletInteractor(accessFactorSourcesProxy)
 
     @Provides
     @Singleton

@@ -7,8 +7,9 @@ import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ActivityRetainedScoped
+@Singleton
 class AccessFactorSourcesProxyImpl @Inject constructor(
     private val appEventBus: AppEventBus
 ) : AccessFactorSourcesProxy, AccessFactorSourcesIOHandler {
