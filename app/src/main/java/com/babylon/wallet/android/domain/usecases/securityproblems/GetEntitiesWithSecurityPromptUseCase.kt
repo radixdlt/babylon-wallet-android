@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.usecases
+package com.babylon.wallet.android.domain.usecases.securityproblems
 
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.FactorSource
