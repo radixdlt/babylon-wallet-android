@@ -1,0 +1,207 @@
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys
+
+import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.model.Curve
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiState
+import com.google.android.gms.common.internal.service.Common
+import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.EntityKind
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.SecureStorageAccessErrorKind
+import com.radixdlt.sargon.SecureStorageKey
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.curve
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.mapError
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.os.driver.BiometricsHandler
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import rdx.works.core.UUIDGenerator
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.core.then
+import rdx.works.profile.data.repository.PublicKeyProvider
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
+import java.io.IOException
+import javax.inject.Inject
+
+@HiltViewModel
+class DerivePublicKeysViewModel @Inject constructor(
+    private val publicKeyProvider: PublicKeyProvider,
+    private val accessFactorSourcesIOHandler: AccessFactorSourcesIOHandler,
+    private val ledgerMessenger: LedgerMessenger,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val biometricsHandler: BiometricsHandler
+) : StateViewModel<DerivePublicKeysViewModel.State>(),
+    OneOffEventHandler<DerivePublicKeysViewModel.Event> by OneOffEventHandlerImpl() {
+
+    override fun initialState(): State = State()
+
+    private lateinit var input: AccessFactorSourcesInput.ToDerivePublicKeys
+    private var derivePublicKeyJob: Job? = null
+
+    init {
+        derivePublicKeyJob = viewModelScope.launch {
+            input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToDerivePublicKeys
+
+            val factorSource = getProfileUseCase().factorSourceById(input.factorSourceId.asGeneral()) ?: run {
+                finishWithFailure(CommonException.SigningRejected())
+                return@launch
+            }
+
+            _state.update { it.copy(content = State.Content.Resolved(factorSource = factorSource)) }
+            deriveKeys(factorSource)
+        }
+    }
+
+    private suspend fun deriveKeys(factorSource: FactorSource) {
+        when (factorSource) {
+            is FactorSource.Device -> {
+                derivePublicKeys(
+                    deviceFactorSource = factorSource.value
+                ).onSuccess { factorInstances ->
+                    finishWithSuccess(factorInstances)
+                }.onFailure {
+                    finishWithFailure(CommonException.SigningRejected())
+                }
+            }
+
+            is FactorSource.Ledger -> {
+                derivePublicKeys(
+                    ledgerFactorSource = factorSource.value
+                ).onSuccess { factorInstances ->
+                    finishWithSuccess(factorInstances)
+                }.onFailure {
+                    finishWithFailure(CommonException.SigningRejected())
+                }
+            }
+
+            else -> {
+                // Not supported yet
+            }
+        }
+    }
+
+    private suspend fun derivePublicKeys(
+        deviceFactorSource: DeviceFactorSource
+    ): Result<List<HierarchicalDeterministicFactorInstance>> = biometricsHandler.askForBiometrics()
+        .mapError { error ->
+            // TODO expose biometrics failure
+            CommonException.SecureStorageAccessException(
+                key = SecureStorageKey.DeviceFactorSourceMnemonic(deviceFactorSource.id),
+                errorKind = SecureStorageAccessErrorKind.CANCELLED,
+                errorMessage = ""
+            )
+        }
+        .mapCatching {
+            input.derivationPaths.map { derivationPath ->
+                publicKeyProvider.deriveHDPublicKeyForDeviceFactorSource(
+                    deviceFactorSource = deviceFactorSource.asGeneral(),
+                    derivationPath = derivationPath
+                ).map { hdPublicKey ->
+                    HierarchicalDeterministicFactorInstance(
+                        factorSourceId = deviceFactorSource.id,
+                        publicKey = hdPublicKey
+                    )
+                }.getOrThrow()
+            }
+        }
+
+    private suspend fun derivePublicKeys(
+        ledgerFactorSource: LedgerHardwareWalletFactorSource
+    ): Result<List<HierarchicalDeterministicFactorInstance>> {
+        val factorInstances = input.derivationPaths.map { derivationPath ->
+            ledgerMessenger.sendDerivePublicKeyRequest(
+                interactionId = UUIDGenerator.uuid().toString(),
+                keyParameters = listOf(LedgerInteractionRequest.KeyParameters.from(derivationPath)),
+                ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(
+                    factorSource = ledgerFactorSource.asGeneral()
+                )
+            ).map { derivePublicKeyResponse ->
+                HierarchicalDeterministicFactorInstance(
+                    factorSourceId = ledgerFactorSource.id,
+                    publicKey = HierarchicalDeterministicPublicKey(
+                        publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex),
+                        derivationPath = derivationPath
+                    )
+                )
+            }.getOrElse {
+                return Result.failure(it)
+            }
+        }
+
+        return Result.success(factorInstances)
+    }
+
+    private suspend fun finishWithSuccess(factorInstances: List<HierarchicalDeterministicFactorInstance>) {
+        accessFactorSourcesIOHandler.setOutput(
+            AccessFactorSourcesOutput.DerivedPublicKeys(
+                factorSourceId = input.factorSourceId,
+                factorInstances = factorInstances
+            )
+        )
+        sendEvent(Event.Dismiss)
+    }
+
+    private suspend fun finishWithFailure(exception: CommonException) {
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(exception))
+        sendEvent(Event.Dismiss)
+    }
+
+    fun onRetryClick() {
+        derivePublicKeyJob?.cancel()
+        val factorSource = (state.value.content as? State.Content.Resolved)?.factorSource ?: return
+
+        viewModelScope.launch {
+            deriveKeys(factorSource = factorSource)
+        }
+    }
+
+    fun onUserDismiss() {
+        viewModelScope.launch {
+            derivePublicKeyJob?.cancel()
+            accessFactorSourcesIOHandler.setOutput(
+                output = AccessFactorSourcesOutput.Failure(CommonException.SigningRejected()) // TODO
+            )
+            sendEvent(Event.Dismiss)
+        }
+    }
+
+    data class State(
+        val content: Content = Content.Resolving
+    ) : UiState {
+
+        sealed interface Content {
+            data object Resolving : Content
+
+            data class Resolved(
+                // TODO: TBD Purpose for this derivation request
+                val factorSource: FactorSource
+            ) : Content
+        }
+    }
+
+    sealed interface Event : OneOffEvent {
+        data object Dismiss : Event
+    }
+}
