@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HdPathComponent
@@ -117,7 +118,7 @@ sealed interface AccessFactorSourcesInput {
 
     data class ToGetSignatures(
         val signPurpose: SignPurpose,
-        val signers: List<ProfileEntity>,
+        val signers: List<AddressOfAccountOrPersona>,
         val signRequest: SignRequest
     ) : AccessFactorSourcesInput
 

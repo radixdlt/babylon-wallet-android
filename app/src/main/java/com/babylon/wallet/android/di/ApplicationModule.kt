@@ -101,13 +101,7 @@ object ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideWalletInteractor(
-        accessFactorSourcesProxy: AccessFactorSourcesProxy
-    ): WalletInteractor = WalletInteractor(accessFactorSourcesProxy)
-
-    @Provides
-    @Singleton
     fun provideHostInteractor(
-        walletInteractor: WalletInteractor
-    ): HostInteractor = walletInteractor
+        accessFactorSourcesProxy: AccessFactorSourcesProxy
+    ): HostInteractor = WalletInteractor(accessFactorSourcesProxy)
 }

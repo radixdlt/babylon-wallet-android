@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.PublicKeyHash
@@ -58,7 +59,7 @@ class ROLAClient @Inject constructor(
 
     suspend fun signAuthChallenge(
         signRequest: SignRequest.RolaSignRequest,
-        entities: List<ProfileEntity>
+        entities: List<AddressOfAccountOrPersona>
     ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
         return accessFactorSourcesProxy.getSignatures(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(

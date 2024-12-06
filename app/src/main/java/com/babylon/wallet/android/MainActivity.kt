@@ -72,9 +72,6 @@ class MainActivity : FragmentActivity() {
     lateinit var biometricsHandler: BiometricsHandler
 
     @Inject
-    lateinit var walletInteractor: WalletInteractor
-
-    @Inject
     lateinit var getProfileUseCase: GetProfileUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,9 +83,6 @@ class MainActivity : FragmentActivity() {
 
         super.onCreate(savedInstanceState)
         biometricsHandler.register(this)
-        walletInteractor.register(
-            getProfileUseCase
-        )
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         intent.data?.let {

@@ -101,7 +101,7 @@ class VerifyEntitiesViewModel @Inject constructor(
                         accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                             signPurpose = SignPurpose.SignAuth,
                             signRequest = signRequest,
-                            signers = state.value.nextEntitiesForProof
+                            signers = state.value.nextEntitiesForProof.map { it.address }
                         )
                     ).onSuccess { result ->
                         _state.update { state ->

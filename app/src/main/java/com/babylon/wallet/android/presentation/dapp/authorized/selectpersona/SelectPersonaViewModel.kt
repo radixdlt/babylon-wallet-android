@@ -146,7 +146,7 @@ class SelectPersonaViewModel @Inject constructor(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signPurpose = SignPurpose.SignAuth,
                 signRequest = signRequest,
-                signers = listOf(selectedPersonaEntity)
+                signers = listOf(selectedPersonaEntity.address)
             )
         ).onSuccess { result ->
             sendEvent(

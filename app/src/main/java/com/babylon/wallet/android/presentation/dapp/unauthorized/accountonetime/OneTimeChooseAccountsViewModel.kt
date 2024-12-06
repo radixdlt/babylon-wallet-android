@@ -166,7 +166,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signPurpose = SignPurpose.SignAuth,
                 signRequest = signRequest,
-                signers = selectedAccountEntities
+                signers = selectedAccountEntities.map { it.address }
             )
         ).onSuccess { result ->
             sendEvent(

@@ -19,12 +19,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.kind
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,6 +35,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
@@ -55,7 +60,16 @@ class GetSignaturesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val signersPerFactorSource = getSigningEntitiesByFactorSource(signers = input.signers)
+            val signersPerFactorSource = getSigningEntitiesByFactorSource(
+                signersAddresses = input.signers
+            ).getOrElse { error ->
+                // end the signing process and return the output (error)
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
+                accessFactorSourcesIOHandler.setOutput(
+                    AccessFactorSourcesOutput.Failure(error = error)
+                )
+                return@launch
+            }
 
             val requests = mutableListOf<State.FactorSourceRequest>()
             signersPerFactorSource.forEach { (factorSource, entities) ->
@@ -148,7 +162,16 @@ class GetSignaturesViewModel @Inject constructor(
 
     fun onRetryClick() {
         viewModelScope.launch {
-            val signersPerFactorSource = getSigningEntitiesByFactorSource(input.signers)
+            val signersPerFactorSource = getSigningEntitiesByFactorSource(
+                signersAddresses = input.signers
+            ).getOrElse { error ->
+                // end the signing process and return the output (error)
+                sendEvent(event = Event.AccessingFactorSourceCompleted)
+                accessFactorSourcesIOHandler.setOutput(
+                    AccessFactorSourcesOutput.Failure(error = error)
+                )
+                return@launch
+            }
 
             when (val content = state.value.showContentForFactorSource) {
                 is State.ShowContentForFactorSource.Device -> {
@@ -247,41 +270,53 @@ class GetSignaturesViewModel @Inject constructor(
 
     @Suppress("UnsafeCallOnNullableType")
     private suspend fun getSigningEntitiesByFactorSource(
-        signers: List<ProfileEntity>
-    ): Map<FactorSource, List<ProfileEntity>> = withContext(defaultDispatcher) {
-        val result = mutableMapOf<FactorSource, List<ProfileEntity>>()
-        val profile = getProfileUseCase()
+        signersAddresses: List<AddressOfAccountOrPersona>
+    ): Result<Map<FactorSource, List<ProfileEntity>>> = runCatching {
+        withContext(defaultDispatcher) {
+            val result = mutableMapOf<FactorSource, List<ProfileEntity>>()
+            val profile = getProfileUseCase()
 
-        signers.forEach { signer ->
-            when (val securityState = signer.securityState) {
-                is EntitySecurityState.Unsecured -> {
-                    val factorSourceId = when (state.value.signPurpose) {
-                        SignPurpose.SignTransaction -> securityState.value.transactionSigning.factorSourceId.asGeneral()
-                        SignPurpose.SignAuth ->
-                            // TODO AuthSigningFactorInstance update this when the feature is implemented, for now hiding the button
-//                            securityState.value.authenticationSigning?.factorSourceId?.asGeneral()
-//                            ?:
-                            securityState.value.transactionSigning.factorSourceId.asGeneral()
-                    }
-                    val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
+            val accounts = profile.activeAccountsOnCurrentNetwork
+            val personas = profile.activePersonasOnCurrentNetwork
+            val signers = signersAddresses.map { address ->
+                when (address) {
+                    is AddressOfAccountOrPersona.Account -> accounts.find {
+                        it.address == address.v1
+                    }?.asProfileEntity() ?: throw CommonException.UnknownAccount()
+                    is AddressOfAccountOrPersona.Identity -> personas.find {
+                        it.address == address.v1
+                    }?.asProfileEntity() ?: throw CommonException.UnknownPersona()
+                }
+            }
 
-                    if (factorSource.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
-                        if (result[factorSource] != null) {
-                            result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
-                        } else {
-                            result[factorSource] = listOf(signer)
+            signers.forEach { signer ->
+                when (val securityState = signer.securityState) {
+                    is EntitySecurityState.Unsecured -> {
+                        val factorSourceId = when (state.value.signPurpose) {
+                            SignPurpose.SignTransaction -> securityState.value.transactionSigning.factorSourceId.asGeneral()
+                            SignPurpose.SignAuth -> securityState.value.authenticationSigning?.factorSourceId?.asGeneral()
+                                ?: securityState.value.transactionSigning.factorSourceId.asGeneral()
+                        }
+                        val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
+
+                        if (factorSource.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
+                            if (result[factorSource] != null) {
+                                result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
+                            } else {
+                                result[factorSource] = listOf(signer)
+                            }
                         }
                     }
                 }
             }
-        }
 
-        result.keys
-            .sortedBy { factorSource ->
-                factorSource.kind.signingOrder()
-            }.associateWith { factorSource ->
-                result[factorSource]!!
-            }
+            result.keys
+                .sortedBy { factorSource ->
+                    factorSource.kind.signingOrder()
+                }.associateWith { factorSource ->
+                    result[factorSource]!!
+                }
+        }
     }
 
     private fun FactorSourceKind.signingOrder(): Int { // based on difficulty - most "challenging" factor comes first

@@ -45,7 +45,7 @@ class SignSubintentUseCase @Inject constructor(
         accessFactorSourcesProxy.getSignatures(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signPurpose = SignPurpose.SignTransaction,
-                signers = signers,
+                signers = signers.map { it.address },
                 signRequest = SignRequest.SubintentSignRequest(subintent = subintent)
             )
         ).map { signaturesResult ->
