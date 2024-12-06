@@ -11,6 +11,7 @@ import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.DebugSettingsItem.InspectProfile
 import com.babylon.wallet.android.presentation.settings.debug.backups.inspectGoogleBackups
+import com.babylon.wallet.android.presentation.settings.debug.factors.securityFactorSamples
 import com.babylon.wallet.android.presentation.settings.debug.profile.inspectProfile
 
 const val ROUTE_DEBUG_SETTINGS_SCREEN = "settings_debug_settings_screen"
@@ -54,6 +55,7 @@ fun NavGraphBuilder.debugSettings(
                         InspectProfile -> navController.inspectProfile()
                         SettingsItem.DebugSettingsItem.LinkConnectionStatusIndicator -> {}
                         SettingsItem.DebugSettingsItem.InspectCloudBackups -> navController.inspectGoogleBackups()
+                        SettingsItem.DebugSettingsItem.SecurityFactorSamples -> navController.securityFactorSamples()
                     }
                 }
             )
@@ -64,6 +66,11 @@ fun NavGraphBuilder.debugSettings(
             }
         )
         inspectGoogleBackups(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        securityFactorSamples(
             onBackClick = {
                 navController.popBackStack()
             }

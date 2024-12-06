@@ -23,6 +23,7 @@ data class RadixShapes(
     val roundedRectTopMedium: CornerBasedShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
     val roundedRectBottomMedium: CornerBasedShape = RoundedCornerShape(bottomEnd = 12.dp, bottomStart = 12.dp),
     val roundedRectTopDefault: CornerBasedShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+    val roundedRectBottomDefault: CornerBasedShape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp),
     val roundedTag: CornerBasedShape = RoundedCornerShape(
         topStart = 4.dp,
         topEnd = 36.dp,
