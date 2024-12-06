@@ -96,9 +96,9 @@ fun List<EntityWithSecurityPrompt>.personaPrompts() = mapNotNull {
 }.associate { it }
 
 enum class SecurityPromptType {
-    WRITE_DOWN_SEED_PHRASE,
-    RECOVERY_REQUIRED,
-    CONFIGURATION_BACKUP_PROBLEM,
-    WALLET_NOT_RECOVERABLE,
-    CONFIGURATION_BACKUP_NOT_UPDATED
+    WRITE_DOWN_SEED_PHRASE, // security problem 3
+    RECOVERY_REQUIRED, // security problem 9
+    CONFIGURATION_BACKUP_PROBLEM, // security problem 5
+    WALLET_NOT_RECOVERABLE, // security problem 6
+    CONFIGURATION_BACKUP_NOT_UPDATED // security problem 7
 }
