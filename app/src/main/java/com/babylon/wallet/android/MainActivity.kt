@@ -73,8 +73,7 @@ class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var walletInteractor: WalletInteractor
-    @Inject
-    lateinit var accessFactorSourcesProxy: AccessFactorSourcesProxy
+
     @Inject
     lateinit var getProfileUseCase: GetProfileUseCase
 
@@ -88,7 +87,6 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         biometricsHandler.register(this)
         walletInteractor.register(
-            accessFactorSourcesProxy,
             getProfileUseCase
         )
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
