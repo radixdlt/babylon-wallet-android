@@ -34,6 +34,20 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
+    override suspend fun derivePublicKeys(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
+    ): Result<AccessFactorSourcesOutput.DerivedPublicKeys> {
+        input = accessFactorSourcesInput
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKeys)
+        val result = _output.first()
+
+        return if (result is AccessFactorSourcesOutput.Failure) {
+            Result.failure(result.error)
+        } else {
+            Result.success(result as AccessFactorSourcesOutput.DerivedPublicKeys)
+        }
+    }
+
     override suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath> {

@@ -4,9 +4,12 @@ import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.HdPathComponent
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
@@ -26,6 +29,10 @@ interface AccessFactorSourcesProxy {
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.HDPublicKey>
+
+    suspend fun derivePublicKeys(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
+    ): Result<AccessFactorSourcesOutput.DerivedPublicKeys>
 
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
@@ -96,6 +103,11 @@ sealed interface AccessFactorSourcesInput {
         val isBiometricsProvided: Boolean
     ) : AccessFactorSourcesInput
 
+    data class ToDerivePublicKeys(
+        val factorSourceId: FactorSourceIdFromHash,
+        val derivationPaths: List<DerivationPath>
+    ): AccessFactorSourcesInput
+
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
 
         val factorSource: FactorSource
@@ -137,6 +149,11 @@ sealed interface AccessFactorSourcesOutput {
 
     data class HDPublicKey(
         val value: HierarchicalDeterministicPublicKey
+    ) : AccessFactorSourcesOutput
+
+    data class DerivedPublicKeys(
+        val factorSourceId: FactorSourceIdFromHash,
+        val factorInstances: List<HierarchicalDeterministicFactorInstance>
     ) : AccessFactorSourcesOutput
 
     data class DerivedAccountsWithNextDerivationPath(
