@@ -21,6 +21,7 @@ dependencyResolutionManagement {
         }
         maven { url 'https://jitpack.io' }
     }
+
 }
 rootProject.name = "BabylonWallet"
 include ':app'
