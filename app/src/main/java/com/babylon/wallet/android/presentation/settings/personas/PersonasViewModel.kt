@@ -17,8 +17,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,7 +34,8 @@ import javax.inject.Inject
 class PersonasViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase
+    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<PersonasViewModel.PersonasUiState>(),
     OneOffEventHandler<PersonasViewModel.PersonasEvent> by OneOffEventHandlerImpl() {
 
@@ -52,7 +55,9 @@ class PersonasViewModel @Inject constructor(
                         babylonFactorSource = babylonFactorSource
                     )
                 }
-            }.collect {}
+            }
+                .flowOn(defaultDispatcher)
+                .collect {}
         }
     }
 

@@ -10,7 +10,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.deviceFactorSources
@@ -18,11 +20,11 @@ import rdx.works.core.sargon.ledgerFactorSources
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
-@Suppress("MagicNumber")
 @HiltViewModel
 class SecurityFactorsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase
+    private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SecurityFactorsUiState>() {
 
     override fun initialState(): SecurityFactorsUiState = SecurityFactorsUiState(
@@ -49,9 +51,11 @@ class SecurityFactorsViewModel @Inject constructor(
                         SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets(ledgerFactorSources.size)
                     )
                 )
-            }.collect { securityFactorsUiState ->
-                _state.update { securityFactorsUiState }
             }
+                .flowOn(defaultDispatcher)
+                .collect { securityFactorsUiState ->
+                    _state.update { securityFactorsUiState }
+                }
         }
     }
 }
