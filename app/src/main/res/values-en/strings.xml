@@ -1068,6 +1068,9 @@ Code: %s</string>
   <string name="securityCenter_configurationBackupItem_title">Configuration Backup</string>
   <string name="securityCenter_configurationBackupItem_subtitle">A backup of your Account, Personas and wallet settings</string>
   <string name="securityCenter_configurationBackupItem_backedUpStatus">Backed up</string>
+  <string name="securityCenter_securityShieldsItem_title">Security Shields</string>
+  <string name="securityCenter_securityShieldsItem_subtitle">Decentralized multi-factor signing and recovery for your Accounts and Personas</string>
+  <string name="securityCenter_securityShieldsItem_shieldedStatus">Shielded</string>
   <string name="securityCenter_anyItem_actionRequiredStatus">Action required</string>
   <string name="securityCenter_encryptWalletBackup_title">Encrypt Wallet Backup File</string>
   <string name="securityCenter_encryptWalletBackup_subtitle">Enter a password to encrypt this wallet backup file. You will be required to enter this password when recovering your Wallet from this file.</string>
@@ -1295,6 +1298,9 @@ Code: %s</string>
   <string name="infoLink_title_radixconnect">Learn more about Radix Connect</string>
   <string name="infoLink_title_transactionfee">How do fees work?</string>
   <string name="infoLink_title_behaviors">What are behaviors?</string>
+  <string name="infoLink_title_securityshield">Learn about Security Shields</string>
+  <string name="infoLink_title_buildsecurityshields">How your Security Shield is built</string>
+  <string name="infoLink_title_nohardwaredevice">I don’t have a hardware device</string>
   <string name="hiddenEntities_title">Hidden Personas &amp; Accounts</string>
   <string name="hiddenEntities_text">You have hidden the following Personas and Accounts. They remain on the Radix Network, but while hidden, your wallet will treat them as if they don’t exist.</string>
   <string name="hiddenEntities_personas">Personas</string>
@@ -1383,4 +1389,27 @@ Code: %s</string>
   <string name="interactionReview_unknown_amount">Amount of deposit is unknown</string>
   <string name="interactionReview_atLeast">At least</string>
   <string name="interactionReview_noMoreThan">No more than</string>
+  <string name="shieldSetupOnboarding_nextButtonTitle">Next</string>
+  <string name="shieldSetupOnboarding_startButtonTitle">Start</string>
+  <string name="shieldSetupOnboarding_introStep_title">Multi-factor authentication for web3</string>
+  <string name="shieldSetupOnboarding_introStep_subtitle">Create your Security Shield by combining different security factors. Use it to safely sign transactions and recover Accounts if you’ve lost access.</string>
+  <string name="shieldSetupOnboarding_buildShieldStep_title">Add your security factors and build your Shield</string>
+  <string name="shieldSetupOnboarding_buildShieldStep_subtitle">Add your security factors to your Radix Wallet and use them to build your Shield.</string>
+  <string name="shieldSetupOnboarding_applyShieldStep_title">Apply your Shield to your Accounts and Personas</string>
+  <string name="shieldSetupOnboarding_applyShieldStep_subtitle">Sign a transaction to apply your Shield to your Accounts and Personas.\n\nYou can use the same Shield for all of them or create multiple Shields.</string>
+  <string name="shieldSetupPrepareFactors_intro_title">Let’s Prepare your Factors</string>
+  <string name="shieldSetupPrepareFactors_intro_subtitleTop">You need at least **2 factors** to build a Security Shield. 1 of your factors must be a hardware device.</string>
+  <string name="shieldSetupPrepareFactors_intro_subtitleBottom">A future wallet update will enable Shields without needing a hardware device.</string>
+  <string name="shieldSetupPrepareFactors_intro_button">Start</string>
+  <string name="shieldSetupPrepareFactors_addHardwareFactor_title">Add a Hardware Device</string>
+  <string name="shieldSetupPrepareFactors_addHardwareFactor_subtitle">Choose a hardware device to use as a security factor in your Shield.</string>
+  <string name="shieldSetupPrepareFactors_addHardwareFactor_button">Add Hardware Device</string>
+  <string name="shieldSetupPrepareFactors_addAnotherFactor_title">Add Another Factor</string>
+  <string name="shieldSetupPrepareFactors_addAnotherFactor_subtitle">You need to add **1 more factor** to begin building your Shield.</string>
+  <string name="shieldSetupPrepareFactors_addAnotherFactor_passphraseHint">Choosing a passphrase is only recommended for advanced users</string>
+  <string name="shieldSetupPrepareFactors_addAnotherFactor_button">Add Factor</string>
+  <string name="shieldSetupPrepareFactors_completion_title">Your Factors are Ready</string>
+  <string name="shieldSetupPrepareFactors_completion_subtitleTop">Now let’s build your Shield.</string>
+  <string name="shieldSetupPrepareFactors_completion_subtitleBottom">Before it’s finished, you’ll have the chance to review it and make any changes.</string>
+  <string name="shieldSetupPrepareFactors_completion_button">Build Shield</string>
 </resources>

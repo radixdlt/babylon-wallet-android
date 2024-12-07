@@ -16,6 +16,9 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ledgerHardwareWalletsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactors
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.seedPhrases
 
@@ -52,6 +55,12 @@ fun NavGraphBuilder.securityCenterNavGraph(
             SecurityCenterScreen(
                 onBackClick = {
                     navController.popBackStack()
+                },
+                toSecurityShields = {
+                    navController.securityShieldsScreen()
+                },
+                toSecurityShieldsOnboarding = {
+                    navController.securityShieldOnboardingScreen()
                 },
                 onSecurityFactorsClick = {
                     navController.securityFactors()
@@ -105,5 +114,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 navController.navigateUp()
             }
         )
+        securityShieldsNavGraph(navController)
     }
 }
