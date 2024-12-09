@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.accessfactorsources.derivepublic
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceError
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -20,10 +21,8 @@ import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.SecureStorageKey
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.os.driver.BiometricsFailure
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -33,8 +32,6 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ProfileException
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -57,7 +54,7 @@ class DerivePublicKeysViewModel @Inject constructor(
             input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToDerivePublicKeys
 
             val factorSource = getProfileUseCase().factorSourceById(input.factorSourceId.asGeneral()) ?: run {
-                finishWithFailure(CommonException.SigningRejected(), input.factorSourceId)
+                finishWithFailure(AccessFactorSourceError.Fatal(CommonException.SigningRejected()))
                 return@launch
             }
 
@@ -76,7 +73,7 @@ class DerivePublicKeysViewModel @Inject constructor(
                 ).onSuccess { factorInstances ->
                     finishWithSuccess(factorInstances)
                 }.onFailure {
-                    finishWithFailure(it, factorSource.value.id)
+                    handleFailure(it, factorSource.value.id)
                 }
             }
 
@@ -86,7 +83,7 @@ class DerivePublicKeysViewModel @Inject constructor(
                 ).onSuccess { factorInstances ->
                     finishWithSuccess(factorInstances)
                 }.onFailure {
-                    finishWithFailure(it, factorSource.value.id)
+                    handleFailure(it, factorSource.value.id)
                 }
             }
 
@@ -139,9 +136,18 @@ class DerivePublicKeysViewModel @Inject constructor(
         return Result.success(factorInstances)
     }
 
+    private suspend fun handleFailure(throwable: Throwable, factorSourceId: FactorSourceIdFromHash) {
+        when (val error = AccessFactorSourceError.from(throwable, factorSourceId)) {
+            is AccessFactorSourceError.Fatal -> finishWithFailure(error)
+            is AccessFactorSourceError.NonFatal -> {
+                // TODO show error to the user
+            }
+        }
+    }
+
     private suspend fun finishWithSuccess(factorInstances: List<HierarchicalDeterministicFactorInstance>) {
         accessFactorSourcesIOHandler.setOutput(
-            AccessFactorSourcesOutput.DerivedPublicKeys(
+            AccessFactorSourcesOutput.DerivedPublicKeys.Success(
                 factorSourceId = input.factorSourceId,
                 factorInstances = factorInstances
             )
@@ -149,24 +155,8 @@ class DerivePublicKeysViewModel @Inject constructor(
         sendEvent(Event.Dismiss)
     }
 
-    private suspend fun finishWithFailure(
-        error: Throwable,
-        factorSourceId: FactorSourceIdFromHash
-    ) {
-        Timber.w(error, "Received error when deriving keys")
-        val commonError = when (error) {
-            // Error received from BiometricsHandler
-            is BiometricsFailure -> error.toCommonException(SecureStorageKey.DeviceFactorSourceMnemonic(factorSourceId = factorSourceId))
-            // Error received from MnemonicRepository
-            is ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException()
-
-            // TODO: Handle non fatal errors
-
-            // Any other fatal error is resolved as rejected
-            else -> CommonException.SigningRejected()
-        }
-
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(commonError))
+    private suspend fun finishWithFailure(error: AccessFactorSourceError.Fatal) {
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.DerivedPublicKeys.Failure(error))
         sendEvent(Event.Dismiss)
     }
 
