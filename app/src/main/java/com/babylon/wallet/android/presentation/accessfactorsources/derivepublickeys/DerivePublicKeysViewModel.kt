@@ -15,15 +15,15 @@ import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.SecureStorageKey
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.mapError
+import com.radixdlt.sargon.os.driver.BiometricsFailure
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -33,6 +33,8 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,7 +57,7 @@ class DerivePublicKeysViewModel @Inject constructor(
             input = accessFactorSourcesIOHandler.getInput() as AccessFactorSourcesInput.ToDerivePublicKeys
 
             val factorSource = getProfileUseCase().factorSourceById(input.factorSourceId.asGeneral()) ?: run {
-                finishWithFailure(CommonException.SigningRejected())
+                finishWithFailure(CommonException.SigningRejected(), input.factorSourceId)
                 return@launch
             }
 
@@ -74,7 +76,7 @@ class DerivePublicKeysViewModel @Inject constructor(
                 ).onSuccess { factorInstances ->
                     finishWithSuccess(factorInstances)
                 }.onFailure {
-                    finishWithFailure(CommonException.SigningRejected())
+                    finishWithFailure(it, factorSource.value.id)
                 }
             }
 
@@ -84,7 +86,7 @@ class DerivePublicKeysViewModel @Inject constructor(
                 ).onSuccess { factorInstances ->
                     finishWithSuccess(factorInstances)
                 }.onFailure {
-                    finishWithFailure(CommonException.SigningRejected())
+                    finishWithFailure(it, factorSource.value.id)
                 }
             }
 
@@ -97,14 +99,6 @@ class DerivePublicKeysViewModel @Inject constructor(
     private suspend fun derivePublicKeys(
         deviceFactorSource: DeviceFactorSource
     ): Result<List<HierarchicalDeterministicFactorInstance>> = biometricsHandler.askForBiometrics()
-        .mapError { error ->
-            // TODO expose biometrics failure
-            CommonException.SecureStorageAccessException(
-                key = SecureStorageKey.DeviceFactorSourceMnemonic(deviceFactorSource.id),
-                errorKind = SecureStorageAccessErrorKind.CANCELLED,
-                errorMessage = ""
-            )
-        }
         .mapCatching {
             input.derivationPaths.map { derivationPath ->
                 publicKeyProvider.deriveHDPublicKeyForDeviceFactorSource(
@@ -155,8 +149,24 @@ class DerivePublicKeysViewModel @Inject constructor(
         sendEvent(Event.Dismiss)
     }
 
-    private suspend fun finishWithFailure(exception: CommonException) {
-        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(exception))
+    private suspend fun finishWithFailure(
+        error: Throwable,
+        factorSourceId: FactorSourceIdFromHash
+    ) {
+        Timber.w(error, "Received error when deriving keys")
+        val commonError = when (error) {
+            // Error received from BiometricsHandler
+            is BiometricsFailure -> error.toCommonException(SecureStorageKey.DeviceFactorSourceMnemonic(factorSourceId = factorSourceId))
+            // Error received from MnemonicRepository
+            is ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException()
+
+            // TODO: Handle non fatal errors
+
+            // Any other fatal error is resolved as rejected
+            else -> CommonException.SigningRejected()
+        }
+
+        accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.Failure(commonError))
         sendEvent(Event.Dismiss)
     }
 

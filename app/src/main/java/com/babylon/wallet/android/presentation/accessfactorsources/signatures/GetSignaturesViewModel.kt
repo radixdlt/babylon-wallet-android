@@ -66,7 +66,7 @@ class GetSignaturesViewModel @Inject constructor(
                 // end the signing process and return the output (error)
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
                 accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.Failure(error = error)
+                    AccessFactorSourcesOutput.Failure(error = error) // Error with profile maybe
                 )
                 return@launch
             }
