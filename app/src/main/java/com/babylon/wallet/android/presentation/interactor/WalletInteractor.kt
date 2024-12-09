@@ -43,19 +43,23 @@ class WalletInteractor @Inject constructor(
 
     override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
         val publicKeysPerFactorSource = request.perFactorSource.map {
-            accessFactorSourcesProxy.derivePublicKeys(
+            val result = accessFactorSourcesProxy.derivePublicKeys(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKeys(
                     purpose = request.derivationPurpose,
                     factorSourceId = it.factorSourceId,
                     derivationPaths = it.derivationPaths
                 )
-            ).map { derivedPublicKeys ->
-                KeyDerivationResponsePerFactorSource(
-                    derivedPublicKeys.factorSourceId,
-                    derivedPublicKeys.factorInstances
-                )
-            }.getOrElse { error ->
-                throw error.toCommonException()
+            )
+            when (result) {
+                is AccessFactorSourcesOutput.DerivedPublicKeys.Success -> {
+                    KeyDerivationResponsePerFactorSource(
+                        result.factorSourceId,
+                        result.factorInstances
+                    )
+                }
+                is AccessFactorSourcesOutput.DerivedPublicKeys.Failure -> {
+                    throw result.error.commonException
+                }
             }
         }
 
