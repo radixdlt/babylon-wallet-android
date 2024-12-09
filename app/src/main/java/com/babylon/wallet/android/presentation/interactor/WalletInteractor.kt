@@ -54,8 +54,8 @@ class WalletInteractor @Inject constructor(
                     derivedPublicKeys.factorSourceId,
                     derivedPublicKeys.factorInstances
                 )
-            }.getOrElse {
-                throw it.toCommonException()
+            }.getOrElse { error ->
+                throw error.toCommonException()
             }
         }
 
@@ -123,7 +123,7 @@ class WalletInteractor @Inject constructor(
                 payloadId = hash,
                 ownedFactorInstance = OwnedFactorInstance(
                     owner = signerWithSignature.key.address,
-                    factorInstance = signerWithSignature.key.securityState.transactionSigningFactorInstance // TODO check that
+                    factorInstance = signerWithSignature.key.securityState.transactionSigningFactorInstance
                 )
             )
 
@@ -148,7 +148,7 @@ class WalletInteractor @Inject constructor(
                 payloadId = hash,
                 ownedFactorInstance = OwnedFactorInstance(
                     owner = signerWithSignature.key.address,
-                    factorInstance = signerWithSignature.key.securityState.transactionSigningFactorInstance // TODO check that
+                    factorInstance = signerWithSignature.key.securityState.transactionSigningFactorInstance
                 )
             )
 
@@ -160,9 +160,26 @@ class WalletInteractor @Inject constructor(
 
     // TODO check that mapping
     private fun Throwable.toCommonException() =
+        // - Derive keys
+        // -- CommonException.SecureStorageAccess
+        // -- CommonException.SecureStorageReadException
+        // -- CommonException.SigningRejected
+        //
+        // - Signing
+        // -- NoMnemonic => CommonException.SecureStorageAccess
+        // -- SecureStorageAccess => CommonException.SecureStorageReadException
+        // - NONFATAL
+        // -- FailedToConnect
+        // -- FailedToGetDeviceId
+        // -- FailedToDerivePublicKeys
+        // -- FailedToDeriveAndDisplayAddress
+        // -- FailedToSignAuthChallenge with BlindSigningNotEnabledButRequired or UserRejectedSigningOfTransaction
         if (this is RejectedByUser || (this is FailedToSignTransaction && this.reason == UserRejectedSigningOfTransaction)) {
             CommonException.SigningRejected()
+        } else if (this is CommonException) {
+            this
         } else {
+
             CommonException.Unknown()
         }
 }
