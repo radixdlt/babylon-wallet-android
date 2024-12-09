@@ -1,14 +1,10 @@
 package com.babylon.wallet.android.presentation.interactor
 
-import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode.UserRejectedSigningOfTransaction
-import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException.RejectedByUser
-import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
 import com.radixdlt.sargon.HdSignatureInputOfTransactionIntentHash
 import com.radixdlt.sargon.HdSignatureOfSubintentHash
@@ -69,13 +65,18 @@ class WalletInteractor @Inject constructor(
     override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash {
         val signaturesPerFactorSource = request.perFactorSource.map { perFactorSource ->
             val hdSignatures = perFactorSource.transactions.map { perTransaction ->
-                val output = accessFactorSourcesProxy.getSignatures(
+                val result = accessFactorSourcesProxy.getSignatures(
                     accessFactorSourcesInput = perTransaction.toAccessFactorSourcesInput()
-                ).getOrElse {
-                    throw it.toCommonException()
-                }
+                )
 
-                output.toHDSignaturesOfSubintentHash(hash = perTransaction.payload.decompile().hash())
+                when (result) {
+                    is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
+                        result.toHDSignaturesOfSubintentHash(hash = perTransaction.payload.decompile().hash())
+                    }
+                    is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> {
+                        throw result.error.commonException
+                    }
+                }
             }.flatten()
 
             SignaturesPerFactorSourceOfSubintentHash(
@@ -92,13 +93,19 @@ class WalletInteractor @Inject constructor(
     override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignWithFactorsOutcomeOfTransactionIntentHash {
         val signaturesPerFactorSource = request.perFactorSource.map { perFactorSource ->
             val hdSignatures = perFactorSource.transactions.map { perTransaction ->
-                val output = accessFactorSourcesProxy.getSignatures(
+                val result = accessFactorSourcesProxy.getSignatures(
                     accessFactorSourcesInput = perTransaction.toAccessFactorSourcesInput()
-                ).getOrElse {
-                    throw it.toCommonException()
-                }
+                )
 
-                output.toHDSignaturesOfTransactionIntentHash(hash = perTransaction.payload.decompile().hash())
+                when (result) {
+                    is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
+                        result.toHDSignaturesOfTransactionIntentHash(hash = perTransaction.payload.decompile().hash())
+                    }
+
+                    is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> {
+                        throw result.error.commonException
+                    }
+                }
             }.flatten()
 
             SignaturesPerFactorSourceOfTransactionIntentHash(
@@ -119,7 +126,7 @@ class WalletInteractor @Inject constructor(
             signRequest = SignRequest.TransactionIntentSignRequest(transactionIntent = payload.decompile())
         )
 
-    private fun AccessFactorSourcesOutput.EntitiesWithSignatures.toHDSignaturesOfTransactionIntentHash(
+    private fun AccessFactorSourcesOutput.EntitiesWithSignatures.Success.toHDSignaturesOfTransactionIntentHash(
         hash: TransactionIntentHash
     ): List<HdSignatureOfTransactionIntentHash> =
         signersWithSignatures.map { signerWithSignature ->
@@ -144,7 +151,7 @@ class WalletInteractor @Inject constructor(
             signRequest = SignRequest.SubintentSignRequest(subintent = payload.decompile())
         )
 
-    private fun AccessFactorSourcesOutput.EntitiesWithSignatures.toHDSignaturesOfSubintentHash(
+    private fun AccessFactorSourcesOutput.EntitiesWithSignatures.Success.toHDSignaturesOfSubintentHash(
         hash: SubintentHash
     ): List<HdSignatureOfSubintentHash> =
         signersWithSignatures.map { signerWithSignature ->
@@ -160,30 +167,5 @@ class WalletInteractor @Inject constructor(
                 input = input,
                 signature = signerWithSignature.value
             )
-        }
-
-    // TODO check that mapping
-    private fun Throwable.toCommonException() =
-        // - Derive keys
-        // -- CommonException.SecureStorageAccess
-        // -- CommonException.SecureStorageReadException
-        // -- CommonException.SigningRejected
-        //
-        // - Signing
-        // -- NoMnemonic => CommonException.SecureStorageAccess
-        // -- SecureStorageAccess => CommonException.SecureStorageReadException
-        // - NONFATAL
-        // -- FailedToConnect
-        // -- FailedToGetDeviceId
-        // -- FailedToDerivePublicKeys
-        // -- FailedToDeriveAndDisplayAddress
-        // -- FailedToSignAuthChallenge with BlindSigningNotEnabledButRequired or UserRejectedSigningOfTransaction
-        if (this is RejectedByUser || (this is FailedToSignTransaction && this.reason == UserRejectedSigningOfTransaction)) {
-            CommonException.SigningRejected()
-        } else if (this is CommonException) {
-            this
-        } else {
-
-            CommonException.Unknown()
         }
 }
