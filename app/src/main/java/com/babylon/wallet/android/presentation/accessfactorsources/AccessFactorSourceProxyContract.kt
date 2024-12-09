@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
@@ -104,6 +105,7 @@ sealed interface AccessFactorSourcesInput {
     ) : AccessFactorSourcesInput
 
     data class ToDerivePublicKeys(
+        val purpose: DerivationPurpose,
         val factorSourceId: FactorSourceIdFromHash,
         val derivationPaths: List<DerivationPath>
     ): AccessFactorSourcesInput

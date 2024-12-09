@@ -14,9 +14,9 @@ import com.radixdlt.sargon.HdSignatureInputOfTransactionIntentHash
 import com.radixdlt.sargon.HdSignatureOfSubintentHash
 import com.radixdlt.sargon.HdSignatureOfTransactionIntentHash
 import com.radixdlt.sargon.HostInteractor
-import com.radixdlt.sargon.KeyDerivationPerFactorSource
 import com.radixdlt.sargon.KeyDerivationRequest
 import com.radixdlt.sargon.KeyDerivationResponse
+import com.radixdlt.sargon.KeyDerivationResponsePerFactorSource
 import com.radixdlt.sargon.OwnedFactorInstance
 import com.radixdlt.sargon.SignRequestOfSubintent
 import com.radixdlt.sargon.SignRequestOfTransactionIntent
@@ -42,14 +42,15 @@ class WalletInteractor @Inject constructor(
 ) : HostInteractor {
 
     override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
-        val publicKeysPerFactorSource = request.perFactorSource.map { entry ->
+        val publicKeysPerFactorSource = request.perFactorSource.map {
             accessFactorSourcesProxy.derivePublicKeys(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKeys(
-                    factorSourceId = entry.key,
-                    derivationPaths = entry.value
+                    purpose = request.derivationPurpose,
+                    factorSourceId = it.factorSourceId,
+                    derivationPaths = it.derivationPaths
                 )
             ).map { derivedPublicKeys ->
-                KeyDerivationPerFactorSource(
+                KeyDerivationResponsePerFactorSource(
                     derivedPublicKeys.factorSourceId,
                     derivedPublicKeys.factorInstances
                 )

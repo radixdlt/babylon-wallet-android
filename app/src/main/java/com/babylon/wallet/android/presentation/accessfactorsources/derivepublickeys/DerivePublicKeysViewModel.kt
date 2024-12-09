@@ -2,47 +2,37 @@ package com.babylon.wallet.android.presentation.accessfactorsources.derivepublic
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.google.android.gms.common.internal.service.Common
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.DeviceFactorSource
-import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.SecureStorageKey
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.curve
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.mapError
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.factorSourceById
-import rdx.works.core.then
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ProfileException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -69,7 +59,9 @@ class DerivePublicKeysViewModel @Inject constructor(
                 return@launch
             }
 
-            _state.update { it.copy(content = State.Content.Resolved(factorSource = factorSource)) }
+            _state.update {
+                it.copy(content = State.Content.Resolved(purpose = input.purpose, factorSource = factorSource))
+            }
             deriveKeys(factorSource)
         }
     }
@@ -195,7 +187,7 @@ class DerivePublicKeysViewModel @Inject constructor(
             data object Resolving : Content
 
             data class Resolved(
-                // TODO: TBD Purpose for this derivation request
+                val purpose: DerivationPurpose,
                 val factorSource: FactorSource
             ) : Content
         }
