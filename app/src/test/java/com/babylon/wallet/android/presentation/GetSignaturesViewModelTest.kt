@@ -142,7 +142,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
             val result = accessFactorSourcesProxyFake.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,
-                    signers = listOf(signerWithLedgerFactorSource, signerWithDeviceFactorSource),
+                    signers = listOf(signerWithLedgerFactorSource, signerWithDeviceFactorSource).map { it.address },
                     signRequest = signRequest
                 )
             )
@@ -180,7 +180,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
             val result = accessFactorSourcesProxyFake.getSignatures(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,
-                    signers = signers,
+                    signers = signers.map { it.address },
                     signRequest = signRequest
                 )
             )
@@ -215,6 +215,10 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
         TODO("Not yet implemented")
     }
 
+    override suspend fun derivePublicKeys(accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys): Result<AccessFactorSourcesOutput.DerivedPublicKeys> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun reDeriveAccounts(accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath> {
         TODO("Not yet implemented")
     }
@@ -239,7 +243,7 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
     override fun getInput(): AccessFactorSourcesInput {
         return AccessFactorSourcesInput.ToGetSignatures(
             signPurpose = SignPurpose.SignTransaction,
-            signers = signers,
+            signers = signers.map { it.address },
             signRequest = signRequest
         )
     }
