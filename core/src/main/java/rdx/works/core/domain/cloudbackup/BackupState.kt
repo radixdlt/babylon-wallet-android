@@ -59,6 +59,20 @@ sealed class BackupState {
     val isCloudBackupEnabled: Boolean
         get() = this is CloudBackupEnabled
 
+    val isCloudBackupSynced: Boolean
+        get() = if (lastModifiedProfileTime != null && lastCloudBackupTime != null) {
+            requireNotNull(lastModifiedProfileTime).isBefore(lastCloudBackupTime)
+        } else {
+            false
+        }
+
+    val isManualBackupSynced: Boolean
+        get() = if (lastModifiedProfileTime != null && lastManualBackupTime != null) {
+            requireNotNull(lastModifiedProfileTime).toInstant().isBefore(lastManualBackupTime)
+        } else {
+            false
+        }
+
     val isCloudBackupNotUpdated: Boolean
         get() {
             return when (this) {
