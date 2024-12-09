@@ -88,11 +88,9 @@ class WalletInteractorTest {
                     derivationPaths = derivationPaths
                 )
             )
-        } returns Result.success(
-            AccessFactorSourcesOutput.DerivedPublicKeys(
-                factorSourceId = factorSource.id,
-                factorInstances = expectedFactorInstances
-            )
+        } returns AccessFactorSourcesOutput.DerivedPublicKeys.Success(
+            factorSourceId = factorSource.id,
+            factorInstances = expectedFactorInstances
         )
 
         val response = sut.deriveKeys(
@@ -140,9 +138,7 @@ class WalletInteractorTest {
                     signRequest = SignRequest.TransactionIntentSignRequest(transaction)
                 )
             )
-        } returns Result.success(
-            AccessFactorSourcesOutput.EntitiesWithSignatures(signersWithSignatures = expectedSignatures)
-        )
+        } returns AccessFactorSourcesOutput.EntitiesWithSignatures.Success(signersWithSignatures = expectedSignatures)
 
         val response = sut.signTransactions(
             request = SignRequestOfTransactionIntent(
@@ -217,9 +213,7 @@ class WalletInteractorTest {
                     signRequest = SignRequest.SubintentSignRequest(subintent)
                 )
             )
-        } returns Result.success(
-            AccessFactorSourcesOutput.EntitiesWithSignatures(signersWithSignatures = expectedSignatures)
-        )
+        } returns AccessFactorSourcesOutput.EntitiesWithSignatures.Success(signersWithSignatures = expectedSignatures)
 
         val response = sut.signSubintents(
             request = SignRequestOfSubintent(

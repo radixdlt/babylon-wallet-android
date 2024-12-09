@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -18,6 +19,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_SHORT_MONTH
 import com.babylon.wallet.android.utils.toEpochMillis
 import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
@@ -142,25 +144,34 @@ class SelectPersonaViewModel @Inject constructor(
             dAppDefinitionAddress = metadata.dAppDefinitionAddress
         )
 
-        accessFactorSourcesProxy.getSignatures(
+        val result = accessFactorSourcesProxy.getSignatures(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signPurpose = SignPurpose.SignAuth,
                 signRequest = signRequest,
                 signers = listOf(selectedPersonaEntity.address)
             )
-        ).onSuccess { result ->
-            sendEvent(
-                Event.PersonaAuthorized(
-                    persona = selectedPersonaEntity,
-                    signature = result.signersWithSignatures[selectedPersonaEntity]
+        )
+        when (result) {
+            is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
+                sendEvent(
+                    Event.PersonaAuthorized(
+                        persona = selectedPersonaEntity,
+                        signature = result.signersWithSignatures[selectedPersonaEntity]
+                    )
                 )
-            )
-            setSigningInProgress(false)
-        }.onFailure {
-            sendEvent(
-                Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it))
-            )
-            setSigningInProgress(false)
+                setSigningInProgress(false)
+            }
+            is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> {
+                when (result.error.commonException) {
+                    is CommonException.SigningRejected -> setSigningInProgress(false)
+                    else -> {
+                        sendEvent(
+                            Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge)
+                        )
+                        setSigningInProgress(false)
+                    }
+                }
+            }
         }
     }
 

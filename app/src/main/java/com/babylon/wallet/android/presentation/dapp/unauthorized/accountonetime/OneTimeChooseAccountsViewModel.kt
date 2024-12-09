@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedReques
 import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -17,6 +18,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.VerifyEntitiesViewModel.Event
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -162,31 +165,41 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
             dAppDefinitionAddress = metadata.dAppDefinitionAddress
         )
 
-        accessFactorSourcesProxy.getSignatures(
+        val result = accessFactorSourcesProxy.getSignatures(
             accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                 signPurpose = SignPurpose.SignAuth,
                 signRequest = signRequest,
                 signers = selectedAccountEntities.map { it.address }
             )
-        ).onSuccess { result ->
-            sendEvent(
-                OneTimeChooseAccountsEvent.AccountsCollected(
-                    accountsWithSignatures = result.signersWithSignatures
-                        .filterKeys {
-                            it is ProfileEntity.AccountEntity
-                        }.mapKeys {
-                            it.key as ProfileEntity.AccountEntity
-                        }
+        )
+
+        when (result) {
+            is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
+                sendEvent(
+                    OneTimeChooseAccountsEvent.AccountsCollected(
+                        accountsWithSignatures = result.signersWithSignatures
+                            .filterKeys {
+                                it is ProfileEntity.AccountEntity
+                            }.mapKeys {
+                                it.key as ProfileEntity.AccountEntity
+                            }
+                    )
                 )
-            )
-            setSigningInProgress(false)
-        }.onFailure {
-            sendEvent(
-                OneTimeChooseAccountsEvent.AuthorizationFailed(
-                    throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it)
-                )
-            )
-            setSigningInProgress(false)
+                setSigningInProgress(false)
+            }
+            is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> {
+                when (result.error.commonException) {
+                    is CommonException.SigningRejected -> setSigningInProgress(false)
+                    else -> {
+                        sendEvent(
+                            OneTimeChooseAccountsEvent.AuthorizationFailed(
+                                throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
+                            )
+                        )
+                        setSigningInProgress(false)
+                    }
+                }
+            }
         }
     }
 
