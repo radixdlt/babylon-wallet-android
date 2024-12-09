@@ -33,7 +33,7 @@ interface AccessFactorSourcesProxy {
 
     suspend fun derivePublicKeys(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
-    ): Result<AccessFactorSourcesOutput.DerivedPublicKeys>
+    ): AccessFactorSourcesOutput.DerivedPublicKeys
 
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
@@ -45,7 +45,7 @@ interface AccessFactorSourcesProxy {
      * - or proving ownership.
      *
      * The output is a map of entities and their signatures.
-     *
+     * Error is guaranteed to be of CommonException only
      */
     suspend fun getSignatures(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
@@ -153,10 +153,16 @@ sealed interface AccessFactorSourcesOutput {
         val value: HierarchicalDeterministicPublicKey
     ) : AccessFactorSourcesOutput
 
-    data class DerivedPublicKeys(
-        val factorSourceId: FactorSourceIdFromHash,
-        val factorInstances: List<HierarchicalDeterministicFactorInstance>
-    ) : AccessFactorSourcesOutput
+    sealed interface DerivedPublicKeys : AccessFactorSourcesOutput {
+        data class Success(
+            val factorSourceId: FactorSourceIdFromHash,
+            val factorInstances: List<HierarchicalDeterministicFactorInstance>
+        ): DerivedPublicKeys
+
+        data class Failure(
+            val error: AccessFactorSourceError.Fatal
+        ): DerivedPublicKeys
+    }
 
     data class DerivedAccountsWithNextDerivationPath(
         val derivedAccounts: List<Account>,
