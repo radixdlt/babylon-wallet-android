@@ -146,10 +146,10 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
                     signRequest = signRequest
                 )
             )
-            assertTrue(result.isSuccess)
-            assertTrue(result.getOrNull()!!.signersWithSignatures.size == 2)
-            assertTrue(result.getOrNull()!!.signersWithSignatures[signers[0]] == signatureFromLedger)
-            assertTrue(result.getOrNull()!!.signersWithSignatures[signers[1]] == signatureFromDevice)
+            val success = result as AccessFactorSourcesOutput.EntitiesWithSignatures.Success
+            assertTrue(success.signersWithSignatures.size == 2)
+            assertTrue(success.signersWithSignatures[signers[0]] == signatureFromLedger)
+            assertTrue(success.signersWithSignatures[signers[1]] == signatureFromDevice)
         }
 
         coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
@@ -184,7 +184,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
                     signRequest = signRequest
                 )
             )
-            assertTrue(result.isFailure)
+            assertTrue(result is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure)
         }
 
         val signature = SignatureWithPublicKey.sample()
@@ -215,7 +215,7 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
         TODO("Not yet implemented")
     }
 
-    override suspend fun derivePublicKeys(accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys): Result<AccessFactorSourcesOutput.DerivedPublicKeys> {
+    override suspend fun derivePublicKeys(accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys): AccessFactorSourcesOutput.DerivedPublicKeys {
         TODO("Not yet implemented")
     }
 
@@ -223,13 +223,9 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSignatures(accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures): Result<AccessFactorSourcesOutput.EntitiesWithSignatures> {
+    override suspend fun getSignatures(accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures): AccessFactorSourcesOutput.EntitiesWithSignatures {
         val result = _output.first()
-        return if (result is AccessFactorSourcesOutput.Failure) {
-            Result.failure(result.error)
-        } else {
-            Result.success(result as AccessFactorSourcesOutput.EntitiesWithSignatures)
-        }
+        return result as AccessFactorSourcesOutput.EntitiesWithSignatures
     }
 
     override fun setTempMnemonicWithPassphrase(mnemonicWithPassphrase: MnemonicWithPassphrase) {

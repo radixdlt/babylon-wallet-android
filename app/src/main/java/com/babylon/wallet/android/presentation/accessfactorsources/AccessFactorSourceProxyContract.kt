@@ -49,7 +49,7 @@ interface AccessFactorSourcesProxy {
      */
     suspend fun getSignatures(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): Result<AccessFactorSourcesOutput.EntitiesWithSignatures>
+    ): AccessFactorSourcesOutput.EntitiesWithSignatures
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -169,9 +169,15 @@ sealed interface AccessFactorSourcesOutput {
         val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
-    data class EntitiesWithSignatures(
-        val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
-    ) : AccessFactorSourcesOutput
+    sealed interface EntitiesWithSignatures: AccessFactorSourcesOutput {
+        data class Success(
+            val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
+        ): EntitiesWithSignatures
+
+        data class Failure(
+            val error: AccessFactorSourceError.Fatal
+        ): EntitiesWithSignatures
+    }
 
     data class Failure(
         val error: Throwable

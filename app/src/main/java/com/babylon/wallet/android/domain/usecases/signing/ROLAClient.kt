@@ -57,18 +57,18 @@ class ROLAClient @Inject constructor(
         }
     }
 
-    suspend fun signAuthChallenge(
-        signRequest: SignRequest.RolaSignRequest,
-        entities: List<AddressOfAccountOrPersona>
-    ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
-        return accessFactorSourcesProxy.getSignatures(
-            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                signPurpose = SignPurpose.SignAuth,
-                signRequest = signRequest,
-                signers = entities
-            )
-        ).mapCatching { output ->
-            output.signersWithSignatures
-        }
-    }
+//    suspend fun signAuthChallenge(
+//        signRequest: SignRequest.RolaSignRequest,
+//        entities: List<AddressOfAccountOrPersona>
+//    ): Result<Map<ProfileEntity, SignatureWithPublicKey>> {
+//        return accessFactorSourcesProxy.getSignatures(
+//            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+//                signPurpose = SignPurpose.SignAuth,
+//                signRequest = signRequest,
+//                signers = entities
+//            )
+//        ).mapCatching { output ->
+//            output.signersWithSignatures
+//        }
+//    }
 }
