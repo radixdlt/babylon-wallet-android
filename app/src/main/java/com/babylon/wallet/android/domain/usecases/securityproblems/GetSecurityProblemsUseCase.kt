@@ -8,11 +8,13 @@ import com.radixdlt.sargon.CheckSecurityProblemsInput
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.os.SargonOsManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.core.sargon.isNotHidden
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 class GetSecurityProblemsUseCase @Inject constructor(
@@ -60,6 +62,8 @@ class GetSecurityProblemsUseCase @Inject constructor(
                 hasManualBackup = backupState.lastManualBackupTime != null
             )
         }.toSet()
+    }.catch { exception ->
+        Timber.e("failed to get security problems: $exception")
     }
 
     private fun findUnrecoverableEntities(entitiesWithSecurityPrompts: List<EntityWithSecurityPrompt>): AddressesOfEntitiesInBadState {
