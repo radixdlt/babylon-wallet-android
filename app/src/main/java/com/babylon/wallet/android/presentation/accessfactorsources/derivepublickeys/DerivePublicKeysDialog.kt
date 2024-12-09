@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.accessfactorsources.composables.R
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.DerivePublicKeysViewModel.State.Content
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.sargon.sample
@@ -47,7 +48,6 @@ fun DerivePublicKeysDialog(
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
 
     BackHandler {
         viewModel.onUserDismiss()
@@ -114,7 +114,13 @@ private fun DerivePublicKeyBottomSheetContent(
                 is Content.Resolved -> {
                     Text(
                         style = RadixTheme.typography.title,
-                        text = "Title TBD"
+                        text = when (content.purpose) {
+                            DerivationPurpose.CREATING_NEW_ACCOUNT -> stringResource(R.string.factorSourceActions_createAccount_title)
+                            DerivationPurpose.CREATING_NEW_PERSONA -> stringResource(R.string.factorSourceActions_createPersona_title)
+                            DerivationPurpose.SECURIFYING_ACCOUNT -> "TBD"
+                            DerivationPurpose.SECURIFYING_PERSONA -> "TBD"
+                            DerivationPurpose.PRE_DERIVING_KEYS -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -175,9 +181,11 @@ class DerivePublicKeysPreviewParameterProvider : PreviewParameterProvider<Derive
         get() = sequenceOf(
             DerivePublicKeysViewModel.State(Content.Resolving),
             DerivePublicKeysViewModel.State(Content.Resolved(
+                purpose = DerivationPurpose.CREATING_NEW_ACCOUNT,
                 factorSource = FactorSource.Device.sample()
             )),
             DerivePublicKeysViewModel.State(Content.Resolved(
+                purpose = DerivationPurpose.CREATING_NEW_PERSONA,
                 factorSource = FactorSource.Ledger.sample()
             )),
         )
