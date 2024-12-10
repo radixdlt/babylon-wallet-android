@@ -6,22 +6,16 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
@@ -36,7 +30,7 @@ class VerifyEntitiesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
+    private val signAuthUseCase: SignAuthUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<VerifyEntitiesViewModel.State>(),
     OneOffEventHandler<VerifyEntitiesViewModel.Event> by OneOffEventHandlerImpl() {
@@ -91,59 +85,40 @@ class VerifyEntitiesViewModel @Inject constructor(
         state.value.walletAuthorizedRequest?.let { request ->
             viewModelScope.launch {
                 setSigningInProgress(true)
-                val signRequest = request.proofOfOwnershipRequestItem?.challenge?.hex?.let { challengeHex ->
-                    SignRequest.RolaSignRequest(
-                        challengeHex = challengeHex,
-                        origin = request.metadata.origin,
-                        dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-                    )
-                }
 
-                signRequest?.let {
-                    val result = accessFactorSourcesProxy.getSignatures(
-                        accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                            signPurpose = SignPurpose.SignAuth,
-                            signRequest = signRequest,
-                            signers = state.value.nextEntitiesForProof.map { it.address }
+                val item = request.proofOfOwnershipRequestItem ?: return@launch
+
+                signAuthUseCase(
+                    challenge = item.challenge,
+                    entities = state.value.nextEntitiesForProof,
+                    metadata = request.metadata
+                ).onSuccess { signersWithSignatures ->
+                    _state.update { state ->
+                        state.copy(signatures = signersWithSignatures)
+                    }
+
+                    val isPersona = signersWithSignatures.keys.first() is ProfileEntity.PersonaEntity
+                    if (isPersona && state.value.requestedAccounts.isNotEmpty()) {
+                        sendEvent(
+                            Event.NavigateToVerifyAccounts(
+                                walletAuthorizedRequestInteractionId = request.interactionId,
+                                entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                                    accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
+                                    signatures = signersWithSignatures.mapKeys { it.key.address }
+                                )
+                            )
+                        )
+                    } else {
+                        sendEvent(Event.EntitiesVerified)
+                    }
+                    setSigningInProgress(false)
+                }.onFailure {
+                    sendEvent(
+                        Event.AuthorizationFailed(
+                            throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
                         )
                     )
-
-                    when (result) {
-                        is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
-                            _state.update { state ->
-                                state.copy(signatures = result.signersWithSignatures)
-                            }
-
-                            val isPersona = result.signersWithSignatures.keys.first() is ProfileEntity.PersonaEntity
-                            if (isPersona && state.value.requestedAccounts.isNotEmpty()) {
-                                sendEvent(
-                                    Event.NavigateToVerifyAccounts(
-                                        walletAuthorizedRequestInteractionId = request.interactionId,
-                                        entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
-                                            accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
-                                            signatures = result.signersWithSignatures.mapKeys { it.key.address }
-                                        )
-                                    )
-                                )
-                            } else {
-                                sendEvent(Event.EntitiesVerified)
-                            }
-                            setSigningInProgress(false)
-                        }
-                        is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> {
-                            when (result.error.commonException) {
-                                is CommonException.SigningRejected -> setSigningInProgress(false)
-                                else -> {
-                                    sendEvent(
-                                        Event.AuthorizationFailed(
-                                            throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
-                                        )
-                                    )
-                                    setSigningInProgress(false)
-                                }
-                            }
-                        }
-                    }
+                    setSigningInProgress(false)
                 }
             }
         }

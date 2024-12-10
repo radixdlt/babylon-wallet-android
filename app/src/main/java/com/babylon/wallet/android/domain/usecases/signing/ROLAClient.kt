@@ -1,17 +1,11 @@
 package com.babylon.wallet.android.domain.usecases.signing
 
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.PublicKeyHash
-import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hex
@@ -22,8 +16,7 @@ import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
     private val getEntitiesOwnerKeysUseCase: GetEntitiesOwnerKeysUseCase,
-    private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
+    private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase
 ) {
 
     suspend fun generateAuthSigningFactorInstance(entity: ProfileEntity): Result<HierarchicalDeterministicFactorInstance> {

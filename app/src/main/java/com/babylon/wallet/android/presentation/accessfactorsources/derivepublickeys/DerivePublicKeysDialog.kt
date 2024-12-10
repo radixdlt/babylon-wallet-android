@@ -18,7 +18,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -180,13 +179,17 @@ class DerivePublicKeysPreviewParameterProvider : PreviewParameterProvider<Derive
     override val values: Sequence<DerivePublicKeysViewModel.State>
         get() = sequenceOf(
             DerivePublicKeysViewModel.State(Content.Resolving),
-            DerivePublicKeysViewModel.State(Content.Resolved(
-                purpose = DerivationPurpose.CREATING_NEW_ACCOUNT,
-                factorSource = FactorSource.Device.sample()
-            )),
-            DerivePublicKeysViewModel.State(Content.Resolved(
-                purpose = DerivationPurpose.CREATING_NEW_PERSONA,
-                factorSource = FactorSource.Ledger.sample()
-            )),
+            DerivePublicKeysViewModel.State(
+                Content.Resolved(
+                    purpose = DerivationPurpose.CREATING_NEW_ACCOUNT,
+                    factorSource = FactorSource.Device.sample()
+                )
+            ),
+            DerivePublicKeysViewModel.State(
+                Content.Resolved(
+                    purpose = DerivationPurpose.CREATING_NEW_PERSONA,
+                    factorSource = FactorSource.Ledger.sample()
+                )
+            ),
         )
 }

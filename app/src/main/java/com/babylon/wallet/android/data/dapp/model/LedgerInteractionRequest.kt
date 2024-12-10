@@ -133,9 +133,7 @@ sealed interface LedgerInteractionRequest {
                 curve = Curve.from(derivationPath.curve),
                 derivationPath = derivationPath.string
             )
-
         }
-
     }
 }
 

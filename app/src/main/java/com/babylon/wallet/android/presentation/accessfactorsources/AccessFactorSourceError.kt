@@ -48,6 +48,5 @@ sealed interface AccessFactorSourceError {
                 commonException = CommonException.SigningRejected()
             )
         }
-
     }
 }

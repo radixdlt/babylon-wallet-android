@@ -47,7 +47,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor() {
                 val signatureForAuthorizedPersona = authorizedPersona.second
 
                 if (signatureForAuthorizedPersona == null) {
-                    return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge())
+                    return Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge)
                 } else {
                     WalletToDappInteractionAuthRequestResponseItem.LoginWithChallenge(
                         v1 = WalletToDappInteractionAuthLoginWithChallengeRequestResponseItem(

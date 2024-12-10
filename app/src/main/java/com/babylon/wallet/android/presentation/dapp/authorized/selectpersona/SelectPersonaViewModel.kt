@@ -6,11 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -19,14 +15,12 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_SHORT_MONTH
 import com.babylon.wallet.android.utils.toEpochMillis
 import com.radixdlt.sargon.AuthorizedDapp
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -49,7 +43,7 @@ class SelectPersonaViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
+    private val signAuthUseCase: SignAuthUseCase
 ) : StateViewModel<SelectPersonaViewModel.State>(), OneOffEventHandler<SelectPersonaViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = SelectPersonaArgs(savedStateHandle)
@@ -138,40 +132,23 @@ class SelectPersonaViewModel @Inject constructor(
         selectedPersonaEntity: ProfileEntity.PersonaEntity,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        val signRequest = SignRequest.RolaSignRequest(
-            challengeHex = challenge.hex,
-            origin = metadata.origin,
-            dAppDefinitionAddress = metadata.dAppDefinitionAddress
-        )
-
-        val result = accessFactorSourcesProxy.getSignatures(
-            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                signPurpose = SignPurpose.SignAuth,
-                signRequest = signRequest,
-                signers = listOf(selectedPersonaEntity.address)
-            )
-        )
-        when (result) {
-            is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
-                sendEvent(
-                    Event.PersonaAuthorized(
-                        persona = selectedPersonaEntity,
-                        signature = result.signersWithSignatures[selectedPersonaEntity]
-                    )
+        signAuthUseCase(
+            challenge = challenge,
+            entity = selectedPersonaEntity,
+            metadata = metadata
+        ).onSuccess { signatureWithPublicKey ->
+            sendEvent(
+                Event.PersonaAuthorized(
+                    persona = selectedPersonaEntity,
+                    signature = signatureWithPublicKey
                 )
-                setSigningInProgress(false)
-            }
-            is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> {
-                when (result.error.commonException) {
-                    is CommonException.SigningRejected -> setSigningInProgress(false)
-                    else -> {
-                        sendEvent(
-                            Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge)
-                        )
-                        setSigningInProgress(false)
-                    }
-                }
-            }
+            )
+            setSigningInProgress(false)
+        }.onFailure {
+            sendEvent(
+                Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge)
+            )
+            setSigningInProgress(false)
         }
     }
 
