@@ -3,7 +3,10 @@ package rdx.works.core.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.radixdlt.sargon.AuthenticationSigningRequest
+import com.radixdlt.sargon.AuthenticationSigningResponse
 import com.radixdlt.sargon.Bios
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.KeyDerivationRequest
 import com.radixdlt.sargon.KeyDerivationResponse
@@ -83,20 +86,27 @@ object CoreProvider {
         @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
     ): SargonOsManager = SargonOsManager.factory(
         bios = bios,
-        hostInteractor = object : HostInteractor {
-            override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
-                TODO("Not yet implemented")
-            }
-
-            override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash {
-                TODO("Not yet implemented")
-            }
-
-            override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignWithFactorsOutcomeOfTransactionIntentHash {
-                TODO("Not yet implemented")
-            }
-        },
+        hostInteractor = HostInteractorStub(),
         applicationScope = applicationScope,
         defaultDispatcher = defaultDispatcher
     )
+}
+
+private class HostInteractorStub : HostInteractor {
+
+    override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
+        throw CommonException.Unknown()
+    }
+
+    override suspend fun signAuth(request: AuthenticationSigningRequest): AuthenticationSigningResponse {
+        throw CommonException.Unknown()
+    }
+
+    override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash {
+        throw CommonException.Unknown()
+    }
+
+    override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignWithFactorsOutcomeOfTransactionIntentHash {
+        throw CommonException.Unknown()
+    }
 }

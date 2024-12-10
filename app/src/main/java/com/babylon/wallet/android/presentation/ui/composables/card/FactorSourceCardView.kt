@@ -151,7 +151,7 @@ fun SimpleFactorSourceCardView(
                 )
 
                 subtitle?.let {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
                     Text(
                         text = it,
@@ -161,7 +161,7 @@ fun SimpleFactorSourceCardView(
                 }
 
                 description?.let {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
                     Text(
                         text = it,

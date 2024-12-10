@@ -159,7 +159,7 @@ private fun AssetsContent(
                 },
                 text = "+$remainingFungiblesCount",
                 contentPadding = PaddingValues(
-                    start = iconSize + RadixTheme.dimensions.paddingXSmall,
+                    start = iconSize + RadixTheme.dimensions.paddingXXSmall,
                     end = RadixTheme.dimensions.paddingSmall
                 )
             )
