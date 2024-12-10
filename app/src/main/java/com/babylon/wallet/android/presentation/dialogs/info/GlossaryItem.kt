@@ -35,4 +35,5 @@ enum class GlossaryItem {
     possibledappcalls,
     securityshield,
     buildsecurityshields,
+    nohardwaredevice
 }

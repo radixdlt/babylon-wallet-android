@@ -187,7 +187,7 @@ private fun RestoreMnemonicsContent(
                     enabled = state.isPrimaryButtonEnabled,
                     isLoading = state.isPrimaryButtonLoading,
                     onClick = onSubmitClick,
-                    additionalContent = {
+                    additionalTopContent = {
                         if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
                             if (state.isSecondaryButtonLoading) {
                                 CircularProgressIndicator(

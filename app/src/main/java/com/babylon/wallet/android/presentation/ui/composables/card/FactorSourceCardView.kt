@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +37,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -60,94 +63,56 @@ fun FactorSourceCardView(
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
-    when (item.header) {
-        is FactorSourceCard.Header.Instance -> FactorSourceCardView(
-            iconRes = item.kind.iconRes(),
-            title = item.header.name,
-            subtitle = null,
-            lastUsedOn = item.header.lastUsedOn,
-            messages = item.messages,
-            accounts = item.accounts,
-            personas = item.personas,
-            modifier = modifier,
-            endContent = endContent
-        )
-        FactorSourceCard.Header.New -> FactorSourceCardView(
+    CardContainer(
+        modifier = modifier
+    ) {
+        SimpleFactorSourceCardView(
             iconRes = item.kind.iconRes(),
             title = item.kind.title(),
             subtitle = item.kind.subtitle(),
-            lastUsedOn = null,
-            messages = item.messages,
-            accounts = item.accounts,
-            personas = item.personas,
-            modifier = modifier,
+            description = null,
             endContent = endContent
+        )
+
+        MessagesView(
+            messages = item.messages
         )
     }
 }
 
 @Composable
-fun FactorSourceCardView(
-    iconRes: Int,
-    title: String,
-    subtitle: String?,
-    lastUsedOn: String?,
-    messages: PersistentList<StatusMessage>,
-    accounts: PersistentList<Account>,
-    personas: PersistentList<Persona>,
+fun FactorInstanceCardView(
+    item: FactorInstanceCard,
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
-    Column(
+    CardContainer(
         modifier = modifier
-            .defaultCardShadow(elevation = 2.dp)
-            .clip(RadixTheme.shapes.roundedRectMedium)
-            .fillMaxWidth()
-            .background(
-                color = RadixTheme.colors.white,
-                shape = RadixTheme.shapes.roundedRectDefault
-            )
     ) {
-        SimpleFactorSourceCard(
-            iconRes = iconRes,
-            title = title,
-            subtitle = subtitle,
-            description = lastUsedOn?.let {
+        SimpleFactorSourceCardView(
+            iconRes = item.kind.iconRes(),
+            title = item.name,
+            subtitle = item.kind.subtitle().takeIf { item.includeDescription },
+            description = item.lastUsedOn?.let {
                 stringResource(id = R.string.factorSources_card_lastUsed, it)
                     .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
             },
             endContent = endContent
         )
 
-        if (messages.isNotEmpty()) {
-            Column(
-                modifier = Modifier.padding(
-                    start = RadixTheme.dimensions.paddingXXLarge,
-                    end = RadixTheme.dimensions.paddingXXLarge,
-                    top = RadixTheme.dimensions.paddingXSmall,
-                    bottom = RadixTheme.dimensions.paddingDefault
-                ),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
-            ) {
-                messages.forEach {
-                    StatusMessageText(
-                        message = it
-                    )
-                }
-            }
-        }
+        MessagesView(
+            messages = item.messages
+        )
 
-        if (accounts.isNotEmpty() || personas.isNotEmpty()) {
-            LinkedEntitiesView(
-                accounts = accounts,
-                personas = personas
-            )
-        }
+        LinkedEntitiesView(
+            accounts = item.accounts,
+            personas = item.personas
+        )
     }
 }
 
 @Composable
-fun SimpleFactorSourceCard(
+fun SimpleFactorSourceCardView(
     @DrawableRes iconRes: Int,
     title: String,
     modifier: Modifier = Modifier,
@@ -212,10 +177,58 @@ fun SimpleFactorSourceCard(
 }
 
 @Composable
+private fun CardContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .defaultCardShadow(elevation = 6.dp)
+            .clip(RadixTheme.shapes.roundedRectMedium)
+            .fillMaxWidth()
+            .background(
+                color = RadixTheme.colors.white,
+                shape = RadixTheme.shapes.roundedRectDefault
+            )
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun MessagesView(
+    messages: PersistentList<FactorSourceStatusMessage>
+) {
+    if (messages.isEmpty()) {
+        return
+    }
+
+    Column(
+        modifier = Modifier.padding(
+            start = RadixTheme.dimensions.paddingXXLarge,
+            end = RadixTheme.dimensions.paddingXXLarge,
+            top = RadixTheme.dimensions.paddingXSmall,
+            bottom = RadixTheme.dimensions.paddingDefault
+        ),
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+    ) {
+        messages.forEach {
+            StatusMessageText(
+                message = it.getMessage()
+            )
+        }
+    }
+}
+
+@Composable
 private fun LinkedEntitiesView(
     accounts: PersistentList<Account>,
     personas: PersistentList<Persona>
 ) {
+    if (accounts.isEmpty() && personas.isEmpty()) {
+        return
+    }
+
     val accountsText = when {
         accounts.isEmpty() -> null
         accounts.size == 1 -> stringResource(id = R.string.factorSources_card_accountSingular)
@@ -369,29 +382,71 @@ private fun FactorSourceCardPreview(
     }
 }
 
+@Composable
+@Preview
+@UsesSampleValues
+private fun FactorInstanceCardPreview(
+    @PreviewParameter(FactorInstanceCardPreviewProvider::class) item: FactorInstanceCard
+) {
+    RadixWalletPreviewTheme {
+        FactorInstanceCardView(
+            item = item
+        )
+    }
+}
+
 @UsesSampleValues
 class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCard> {
 
     override val values: Sequence<FactorSourceCard>
         get() = sequenceOf(
             FactorSourceCard(
-                kind = FactorSourceKind.DEVICE,
-                header = FactorSourceCard.Header.Instance(
-                    id = FactorSourceId.Hash.init(
-                        kind = FactorSourceKind.DEVICE,
-                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
-                    ),
-                    name = "My Phone",
-                    lastUsedOn = "Today"
-                ),
+                kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                messages = persistentListOf()
+            ),
+            FactorSourceCard(
+                kind = FactorSourceKind.ARCULUS_CARD,
+                messages = persistentListOf()
+            ),
+            FactorSourceCard(
+                kind = FactorSourceKind.PASSWORD,
+                messages = persistentListOf()
+            ),
+            FactorSourceCard(
+                kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 messages = persistentListOf(
-                    StatusMessage(
-                        message = "Choosing a passphrase is only recommended for advanced users",
-                        type = StatusMessage.Type.WARNING
-                    ),
-                    StatusMessage(
-                        message = "Warning text",
-                        type = StatusMessage.Type.WARNING
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "This seed phrase has been written down",
+                            type = StatusMessage.Type.SUCCESS
+                        )
+                    )
+                )
+            )
+        )
+}
+
+@UsesSampleValues
+class FactorInstanceCardPreviewProvider : PreviewParameterProvider<FactorInstanceCard> {
+
+    override val values: Sequence<FactorInstanceCard>
+        get() = sequenceOf(
+            FactorInstanceCard(
+                id = FactorSourceId.Hash.init(
+                    kind = FactorSourceKind.DEVICE,
+                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                ),
+                name = "My Phone",
+                includeDescription = false,
+                lastUsedOn = "Today",
+                kind = FactorSourceKind.DEVICE,
+                messages = persistentListOf(
+                    FactorSourceStatusMessage.PassphraseHint,
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "Warning text",
+                            type = StatusMessage.Type.WARNING
+                        )
                     )
                 ),
                 accounts = persistentListOf(
@@ -401,39 +456,6 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
                 )
-            ),
-            FactorSourceCard(
-                kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                header = FactorSourceCard.Header.New,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
-            ),
-            FactorSourceCard(
-                kind = FactorSourceKind.ARCULUS_CARD,
-                header = FactorSourceCard.Header.New,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
-            ),
-            FactorSourceCard(
-                kind = FactorSourceKind.PASSWORD,
-                header = FactorSourceCard.Header.New,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
-            ),
-            FactorSourceCard(
-                kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                header = FactorSourceCard.Header.New,
-                messages = persistentListOf(
-                    StatusMessage(
-                        message = "This seed phrase has been written down",
-                        type = StatusMessage.Type.SUCCESS
-                    )
-                ),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
             )
         )
 }

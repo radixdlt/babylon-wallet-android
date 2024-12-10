@@ -18,10 +18,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -40,6 +42,8 @@ import com.babylon.wallet.android.presentation.ui.composables.HorizontalPagerInd
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 
 @Composable
@@ -59,7 +63,8 @@ fun SecurityShieldOnboardingScreen(
         onDismiss = onDismiss,
         onPageChange = viewModel::onPageChange,
         onInfoClick = onInfoClick,
-        onButtonClick = viewModel::onButtonClick
+        onButtonClick = viewModel::onButtonClick,
+        onMessageShown = viewModel::onMessageShown
     )
 
     LaunchedEffect(Unit) {
@@ -80,7 +85,8 @@ private fun SecurityShieldOnboardingContent(
     onDismiss: () -> Unit,
     onPageChange: (Int) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
+    onMessageShown: () -> Unit
 ) {
     val pagerState = rememberPagerState(
         pageCount = { state.pageCount }
@@ -101,6 +107,14 @@ private fun SecurityShieldOnboardingContent(
 
         onPageChange(pagerState.currentPage)
     }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    SnackbarUIMessage(
+        message = state.message,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -142,6 +156,12 @@ private fun SecurityShieldOnboardingContent(
                 )
             }
         },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
+            )
+        },
         containerColor = RadixTheme.colors.white
     ) { padding ->
         HorizontalPager(
@@ -160,16 +180,20 @@ private fun SecurityShieldOnboardingContent(
                 titleRes = currentPage.titleRes(),
                 descriptionRes = currentPage.descriptionRes()
             ) {
-                when (currentPage) {
-                    SecurityShieldOnboardingViewModel.State.Page.Introduction -> InfoButton(
-                        text = stringResource(id = R.string.infoLink_title_securityshield),
-                        onClick = { onInfoClick(GlossaryItem.securityshield) }
-                    )
-                    SecurityShieldOnboardingViewModel.State.Page.AddFactors -> InfoButton(
-                        text = stringResource(id = R.string.infoLink_title_buildsecurityshields),
-                        onClick = { onInfoClick(GlossaryItem.buildsecurityshields) }
-                    )
-                    SecurityShieldOnboardingViewModel.State.Page.ApplyShield -> {}
+                Box(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                ) {
+                    when (currentPage) {
+                        SecurityShieldOnboardingViewModel.State.Page.Introduction -> InfoButton(
+                            text = stringResource(id = R.string.infoLink_title_securityshield),
+                            onClick = { onInfoClick(GlossaryItem.securityshield) }
+                        )
+                        SecurityShieldOnboardingViewModel.State.Page.AddFactors -> InfoButton(
+                            text = stringResource(id = R.string.infoLink_title_buildsecurityshields),
+                            onClick = { onInfoClick(GlossaryItem.buildsecurityshields) }
+                        )
+                        SecurityShieldOnboardingViewModel.State.Page.ApplyShield -> {}
+                    }
                 }
             }
         }
@@ -253,7 +277,8 @@ private fun SecurityShieldOnboardingPreview() {
             onDismiss = {},
             onPageChange = {},
             onInfoClick = {},
-            onButtonClick = {}
+            onButtonClick = {},
+            onMessageShown = {}
         )
     }
 }
