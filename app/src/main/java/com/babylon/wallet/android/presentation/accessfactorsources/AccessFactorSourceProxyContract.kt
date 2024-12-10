@@ -108,7 +108,7 @@ sealed interface AccessFactorSourcesInput {
         val purpose: DerivationPurpose,
         val factorSourceId: FactorSourceIdFromHash,
         val derivationPaths: List<DerivationPath>
-    ): AccessFactorSourcesInput
+    ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
 
@@ -157,11 +157,11 @@ sealed interface AccessFactorSourcesOutput {
         data class Success(
             val factorSourceId: FactorSourceIdFromHash,
             val factorInstances: List<HierarchicalDeterministicFactorInstance>
-        ): DerivedPublicKeys
+        ) : DerivedPublicKeys
 
         data class Failure(
             val error: AccessFactorSourceError.Fatal
-        ): DerivedPublicKeys
+        ) : DerivedPublicKeys
     }
 
     data class DerivedAccountsWithNextDerivationPath(
@@ -169,14 +169,14 @@ sealed interface AccessFactorSourcesOutput {
         val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
-    sealed interface EntitiesWithSignatures: AccessFactorSourcesOutput {
+    sealed interface EntitiesWithSignatures : AccessFactorSourcesOutput {
         data class Success(
             val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
-        ): EntitiesWithSignatures
+        ) : EntitiesWithSignatures
 
         data class Failure(
             val error: AccessFactorSourceError.Fatal
-        ): EntitiesWithSignatures
+        ) : EntitiesWithSignatures
     }
 
     data class Failure(
