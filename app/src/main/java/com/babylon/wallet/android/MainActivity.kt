@@ -30,8 +30,6 @@ import com.babylon.wallet.android.designsystem.theme.DefaultDarkScrim
 import com.babylon.wallet.android.designsystem.theme.DefaultLightScrim
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
-import com.babylon.wallet.android.presentation.interactor.WalletInteractor
 import com.babylon.wallet.android.presentation.lockscreen.AppLockActivity
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
@@ -39,7 +37,6 @@ import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
-import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

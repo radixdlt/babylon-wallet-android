@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.signing.EntityWithSignature
@@ -9,6 +8,7 @@ import com.babylon.wallet.android.domain.model.signing.SignPurpose
 import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourceError
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesIOHandler
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -23,6 +23,7 @@ import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -39,6 +40,7 @@ import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -63,11 +65,13 @@ class GetSignaturesViewModel @Inject constructor(
             val signersPerFactorSource = getSigningEntitiesByFactorSource(
                 signersAddresses = input.signers
             ).getOrElse { error ->
-                // end the signing process and return the output (error)
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
-                accessFactorSourcesIOHandler.setOutput(
-                    AccessFactorSourcesOutput.Failure(error = error) // Error with profile maybe
-                )
+                Timber.w(error, "Could not resolve signers per factor source")
+                val commonError = if (error is CommonException) {
+                    error
+                } else {
+                    CommonException.SigningRejected()
+                }
+                finishWithFailure(AccessFactorSourceError.Fatal(commonError))
                 return@launch
             }
 
@@ -152,7 +156,7 @@ class GetSignaturesViewModel @Inject constructor(
             null -> {
                 sendEvent(event = Event.AccessingFactorSourceCompleted)
                 accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.EntitiesWithSignatures(
+                    output = AccessFactorSourcesOutput.EntitiesWithSignatures.Success(
                         signersWithSignatures = state.value.entitiesWithSignatures
                     )
                 )
@@ -221,10 +225,9 @@ class GetSignaturesViewModel @Inject constructor(
                 ).onSuccess { entitiesWithSignaturesList ->
                     entitiesWithSignaturesForAllDeviceFactorSources.addAll(entitiesWithSignaturesList)
                 }.onFailure {
-                    // end the signing process and return the output (error)
-                    sendEvent(event = Event.AccessingFactorSourceCompleted)
-                    accessFactorSourcesIOHandler.setOutput(
-                        AccessFactorSourcesOutput.Failure(error = it)
+                    handleFailure(
+                        throwable = it,
+                        factorSourceId = deviceFactorSource.value.id
                     )
                     return@launch
                 }
@@ -254,15 +257,9 @@ class GetSignaturesViewModel @Inject constructor(
                 }
                 proceedToNextSigners()
             }.onFailure { error ->
-                if (error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction &&
-                    error.reason == LedgerErrorCode.Generic // Generic can mean anything, e.g. user closed the browser tab
-                ) {
-                    return@launch // should be return@launch to keep the bottom sheet open
-                }
-                // end the signing process and return the output (error)
-                sendEvent(event = Event.AccessingFactorSourceCompleted)
-                accessFactorSourcesIOHandler.setOutput(
-                    output = AccessFactorSourcesOutput.Failure(error = error)
+                handleFailure(
+                    throwable = error,
+                    factorSourceId = ledgerFactorSource.value.id
                 )
             }
         }
@@ -325,6 +322,23 @@ class GetSignaturesViewModel @Inject constructor(
             FactorSourceKind.DEVICE -> 1
             else -> Int.MAX_VALUE // it doesn't matter because we add only the ledger or device factor sources
         }
+    }
+
+    private suspend fun handleFailure(throwable: Throwable, factorSourceId: FactorSourceIdFromHash) {
+        when (val error = AccessFactorSourceError.from(throwable, factorSourceId)) {
+            is AccessFactorSourceError.Fatal -> finishWithFailure(error)
+            is AccessFactorSourceError.NonFatal -> {
+                // TODO show error to the user
+            }
+        }
+    }
+
+    private suspend fun finishWithFailure(error: AccessFactorSourceError.Fatal) {
+        // end the signing process and return the output (error)
+        sendEvent(event = Event.AccessingFactorSourceCompleted)
+        accessFactorSourcesIOHandler.setOutput(
+            AccessFactorSourcesOutput.EntitiesWithSignatures.Failure(error = error) // Error with profile maybe
+        )
     }
 
     data class State(

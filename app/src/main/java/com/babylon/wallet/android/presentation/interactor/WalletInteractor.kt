@@ -5,6 +5,10 @@ import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.AuthenticationSigningRequest
+import com.radixdlt.sargon.AuthenticationSigningResponse
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
 import com.radixdlt.sargon.HdSignatureInputOfTransactionIntentHash
 import com.radixdlt.sargon.HdSignatureOfSubintentHash
@@ -26,8 +30,11 @@ import com.radixdlt.sargon.SubintentHash
 import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
 import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
+import com.radixdlt.sargon.authenticationSigningInputGetRolaChallenge
 import com.radixdlt.sargon.extensions.decompile
 import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -60,6 +67,41 @@ class WalletInteractor @Inject constructor(
         }
 
         return KeyDerivationResponse(perFactorSource = publicKeysPerFactorSource)
+    }
+
+    override suspend fun signAuth(request: AuthenticationSigningRequest): AuthenticationSigningResponse {
+        val result = accessFactorSourcesProxy.getSignatures(
+            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
+                signPurpose = SignPurpose.SignAuth,
+                signers = listOf(request.input.ownedFactorInstance.owner),
+                signRequest = SignRequest.RolaSignRequest(
+                    challengeHex = request.input.challengeNonce.hex,
+                    origin = request.input.metadata.origin,
+                    dAppDefinitionAddress = request.input.metadata.dappDefinitionAddress.string
+                )
+            )
+        )
+
+        return when (result) {
+            is AccessFactorSourcesOutput.EntitiesWithSignatures.Success -> {
+                val profileEntity = when (val owner = request.input.ownedFactorInstance.owner) {
+                    is AddressOfAccountOrPersona.Account -> result.signersWithSignatures.keys.find {
+                        it.address == owner
+                    } ?: throw CommonException.UnknownAccount()
+                    is AddressOfAccountOrPersona.Identity -> result.signersWithSignatures.keys.find {
+                        it.address == owner
+                    } ?: throw CommonException.UnknownPersona()
+                }
+
+                val signature = result.signersWithSignatures[profileEntity] ?: throw CommonException.SigningRejected()
+
+                AuthenticationSigningResponse(
+                    rolaChallenge = authenticationSigningInputGetRolaChallenge(request.input),
+                    signatureWithPublicKey = signature
+                )
+            }
+            is AccessFactorSourcesOutput.EntitiesWithSignatures.Failure -> throw result.error.commonException
+        }
     }
 
     override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash {

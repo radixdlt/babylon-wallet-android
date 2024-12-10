@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.dapp.selectpersona
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.AccessFactorSourcesProxyFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -53,6 +54,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl(AppEventBusImpl())
+    private val signAuthUseCase = mockk<SignAuthUseCase>()
 
     private val dApp = DApp.sampleMainnet()
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
@@ -99,7 +101,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
             getProfileUseCase,
             preferencesManager,
             incomingRequestRepository,
-            AccessFactorSourcesProxyFake()
+            signAuthUseCase
         )
     }
 
