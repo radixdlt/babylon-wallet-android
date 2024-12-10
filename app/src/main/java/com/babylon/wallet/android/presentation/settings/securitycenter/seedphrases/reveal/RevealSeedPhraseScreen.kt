@@ -188,7 +188,7 @@ private fun SeedPhraseRow(
 
 @Composable
 private fun SingleWord(label: String, word: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)) {
         Text(
             text = label,
             style = RadixTheme.typography.body1HighImportance,

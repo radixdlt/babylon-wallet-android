@@ -407,7 +407,7 @@ private fun AccountHeader(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXSmall),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXSmall),
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                 ) {
                     if (accountAddress != null) {

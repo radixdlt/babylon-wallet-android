@@ -236,7 +236,7 @@ fun TransferContent(
                         modifier = Modifier
                             .padding(
                                 horizontal = RadixTheme.dimensions.paddingMedium,
-                                vertical = RadixTheme.dimensions.paddingXSmall
+                                vertical = RadixTheme.dimensions.paddingXXSmall
                             ),
                         text = stringResource(
                             id = R.string.assetTransfer_accountList_fromLabel
@@ -267,7 +267,7 @@ fun TransferContent(
                             .weight(1f)
                             .padding(
                                 horizontal = RadixTheme.dimensions.paddingMedium,
-                                vertical = RadixTheme.dimensions.paddingXSmall
+                                vertical = RadixTheme.dimensions.paddingXXSmall
                             ),
                         text = stringResource(
                             id = R.string.assetTransfer_accountList_toLabel

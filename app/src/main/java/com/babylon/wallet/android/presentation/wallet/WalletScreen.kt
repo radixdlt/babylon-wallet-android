@@ -294,7 +294,7 @@ private fun WalletAccountList(
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                 TotalFiatBalanceView(
                     fiatPrice = state.totalBalance,
                     isLoading = state.isLoadingTotalBalance,

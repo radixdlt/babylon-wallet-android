@@ -793,7 +793,7 @@ private fun VerifyWithYourSeedPhrasePage(
                 modifier = Modifier.fillMaxWidth(),
                 text = AnnotatedString(stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning))
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             SeedPhraseInputForm(
                 seedPhraseWords = seedPhraseWords,
                 onWordChanged = onWordChanged,
