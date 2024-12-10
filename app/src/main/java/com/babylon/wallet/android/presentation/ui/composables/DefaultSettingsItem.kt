@@ -92,7 +92,7 @@ fun DefaultSettingsItem(
                 subtitle()
             }
             infoView?.let { info ->
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
                 info()
             }
         }
@@ -199,7 +199,7 @@ fun DefaultSettingsItem(
             {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
                 ) {
                     Spacer(modifier = Modifier)
                     warnings.forEach { warning ->

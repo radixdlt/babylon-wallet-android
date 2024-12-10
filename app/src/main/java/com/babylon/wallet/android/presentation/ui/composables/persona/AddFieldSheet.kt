@@ -154,7 +154,7 @@ private fun AddFieldCheckbox(
     ) {
         AnimatedVisibility(visible = checked, enter = fadeIn(), exit = fadeOut()) {
             Icon(
-                modifier = Modifier.padding(dimensions.paddingXXSmall),
+                modifier = Modifier.padding(dimensions.paddingXXXSmall),
                 painter = painterResource(id = DSR.ic_check),
                 contentDescription = null,
                 tint = RadixTheme.colors.white

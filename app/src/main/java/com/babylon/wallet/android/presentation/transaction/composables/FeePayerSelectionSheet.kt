@@ -106,7 +106,7 @@ private fun FeePayerSelectionContent(
             Box {
                 IconButton(
                     modifier = Modifier.padding(
-                        start = RadixTheme.dimensions.paddingXSmall,
+                        start = RadixTheme.dimensions.paddingXXSmall,
                         top = RadixTheme.dimensions.paddingMedium
                     ),
                     onClick = onClose
@@ -258,7 +258,7 @@ private fun FeePayerCard(
                 maxLines = 2
             )
 
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
 
             RadixRadioButton(
                 selected = candidate.account.address == selectedCandidateAddress,
@@ -272,7 +272,7 @@ private fun FeePayerCard(
         }
 
         if (!candidate.hasEnoughBalance) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
             WarningText(
                 modifier = Modifier

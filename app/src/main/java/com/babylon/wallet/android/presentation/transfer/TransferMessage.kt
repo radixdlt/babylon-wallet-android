@@ -43,7 +43,7 @@ fun TransferMessage(
             modifier = Modifier
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingMedium,
-                    vertical = RadixTheme.dimensions.paddingXSmall
+                    vertical = RadixTheme.dimensions.paddingXXSmall
                 ),
             text = stringResource(id = R.string.assetTransfer_transactionMessage).uppercase(),
             style = RadixTheme.typography.body1Link,
@@ -63,7 +63,7 @@ fun TransferMessage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingXSmall),
+                    .padding(RadixTheme.dimensions.paddingXXSmall),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {

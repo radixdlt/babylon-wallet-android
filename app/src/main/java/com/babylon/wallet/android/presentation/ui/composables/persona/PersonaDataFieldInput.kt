@@ -236,7 +236,7 @@ fun PersonaNameInput(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             DefaultSelector(
                 modifier = Modifier.fillMaxWidth(),
                 items = Name.Variant.values().map { SelectorItem(it, it.description()) }.toPersistentList(),

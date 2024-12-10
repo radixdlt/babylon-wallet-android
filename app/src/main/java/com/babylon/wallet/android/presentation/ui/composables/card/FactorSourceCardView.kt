@@ -124,10 +124,10 @@ fun FactorSourceCardView(
                 modifier = Modifier.padding(
                     start = RadixTheme.dimensions.paddingXXLarge,
                     end = RadixTheme.dimensions.paddingXXLarge,
-                    top = RadixTheme.dimensions.paddingXSmall,
+                    top = RadixTheme.dimensions.paddingXXSmall,
                     bottom = RadixTheme.dimensions.paddingDefault
                 ),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
             ) {
                 messages.forEach {
                     StatusMessageText(
@@ -186,7 +186,7 @@ fun SimpleFactorSourceCard(
                 )
 
                 subtitle?.let {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
                     Text(
                         text = it,
@@ -196,7 +196,7 @@ fun SimpleFactorSourceCard(
                 }
 
                 description?.let {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
                     Text(
                         text = it,

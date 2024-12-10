@@ -56,7 +56,7 @@ fun NetworkFeeContent(
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 InfoButton(
                     modifier = Modifier
                         .fillMaxHeight()

@@ -100,7 +100,7 @@ fun TransactionPreviewHeader(
                     }
 
                     if (someDApp != null) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically

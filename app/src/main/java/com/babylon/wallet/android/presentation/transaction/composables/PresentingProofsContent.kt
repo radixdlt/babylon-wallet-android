@@ -52,7 +52,7 @@ fun PresentingProofsContent(
                         vertical = RadixTheme.dimensions.paddingSmall
                     )
                     .height(intrinsicSize = IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
             ) {
                 Text(
                     text = stringResource(id = R.string.interactionReview_presentingHeading).uppercase(),
