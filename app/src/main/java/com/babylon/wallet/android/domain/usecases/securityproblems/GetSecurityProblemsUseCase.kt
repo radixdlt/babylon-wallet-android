@@ -46,12 +46,10 @@ class GetSecurityProblemsUseCase @Inject constructor(
                 unrecoverableEntities = findUnrecoverableEntities(entitiesWithSecurityPrompts),
                 withoutControlEntities = findWithoutControlEntities(entitiesWithSecurityPrompts),
                 lastCloudBackup = BackupResult(
-                    saveIdentifier = "string",
                     isCurrent = backupState.isCloudBackupSynced,
                     isFailed = backupState is BackupState.CloudBackupEnabled && backupState.hasAnyErrors
                 ),
                 lastManualBackup = BackupResult(
-                    saveIdentifier = "string",
                     isCurrent = backupState.isManualBackupSynced,
                     isFailed = false,
                 )
