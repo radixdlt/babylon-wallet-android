@@ -180,7 +180,7 @@ private fun SectionHeader(modifier: Modifier = Modifier, text: String) {
             modifier = Modifier
                 .size(24.dp)
                 .dashedCircleBorder(RadixTheme.colors.gray3)
-                .padding(RadixTheme.dimensions.paddingXSmall),
+                .padding(RadixTheme.dimensions.paddingXXSmall),
             painter = painterResource(
                 id = DSR.ic_deposit_changes_heading
             ),

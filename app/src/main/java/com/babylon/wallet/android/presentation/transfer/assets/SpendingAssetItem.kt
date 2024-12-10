@@ -238,7 +238,7 @@ private fun ColumnScope.FungibleSpendingAsset(
         ) {
             Text(
                 modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingXSmall)
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXSmall)
                     .clickable { onMaxClicked() },
                 text = stringResource(id = R.string.common_max),
                 style = RadixTheme.typography.body1Link.copy(

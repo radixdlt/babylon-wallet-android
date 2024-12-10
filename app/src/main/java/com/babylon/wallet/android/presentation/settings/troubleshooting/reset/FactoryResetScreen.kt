@@ -231,7 +231,7 @@ private fun DeleteWalletDialog(
                     .clickable(role = Role.Button) { onConfirm() }
                     .padding(
                         horizontal = RadixTheme.dimensions.paddingSmall,
-                        vertical = RadixTheme.dimensions.paddingXSmall
+                        vertical = RadixTheme.dimensions.paddingXXSmall
                     ),
                 text = stringResource(id = R.string.common_confirm),
                 color = RadixTheme.colors.red1
@@ -243,7 +243,7 @@ private fun DeleteWalletDialog(
                     .clickable(role = Role.Button) { onDeny() }
                     .padding(
                         horizontal = RadixTheme.dimensions.paddingSmall,
-                        vertical = RadixTheme.dimensions.paddingXSmall
+                        vertical = RadixTheme.dimensions.paddingXXSmall
                     ),
                 text = stringResource(id = R.string.common_cancel),
                 color = RadixTheme.colors.blue2

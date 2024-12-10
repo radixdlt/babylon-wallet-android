@@ -1079,7 +1079,9 @@ Code: %s</string>
   <string name="securityCenter_encryptWalletBackup_passwordMismatchError">Passwords do not match</string>
   <string name="securityCenter_encryptWalletBackup_continue">Continue</string>
   <string name="securityFactors_title">Security Factors</string>
-  <string name="securityFactors_subtitle">View and manage your security factors</string>
+  <string name="securityFactors_subtitle">Manage the security factors you’ll use in your Security Shields.</string>
+  <string name="securityFactors_hardware">Hardware</string>
+  <string name="securityFactors_information">Things you know</string>
   <string name="securityFactors_seedPhrases_title">Seed Phrases</string>
   <string name="securityFactors_seedPhrases_subtitle">Your seedphrases connected to your account</string>
   <string name="securityFactors_seedPhrases_counterSingular">1 Seed phrase</string>
@@ -1223,7 +1225,7 @@ Code: %s</string>
   <string name="securityProblems_no9_accountCard">Recovery required</string>
   <string name="securityProblems_no9_securityCenterTitle">Recovery required</string>
   <string name="securityProblems_no9_securityCenterBody">Enter seed phrase to recover control.</string>
-  <string name="securityProblems_no9_securityFactors">Enter seed phrase to recover control</string>
+  <string name="securityProblems_no9_securityFactors">Enter seed phrase to recover use</string>
   <string name="securityProblems_no9_seedPhrases">Enter seed phrase to recover control</string>
   <string name="securityProblems_no9_walletSettingsPersonas">Recovery required</string>
   <string name="securityProblems_no9_personas">Recovery required</string>
@@ -1412,4 +1414,9 @@ Code: %s</string>
   <string name="shieldSetupPrepareFactors_completion_subtitleTop">Now let’s build your Shield.</string>
   <string name="shieldSetupPrepareFactors_completion_subtitleBottom">Before it’s finished, you’ll have the chance to review it and make any changes.</string>
   <string name="shieldSetupPrepareFactors_completion_button">Build Shield</string>
+  <string name="shieldSetupSelectFactors_title">Select Factors for Transactions</string>
+  <string name="shieldSetupSelectFactors_subtitle">Choose the factors you’ll use to sign transactions. You’ll use **all** of these factors every time you send assets or log in to dApps.</string>
+  <string name="shieldSetupSelectFactors_statusMessage_atLeastOneFactor">You need to select at least 1 factor for signing transactions</string>
+  <string name="shieldSetupSelectFactors_statusMessage_recommendedFactors">Choosing 2 factors will make your Shield more secure and reliable</string>
+  <string name="shieldSetupSelectFactors_buildButtonTitle">Build Shield</string>
 </resources>
