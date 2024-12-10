@@ -11,7 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import timber.log.Timber
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReadyScreen
 
 const val ROUTE_ADD_FACTOR = "add_factor"
 
@@ -68,16 +68,8 @@ fun NavGraphBuilder.addFactorScreen(
             onDismiss = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             toFactorSetup = { kind ->
-                Timber.d("Selected kind: $kind")
-//                when (kind) {
-//                    FactorSourceKind.DEVICE -> TODO()
-//                    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> TODO()
-//                    FactorSourceKind.OFF_DEVICE_MNEMONIC -> TODO()
-//                    FactorSourceKind.TRUSTED_CONTACT -> TODO()
-//                    FactorSourceKind.SECURITY_QUESTIONS -> TODO()
-//                    FactorSourceKind.ARCULUS_CARD -> TODO()
-//                    FactorSourceKind.PASSWORD -> TODO()
-//                }
+                // TODO navigate to specific factor setup screen based on the kind
+                navController.factorsReadyScreen()
             }
         )
     }

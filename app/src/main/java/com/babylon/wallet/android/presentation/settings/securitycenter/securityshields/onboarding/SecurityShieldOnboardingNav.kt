@@ -6,15 +6,14 @@ import androidx.compose.animation.ExitTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
 
 const val ROUTE_SECURITY_SHIELD_ONBOARDING = "security_shield_onboarding"
 
-fun NavController.securityShieldOnboardingScreen(navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}) {
-    navigate(ROUTE_SECURITY_SHIELD_ONBOARDING, navOptionsBuilder)
+fun NavController.securityShieldOnboardingScreen() {
+    navigate(ROUTE_SECURITY_SHIELD_ONBOARDING)
 }
 
 fun NavGraphBuilder.securityShieldOnboardingScreen(

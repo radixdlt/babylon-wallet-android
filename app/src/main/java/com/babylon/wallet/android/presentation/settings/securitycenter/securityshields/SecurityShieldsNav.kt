@@ -10,6 +10,7 @@ import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.addfactor.addFactorScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReadyScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
 
@@ -30,6 +31,8 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         prepareFactorsScreen(navController)
 
         addFactorScreen(navController)
+
+        factorsReadyScreen(navController)
     }
 }
 
