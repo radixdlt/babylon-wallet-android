@@ -3,6 +3,8 @@ package rdx.works.core.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.radixdlt.sargon.AuthenticationSigningRequest
+import com.radixdlt.sargon.AuthenticationSigningResponse
 import com.radixdlt.sargon.Bios
 import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.HostInteractor
@@ -93,6 +95,10 @@ object CoreProvider {
 private class HostInteractorStub : HostInteractor {
 
     override suspend fun deriveKeys(request: KeyDerivationRequest): KeyDerivationResponse {
+        throw CommonException.Unknown()
+    }
+
+    override suspend fun signAuth(request: AuthenticationSigningRequest): AuthenticationSigningResponse {
         throw CommonException.Unknown()
     }
 
