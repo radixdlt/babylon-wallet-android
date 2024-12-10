@@ -27,6 +27,7 @@ import com.radixdlt.sargon.DappToWalletInteractionResetRequestItem
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -214,9 +215,10 @@ class DappDetailViewModel @Inject constructor(
                         remoteEntityId = RemoteEntityID.ConnectorId(""),
                         interactionId = UUID.randomUUID().toString(),
                         requestMetadata = DappToWalletInteraction.RequestMetadata(
-                            authorizedDapp.networkId,
-                            "",
-                            authorizedDapp.dappDefinitionAddress.string,
+                            version = newWalletInteractionVersionCurrent(),
+                            networkId = authorizedDapp.networkId,
+                            origin = "",
+                            dAppDefinitionAddress = authorizedDapp.dappDefinitionAddress.string,
                             isInternal = true
                         ),
                         authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(

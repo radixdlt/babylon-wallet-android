@@ -3,12 +3,12 @@ package com.babylon.wallet.android.presentation.accessfactorsources
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ActivityRetainedScoped
+@Singleton
 class AccessFactorSourcesProxyImpl @Inject constructor(
     private val appEventBus: AppEventBus
 ) : AccessFactorSourcesProxy, AccessFactorSourcesIOHandler {
@@ -33,6 +33,16 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
+    override suspend fun derivePublicKeys(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
+    ): AccessFactorSourcesOutput.DerivedPublicKeys {
+        input = accessFactorSourcesInput
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKeys)
+        val result = _output.first()
+
+        return result as AccessFactorSourcesOutput.DerivedPublicKeys
+    }
+
     override suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath> {
@@ -51,16 +61,12 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
 
     override suspend fun getSignatures(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): Result<AccessFactorSourcesOutput.EntitiesWithSignatures> {
+    ): AccessFactorSourcesOutput.EntitiesWithSignatures {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.GetSignatures)
         val result = _output.first()
 
-        return if (result is AccessFactorSourcesOutput.Failure) {
-            Result.failure(result.error)
-        } else {
-            Result.success(result as AccessFactorSourcesOutput.EntitiesWithSignatures)
-        }
+        return result as AccessFactorSourcesOutput.EntitiesWithSignatures
     }
 
     override fun getInput(): AccessFactorSourcesInput {

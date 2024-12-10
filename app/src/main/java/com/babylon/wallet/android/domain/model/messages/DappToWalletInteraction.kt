@@ -5,6 +5,8 @@ import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.WalletInteractionId
+import com.radixdlt.sargon.WalletInteractionVersion
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.core.sargon.PersonaDataField
@@ -32,6 +34,7 @@ sealed class DappToWalletInteraction(
         }
 
     data class RequestMetadata(
+        val version: WalletInteractionVersion,
         val networkId: NetworkId,
         val origin: String,
         val dAppDefinitionAddress: String,
@@ -44,6 +47,7 @@ sealed class DappToWalletInteraction(
                 networkId: NetworkId,
                 blockUntilCompleted: Boolean = false
             ) = RequestMetadata(
+                version = newWalletInteractionVersionCurrent(),
                 networkId = networkId,
                 origin = "",
                 dAppDefinitionAddress = "",

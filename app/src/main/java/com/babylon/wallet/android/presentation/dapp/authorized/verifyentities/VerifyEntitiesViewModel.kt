@@ -6,19 +6,16 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel.Event
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
@@ -33,7 +30,7 @@ class VerifyEntitiesViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
+    private val signAuthUseCase: SignAuthUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<VerifyEntitiesViewModel.State>(),
     OneOffEventHandler<VerifyEntitiesViewModel.Event> by OneOffEventHandlerImpl() {
@@ -88,49 +85,40 @@ class VerifyEntitiesViewModel @Inject constructor(
         state.value.walletAuthorizedRequest?.let { request ->
             viewModelScope.launch {
                 setSigningInProgress(true)
-                val signRequest = request.proofOfOwnershipRequestItem?.challenge?.hex?.let { challengeHex ->
-                    SignRequest.RolaSignRequest(
-                        challengeHex = challengeHex,
-                        origin = request.metadata.origin,
-                        dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-                    )
-                }
 
-                signRequest?.let {
-                    accessFactorSourcesProxy.getSignatures(
-                        accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                            signPurpose = SignPurpose.SignAuth,
-                            signRequest = signRequest,
-                            signers = state.value.nextEntitiesForProof
-                        )
-                    ).onSuccess { result ->
-                        _state.update { state ->
-                            state.copy(signatures = result.signersWithSignatures)
-                        }
+                val item = request.proofOfOwnershipRequestItem ?: return@launch
 
-                        val isPersona = result.signersWithSignatures.keys.first() is ProfileEntity.PersonaEntity
-                        if (isPersona && state.value.requestedAccounts.isNotEmpty()) {
-                            sendEvent(
-                                Event.NavigateToVerifyAccounts(
-                                    walletAuthorizedRequestInteractionId = request.interactionId,
-                                    entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
-                                        accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
-                                        signatures = result.signersWithSignatures.mapKeys { it.key.address }
-                                    )
+                signAuthUseCase(
+                    challenge = item.challenge,
+                    entities = state.value.nextEntitiesForProof,
+                    metadata = request.metadata
+                ).onSuccess { signersWithSignatures ->
+                    _state.update { state ->
+                        state.copy(signatures = signersWithSignatures)
+                    }
+
+                    val isPersona = signersWithSignatures.keys.first() is ProfileEntity.PersonaEntity
+                    if (isPersona && state.value.requestedAccounts.isNotEmpty()) {
+                        sendEvent(
+                            Event.NavigateToVerifyAccounts(
+                                walletAuthorizedRequestInteractionId = request.interactionId,
+                                entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                                    accountAddresses = state.value.requestedAccounts.map { it.accountAddress },
+                                    signatures = signersWithSignatures.mapKeys { it.key.address }
                                 )
                             )
-                        } else {
-                            sendEvent(Event.EntitiesVerified)
-                        }
-                        setSigningInProgress(false)
-                    }.onFailure { exception ->
-                        sendEvent(
-                            Event.AuthorizationFailed(
-                                throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception)
-                            )
                         )
-                        setSigningInProgress(false)
+                    } else {
+                        sendEvent(Event.EntitiesVerified)
                     }
+                    setSigningInProgress(false)
+                }.onFailure {
+                    sendEvent(
+                        Event.AuthorizationFailed(
+                            throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
+                        )
+                    )
+                    setSigningInProgress(false)
                 }
             }
         }

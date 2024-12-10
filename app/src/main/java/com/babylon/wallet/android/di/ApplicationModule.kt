@@ -8,7 +8,10 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapper
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsObserverWrapperImpl
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.presentation.interactor.WalletInteractor
 import com.radixdlt.sargon.HomeCardsManager
+import com.radixdlt.sargon.HostInteractor
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RadixConnectMobile
 import com.radixdlt.sargon.extensions.init
@@ -95,4 +98,10 @@ object ApplicationModule {
     ) = BiometricsHandler(
         biometricsSystemDialogTitle = context.getString(com.babylon.wallet.android.R.string.biometrics_prompt_title)
     )
+
+    @Provides
+    @Singleton
+    fun provideHostInteractor(
+        accessFactorSourcesProxy: AccessFactorSourcesProxy
+    ): HostInteractor = WalletInteractor(accessFactorSourcesProxy)
 }
