@@ -50,6 +50,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
         data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
             DappRequestException(cause = cause)
+
         data class PreviewError(override val cause: Throwable?) : DappRequestException()
         data object InvalidPreAuthorizationExpirationTooClose : DappRequestException()
         data object InvalidPreAuthorizationExpired : DappRequestException()
@@ -99,11 +100,13 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         data class SubmitNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException()
         data object ReceivingAccountDoesNotAllowDeposits : PrepareTransactionException()
+        data object RequestNotFound : PrepareTransactionException()
 
         override val dappWalletInteractionErrorType: DappWalletInteractionErrorType
             get() = when (this) {
-                is BuildTransactionHeader -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
-                is ConvertManifest -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
+                is BuildTransactionHeader,
+                is ConvertManifest,
+                is RequestNotFound -> DappWalletInteractionErrorType.FAILED_TO_PREPARE_TRANSACTION
                 is PrepareNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SIGN_TRANSACTION
                 is SubmitNotarizedTransaction -> DappWalletInteractionErrorType.FAILED_TO_SUBMIT_TRANSACTION
                 is FailedToFindAccountWithEnoughFundsToLockFee -> {
@@ -426,6 +429,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
 
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
+            RadixWalletException.PrepareTransactionException.RequestNotFound -> R.string.error_transactionFailure_prepare
         }
     )
 }

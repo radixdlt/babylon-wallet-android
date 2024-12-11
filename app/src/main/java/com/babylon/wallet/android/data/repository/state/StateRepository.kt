@@ -60,7 +60,11 @@ import javax.inject.Inject
 @Suppress("TooManyFunctions")
 interface StateRepository {
 
-    fun observeAccountsOnLedger(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>>
+    fun observeAccountsOnLedger(
+        accounts: List<Account>,
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean = false
+    ): Flow<List<AccountWithAssets>>
 
     suspend fun getNextNFTsPage(account: Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
@@ -122,10 +126,12 @@ class StateRepositoryImpl @Inject constructor(
 
     override fun observeAccountsOnLedger(
         accounts: List<Account>,
-        isRefreshing: Boolean
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean
     ): Flow<List<AccountWithAssets>> = accountsStateCache.observeAccountsOnLedger(
         accounts = accounts,
-        isRefreshing = isRefreshing
+        isRefreshing = isRefreshing,
+        includeHiddenResources = includeHiddenResources
     )
 
     override suspend fun getNextNFTsPage(

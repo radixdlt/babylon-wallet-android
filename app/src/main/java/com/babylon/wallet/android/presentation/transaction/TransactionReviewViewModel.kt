@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.SubintentExpiration
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException
 import com.babylon.wallet.android.domain.model.messages.TransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
@@ -136,7 +137,13 @@ class TransactionReviewViewModel @Inject constructor(
     private fun processIncomingRequest() = viewModelScope.launch {
         val request = incomingRequestRepository.getRequest(args.interactionId) as? TransactionRequest
         if (request == null) {
-            sendEvent(Event.Dismiss)
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    previewType = PreviewType.None,
+                    error = TransactionErrorMessage(RadixWalletException.PrepareTransactionException.RequestNotFound)
+                )
+            }
         } else {
             data.update { it.copy(txRequest = request) }
 
@@ -261,10 +268,17 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun dismissTerminalErrorDialog() {
-        (state.value.error?.error as? DappRequestException)?.let { exception ->
-            viewModelScope.launch { submit.onDismiss(exception) }
-        }
         _state.update { it.copy(error = null) }
+
+        viewModelScope.launch {
+            val error = state.value.error?.error
+            if (error is DappRequestException) {
+                submit.onDismiss(error)
+            } else {
+                incomingRequestRepository.requestHandled(args.interactionId)
+                sendEvent(Event.Dismiss)
+            }
+        }
     }
 
     fun onAcknowledgeRawTransactionWarning() {
