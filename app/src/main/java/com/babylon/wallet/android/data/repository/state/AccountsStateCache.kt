@@ -102,9 +102,10 @@ class AccountsStateCache @Inject constructor(
 
     fun observeAccountsOnLedger(
         accounts: List<Account>,
-        isRefreshing: Boolean
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean
     ): Flow<List<AccountWithAssets>> = combineTransform(
-        accountsMemoryCache,
+        accountsMemoryCache.map { if (includeHiddenResources) it else filterHiddenResources(it) },
         cacheErrors
     ) { cache, error ->
         if (error != null) {
@@ -316,7 +317,7 @@ class AccountsStateCache @Inject constructor(
                 dao.updatePools(pools = join)
             } else {
                 emit(
-                    filterHiddenResources(cached).mapNotNull {
+                    cached.mapNotNull {
                         it.value.toAccountAddressWithAssets(
                             accountAddress = it.key,
                             pools = cachedPools,
@@ -327,7 +328,7 @@ class AccountsStateCache @Inject constructor(
             }
         } else {
             emit(
-                filterHiddenResources(cached).mapNotNull {
+                cached.mapNotNull {
                     it.value.toAccountAddressWithAssets(
                         accountAddress = it.key,
                         pools = cachedPools,
@@ -339,21 +340,24 @@ class AccountsStateCache @Inject constructor(
     }
 
     private suspend fun filterHiddenResources(
-        cached: Map<AccountAddress, AccountCachedData>
-    ): Map<AccountAddress, AccountCachedData> {
+        cached: List<AccountAddressWithAssets>?
+    ): List<AccountAddressWithAssets>? {
+        cached ?: return null
         val resourcePreferences = profileRepository.profile.first().currentNetwork?.resourcePreferences
             ?: return cached
         val hiddenPoolAddresses = resourcePreferences.hiddenPools().toSet()
         val hiddenFungibleAddresses = resourcePreferences.hiddenFungibles().toSet()
         val hiddenNonFungibleAddresses = resourcePreferences.hiddenNonFungibles().toSet()
 
-        return cached.mapValues { entry ->
-            entry.value.copy(
-                fungibles = entry.value.fungibles.filterNot { it.address in hiddenFungibleAddresses }
-                    .filterNot { it.poolAddress in hiddenPoolAddresses }
-                    .toMutableList(),
-                nonFungibles = entry.value.nonFungibles.filterNot { it.address in hiddenNonFungibleAddresses }
-                    .toMutableList()
+        return cached.map { entry ->
+            entry.copy(
+                assets = entry.assets?.copy(
+                    tokens = entry.assets.tokens.filterNot { it.resource.address in hiddenFungibleAddresses },
+                    poolUnits = entry.assets.poolUnits.filterNot { it.pool?.address in hiddenPoolAddresses },
+                    nonFungibles = entry.assets.nonFungibles.filterNot { it.resource.address in hiddenNonFungibleAddresses },
+                    liquidStakeUnits = entry.assets.liquidStakeUnits.filterNot { it.fungibleResource.address in hiddenFungibleAddresses },
+                    stakeClaims = entry.assets.stakeClaims.filterNot { it.nonFungibleResource.address in hiddenNonFungibleAddresses }
+                )
             )
         }
     }

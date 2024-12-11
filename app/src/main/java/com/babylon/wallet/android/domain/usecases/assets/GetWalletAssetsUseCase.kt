@@ -13,22 +13,37 @@ class GetWalletAssetsUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    fun observe(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> = stateRepository.observeAccountsOnLedger(
+    fun observe(
+        accounts: List<Account>,
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean = false
+    ): Flow<List<AccountWithAssets>> = stateRepository.observeAccountsOnLedger(
         accounts = accounts,
-        isRefreshing = isRefreshing
+        isRefreshing = isRefreshing,
+        includeHiddenResources = includeHiddenResources
     )
 
-    suspend fun collect(accounts: List<Account>, isRefreshing: Boolean): Result<List<AccountWithAssets>> = observe(
+    suspend fun collect(
+        accounts: List<Account>,
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean = false
+    ): Result<List<AccountWithAssets>> = observe(
         accounts = accounts,
-        isRefreshing = isRefreshing
+        isRefreshing = isRefreshing,
+        includeHiddenResources = includeHiddenResources
     ).map {
         Result.success(it)
     }.catch { error ->
         emit(Result.failure(error))
     }.first()
 
-    suspend fun collect(account: Account, isRefreshing: Boolean): Result<AccountWithAssets> = collect(
+    suspend fun collect(
+        account: Account,
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean = false
+    ): Result<AccountWithAssets> = collect(
         accounts = listOf(account),
-        isRefreshing = isRefreshing
+        isRefreshing = isRefreshing,
+        includeHiddenResources = includeHiddenResources
     ).mapCatching { it.first() }
 }

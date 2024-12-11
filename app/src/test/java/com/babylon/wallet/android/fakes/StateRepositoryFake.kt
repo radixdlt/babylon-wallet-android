@@ -27,7 +27,11 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 
 open class StateRepositoryFake : StateRepository {
-    override fun observeAccountsOnLedger(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> = flowOf()
+    override fun observeAccountsOnLedger(
+        accounts: List<Account>,
+        isRefreshing: Boolean,
+        includeHiddenResources: Boolean
+    ): Flow<List<AccountWithAssets>> = flowOf()
 
     override suspend fun getNextNFTsPage(
         account: Account,

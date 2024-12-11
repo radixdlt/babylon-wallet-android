@@ -19,6 +19,7 @@ data class TransactionErrorMessage(
     val isTerminalError: Boolean
         get() = isNoMnemonicErrorVisible ||
             error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
+            error is RadixWalletException.PrepareTransactionException.RequestNotFound ||
             error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction ||
             error is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ||
             error is RadixWalletException.DappRequestException.PreviewError ||
