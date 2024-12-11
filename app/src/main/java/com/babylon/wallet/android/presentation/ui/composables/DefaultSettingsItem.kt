@@ -89,6 +89,7 @@ fun DefaultSettingsItem(
                 color = RadixTheme.colors.gray1
             )
             subtitleView?.let { subtitle ->
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                 subtitle()
             }
             infoView?.let { info ->
