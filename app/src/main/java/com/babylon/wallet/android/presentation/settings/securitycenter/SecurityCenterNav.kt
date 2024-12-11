@@ -89,12 +89,22 @@ fun NavGraphBuilder.securityCenterNavGraph(
             },
             onSecurityFactorSettingItemClick = { item ->
                 when (item) {
-                    is SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets -> {
+                    is SettingsItem.SecurityFactorsSettingsItem.LedgerNano -> {
                         navController.ledgerHardwareWalletsScreen()
                     }
 
-                    is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases -> {
+                    is SettingsItem.SecurityFactorsSettingsItem.BiometricsPin -> {
                         navController.seedPhrases()
+                    }
+
+                    SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
+                        // TODO
+                    }
+                    SettingsItem.SecurityFactorsSettingsItem.Passphrase -> {
+                        // TODO
+                    }
+                    SettingsItem.SecurityFactorsSettingsItem.Password -> {
+                        // TODO
                     }
                 }
             }
