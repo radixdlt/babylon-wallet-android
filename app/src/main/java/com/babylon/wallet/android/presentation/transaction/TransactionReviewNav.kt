@@ -22,7 +22,7 @@ import rdx.works.core.domain.resources.Resource
 @VisibleForTesting
 internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
 
-const val ROUTE_TRANSACTION_REVIEW = "transaction_review_route/{$ARG_TRANSACTION_REQUEST_ID}"
+const val ROUTE_TRANSACTION_REVIEW = "transaction_review_route?$ARG_TRANSACTION_REQUEST_ID={$ARG_TRANSACTION_REQUEST_ID}"
 
 internal class TransactionReviewArgs(val interactionId: String) {
     constructor(savedStateHandle: SavedStateHandle) : this(
@@ -31,7 +31,7 @@ internal class TransactionReviewArgs(val interactionId: String) {
 }
 
 fun NavController.transactionReview(requestId: String, navOptionsBuilder: NavOptionsBuilder.() -> Unit = {}) {
-    navigate("transaction_review_route/$requestId", navOptionsBuilder)
+    navigate("transaction_review_route?$ARG_TRANSACTION_REQUEST_ID=$requestId", navOptionsBuilder)
 }
 
 @Suppress("LongParameterList")
