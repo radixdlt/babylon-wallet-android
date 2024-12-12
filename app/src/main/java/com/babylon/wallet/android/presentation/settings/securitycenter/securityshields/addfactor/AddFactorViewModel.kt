@@ -67,8 +67,8 @@ class AddFactorViewModel @Inject constructor(
 
             HARDWARE_ONLY(
                 listOf(
-                    FactorSourceKind.DEVICE,
-                    FactorSourceKind.ARCULUS_CARD
+                    FactorSourceKind.ARCULUS_CARD,
+                    FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
                 )
             ),
             ANY(
