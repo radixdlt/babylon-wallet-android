@@ -4,8 +4,8 @@ import android.text.format.DateUtils
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.radixdlt.sargon.Account
@@ -123,7 +123,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }.toPersistentList(),
         multiChoiceItems = getSupportedKinds().map {
             Selectable(
-                data = FactorInstanceCard(
+                data = FactorSourceInstanceCard(
                     id = FactorSourceId.Hash.init(
                         kind = it,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -164,7 +164,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }
     }
 
-    fun onCheckedChange(item: FactorInstanceCard, isChecked: Boolean) {
+    fun onCheckedChange(item: FactorSourceInstanceCard, isChecked: Boolean) {
         _state.update { state ->
             state.copy(
                 multiChoiceItems = state.multiChoiceItems.mapWhen(
@@ -175,7 +175,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }
     }
 
-    fun onRemoveClick(item: FactorInstanceCard) {
+    fun onRemoveClick(item: FactorSourceInstanceCard) {
         Timber.d("Remove clicked: $item")
     }
 
@@ -192,8 +192,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf()
-    ): FactorInstanceCard {
-        return FactorInstanceCard(
+    ): FactorSourceInstanceCard {
+        return FactorSourceInstanceCard(
             id = id.asGeneral(),
             name = hint.label,
             includeDescription = includeDescription,
@@ -210,8 +210,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf()
-    ): FactorInstanceCard {
-        return FactorInstanceCard(
+    ): FactorSourceInstanceCard {
+        return FactorSourceInstanceCard(
             id = id.asGeneral(),
             name = hint.label,
             includeDescription = includeDescription,
@@ -230,10 +230,10 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
 
     data class State(
         val displayOnlySourceItems: PersistentList<FactorSourceCard> = persistentListOf(),
-        val displayOnlyInstanceItems: PersistentList<FactorInstanceCard> = persistentListOf(),
+        val displayOnlyInstanceItems: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
         val singleChoiceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
-        val multiChoiceItems: PersistentList<Selectable<FactorInstanceCard>> = persistentListOf(),
-        val removableItems: PersistentList<FactorInstanceCard> = persistentListOf()
+        val multiChoiceItems: PersistentList<Selectable<FactorSourceInstanceCard>> = persistentListOf(),
+        val removableItems: PersistentList<FactorSourceInstanceCard> = persistentListOf()
     ) : UiState
 
     companion object {

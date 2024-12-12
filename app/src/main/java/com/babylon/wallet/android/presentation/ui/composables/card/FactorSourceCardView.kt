@@ -37,8 +37,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
@@ -81,8 +81,8 @@ fun FactorSourceCardView(
 }
 
 @Composable
-fun FactorInstanceCardView(
-    item: FactorInstanceCard,
+fun FactorSourceInstanceCardView(
+    item: FactorSourceInstanceCard,
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
@@ -385,11 +385,11 @@ private fun FactorSourceCardPreview(
 @Composable
 @Preview
 @UsesSampleValues
-private fun FactorInstanceCardPreview(
-    @PreviewParameter(FactorInstanceCardPreviewProvider::class) item: FactorInstanceCard
+private fun FactorSourceInstanceCardPreview(
+    @PreviewParameter(FactorSourceInstanceCardPreviewProvider::class) item: FactorSourceInstanceCard
 ) {
     RadixWalletPreviewTheme {
-        FactorInstanceCardView(
+        FactorSourceInstanceCardView(
             item = item
         )
     }
@@ -427,11 +427,11 @@ class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCar
 }
 
 @UsesSampleValues
-class FactorInstanceCardPreviewProvider : PreviewParameterProvider<FactorInstanceCard> {
+class FactorSourceInstanceCardPreviewProvider : PreviewParameterProvider<FactorSourceInstanceCard> {
 
-    override val values: Sequence<FactorInstanceCard>
+    override val values: Sequence<FactorSourceInstanceCard>
         get() = sequenceOf(
-            FactorInstanceCard(
+            FactorSourceInstanceCard(
                 id = FactorSourceId.Hash.init(
                     kind = FactorSourceKind.DEVICE,
                     mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),

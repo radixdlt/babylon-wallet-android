@@ -6,7 +6,7 @@ import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.PersistentList
 
-data class FactorInstanceCard(
+data class FactorSourceInstanceCard(
     val id: FactorSourceId.Hash,
     val name: String,
     val includeDescription: Boolean,

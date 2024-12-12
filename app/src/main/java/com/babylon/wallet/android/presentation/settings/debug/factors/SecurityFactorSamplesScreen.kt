@@ -18,14 +18,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.card.FactorInstanceCardView
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
-import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorInstanceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceInstanceCardView
+import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.radixdlt.sargon.Account
@@ -62,8 +62,8 @@ private fun SecurityFactorSamplesContent(
     state: SecurityFactorSamplesViewModel.State,
     onBackClick: () -> Unit,
     onSelect: (FactorSourceCard) -> Unit,
-    onCheckedChange: (FactorInstanceCard, Boolean) -> Unit,
-    onRemoveClick: (FactorInstanceCard) -> Unit
+    onCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
+    onRemoveClick: (FactorSourceInstanceCard) -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -82,7 +82,7 @@ private fun SecurityFactorSamplesContent(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             items(state.displayOnlyInstanceItems) {
-                FactorInstanceCardView(
+                FactorSourceInstanceCardView(
                     item = it
                 )
             }
@@ -102,7 +102,7 @@ private fun SecurityFactorSamplesContent(
             }
 
             items(state.multiChoiceItems) {
-                SelectableMultiChoiceFactorInstanceCard(
+                SelectableMultiChoiceFactorSourceInstanceCard(
                     item = it.data,
                     isChecked = it.selected,
                     onCheckedChange = onCheckedChange
@@ -110,7 +110,7 @@ private fun SecurityFactorSamplesContent(
             }
 
             items(state.removableItems) {
-                RemovableFactorInstanceCard(
+                RemovableFactorSourceInstanceCard(
                     item = it,
                     onRemoveClick = onRemoveClick
                 )
@@ -127,7 +127,7 @@ private fun SecurityFactorSamplesPreview() {
         SecurityFactorSamplesContent(
             state = SecurityFactorSamplesViewModel.State(
                 displayOnlyInstanceItems = persistentListOf(
-                    FactorInstanceCard(
+                    FactorSourceInstanceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.DEVICE,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -180,7 +180,7 @@ private fun SecurityFactorSamplesPreview() {
                 ),
                 multiChoiceItems = persistentListOf(
                     Selectable(
-                        data = FactorInstanceCard(
+                        data = FactorSourceInstanceCard(
                             id = FactorSourceId.Hash.init(
                                 kind = FactorSourceKind.DEVICE,
                                 mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
