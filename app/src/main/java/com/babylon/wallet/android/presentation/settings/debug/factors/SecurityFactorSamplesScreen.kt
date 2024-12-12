@@ -15,14 +15,30 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
-import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceInstanceCardView
+import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.samples.sampleStokenet
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun SecurityFactorSamplesScreen(
@@ -46,8 +62,8 @@ private fun SecurityFactorSamplesContent(
     state: SecurityFactorSamplesViewModel.State,
     onBackClick: () -> Unit,
     onSelect: (FactorSourceCard) -> Unit,
-    onCheckedChange: (FactorSourceCard, Boolean) -> Unit,
-    onRemoveClick: (FactorSourceCard) -> Unit
+    onCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
+    onRemoveClick: (FactorSourceInstanceCard) -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -65,7 +81,13 @@ private fun SecurityFactorSamplesContent(
             contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
-            items(state.displayOnlyItems) {
+            items(state.displayOnlyInstanceItems) {
+                FactorSourceInstanceCardView(
+                    item = it
+                )
+            }
+
+            items(state.displayOnlySourceItems) {
                 FactorSourceCardView(
                     item = it
                 )
@@ -73,22 +95,22 @@ private fun SecurityFactorSamplesContent(
 
             items(state.singleChoiceItems) {
                 SelectableSingleChoiceFactorSourceCard(
-                    item = it.item,
-                    isSelected = it.isSelected,
+                    item = it.data,
+                    isSelected = it.selected,
                     onSelect = onSelect
                 )
             }
 
             items(state.multiChoiceItems) {
-                SelectableMultiChoiceFactorSourceCard(
-                    item = it.item,
-                    isChecked = it.isSelected,
+                SelectableMultiChoiceFactorSourceInstanceCard(
+                    item = it.data,
+                    isChecked = it.selected,
                     onCheckedChange = onCheckedChange
                 )
             }
 
             items(state.removableItems) {
-                RemovableFactorSourceCard(
+                RemovableFactorSourceInstanceCard(
                     item = it,
                     onRemoveClick = onRemoveClick
                 )
@@ -99,10 +121,81 @@ private fun SecurityFactorSamplesContent(
 
 @Composable
 @Preview
+@UsesSampleValues
 private fun SecurityFactorSamplesPreview() {
     RadixWalletPreviewTheme {
         SecurityFactorSamplesContent(
-            state = SecurityFactorSamplesViewModel.State(),
+            state = SecurityFactorSamplesViewModel.State(
+                displayOnlyInstanceItems = persistentListOf(
+                    FactorSourceInstanceCard(
+                        id = FactorSourceId.Hash.init(
+                            kind = FactorSourceKind.DEVICE,
+                            mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                        ),
+                        name = "My Phone",
+                        includeDescription = false,
+                        lastUsedOn = "Today",
+                        kind = FactorSourceKind.DEVICE,
+                        messages = persistentListOf(
+                            FactorSourceStatusMessage.PassphraseHint,
+                            FactorSourceStatusMessage.Dynamic(
+                                message = StatusMessage(
+                                    message = "Warning text",
+                                    type = StatusMessage.Type.WARNING
+                                )
+                            )
+                        ),
+                        accounts = persistentListOf(
+                            Account.sampleMainnet()
+                        ),
+                        personas = persistentListOf(
+                            Persona.sampleMainnet(),
+                            Persona.sampleStokenet()
+                        )
+                    )
+                ),
+                displayOnlySourceItems = persistentListOf(
+                    FactorSourceCard(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        messages = persistentListOf()
+                    ),
+                    FactorSourceCard(
+                        kind = FactorSourceKind.ARCULUS_CARD,
+                        messages = persistentListOf()
+                    )
+                ),
+                singleChoiceItems = persistentListOf(
+                    Selectable(
+                        data = FactorSourceCard(
+                            kind = FactorSourceKind.DEVICE,
+                            messages = persistentListOf()
+                        )
+                    ),
+                    Selectable(
+                        data = FactorSourceCard(
+                            kind = FactorSourceKind.ARCULUS_CARD,
+                            messages = persistentListOf()
+                        )
+                    )
+                ),
+                multiChoiceItems = persistentListOf(
+                    Selectable(
+                        data = FactorSourceInstanceCard(
+                            id = FactorSourceId.Hash.init(
+                                kind = FactorSourceKind.DEVICE,
+                                mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                            ),
+                            name = "My Phone",
+                            includeDescription = false,
+                            lastUsedOn = "Today",
+                            kind = FactorSourceKind.DEVICE,
+                            messages = persistentListOf(),
+                            accounts = persistentListOf(),
+                            personas = persistentListOf()
+                        )
+                    )
+                )
+            ),
             onBackClick = {},
             onSelect = {},
             onCheckedChange = { _, _ -> },

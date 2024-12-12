@@ -1,18 +1,24 @@
 package com.babylon.wallet.android.presentation.settings.debug.factors
 
 import android.text.format.DateUtils
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
+import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -33,12 +39,12 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     @Suppress("LongMethod")
     @OptIn(UsesSampleValues::class)
     override fun initialState(): State = State(
-        displayOnlyItems = persistentListOf(
-            LedgerHardwareWalletFactorSource.sample().toCard(
+        displayOnlyInstanceItems = persistentListOf(
+            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
                 accounts = persistentListOf(Account.sampleStokenet.nadia),
                 personas = persistentListOf(Persona.sampleStokenet.leiaSkywalker)
             ),
-            LedgerHardwareWalletFactorSource.sample().toCard(
+            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
                 accounts = persistentListOf(
                     Account.sampleMainnet.alice,
                     Account.sampleMainnet.bob,
@@ -56,7 +62,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     Persona.sampleStokenet.connor
                 )
             ),
-            LedgerHardwareWalletFactorSource.sample().toCard(
+            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
                 accounts = persistentListOf(
                     Account.sampleMainnet.alice,
                     Account.sampleMainnet.bob,
@@ -66,7 +72,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     Account.sampleStokenet.paige
                 )
             ),
-            LedgerHardwareWalletFactorSource.sample().toCard(
+            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
                 personas = persistentListOf(
                     Persona.sampleMainnet.satoshi,
                     Persona.sampleMainnet.batman,
@@ -76,70 +82,73 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     Persona.sampleStokenet.connor
                 )
             ),
+            DeviceFactorSource.sample().toInstanceCard(
+                messages = persistentListOf(
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "Some error",
+                            type = StatusMessage.Type.ERROR
+                        )
+                    )
+                )
+            )
+        ),
+        displayOnlySourceItems = persistentListOf(
             FactorSourceCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
-                header = FactorSourceCard.Header.New,
                 messages = persistentListOf(
-                    StatusMessage(
-                        message = "Some warning",
-                        type = StatusMessage.Type.WARNING
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "Some warning",
+                            type = StatusMessage.Type.WARNING
+                        )
                     ),
-                    StatusMessage(
-                        message = "This seed phrase has been written down",
-                        type = StatusMessage.Type.SUCCESS
-                    )
-                ),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
-            ),
-            DeviceFactorSource.sample().toCard(
-                messages = persistentListOf(
-                    StatusMessage(
-                        message = "Some error",
-                        type = StatusMessage.Type.ERROR
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "This seed phrase has been written down",
+                            type = StatusMessage.Type.SUCCESS
+                        )
                     )
                 )
             )
         ),
         singleChoiceItems = getSupportedKinds().map {
-            SelectableFactorSourceCard(
-                item = FactorSourceCard(
+            Selectable(
+                data = FactorSourceCard(
                     kind = it,
-                    header = FactorSourceCard.Header.New,
-                    messages = persistentListOf(),
-                    accounts = persistentListOf(),
-                    personas = persistentListOf()
+                    messages = persistentListOf()
                 ),
-                isSelected = false
+                selected = false
             )
         }.toPersistentList(),
         multiChoiceItems = getSupportedKinds().map {
-            SelectableFactorSourceCard(
-                item = FactorSourceCard(
+            Selectable(
+                data = FactorSourceInstanceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = it,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = when (it) {
+                        FactorSourceKind.DEVICE -> "My Phone"
+                        FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> "Highly Secretive Stick"
+                        FactorSourceKind.OFF_DEVICE_MNEMONIC -> "ShizzleWords"
+                        FactorSourceKind.ARCULUS_CARD -> "Arculus Card Secret"
+                        FactorSourceKind.PASSWORD -> "My Password"
+                        else -> it.name
+                    },
+                    includeDescription = false,
+                    lastUsedOn = null,
                     kind = it,
-                    header = FactorSourceCard.Header.New,
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
                     personas = persistentListOf()
                 ),
-                isSelected = false
+                selected = false
             )
         }.toPersistentList(),
         removableItems = persistentListOf(
-            FactorSourceCard(
-                kind = FactorSourceKind.DEVICE,
-                header = FactorSourceCard.Header.New,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
-            ),
-            FactorSourceCard(
-                kind = FactorSourceKind.ARCULUS_CARD,
-                header = FactorSourceCard.Header.New,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
-            )
+            DeviceFactorSource.sample().toInstanceCard(includeDescription = true),
+            LedgerHardwareWalletFactorSource.sample().toInstanceCard(includeDescription = true)
         )
     )
 
@@ -148,25 +157,25 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             state.copy(
                 singleChoiceItems = state.singleChoiceItems.map { selectableItem ->
                     selectableItem.copy(
-                        isSelected = selectableItem.item.kind == item.kind
+                        selected = selectableItem.data.kind == item.kind
                     )
                 }.toPersistentList()
             )
         }
     }
 
-    fun onCheckedChange(item: FactorSourceCard, isChecked: Boolean) {
+    fun onCheckedChange(item: FactorSourceInstanceCard, isChecked: Boolean) {
         _state.update { state ->
             state.copy(
                 multiChoiceItems = state.multiChoiceItems.mapWhen(
-                    predicate = { it.item.kind == item.kind },
-                    mutation = { it.copy(isSelected = isChecked) }
+                    predicate = { it.data.kind == item.kind },
+                    mutation = { it.copy(selected = isChecked) }
                 ).toPersistentList()
             )
         }
     }
 
-    fun onRemoveClick(item: FactorSourceCard) {
+    fun onRemoveClick(item: FactorSourceInstanceCard) {
         Timber.d("Remove clicked: $item")
     }
 
@@ -178,36 +187,36 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         return this !in unsupportedKinds
     }
 
-    private fun DeviceFactorSource.toCard(
-        messages: PersistentList<StatusMessage> = persistentListOf(),
+    private fun DeviceFactorSource.toInstanceCard(
+        includeDescription: Boolean = false,
+        messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf()
-    ): FactorSourceCard {
-        return FactorSourceCard(
+    ): FactorSourceInstanceCard {
+        return FactorSourceInstanceCard(
+            id = id.asGeneral(),
+            name = hint.label,
+            includeDescription = includeDescription,
+            lastUsedOn = common.lastUsedOn.formatted(),
             kind = kind,
-            header = FactorSourceCard.Header.Instance(
-                id = id.asGeneral(),
-                name = hint.label,
-                lastUsedOn = common.lastUsedOn.formatted()
-            ),
             messages = messages,
             accounts = accounts,
             personas = personas
         )
     }
 
-    private fun LedgerHardwareWalletFactorSource.toCard(
-        messages: PersistentList<StatusMessage> = persistentListOf(),
+    private fun LedgerHardwareWalletFactorSource.toInstanceCard(
+        includeDescription: Boolean = false,
+        messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf()
-    ): FactorSourceCard {
-        return FactorSourceCard(
+    ): FactorSourceInstanceCard {
+        return FactorSourceInstanceCard(
+            id = id.asGeneral(),
+            name = hint.label,
+            includeDescription = includeDescription,
+            lastUsedOn = common.lastUsedOn.formatted(),
             kind = kind,
-            header = FactorSourceCard.Header.Instance(
-                id = id.asGeneral(),
-                name = hint.label,
-                lastUsedOn = common.lastUsedOn.formatted()
-            ),
             messages = messages,
             accounts = accounts,
             personas = personas
@@ -219,16 +228,12 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         return DateUtils.getRelativeTimeSpanString(millis).toString()
     }
 
-    data class SelectableFactorSourceCard(
-        val item: FactorSourceCard,
-        val isSelected: Boolean
-    )
-
     data class State(
-        val displayOnlyItems: PersistentList<FactorSourceCard> = persistentListOf(),
-        val singleChoiceItems: PersistentList<SelectableFactorSourceCard> = persistentListOf(),
-        val multiChoiceItems: PersistentList<SelectableFactorSourceCard> = persistentListOf(),
-        val removableItems: PersistentList<FactorSourceCard> = persistentListOf()
+        val displayOnlySourceItems: PersistentList<FactorSourceCard> = persistentListOf(),
+        val displayOnlyInstanceItems: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
+        val singleChoiceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
+        val multiChoiceItems: PersistentList<Selectable<FactorSourceInstanceCard>> = persistentListOf(),
+        val removableItems: PersistentList<FactorSourceInstanceCard> = persistentListOf()
     ) : UiState
 
     companion object {

@@ -228,6 +228,7 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
     GlossaryItem.securityshield -> "" // TODO crowdin
     GlossaryItem.buildsecurityshields -> "" // TODO crowdin
+    GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 
 @Composable

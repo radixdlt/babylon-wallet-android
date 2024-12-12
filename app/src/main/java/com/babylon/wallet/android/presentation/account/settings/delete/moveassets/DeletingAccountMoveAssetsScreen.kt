@@ -120,7 +120,7 @@ private fun DeletingAccountMoveAssetsContent(
         },
         bottomBar = {
             RadixBottomBar(
-                additionalContent = {
+                additionalTopContent = {
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
