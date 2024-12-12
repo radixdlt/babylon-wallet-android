@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
@@ -32,17 +33,16 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun SelectableSingleChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
-    item: FactorSourceCard,
-    isSelected: Boolean,
+    item: Selectable<FactorSourceCard>,
     onSelect: (FactorSourceCard) -> Unit
 ) {
     FactorSourceCardView(
-        modifier = modifier.noIndicationClickable { onSelect(item) },
-        item = item,
+        modifier = modifier.noIndicationClickable { onSelect(item.data) },
+        item = item.data,
         endContent = {
             RadioButtonSelectorView(
-                isSelected = isSelected,
-                onSelectedChange = { onSelect(item) }
+                isSelected = item.selected,
+                onSelectedChange = { onSelect(item.data) }
             )
         }
     )
@@ -51,17 +51,16 @@ fun SelectableSingleChoiceFactorSourceCard(
 @Composable
 fun SelectableMultiChoiceFactorSourceInstanceCard(
     modifier: Modifier = Modifier,
-    item: FactorSourceInstanceCard,
-    isChecked: Boolean,
+    item: Selectable<FactorSourceInstanceCard>,
     onCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit
 ) {
     FactorSourceInstanceCardView(
-        modifier = modifier.noIndicationClickable { onCheckedChange(item, !isChecked) },
-        item = item,
+        modifier = modifier.noIndicationClickable { onCheckedChange(item.data, !item.selected) },
+        item = item.data,
         endContent = {
             CheckboxSelectorView(
-                isChecked = isChecked,
-                onCheckedChange = { onCheckedChange(item, it) }
+                isChecked = item.selected,
+                onCheckedChange = { onCheckedChange(item.data, it) }
             )
         }
     )
@@ -167,11 +166,13 @@ private fun CheckboxSelectorView(
 private fun SelectableSingleChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         SelectableSingleChoiceFactorSourceCard(
-            item = FactorSourceCard(
-                kind = FactorSourceKind.DEVICE,
-                messages = persistentListOf()
+            item = Selectable(
+                data = FactorSourceCard(
+                    kind = FactorSourceKind.DEVICE,
+                    messages = persistentListOf()
+                ),
+                selected = false
             ),
-            isSelected = false,
             onSelect = {}
         )
     }
@@ -183,20 +184,22 @@ private fun SelectableSingleChoiceFactorSourceCardPreview() {
 private fun SelectableMultiChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
         SelectableMultiChoiceFactorSourceInstanceCard(
-            item = FactorSourceInstanceCard(
-                id = FactorSourceId.Hash.init(
+            item = Selectable(
+                data = FactorSourceInstanceCard(
+                    id = FactorSourceId.Hash.init(
+                        kind = FactorSourceKind.ARCULUS_CARD,
+                        mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    ),
+                    name = "Arculus Card Secret",
+                    includeDescription = false,
+                    lastUsedOn = "Today",
                     kind = FactorSourceKind.ARCULUS_CARD,
-                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                    messages = persistentListOf(),
+                    accounts = persistentListOf(),
+                    personas = persistentListOf()
                 ),
-                name = "Arculus Card Secret",
-                includeDescription = false,
-                lastUsedOn = "Today",
-                kind = FactorSourceKind.ARCULUS_CARD,
-                messages = persistentListOf(),
-                accounts = persistentListOf(),
-                personas = persistentListOf()
+                selected = true
             ),
-            isChecked = true,
             onCheckedChange = { _, _ -> }
         )
     }
