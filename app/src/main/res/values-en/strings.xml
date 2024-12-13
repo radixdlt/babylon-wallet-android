@@ -909,6 +909,15 @@ Code: %s</string>
   <string name="factorSources_card_arculusCardDescription">Tap to your phone to approve</string>
   <string name="factorSources_card_passwordTitle">Password</string>
   <string name="factorSources_card_passwordDescription">Enter a decentralized password to approve</string>
+  <string name="factorSources_list_deviceAdd">Add Biometrics/PIN</string>
+  <string name="factorSources_list_ledgerAdd">Add New Ledger Nano</string>
+  <string name="factorSources_list_passphraseAdd">Add New Passphrase</string>
+  <string name="factorSources_list_arculusCardAdd">Add Arculus Card</string>
+  <string name="factorSources_list_passwordAdd">Add New Password</string>
+  <string name="factorSources_list_seedPhraseWrittenDown">This seed phrase has been written down</string>
+  <string name="factorSources_list_seedPhraseNotRecoverable">Write down seed phrase to make this factor recoverable</string>
+  <string name="factorSources_list_arculusCardNotWorking">Arculus not working. Try adding it again</string>
+  <string name="factorSources_list_lostFactorSource">This factor has been lost</string>
   <string name="customizeNetworkFees_normalMode_title">Customize Fees</string>
   <string name="customizeNetworkFees_feeBreakdownTitle">Estimated Transaction Fees</string>
   <string name="customizeNetworkFees_totalFee">Transaction Fee</string>
@@ -1422,12 +1431,4 @@ Code: %s</string>
   <string name="shieldSetupSelectFactors_statusMessage_atLeastOneFactor">You need to select at least 1 factor for signing transactions</string>
   <string name="shieldSetupSelectFactors_statusMessage_recommendedFactors">Choosing 2 factors will make your Shield more secure and reliable</string>
   <string name="shieldSetupSelectFactors_buildButtonTitle">Build Shield</string>
-  <string name="deviceFactorSources_navigationTitle">Biometrics/PIN</string>
-  <string name="deviceFactorSources_subtitle">Use phone biometrics/PIN to approve</string>
-  <string name="deviceFactorSources_default">Default</string>
-  <string name="deviceFactorSources_others">Others</string>
-  <string name="deviceFactorSources_writtenDown">This seed phrase has been written down</string>
-  <string name="deviceFactorSources_writeDown">Write down seed phrase to make this factor recoverable</string>
-  <string name="deviceFactorSources_lost">This factor has been lost</string>
-  <string name="deviceFactorSources_add">Add Biometrics/PIN</string>
 </resources>
