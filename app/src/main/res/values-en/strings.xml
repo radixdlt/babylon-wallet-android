@@ -914,6 +914,8 @@ Code: %s</string>
   <string name="factorSources_list_passphraseAdd">Add New Passphrase</string>
   <string name="factorSources_list_arculusCardAdd">Add Arculus Card</string>
   <string name="factorSources_list_passwordAdd">Add New Password</string>
+  <string name="factorSources_list_default">Default</string>
+  <string name="factorSources_list_others">Others</string>
   <string name="factorSources_list_seedPhraseWrittenDown">This seed phrase has been written down</string>
   <string name="factorSources_list_seedPhraseNotRecoverable">Write down seed phrase to make this factor recoverable</string>
   <string name="factorSources_list_arculusCardNotWorking">Arculus not working. Try adding it again</string>
