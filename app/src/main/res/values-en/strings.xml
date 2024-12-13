@@ -890,11 +890,14 @@ Code: %s</string>
   <string name="factorSources_kind_trustedContact">Third-party</string>
   <string name="factorSources_kind_securityQuestions">Security Questions</string>
   <string name="factorSources_card_linkedAccountsAndPersonas">Linked to %s and %s</string>
+  <string name="factorSources_card_linkedAccountsAndPersonasSomeHidden">Linked to %s and %s (and some hidden)</string>
   <string name="factorSources_card_linkedAccountsOrPersonas">Linked to %s</string>
+  <string name="factorSources_card_linkedAccountsOrPersonasSomeHidden">Linked to %s (and some hidden)</string>
   <string name="factorSources_card_accountSingular">1 Account</string>
   <string name="factorSources_card_accountPlural">%d Accounts</string>
   <string name="factorSources_card_personaSingular">1 Persona</string>
   <string name="factorSources_card_personaPlural">%d Personas</string>
+  <string name="factorSources_card_hiddenAccountsOrPersonas">Hidden Accounts or Personas</string>
   <string name="factorSources_card_lastUsed">**Last Used:** %s</string>
   <string name="factorSources_card_deviceTitle">Biometrics/PIN</string>
   <string name="factorSources_card_deviceDescription">Use phone biometrics/PIN to approve</string>
@@ -1419,4 +1422,12 @@ Code: %s</string>
   <string name="shieldSetupSelectFactors_statusMessage_atLeastOneFactor">You need to select at least 1 factor for signing transactions</string>
   <string name="shieldSetupSelectFactors_statusMessage_recommendedFactors">Choosing 2 factors will make your Shield more secure and reliable</string>
   <string name="shieldSetupSelectFactors_buildButtonTitle">Build Shield</string>
+  <string name="deviceFactorSources_navigationTitle">Biometrics/PIN</string>
+  <string name="deviceFactorSources_subtitle">Use phone biometrics/PIN to approve</string>
+  <string name="deviceFactorSources_default">Default</string>
+  <string name="deviceFactorSources_others">Others</string>
+  <string name="deviceFactorSources_writtenDown">This seed phrase has been written down</string>
+  <string name="deviceFactorSources_writeDown">Write down seed phrase to make this factor recoverable</string>
+  <string name="deviceFactorSources_lost">This factor has been lost</string>
+  <string name="deviceFactorSources_add">Add Biometrics/PIN</string>
 </resources>
