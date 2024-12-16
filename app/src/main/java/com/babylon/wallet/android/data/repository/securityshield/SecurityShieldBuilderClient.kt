@@ -27,12 +27,13 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.sortedFactorSourcesForPrimaryThresholdSelection(factorSources)
     }
 
-    fun updateFactorSourceSelection(id: FactorSourceId, isSelected: Boolean) {
+    fun updateFactorSourceSelection(id: FactorSourceId, isSelected: Boolean): List<FactorSourceId> {
         if (isSelected) {
             securityShieldBuilder.addFactorSourceToPrimaryThreshold(id)
         } else {
             securityShieldBuilder.removeFactorFromPrimary(id)
         }
+        return securityShieldBuilder.getPrimaryThresholdFactors()
     }
 
     fun validateFactorSourceSelection(): SelectedFactorSourcesForRoleStatus {
