@@ -1,20 +1,24 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 
 @Composable
 fun StatusMessageText(
+    modifier: Modifier = Modifier,
+    onTextClick: ((Int) -> Unit)? = null,
     message: StatusMessage
 ) {
     WarningText(
-        text = AnnotatedString(message.message),
+        modifier = modifier,
+        text = message.message,
         textStyle = RadixTheme.typography.body2HighImportance,
         contentColor = message.type.color(),
-        iconRes = message.type.iconRes()
+        iconRes = message.type.iconRes(),
+        onTextClick = onTextClick
     )
 }
 
