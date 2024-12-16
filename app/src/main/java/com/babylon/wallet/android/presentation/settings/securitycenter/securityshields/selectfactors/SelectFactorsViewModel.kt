@@ -65,19 +65,21 @@ class SelectFactorsViewModel @Inject constructor(
         card: FactorSourceInstanceCard,
         checked: Boolean
     ) {
-        val selectedFactorIds = securityShieldBuilderClient.updateFactorSourceSelection(card.id, checked)
+        viewModelScope.launch {
+            val selectedFactorIds = securityShieldBuilderClient.updateFactorSourceSelection(card.id, checked)
 
-        _state.update { state ->
-            state.copy(
-                status = securityShieldBuilderClient.validateFactorSourceSelection(),
-                items = state.items.map { item ->
-                    if (item is State.UiItem.Factor) {
-                        item.copy(card = item.card.copy(selected = item.card.data.id in selectedFactorIds))
-                    } else {
-                        item
+            _state.update { state ->
+                state.copy(
+                    status = securityShieldBuilderClient.validateFactorSourceSelection(),
+                    items = state.items.map { item ->
+                        if (item is State.UiItem.Factor) {
+                            item.copy(card = item.card.copy(selected = item.card.data.id in selectedFactorIds))
+                        } else {
+                            item
+                        }
                     }
-                }
-            )
+                )
+            }
         }
     }
 
