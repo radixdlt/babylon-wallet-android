@@ -37,6 +37,7 @@ class SelectFactorsViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { state ->
                 state.copy(
+                    status = securityShieldBuilderClient.validateFactorSourceSelection(),
                     items = securityShieldBuilderClient.getFactorSources()
                         .groupBy { it.kind }
                         .flatMap { entry ->
@@ -64,11 +65,11 @@ class SelectFactorsViewModel @Inject constructor(
         card: FactorSourceInstanceCard,
         checked: Boolean
     ) {
-        val status = securityShieldBuilderClient.updateFactorSourceSelection(card.id, checked)
+        securityShieldBuilderClient.updateFactorSourceSelection(card.id, checked)
 
         _state.update { state ->
             state.copy(
-                status = status,
+                status = securityShieldBuilderClient.validateFactorSourceSelection(),
                 items = state.items.map { item ->
                     if (item is State.UiItem.Factor && item.card.data.id == card.id) {
                         item.copy(card = item.card.copy(selected = checked))
