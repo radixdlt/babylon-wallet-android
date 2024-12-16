@@ -7,21 +7,19 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.extensions.name
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SelectFactorsViewModel @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase,
     private val securityShieldBuilderClient: SecurityShieldBuilderClient
 ) : StateViewModel<SelectFactorsViewModel.State>() {
 
@@ -37,16 +35,10 @@ class SelectFactorsViewModel @Inject constructor(
 
     private fun initFactorSources() {
         viewModelScope.launch {
-            securityShieldBuilderClient.newBuilder()
-            securityShieldBuilderClient.call {
-
-            }
-            val factorSources = getProfileUseCase().factorSources
-            securityShieldBuilderClient
-
             _state.update { state ->
                 state.copy(
-                    items = factorSources.groupBy { it.kind }
+                    items = securityShieldBuilderClient.getFactorSources()
+                        .groupBy { it.kind }
                         .flatMap { entry ->
                             listOf(State.UiItem.CategoryHeader(entry.key)) + entry.value.map { it.toUiItem() }
                         }
@@ -72,12 +64,25 @@ class SelectFactorsViewModel @Inject constructor(
         card: FactorSourceInstanceCard,
         checked: Boolean
     ) {
-        //TODO add/remove to/from shield + validate
+        val status = securityShieldBuilderClient.updateFactorSourceSelection(card.id, checked)
+
+        _state.update { state ->
+            state.copy(
+                status = status,
+                items = state.items.map { item ->
+                    if (item is State.UiItem.Factor && item.card.data.id == card.id) {
+                        item.copy(card = item.card.copy(selected = checked))
+                    } else {
+                        item
+                    }
+                }
+            )
+        }
     }
 
     data class State(
         val items: List<UiItem> = emptyList(),
-        val statusMessage: StatusMessage? = null,
+        val status: SelectedFactorSourcesForRoleStatus? = null,
         val message: UiMessage? = null
     ) : UiState {
 

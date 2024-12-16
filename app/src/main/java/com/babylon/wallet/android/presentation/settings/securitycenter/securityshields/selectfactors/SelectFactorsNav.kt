@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 
 const val ROUTE_SELECT_FACTORS = "select_factors"
 
@@ -27,8 +28,9 @@ fun NavGraphBuilder.selectFactorsScreen(
         SelectFactorsScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
             onBuildShield = {
-                //TODO navigate to build shield screen for access role
+                // TODO navigate to build shield screen for access role
             }
         )
     }
