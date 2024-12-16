@@ -920,6 +920,16 @@ Code: %s</string>
   <string name="factorSources_list_seedPhraseNotRecoverable">Write down seed phrase to make this factor recoverable</string>
   <string name="factorSources_list_arculusCardNotWorking">Arculus not working. Try adding it again</string>
   <string name="factorSources_list_lostFactorSource">This factor has been lost</string>
+  <string name="factorSources_detail_settings">Factor Settings</string>
+  <string name="factorSources_detail_test">Test</string>
+  <string name="factorSources_detail_advanced">Advanced</string>
+  <string name="factorSources_detail_rename">Rename this factor</string>
+  <string name="factorSources_detail_spotCheck">Spot Check</string>
+  <string name="factorSources_detail_testCanUse">Test that you can use this factor</string>
+  <string name="factorSources_detail_lastUsed">**Last used:** %s</string>
+  <string name="factorSources_detail_viewSeedPhrase">View Seed Phrase</string>
+  <string name="factorSources_detail_writeSeedPhrase">Write down the seed phrase for advanced recovery</string>
+  <string name="factorSources_detail_changePin">Change PIN</string>
   <string name="customizeNetworkFees_normalMode_title">Customize Fees</string>
   <string name="customizeNetworkFees_feeBreakdownTitle">Estimated Transaction Fees</string>
   <string name="customizeNetworkFees_totalFee">Transaction Fee</string>
@@ -1433,4 +1443,16 @@ Code: %s</string>
   <string name="shieldSetupSelectFactors_statusMessage_atLeastOneFactor">You need to select at least 1 factor for signing transactions</string>
   <string name="shieldSetupSelectFactors_statusMessage_recommendedFactors">Choosing 2 factors will make your Shield more secure and reliable</string>
   <string name="shieldSetupSelectFactors_buildButtonTitle">Build Shield</string>
+  <string name="renameLabel_factorSource_title">Rename Factor Source</string>
+  <string name="renameLabel_factorSource_subtitle">Enter a new name for this Factor Source</string>
+  <string name="renameLabel_factorSource_empty">Factor Source name required</string>
+  <string name="renameLabel_connector_title">Rename Connector</string>
+  <string name="renameLabel_connector_subtitle">Enter a new name for this Linked Connector</string>
+  <string name="renameLabel_connector_empty">Linked Connector name required</string>
+  <string name="renameLabel_account_title">Rename Account</string>
+  <string name="renameLabel_account_subtitle">Enter a new label for this Account</string>
+  <string name="renameLabel_account_empty">Account label required</string>
+  <string name="renameLabel_account_tooLong">Account label too long</string>
+  <string name="renameLabel_update">Update</string>
+  <string name="renameLabel_success">Updated</string>
 </resources>
