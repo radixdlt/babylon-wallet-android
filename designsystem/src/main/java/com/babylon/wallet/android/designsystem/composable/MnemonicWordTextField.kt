@@ -150,9 +150,9 @@ fun MnemonicWordTextField(
             )
         }
         if (error != null || errorFixedSize) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (error != null) {

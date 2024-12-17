@@ -242,7 +242,7 @@ fun SeedPhraseCard(
             )
         }
         if (data.allAccounts.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             data.allAccounts.forEach { account ->
                 SimpleAccountCard(
                     modifier = Modifier.fillMaxWidth(),

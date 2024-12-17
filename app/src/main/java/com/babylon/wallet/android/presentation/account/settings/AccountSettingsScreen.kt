@@ -385,7 +385,7 @@ private fun BottomSheet(
     ) {
         IconButton(
             modifier = Modifier.padding(
-                start = RadixTheme.dimensions.paddingXSmall,
+                start = RadixTheme.dimensions.paddingXXSmall,
                 top = RadixTheme.dimensions.paddingMedium
             ),
             onClick = onClose

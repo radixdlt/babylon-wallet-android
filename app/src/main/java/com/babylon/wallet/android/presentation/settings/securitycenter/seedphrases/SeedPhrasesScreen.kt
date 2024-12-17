@@ -225,13 +225,13 @@ fun SeedPhraseCard(
             )
         }
         if (data.mnemonicState == DeviceFactorSourceWithEntities.MnemonicState.NotBackedUp) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             WarningText(
                 text = AnnotatedString(stringResource(id = R.string.securityProblems_no3_seedPhrases)),
                 contentColor = RadixTheme.colors.orange1
             )
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
         if (data.hasOnlyHiddenAccounts) {
             Text(
                 modifier = Modifier

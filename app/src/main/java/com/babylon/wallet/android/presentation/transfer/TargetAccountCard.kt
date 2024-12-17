@@ -93,9 +93,9 @@ fun TargetAccountCard(
             modifier = cardModifier
                 .padding(
                     start = RadixTheme.dimensions.paddingMedium,
-                    end = RadixTheme.dimensions.paddingXSmall,
-                    top = RadixTheme.dimensions.paddingXSmall,
-                    bottom = RadixTheme.dimensions.paddingXSmall
+                    end = RadixTheme.dimensions.paddingXXSmall,
+                    top = RadixTheme.dimensions.paddingXXSmall,
+                    bottom = RadixTheme.dimensions.paddingXXSmall
                 ),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
@@ -177,7 +177,7 @@ fun TargetAccountCard(
                 .padding(vertical = RadixTheme.dimensions.paddingDefault)
                 .padding(
                     start = RadixTheme.dimensions.paddingDefault,
-                    end = RadixTheme.dimensions.paddingXSmall
+                    end = RadixTheme.dimensions.paddingXXSmall
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -214,14 +214,14 @@ fun TargetAccountCard(
                     )
                 }
                 if (targetAccount.isSignatureRequiredForTransfer(resourceAddress = spendingAsset.resourceAddress)) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                     SpendingAssetWarning(
                         text = stringResource(id = R.string.assetTransfer_extraSignature_label),
                         color = RadixTheme.colors.orange3
                     )
                 }
                 if (!spendingAsset.canDeposit) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                     SpendingAssetWarning(
                         text = stringResource(id = R.string.assetTransfer_depositStatus_denied),
                         color = RadixTheme.colors.red1
@@ -245,7 +245,7 @@ fun TargetAccountCard(
 fun ColumnScope.SpendingAssetWarning(modifier: Modifier = Modifier, text: String, color: Color) {
     Row(
         modifier = modifier
-            .padding(start = RadixTheme.dimensions.paddingXSmall)
+            .padding(start = RadixTheme.dimensions.paddingXXSmall)
             .align(Alignment.Start)
     ) {
         Icon(
@@ -260,7 +260,7 @@ fun ColumnScope.SpendingAssetWarning(modifier: Modifier = Modifier, text: String
         )
         Text(
             text = text,
-            modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
+            modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXXSmall),
             style = RadixTheme.typography.body2Regular,
             color = color,
             maxLines = 1,

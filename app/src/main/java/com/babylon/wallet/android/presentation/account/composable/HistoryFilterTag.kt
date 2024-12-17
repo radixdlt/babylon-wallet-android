@@ -46,7 +46,7 @@ fun HistoryFilterTag(
             )
             .applyIf(selected, tagSelectedModifier)
             .applyIf(!selected, tagBorderModifier),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
         leadingIcon?.invoke()

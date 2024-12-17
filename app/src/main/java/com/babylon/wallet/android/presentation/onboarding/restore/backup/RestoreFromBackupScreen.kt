@@ -365,7 +365,7 @@ private fun RestoredProfileListItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = RadixTheme.dimensions.paddingXSmall)
+                    .padding(start = RadixTheme.dimensions.paddingXXSmall)
             ) {
                 Text(
                     text = stringResource(

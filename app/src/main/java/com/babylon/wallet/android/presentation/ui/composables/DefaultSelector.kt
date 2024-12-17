@@ -83,7 +83,7 @@ fun <T : SelectorItem<*>> DefaultSelector(
                     },
                     contentPadding = PaddingValues(
                         horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingXSmall
+                        vertical = RadixTheme.dimensions.paddingXXSmall
                     )
                 )
             }

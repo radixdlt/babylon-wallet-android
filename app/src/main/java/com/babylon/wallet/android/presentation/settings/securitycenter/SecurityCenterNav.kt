@@ -16,6 +16,9 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ledgerHardwareWalletsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactors
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.seedPhrases
 
@@ -53,6 +56,12 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 onBackClick = {
                     navController.popBackStack()
                 },
+                toSecurityShields = {
+                    navController.securityShieldsScreen()
+                },
+                toSecurityShieldsOnboarding = {
+                    navController.securityShieldOnboardingScreen()
+                },
                 onSecurityFactorsClick = {
                     navController.securityFactors()
                 },
@@ -80,12 +89,22 @@ fun NavGraphBuilder.securityCenterNavGraph(
             },
             onSecurityFactorSettingItemClick = { item ->
                 when (item) {
-                    is SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets -> {
+                    is SettingsItem.SecurityFactorsSettingsItem.LedgerNano -> {
                         navController.ledgerHardwareWalletsScreen()
                     }
 
-                    is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases -> {
+                    is SettingsItem.SecurityFactorsSettingsItem.BiometricsPin -> {
                         navController.seedPhrases()
+                    }
+
+                    SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
+                        // TODO
+                    }
+                    SettingsItem.SecurityFactorsSettingsItem.Passphrase -> {
+                        // TODO
+                    }
+                    SettingsItem.SecurityFactorsSettingsItem.Password -> {
+                        // TODO
                     }
                 }
             }
@@ -105,5 +124,6 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 navController.navigateUp()
             }
         )
+        securityShieldsNavGraph(navController)
     }
 }
