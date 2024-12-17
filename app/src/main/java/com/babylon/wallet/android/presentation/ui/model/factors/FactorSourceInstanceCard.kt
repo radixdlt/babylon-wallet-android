@@ -15,7 +15,8 @@ data class FactorSourceInstanceCard(
     val kind: FactorSourceKind,
     val messages: PersistentList<FactorSourceStatusMessage>,
     val accounts: PersistentList<Account>,
-    val personas: PersistentList<Persona>
+    val personas: PersistentList<Persona>,
+    val hasHiddenEntities: Boolean
 ) {
 
     companion object {
