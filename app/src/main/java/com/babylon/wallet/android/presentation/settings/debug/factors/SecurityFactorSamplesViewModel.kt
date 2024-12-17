@@ -42,7 +42,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         displayOnlyInstanceItems = persistentListOf(
             LedgerHardwareWalletFactorSource.sample().toInstanceCard(
                 accounts = persistentListOf(Account.sampleStokenet.nadia),
-                personas = persistentListOf(Persona.sampleStokenet.leiaSkywalker)
+                personas = persistentListOf(Persona.sampleStokenet.leiaSkywalker),
+                hasHiddenEntities = true
             ),
             LedgerHardwareWalletFactorSource.sample().toInstanceCard(
                 accounts = persistentListOf(
@@ -80,7 +81,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     Persona.sampleStokenet.leiaSkywalker,
                     Persona.sampleStokenet.hermione,
                     Persona.sampleStokenet.connor
-                )
+                ),
+                hasHiddenEntities = true
             ),
             DeviceFactorSource.sample().toInstanceCard(
                 messages = persistentListOf(
@@ -90,7 +92,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                             type = StatusMessage.Type.ERROR
                         )
                     )
-                )
+                ),
+                hasHiddenEntities = true
             )
         ),
         displayOnlySourceItems = persistentListOf(
@@ -141,14 +144,15 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     kind = it,
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
-                    personas = persistentListOf()
+                    personas = persistentListOf(),
+                    hasHiddenEntities = true
                 ),
                 selected = false
             )
         }.toPersistentList(),
         removableItems = persistentListOf(
             DeviceFactorSource.sample().toInstanceCard(includeDescription = true),
-            LedgerHardwareWalletFactorSource.sample().toInstanceCard(includeDescription = true)
+            LedgerHardwareWalletFactorSource.sample().toInstanceCard(includeDescription = true, hasHiddenEntities = true)
         )
     )
 
@@ -191,7 +195,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         includeDescription: Boolean = false,
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
-        personas: PersistentList<Persona> = persistentListOf()
+        personas: PersistentList<Persona> = persistentListOf(),
+        hasHiddenEntities: Boolean = false
     ): FactorSourceInstanceCard {
         return FactorSourceInstanceCard(
             id = id.asGeneral(),
@@ -201,7 +206,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             kind = kind,
             messages = messages,
             accounts = accounts,
-            personas = personas
+            personas = personas,
+            hasHiddenEntities = hasHiddenEntities
         )
     }
 
@@ -209,7 +215,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         includeDescription: Boolean = false,
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
-        personas: PersistentList<Persona> = persistentListOf()
+        personas: PersistentList<Persona> = persistentListOf(),
+        hasHiddenEntities: Boolean = false
     ): FactorSourceInstanceCard {
         return FactorSourceInstanceCard(
             id = id.asGeneral(),
@@ -219,7 +226,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             kind = kind,
             messages = messages,
             accounts = accounts,
-            personas = personas
+            personas = personas,
+            hasHiddenEntities = hasHiddenEntities
         )
     }
 

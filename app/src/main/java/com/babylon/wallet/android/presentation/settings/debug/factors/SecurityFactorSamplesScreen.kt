@@ -149,7 +149,8 @@ private fun SecurityFactorSamplesPreview() {
                         personas = persistentListOf(
                             Persona.sampleMainnet(),
                             Persona.sampleStokenet()
-                        )
+                        ),
+                        hasHiddenEntities = true
                     )
                 ),
                 displayOnlySourceItems = persistentListOf(
@@ -189,7 +190,8 @@ private fun SecurityFactorSamplesPreview() {
                             kind = FactorSourceKind.DEVICE,
                             messages = persistentListOf(),
                             accounts = persistentListOf(),
-                            personas = persistentListOf()
+                            personas = persistentListOf(),
+                            hasHiddenEntities = false
                         )
                     )
                 )
