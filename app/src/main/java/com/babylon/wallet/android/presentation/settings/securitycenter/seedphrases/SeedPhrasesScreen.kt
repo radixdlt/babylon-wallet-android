@@ -51,6 +51,7 @@ import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
+@Deprecated("remove it when new design/flow is complete")
 @Composable
 fun SeedPhrasesScreen(
     modifier: Modifier = Modifier,
