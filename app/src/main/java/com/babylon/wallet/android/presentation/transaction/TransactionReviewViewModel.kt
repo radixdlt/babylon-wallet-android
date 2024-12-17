@@ -322,7 +322,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isPreviewDisplayable: Boolean = previewType != PreviewType.None && previewType != PreviewType.UnacceptableManifest
 
         val rawManifestIsPreviewable: Boolean
-            get() = previewType is PreviewType.Transaction || previewType is PreviewType.NonConforming
+            get() = previewType is PreviewType.Transaction
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
