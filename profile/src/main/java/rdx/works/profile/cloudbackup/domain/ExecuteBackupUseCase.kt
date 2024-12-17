@@ -4,11 +4,10 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.radixdlt.sargon.ProfileState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.first
-import rdx.works.core.domain.ProfileState
 import rdx.works.profile.cloudbackup.data.DriveClient
 import rdx.works.profile.cloudbackup.model.BackupServiceException
 import rdx.works.profile.data.repository.ProfileRepository
@@ -24,10 +23,8 @@ class ExecuteBackupUseCase @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val profileState = profileRepository.profileState.filterNot {
-            it is ProfileState.NotInitialised
-        }.first()
-        val profile = (profileState as? ProfileState.Restored)?.profile
+        val profileState = profileRepository.profileState.first()
+        val profile = (profileState as? ProfileState.Loaded)?.v1
 
         return if (profile != null) {
             driveClient.backupProfile(profile = profile).fold(

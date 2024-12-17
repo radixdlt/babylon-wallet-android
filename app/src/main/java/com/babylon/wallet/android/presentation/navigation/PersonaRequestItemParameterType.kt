@@ -4,7 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.navigation.NavType
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 
 val RequiredPersonaFieldsParameterType =
     object : NavType<RequiredPersonaFields>(isNullableAllowed = true) {

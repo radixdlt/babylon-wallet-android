@@ -37,13 +37,9 @@ class CreateAccountUseCase @Inject constructor(
             customAppearanceId = currentProfile.nextAppearanceId(forNetworkId = networkId)
         )
 
-        val accountWithOnLedgerStatusResult = resolveAccountsLedgerStateRepository(listOf(newAccount))
-
-        val accountToAdd = if (accountWithOnLedgerStatusResult.isSuccess) {
-            accountWithOnLedgerStatusResult.getOrThrow().first().account
-        } else {
-            newAccount
-        }
+        val accountToAdd = resolveAccountsLedgerStateRepository(
+            listOf(newAccount)
+        ).getOrNull()?.firstOrNull()?.account ?: newAccount
 
         val updatedProfile = currentProfile.addAccounts(
             accounts = listOf(accountToAdd),

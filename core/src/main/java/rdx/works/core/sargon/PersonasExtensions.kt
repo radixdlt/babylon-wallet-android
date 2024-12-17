@@ -5,18 +5,17 @@ import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.EntityFlags
-import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.nonHardenedIndex
+import com.radixdlt.sargon.extensions.path
 
-fun Collection<Persona>.notHiddenPersonas(): List<Persona> = filter { !it.isHidden }
-fun Collection<Persona>.hiddenPersonas(): List<Persona> = filter { it.isHidden }
+fun Collection<Persona>.active(): List<Persona> = filterNot { it.isHidden || it.isDeleted }
 
 val Persona.factorSourceId: FactorSourceId
     get() = securityState.factorSourceId
@@ -24,8 +23,8 @@ val Persona.factorSourceId: FactorSourceId
 val Persona.derivationPathScheme: DerivationPathScheme
     get() = securityState.derivationPathScheme
 
-val Persona.derivationPathEntityIndex: HDPathValue
-    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.nonHardenedIndex
+val Persona.derivationPathEntityIndex: HdPathComponent
+    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.path.components.last()
 
 val Persona.hasAuthSigning: Boolean
     get() = securityState.hasAuthSigning
@@ -34,7 +33,12 @@ val Persona.usesEd25519: Boolean
     get() = securityState.usesEd25519
 
 val Persona.isHidden: Boolean
-    get() = EntityFlag.DELETED_BY_USER in flags
+    get() = EntityFlag.HIDDEN_BY_USER in flags
+
+// Not implemented, the user cannot delete a persona.
+// Keeping this for parity with account.
+val Persona.isDeleted: Boolean
+    get() = EntityFlag.TOMBSTONED_BY_USER in flags
 
 @Suppress("LongParameterList")
 fun Persona.Companion.init(

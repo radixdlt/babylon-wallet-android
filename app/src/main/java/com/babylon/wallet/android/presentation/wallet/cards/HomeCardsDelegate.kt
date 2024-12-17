@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.wallet.cards
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
+import com.babylon.wallet.android.utils.Constants.RADIX_ECOSYSTEM_URL
+import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.HomeCard
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +23,27 @@ class HomeCardsDelegate @Inject constructor(
     ) {
         super.invoke(scope, state)
         observeCards()
+    }
+
+    fun onCardClick(
+        card: HomeCard,
+        navigateToLinkConnector: suspend () -> Unit,
+        openUrl: suspend (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            when (card) {
+                HomeCard.Connector -> navigateToLinkConnector()
+
+                HomeCard.StartRadQuest -> openUrl(RAD_QUEST_URL)
+
+                HomeCard.DiscoverRadixDapps -> openUrl(RADIX_ECOSYSTEM_URL)
+
+                else -> {}
+            }
+
+            // Currently all the cards should be dismissed on tap
+            dismissCard(card)
+        }
     }
 
     fun dismissCard(card: HomeCard) {

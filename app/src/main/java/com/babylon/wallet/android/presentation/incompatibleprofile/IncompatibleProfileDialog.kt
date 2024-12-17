@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleP
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.openEmail
+import com.radixdlt.sargon.CommonException
 
 const val ROUTE_INCOMPATIBLE_PROFILE = "incompatible_profile_route"
 
@@ -150,7 +151,7 @@ private fun IncompatibleWalletWithCausePreview() {
     RadixWalletPreviewTheme {
         IncompatibleWalletContent(
             state = IncompatibleProfileViewModel.State(
-                incompatibleCause = RuntimeException("Some error")
+                incompatibleCause = CommonException.Unknown()
             ),
             onDismiss = {},
             onDeleteProfile = {},

@@ -17,7 +17,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.DappWalletInteractionErrorType
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -45,7 +45,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     }
 
     private val args = TransactionStatusDialogArgs(savedStateHandle)
-    private var pollJob: Job? = null
+    private var observeStatusJob: Job? = null
     private var isRequestHandled = false
 
     init {
@@ -64,23 +64,24 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     }
 
                     if (status is TransactionStatus.Completing) {
-                        pollTransactionStatus(status)
+                        observeTransactionStatus(status)
                     }
                 }
         }
 
         val initialStatus = state.value.status
         if (initialStatus is TransactionStatus.Completing) {
-            pollTransactionStatus(initialStatus)
+            observeTransactionStatus(initialStatus)
         }
     }
 
-    private fun pollTransactionStatus(status: TransactionStatus.Completing) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForPollStatus(status.transactionId).collectLatest { pollResult ->
-                pollResult.result.onSuccess {
+    private fun observeTransactionStatus(status: TransactionStatus.Completing) {
+        observeStatusJob?.cancel()
+        observeStatusJob = viewModelScope.launch {
+            transactionStatusClient.listenForTransactionStatus(status.transactionId).collectLatest { result ->
+                result.result.onSuccess {
                     // Notify the system and this particular dialog that the transaction is completed
+                    markRequestAsHandled()
                     appEventBus.sendEvent(
                         AppEvent.Status.Transaction.Success(
                             requestId = status.requestId,
@@ -91,8 +92,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                             dAppName = status.dAppName
                         )
                     )
-                    markRequestAsHandled()
                 }.onFailure { error ->
+                    markRequestAsHandled()
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
                             incomingRequestRepository.getRequest(status.requestId)?.let { transactionRequest ->
@@ -181,8 +182,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
         val walletErrorType: DappWalletInteractionErrorType?
             get() = (status as? TransactionStatus.Failed)?.walletErrorType
 
-        val transactionId: IntentHash?
-            get() = runCatching { IntentHash.init(status.transactionId) }.getOrNull()
+        val transactionId: TransactionIntentHash?
+            get() = runCatching { TransactionIntentHash.init(status.transactionId) }.getOrNull()
 
         enum class DismissInfo {
             STOP_WAITING,

@@ -19,15 +19,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.domain.DeviceFactorSourceData
-import rdx.works.profile.domain.GetFactorSourcesWithAccountsUseCase
+import rdx.works.profile.domain.DeviceFactorSourceWithEntities
+import rdx.works.profile.domain.GetProfileEntitiesConnectedToSeedPhrasesUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class SeedPhrasesViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
-    private val getFactorSourcesWithAccountsUseCase: GetFactorSourcesWithAccountsUseCase
+    private val getProfileEntitiesConnectedToSeedPhrasesUseCase: GetProfileEntitiesConnectedToSeedPhrasesUseCase
 ) : StateViewModel<SeedPhrasesViewModel.SeedPhraseUiState>(),
     OneOffEventHandler<SeedPhrasesViewModel.Effect> by OneOffEventHandlerImpl() {
 
@@ -37,18 +37,18 @@ class SeedPhrasesViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                getFactorSourcesWithAccountsUseCase(),
+                getProfileEntitiesConnectedToSeedPhrasesUseCase(),
                 refreshFlow
             ) { factorSources, _ ->
                 val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
                 factorSources.map { data ->
                     val mnemonicExist = mnemonicRepository.mnemonicExist(data.deviceFactorSource.value.id.asGeneral())
                     val mnemonicState = when {
-                        !mnemonicExist -> DeviceFactorSourceData.MnemonicState.NeedRecover
+                        !mnemonicExist -> DeviceFactorSourceWithEntities.MnemonicState.NeedRecover
                         backedUpFactorSourceIds.contains(
                             data.deviceFactorSource.value.id.asGeneral()
-                        ) -> DeviceFactorSourceData.MnemonicState.BackedUp
-                        else -> DeviceFactorSourceData.MnemonicState.NotBackedUp
+                        ) -> DeviceFactorSourceWithEntities.MnemonicState.BackedUp
+                        else -> DeviceFactorSourceWithEntities.MnemonicState.NotBackedUp
                     }
                     data.copy(mnemonicState = mnemonicState)
                 }
@@ -63,9 +63,9 @@ class SeedPhrasesViewModel @Inject constructor(
         }
     }
 
-    fun onSeedPhraseClick(deviceFactorSourceItem: DeviceFactorSourceData) {
+    fun onSeedPhraseClick(deviceFactorSourceItem: DeviceFactorSourceWithEntities) {
         viewModelScope.launch {
-            if (deviceFactorSourceItem.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover) {
+            if (deviceFactorSourceItem.mnemonicState == DeviceFactorSourceWithEntities.MnemonicState.NeedRecover) {
                 sendEvent(Effect.OnRequestToRecoverMnemonic(deviceFactorSourceItem.deviceFactorSource.value.id.asGeneral()))
             } else {
                 sendEvent(Effect.OnRequestToShowMnemonic(deviceFactorSourceItem.deviceFactorSource.value.id.asGeneral()))
@@ -74,7 +74,7 @@ class SeedPhrasesViewModel @Inject constructor(
     }
 
     data class SeedPhraseUiState(
-        val deviceFactorSourcesWithAccounts: PersistentList<DeviceFactorSourceData> = persistentListOf(),
+        val deviceFactorSourcesWithAccounts: PersistentList<DeviceFactorSourceWithEntities> = persistentListOf(),
     ) : UiState
 
     sealed interface Effect : OneOffEvent {

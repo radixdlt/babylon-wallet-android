@@ -4,14 +4,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.resourceAddress
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetException
@@ -35,16 +35,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.resourceAddress
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
@@ -55,7 +54,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
-    private var pollJob: Job? = null
+    private var observeStatusJob: Job? = null
     private val args = AccountThirdPartyDepositsArgs(savedStateHandle)
 
     override fun initialState(): AccountThirdPartyDepositsUiState = AccountThirdPartyDepositsUiState(accountAddress = args.address)
@@ -65,9 +64,9 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     }
 
     private fun handleRequestStatus(requestId: String) {
-        pollJob?.cancel()
-        pollJob = viewModelScope.launch {
-            transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
+        observeStatusJob?.cancel()
+        observeStatusJob = viewModelScope.launch {
+            transactionStatusClient.listenForTransactionStatusByRequestId(requestId).collect { status ->
                 status.result.onSuccess {
                     when (val type = status.transactionType) {
                         is TransactionType.UpdateThirdPartyDeposits -> {
@@ -138,7 +137,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 )
             }.mapCatching {
-                TransactionManifestData.from(it)
+                UnvalidatedManifestData.from(it)
             }.onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
                 val requestId = UUID.randomUUID().toString()
@@ -149,7 +148,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         blockUntilCompleted = true
                     )
                 )
-                handleRequestStatus(requestId.toString())
+                handleRequestStatus(requestId)
             }.onFailure { t ->
                 _state.update { state ->
                     state.copy(error = UiMessage.ErrorMessage(t))

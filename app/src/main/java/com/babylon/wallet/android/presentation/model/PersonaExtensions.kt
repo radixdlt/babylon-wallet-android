@@ -2,19 +2,14 @@ package com.babylon.wallet.android.presentation.model
 
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.RequiredPersonaField
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
-import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryName
-import com.radixdlt.sargon.PersonaDataEntryPhoneNumber
-import com.radixdlt.sargon.PersonaDataNameVariant
 import com.radixdlt.sargon.RequestedNumberQuantifier
-import com.radixdlt.sargon.WalletToDappInteractionPersonaDataRequestResponseItem
 import rdx.works.core.sargon.IdentifiedEntry
 import rdx.works.core.sargon.PersonaDataField
 
@@ -32,9 +27,9 @@ fun List<PersonaDataField.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun RequestedNumberQuantifier.toQuantifierUsedInRequest(): IncomingMessage.IncomingRequest.NumberOfValues.Quantifier = when (this) {
-    RequestedNumberQuantifier.EXACTLY -> IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
-    RequestedNumberQuantifier.AT_LEAST -> IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+fun RequestedNumberQuantifier.toQuantifierUsedInRequest(): DappToWalletInteraction.NumberOfValues.Quantifier = when (this) {
+    RequestedNumberQuantifier.EXACTLY -> DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
+    RequestedNumberQuantifier.AT_LEAST -> DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
 }
 
 @Suppress("UNUSED_EXPRESSION")
@@ -63,28 +58,6 @@ val PersonaDataField.Name.fullName: String
         val nickname = if (nickname.isNotEmpty()) "\"$nickname\"" else nickname
         return listOf(fullName, nickname).filter { it.isNotEmpty() }.joinToString("\n")
     }
-
-fun PersonaData.toWalletToDappInteractionPersonaDataRequestResponseItem(): WalletToDappInteractionPersonaDataRequestResponseItem {
-    return WalletToDappInteractionPersonaDataRequestResponseItem(
-        name = name?.value?.let { name ->
-            PersonaDataEntryName(
-                variant = when (name.variant) {
-                    PersonaDataNameVariant.EASTERN -> PersonaDataNameVariant.EASTERN
-                    PersonaDataNameVariant.WESTERN -> PersonaDataNameVariant.WESTERN
-                },
-                familyName = name.familyName,
-                givenNames = name.givenNames,
-                nickname = name.nickname
-            )
-        },
-        emailAddresses = emailAddresses.collection.map {
-            EmailAddress(it.value.email)
-        },
-        phoneNumbers = phoneNumbers.collection.map {
-            PersonaDataEntryPhoneNumber(it.value.number)
-        }
-    )
-}
 
 fun PersonaDataField.sortOrderInt(): Int {
     return kind.ordinal

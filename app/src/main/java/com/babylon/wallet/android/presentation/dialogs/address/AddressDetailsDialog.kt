@@ -269,7 +269,7 @@ private fun FullAddress(
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 Text(
                     text = stringResource(id = R.string.addressDetails_copy),
                     style = RadixTheme.typography.body1Header
@@ -287,7 +287,7 @@ private fun FullAddress(
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 Text(
                     text = stringResource(id = R.string.addressDetails_enlarge),
                     style = RadixTheme.typography.body1Header
@@ -305,7 +305,7 @@ private fun FullAddress(
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 Text(
                     text = stringResource(id = R.string.addressDetails_share),
                     style = RadixTheme.typography.body1Header

@@ -1,15 +1,16 @@
 package com.babylon.wallet.android.presentation.account.settings
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -27,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,6 +41,8 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.State
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
@@ -49,7 +51,9 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
+import com.babylon.wallet.android.presentation.ui.composables.utils.SyncSheetState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
@@ -57,7 +61,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,33 +70,25 @@ fun AccountSettingsScreen(
     modifier: Modifier = Modifier,
     onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
+    onDeleteAccountClick: (AccountAddress) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                Event.AccountHidden -> onHideAccountClick()
+                is Event.AccountHidden -> onHideAccountClick()
+                is Event.OpenDeleteAccount -> onDeleteAccountClick(event.accountAddress)
             }
         }
     }
 
-    val hideSheetAction: () -> Unit = remember {
-        {
-            scope.launch {
-                bottomSheetState.hide()
-                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.None)
-            }
-        }
-    }
-
-    BackHandler(enabled = bottomSheetState.isVisible) {
-        hideSheetAction()
-    }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    SyncSheetState(
+        sheetState = bottomSheetState,
+        isSheetVisible = state.isBottomSheetVisible,
+        onSheetClosed = viewModel::onDismissBottomSheet
+    )
 
     AccountSettingsContent(
         modifier = modifier,
@@ -101,12 +96,7 @@ fun AccountSettingsScreen(
         onMessageShown = viewModel::onMessageShown,
         error = state.error,
         account = state.account,
-        onShowRenameAccountClick = {
-            scope.launch {
-                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.RenameAccount)
-                bottomSheetState.show()
-            }
-        },
+        onShowRenameAccountClick = viewModel::onRenameAccountRequest,
         settingsSections = state.settingsSections,
         onSettingClick = { item ->
             state.account?.address?.let { accountAddress ->
@@ -116,14 +106,10 @@ fun AccountSettingsScreen(
         onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
         faucetState = state.faucetState,
         isXrdLoading = state.isFreeXRDLoading,
-        onHideAccount = {
-            scope.launch {
-                viewModel.setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.HideAccount)
-                bottomSheetState.show()
-            }
-        },
+        onHideAccount = viewModel::onHideAccountRequest,
         isAccountNameUpdated = state.isAccountNameUpdated,
-        onSnackbarMessageShown = viewModel::onSnackbarMessageShown
+        onSnackbarMessageShown = viewModel::onSnackbarMessageShown,
+        onDeleteAccount = viewModel::onDeleteAccountRequest
     )
 
     if (state.isBottomSheetVisible) {
@@ -132,8 +118,8 @@ fun AccountSettingsScreen(
             enableImePadding = true,
             sheetState = bottomSheetState,
             sheetContent = {
-                when (state.bottomSheetContent) {
-                    AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
+                when (val sheetState = state.bottomSheetContent) {
+                    State.BottomSheetContent.RenameAccount -> {
                         RenameAccountSheet(
                             accountNameChanged = state.accountNameChanged,
                             onNewAccountNameChange = viewModel::onRenameAccountNameChange,
@@ -141,24 +127,23 @@ fun AccountSettingsScreen(
                             isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
                             onRenameAccountNameClick = {
                                 viewModel.onRenameAccountNameConfirm()
-                                hideSheetAction()
                             },
-                            onClose = hideSheetAction
+                            onClose = viewModel::onDismissBottomSheet
                         )
                     }
 
-                    AccountPreferenceUiState.BottomSheetContent.HideAccount -> {
+                    State.BottomSheetContent.HideAccount -> {
                         HideAccountSheet(
                             onHideAccountClick = viewModel::onHideAccount,
-                            onClose = hideSheetAction
+                            onClose = viewModel::onDismissBottomSheet
                         )
                     }
 
-                    AccountPreferenceUiState.BottomSheetContent.None -> {}
+                    State.BottomSheetContent.None -> {}
                 }
             },
             showDragHandle = true,
-            onDismissRequest = hideSheetAction
+            onDismissRequest = viewModel::onDismissBottomSheet
         )
     }
 }
@@ -177,6 +162,7 @@ private fun AccountSettingsContent(
     faucetState: FaucetState,
     isXrdLoading: Boolean,
     onHideAccount: () -> Unit,
+    onDeleteAccount: () -> Unit,
     isAccountNameUpdated: Boolean,
     onSnackbarMessageShown: () -> Unit,
 ) {
@@ -207,6 +193,46 @@ private fun AccountSettingsContent(
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .padding(WindowInsets.navigationBars.asPaddingValues())
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                if (faucetState is FaucetState.Available) {
+                    RadixSecondaryButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                        onClick = onGetFreeXrdClick,
+                        isLoading = isXrdLoading,
+                        enabled = !isXrdLoading && faucetState.isEnabled
+                    )
+                    if (isXrdLoading) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                            text = stringResource(R.string.accountSettings_loadingPrompt),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                    }
+                }
+
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.accountSettings_hideAccount_button),
+                    onClick = onHideAccount
+                )
+
+                WarningButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.accountSettings_deleteAccount),
+                    onClick = onDeleteAccount
+                )
+            }
         },
         snackbarHost = {
             RadixSnackbarHost(
@@ -267,56 +293,6 @@ private fun AccountSettingsContent(
                         }
                     }
                 }
-            }
-            item {
-                if (faucetState is FaucetState.Available) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = RadixTheme.dimensions.paddingLarge,
-                                end = RadixTheme.dimensions.paddingLarge,
-                                top = RadixTheme.dimensions.paddingDefault
-                            ),
-                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
-                        onClick = onGetFreeXrdClick,
-                        isLoading = isXrdLoading,
-                        enabled = !isXrdLoading && faucetState.isEnabled
-                    )
-
-                    if (isXrdLoading) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingXXXXLarge,
-                                    vertical = RadixTheme.dimensions.paddingSmall
-                                ),
-                            text = stringResource(R.string.accountSettings_loadingPrompt),
-                            style = RadixTheme.typography.body2Regular,
-                            color = RadixTheme.colors.gray1
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                } else {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-            }
-            item {
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = RadixTheme.dimensions.paddingLarge,
-                            end = RadixTheme.dimensions.paddingLarge,
-                            bottom = RadixTheme.dimensions.paddingDefault
-                        ),
-                    text = stringResource(R.string.accountSettings_hideAccount_button),
-                    onClick = onHideAccount
-                )
             }
         }
     }
@@ -409,7 +385,7 @@ private fun BottomSheet(
     ) {
         IconButton(
             modifier = Modifier.padding(
-                start = RadixTheme.dimensions.paddingXSmall,
+                start = RadixTheme.dimensions.paddingXXSmall,
                 top = RadixTheme.dimensions.paddingMedium
             ),
             onClick = onClose
@@ -449,6 +425,7 @@ fun AccountSettingsPreview() {
             faucetState = FaucetState.Available(isEnabled = true),
             isXrdLoading = false,
             onHideAccount = {},
+            onDeleteAccount = {},
             isAccountNameUpdated = false,
             onSnackbarMessageShown = {}
         )

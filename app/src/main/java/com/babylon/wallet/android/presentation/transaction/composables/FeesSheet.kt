@@ -33,7 +33,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferableResources
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
@@ -48,9 +49,6 @@ import com.radixdlt.sargon.samples.sampleMainnet
 fun FeesSheet(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State.Sheet.CustomizeFees,
-    transactionFees: TransactionFees,
-    isSelectedFeePayerInvolvedInTransaction: Boolean,
-    insufficientBalanceToPayTheFee: Boolean,
     onClose: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
@@ -209,14 +207,14 @@ fun FeesSheet(
                     TransactionAccountCardHeader(
                         modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        account = AccountWithTransferableResources.Owned(
-                            account = feePayer.feePayerCandidate,
-                            resources = emptyList()
+                        accountWithTransferables = AccountWithTransferables(
+                            account = InvolvedAccount.Owned(feePayer.feePayerCandidate),
+                            transferables = emptyList()
                         ),
                         shape = RadixTheme.shapes.roundedRectMedium
                     )
 
-                    if (insufficientBalanceToPayTheFee) {
+                    if (state.properties.isBalanceInsufficientToPayTheFee) {
                         WarningText(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -228,7 +226,7 @@ fun FeesSheet(
                             contentColor = RadixTheme.colors.red1,
                             textStyle = RadixTheme.typography.body1Header
                         )
-                    } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
+                    } else if (state.properties.isSelectedFeePayerInvolvedInTransaction.not()) {
                         Row(
                             modifier = Modifier
                                 .padding(
@@ -304,13 +302,13 @@ fun FeesSheet(
             when (state.feesMode) {
                 TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                     NetworkFeesDefaultView(
-                        transactionFees = transactionFees
+                        transactionFees = state.transactionFees
                     )
                 }
 
                 TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                     NetworkFeesAdvancedView(
-                        transactionFees = transactionFees,
+                        transactionFees = state.transactionFees,
                         onFeePaddingAmountChanged = onFeePaddingAmountChanged,
                         onTipPercentageChanged = onTipPercentageChanged
                     )
@@ -350,7 +348,7 @@ fun FeesSheet(
 }
 
 @Composable
-fun NetworkFeesDefaultView(
+private fun NetworkFeesDefaultView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?
 ) {
@@ -473,7 +471,7 @@ fun NetworkFeesDefaultView(
 }
 
 @Composable
-fun NetworkFeesAdvancedView(
+private fun NetworkFeesAdvancedView(
     modifier: Modifier = Modifier,
     transactionFees: TransactionFees?,
     onFeePaddingAmountChanged: (String) -> Unit,
@@ -598,7 +596,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.networkExecutionCost.orEmpty()
+                        transactionFees?.totalExecutionCostDisplayed.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -625,7 +623,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.networkFinalizationCost.orEmpty()
+                        transactionFees?.finalizationCostDisplayed.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -680,7 +678,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.networkStorageCost.orEmpty()
+                        transactionFees?.storageExpansionCostDisplayed.orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -733,7 +731,7 @@ fun NetworkFeesAdvancedView(
                 } else {
                     stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.royaltiesCost.orEmpty()
+                        transactionFees?.royaltiesCostDisplayed.orEmpty()
                     )
                 }
                 Text(
@@ -840,11 +838,14 @@ private fun FeesSheetEmptyPreview() {
         FeesSheet(
             state = TransactionReviewViewModel.State.Sheet.CustomizeFees(
                 feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
-                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = TransactionFees(),
+                properties = TransactionReviewViewModel.State.Fees.Properties(
+                    isSelectedFeePayerInvolvedInTransaction = false,
+                    noFeePayerSelected = false,
+                    isBalanceInsufficientToPayTheFee = false,
+                )
             ),
-            transactionFees = TransactionFees(),
-            insufficientBalanceToPayTheFee = false,
-            isSelectedFeePayerInvolvedInTransaction = false,
             onClose = {},
             onChangeFeePayerClick = {},
             onSelectFeePayerClick = {},
@@ -867,11 +868,14 @@ private fun FeesSheetNotEnoughXRDPreview() {
                 feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                     feePayerCandidate = Account.sampleMainnet.carol
                 ),
-                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = TransactionFees(),
+                properties = TransactionReviewViewModel.State.Fees.Properties(
+                    isSelectedFeePayerInvolvedInTransaction = false,
+                    noFeePayerSelected = false,
+                    isBalanceInsufficientToPayTheFee = true,
+                )
             ),
-            transactionFees = TransactionFees(),
-            insufficientBalanceToPayTheFee = true,
-            isSelectedFeePayerInvolvedInTransaction = false,
             onClose = {},
             onChangeFeePayerClick = {},
             onSelectFeePayerClick = {},
@@ -894,11 +898,14 @@ private fun FeesSheetAccountNotInvolvedPreview() {
                 feePayerMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                     feePayerCandidate = Account.sampleMainnet.carol
                 ),
-                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default
+                feesMode = TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = TransactionFees(),
+                properties = TransactionReviewViewModel.State.Fees.Properties(
+                    isSelectedFeePayerInvolvedInTransaction = false,
+                    noFeePayerSelected = false,
+                    isBalanceInsufficientToPayTheFee = true,
+                )
             ),
-            transactionFees = TransactionFees(),
-            insufficientBalanceToPayTheFee = false,
-            isSelectedFeePayerInvolvedInTransaction = false,
             onClose = {},
             onChangeFeePayerClick = {},
             onSelectFeePayerClick = {},

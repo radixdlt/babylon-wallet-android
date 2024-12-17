@@ -7,7 +7,8 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.LedgerResponse
+import com.babylon.wallet.android.domain.usecases.BiometricsAuthenticateUseCase
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -39,7 +40,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -72,7 +72,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val olympiaWalletDataParser: OlympiaWalletDataParser,
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
     private val appEventBus: AppEventBus,
-    private val p2PLinksRepository: P2PLinksRepository
+    private val p2PLinksRepository: P2PLinksRepository,
+    private val biometricsAuthenticateUseCase: BiometricsAuthenticateUseCase,
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
     private val scannedData = mutableSetOf<String>()
@@ -124,7 +125,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     private fun processLedgerResponse(
         ledgerFactorSource: FactorSource.Ledger,
-        derivePublicKeyResponse: IncomingMessage.LedgerResponse.DerivePublicKeyResponse
+        derivePublicKeyResponse: LedgerResponse.DerivePublicKeyResponse
     ) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
@@ -148,20 +149,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
         verifiedHardwareAccounts[ledgerFactorSource] = verifiedAccounts
         updateHardwareAccountLeftToMigrateCount()
-        completeImport()
-    }
-
-    private fun completeImport() {
-        val hardwareAccountsLeftToMigrate = hardwareAccountsLeftToMigrate()
-        if (hardwareAccountsLeftToMigrate.isEmpty()) {
-            if (softwareAccountsToMigrate().isEmpty()) {
-                onImportAllAccounts()
-            } else {
-                viewModelScope.launch {
-                    sendEvent(OlympiaImportEvent.BiometricPromptBeforeFinalImport)
-                }
-            }
-        }
+        migrateAccounts()
     }
 
     fun onQrCodeScanned(qrData: String) {
@@ -249,13 +237,13 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     private fun buildPages(
         olympiaAccounts: List<OlympiaAccountDetails>,
-        mnemonicExistForSoftwareAccounts: Boolean
+        needSeedPhraseInput: Boolean
     ): PersistentList<ImportLegacyWalletUiState.Page> {
         val hasSoftwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Software && !it.alreadyImported }
         val hasHardwareAccounts = olympiaAccounts.any { it.type == OlympiaAccountType.Hardware && !it.alreadyImported }
         var pages = listOf(ImportLegacyWalletUiState.Page.ScanQr, ImportLegacyWalletUiState.Page.AccountsToImportList)
         when {
-            hasSoftwareAccounts && !mnemonicExistForSoftwareAccounts -> {
+            hasSoftwareAccounts && needSeedPhraseInput -> {
                 pages = pages + listOf(ImportLegacyWalletUiState.Page.MnemonicInput)
                 if (hasHardwareAccounts) {
                     pages = pages + listOf(ImportLegacyWalletUiState.Page.HardwareAccounts)
@@ -283,62 +271,63 @@ class ImportLegacyWalletViewModel @Inject constructor(
         seedPhraseInputDelegate.onPassphraseChanged(value)
     }
 
-    fun onImportAccounts(biometricAuthProvider: suspend () -> Boolean) {
-        viewModelScope.launch {
-            val selectedAccounts = _state.value.olympiaAccountsToImport
-            if (selectedAccounts.isNotEmpty()) {
-                val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.deviceFactorSources?.any {
-                    it.supportsOlympia
-                } == true
-                val mnemonicExistForSoftwareAccounts = when {
-                    hasOlympiaFactorSource -> {
-                        if (biometricAuthProvider()) {
-                            val factorSourceIdResult = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccountsToMigrate())
-                            factorSourceIdResult.onFailure {
-                                if (it is ProfileException.SecureStorageAccess) {
-                                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                                } else {
-                                    _state.update { state ->
-                                        state.copy(uiMessage = UiMessage.ErrorMessage(it))
-                                    }
-                                }
-                                return@launch
-                            }
-                            val factorSourceId = factorSourceIdResult.getOrNull()
-                            _state.update {
-                                it.copy(existingOlympiaFactorSourceId = factorSourceIdResult.getOrNull())
-                            }
-                            factorSourceId != null
-                        } else {
-                            return@launch
+    fun onImportSubmit() = viewModelScope.launch {
+        val allAccounts = _state.value.olympiaAccountsToImport
+        val softwareAccounts = softwareAccountsToMigrate()
+        val hardwareAccounts = hardwareAccountsLeftToMigrate()
+        if (allAccounts.isNotEmpty()) {
+            val olympiaDeviceFactorSourceExists = getProfileUseCase().deviceFactorSources.any { it.supportsOlympia }
+            val needToVerifyExistingOlympiaFactorSource = softwareAccounts.isNotEmpty() && olympiaDeviceFactorSourceExists
+            val needsSeedPhraseInput = if (needToVerifyExistingOlympiaFactorSource) {
+                // If such factor source exists we need to verify if it can derive the public keys of the accounts
+                // about to be imported
+                val authenticated = biometricsAuthenticateUseCase()
+                if (!authenticated) return@launch
+
+                val validFactorSourceId = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccounts).getOrElse { error ->
+                    if (error is ProfileException.SecureStorageAccess) {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    } else {
+                        _state.update { state ->
+                            state.copy(uiMessage = UiMessage.ErrorMessage(error))
                         }
                     }
-
-                    else -> false
+                    return@launch
                 }
-                val pages = buildPages(selectedAccounts, mnemonicExistForSoftwareAccounts)
-                updateHardwareAccountLeftToMigrateCount()
-                _state.update { state ->
-                    state.copy(pages = pages)
+                _state.update {
+                    it.copy(existingOlympiaFactorSourceId = validFactorSourceId)
                 }
-                if (mnemonicExistForSoftwareAccounts && hardwareAccountsLeftToMigrate().isEmpty()) {
-                    // we just asked for biometrics, so assume we are authenticated
-                    onImportAllAccounts(biometricAuthProvider = { true })
-                } else {
-                    proceedToNextPage()
-                }
+                validFactorSourceId == null
             } else {
-                val pages = buildPages(selectedAccounts, false)
-                updateHardwareAccountLeftToMigrateCount()
-                _state.update { state ->
-                    state.copy(pages = pages)
-                }
+                // Such factor source does not exist for sure. We need to ask user to provide the seed phrase if software accounts exist.
+                softwareAccounts.isNotEmpty()
+            }
+
+            val pages = buildPages(
+                olympiaAccounts = allAccounts,
+                needSeedPhraseInput = needsSeedPhraseInput
+            )
+            updateHardwareAccountLeftToMigrateCount()
+            _state.update { state ->
+                state.copy(pages = pages)
+            }
+
+            if (!needsSeedPhraseInput && hardwareAccounts.isEmpty()) {
+                migrateAccounts(biometricsAlreadyProvided = needToVerifyExistingOlympiaFactorSource)
+            } else {
                 proceedToNextPage()
             }
+        } else {
+            val pages = buildPages(_state.value.olympiaAccountsToImport, false)
+            updateHardwareAccountLeftToMigrateCount()
+            _state.update { state ->
+                state.copy(pages = pages)
+            }
+            proceedToNextPage()
         }
     }
 
-    fun onValidateSoftwareAccounts(biometricAuthProvider: suspend () -> Boolean) {
+    fun onValidateSoftwareAccounts() {
         viewModelScope.launch {
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
             val accountsValid = state.value.existingOlympiaFactorSourceId != null || state.value.mnemonicWithPassphrase()
@@ -346,7 +335,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             if (accountsValid) {
                 when (_state.value.pages.nextPage(_state.value.currentPage)) {
                     ImportLegacyWalletUiState.Page.HardwareAccounts -> proceedToNextPage()
-                    else -> onImportAllAccounts(biometricAuthProvider)
+                    else -> migrateAccounts()
                 }
             } else {
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
@@ -354,38 +343,36 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
     }
 
-    @Suppress("UnsafeCallOnNullableType")
-    fun onImportAllAccounts(biometricAuthProvider: suspend () -> Boolean = { true }) {
+    private fun migrateAccounts(biometricsAlreadyProvided: Boolean = false) {
         viewModelScope.launch {
-            if (_state.value.olympiaAccountsToImport.isNotEmpty()) {
-                val authenticated = biometricAuthProvider()
-                if (!authenticated) return@launch
-                val factorSourceID = if (state.value.existingOlympiaFactorSourceId != null) {
-                    state.value.existingOlympiaFactorSourceId!!
-                } else {
-                    val result = addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
-                    if (result.exceptionOrNull() != null) {
-                        val exception = result.exceptionOrNull()
-                        if (exception is ProfileException.SecureStorageAccess) {
+            val softwareAccounts = softwareAccountsToMigrate()
+            if (softwareAccounts.isNotEmpty()) {
+                val deviceFactorSourceId = state.value.existingOlympiaFactorSourceId ?: run {
+                    if (!biometricsAlreadyProvided) {
+                        val authenticated = biometricsAuthenticateUseCase()
+                        if (!authenticated) return@launch
+                    }
+
+                    addOlympiaFactorSourceUseCase(
+                        state.value.mnemonicWithPassphrase()
+                    ).getOrElse { error ->
+                        if (error is ProfileException.SecureStorageAccess) {
                             appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                         } else {
                             _state.update { state ->
-                                state.copy(uiMessage = UiMessage.ErrorMessage(exception))
+                                state.copy(uiMessage = UiMessage.ErrorMessage(error))
                             }
                         }
                         return@launch
-                    } else {
-                        result.getOrThrow()
                     }
                 }
-                val softwareAccountsToMigrate = softwareAccountsToMigrate()
-                if (softwareAccountsToMigrate.isNotEmpty()) {
-                    migrateOlympiaAccountsUseCase(
-                        olympiaAccounts = softwareAccountsToMigrate,
-                        factorSourceId = factorSourceID
-                    )
-                }
+
+                migrateOlympiaAccountsUseCase(
+                    olympiaAccounts = softwareAccounts,
+                    factorSourceId = deviceFactorSourceId
+                )
             }
+
             if (verifiedHardwareAccounts.isNotEmpty()) {
                 verifiedHardwareAccounts.entries.forEach { entry ->
                     migrateOlympiaAccountsUseCase(
@@ -394,6 +381,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     )
                 }
             }
+
             _state.update { state ->
                 state.copy(
                     migratedAccounts = state.olympiaAccountsToImport.mapNotNull {
@@ -401,6 +389,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     }.toPersistentList()
                 )
             }
+
             proceedToNextPage()
         }
     }
@@ -468,7 +457,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     fun onContinueWithLedgerClick() {
         val hardwareAccountsLeft = hardwareAccountsLeftToMigrate()
         if (hardwareAccountsLeft.isEmpty()) {
-            completeImport()
+            migrateAccounts()
         } else {
             viewModelScope.launch {
                 val hasAtLeastOneLinkedConnector = p2PLinksRepository.getP2PLinks()
@@ -528,7 +517,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
 sealed interface OlympiaImportEvent : OneOffEvent {
     data class NextPage(val page: ImportLegacyWalletUiState.Page) : OlympiaImportEvent
     data class PreviousPage(val page: ImportLegacyWalletUiState.Page?) : OlympiaImportEvent
-    data object BiometricPromptBeforeFinalImport : OlympiaImportEvent
 }
 
 data class ImportLegacyWalletUiState(

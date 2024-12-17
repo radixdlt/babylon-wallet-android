@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.data.dapp.model.IncompatibleRequestVersionException
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.LedgerResponse
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.DappToWalletInteractionUnvalidated
 import com.radixdlt.sargon.DappWalletInteractionErrorType
@@ -48,9 +50,9 @@ interface PeerdroidClient {
         message: String
     ): Result<Unit>
 
-    fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest>
+    fun listenForIncomingRequests(): Flow<DappToWalletInteraction>
 
-    fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse>
+    fun listenForLedgerResponses(): Flow<LedgerResponse>
 
     fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error>
 
@@ -59,6 +61,7 @@ interface PeerdroidClient {
     fun terminate()
 }
 
+@Suppress("TooManyFunctions")
 class PeerdroidClientImpl @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -112,7 +115,7 @@ class PeerdroidClientImpl @Inject constructor(
             .flowOn(ioDispatcher)
     }
 
-    override fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest> {
+    override fun listenForIncomingRequests(): Flow<DappToWalletInteraction> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
@@ -120,7 +123,7 @@ class PeerdroidClientImpl @Inject constructor(
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse> {
+    override fun listenForLedgerResponses(): Flow<LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
@@ -132,63 +135,82 @@ class PeerdroidClientImpl @Inject constructor(
         peerdroidConnector.terminateConnectionToConnectorExtension()
     }
 
-    @Suppress("SwallowedException")
     private suspend fun parseIncomingMessage(
         remoteConnectorId: String,
         messageInJsonString: String
     ): IncomingMessage {
-        return try {
-            val dappInteraction = runCatching {
-                DappToWalletInteractionUnvalidated.fromJson(messageInJsonString)
-            }.getOrNull()
-            if (dappInteraction != null) {
-                val interactionVersion = dappInteraction.metadata.version.toLong()
-                if (interactionVersion != Constants.WALLET_INTERACTION_VERSION) {
-                    throw IncompatibleRequestVersionException(
-                        requestVersion = interactionVersion,
-                        requestId = dappInteraction.interactionId
-                    )
-                }
-                dappInteraction.toDomainModel(remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(remoteConnectorId)).getOrThrow()
-            } else {
-                val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
-                interaction.toDomainModel()
-            }
-        } catch (serializationException: SerializationException) {
-            // TODO a snackbar message error like iOS
-            Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
-            IncomingMessage.ParsingError
-        } catch (incompatibleRequestVersionException: IncompatibleRequestVersionException) {
-            val requestVersion = incompatibleRequestVersionException.requestVersion
-            val currentVersion = Constants.WALLET_INTERACTION_VERSION
-            Timber.e("The version of the request: $requestVersion is incompatible. Wallet version: $currentVersion")
-            sendIncompatibleVersionRequestToDapp(
-                requestId = incompatibleRequestVersionException.requestId,
-                remoteConnectorId = remoteConnectorId
-            )
-            IncomingMessage.ParsingError
-        } catch (e: RadixWalletException.IncomingMessageException.MessageParse) {
-            IncomingMessage.Error(e)
-        } catch (e: RadixWalletException.IncomingMessageException.LedgerResponseParse) {
-            IncomingMessage.Error(e)
-        } catch (exception: Exception) {
-            Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
-            IncomingMessage.Error(RadixWalletException.IncomingMessageException.Unknown(exception))
+        // Try to parse as a dApp interaction
+        val dAppInteraction = runCatching {
+            DappToWalletInteractionUnvalidated.fromJson(messageInJsonString)
+        }.getOrNull()
+
+        if (dAppInteraction == null) {
+            // Try to parse as a ledger interaction
+            return parseLedgerInteraction(messageInJsonString)
         }
+
+        // It's a dApp interaction, validate the version
+        val interactionVersion = dAppInteraction.metadata.version.toLong()
+        if (interactionVersion != Constants.WALLET_INTERACTION_VERSION) {
+            val currentVersion = Constants.WALLET_INTERACTION_VERSION
+            Timber.e("The version of the request: $interactionVersion is incompatible. Wallet version: $currentVersion")
+            sendFailureResponseToDApp(
+                requestId = dAppInteraction.interactionId,
+                remoteConnectorId = remoteConnectorId,
+                dAppWalletInteractionErrorType = DappWalletInteractionErrorType.INCOMPATIBLE_VERSION,
+                message = null
+            )
+
+            return IncomingMessage.ParsingError
+        }
+
+        // Process the unvalidated dApp to wallet interaction
+        return dAppInteraction.toDomainModel(
+            remoteEntityId = RemoteEntityID.ConnectorId(remoteConnectorId)
+        ).fold(
+            onSuccess = { it },
+            onFailure = { error ->
+                Timber.e("failed to parse incoming message: ${error.localizedMessage}")
+                when (error) {
+                    is RadixWalletException -> IncomingMessage.Error(error)
+                    else -> IncomingMessage.ParsingError
+                }
+            }
+        )
     }
 
-    private suspend fun sendIncompatibleVersionRequestToDapp(
+    private fun parseLedgerInteraction(messageInJsonString: String): IncomingMessage = runCatching {
+        val interaction = json.decodeFromString<LedgerInteractionResponse>(messageInJsonString)
+        interaction.toDomainModel()
+    }.fold(
+        onSuccess = { it },
+        onFailure = { error ->
+            when (error) {
+                is SerializationException -> {
+                    Timber.e("Failed to parse incoming ledger interaction with serialization exception: ${error.localizedMessage}")
+                    IncomingMessage.ParsingError
+                }
+                else -> {
+                    Timber.e("Failed to parse ledger response: ${error.localizedMessage}")
+                    IncomingMessage.Error(RadixWalletException.DappRequestException.InvalidRequestChallenge)
+                }
+            }
+        }
+    )
+
+    private suspend fun sendFailureResponseToDApp(
         remoteConnectorId: String,
-        requestId: String
+        requestId: String,
+        dAppWalletInteractionErrorType: DappWalletInteractionErrorType,
+        message: String?
     ) {
-        val messageJson =
-            WalletToDappInteractionResponse.Failure(
-                WalletToDappInteractionFailureResponse(
-                    interactionId = requestId,
-                    error = DappWalletInteractionErrorType.INCOMPATIBLE_VERSION,
-                    message = null
-                )
-            ).toJson()
+        val messageJson = WalletToDappInteractionResponse.Failure(
+            WalletToDappInteractionFailureResponse(
+                interactionId = requestId,
+                error = dAppWalletInteractionErrorType,
+                message = message
+            )
+        ).toJson()
         sendMessage(remoteConnectorId, messageJson)
     }
 }

@@ -18,9 +18,11 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Profile
@@ -32,7 +34,6 @@ import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.AuthorizedDapps
 import com.radixdlt.sargon.extensions.EntityFlags
 import com.radixdlt.sargon.extensions.FactorSources
-import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.ProfileNetworks
@@ -43,6 +44,8 @@ import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.indexInGlobalKeySpace
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
@@ -88,7 +91,7 @@ val Profile.allEntitiesOnCurrentNetwork: List<ProfileEntity>
         allPersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
-    get() = currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
+    get() = currentNetwork?.accounts?.active().orEmpty()
 
 fun Profile.activeAccountOnCurrentNetwork(withAddress: AccountAddress): Account? =
     activeAccountsOnCurrentNetwork.firstOrNull { account ->
@@ -96,13 +99,13 @@ fun Profile.activeAccountOnCurrentNetwork(withAddress: AccountAddress): Account?
     }
 
 val Profile.hiddenAccountsOnCurrentNetwork: List<Account>
-    get() = currentNetwork?.accounts?.hiddenAccounts().orEmpty()
+    get() = currentNetwork?.accounts?.filter { it.isHidden }.orEmpty()
 
 val Profile.activePersonasOnCurrentNetwork: List<Persona>
-    get() = currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+    get() = currentNetwork?.personas?.active().orEmpty()
 
 val Profile.hiddenPersonasOnCurrentNetwork: List<Persona>
-    get() = currentNetwork?.personas?.hiddenPersonas().orEmpty()
+    get() = currentNetwork?.personas?.filter { it.isHidden }.orEmpty()
 
 fun Profile.activePersonaOnCurrentNetwork(withAddress: IdentityAddress): Persona? =
     activePersonasOnCurrentNetwork.firstOrNull { persona ->
@@ -264,36 +267,45 @@ fun Profile.nextAccountIndex(
     forNetworkId: NetworkId,
     factorSourceId: FactorSourceId,
     derivationPathScheme: DerivationPathScheme,
-): HDPathValue {
-    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return 0u
+): HdPathComponent {
+    val default = HdPathComponent.init(
+        localKeySpace = 0u,
+        keySpace = KeySpace.Unsecurified(isHardened = true)
+    )
+    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return default
+
     val accountsControlledByFactorSource = forNetwork.accounts.filter {
         it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
     }
     return if (accountsControlledByFactorSource.isEmpty()) {
-        0u
+        default
     } else {
-        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u
+        val global = accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex.indexInGlobalKeySpace } + 1u
+
+        HdPathComponent.init(globalKeySpace = global)
     }
 }
 
 fun Profile.nextPersonaIndex(
     forNetworkId: NetworkId,
     derivationPathScheme: DerivationPathScheme,
-    factorSourceID: FactorSourceId? = null
-): HDPathValue {
-    val network = networks.asIdentifiable().getBy(forNetworkId) ?: return 0u
+    factorSourceId: FactorSourceId
+): HdPathComponent {
+    val default = HdPathComponent.init(
+        localKeySpace = 0u,
+        keySpace = KeySpace.Unsecurified(isHardened = true)
+    )
+    val forNetwork = networks.asIdentifiable().getBy(forNetworkId) ?: return default
 
-    val factorSource = factorSources.find {
-        it.id == factorSourceID
-    } ?: mainBabylonFactorSource ?: return 0u
-
-    val personasControlledByFactorSource = network.personas.filter {
-        it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
+    val personasControlledByFactorSource = forNetwork.personas.filter {
+        it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
     }
     return if (personasControlledByFactorSource.isEmpty()) {
-        0u
+        default
     } else {
-        personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u
+        val global = personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex.indexInGlobalKeySpace } + 1u
+
+        HdPathComponent.init(globalKeySpace = global)
     }
 }
 
@@ -352,9 +364,9 @@ fun Profile.changePersonaVisibility(identityAddress: IdentityAddress, isHidden: 
                     predicate = { it.address == identityAddress },
                     mutation = { persona ->
                         val updatedFlags = if (isHidden) {
-                            persona.flags + EntityFlag.DELETED_BY_USER
+                            persona.flags + EntityFlag.HIDDEN_BY_USER
                         } else {
-                            persona.flags - EntityFlag.DELETED_BY_USER
+                            persona.flags - EntityFlag.HIDDEN_BY_USER
                         }
                         persona.copy(flags = EntityFlags(updatedFlags).asList())
                     }
@@ -396,9 +408,9 @@ fun Profile.changeAccountVisibility(accountAddress: AccountAddress, hide: Boolea
             predicate = { it.address == accountAddress },
             mutation = { account ->
                 val updatedFlags = if (hide) {
-                    account.flags + EntityFlag.DELETED_BY_USER
+                    account.flags + EntityFlag.HIDDEN_BY_USER
                 } else {
-                    account.flags - EntityFlag.DELETED_BY_USER
+                    account.flags - EntityFlag.HIDDEN_BY_USER
                 }
                 account.copy(flags = EntityFlags(updatedFlags).asList())
             }
@@ -419,12 +431,12 @@ fun Profile.unHideAllEntities(): Profile {
         network.copy(
             personas = Personas(
                 network.personas.map { persona ->
-                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.DELETED_BY_USER).asList())
+                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.HIDDEN_BY_USER).asList())
                 }
             ).asList(),
             accounts = Accounts(
                 network.accounts.map { persona ->
-                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.DELETED_BY_USER).asList())
+                    persona.copy(flags = persona.flags.asIdentifiable().remove(EntityFlag.HIDDEN_BY_USER).asList())
                 }
             ).asList()
         )
@@ -560,6 +572,7 @@ fun Profile.updateLastUsed(id: FactorSourceId): Profile {
                     is FactorSource.TrustedContact -> factorSource.value.copy(
                         common = factorSource.value.common.copy(lastUsedOn = TimestampGenerator())
                     ).asGeneral()
+                    is FactorSource.Password -> error("Password factor source is not yet supported.")
                 }
             }
         ).asList()
@@ -684,8 +697,8 @@ private fun Profile.withUpdatedContentHint() = copy(
     header = header.copy(
         contentHint = ContentHint(
             numberOfNetworks = networks.size.toUShort(),
-            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.notHiddenAccounts().size }.toUShort(),
-            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.notHiddenPersonas().size }.toUShort()
+            numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.active().size }.toUShort(),
+            numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.active().size }.toUShort()
         )
     )
 )

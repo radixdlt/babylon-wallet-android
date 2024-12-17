@@ -25,6 +25,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.BuildConfig
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.di.NonEncryptedPreferences
 import rdx.works.core.domain.cloudbackup.LastCloudBackupEvent
 import java.time.Instant
 import javax.inject.Inject
@@ -95,7 +96,7 @@ interface PreferencesManager {
 
 @Suppress("TooManyFunctions") // TODO maybe break it into two or more classes
 class PreferencesManagerImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    @NonEncryptedPreferences private val dataStore: DataStore<Preferences>
 ) : PreferencesManager {
 
     override val surveyUuid: Flow<String>

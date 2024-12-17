@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -76,13 +77,14 @@ fun SimpleAccountCard(
 @Composable
 fun SimpleAccountCard(
     modifier: Modifier = Modifier,
-    account: Account
+    account: Account,
+    shape: Shape = RadixTheme.shapes.roundedRectSmall
 ) {
     Row(
         modifier = modifier
             .background(
-                account.appearanceId.gradient(),
-                RadixTheme.shapes.roundedRectSmall
+                brush = account.appearanceId.gradient(),
+                shape = shape
             )
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
@@ -100,6 +102,39 @@ fun SimpleAccountCard(
             overflow = TextOverflow.Ellipsis
         )
         ActionableAddressView(
+            address = remember(account.address) {
+                Address.Account(account.address)
+            },
+            textStyle = RadixTheme.typography.body2HighImportance,
+            textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+        )
+    }
+}
+
+@Composable
+fun SimpleAccountCardWithAddress(
+    modifier: Modifier = Modifier,
+    account: Account
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(top = RadixTheme.dimensions.paddingLarge),
+            text = account.displayName.value,
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            color = RadixTheme.colors.white,
+            overflow = TextOverflow.Ellipsis
+        )
+        ActionableAddressView(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingLarge),
             address = remember(account.address) {
                 Address.Account(account.address)
             },

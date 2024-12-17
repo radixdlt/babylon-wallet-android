@@ -242,7 +242,7 @@ fun MetadataValueView(
                 }
                 Icon(
                     modifier = Modifier
-                        .padding(start = RadixTheme.dimensions.paddingXSmall)
+                        .padding(start = RadixTheme.dimensions.paddingXXSmall)
                         .size(iconSize),
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_copy),
                     contentDescription = null,
@@ -353,7 +353,7 @@ fun MetadataValueView(
                 )
             }
 
-            MetadataType.Url -> LinkText(
+            MetadataType.Url, MetadataType.Origin -> LinkText(
                 modifier = modifier.fillMaxWidth(),
                 url = metadata.value
             )
@@ -365,7 +365,7 @@ private const val SHORT_KEY_THRESHOLD = 30
 private const val SHORT_VALUE_THRESHOLD = 40
 private val Metadata.isRenderedInNewLine: Boolean
     get() = this is Metadata.Primitive && (
-        valueType is MetadataType.Url ||
+        valueType is MetadataType.Url || valueType is MetadataType.Origin ||
             (valueType is MetadataType.String && value.length > SHORT_VALUE_THRESHOLD) ||
             (valueType is MetadataType.NonFungibleGlobalId)
         )

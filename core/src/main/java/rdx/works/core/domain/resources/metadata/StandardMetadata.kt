@@ -110,7 +110,7 @@ fun List<Metadata>.dAppDefinitions(): List<String> = findCollection(
 
 fun List<Metadata>.claimedWebsites(): List<String>? = findCollection(
     key = ExplicitMetadataKey.CLAIMED_WEBSITES,
-    type = MetadataType.Url
+    type = MetadataType.Origin
 )?.map { it.value }
 
 fun List<Metadata>.claimedEntities(): List<String>? = findCollection(

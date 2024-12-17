@@ -9,11 +9,12 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.accountPrompts
+import com.babylon.wallet.android.domain.usecases.CheckDeletedAccountsOnLedgerUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.accountPrompts
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -25,7 +26,6 @@ import com.babylon.wallet.android.presentation.wallet.locker.WalletAccountLocker
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants.RAD_QUEST_URL
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.HomeCard
@@ -78,6 +78,7 @@ private const val DELAY_BETWEEN_POP_UP_SCREENS_MS = 1000L
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getFiatValueUseCase: GetFiatValueUseCase,
+    private val checkDeletedAccountsOnLedgerUseCase: CheckDeletedAccountsOnLedgerUseCase,
     getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
@@ -126,10 +127,12 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    fun refreshAccountLockers() = accountLockersDelegate.onRefresh()
+
     override fun initialState() = State()
 
     fun onStart() {
-        loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+        loadAssets(refreshType = RefreshType.Initial)
     }
 
     fun popUpScreen(): StateFlow<PopUpScreen?> = popUpScreen
@@ -201,9 +204,13 @@ class WalletViewModel @Inject constructor(
         ) { accounts, refreshType ->
             _state.update { it.loadingAssets(accounts = accounts, refreshType = refreshType) }
 
+            if (refreshType.shouldSyncWithAccountStateWithLedger) {
+                syncDeletedAccounts()
+            }
+
             accounts
         }.flatMapLatest { accounts ->
-            getWalletAssetsUseCase(
+            getWalletAssetsUseCase.observe(
                 accounts = accounts,
                 isRefreshing = _state.value.refreshType.overrideCache
             ).catch { error ->
@@ -247,18 +254,20 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    private fun syncDeletedAccounts() {
+        viewModelScope.launch {
+            if (checkDeletedAccountsOnLedgerUseCase.sync()) {
+                appEventBus.sendEvent(AppEvent.AccountsPreviouslyDeletedDetected)
+            }
+        }
+    }
+
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
             appEventBus.events.collect { event ->
                 when (event) {
-                    AppEvent.RefreshAssetsNeeded -> loadAssets(
-                        refreshType = RefreshType.Manual(
-                            overrideCache = true,
-                            showRefreshIndicator = true
-                        )
-                    )
-
-                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.Manual(overrideCache = false, showRefreshIndicator = false))
+                    AppEvent.RefreshAssetsNeeded -> loadAssets(refreshType = RefreshType.WalletRefresh)
+                    RestoredMnemonic -> loadAssets(refreshType = RefreshType.RestoredMnemonic)
                     AppEvent.NPSSurveySubmitted -> {
                         _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
                     }
@@ -279,8 +288,8 @@ class WalletViewModel @Inject constructor(
     }
 
     fun onRefresh() {
-        loadAssets(refreshType = RefreshType.Manual(overrideCache = true, showRefreshIndicator = true))
-        accountLockersDelegate.onRefresh()
+        loadAssets(refreshType = RefreshType.WalletRefresh)
+        refreshAccountLockers()
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -300,21 +309,11 @@ class WalletViewModel @Inject constructor(
     }
 
     fun onCardClick(card: HomeCard) {
-        viewModelScope.launch {
-            when (card) {
-                HomeCard.Connector -> {
-                    sendEvent(Event.NavigateToLinkConnector)
-                }
-
-                HomeCard.StartRadQuest -> {
-                    sendEvent(Event.OpenUrl(RAD_QUEST_URL))
-                }
-
-                else -> {}
-            }
-            // Currently all the cards should be dismissed on tap
-            homeCards.dismissCard(card)
-        }
+        homeCards.onCardClick(
+            card = card,
+            navigateToLinkConnector = { sendEvent(Event.NavigateToLinkConnector) },
+            openUrl = { url -> sendEvent(Event.OpenUrl(url)) }
+        )
     }
 
     fun onCardClose(card: HomeCard) {
@@ -340,15 +339,28 @@ class WalletViewModel @Inject constructor(
         val overrideCache: Boolean
         val showRefreshIndicator: Boolean
 
+        val shouldSyncWithAccountStateWithLedger: Boolean
+            get() = overrideCache || this is Initial
+
         data object None : RefreshType {
             override val overrideCache: Boolean = false
             override val showRefreshIndicator: Boolean = false
         }
 
-        data class Manual(
-            override val overrideCache: Boolean,
-            override val showRefreshIndicator: Boolean
-        ) : RefreshType
+        data object Initial : RefreshType {
+            override val overrideCache: Boolean = false
+            override val showRefreshIndicator: Boolean = false
+        }
+
+        data object WalletRefresh : RefreshType {
+            override val overrideCache: Boolean = true
+            override val showRefreshIndicator: Boolean = true
+        }
+
+        data object RestoredMnemonic : RefreshType {
+            override val overrideCache: Boolean = false
+            override val showRefreshIndicator: Boolean = false
+        }
 
         data object Automatic : RefreshType {
             override val overrideCache: Boolean = true

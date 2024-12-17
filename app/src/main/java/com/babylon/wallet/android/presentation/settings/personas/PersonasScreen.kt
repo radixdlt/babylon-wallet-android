@@ -1,13 +1,13 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
@@ -21,14 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.EntityWithSecurityPrompt
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
@@ -100,37 +99,33 @@ fun PersonasContent(
             horizontalAlignment = Alignment.Start
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray4)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            Text(
-                modifier = Modifier.padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingMedium
-                ),
-                text = stringResource(id = R.string.personas_subtitle),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            InfoButton(
-                modifier = Modifier.padding(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingMedium
-                ),
-                text = stringResource(id = R.string.infoLink_title_personas),
-                onClick = {
-                    onInfoClick(GlossaryItem.personas)
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingMedium
+                        ),
+                        text = stringResource(id = R.string.personas_subtitle),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                    InfoButton(
+                        modifier = Modifier.padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingMedium
+                        ),
+                        text = stringResource(id = R.string.infoLink_title_personas),
+                        onClick = {
+                            onInfoClick(GlossaryItem.personas)
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
-            )
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
                 itemsIndexed(items = state.personas) { _, personaItem ->
                     PersonaCard(
                         modifier = Modifier
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                             .clip(RadixTheme.shapes.roundedRectMedium)
                             .throttleClickable {
                                 onPersonaClick(personaItem.address)
@@ -145,10 +140,13 @@ fun PersonasContent(
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(align = Alignment.CenterHorizontally)
+                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona
                     )
-                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
         }

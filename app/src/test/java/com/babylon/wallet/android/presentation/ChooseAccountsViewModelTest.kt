@@ -2,10 +2,13 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
+import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsViewModel
 import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.radixdlt.sargon.Gateway
@@ -45,42 +48,42 @@ class ChooseAccountsViewModelTest {
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
 
-    private val accountsRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val accountsRequestExact = WalletUnauthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 1,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
     )
-    private val accountsTwoRequestExact = IncomingMessage.IncomingRequest.UnauthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val accountsTwoRequestExact = WalletUnauthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 2,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                DappToWalletInteraction.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
     )
 
-    private val accountsRequestAtLeast = IncomingMessage.IncomingRequest.UnauthorizedRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val accountsRequestAtLeast = WalletUnauthorizedRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
-        oneTimeAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
+        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
-            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
+            numberOfValues = DappToWalletInteraction.NumberOfValues(
                 2,
-                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+                DappToWalletInteraction.NumberOfValues.Quantifier.AtLeast
             ),
             challenge = null
         )
@@ -93,11 +96,14 @@ class ChooseAccountsViewModelTest {
         viewModel = OneTimeChooseAccountsViewModel(
             savedStateHandle = SavedStateHandle(
                 mapOf(
+                    ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                     ARG_NUMBER_OF_ACCOUNTS to accountsRequestAtLeast.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                     ARG_EXACT_ACCOUNT_COUNT to true
                 )
             ),
-            getProfileUseCase = getProfileUseCase
+            getProfileUseCase = getProfileUseCase,
+            incomingRequestRepository = incomingRequestRepository,
+            accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
         )
     }
 
@@ -121,7 +127,7 @@ class ChooseAccountsViewModelTest {
     fun `given a request for at least 2 accounts, when user selects one, then continue button is disabled`() =
         runTest {
             advanceUntilIdle()
-            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelected(0)
             val state = viewModel.state.first()
             assertFalse(state.isContinueButtonEnabled)
         }
@@ -130,8 +136,8 @@ class ChooseAccountsViewModelTest {
     fun `given a request for at least 2 accounts, when user selects two, then continue button is enabled`() =
         runTest {
             advanceUntilIdle()
-            viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
+            viewModel.onAccountSelected(0)
+            viewModel.onAccountSelected(1)
             val state = viewModel.state.first()
             assertTrue(state.isContinueButtonEnabled)
         }
@@ -140,9 +146,9 @@ class ChooseAccountsViewModelTest {
     fun `given a request for at least 2 accounts, when user selects two and unselect the last selected, then continue button is disabled`() =
         runTest {
             advanceUntilIdle()
-            viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
-            viewModel.onAccountSelect(1)
+            viewModel.onAccountSelected(0)
+            viewModel.onAccountSelected(1)
+            viewModel.onAccountSelected(1)
             val state = viewModel.state.first()
             assertFalse(state.isContinueButtonEnabled)
         }
@@ -156,17 +162,20 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
+                        ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                         ARG_NUMBER_OF_ACCOUNTS to accountsRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
             )
 
             advanceUntilIdle()
 
             // when
-            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelected(0)
 
             // then
             val state = viewModel.state.first()
@@ -182,17 +191,20 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
+                        ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                         ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
             )
 
             advanceUntilIdle()
 
             // when
-            viewModel.onAccountSelect(0)
+            viewModel.onAccountSelected(0)
 
             // then
             val state = viewModel.state.first()
@@ -207,17 +219,20 @@ class ChooseAccountsViewModelTest {
             viewModel = OneTimeChooseAccountsViewModel(
                 savedStateHandle = SavedStateHandle(
                     mapOf(
+                        ARG_UNAUTHORIZED_REQUEST_INTERACTION_ID to accountsRequestExact.interactionId,
                         ARG_NUMBER_OF_ACCOUNTS to accountsTwoRequestExact.oneTimeAccountsRequestItem!!.numberOfValues.quantity,
                         ARG_EXACT_ACCOUNT_COUNT to true
                     )
                 ),
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                incomingRequestRepository = incomingRequestRepository,
+                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
             )
             advanceUntilIdle()
 
             // when
-            viewModel.onAccountSelect(0)
-            viewModel.onAccountSelect(1)
+            viewModel.onAccountSelected(0)
+            viewModel.onAccountSelected(1)
 
             // then
             val state = viewModel.state.first()

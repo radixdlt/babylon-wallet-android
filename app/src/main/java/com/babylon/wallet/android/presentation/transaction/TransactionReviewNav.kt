@@ -12,9 +12,10 @@ import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Resource
 
@@ -33,10 +34,12 @@ fun NavController.transactionReview(requestId: String, navOptionsBuilder: NavOpt
     navigate("transaction_review_route/$requestId", navOptionsBuilder)
 }
 
+@Suppress("LongParameterList")
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
-    onTransferableFungibleClick: (TransferableAsset.Fungible) -> Unit,
-    onTransferableNonFungibleClick: (TransferableAsset.NonFungible, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableFungibleClick: (Transferable.FungibleType) -> Unit,
+    onTransferableNonFungibleItemClick: (Transferable.NonFungibleType, Resource.NonFungibleResource.Item?) -> Unit,
+    onTransferableNonFungibleByAmountClick: (Transferable.NonFungibleType, BoundedAmount) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -63,7 +66,8 @@ fun NavGraphBuilder.transactionReviewScreen(
             viewModel = hiltViewModel(),
             onDismiss = onBackClick,
             onTransferableFungibleClick = onTransferableFungibleClick,
-            onTransferableNonFungibleClick = onTransferableNonFungibleClick,
+            onTransferableNonFungibleItemClick = onTransferableNonFungibleItemClick,
+            onTransferableNonFungibleByAmountClick = onTransferableNonFungibleByAmountClick,
             onDAppClick = onDAppClick,
             onInfoClick = onInfoClick
         )

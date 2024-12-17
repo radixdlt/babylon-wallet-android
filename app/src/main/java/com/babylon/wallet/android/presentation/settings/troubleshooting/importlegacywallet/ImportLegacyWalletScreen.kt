@@ -1,8 +1,4 @@
-@file:Suppress("CyclomaticComplexMethod", "TooManyFunctions")
-@file:OptIn(
-    ExperimentalPermissionsApi::class,
-    ExperimentalFoundationApi::class
-)
+@file:Suppress("TooManyFunctions")
 
 package com.babylon.wallet.android.presentation.settings.troubleshooting.importlegacywallet
 
@@ -45,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +52,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
@@ -92,9 +86,6 @@ import com.babylon.wallet.android.presentation.ui.composables.utils.HideKeyboard
 import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.keyboardVisiblePadding
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -121,7 +112,6 @@ fun ImportLegacyWalletScreen(
     onCloseScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
 
@@ -146,20 +136,12 @@ fun ImportLegacyWalletScreen(
         pages = state.pages,
         oneOffEvent = viewModel.oneOffEvent,
         olympiaAccountsToImport = state.olympiaAccountsToImport,
-        onImportAccounts = {
-            viewModel.onImportAccounts {
-                context.biometricAuthenticateSuspend()
-            }
-        },
+        onImportSubmit = viewModel::onImportSubmit,
         onCloseScreen = onCloseScreen,
         importButtonEnabled = state.importButtonEnabled,
         onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
-        onValidateSoftwareAccounts = {
-            viewModel.onValidateSoftwareAccounts {
-                context.biometricAuthenticateSuspend()
-            }
-        },
+        onValidateSoftwareAccounts = viewModel::onValidateSoftwareAccounts,
         uiMessage = state.uiMessage,
         onMessageShown = viewModel::onMessageShown,
         migratedAccounts = state.migratedAccounts,
@@ -183,7 +165,6 @@ fun ImportLegacyWalletScreen(
         shouldShowAddLedgerDeviceScreen = state.shouldShowAddLedgerDeviceScreen,
         onCloseSettings = viewModel::onCloseSettings,
         onWordSelected = viewModel::onWordSelected,
-        importAllAccounts = viewModel::onImportAllAccounts,
         onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onErrorDismiss,
         seedPhraseInputState = state.seedPhraseInputState,
         onInfoClick = onInfoClick
@@ -199,7 +180,7 @@ private fun ImportLegacyWalletContent(
     pages: ImmutableList<Page>,
     oneOffEvent: Flow<OlympiaImportEvent>,
     olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails>,
-    onImportAccounts: () -> Unit,
+    onImportSubmit: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
     onWordChanged: (Int, String) -> Unit,
@@ -228,7 +209,6 @@ private fun ImportLegacyWalletContent(
     shouldShowAddLedgerDeviceScreen: Boolean,
     onCloseSettings: () -> Unit,
     onWordSelected: (Int, String) -> Unit,
-    importAllAccounts: () -> Unit,
     onInvalidConnectionPasswordShown: () -> Unit,
     seedPhraseInputState: SeedPhraseInputDelegate.State,
     onInfoClick: (GlossaryItem) -> Unit
@@ -242,7 +222,6 @@ private fun ImportLegacyWalletContent(
     var focusedWordIndex by remember {
         mutableStateOf<Int?>(null)
     }
-    val context = LocalContext.current
     BackHandler {
         when (currentPage) {
             Page.ImportComplete, Page.ScanQr -> {
@@ -276,14 +255,6 @@ private fun ImportLegacyWalletContent(
                     } else {
                         scope.launch {
                             pagerState.animateScrollToPage(pages.indexOf(page))
-                        }
-                    }
-                }
-
-                OlympiaImportEvent.BiometricPromptBeforeFinalImport -> {
-                    context.biometricAuthenticate { result ->
-                        if (result == BiometricAuthenticationResult.Succeeded) {
-                            importAllAccounts()
                         }
                     }
                 }
@@ -354,7 +325,7 @@ private fun ImportLegacyWalletContent(
                                 .fillMaxSize()
                                 .padding(top = padding.calculateTopPadding()),
                             olympiaAccountsToImport = olympiaAccountsToImport,
-                            onImportAccounts = onImportAccounts,
+                            onImportSubmit = onImportSubmit,
                             importButtonEnabled = importButtonEnabled,
                         )
                     }
@@ -447,6 +418,7 @@ private fun seedPhraseSuggestionsVisible(wordAutocompleteCandidates: ImmutableLi
     return wordAutocompleteCandidates.isNotEmpty() && isKeyboardVisible()
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CameraVisibilityEffect(
     pagerState: PagerState,
@@ -523,7 +495,7 @@ private fun ScanQrPage(
 private fun AccountsToImportListPage(
     modifier: Modifier = Modifier,
     olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails>,
-    onImportAccounts: () -> Unit,
+    onImportSubmit: () -> Unit,
     importButtonEnabled: Boolean
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -573,7 +545,7 @@ private fun AccountsToImportListPage(
                 R.string.importOlympiaAccounts_accountsToImport_buttonManyAccounts,
                 olympiaAccountsToImport.size
             ),
-            onClick = onImportAccounts,
+            onClick = onImportSubmit,
             enabled = importButtonEnabled
         )
     }
@@ -821,7 +793,7 @@ private fun VerifyWithYourSeedPhrasePage(
                 modifier = Modifier.fillMaxWidth(),
                 text = AnnotatedString(stringResource(R.string.importOlympiaAccounts_verifySeedPhrase_warning))
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             SeedPhraseInputForm(
                 seedPhraseWords = seedPhraseWords,
                 onWordChanged = onWordChanged,
@@ -860,7 +832,7 @@ fun AccountListPagePreview() {
         AccountsToImportListPage(
             modifier = Modifier,
             olympiaAccountsToImport = olympiaAccountsList.toPersistentList(),
-            onImportAccounts = {},
+            onImportSubmit = {},
             importButtonEnabled = true
         )
     }

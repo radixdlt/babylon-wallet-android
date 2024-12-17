@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.NetworkId
@@ -23,6 +24,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.KeystoreManager
+import rdx.works.core.sargon.active
 import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.factorSourceId
@@ -38,7 +41,6 @@ import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseC
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions", "LongParameterList")
@@ -52,7 +54,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus,
-    private val homeCardsRepository: HomeCardsRepository
+    private val homeCardsRepository: HomeCardsRepository,
+    private val keystoreManager: KeystoreManager
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
     OneOffEventHandler<RestoreMnemonicsViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -65,6 +68,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = args.backupType?.let { backupType ->
+                // Reset keyspec before importing any mnemonic, when keyspec is invalid
+                keystoreManager.resetMnemonicKeySpecWhenInvalidated()
+
                 getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
             } ?: run {
                 getProfileUseCase.flow.firstOrNull()
@@ -225,12 +231,18 @@ class RestoreMnemonicsViewModel @Inject constructor(
                             }
                             onRestorationComplete()
                         }.onFailure {
-                            Timber.w(it)
-                            _state.update { state ->
-                                state.copy(
-                                    isPrimaryButtonLoading = false,
-                                    uiMessage = UiMessage.ErrorMessage(it)
-                                )
+                            if (it is CommonException.SecureStorageWriteException) {
+                                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                                _state.update { state ->
+                                    state.copy(isPrimaryButtonLoading = false)
+                                }
+                            } else {
+                                _state.update { state ->
+                                    state.copy(
+                                        isPrimaryButtonLoading = false,
+                                        uiMessage = UiMessage.ErrorMessage(it)
+                                    )
+                                }
                             }
                         }
                 } ?: run {
@@ -312,8 +324,8 @@ data class RecoverableFactorSource(
     val associatedAccounts: List<Account>,
     val factorSource: FactorSource.Device
 ) {
-    val nonHiddenAccountsToDisplay: List<Account>
-        get() = associatedAccounts.filter { it.isHidden.not() }
+    val activeAccountsToDisplay: List<Account>
+        get() = associatedAccounts.active()
 
     val areAllAccountsHidden: Boolean
         get() = associatedAccounts.isNotEmpty() && associatedAccounts.all { it.isHidden }

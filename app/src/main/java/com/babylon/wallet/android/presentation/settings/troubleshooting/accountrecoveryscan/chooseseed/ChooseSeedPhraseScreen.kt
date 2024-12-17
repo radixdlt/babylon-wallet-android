@@ -47,7 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanne
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
-import rdx.works.profile.domain.DeviceFactorSourceData
+import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
 @Composable
 fun ChooseSeedPhraseScreen(
@@ -193,7 +193,7 @@ private fun ChooseSeedPhraseContent(
 @Composable
 fun SeedPhraseCard(
     modifier: Modifier,
-    data: DeviceFactorSourceData,
+    data: DeviceFactorSourceWithEntities,
     selected: Boolean,
     onSelectionChanged: () -> Unit,
 ) {
@@ -242,7 +242,7 @@ fun SeedPhraseCard(
             )
         }
         if (data.allAccounts.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             data.allAccounts.forEach { account ->
                 SimpleAccountCard(
                     modifier = Modifier.fillMaxWidth(),

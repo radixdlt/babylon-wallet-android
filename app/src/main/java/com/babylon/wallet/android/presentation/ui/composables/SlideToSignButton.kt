@@ -53,6 +53,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SlideToSignButton(
+    title: String,
     enabled: Boolean,
     isSubmitting: Boolean,
     onSwipeComplete: () -> Unit,
@@ -118,7 +119,7 @@ fun SlideToSignButton(
                         )
                     }
                 },
-            text = stringResource(id = R.string.transactionReview_slideToSign),
+            text = title,
             style = RadixTheme.typography.body1Header,
             color = textColor
         )
@@ -203,7 +204,12 @@ enum class ButtonSliderPosition {
 @Composable
 fun AccountContentPreview() {
     RadixWalletTheme {
-        SlideToSignButton(enabled = true, isSubmitting = false, onSwipeComplete = { })
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = true,
+            isSubmitting = false,
+            onSwipeComplete = { }
+        )
     }
 }
 
@@ -211,7 +217,12 @@ fun AccountContentPreview() {
 @Composable
 fun AccountContentPreviewDisabled() {
     RadixWalletTheme {
-        SlideToSignButton(enabled = false, isSubmitting = false, onSwipeComplete = { })
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = false,
+            isSubmitting = false,
+            onSwipeComplete = { }
+        )
     }
 }
 
@@ -219,6 +230,11 @@ fun AccountContentPreviewDisabled() {
 @Composable
 fun AccountContentPreviewSubmitting() {
     RadixWalletTheme {
-        SlideToSignButton(enabled = true, isSubmitting = true, onSwipeComplete = { })
+        SlideToSignButton(
+            title = stringResource(id = R.string.interactionReview_slideToSign),
+            enabled = true,
+            isSubmitting = true,
+            onSwipeComplete = { }
+        )
     }
 }

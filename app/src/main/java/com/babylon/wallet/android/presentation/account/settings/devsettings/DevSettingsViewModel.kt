@@ -4,9 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
-import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
+import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
@@ -28,7 +28,6 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class DevSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
@@ -90,7 +89,7 @@ class DevSettingsViewModel @Inject constructor(
                         )
                     )
                     _state.update { it.copy(isLoading = false) }
-                    listenForRolaKeyUploadTransactionResult(interactionId.toString())
+                    listenForRolaKeyUploadTransactionResult(interactionId)
                 }.onFailure {
                     if (it is ProfileException.SecureStorageAccess) {
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
@@ -105,7 +104,7 @@ class DevSettingsViewModel @Inject constructor(
 
     private fun listenForRolaKeyUploadTransactionResult(requestId: String) {
         viewModelScope.launch {
-            transactionStatusClient.listenForPollStatusByRequestId(requestId).collect { status ->
+            transactionStatusClient.listenForTransactionStatusByRequestId(requestId).collect { status ->
                 status.result.onSuccess {
                     transactionStatusClient.statusHandled(status.txId)
                     when (val type = status.transactionType) {

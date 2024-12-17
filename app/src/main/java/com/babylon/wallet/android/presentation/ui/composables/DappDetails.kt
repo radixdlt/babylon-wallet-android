@@ -206,7 +206,11 @@ fun DappDetails(
                                 .fillMaxWidth()
                                 .padding(horizontal = dimensions.paddingDefault),
                             titleRes = R.string.authorizedDapps_dAppDetails_depositsTitle,
-                            subtitleRes = R.string.authorizedDapps_dAppDetails_depositsHidden,
+                            subtitleRes = if (isShowLockerDepositsChecked) {
+                                R.string.authorizedDapps_dAppDetails_depositsVisible
+                            } else {
+                                R.string.authorizedDapps_dAppDetails_depositsHidden
+                            },
                             icon = null,
                             subtitleTextColor = RadixTheme.colors.gray2,
                             checked = isShowLockerDepositsChecked,

@@ -31,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -54,7 +53,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
@@ -69,7 +67,6 @@ fun AccountRecoveryScanScreen(
     onRecoveryComplete: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
     if (state.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             viewModel.dismissNoMnemonicError()
@@ -93,7 +90,7 @@ fun AccountRecoveryScanScreen(
         state = state,
         onAccountSelected = viewModel::onAccountSelected,
         onContinueClick = {
-            viewModel.onContinueClick { context.biometricAuthenticateSuspend() }
+            viewModel.onContinueClick()
         },
         isScanningNetwork = state.isScanningNetwork,
         onMessageShown = viewModel::onMessageShown
@@ -175,7 +172,7 @@ private fun AccountRecoveryScanContent(
                     text = stringResource(id = R.string.accountRecoveryScan_scanComplete_continueButton),
                     enabled = isScanningNetwork.not(),
                     isLoading = isScanningNetwork,
-                    additionalContent = {
+                    additionalTopContent = {
                         val activeAccountsShown = pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal
                         if (activeAccountsShown) {
                             RadixTextButton(

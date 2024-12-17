@@ -2,15 +2,17 @@
 
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +21,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,26 +37,35 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.TransactionVersion
-import rdx.works.core.sargon.default
-import java.util.UUID
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun TransactionPreviewHeader(
     modifier: Modifier = Modifier,
-    state: State,
+    isPreAuthorization: Boolean,
+    isRawManifestPreviewable: Boolean,
+    isRawManifestVisible: Boolean,
+    proposingDApp: State.ProposingDApp?,
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
+    val title = stringResource(
+        id = if (isPreAuthorization) {
+            R.string.preAuthorizationReview_title
+        } else {
+            R.string.transactionReview_title
+        }
+    )
+    val isToggleButtonVisible = !isPreAuthorization && isRawManifestPreviewable
     TwoRowsTopAppBar(
         modifier = modifier,
         title = {
@@ -63,6 +75,8 @@ fun TransactionPreviewHeader(
                     .padding(start = RadixTheme.dimensions.paddingXXLarge)
                     .padding(end = RadixTheme.dimensions.paddingXLarge)
             ) {
+                val someDApp = remember(proposingDApp) { (proposingDApp as? State.ProposingDApp.Some) }
+
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -77,33 +91,42 @@ fun TransactionPreviewHeader(
                         ) {
                             Text(
                                 modifier = Modifier.weight(1.5f),
-                                text = stringResource(R.string.transactionReview_title),
+                                text = title,
                                 color = RadixTheme.colors.gray1,
                                 textAlign = TextAlign.Start,
                                 maxLines = 2,
                             )
                         }
-                        if (state.proposingDApp?.iconUrl != null) {
-                            Thumbnail.DApp(
-                                modifier = Modifier
-                                    .size(64.dp),
-                                dapp = state.proposingDApp,
-                                shape = RadixTheme.shapes.roundedRectSmall
+                    }
+
+                    if (someDApp != null) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val dAppName = someDApp.dApp?.name.dAppDisplayName()
+
+                            if (someDApp.dApp?.iconUrl != null) {
+                                Thumbnail.DApp(
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                    dapp = someDApp.dApp,
+                                    shape = RadixTheme.shapes.roundedRectSmall
+                                )
+
+                                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+                            }
+
+                            Text(
+                                text = stringResource(id = R.string.interactionReview_subtitle, dAppName),
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.Start,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
-                    }
-                    if (state.request?.isInternal != true) {
-                        val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
-                            stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                        }
-                        Text(
-                            text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
-                            style = RadixTheme.typography.body2HighImportance,
-                            color = RadixTheme.colors.gray1,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
                     }
                 }
             }
@@ -112,7 +135,7 @@ fun TransactionPreviewHeader(
         smallTitle = {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.transactionReview_title),
+                text = title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center,
                 maxLines = 2
@@ -135,30 +158,15 @@ fun TransactionPreviewHeader(
             }
         },
         actions = {
-            if (state.isRawManifestToggleVisible) {
-                val icon = if (state.isRawManifestVisible) {
-                    com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_collapse
-                } else {
-                    com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
-                }
-                IconButton(
-                    modifier = Modifier
-                        .padding(end = RadixTheme.dimensions.paddingXLarge)
-                        .background(
-                            color = RadixTheme.colors.gray4,
-                            shape = RadixTheme.shapes.roundedRectSmall
-                        )
-                        .size(width = 50.dp, height = 40.dp),
-                    onClick = onRawManifestClick
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            id = icon
-                        ),
-                        tint = Color.Unspecified,
-                        contentDescription = "manifest expand"
-                    )
-                }
+            if (isToggleButtonVisible) {
+                TransactionRawManifestToggle(
+                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingXLarge),
+                    isToggleOn = isRawManifestVisible,
+                    onRawManifestClick = onRawManifestClick
+                )
+            } else {
+                // Need to add the same space as the navigation icon to center the title
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault + 40.dp))
             }
         },
         colors = TopAppBarDefaults.largeTopAppBarColors(
@@ -179,23 +187,22 @@ fun TransactionPreviewHeader(
 fun TransactionPreviewHeaderPreview() {
     RadixWalletTheme {
         TransactionPreviewHeader(
-            onBackClick = {},
-            state = State(
-                request = IncomingMessage.IncomingRequest.TransactionRequest(
-                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
-                    interactionId = UUID.randomUUID().toString(),
-                    transactionManifestData = TransactionManifestData(
-                        instructions = "",
-                        networkId = Gateway.default.network.id,
-                        message = TransactionManifestData.TransactionMessage.Public("Hello"),
-                        version = TransactionVersion.Default.value
-                    ),
-                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
-                ),
-                isLoading = false,
-                isNetworkFeeLoading = false,
-                previewType = PreviewType.None,
+            isPreAuthorization = false,
+            proposingDApp = State.ProposingDApp.Some(
+                dApp = DApp(
+                    dAppAddress = AccountAddress.sampleMainnet(),
+                    metadata = listOf(
+                        rdx.works.core.domain.resources.metadata.Metadata.Primitive(
+                            key = rdx.works.core.domain.resources.ExplicitMetadataKey.ICON_URL.key,
+                            valueType = MetadataType.Url,
+                            value = "https://example.com/icon.png"
+                        )
+                    )
+                )
             ),
+            isRawManifestPreviewable = true,
+            isRawManifestVisible = false,
+            onBackClick = {},
             onRawManifestClick = {},
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         )

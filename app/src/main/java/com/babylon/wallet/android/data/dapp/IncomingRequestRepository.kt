@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp
 
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import kotlinx.coroutines.flow.Flow
@@ -15,11 +15,11 @@ import javax.inject.Inject
 
 interface IncomingRequestRepository {
 
-    val currentRequestToHandle: Flow<IncomingRequest>
+    val currentRequestToHandle: Flow<DappToWalletInteraction>
 
-    suspend fun add(incomingRequest: IncomingRequest)
+    suspend fun add(dappToWalletInteraction: DappToWalletInteraction)
 
-    suspend fun addPriorityRequest(incomingRequest: IncomingRequest)
+    suspend fun addPriorityRequest(dappToWalletInteraction: DappToWalletInteraction)
 
     suspend fun requestHandled(requestId: String)
 
@@ -27,7 +27,7 @@ interface IncomingRequestRepository {
 
     suspend fun resumeIncomingRequests()
 
-    fun getRequest(requestId: String): IncomingRequest?
+    fun getRequest(requestId: String): DappToWalletInteraction?
 
     fun removeAll()
 
@@ -35,9 +35,9 @@ interface IncomingRequestRepository {
 
     suspend fun requestDeferred(requestId: String)
 
-    fun consumeBufferedRequest(): IncomingRequest?
+    fun consumeBufferedRequest(): DappToWalletInteraction?
 
-    fun setBufferedRequest(request: IncomingRequest)
+    fun setBufferedRequest(request: DappToWalletInteraction)
 }
 
 @Suppress("TooManyFunctions")
@@ -45,13 +45,15 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     private val appEventBus: AppEventBus
 ) : IncomingRequestRepository {
 
+    private val logger = Timber.tag("IncomingRequestRepository")
+
     private val requestQueue = LinkedList<QueueItem>()
 
     /**
      * Current request is saved in a state flow. This is needed in order to know if the topmost
      * request in [requestQueue] is being handled right now.
      */
-    private val _currentRequestToHandle = MutableStateFlow<IncomingRequest?>(null)
+    private val _currentRequestToHandle = MutableStateFlow<DappToWalletInteraction?>(null)
 
     /**
      * The exposed request to handled is a shared flow, there is no need for the client to know which
@@ -64,28 +66,29 @@ class IncomingRequestRepositoryImpl @Inject constructor(
     /**
      * Request that can come in via deep link before wallet is setup.
      */
-    private var bufferedRequest: IncomingRequest? = null
+    private var bufferedRequest: DappToWalletInteraction? = null
 
-    override fun setBufferedRequest(request: IncomingRequest) {
+    override fun setBufferedRequest(request: DappToWalletInteraction) {
         bufferedRequest = request
     }
 
-    override fun consumeBufferedRequest(): IncomingRequest? {
+    override fun consumeBufferedRequest(): DappToWalletInteraction? {
         return bufferedRequest?.also { bufferedRequest = null }
     }
 
-    override suspend fun add(incomingRequest: IncomingRequest) {
+    override suspend fun add(dappToWalletInteraction: DappToWalletInteraction) {
         mutex.withLock {
-            val requestItem = QueueItem.RequestItem(incomingRequest)
+            val requestItem = QueueItem.RequestItem(dappToWalletInteraction)
 
-            if (incomingRequest.isInternal) {
+            if (dappToWalletInteraction.isInternal) {
                 requestQueue.addFirst(requestItem)
             } else {
                 requestQueue.add(requestItem)
             }
             handleNextRequest()
-            Timber.d(
-                "🗂 new incoming request with id ${incomingRequest.interactionId} added in list, so size now is ${getAmountOfRequests()}"
+            logger.d(
+                "🗂 new incoming request with id ${dappToWalletInteraction.interactionId} added in list, " +
+                    "so size now is ${getAmountOfRequests()}"
             )
         }
     }
@@ -98,14 +101,14 @@ class IncomingRequestRepositoryImpl @Inject constructor(
      * we send a defer event for it so that UI can react and defer handling, without removing it from the queue.
      * Deferred request will be handled again when top priority one handling completes
      */
-    override suspend fun addPriorityRequest(incomingRequest: IncomingRequest) {
+    override suspend fun addPriorityRequest(dappToWalletInteraction: DappToWalletInteraction) {
         mutex.withLock {
-            requestQueue.addFirst(QueueItem.RequestItem(incomingRequest))
+            requestQueue.addFirst(QueueItem.RequestItem(dappToWalletInteraction))
             val currentRequest = _currentRequestToHandle.value
             val handlingPaused = requestQueue.contains(QueueItem.HighPriorityScreen)
             when {
                 currentRequest != null -> {
-                    Timber.d("🗂 Deferring request with id ${currentRequest.interactionId}")
+                    logger.d("🗂 Deferring request with id ${currentRequest.interactionId}")
                     appEventBus.sendEvent(AppEvent.DeferRequestHandling(currentRequest.interactionId))
                 }
 
@@ -120,10 +123,10 @@ class IncomingRequestRepositoryImpl @Inject constructor(
 
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
-            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId }
+            requestQueue.removeIf { it is QueueItem.RequestItem && it.dappToWalletInteraction.interactionId == requestId }
             clearCurrent(requestId)
             handleNextRequest()
-            Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
+            logger.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
     }
 
@@ -131,7 +134,7 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         mutex.withLock {
             clearCurrent(requestId)
             handleNextRequest()
-            Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
+            logger.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
     }
 
@@ -151,14 +154,14 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             // Put high priority item below any internal request and mobile connect requests
             val index = requestQueue.indexOfFirst {
                 val item = it as? QueueItem.RequestItem
-                item != null && !item.incomingRequest.isInternal
+                item != null && !item.dappToWalletInteraction.isInternal
             }
             if (index != -1) {
                 requestQueue.add(index, QueueItem.HighPriorityScreen)
             } else {
                 requestQueue.addFirst(QueueItem.HighPriorityScreen)
             }
-            Timber.d("🗂 Temporarily pausing incoming message queue")
+            logger.d("🗂 Temporarily pausing incoming message queue")
         }
     }
 
@@ -167,20 +170,20 @@ class IncomingRequestRepositoryImpl @Inject constructor(
             val removed = requestQueue.removeIf { it is QueueItem.HighPriorityScreen }
             if (removed) {
                 handleNextRequest()
-                Timber.d("🗂 Resuming incoming message queue")
+                logger.d("🗂 Resuming incoming message queue")
             }
         }
     }
 
-    override fun getRequest(requestId: String): IncomingRequest? {
+    override fun getRequest(requestId: String): DappToWalletInteraction? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId
+            it is QueueItem.RequestItem && it.dappToWalletInteraction.interactionId == requestId
         }
         if (queueItem == null) {
-            Timber.w("Request with id $requestId is null")
+            logger.w("Request with id $requestId is null")
         }
-        Timber.d("\uD83D\uDDC2 get request $requestId")
-        return (queueItem as? QueueItem.RequestItem)?.incomingRequest
+        logger.d("\uD83D\uDDC2 get request $requestId")
+        return (queueItem as? QueueItem.RequestItem)?.dappToWalletInteraction
     }
 
     override fun removeAll() {
@@ -195,13 +198,13 @@ class IncomingRequestRepositoryImpl @Inject constructor(
         // In order to emit an incoming request, the topmost item should be
         // a. An incoming request
         // b. It should not be the same as the one being handled already
-        if (nextRequest is QueueItem.RequestItem && _currentRequestToHandle.value != nextRequest.incomingRequest) {
-            _currentRequestToHandle.emit(nextRequest.incomingRequest)
+        if (nextRequest is QueueItem.RequestItem && _currentRequestToHandle.value != nextRequest.dappToWalletInteraction) {
+            _currentRequestToHandle.emit(nextRequest.dappToWalletInteraction)
         }
     }
 
     private sealed interface QueueItem {
         data object HighPriorityScreen : QueueItem
-        data class RequestItem(val incomingRequest: IncomingRequest) : QueueItem
+        data class RequestItem(val dappToWalletInteraction: DappToWalletInteraction) : QueueItem
     }
 }

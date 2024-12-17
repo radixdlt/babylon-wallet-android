@@ -62,11 +62,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.main.OlympiaErrorState
+import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -117,6 +117,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
+    headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
     heightFraction: Float = 1f,
@@ -214,6 +215,7 @@ fun BottomSheetDialogWrapper(
                                 .padding(top = RadixTheme.dimensions.paddingMedium)
                                 .fillMaxWidth()
                                 .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
+                            backIcon = headerBackIcon,
                             onDismissRequest = { onDismissRequest() },
                             title = title
                         )
@@ -314,7 +316,7 @@ fun BDFSErrorDialog(
     finish: (accepted: Boolean) -> Unit,
     title: String,
     message: String,
-    state: OlympiaErrorState
+    state: MainViewModel.OlympiaErrorState
 ) {
     BasicAlertDialog(modifier = modifier.clip(RadixTheme.shapes.roundedRectMedium), onDismissRequest = { finish(false) }) {
         Column(
@@ -422,8 +424,8 @@ fun BasicPromptAlertDialog(
 fun NoMnemonicAlertDialog(onDismiss: () -> Unit) {
     BasicPromptAlertDialog(
         finish = { onDismiss() },
-        titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-        messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+        titleText = stringResource(id = R.string.common_noMnemonicAlert_title),
+        messageText = stringResource(id = R.string.common_noMnemonicAlert_text),
         dismissText = null
     )
 }
@@ -460,7 +462,7 @@ fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionId: IntentHash?,
+    transactionId: TransactionIntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -530,7 +532,7 @@ private fun SomethingWentWrongDialogPreview(@PreviewParameter(MobileConnectParam
             isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
-            transactionId = IntentHash.sample()
+            transactionId = TransactionIntentHash.sample()
         )
     }
 }

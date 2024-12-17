@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionR
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.toDappWalletInteractionErrorType
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
@@ -24,7 +24,7 @@ class VerifyDAppUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
-    suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
+    suspend operator fun invoke(request: DappToWalletInteraction): Result<Boolean> {
         val networkId = getProfileUseCase().currentGateway.network.id
         if (networkId != request.metadata.networkId) {
             val error = RadixWalletException.DappRequestException.WrongNetwork(

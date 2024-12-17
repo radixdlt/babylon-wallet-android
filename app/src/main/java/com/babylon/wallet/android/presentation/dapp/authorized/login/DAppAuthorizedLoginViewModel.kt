@@ -5,16 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException.InvalidPersonaOrAccounts
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AccountsRequestItem
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.model.IncomingRequestResponse
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
-import com.babylon.wallet.android.domain.model.toRequiredFields
-import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
+import com.babylon.wallet.android.domain.usecases.login.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -22,11 +20,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.FailureDialogState
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
-import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -43,7 +38,10 @@ import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
 import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
@@ -55,7 +53,9 @@ import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.addOrUpdateAuthorizedDAppPersona
 import rdx.works.core.sargon.hasAuthorizedPersona
 import rdx.works.core.sargon.updateAuthorizedDAppPersonaFields
@@ -77,19 +77,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase
-) : StateViewModel<DAppLoginUiState>(),
-    OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<DAppLoginUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+
+    override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
     private val args = DAppAuthorizedLoginArgs(savedStateHandle)
 
-    private val mutex = Mutex()
-
-    private lateinit var request: AuthorizedRequest
+    private lateinit var request: WalletAuthorizedRequest
 
     private var authorizedDapp: AuthorizedDapp? = null
     private var editedDapp: AuthorizedDapp? = null
-
-    override fun initialState(): DAppLoginUiState = DAppLoginUiState()
+    private val mutex = Mutex()
 
     init {
         viewModelScope.launch {
@@ -100,50 +98,73 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             }
         }
+
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? AuthorizedRequest
+            val requestToHandle = incomingRequestRepository.getRequest(args.interactionId) as? WalletAuthorizedRequest
+
             if (requestToHandle == null) {
                 sendEvent(Event.CloseLoginFlow)
                 return@launch
             } else {
                 request = requestToHandle
+                if (request.isValidRequest().not()) {
+                    handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
+                    return@launch
+                }
             }
-            val dAppDefinitionAddress = runCatching { AccountAddress.init(request.requestMetadata.dAppDefinitionAddress) }.getOrNull()
-            if (!request.isValidRequest() || dAppDefinitionAddress == null) {
+
+            val dAppDefinitionAddress = runCatching {
+                AccountAddress.init(request.requestMetadata.dAppDefinitionAddress)
+            }.getOrNull()
+            if (dAppDefinitionAddress == null) {
                 handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
                 return@launch
             }
+
             authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(dAppDefinitionAddress = dAppDefinitionAddress)
             editedDapp = authorizedDapp
-            stateRepository.getDAppsDetails(
-                definitionAddresses = listOf(dAppDefinitionAddress),
-                isRefreshing = false
-            ).onSuccess { dApps ->
-                dApps.firstOrNull()?.let { dApp ->
-                    _state.update { it.copy(dapp = dApp) }
-                }
-            }.onFailure { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
-            }
+
+            getDappDetails(dAppDefinitionAddress = dAppDefinitionAddress)
+
             setInitialDappLoginRoute(dAppDefinitionAddress)
         }
     }
 
+    private suspend fun getDappDetails(dAppDefinitionAddress: AccountAddress) {
+        stateRepository.getDAppsDetails(
+            definitionAddresses = listOf(dAppDefinitionAddress),
+            isRefreshing = false
+        ).onSuccess { dApps ->
+            dApps.firstOrNull()?.let { dApp ->
+                _state.update { it.copy(dapp = dApp) }
+            }
+        }.onFailure { error ->
+            _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+        }
+    }
+
     private suspend fun setInitialDappLoginRoute(dAppDefinitionAddress: AccountAddress) {
-        when (val authRequest = request.authRequest) {
-            is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
-                val dapp = authorizedDapp
-                if (dapp != null) {
-                    setInitialDappLoginRouteForUsePersonaRequest(dapp, authRequest)
+        checkForProofOfOwnershipRequest().onFailure {
+            handleRequestError(InvalidPersonaOrAccounts)
+            return
+        }
+        when (val authRequest = request.authRequestItem) {
+            is WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest -> {
+                if (authorizedDapp != null && authorizedDapp?.hasAuthorizedPersona(authRequest.identityAddress) == true) {
+                    setInitialDappLoginRouteForUsePersonaRequest(
+                        usePersonaRequest = authRequest,
+                        dappDefinitionAddress = dAppDefinitionAddress
+                    )
                 } else {
                     onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
                 }
             }
 
-            else -> {
+            is WalletAuthorizedRequest.AuthRequestItem.LoginRequest -> {
                 _state.update {
                     it.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
+                            authorizedRequestInteractionId = args.interactionId,
                             dappDefinitionAddress = dAppDefinitionAddress
                         )
                     )
@@ -152,38 +173,94 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    @Suppress("LongMethod", "CyclomaticComplexMethod", "UnsafeCallOnNullableType")
-    private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
-        dapp: AuthorizedDapp,
-        authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
-    ) {
-        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.identityAddress)
-        if (hasAuthorizedPersona.not()) {
-            onAbortDappLogin(DappWalletInteractionErrorType.INVALID_PERSONA)
-            return
+    private suspend fun checkForProofOfOwnershipRequest(): Result<Unit> {
+        // check if request contains proofOfOwnershipRequestItem
+        // and if yes then validate the requested entities from this request item
+        val proofOfOwnershipRequestItem = request.proofOfOwnershipRequestItem
+        if (proofOfOwnershipRequestItem != null) {
+            val areRequestedAddressesValid = validateRequestedAddressesForProofOfOwnership(
+                requestedPersonaAddress = proofOfOwnershipRequestItem.personaAddress,
+                requestedAccountAddresses = proofOfOwnershipRequestItem.accountAddresses
+            )
+            if (areRequestedAddressesValid) {
+                _state.update { state ->
+                    state.copy(
+                        personaRequiredProofOfOwnership = proofOfOwnershipRequestItem.personaAddress,
+                        accountsRequiredProofOfOwnership = proofOfOwnershipRequestItem.accountAddresses
+                    )
+                }
+                return Result.success(Unit)
+            } else {
+                return Result.failure(InvalidPersonaOrAccounts)
+            }
         }
+        return Result.success(Unit)
+    }
+
+    @Suppress("ReturnCount")
+    private suspend fun validateRequestedAddressesForProofOfOwnership(
+        requestedPersonaAddress: IdentityAddress?,
+        requestedAccountAddresses: List<AccountAddress>?
+    ): Boolean {
+        // if both requestedPersonaAddress and requestedAccountAddresses are null then return false
+        if (requestedPersonaAddress == null && requestedAccountAddresses == null) return false
+
+        val profile = getProfileUseCase()
+
+        // validate requestedPersonaAddress if present
+        val isIdentityValid = requestedPersonaAddress?.let { address ->
+            profile.activePersonasOnCurrentNetwork.any { it.address == address }
+        } ?: true // if requestedPersonaAddress is null then it's considered valid
+
+        // if requestedPersonaAddress is not present then return false
+        if (!isIdentityValid) return false
+
+        // if requestedPersonaAddress is valid and requestedAccountAddresses is null then return true
+        if (requestedAccountAddresses == null) return true
+
+        // if requestedPersonaAddress is valid but requestedAccountAddresses is empty then return false
+        if (requestedAccountAddresses.isEmpty()) return false
+
+        // validate requestedAccountAddresses if present and non-empty
+        val profileAccountAddresses = profile.activeAccountsOnCurrentNetwork.map { it.address }
+        val areAccountsValid = requestedAccountAddresses.all { address ->
+            address in profileAccountAddresses
+        }
+
+        return areAccountsValid
+    }
+
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
+    private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
+        usePersonaRequest: WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest,
+        dappDefinitionAddress: AccountAddress
+    ) {
+        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(usePersonaRequest.identityAddress))
+        _state.update { it.copy(personaWithSignature = persona.asProfileEntity() to null) }
+
         val resetAccounts = request.resetRequestItem?.accounts == true
         val resetPersonaData = request.resetRequestItem?.personaData == true
-        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(authRequest.identityAddress))
-        onSelectPersona(persona)
         val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
         val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
         val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
         val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
         val ongoingAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
-            personaAddress = authRequest.identityAddress,
+            personaAddress = usePersonaRequest.identityAddress,
             accountsRequestItem = ongoingAccountsRequestItem
         )
         val ongoingDataAlreadyGranted = personaDataAccessAlreadyGranted(
             requestItem = ongoingPersonaDataRequestItem,
             personaAddress = persona.address
         )
+        val proofOfOwnershipRequestItem = request.proofOfOwnershipRequestItem
+
         when {
             ongoingAccountsRequestItem != null && (!ongoingAccountsAlreadyGranted || resetAccounts) -> {
                 _state.update {
                     it.copy(
-                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.Permission(
-                            ongoingAccountsRequestItem.numberOfValues.quantity,
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingAccounts(
+                            authorizedRequestInteractionId = args.interactionId,
+                            numberOfAccounts = ongoingAccountsRequestItem.numberOfValues.quantity,
                             isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
                         )
                     )
@@ -195,7 +272,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                            authRequest.identityAddress,
+                            usePersonaRequest.identityAddress,
                             ongoingPersonaDataRequestItem.toRequiredFields()
                         )
                     )
@@ -205,10 +282,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             oneTimeAccountsRequestItem != null -> {
                 _state.update {
                     it.copy(
-                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.ChooseAccount(
-                            oneTimeAccountsRequestItem.numberOfValues.quantity,
+                        initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OneTimeAccounts(
+                            authorizedRequestInteractionId = args.interactionId,
+                            numberOfAccounts = oneTimeAccountsRequestItem.numberOfValues.quantity,
                             isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly(),
-                            oneTime = true
+                            isOneTimeRequest = true
                         )
                     )
                 }
@@ -224,26 +302,54 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 }
             }
 
+            proofOfOwnershipRequestItem != null -> {
+                if (proofOfOwnershipRequestItem.personaAddress != null) {
+                    _state.update { state ->
+                        state.copy(
+                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.VerifyPersona(
+                                walletAuthorizedRequestInteractionId = args.interactionId,
+                                entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                                    personaAddress = state.personaRequiredProofOfOwnership,
+                                    accountAddresses = state.accountsRequiredProofOfOwnership.orEmpty()
+                                )
+                            )
+                        )
+                    }
+                } else if (request.proofOfOwnershipRequestItem?.accountAddresses != null) {
+                    _state.update { state ->
+                        state.copy(
+                            initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.VerifyAccounts(
+                                walletAuthorizedRequestInteractionId = args.interactionId,
+                                entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                                    accountAddresses = state.accountsRequiredProofOfOwnership.orEmpty()
+                                )
+                            )
+                        )
+                    }
+                }
+            }
+
             else -> {
                 _state.update {
                     val selectedOngoingAccounts = ongoingAccountsRequestItem?.let { ongoingAccountsRequest ->
                         dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                            dapp.dappDefinitionAddress,
-                            persona.address,
-                            ongoingAccountsRequest.numberOfValues.quantity,
-                            ongoingAccountsRequest.numberOfValues.toRequestedNumberQuantifier()
+                            dAppDefinitionAddress = dappDefinitionAddress,
+                            personaAddress = persona.address,
+                            numberOfAccounts = ongoingAccountsRequest.numberOfValues.quantity,
+                            quantifier = ongoingAccountsRequest.numberOfValues.toRequestedNumberQuantifier()
                         ).mapNotNull { address ->
-                            getProfileUseCase().activeAccountOnCurrentNetwork(address)?.toUiModel()
+                            getProfileUseCase().activeAccountOnCurrentNetwork(address)?.asProfileEntity()
                         }
                     }.orEmpty()
+
                     val selectedOngoingPersonaData = ongoingPersonaDataRequestItem?.let { personaDataRequest ->
                         persona.getPersonaDataForFieldKinds(
                             personaDataRequest.toRequiredFields().fields
                         )
                     }
-                    // automatically fill in persona, the persona data, accounts and complete request
+
                     it.copy(
-                        selectedAccountsOngoing = selectedOngoingAccounts,
+                        ongoingAccountsWithSignatures = selectedOngoingAccounts.associateWith { null },
                         selectedOngoingPersonaData = selectedOngoingPersonaData,
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.CompleteRequest
                     )
@@ -252,66 +358,38 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: Throwable) {
-        if (exception is RadixWalletException.DappRequestException) {
-            logNonFatalException(exception)
-            when (exception.cause) {
-                is ProfileException.SecureStorageAccess -> {
-                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                }
-
-                is ProfileException.NoMnemonic -> {
-                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-                }
-
-                is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
-
-                else -> {
-                    respondToIncomingRequestUseCase.respondWithFailure(
-                        request,
-                        exception.dappWalletInteractionErrorType,
-                        exception.getDappMessage()
-                    )
-                    _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
-                }
-            }
-        }
-    }
-
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         val exception = (_state.value.failureDialog as? FailureDialogState.Open)?.dappRequestException ?: return@launch
-        respondToIncomingRequestUseCase.respondWithFailure(request, exception.dappWalletInteractionErrorType, exception.getDappMessage())
+        respondToIncomingRequestUseCase.respondWithFailure(
+            request,
+            exception.dappWalletInteractionErrorType,
+            exception.getDappMessage()
+        )
         _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
 
-    fun onMessageShown() {
-        _state.update { it.copy(uiMessage = null) }
-    }
-
-    fun dismissNoMnemonicError() {
-        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
-    }
-
-    fun personaSelectionConfirmed() {
+    fun onPersonaAuthorized(
+        authorizedPersona: ProfileEntity.PersonaEntity,
+        signature: SignatureWithPublicKey?
+    ) { // when user selects a persona for the AuthRequestItem.LoginRequest
         viewModelScope.launch {
-            val selectedPersona = state.value.selectedPersona?.persona
-            requireNotNull(selectedPersona)
-            updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona)
-            handleNextRequestItem(selectedPersona)
+            _state.update { it.copy(personaWithSignature = authorizedPersona to signature) }
+            updateOrCreateAuthorizedDappWithSelectedPersona(authorizedPersona.persona)
+            handleNextRequestItemOfLoginRequest(authorizedPersona.persona)
         }
     }
 
-    private suspend fun handleNextRequestItem(selectedPersona: Persona) {
+    private suspend fun handleNextRequestItemOfLoginRequest(selectedPersona: Persona) {
         val request = request
         when {
-            request.hasOnlyAuthItem() -> {
+            request.isOnlyLoginRequest() -> {
                 completeRequestHandling()
             }
 
             request.ongoingAccountsRequestItem != null -> {
-                handleOngoingAddressRequestItem(
+                handleOngoingAccountsRequestItem(
                     request.ongoingAccountsRequestItem,
                     selectedPersona.address
                 )
@@ -338,33 +416,29 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleOneTimeAccountRequestItem(
-        oneTimeAccountsRequestItem: AccountsRequestItem
-    ) {
+    private suspend fun handleOneTimeAccountRequestItem(oneTimeAccountsRequestItem: DappToWalletInteraction.AccountsRequestItem) {
         val numberOfAccounts = oneTimeAccountsRequestItem.numberOfValues.quantity
         val isExactAccountsCount = oneTimeAccountsRequestItem.numberOfValues.exactly()
         sendEvent(
-            Event.ChooseAccounts(
-                numberOfAccounts,
-                isExactAccountsCount,
-                oneTime = true
+            Event.NavigateToChooseAccounts(
+                authorizedRequestInteractionId = args.interactionId,
+                isOneTimeRequest = true,
+                isExactAccountsCount = isExactAccountsCount,
+                numberOfAccounts = numberOfAccounts
             )
         )
     }
 
-    fun onGrantedPersonaDataOngoing() {
+    fun onGrantedOngoingPersonaData() {
         viewModelScope.launch {
-            val requiredFields =
-                checkNotNull(request.ongoingPersonaDataRequestItem?.toRequiredFields())
-            val selectedPersona = checkNotNull(state.value.selectedPersona)
+            val requiredFields = checkNotNull(request.ongoingPersonaDataRequestItem?.toRequiredFields())
+            val selectedPersona = state.value.personaWithSignature?.first
+            checkNotNull(selectedPersona)
             getProfileUseCase().activePersonaOnCurrentNetwork(selectedPersona.persona.address)
                 ?.let { updatedPersona ->
                     val grantedPersonaData = updatedPersona.getPersonaDataForFieldKinds(requiredFields.fields)
                     _state.update {
-                        it.copy(
-                            selectedPersona = updatedPersona.toUiModel(),
-                            selectedOngoingPersonaData = grantedPersonaData
-                        )
+                        it.copy(selectedOngoingPersonaData = grantedPersonaData)
                     }
                     mutex.withLock {
                         editedDapp = editedDapp?.updateAuthorizedDAppPersonaFields(
@@ -378,23 +452,26 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onGrantedPersonaDataOnetime(persona: Persona) {
+    fun onGrantedOnetimePersonaData(persona: Persona) {
         viewModelScope.launch {
-            val requiredFields =
-                checkNotNull(request.oneTimePersonaDataRequestItem?.toRequiredFields())
+            val requiredFields = checkNotNull(request.oneTimePersonaDataRequestItem?.toRequiredFields())
             val sharedPersonaData = persona.getPersonaDataForFieldKinds(requiredPersonaFields = requiredFields.fields)
             _state.update {
-                it.copy(
-                    selectedOnetimePersonaData = sharedPersonaData
-                )
+                it.copy(selectedOnetimePersonaData = sharedPersonaData)
             }
-            completeRequestHandling()
+
+            val proofOfOwnershipRequestItem = request.proofOfOwnershipRequestItem
+            if (proofOfOwnershipRequestItem != null) {
+                handleProofOfOwnershipRequestItem(proofOfOwnershipRequestItem)
+            } else {
+                completeRequestHandling()
+            }
         }
     }
 
     private suspend fun requestedAccountsPermissionAlreadyGranted(
         personaAddress: IdentityAddress,
-        accountsRequestItem: AccountsRequestItem?
+        accountsRequestItem: DappToWalletInteraction.AccountsRequestItem?
     ): Boolean {
         if (accountsRequestItem == null) return false
         return authorizedDapp?.let { dapp ->
@@ -411,13 +488,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleOngoingPersonaDataRequestItem(
         personaAddress: IdentityAddress,
-        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem
+        requestItem: DappToWalletInteraction.PersonaDataRequestItem
     ) {
         val dapp = requireNotNull(editedDapp)
         val dataAccessAlreadyGranted = personaDataAccessAlreadyGranted(requestItem, personaAddress)
         if (request.resetRequestItem?.personaData == true || !dataAccessAlreadyGranted) {
             sendEvent(
-                Event.PersonaDataOngoing(
+                Event.NavigateToOngoingPersonaData(
                     personaAddress,
                     requestItem.toRequiredFields()
                 )
@@ -459,7 +536,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun personaDataAccessAlreadyGranted(
-        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem?,
+        requestItem: DappToWalletInteraction.PersonaDataRequestItem?,
         personaAddress: IdentityAddress
     ): Boolean {
         if (requestItem == null) return false
@@ -472,42 +549,41 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
     }
 
-    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: IncomingMessage.IncomingRequest.PersonaRequestItem) {
+    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaDataRequestItem: DappToWalletInteraction.PersonaDataRequestItem) {
         viewModelScope.launch {
             sendEvent(
-                Event.PersonaDataOnetime(
-                    oneTimePersonaRequestItem.toRequiredFields()
+                Event.NavigateToOneTimePersonaData(
+                    oneTimePersonaDataRequestItem.toRequiredFields()
                 )
             )
         }
     }
 
-    private suspend fun handleOngoingAddressRequestItem(
-        ongoingAccountsRequestItem: AccountsRequestItem,
+    private suspend fun handleOngoingAccountsRequestItem(
+        ongoingAccountsRequestItem: DappToWalletInteraction.AccountsRequestItem,
         personaAddress: IdentityAddress
     ) {
         val dapp = requireNotNull(editedDapp)
         val numberOfAccounts = ongoingAccountsRequestItem.numberOfValues.quantity
         val isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
-        val potentialOngoingAddresses =
-            dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                dapp.dappDefinitionAddress,
-                personaAddress,
-                numberOfAccounts,
-                ongoingAccountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
-            )
+        val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
+            dAppDefinitionAddress = dapp.dappDefinitionAddress,
+            personaAddress = personaAddress,
+            numberOfAccounts = numberOfAccounts,
+            quantifier = ongoingAccountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
+        )
         if (request.resetRequestItem?.accounts == true || potentialOngoingAddresses.isEmpty()) {
             sendEvent(
-                Event.DisplayPermission(
-                    numberOfAccounts,
-                    isExactAccountsCount
+                event = Event.NavigateToOngoingAccounts(
+                    isExactAccountsCount = isExactAccountsCount,
+                    numberOfAccounts = numberOfAccounts
                 )
             )
         } else {
             val selectedAccounts = potentialOngoingAddresses.mapNotNull {
-                getProfileUseCase().activeAccountOnCurrentNetwork(it)?.toUiModel(true)
-            }
-            _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
+                getProfileUseCase().activeAccountOnCurrentNetwork(it) // ?.toUiModel(true)
+            }.map { it.asProfileEntity() }
+            _state.update { it.copy(ongoingAccountsWithSignatures = selectedAccounts.associateWith { null }) }
             mutex.withLock {
                 editedDapp =
                     editedDapp?.updateAuthorizedDAppPersonas(
@@ -592,54 +668,57 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(persona: Persona) {
-        _state.update { it.copy(selectedPersona = persona.toUiModel()) }
-    }
-
-    fun onPermissionGranted(
-        numberOfAccounts: Int,
+    fun onAccountPermissionGranted(
+        isOneTimeRequest: Boolean,
         isExactAccountsCount: Boolean,
-        isOneTime: Boolean
+        numberOfAccounts: Int
     ) {
         viewModelScope.launch {
             sendEvent(
-                Event.ChooseAccounts(
-                    numberOfAccounts = numberOfAccounts,
+                Event.NavigateToChooseAccounts(
+                    authorizedRequestInteractionId = args.interactionId,
+                    isOneTimeRequest = isOneTimeRequest,
                     isExactAccountsCount = isExactAccountsCount,
-                    oneTime = isOneTime
+                    numberOfAccounts = numberOfAccounts
                 )
             )
         }
     }
 
-    fun onAccountsSelected(selectedAccounts: List<AccountItemUiModel>, oneTimeRequest: Boolean) {
-        val selectedPersona = state.value.selectedPersona?.persona
+    @Suppress("CyclomaticComplexMethod")
+    fun onAccountsCollected(
+        accountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?>,
+        isOneTimeRequest: Boolean
+    ) {
+        val selectedPersona = state.value.personaWithSignature?.first
         requireNotNull(selectedPersona)
-        val handledRequest = if (oneTimeRequest) {
+
+        val handledRequest = if (isOneTimeRequest) {
             request.oneTimeAccountsRequestItem
         } else {
             request.ongoingAccountsRequestItem
         }
+        val request = request
+
         if (handledRequest?.isOngoing == true) {
-            _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
+            _state.update { it.copy(ongoingAccountsWithSignatures = accountsWithSignatures) }
             viewModelScope.launch {
                 mutex.withLock {
                     editedDapp = editedDapp?.updateDAppAuthorizedPersonaSharedAccounts(
-                        personaAddress = selectedPersona.address,
+                        personaAddress = selectedPersona.identityAddress,
                         sharedAccounts = SharedToDappWithPersonaAccountAddresses(
                             request = RequestedQuantity(
                                 quantifier = handledRequest.numberOfValues.toRequestedNumberQuantifier(),
                                 quantity = handledRequest.numberOfValues.quantity.toUShort()
                             ),
-                            ids = selectedAccounts.map { it.address }
+                            ids = accountsWithSignatures.keys.map { it.accountAddress }
                         )
                     )
                 }
-                val request = request
                 when {
                     request.ongoingPersonaDataRequestItem != null && request.ongoingPersonaDataRequestItem.isValid() -> {
                         handleOngoingPersonaDataRequestItem(
-                            selectedPersona.address,
+                            selectedPersona.identityAddress,
                             request.ongoingPersonaDataRequestItem
                         )
                     }
@@ -652,17 +731,24 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
                     }
 
+                    request.proofOfOwnershipRequestItem != null -> {
+                        handleProofOfOwnershipRequestItem(request.proofOfOwnershipRequestItem)
+                    }
+
                     else -> {
                         completeRequestHandling()
                     }
                 }
             }
         } else if (handledRequest?.isOngoing == false) {
-            _state.update { it.copy(selectedAccountsOneTime = selectedAccounts) }
-            val request = request
+            _state.update { it.copy(oneTimeAccountsWithSignatures = accountsWithSignatures) }
             when {
                 request.oneTimePersonaDataRequestItem != null && request.oneTimePersonaDataRequestItem.isValid() -> {
                     handleOneTimePersonaDataRequestItem(request.oneTimePersonaDataRequestItem)
+                }
+
+                request.proofOfOwnershipRequestItem != null -> {
+                    handleProofOfOwnershipRequestItem(request.proofOfOwnershipRequestItem)
                 }
 
                 else -> {
@@ -674,9 +760,45 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
+    private fun handleProofOfOwnershipRequestItem(proofOfOwnershipRequestItem: WalletAuthorizedRequest.ProofOfOwnershipRequestItem) {
+        viewModelScope.launch {
+            if (proofOfOwnershipRequestItem.personaAddress != null) {
+                sendEvent(
+                    Event.NavigateToVerifyPersona(
+                        walletUnauthorizedRequestInteractionId = request.interactionId,
+                        entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                            personaAddress = state.value.personaRequiredProofOfOwnership,
+                            accountAddresses = state.value.accountsRequiredProofOfOwnership.orEmpty()
+                        )
+                    )
+                )
+            } else if (proofOfOwnershipRequestItem.accountAddresses != null) {
+                sendEvent(
+                    Event.NavigateToVerifyAccounts(
+                        walletUnauthorizedRequestInteractionId = request.interactionId,
+                        entitiesForProofWithSignatures = EntitiesForProofWithSignatures(
+                            accountAddresses = state.value.accountsRequiredProofOfOwnership.orEmpty()
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    fun onRequestedEntitiesVerified(entitiesWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>) {
+        _state.update { state ->
+            state.copy(verifiedEntities = entitiesWithSignatures)
+        }
+        completeRequestHandling()
+    }
+
+    fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
+
+    fun dismissNoMnemonicError() = _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+
     fun completeRequestHandling() {
         viewModelScope.launch {
-            val selectedPersona = state.value.selectedPersona?.persona
+            val selectedPersona = state.value.personaWithSignature?.first
             requireNotNull(selectedPersona)
             if (request.isInternal) {
                 mutex.withLock {
@@ -687,17 +809,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             } else {
                 buildAuthorizedDappResponseUseCase(
                     request = request,
-                    selectedPersona = selectedPersona,
-                    oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
-                        getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
-                    },
-                    ongoingAccounts = state.value.selectedAccountsOngoing.mapNotNull {
-                        getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
-                    },
+                    authorizedPersona = selectedPersona to state.value.personaWithSignature?.second,
+                    oneTimeAccountsWithSignatures = state.value.oneTimeAccountsWithSignatures,
+                    ongoingAccountsWithSignatures = state.value.ongoingAccountsWithSignatures,
                     ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
-                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData
-                ).mapCatching { response ->
-                    respondToIncomingRequestUseCase.respondWithSuccess(request, response).getOrThrow()
+                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
+                    verifiedEntities = state.value.verifiedEntities
+                ).mapCatching { walletToDappInteractionResponse ->
+                    respondToIncomingRequestUseCase.respondWithSuccess(
+                        request = request,
+                        response = walletToDappInteractionResponse
+                    ).getOrThrow()
                 }.onSuccess { result ->
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
@@ -718,6 +840,36 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
         }
     }
+
+    fun handleRequestError(exception: Throwable) {
+        viewModelScope.launch {
+            if (exception is RadixWalletException.DappRequestException) {
+                logNonFatalException(exception)
+                when (exception.cause) {
+                    is ProfileException.SecureStorageAccess -> {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    }
+
+                    is ProfileException.NoMnemonic -> {
+                        _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                    }
+
+                    is RadixWalletException.LedgerCommunicationException,
+                    is RadixWalletException.DappRequestException.RejectedByUser -> {
+                    }
+
+                    else -> {
+                        respondToIncomingRequestUseCase.respondWithFailure(
+                            request,
+                            exception.dappWalletInteractionErrorType,
+                            exception.getDappMessage()
+                        )
+                        _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
+                    }
+                }
+            }
+        }
+    }
 }
 
 sealed interface Event : OneOffEvent {
@@ -725,36 +877,51 @@ sealed interface Event : OneOffEvent {
     data object CloseLoginFlow : Event
 
     data object LoginFlowCompleted : Event
-    data class DisplayPermission(
-        val numberOfAccounts: Int,
+
+    data class NavigateToOngoingAccounts(
+        val isOneTimeRequest: Boolean = false,
         val isExactAccountsCount: Boolean,
-        val oneTime: Boolean = false
+        val numberOfAccounts: Int
     ) : Event
 
-    data class PersonaDataOngoing(
+    data class NavigateToOngoingPersonaData(
         val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields
     ) : Event
 
-    data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
+    data class NavigateToOneTimePersonaData(val requiredPersonaFields: RequiredPersonaFields) : Event
 
-    data class ChooseAccounts(
-        val numberOfAccounts: Int,
+    data class NavigateToChooseAccounts(
+        val authorizedRequestInteractionId: String,
+        val isOneTimeRequest: Boolean = false,
         val isExactAccountsCount: Boolean,
-        val oneTime: Boolean = false,
+        val numberOfAccounts: Int,
         val showBack: Boolean = true
+    ) : Event
+
+    data class NavigateToVerifyPersona(
+        val walletUnauthorizedRequestInteractionId: String,
+        val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
+    ) : Event
+
+    data class NavigateToVerifyAccounts(
+        val walletUnauthorizedRequestInteractionId: String,
+        val entitiesForProofWithSignatures: EntitiesForProofWithSignatures
     ) : Event
 }
 
 data class DAppLoginUiState(
     val dapp: DApp? = null,
     val uiMessage: UiMessage? = null,
+    val personaWithSignature: Pair<ProfileEntity.PersonaEntity, SignatureWithPublicKey?>? = null,
     val failureDialog: FailureDialogState = FailureDialogState.Closed,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
-    val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
+    val ongoingAccountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?> = emptyMap(),
+    val oneTimeAccountsWithSignatures: Map<ProfileEntity.AccountEntity, SignatureWithPublicKey?> = emptyMap(),
     val selectedOngoingPersonaData: PersonaData? = null,
     val selectedOnetimePersonaData: PersonaData? = null,
-    val selectedAccountsOneTime: List<AccountItemUiModel> = emptyList(),
-    val selectedPersona: PersonaUiModel? = null,
+    val personaRequiredProofOfOwnership: IdentityAddress? = null,
+    val accountsRequiredProofOfOwnership: List<AccountAddress>? = null,
+    val verifiedEntities: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
     val isNoMnemonicErrorVisible: Boolean = false
 ) : UiState

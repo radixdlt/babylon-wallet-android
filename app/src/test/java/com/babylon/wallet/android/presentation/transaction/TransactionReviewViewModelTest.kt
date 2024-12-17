@@ -4,61 +4,70 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.data.gateway.coreapi.CoreApiTransactionReceipt
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
+import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.IncomingRequestResponse
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ClearCachedNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
-import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
+import com.babylon.wallet.android.domain.usecases.signing.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignSubintentUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolContributionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolRedemptionProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.TransferProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorUnstakeProcessor
-import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
-import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
-import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDeletionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.AccountDepositSettingsProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.GeneralTransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolContributionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.PoolRedemptionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.TransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorClaimProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorStakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ValidatorUnstakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
+import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegateImpl
+import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegateImpl
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.DappWalletInteractionErrorType
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.SargonOs
+import com.radixdlt.sargon.TransactionIntentHash
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.TransactionToReview
 import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
@@ -73,7 +82,6 @@ import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -84,7 +92,6 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.transaction.NotarizationResult
@@ -103,14 +110,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
 
-    private val signTransactionUseCase = mockk<SignTransactionUseCase>()
+    private val signAndNotariseTransactionUseCase = mockk<SignAndNotariseTransactionUseCase>()
+    private val signSubintentUseCase = mockk<SignSubintentUseCase>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
     private val resolveAssetsFromAddressUseCase = mockk<ResolveAssetsFromAddressUseCase>()
     private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
     private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val clearCachedNewlyCreatedEntitiesUseCase = mockk<ClearCachedNewlyCreatedEntitiesUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
@@ -124,7 +131,16 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
-    private val previewTypeAnalyzer = PreviewTypeAnalyzer(
+    private val sargonOs = mockk<SargonOs>()
+    private val sargonOsManager = mockk<SargonOsManager>().also {
+        every { it.sargonOs } returns sargonOs
+    }
+    private val manifestSummaryToPreviewTypeAnalyser = ManifestSummaryToPreviewTypeAnalyser(
+        resolveAssetsFromAddressUseCase,
+        getProfileUseCase,
+        resolveComponentAddressesUseCase
+    )
+    private val executionSummaryToPreviewTypeAnalyser = ExecutionSummaryToPreviewTypeAnalyser(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
             getProfileUseCase = getProfileUseCase,
@@ -157,42 +173,39 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         validatorClaimProcessor = ValidatorClaimProcessor(
             getProfileUseCase = getProfileUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
+        ),
+        accountDeletionProcessor = AccountDeletionProcessor(
+            getProfileUseCase = getProfileUseCase,
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
     private val coroutineDispatcher = UnconfinedTestDispatcher()
-    private val sampleIntentHash = IntentHash.sample()
+    private val sampleTransactionIntentHash = TransactionIntentHash.sample()
     private val notarizationResult = NotarizationResult(
-        intentHash = sampleIntentHash,
-        compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
+        notarizedTransaction = NotarizedTransaction.sample(),
         endEpoch = 50u
     )
     private val sampleRequestId = UUID.randomUUID().toString()
-    private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
+    private val sampleUnvalidatedManifestData = mockk<UnvalidatedManifestData>().apply {
         every { networkId } returns NetworkId.MAINNET
         every { instructions } returns ""
         every { blobs } returns emptyList()
-        every { message } returns TransactionManifestData.TransactionMessage.None
-        every { entitiesRequiringAuth() } returns TransactionManifestData.EntitiesRequiringAuth(
-            accounts = emptyList(),
-            identities = emptyList()
-        )
+        every { message } returns Message.None
     }
-    private val sampleRequest = IncomingMessage.IncomingRequest.TransactionRequest(
-        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+    private val sampleRequest = TransactionRequest(
+        remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = sampleRequestId,
-        transactionManifestData = sampleTransactionManifestData,
-        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+        unvalidatedManifestData = sampleUnvalidatedManifestData,
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
             dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
             isInternal = false
         ),
-        transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
+        kind = TransactionRequest.Kind.Regular(
+            transactionType = TransactionType.Generic
+        )
     )
-
-    private val profile = Profile.sample()
-        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
-        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
@@ -219,6 +232,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         newlyCreatedNonFungibles = listOf()
     )
 
+    private val profile = Profile.sample()
+        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
+
     @Before
     override fun setUp() = runTest {
         super.setUp()
@@ -232,16 +249,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
-        coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { signTransactionUseCase(any()) } returns Result.success(notarizationResult)
-        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
+        coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.success(notarizationResult)
+        coEvery { searchFeePayersUseCase(any(), any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
-        coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
-        coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
+        coEvery { transactionStatusClient.observeTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
-            respondToIncomingRequestUseCase.respondWithSuccess(
+            respondToIncomingRequestUseCase.respondWithSuccessTransactionIntent(
                 request = any(),
-                txId = any(),
+                intentHash = any()
             )
         } returns Result.success(IncomingRequestResponse.SuccessCE)
         coEvery {
@@ -260,7 +275,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 Curve25519SecretKey.secureRandom()
             )
         )
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
         coEvery { getFiatValueUseCase.forXrd() } returns Result.success(FiatPrice("0.06".toDecimal192(), SupportedCurrency.USD))
     }
@@ -268,35 +282,37 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
             analysis = TransactionAnalysisDelegate(
-                previewTypeAnalyzer = previewTypeAnalyzer,
+                executionSummaryToPreviewTypeAnalyser = executionSummaryToPreviewTypeAnalyser,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
+                getProfileUseCase = getProfileUseCase,
+                manifestSummaryToPreviewTypeAnalyser = manifestSummaryToPreviewTypeAnalyser,
+                sargonOsManager = sargonOsManager,
+                dispatcher = coroutineDispatcher
+            ),
+            guarantees = TransactionGuaranteesDelegateImpl(),
+            fees = TransactionFeesDelegateImpl(
+                getProfileUseCase = getProfileUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
-                resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
-                transactionRepository = transactionRepository,
                 getFiatValueUseCase = getFiatValueUseCase
             ),
-            guarantees = TransactionGuaranteesDelegate(),
-            fees = TransactionFeesDelegate(
-                getProfileUseCase = getProfileUseCase,
-            ),
-            submit = TransactionSubmitDelegate(
-                signTransactionUseCase = signTransactionUseCase,
+            submit = TransactionSubmitDelegateImpl(
+                signAndNotarizeTransactionUseCase = signAndNotariseTransactionUseCase,
+                signSubintentUseCase = signSubintentUseCase,
                 respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
                 getCurrentGatewayUseCase = getCurrentGatewayUseCase,
                 incomingRequestRepository = incomingRequestRepository,
                 appEventBus = appEventBus,
                 clearCachedNewlyCreatedEntitiesUseCase = clearCachedNewlyCreatedEntitiesUseCase,
                 transactionStatusClient = transactionStatusClient,
-                submitTransactionUseCase = submitTransactionUseCase,
-                applicationScope = TestScope(),
-                exceptionMessageProvider = exceptionMessageProvider
+                exceptionMessageProvider = exceptionMessageProvider,
+                transactionRepository = transactionRepository
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
             getDAppsUseCase = getDAppsUseCase,
             appEventBus = appEventBus,
             getProfileUseCase = getProfileUseCase,
-            coroutineDispatcher = coroutineDispatcher
+            defaultDispatcher = coroutineDispatcher
         )
     }
 
@@ -307,9 +323,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         vm.onApproveTransaction()
         advanceUntilIdle()
         coVerify(exactly = 1) {
-            respondToIncomingRequestUseCase.respondWithSuccess(
+            respondToIncomingRequestUseCase.respondWithSuccessTransactionIntent(
                 request = sampleRequest,
-                txId = sampleIntentHash.bech32EncodedTxId
+                intentHash = sampleTransactionIntentHash
             )
         }
     }
@@ -331,13 +347,13 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         }
         assertEquals(DappWalletInteractionErrorType.WRONG_NETWORK, errorSlot.captured)
         vm.oneOffEvent.test {
-            TestCase.assertTrue(awaitItem() is Event.Dismiss)
+            TestCase.assertTrue(awaitItem() is TransactionReviewViewModel.Event.Dismiss)
         }
     }
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { signTransactionUseCase(any()) } returns Result.failure(
+        coEvery { signAndNotariseTransactionUseCase(any()) } returns Result.failure(
             RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value
@@ -363,27 +379,31 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "1.10842739440"
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = 1.5.toDecimal192(),
-                contingentLock = 0.toDecimal192()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = 0.3.toDecimal192(),
-                finalizationCost = 0.3.toDecimal192(),
-                storageExpansionCost = 0.2.toDecimal192(),
-                royaltyCost = 0.2.toDecimal192()
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
+
+        coEvery { sargonOs.analyseTransactionPreview(any(), any(), any(), any(), any()) } returns TransactionToReview(
+            transactionManifest = TransactionManifest.sample(),
+            executionSummary = emptyExecutionSummary.copy(
+                feeLocks = FeeLocks(
+                    lock = 1.5.toDecimal192(),
+                    contingentLock = 0.toDecimal192()
+                ),
+                feeSummary = FeeSummary(
+                    executionCost = 0.3.toDecimal192(),
+                    finalizationCost = 0.3.toDecimal192(),
+                    storageExpansionCost = 0.2.toDecimal192(),
+                    royaltyCost = 0.2.toDecimal192()
+                ),
+                detailedClassification = listOf(
+                    DetailedManifestClass.General
+                ),
+                reservedInstructions = emptyList()
+            )
         )
         val vm = vm.value
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
 
-        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.transactionFees.transactionFeeToLock)
+        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.fees?.transactionFees?.transactionFeeToLock)
     }
 
     @Test
@@ -393,27 +413,31 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = 0.9019403.toDecimal192()
 
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = 0.5.toDecimal192(),
-                contingentLock = 0.toDecimal192()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = 0.3.toDecimal192(),
-                finalizationCost = 0.3.toDecimal192(),
-                storageExpansionCost = 0.2.toDecimal192(),
-                royaltyCost = 0.2.toDecimal192()
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
+        coEvery { sargonOs.analyseTransactionPreview(any(), any(), any(), any(), any()) } returns TransactionToReview(
+            transactionManifest = TransactionManifest.sample(),
+            executionSummary = emptyExecutionSummary.copy(
+                feeLocks = FeeLocks(
+                    lock = 0.5.toDecimal192(),
+                    contingentLock = 0.toDecimal192()
+                ),
+                feeSummary = FeeSummary(
+                    executionCost = 0.3.toDecimal192(),
+                    finalizationCost = 0.3.toDecimal192(),
+                    storageExpansionCost = 0.2.toDecimal192(),
+                    royaltyCost = 0.2.toDecimal192()
+                ),
+                detailedClassification = listOf(
+                    DetailedManifestClass.General
+                ),
+                reservedInstructions = emptyList()
+            )
         )
+
         val vm = vm.value
         advanceUntilIdle()
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
+        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
     }
 
     @Test
@@ -424,36 +448,30 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = 2.3678038.toDecimal192()
 
-        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = 0.5.toDecimal192(),
-                contingentLock = 0.toDecimal192()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = 0.3.toDecimal192(),
-                finalizationCost = 0.3.toDecimal192(),
-                storageExpansionCost = 0.2.toDecimal192(),
-                royaltyCost = 0.2.toDecimal192()
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
+        coEvery { sargonOs.analyseTransactionPreview(any(), any(), any(), any(), any()) } returns TransactionToReview(
+            transactionManifest = TransactionManifest.sample(),
+            executionSummary = emptyExecutionSummary.copy(
+                feeLocks = FeeLocks(
+                    lock = 0.5.toDecimal192(),
+                    contingentLock = 0.toDecimal192()
+                ),
+                feeSummary = FeeSummary(
+                    executionCost = 0.3.toDecimal192(),
+                    finalizationCost = 0.3.toDecimal192(),
+                    storageExpansionCost = 0.2.toDecimal192(),
+                    royaltyCost = 0.2.toDecimal192()
+                ),
+                detailedClassification = listOf(
+                    DetailedManifestClass.General
+                ),
+                reservedInstructions = emptyList()
+            )
         )
         val vm = vm.value
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
+        assertEquals(expectedFeeLock, vm.state.value.fees?.transactionFees?.transactionFeeToLock?.rounded(7u))
     }
-
-    private fun previewResponse() = TransactionPreviewResponse(
-        encodedReceipt = "",
-        receipt = CoreApiTransactionReceipt(
-            status = "",
-            errorMessage = ""
-        ),
-        logs = emptyList()
-    )
 }

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.walletclaimed
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -27,7 +28,8 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
     private val cloudBackupErrorStream: CloudBackupErrorStream,
     private val profileRepository: ProfileRepository,
     private val driveClient: DriveClient,
-    private val hostInfoRepository: HostInfoRepository
+    private val hostInfoRepository: HostInfoRepository,
+    private val deleteWalletUseCase: DeleteWalletUseCase
 ) : StateViewModel<ClaimedByAnotherDeviceViewModel.State>(),
     OneOffEventHandler<ClaimedByAnotherDeviceViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -36,17 +38,17 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onClearWalletClick() = viewModelScope.launch {
-        profileRepository.clearAllWalletData()
+        deleteWalletUseCase()
         cloudBackupErrorStream.resetErrors()
         sendEvent(Event.ResetToOnboarding)
     }
 
     fun onTransferWalletBackClick() = viewModelScope.launch {
         val currentProfile = profileRepository.profile.firstOrNull() ?: return@launch
-
-        _state.update { it.copy(isReclaiming = true) }
         val hostId = hostInfoRepository.getHostId()
         val hostInfo = hostInfoRepository.getHostInfo()
+
+        _state.update { it.copy(isReclaiming = true) }
         val claimingProfile = currentProfile.claim(deviceInfo = DeviceInfo.from(hostId, hostInfo))
 
         driveClient.claimCloudBackup(

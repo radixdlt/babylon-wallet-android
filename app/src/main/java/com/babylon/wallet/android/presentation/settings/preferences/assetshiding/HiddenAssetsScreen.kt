@@ -109,8 +109,7 @@ private fun HiddenAssetsContent(
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
-
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         },
         snackbarHost = {

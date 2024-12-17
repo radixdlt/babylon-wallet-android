@@ -3,9 +3,9 @@ package com.babylon.wallet.android.presentation.settings.personas.personadetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
-import com.babylon.wallet.android.data.transaction.ROLAClient
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.signing.ROLAClient
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -48,7 +48,7 @@ class PersonaDetailViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val getDAppsUseCase: GetDAppsUseCase,
     savedStateHandle: SavedStateHandle,
-    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
+    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)

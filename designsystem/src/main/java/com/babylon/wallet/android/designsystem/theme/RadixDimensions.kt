@@ -9,8 +9,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 data class RadixDimensions(
-    val paddingXXSmall: Dp = 2.dp,
-    val paddingXSmall: Dp = 4.dp,
+    val paddingXXXSmall: Dp = 2.dp,
+    val paddingXXSmall: Dp = 4.dp,
+    val paddingXSmall: Dp = 6.dp,
     val paddingSmall: Dp = 8.dp,
     val paddingMedium: Dp = 12.dp,
     val paddingDefault: Dp = 16.dp,
@@ -22,7 +23,8 @@ data class RadixDimensions(
     val paddingXXXXLarge: Dp = 48.dp,
 
     val buttonDefaultHeight: Dp = 50.dp,
-    val seedPhraseWordsSuggestionsHeight: Dp = 56.dp
+    val seedPhraseWordsSuggestionsHeight: Dp = 56.dp,
+    val amountShimmeringWidth: Dp = 96.dp,
 )
 
 @Composable

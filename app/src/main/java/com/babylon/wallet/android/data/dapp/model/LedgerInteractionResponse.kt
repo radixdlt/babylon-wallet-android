@@ -1,11 +1,13 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.IncomingMessage.LedgerResponse
+import com.babylon.wallet.android.domain.model.messages.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -14,6 +16,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonClassDiscriminator
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @JsonClassDiscriminator("discriminator")
 sealed interface LedgerInteractionResponse
@@ -70,6 +73,17 @@ data class DerivePublicKeyResponse(
 @Serializable
 @SerialName("signTransaction")
 data class SignTransactionResponse(
+    @SerialName("interactionId")
+    val interactionId: String,
+    @SerialName("success")
+    val success: List<SignatureOfSigner>? = null,
+    @SerialName("error")
+    val error: Error? = null
+) : LedgerInteractionResponse
+
+@Serializable
+@SerialName("signSubintentHash")
+data class SignSubintentHashResponse(
     @SerialName("interactionId")
     val interactionId: String,
     @SerialName("success")
@@ -161,24 +175,34 @@ fun List<DerivedPublicKey>.toDomainModel() = map { derivedPublicKey ->
     derivedPublicKey.toDomainModel()
 }
 
-@Suppress("SwallowedException")
 fun LedgerInteractionResponse.toDomainModel(): IncomingMessage {
-    try {
-        return when (this) {
-            is DerivePublicKeyResponse -> toDomainModel()
-            is GetDeviceInfoResponse -> toDomainModel()
-            is SignChallengeResponse -> toDomainModel()
-            is SignTransactionResponse -> toDomainModel()
-            is DeriveAndDisplayAddressResponse -> toDomainModel()
-        }
-    } catch (e: Exception) {
-        throw RadixWalletException.IncomingMessageException.LedgerResponseParse(e)
+    return when (this) {
+        is DerivePublicKeyResponse -> toDomainModel()
+        is GetDeviceInfoResponse -> toDomainModel()
+        is SignChallengeResponse -> toDomainModel()
+        is SignTransactionResponse -> toDomainModel()
+        is DeriveAndDisplayAddressResponse -> toDomainModel()
+        is SignSubintentHashResponse -> toDomainModel()
     }
 }
 
 private fun SignTransactionResponse.toDomainModel() =
     if (success != null) {
         LedgerResponse.SignTransactionResponse(
+            interactionId,
+            success.map { it.toDomainModel() }
+        )
+    } else {
+        LedgerResponse.LedgerErrorResponse(
+            interactionId = interactionId,
+            code = error?.code ?: LedgerErrorCode.Generic,
+            message = error?.message.orEmpty()
+        )
+    }
+
+private fun SignSubintentHashResponse.toDomainModel() =
+    if (success != null) {
+        LedgerResponse.SignSubintentHashResponse(
             interactionId,
             success.map { it.toDomainModel() }
         )

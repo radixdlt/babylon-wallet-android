@@ -6,39 +6,27 @@ package com.babylon.wallet.android.presentation.ui.composables
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
@@ -46,9 +34,6 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -58,11 +43,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.HomeCard
+import com.radixdlt.sargon.extensions.toUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.sargon.toUrl
-import kotlin.math.absoluteValue
-import kotlin.math.sign
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -185,10 +168,13 @@ private fun CardView(
                         placeholder = Placeholder(
                             width = titleStyle.fontSize,
                             height = titleStyle.fontSize,
-                            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
+                            placeholderVerticalAlign = PlaceholderVerticalAlign.TextBottom
                         )
                     ) {
                         Icon(
+                            modifier = Modifier
+                                .width(14.dp)
+                                .height(12.dp),
                             painter = painterResource(id = R.drawable.ic_external_link),
                             contentDescription = null,
                             tint = RadixTheme.colors.gray2
@@ -255,6 +241,7 @@ private fun HomeCard.title() = buildAnnotatedString {
         HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_title)
         is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_title)
         HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_title)
+        HomeCard.DiscoverRadixDapps -> stringResource(id = R.string.homePageCarousel_discoverRadixDapps_title)
     }
     append(title)
 
@@ -270,14 +257,13 @@ private fun HomeCard.description() = when (this) {
     HomeCard.ContinueRadQuest -> stringResource(id = R.string.homePageCarousel_rejoinRadquest_text)
     is HomeCard.Dapp -> stringResource(id = R.string.homePageCarousel_continueOnDapp_text)
     HomeCard.StartRadQuest -> stringResource(id = R.string.homePageCarousel_discoverRadix_text)
+    HomeCard.DiscoverRadixDapps -> stringResource(id = R.string.homePageCarousel_discoverRadixDapps_text)
 }
 
 @Composable
 private fun HomeCard.EndIcon(
     modifier: Modifier = Modifier
 ) = when (this) {
-    HomeCard.Connector -> {}
-    HomeCard.ContinueRadQuest -> {}
     is HomeCard.Dapp -> {
         val uri = remember(iconUrl) {
             iconUrl?.let { Uri.parse(it.toString()) }
@@ -290,7 +276,11 @@ private fun HomeCard.EndIcon(
         )
     }
 
-    HomeCard.StartRadQuest -> {}
+    HomeCard.StartRadQuest,
+    HomeCard.Connector,
+    HomeCard.ContinueRadQuest,
+    HomeCard.DiscoverRadixDapps -> {
+    }
 }
 
 @Composable
@@ -299,89 +289,12 @@ private fun HomeCard.EndGraphicRes() = when (this) {
     HomeCard.ContinueRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
     is HomeCard.Dapp -> null
     HomeCard.StartRadQuest -> painterResource(id = R.drawable.ic_radquest_bg)
+    HomeCard.DiscoverRadixDapps -> painterResource(id = R.drawable.ic_homecarousel_discover_dapps)
 }
 
 private const val INLINE_LINK_ICON = "link_icon"
 
-@Composable
-private fun HorizontalPagerIndicator(
-    pagerState: PagerState,
-    modifier: Modifier = Modifier,
-    pageIndexMapping: (Int) -> Int = { it },
-    activeColor: Color = LocalContentColor.current.copy(alpha = LocalContentAlpha.current),
-    inactiveColor: Color = activeColor.copy(ContentAlpha.disabled),
-    activeIndicatorWidth: Dp = 8.dp,
-    activeIndicatorHeight: Dp = activeIndicatorWidth,
-    inactiveIndicatorWidth: Dp = 8.dp,
-    inactiveIndicatorHeight: Dp = inactiveIndicatorWidth,
-    spacing: Dp = activeIndicatorWidth,
-    indicatorShape: Shape = CircleShape,
-) {
-    val activeIndicatorWidthPx = LocalDensity.current.run { activeIndicatorWidth.roundToPx() }
-    val spacingPx = LocalDensity.current.run { spacing.roundToPx() }
-
-    val inactiveWidth = inactiveIndicatorWidth.coerceAtMost(activeIndicatorWidth)
-    val inactiveHeight = inactiveIndicatorHeight.coerceAtMost(activeIndicatorHeight)
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(spacing),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            val indicatorModifier = Modifier
-                .size(
-                    width = activeIndicatorWidth,
-                    height = activeIndicatorHeight
-                )
-                .padding(
-                    horizontal = (activeIndicatorWidth - inactiveWidth) / 2,
-                    vertical = (activeIndicatorHeight - inactiveHeight) / 2
-                )
-                .background(color = inactiveColor, shape = indicatorShape)
-
-            repeat(pagerState.pageCount) {
-                Box(indicatorModifier)
-            }
-        }
-
-        Box(
-            Modifier
-                .offset {
-                    val position = pageIndexMapping(pagerState.currentPage)
-                    val offset = pagerState.currentPageOffsetFraction
-                    val next = pageIndexMapping(pagerState.currentPage + offset.sign.toInt())
-                    val scrollPosition = ((next - position) * offset.absoluteValue + position)
-                        .coerceIn(
-                            0f,
-                            (pagerState.pageCount - 1)
-                                .coerceAtLeast(0)
-                                .toFloat()
-                        )
-
-                    IntOffset(
-                        x = ((spacingPx + activeIndicatorWidthPx) * scrollPosition).toInt(),
-                        y = 0
-                    )
-                }
-                .size(width = activeIndicatorWidth, height = activeIndicatorHeight)
-                .then(
-                    if (pagerState.pageCount > 0) {
-                        Modifier.background(
-                            color = activeColor,
-                            shape = indicatorShape,
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
-        )
-    }
-}
-
-private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest
+private fun HomeCard.opensExternalLink() = this is HomeCard.StartRadQuest || this is HomeCard.DiscoverRadixDapps
 
 @Preview
 @Composable
@@ -392,7 +305,8 @@ fun HomeCardsCarouselContinueRadQuestPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -413,7 +327,8 @@ fun HomeCardsCarouselStartRadQuestPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -435,7 +350,8 @@ fun HomeCardsCarouselDAppPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -457,7 +373,8 @@ fun HomeCardsCarouselConnectorPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(
@@ -479,7 +396,8 @@ fun HomeCardsCarouselScaledFontPreview() {
                 HomeCard.ContinueRadQuest,
                 HomeCard.StartRadQuest,
                 HomeCard.Dapp(iconUrl = "https://stokenet-dashboard.radixdlt.com/dashboard_icon.png".toUrl()),
-                HomeCard.Connector
+                HomeCard.Connector,
+                HomeCard.DiscoverRadixDapps
             )
         }
         HomeCardsCarousel(

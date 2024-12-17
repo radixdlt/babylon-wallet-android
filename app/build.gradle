@@ -76,8 +76,8 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 50
-        versionName "1.9.0"
+        versionCode 54
+        versionName "1.11.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
@@ -133,6 +133,12 @@ android {
             buildConfigField "String", "REFINER_FORM_UUID", '"3432b6e0-dfad-11ee-a53c-95167f067d9c"'
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        releasePreview {
+            initWith release
+            applicationIdSuffix ".preview"
+            resValue "string", "app_name", "Radix Wallet Preview"
+            matchingFallbacks = ['release']
         }
     }
     compileOptions {

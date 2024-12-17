@@ -23,8 +23,8 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toUrl
 import rdx.works.core.sargon.init
-import rdx.works.core.sargon.toUrl
 
 @VisibleForTesting
 const val ARG_NETWORK_URL = "arg_network_url"

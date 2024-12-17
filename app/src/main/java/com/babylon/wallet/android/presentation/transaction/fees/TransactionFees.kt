@@ -1,8 +1,13 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.data.transaction.TransactionConfig
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
+import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
+import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.model.guaranteesCount
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.clamped
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.formattedTextField
@@ -87,20 +92,20 @@ data class TransactionFees(
 
     // ********* ADVANCED *********
 
-    val networkExecutionCost: String
+    val totalExecutionCostDisplayed: String
         get() = totalExecutionCost.formatted()
 
-    val networkFinalizationCost: String
+    val finalizationCostDisplayed: String
         get() = networkFinalization.formatted()
 
-    val networkStorageCost: String
+    val storageExpansionCostDisplayed: String
         get() = networkStorage.formatted()
 
-    val royaltiesCost: String
+    val royaltiesCostDisplayed: String
         get() = royalties.formatted()
 
     val noRoyaltiesCostDue: Boolean
-        get() = royaltiesCost == "0"
+        get() = royaltiesCostDisplayed == "0"
 
     /**
      * This is negative amount (if greater than zero) representation of nonContingentLock for Paid by dApps section
@@ -123,19 +128,21 @@ data class TransactionFees(
      * Finalized fee to lock for the transaction
      **/
     val transactionFeeToLock: Decimal192
-        get() = totalExecutionCost +
-            networkFinalization +
-            effectiveTip +
-            networkStorage +
-            feePaddingAmountForCalculation +
-            royalties -
-            nonContingentFeeLock
+        get() = (
+            totalExecutionCost +
+                networkFinalization +
+                effectiveTip +
+                networkStorage +
+                feePaddingAmountForCalculation +
+                royalties -
+                nonContingentFeeLock
+            ).clamped
 
     val transactionFeeTotalUsd: FiatPrice?
         get() = xrdFiatPrice?.let { FiatPrice(transactionFeeToLock * it.price, it.currency) }
 
     /**
-     * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION
+     * default should be the XRD amount corresponding to 15% of (EXECUTION + FINALIZATION + STORAGE)
      */
     private val defaultPadding: Decimal192 = PERCENT_15 * (totalExecutionCost + networkFinalization + networkStorage)
 
@@ -166,6 +173,30 @@ data class TransactionFees(
     }
 
     companion object {
+
+        fun from(
+            summary: ExecutionSummary,
+            notaryAndSigners: NotaryAndSigners,
+            previewType: PreviewType
+        ) = TransactionFees(
+            nonContingentFeeLock = summary.feeLocks.lock,
+            networkExecution = summary.feeSummary.executionCost,
+            networkFinalization = summary.feeSummary.finalizationCost,
+            networkStorage = summary.feeSummary.storageExpansionCost,
+            royalties = summary.feeSummary.royaltyCost,
+            guaranteesCount = (previewType as? PreviewType.Transaction)?.to?.guaranteesCount() ?: 0,
+            notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
+            includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
+            signersCount = notaryAndSigners.signers.count()
+        ).let { fees ->
+            if (fees.defaultTransactionFee > 0.toDecimal192()) {
+                // There will be a lock fee so update lock fee cost
+                fees.copy(includeLockFee = true)
+            } else {
+                fees
+            }
+        }
+
         private val PERCENT_15 = 0.15.toDecimal192()
 
         private val LOCK_FEE_INSTRUCTION_COST: Decimal192 = 0.08581566997.toDecimal192()

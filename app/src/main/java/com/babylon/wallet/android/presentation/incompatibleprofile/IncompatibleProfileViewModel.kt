@@ -9,13 +9,13 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.radixdlt.sargon.CommonException
+import com.radixdlt.sargon.ProfileState
 import com.radixdlt.sargon.errorCodeFromError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 
@@ -32,7 +32,7 @@ class IncompatibleProfileViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val incompatibleProfile = profileRepository.profileState.filterIsInstance<ProfileState.Incompatible>().firstOrNull()
-            _state.update { it.copy(incompatibleCause = incompatibleProfile?.cause) }
+            _state.update { it.copy(incompatibleCause = incompatibleProfile?.v1) }
         }
     }
 
@@ -45,15 +45,9 @@ class IncompatibleProfileViewModel @Inject constructor(
 
             val cause = _state.value.incompatibleCause
             if (cause != null) {
-                if (cause is CommonException) {
-                    body.appendLine("Error Code: ${errorCodeFromError(cause)}")
+                body.appendLine("Error Code: ${errorCodeFromError(cause)}")
 
-                    if (cause is CommonException.FailedToDeserializeJsonToValue) {
-                        body.appendLine(_state.value.incompatibleCause?.message)
-                        body.appendLine()
-                        body.appendLine(_state.value.incompatibleCause?.stackTraceToString())
-                    }
-                } else {
+                if (cause is CommonException.FailedToDeserializeJsonToValue) {
                     body.appendLine(_state.value.incompatibleCause?.message)
                     body.appendLine()
                     body.appendLine(_state.value.incompatibleCause?.stackTraceToString())
@@ -71,7 +65,7 @@ class IncompatibleProfileViewModel @Inject constructor(
     }
 
     data class State(
-        val incompatibleCause: Throwable? = null
+        val incompatibleCause: CommonException? = null
     ) : UiState
 
     sealed interface Event : OneOffEvent {

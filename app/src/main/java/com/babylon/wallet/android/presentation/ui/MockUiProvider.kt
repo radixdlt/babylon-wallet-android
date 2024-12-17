@@ -5,10 +5,10 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Bip44LikePath
+import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -83,7 +83,7 @@ object MockUiProvider {
             address = LegacyOlympiaAccountAddress.sample(),
             publicKey = PublicKey.Secp256k1.sample(),
             accountName = "account one",
-            derivationPath = Bip44LikePath.sample().asGeneral(),
+            derivationPath = DerivationPath.Bip44Like(Bip44LikePath.sample()),
             newBabylonAddress = LegacyOlympiaAccountAddress.sample().toBabylonAddress(),
             appearanceId = AppearanceId(0u)
         ),
@@ -94,7 +94,7 @@ object MockUiProvider {
             address = LegacyOlympiaAccountAddress.sample.other(),
             publicKey = PublicKey.Secp256k1.sample.other(),
             accountName = "account two",
-            derivationPath = Bip44LikePath.sample.other().asGeneral(),
+            derivationPath = DerivationPath.Bip44Like(Bip44LikePath.sample.other()),
             newBabylonAddress = LegacyOlympiaAccountAddress.sample.other().toBabylonAddress(),
             appearanceId = AppearanceId(1u)
         )

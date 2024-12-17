@@ -12,8 +12,8 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import rdx.works.core.di.DefaultDispatcher
 import rdx.works.profile.datastore.EncryptedPreferencesManager
-import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class MnemonicRepository @Inject constructor(

@@ -24,7 +24,7 @@ fun TransferableHiddenItemWarning(
             WarningText(
                 modifier = Modifier.fillMaxWidth(),
                 text = AnnotatedString(text),
-                textStyle = RadixTheme.typography.body1Header
+                textStyle = RadixTheme.typography.body2HighImportance
             )
         }
     }

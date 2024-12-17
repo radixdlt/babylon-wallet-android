@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerha
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -55,10 +54,10 @@ class AddLedgerDeviceViewModel @Inject constructor(
                                 newConnectedLedgerDevice = LedgerDeviceUiModel(
                                     id = deviceInfoResponse.deviceId,
                                     model = deviceInfoResponse.model,
-                                    name = existingLedgerFactorSource.value.hint.name
+                                    name = existingLedgerFactorSource.value.hint.label
                                 ),
                                 uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(
-                                    label = existingLedgerFactorSource.value.hint.name
+                                    label = existingLedgerFactorSource.value.hint.label
                                 )
                             )
                         }
@@ -94,7 +93,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
             )
             val message: UiMessage? = when (result) {
                 is AddLedgerFactorSourceResult.AlreadyExist -> UiMessage.InfoMessage.LedgerAlreadyExist(
-                    label = result.ledgerFactorSource.value.hint.name
+                    label = result.ledgerFactorSource.value.hint.label
                 )
 
                 else -> null

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -33,19 +34,32 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.PoolResourcesValues
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.toImmutableMap
+import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
 
 @Composable
 fun PoolUnitDialogContent(
@@ -59,7 +73,8 @@ fun PoolUnitDialogContent(
     onHideClick: () -> Unit
 ) {
     val resourceAddress = args.resourceAddress
-    val amount = args.fungibleAmountOf(resourceAddress) ?: poolUnit?.stake?.ownedAmount
+    val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
+        ?: remember(poolUnit) { poolUnit?.stake?.ownedAmount?.let { BoundedAmount.Exact(it) } }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -88,12 +103,12 @@ fun PoolUnitDialogContent(
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(
+            LargeBoundedAmountSection(
                 modifier = Modifier
-                    .fillMaxWidth(fraction = if (poolUnit?.stake == null) 0.5f else 1f)
-                    .radixPlaceholder(visible = poolUnit?.stake == null),
-                amount = amount,
-                symbol = poolUnit?.resource?.symbol.orEmpty()
+                    .widthIn(min = if (poolUnit == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
+                    .radixPlaceholder(visible = poolUnit == null),
+                boundedAmount = amount,
+                symbol = poolUnit?.resource?.symbol
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             HorizontalDivider(
@@ -110,8 +125,9 @@ fun PoolUnitDialogContent(
 
             if (poolUnit != null) {
                 val resourcesWithAmount = remember(poolUnit, args) {
-                    poolUnit.pool?.resources?.associateWith {
-                        args.fungibleAmountOf(it.address) ?: poolUnit.resourceRedemptionValue(it)
+                    poolUnit.pool?.resources?.associateWith { resource ->
+                        args.fungibleAmountOf(resource.address)
+                            ?: poolUnit.poolItemRedemptionValue(resource.address)?.let { BoundedAmount.Exact(it) }
                     }.orEmpty().toImmutableMap()
                 }
                 PoolResourcesValues(
@@ -261,5 +277,41 @@ fun PoolUnitDialogContent(
                 }
             )
         }
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun PoolUnitDialogContentPreview() {
+    RadixWalletPreviewTheme {
+        PoolUnitDialogContent(
+            args = AssetDialogArgs.Fungible(
+                resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
+                isNewlyCreated = false,
+                underAccountAddress = null,
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()))
+            ),
+            poolUnit = PoolUnit(
+                stake = Resource.FungibleResource(
+                    address = ResourceAddress.xrd(NetworkId.MAINNET),
+                    ownedAmount = 123.toDecimal192(),
+                    currentSupply = Decimal192.sample.invoke(),
+                    assetBehaviours = setOf(AssetBehaviour.SUPPLY_INCREASABLE, AssetBehaviour.SUPPLY_FLEXIBLE),
+                    metadata = listOf(
+                        Metadata.Collection(
+                            key = ExplicitMetadataKey.TAGS.key,
+                            values = listOf(),
+                        )
+                    )
+                ),
+                pool = null
+            ),
+            poolUnitPrice = null,
+            isLoadingBalance = false,
+            canBeHidden = false,
+            onInfoClick = {},
+            onHideClick = {}
+        )
     }
 }

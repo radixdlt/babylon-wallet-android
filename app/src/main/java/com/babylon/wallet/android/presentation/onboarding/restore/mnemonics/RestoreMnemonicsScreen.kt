@@ -187,7 +187,7 @@ private fun RestoreMnemonicsContent(
                     enabled = state.isPrimaryButtonEnabled,
                     isLoading = state.isPrimaryButtonLoading,
                     onClick = onSubmitClick,
-                    additionalContent = {
+                    additionalTopContent = {
                         if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
                             if (state.isSecondaryButtonLoading) {
                                 CircularProgressIndicator(
@@ -343,7 +343,7 @@ private fun EntitiesView(
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                     contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
                 ) {
-                    items(recoverable.nonHiddenAccountsToDisplay) { account ->
+                    items(recoverable.activeAccountsToDisplay) { account ->
                         SimpleAccountCard(
                             modifier = Modifier.fillMaxWidth(),
                             account = account

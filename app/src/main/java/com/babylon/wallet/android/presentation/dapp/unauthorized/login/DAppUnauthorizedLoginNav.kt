@@ -10,7 +10,7 @@ import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 
 @VisibleForTesting
 internal const val ARG_REQUEST_ID = "request_id"
@@ -26,11 +26,10 @@ fun NavController.dAppLoginUnauthorized(requestId: String, navOptionsBuilder: Na
     navigate("dapp_login_unauthorized/$requestId", navOptionsBuilder)
 }
 
-@Suppress("LongParameterList")
 fun NavGraphBuilder.dAppLoginUnauthorized(
     navController: NavController,
-    navigateToChooseAccount: (Int, Boolean) -> Unit,
-    navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
+    onNavigateToChooseAccount: (String, Int, Boolean) -> Unit,
+    onNavigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
     onLoginFlowComplete: () -> Unit
 ) {
     composable(
@@ -47,8 +46,8 @@ fun NavGraphBuilder.dAppLoginUnauthorized(
         val vm = hiltViewModel<DAppUnauthorizedLoginViewModel>(parentEntry)
         DappUnauthorizedLoginScreen(
             viewModel = vm,
-            navigateToOneTimePersonaData = navigateToOneTimePersonaData,
-            navigateToChooseAccount = navigateToChooseAccount,
+            onNavigateToOneTimePersonaData = onNavigateToOneTimePersonaData,
+            onNavigateToChooseAccount = onNavigateToChooseAccount,
             onLoginFlowComplete = onLoginFlowComplete
         )
     }

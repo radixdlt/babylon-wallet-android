@@ -49,7 +49,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.sample
-import rdx.works.profile.domain.DeviceFactorSourceData
+import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
 @Composable
 fun SeedPhrasesScreen(
@@ -89,18 +89,21 @@ fun SeedPhrasesScreen(
 
 @Composable
 private fun SeedPhraseContent(
-    deviceFactorSourceData: PersistentList<DeviceFactorSourceData>,
+    deviceFactorSourceData: PersistentList<DeviceFactorSourceWithEntities>,
     onBackClick: () -> Unit,
-    onSeedPhraseClick: (DeviceFactorSourceData) -> Unit,
+    onSeedPhraseClick: (DeviceFactorSourceWithEntities) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
-            RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.displayMnemonics_seedPhrases),
-                onBackClick = onBackClick,
-                windowInsets = WindowInsets.statusBarsAndBanner
-            )
+            Column {
+                RadixCenteredTopAppBar(
+                    title = stringResource(id = R.string.displayMnemonics_seedPhrases),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBarsAndBanner
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
@@ -108,7 +111,6 @@ private fun SeedPhraseContent(
             modifier = Modifier.padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
             LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = modifier
@@ -157,9 +159,9 @@ private fun SeedPhraseContent(
 @Composable
 fun SeedPhraseCard(
     modifier: Modifier,
-    data: DeviceFactorSourceData
+    data: DeviceFactorSourceWithEntities
 ) {
-    val mnemonicNeedsRecovery = data.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover
+    val mnemonicNeedsRecovery = data.mnemonicState == DeviceFactorSourceWithEntities.MnemonicState.NeedRecover
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
@@ -222,14 +224,14 @@ fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
         }
-        if (data.mnemonicState == DeviceFactorSourceData.MnemonicState.NotBackedUp) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+        if (data.mnemonicState == DeviceFactorSourceWithEntities.MnemonicState.NotBackedUp) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
             WarningText(
                 text = AnnotatedString(stringResource(id = R.string.securityProblems_no3_seedPhrases)),
                 contentColor = RadixTheme.colors.orange1
             )
         }
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
         if (data.hasOnlyHiddenAccounts) {
             Text(
                 modifier = Modifier
@@ -243,7 +245,7 @@ fun SeedPhraseCard(
                 color = RadixTheme.colors.gray2
             )
         } else {
-            data.notHiddenAccounts.forEach { account ->
+            data.activeAccounts.forEach { account ->
                 SimpleAccountCard(
                     modifier = Modifier.fillMaxWidth(),
                     account = account
@@ -261,12 +263,12 @@ fun SeedPhrasesWithAccountsAndPersonasPreview() {
         SeedPhraseContent(
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample(),
                     allAccounts = Account.sampleMainnet.all,
                     personas = Persona.sampleMainnet.all
                 ),
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample.other(),
                     allAccounts = persistentListOf(Account.sampleMainnet())
                 )
@@ -284,10 +286,10 @@ fun SeedPhrasesWithoutAccountsAndPersonasPreview() {
         SeedPhraseContent(
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample(),
                 ),
-                DeviceFactorSourceData(
+                DeviceFactorSourceWithEntities(
                     deviceFactorSource = FactorSource.Device.sample.other(),
                     allAccounts = persistentListOf(Account.sampleMainnet())
                 )

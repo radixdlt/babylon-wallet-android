@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.model
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -36,14 +36,14 @@ fun SpendingAsset.displayTitle(
 }
 
 @Composable
-fun TransferableAsset.displayTitle(
+fun Transferable.displayTitle(
     fallback: @Composable () -> String = { stringResource(id = R.string.dash) }
 ): String = when (this) {
-    is TransferableAsset.Fungible.Token -> resource.displayTitleAsToken(fallback)
-    is TransferableAsset.Fungible.LSUAsset -> resource.displayTitleAsLSU()
-    is TransferableAsset.Fungible.PoolUnitAsset -> resource.displayTitleAsPoolUnit()
-    is TransferableAsset.NonFungible.NFTAssets -> resource.displayTitleAsNFTCollection(fallback)
-    is TransferableAsset.NonFungible.StakeClaimAssets -> resource.displayTitleAsStakeClaimNFTCollection()
+    is Transferable.FungibleType.LSU -> asset.resource.displayTitleAsLSU()
+    is Transferable.FungibleType.PoolUnit -> asset.resource.displayTitleAsPoolUnit()
+    is Transferable.FungibleType.Token -> asset.resource.displayTitleAsToken(fallback)
+    is Transferable.NonFungibleType.NFTCollection -> asset.resource.displayTitleAsNFTCollection(fallback)
+    is Transferable.NonFungibleType.StakeClaim -> asset.resource.displayTitleAsStakeClaimNFTCollection()
 }
 
 @Composable

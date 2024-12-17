@@ -21,17 +21,42 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
-import com.radixdlt.sargon.IntentHash
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 
 @Composable
 internal fun SuccessContent(
     modifier: Modifier = Modifier,
-    transactionId: IntentHash?,
+    transactionId: TransactionIntentHash?,
     isMobileConnect: Boolean,
     isInternal: Boolean,
     dAppName: String?
+) {
+    SuccessContent(
+        modifier = modifier,
+        transactionId = transactionId,
+        isMobileConnect = isMobileConnect,
+        title = stringResource(id = R.string.transactionStatus_success_title),
+        subtitle = if (isInternal) {
+            stringResource(R.string.transactionStatus_success_text)
+        } else {
+            stringResource(
+                id = R.string.dAppRequest_completion_subtitle,
+                dAppName.dAppDisplayName()
+            )
+        }
+    )
+}
+
+@Composable
+internal fun SuccessContent(
+    modifier: Modifier = Modifier,
+    transactionId: TransactionIntentHash?,
+    isMobileConnect: Boolean,
+    title: String,
+    subtitle: String
 ) {
     Column {
         Column(
@@ -49,22 +74,12 @@ internal fun SuccessContent(
                 contentDescription = null
             )
             Text(
-                text = stringResource(id = R.string.transactionStatus_success_title),
+                text = title,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
 
-            val subtitle = if (isInternal) {
-                stringResource(R.string.transactionStatus_success_text)
-            } else {
-                stringResource(
-                    id = R.string.dAppRequest_completion_subtitle,
-                    dAppName.orEmpty().ifEmpty {
-                        stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                    }
-                )
-            }
             Text(
                 text = subtitle,
                 style = RadixTheme.typography.body1Regular,
@@ -104,7 +119,7 @@ private fun SuccessBottomDialogPreview(
 ) {
     RadixWalletTheme {
         SuccessContent(
-            transactionId = IntentHash.sample(),
+            transactionId = TransactionIntentHash.sample(),
             isMobileConnect = isMobileConnect,
             isInternal = false,
             dAppName = null

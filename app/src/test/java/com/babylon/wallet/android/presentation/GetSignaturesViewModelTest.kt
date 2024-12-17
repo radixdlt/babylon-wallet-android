@@ -45,8 +45,8 @@ import rdx.works.profile.domain.GetProfileUseCase
 private val sampleProfile = Profile.sampleWithLedgerAccount()
 
 private val signers = sampleProfile.allAccountsOnCurrentNetwork.map { it.asProfileEntity() }
-private val signRequest = SignRequest.SignTransactionRequest(
-    intent = TransactionIntent.sample()
+private val signRequest = SignRequest.TransactionIntentSignRequest(
+    transactionIntent = TransactionIntent.sample()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)

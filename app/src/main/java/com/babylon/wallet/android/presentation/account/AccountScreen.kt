@@ -55,7 +55,7 @@ import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountViewModel.Event
 import com.babylon.wallet.android.presentation.account.AccountViewModel.State
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
@@ -72,6 +72,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewD
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.Account
@@ -406,7 +407,7 @@ private fun AccountHeader(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXSmall),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXSmall),
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                 ) {
                     if (accountAddress != null) {
@@ -459,9 +460,7 @@ private fun AccountHeader(
                             onClick = { onLockerDepositClick(deposit) },
                             text = stringResource(
                                 id = R.string.homePage_accountLockerClaim,
-                                deposit.dAppName.ifEmpty {
-                                    stringResource(id = R.string.dAppRequest_metadata_unknownName)
-                                }
+                                deposit.dAppName.dAppDisplayName()
                             ),
                             iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_notifications
                         )

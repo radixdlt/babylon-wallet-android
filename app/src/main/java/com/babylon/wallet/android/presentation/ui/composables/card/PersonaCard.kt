@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.PromptLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
@@ -38,6 +38,35 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
+
+@Composable
+fun SimplePersonaCard(
+    modifier: Modifier = Modifier,
+    persona: Persona,
+) {
+    Column(modifier) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(RadixTheme.dimensions.paddingDefault),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Thumbnail.Persona(
+                modifier = Modifier.size(54.dp),
+                persona = persona
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = persona.displayName.value,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1
+            )
+        }
+    }
+}
 
 @Composable
 fun PersonaCard(
@@ -152,6 +181,15 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
                 Spacer(modifier = Modifier.height(paddingDefault))
             }
         }
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+fun SimplePersonaCardPreview() {
+    RadixWalletTheme {
+        SimplePersonaCard(persona = Persona.sampleMainnet())
     }
 }
 

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -33,24 +34,39 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.BoundedAmountSection
+import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.sargon.default
 
 @Composable
@@ -63,7 +79,8 @@ fun LSUDialogContent(
     onInfoClick: (GlossaryItem) -> Unit
 ) {
     val resourceAddress = args.resourceAddress
-    val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
+    val amount = remember(args) { args.fungibleAmountOf(resourceAddress) }
+        ?: lsu?.fungibleResource?.ownedAmount?.let { BoundedAmount.Exact(it) }
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -77,13 +94,12 @@ fun LSUDialogContent(
     ) {
         LSUIconSection(lsu = lsu)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-        TokenBalance(
+        LargeBoundedAmountSection(
             modifier = Modifier
-                .fillMaxWidth(fraction = if (lsu == null) 0.5f else 1f)
+                .widthIn(min = if (lsu == null) RadixTheme.dimensions.amountShimmeringWidth else 0.dp)
                 .radixPlaceholder(visible = lsu == null),
-            amount = amount,
-            symbol = lsu?.resource?.symbol.orEmpty()
+            boundedAmount = amount,
+            symbol = lsu?.resource?.symbol
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -122,7 +138,7 @@ fun LSUDialogContent(
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
-            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValue()
+            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValueXRD()?.let { BoundedAmount.Exact(it) }
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
@@ -265,7 +281,7 @@ private fun LSUIconSection(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: Decimal192?,
+    amount: BoundedAmount?,
     price: AssetPrice.LSUPrice?,
     isLoadingBalance: Boolean
 ) {
@@ -295,28 +311,29 @@ private fun LSUResourceValue(
         )
 
         Column(horizontalAlignment = Alignment.End) {
-            Text(
+            Box(
                 modifier = Modifier
-                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
+                    .widthIn(min = RadixTheme.dimensions.amountShimmeringWidth)
                     .radixPlaceholder(visible = amount == null),
-                text = amount?.formatted().orEmpty(),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 1
-            )
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                amount?.let {
+                    BoundedAmountSection(
+                        boundedAmount = it,
+                        isCompact = true
+                    )
+                }
+            }
 
             val xrdPrice = remember(price, amount) {
-                if (amount != null) {
+                (amount as? BoundedAmount.Exact)?.amount?.let { amount ->
                     price?.xrdPrice(amount)
-                } else {
-                    null
                 }
             }
             if (isLoadingBalance) {
                 ShimmeringView(
                     modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                         .height(12.dp)
                         .fillMaxWidth(0.3f),
                     isVisible = true
@@ -336,3 +353,40 @@ private fun LSUResourceValue(
 fun LiquidStakeUnit?.name(): String = this?.name?.ifEmpty {
     stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 } ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun LSUDialogContentPreview() {
+    RadixWalletPreviewTheme {
+        LSUDialogContent(
+            lsu = LiquidStakeUnit(
+                fungibleResource = Resource.FungibleResource(
+                    address = ResourceAddress.xrd(NetworkId.MAINNET),
+                    ownedAmount = 123.toDecimal192(),
+                    currentSupply = Decimal192.sample.invoke(),
+                    assetBehaviours = setOf(AssetBehaviour.SUPPLY_INCREASABLE, AssetBehaviour.SUPPLY_FLEXIBLE),
+                    metadata = listOf(
+                        Metadata.Collection(
+                            key = ExplicitMetadataKey.TAGS.key,
+                            values = listOf(),
+                        )
+                    )
+                ),
+                validator = Validator(
+                    address = ValidatorAddress.sampleMainnet(),
+                    totalXrdStake = null
+                )
+            ),
+            price = null,
+            args = AssetDialogArgs.Fungible(
+                resourceAddress = ResourceAddress.xrd(NetworkId.MAINNET),
+                isNewlyCreated = false,
+                underAccountAddress = null,
+                amounts = mapOf(ResourceAddress.xrd(NetworkId.MAINNET).string to BoundedAmount.Exact(Decimal192.sample()))
+            ),
+            isLoadingBalance = false,
+            onInfoClick = {}
+        )
+    }
+}

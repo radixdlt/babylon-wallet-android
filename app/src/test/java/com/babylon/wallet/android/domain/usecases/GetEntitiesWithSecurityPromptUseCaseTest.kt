@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.domain.usecases.securityproblems.EntityWithSecurityPrompt
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.fakes.FakePreferenceManager
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.TestDispatcherRule
@@ -25,7 +28,7 @@ import org.junit.Test
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.cloudbackup.BackupState
 import rdx.works.core.sargon.changeGateway
-import rdx.works.profile.data.repository.MnemonicIntegrityRepository
+import rdx.works.profile.data.repository.CheckKeystoreIntegrityUseCase
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
@@ -39,7 +42,7 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
     private val mnemonicRepositoryMock = mockk<MnemonicRepository>()
     private val getBackupStateUseCaseMock = mockk<GetBackupStateUseCase>()
-    private val mnemonicIntegrityRepository = mockk<MnemonicIntegrityRepository>().apply {
+    private val checkKeystoreIntegrityUseCase = mockk<CheckKeystoreIntegrityUseCase>().apply {
         every { didMnemonicIntegrityChange } returns flowOf(false)
     }
 
@@ -51,7 +54,7 @@ class GetEntitiesWithSecurityPromptUseCaseTest {
         preferencesManager = FakePreferenceManager(),
         mnemonicRepository = mnemonicRepositoryMock,
         getBackupStateUseCase = getBackupStateUseCaseMock,
-        mnemonicIntegrityRepository = mnemonicIntegrityRepository
+        checkKeystoreIntegrityUseCase = checkKeystoreIntegrityUseCase
     )
 
     @Test

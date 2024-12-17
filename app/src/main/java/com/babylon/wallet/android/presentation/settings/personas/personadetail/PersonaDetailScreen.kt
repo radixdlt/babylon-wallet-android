@@ -1,5 +1,3 @@
-@file:Suppress("TooManyFunctions")
-
 package com.babylon.wallet.android.presentation.settings.personas.personadetail
 
 import androidx.compose.foundation.layout.Column
@@ -132,7 +130,7 @@ private fun PersonaDetailContent(
                     windowInsets = WindowInsets.statusBarsAndBanner
                 )
 
-                HorizontalDivider(color = RadixTheme.colors.gray5)
+                HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         },
         bottomBar = {

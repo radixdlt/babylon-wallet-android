@@ -34,15 +34,17 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
+import com.babylon.wallet.android.presentation.dapp.authorized.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.dapp.authorized.verifyentities.EntitiesForProofWithSignatures
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -60,25 +62,46 @@ fun PersonaDataOnetimeScreen(
     sharedViewModel: DAppAuthorizedLoginViewModel,
     onEdit: (PersonaDataOnetimeEvent.OnEditPersona) -> Unit,
     onCreatePersona: (Boolean) -> Unit,
+    onNavigateToVerifyPersona: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
+    onNavigateToVerifyAccounts: (interactionId: String, EntitiesForProofWithSignatures) -> Unit,
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
+
     if (sharedState.isNoMnemonicErrorVisible) {
         NoMnemonicAlertDialog {
             sharedViewModel.dismissNoMnemonicError()
         }
     }
+
+    BackHandler {
+        if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.OngoingAccounts) {
+            sharedViewModel.onAbortDappLogin()
+        } else {
+            onBackClick()
+        }
+    }
+
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
+                is Event.NavigateToVerifyPersona -> onNavigateToVerifyPersona(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
+                is Event.NavigateToVerifyAccounts -> onNavigateToVerifyAccounts(
+                    event.walletUnauthorizedRequestInteractionId,
+                    event.entitiesForProofWithSignatures
+                )
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
                 else -> {}
             }
         }
     }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -90,16 +113,10 @@ fun PersonaDataOnetimeScreen(
             }
         }
     }
-    BackHandler {
-        if (sharedState.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
-            sharedViewModel.onAbortDappLogin()
-        } else {
-            onBackClick()
-        }
-    }
+
     PersonaDataOnetimeContent(
         onContinueClick = {
-            sharedViewModel.onGrantedPersonaDataOnetime(state.selectedPersona())
+            sharedViewModel.onGrantedOnetimePersonaData(state.selectedPersona())
         },
         dapp = sharedState.dapp,
         onBackClick = {
@@ -174,8 +191,7 @@ private fun PersonaDataOnetimeContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 PermissionRequestHeader(
-                    dappName = dapp?.name.orEmpty()
-                        .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                    dappName = dapp.displayName()
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                 Text(
@@ -239,7 +255,7 @@ private fun PermissionRequestHeader(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun LoginPermissionContentPreview() {
+private fun PersonaDataOnetimePreview() {
     RadixWalletTheme {
         PersonaDataOnetimeContent(
             onContinueClick = {},

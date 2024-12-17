@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -37,6 +38,9 @@ import com.babylon.wallet.android.presentation.dialogs.assets.DescriptionSection
 import com.babylon.wallet.android.presentation.dialogs.assets.NonStandardMetadataSection
 import com.babylon.wallet.android.presentation.dialogs.assets.TagsSection
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.composables.LargeBoundedAmountSection
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -48,10 +52,16 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import java.util.concurrent.TimeUnit
 
 @Suppress("CyclomaticComplexMethod")
@@ -63,6 +73,7 @@ fun NonFungibleAssetDialogContent(
     asset: Asset.NonFungible?,
     price: AssetPrice.StakeClaimPrice?,
     isLoadingBalance: Boolean,
+    boundedAmount: BoundedAmount? = null,
     isNewlyCreated: Boolean = false,
     accountContext: Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
@@ -230,6 +241,13 @@ fun NonFungibleAssetDialogContent(
                             visible = true,
                             shape = RadixTheme.shapes.roundedRectMedium
                         )
+                )
+            }
+
+            boundedAmount?.let { amount ->
+                LargeBoundedAmountSection(
+                    modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    boundedAmount = amount
                 )
             }
 
@@ -460,5 +478,24 @@ private fun approximateClaimTimeText(approximateClaimMinutes: Long): String {
                 stringResource(id = R.string.assetDetails_staking_readyToClaimInMinutes, approximateClaimMinutes)
             }
         }
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun NonFungibleAssetDialogPreview() {
+    RadixWalletPreviewTheme {
+        NonFungibleAssetDialogContent(
+            resourceAddress = ResourceAddress.sampleMainnet(),
+            localId = NonFungibleLocalId.sample(),
+            boundedAmount = BoundedAmount.Range(minAmount = 10.toDecimal192(), 100.toDecimal192()),
+            asset = NonFungibleCollection(
+                collection = Resource.NonFungibleResource.sampleMainnet(),
+            ),
+            price = null,
+            isLoadingBalance = false,
+            canBeHidden = false
+        )
     }
 }

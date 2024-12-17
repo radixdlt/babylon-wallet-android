@@ -23,7 +23,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.TransactionId
-import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.TransactionIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sample
 
@@ -32,7 +32,7 @@ internal fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
-    transactionId: IntentHash?,
+    transactionId: TransactionIntentHash?,
     isMobileConnect: Boolean
 ) {
     Column {
@@ -102,7 +102,7 @@ private fun SomethingWentWrongDialogPreview(@PreviewParameter(FailureContentPara
             isMobileConnect = isMobileConnect,
             title = "Title",
             subtitle = "Subtitle",
-            transactionId = IntentHash.sample()
+            transactionId = TransactionIntentHash.sample()
         )
     }
 }

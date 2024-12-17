@@ -16,8 +16,10 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ENTITY_NAME_MAX_LENGTH
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -35,7 +37,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class AccountSettingsViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
@@ -43,12 +45,13 @@ class AccountSettingsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
     @ApplicationScope private val appScope: CoroutineScope,
-    private val appEventBus: AppEventBus
-) : StateViewModel<AccountPreferenceUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+    private val appEventBus: AppEventBus,
+) : StateViewModel<AccountSettingsViewModel.State>(),
+    OneOffEventHandler<AccountSettingsViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
 
-    override fun initialState(): AccountPreferenceUiState = AccountPreferenceUiState()
+    override fun initialState(): State = State()
 
     init {
         loadAccount()
@@ -130,13 +133,26 @@ class AccountSettingsViewModel @Inject constructor(
                     newDisplayName = DisplayName(newAccountName)
                 )
                 _state.update { state -> state.copy(isAccountNameUpdated = true) }
+                onDismissBottomSheet()
             } ?: Timber.d("Couldn't find account to rename the display name!")
         }
     }
 
-    fun setBottomSheetContent(content: AccountPreferenceUiState.BottomSheetContent) {
+    fun onDismissBottomSheet() {
         _state.update {
-            it.copy(bottomSheetContent = content)
+            it.copy(bottomSheetContent = State.BottomSheetContent.None)
+        }
+    }
+
+    fun onRenameAccountRequest() {
+        _state.update {
+            it.copy(bottomSheetContent = State.BottomSheetContent.RenameAccount)
+        }
+    }
+
+    fun onHideAccountRequest() {
+        _state.update {
+            it.copy(bottomSheetContent = State.BottomSheetContent.HideAccount)
         }
     }
 
@@ -167,7 +183,8 @@ class AccountSettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val account = state.value.account ?: return@launch
             changeEntityVisibilityUseCase.changeAccountVisibility(entityAddress = account.address, hide = true)
-            setBottomSheetContent(AccountPreferenceUiState.BottomSheetContent.None)
+
+            onDismissBottomSheet()
             sendEvent(Event.AccountHidden)
         }
     }
@@ -175,38 +192,49 @@ class AccountSettingsViewModel @Inject constructor(
     fun onSnackbarMessageShown() {
         _state.update { state -> state.copy(isAccountNameUpdated = false) }
     }
-}
 
-sealed interface Event : OneOffEvent {
-    data object AccountHidden : Event
-}
-
-data class AccountPreferenceUiState(
-    val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
-    val account: Account? = null,
-    val accountNameChanged: String = "",
-    val isNewNameValid: Boolean = false,
-    val isNewNameLengthMoreThanTheMaximum: Boolean = false,
-    val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
-    val error: UiMessage? = null,
-    val faucetState: FaucetState = FaucetState.Unavailable,
-    val isAccountNameUpdated: Boolean = false,
-    val isFreeXRDLoading: Boolean = false
-) : UiState {
-
-    val isBottomSheetVisible: Boolean
-        get() = bottomSheetContent != BottomSheetContent.None
-
-    enum class BottomSheetContent {
-        None, RenameAccount, HideAccount
+    fun onDeleteAccountRequest() {
+        val account = state.value.account ?: return
+        viewModelScope.launch {
+            sendEvent(Event.OpenDeleteAccount(accountAddress = account.address))
+        }
     }
 
-    companion object {
-        val defaultSettings = persistentListOf(
-            AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
-            AccountSettingsSection.AccountSection(
-                listOf(AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL))
+    data class State(
+        val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
+        val account: Account? = null,
+        val accountNameChanged: String = "",
+        val isNewNameValid: Boolean = false,
+        val isNewNameLengthMoreThanTheMaximum: Boolean = false,
+        val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
+        val error: UiMessage? = null,
+        val faucetState: FaucetState = FaucetState.Unavailable,
+        val isAccountNameUpdated: Boolean = false,
+        val isFreeXRDLoading: Boolean = false
+    ) : UiState {
+
+        val isBottomSheetVisible: Boolean
+            get() = bottomSheetContent != BottomSheetContent.None
+
+        sealed interface BottomSheetContent {
+            data object None : BottomSheetContent
+            data object RenameAccount : BottomSheetContent
+            data object HideAccount : BottomSheetContent
+        }
+
+        companion object {
+            val defaultSettings = persistentListOf(
+                AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
+                AccountSettingsSection.AccountSection(
+                    listOf(AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL))
+                )
             )
-        )
+        }
+    }
+
+    sealed interface Event : OneOffEvent {
+        data object AccountHidden : Event
+
+        data class OpenDeleteAccount(val accountAddress: AccountAddress) : Event
     }
 }

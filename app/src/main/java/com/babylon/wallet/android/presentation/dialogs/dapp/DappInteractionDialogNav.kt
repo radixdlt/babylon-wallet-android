@@ -9,7 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.R
+import com.babylon.wallet.android.presentation.ui.composables.dAppDisplayName
 import com.babylon.wallet.android.utils.AppEvent
 
 @VisibleForTesting
@@ -38,11 +38,7 @@ internal class DappInteractionSuccessDialogArgs(
 fun NavController.dappInteractionDialog(
     event: AppEvent.Status.DappInteraction
 ) {
-    val name = if (event.dAppName.isNullOrBlank()) {
-        context.resources.getString(R.string.dAppRequest_metadata_unknownName)
-    } else {
-        event.dAppName
-    }
+    val name = event.dAppName.dAppDisplayName(context)
     navigate("$ROUTE/${event.requestId}/$name/${event.isMobileConnect}")
 }
 

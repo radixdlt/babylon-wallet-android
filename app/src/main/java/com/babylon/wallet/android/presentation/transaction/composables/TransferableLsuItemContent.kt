@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,29 +19,34 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displaySubtitle
 import com.babylon.wallet.android.presentation.model.displayTitle
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
+import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.XrdResource
 
 @Composable
 fun TransferableLsuItemContent(
     modifier: Modifier = Modifier,
-    transferable: Transferable,
+    transferableLSU: Transferable.FungibleType.LSU,
     shape: Shape
 ) {
-    val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -59,66 +66,99 @@ fun TransferableLsuItemContent(
         ) {
             Thumbnail.LSU(
                 modifier = Modifier.size(42.dp),
-                liquidStakeUnit = transferableLsu.lsu,
+                liquidStakeUnit = transferableLSU.asset,
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = transferableLsu.displayTitle(),
+                    text = transferableLSU.asset.displayTitle(),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferableLsu.displaySubtitle(),
+                    text = transferableLSU.asset.displaySubtitle(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            VerticalAmountSection(transferable = transferable)
+            BoundedAmountSection(boundedAmount = transferableLSU.amount)
         }
+        UnknownAmount(
+            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall),
+            amount = transferableLSU.amount
+        )
         Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
-            text = stringResource(id = R.string.transactionReview_worth).uppercase(),
+            text = stringResource(id = R.string.interactionReview_worth).uppercase(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                .padding(RadixTheme.dimensions.paddingMedium),
-            verticalAlignment = CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                .padding(RadixTheme.dimensions.paddingMedium)
         ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(RadixTheme.shapes.circle),
-                tint = Color.Unspecified
-            )
-            Text(
-                text = XrdResource.SYMBOL,
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = transferableLsu.xrdWorth.formatted(),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 2
+            Row(
+                verticalAlignment = CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(RadixTheme.shapes.circle),
+                    tint = Color.Unspecified
+                )
+
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+                Text(
+                    text = XrdResource.SYMBOL,
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                BoundedAmountSection(
+                    boundedAmount = transferableLSU.xrdWorth,
+                    isCompact = true
+                )
+            }
+
+            UnknownAmount(
+                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                amount = transferableLSU.xrdWorth
             )
         }
+    }
+}
+
+@Composable
+@Preview
+@UsesSampleValues
+private fun TransferableLsuItemPreview(
+    @PreviewParameter(BoundedAmountSectionPreviewProvider::class) amount: BoundedAmount
+) {
+    RadixWalletPreviewTheme {
+        TransferableLsuItemContent(
+            transferableLSU = Transferable.FungibleType.LSU(
+                asset = LiquidStakeUnit.sampleMainnet(),
+                amount = amount,
+                xrdWorth = BoundedAmount.Max(Decimal192.sample())
+            ),
+            shape = RectangleShape
+        )
     }
 }

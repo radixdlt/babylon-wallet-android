@@ -15,7 +15,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.messages.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
@@ -60,8 +60,8 @@ fun NavGraphBuilder.personaDataOngoing(
     onBackClick: () -> Unit,
     navController: NavController,
     onLoginFlowComplete: () -> Unit,
-    onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
-    onChooseAccounts: (Event.ChooseAccounts) -> Unit
+    onPersonaDataOnetime: (Event.NavigateToOneTimePersonaData) -> Unit,
+    onChooseAccounts: (Event.NavigateToChooseAccounts) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DATA_ONGOING,

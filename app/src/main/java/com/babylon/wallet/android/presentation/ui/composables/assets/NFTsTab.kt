@@ -203,7 +203,7 @@ private fun NonFungibleResourceItem(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = RadixTheme.dimensions.paddingXSmall),
+                        .padding(bottom = RadixTheme.dimensions.paddingXXSmall),
                     text = name,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1

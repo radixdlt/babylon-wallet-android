@@ -24,6 +24,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
@@ -38,9 +39,7 @@ import com.radixdlt.sargon.extensions.formatted
 @Composable
 fun NetworkFeeContent(
     fees: TransactionFees,
-    noFeePayerSelected: Boolean,
-    insufficientBalanceToPayTheFee: Boolean,
-    isSelectedFeePayerInvolvedInTransaction: Boolean,
+    properties: TransactionReviewViewModel.State.Fees.Properties,
     isNetworkFeeLoading: Boolean,
     modifier: Modifier = Modifier,
     onCustomizeClick: () -> Unit,
@@ -57,7 +56,7 @@ fun NetworkFeeContent(
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+                Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
                 InfoButton(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -109,42 +108,44 @@ fun NetworkFeeContent(
             )
         }
 
-        if (noFeePayerSelected) {
-            if (!isNetworkFeeLoading) {
+        if (!isNetworkFeeLoading) {
+            if (properties.noFeePayerSelected) {
                 WarningText(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = RadixTheme.dimensions.paddingSmall),
                     text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_feePayerRequired)),
                 )
-            }
-        } else if (insufficientBalanceToPayTheFee) {
-            WarningText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = RadixTheme.dimensions.paddingSmall),
-                text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
-                contentColor = RadixTheme.colors.red1,
-                textStyle = RadixTheme.typography.body1Header
-            )
-        } else if (isSelectedFeePayerInvolvedInTransaction.not()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-            ) {
+            } else if (properties.isBalanceInsufficientToPayTheFee) {
                 WarningText(
-                    modifier = Modifier.weight(1f),
-                    text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = RadixTheme.dimensions.paddingSmall),
+                    text = AnnotatedString(stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance)),
+                    contentColor = RadixTheme.colors.red1,
                     textStyle = RadixTheme.typography.body1Header
                 )
-                InfoButton(
-                    text = stringResource(R.string.empty),
-                    color = RadixTheme.colors.gray3,
-                    onClick = {
-                        onInfoClick(GlossaryItem.payingaccount)
-                    }
-                )
+            } else if (properties.isSelectedFeePayerInvolvedInTransaction.not()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = RadixTheme.dimensions.paddingSmall),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                ) {
+                    WarningText(
+                        modifier = Modifier.weight(1f),
+                        text = AnnotatedString(stringResource(id = R.string.transactionReview_feePayerValidation_linksNewAccount)),
+                        textStyle = RadixTheme.typography.body1Header
+                    )
+                    InfoButton(
+                        text = stringResource(R.string.empty),
+                        color = RadixTheme.colors.gray3,
+                        onClick = {
+                            onInfoClick(GlossaryItem.payingaccount)
+                        }
+                    )
+                }
             }
         }
 
@@ -163,9 +164,11 @@ fun NetworkFeeContentLoadingPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            noFeePayerSelected = false,
-            insufficientBalanceToPayTheFee = false,
-            isSelectedFeePayerInvolvedInTransaction = true,
+            properties = TransactionReviewViewModel.State.Fees.Properties(
+                noFeePayerSelected = false,
+                isBalanceInsufficientToPayTheFee = false,
+                isSelectedFeePayerInvolvedInTransaction = true
+            ),
             isNetworkFeeLoading = true,
             onCustomizeClick = {},
             onInfoClick = {}
@@ -179,9 +182,11 @@ fun NetworkFeeContentWithoutInvolvedAccountPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            noFeePayerSelected = false,
-            insufficientBalanceToPayTheFee = false,
-            isSelectedFeePayerInvolvedInTransaction = false,
+            properties = TransactionReviewViewModel.State.Fees.Properties(
+                noFeePayerSelected = false,
+                isBalanceInsufficientToPayTheFee = false,
+                isSelectedFeePayerInvolvedInTransaction = false
+            ),
             isNetworkFeeLoading = false,
             onCustomizeClick = {},
             onInfoClick = {}
@@ -195,9 +200,11 @@ fun NetworkFeeContentNoFeePayerPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            noFeePayerSelected = true,
-            insufficientBalanceToPayTheFee = false,
-            isSelectedFeePayerInvolvedInTransaction = false,
+            properties = TransactionReviewViewModel.State.Fees.Properties(
+                noFeePayerSelected = true,
+                isBalanceInsufficientToPayTheFee = false,
+                isSelectedFeePayerInvolvedInTransaction = false
+            ),
             isNetworkFeeLoading = false,
             onCustomizeClick = {},
             onInfoClick = {}
@@ -211,9 +218,11 @@ fun NetworkFeeContentInsufficientBalancePreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            noFeePayerSelected = false,
-            insufficientBalanceToPayTheFee = true,
-            isSelectedFeePayerInvolvedInTransaction = true,
+            properties = TransactionReviewViewModel.State.Fees.Properties(
+                noFeePayerSelected = false,
+                isBalanceInsufficientToPayTheFee = true,
+                isSelectedFeePayerInvolvedInTransaction = true
+            ),
             isNetworkFeeLoading = false,
             onCustomizeClick = {},
             onInfoClick = {}
@@ -227,9 +236,11 @@ fun NetworkFeeContentInsufficientBalanceWithoutInvolvedAccountPreview() {
     RadixWalletPreviewTheme {
         NetworkFeeContent(
             fees = TransactionFees(),
-            noFeePayerSelected = false,
-            insufficientBalanceToPayTheFee = true,
-            isSelectedFeePayerInvolvedInTransaction = false,
+            properties = TransactionReviewViewModel.State.Fees.Properties(
+                noFeePayerSelected = false,
+                isBalanceInsufficientToPayTheFee = true,
+                isSelectedFeePayerInvolvedInTransaction = false
+            ),
             isNetworkFeeLoading = false,
             onCustomizeClick = {},
             onInfoClick = {}

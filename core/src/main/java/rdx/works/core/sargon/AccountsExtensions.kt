@@ -12,6 +12,7 @@ import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.NetworkId
@@ -20,14 +21,12 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.EntityFlags
-import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.default
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.nonHardenedIndex
+import com.radixdlt.sargon.extensions.path
 import com.radixdlt.sargon.extensions.toBabylonAddress
 
-fun Collection<Account>.notHiddenAccounts(): List<Account> = filterNot { it.isHidden }
-fun Collection<Account>.hiddenAccounts(): List<Account> = filter { it.isHidden }
+fun Collection<Account>.active(): List<Account> = filterNot { it.isHidden || it.isDeleted }
 
 val Account.factorSourceId: FactorSourceId
     get() = securityState.factorSourceId
@@ -38,8 +37,8 @@ val Account.derivationPathScheme: DerivationPathScheme
 val Account.hasAuthSigning: Boolean
     get() = securityState.hasAuthSigning
 
-val Account.derivationPathEntityIndex: HDPathValue
-    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.nonHardenedIndex
+val Account.derivationPathEntityIndex: HdPathComponent
+    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.path.components.last()
 
 val Account.usesEd25519: Boolean
     get() = securityState.usesEd25519
@@ -48,7 +47,10 @@ val Account.usesSECP256k1: Boolean
     get() = securityState.usesSECP256k1
 
 val Account.isHidden: Boolean
-    get() = EntityFlag.DELETED_BY_USER in flags
+    get() = EntityFlag.HIDDEN_BY_USER in flags
+
+val Account.isDeleted: Boolean
+    get() = EntityFlag.TOMBSTONED_BY_USER in flags
 
 val Account.isOlympia: Boolean
     get() = usesSECP256k1

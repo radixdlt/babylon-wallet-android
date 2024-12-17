@@ -1,15 +1,18 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.AccountPath
+import com.radixdlt.sargon.Bip44LikePath
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.IdentityPath
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.HDPathValue
-import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asHardened
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -29,43 +32,55 @@ class PublicKeyProvider @Inject constructor(
     suspend fun getNextDerivationPathForFactorSource(
         forNetworkId: NetworkId,
         factorSource: FactorSource,
-        entityKind: EntityKind = EntityKind.ACCOUNT
+        entityKind: EntityKind = EntityKind.ACCOUNT,
+        keyKind: Cap26KeyKind = Cap26KeyKind.TRANSACTION_SIGNING,
     ): DerivationPath {
         val profile = profileRepository.profile.first()
-        val accountIndex = when (entityKind) {
-            EntityKind.ACCOUNT -> profile.nextAccountIndex(
-                forNetworkId = forNetworkId,
-                factorSourceId = factorSource.id,
-                derivationPathScheme = DerivationPathScheme.CAP26
-            )
+        return when (entityKind) {
+            EntityKind.ACCOUNT -> {
+                val accountIndex = profile.nextAccountIndex(
+                    forNetworkId = forNetworkId,
+                    factorSourceId = factorSource.id,
+                    derivationPathScheme = DerivationPathScheme.CAP26
+                )
 
-            EntityKind.PERSONA -> profile.nextPersonaIndex(
-                forNetworkId = forNetworkId,
-                derivationPathScheme = DerivationPathScheme.CAP26,
-                factorSourceID = factorSource.id
-            )
+                AccountPath.init(
+                    networkId = forNetworkId,
+                    keyKind = keyKind,
+                    index = accountIndex.asHardened()
+                ).asGeneral()
+            }
+
+            EntityKind.PERSONA -> {
+                val identityIndex = profile.nextPersonaIndex(
+                    forNetworkId = forNetworkId,
+                    derivationPathScheme = DerivationPathScheme.CAP26,
+                    factorSourceId = factorSource.id
+                )
+
+                IdentityPath.init(
+                    networkId = forNetworkId,
+                    keyKind = keyKind,
+                    index = identityIndex.asHardened()
+                ).asGeneral()
+            }
         }
-        return DerivationPath.Cap26.account(
-            networkId = forNetworkId,
-            keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-            index = accountIndex
-        )
     }
 
     fun getDerivationPathsForIndices(
         forNetworkId: NetworkId,
-        indices: Set<HDPathValue>,
+        indices: LinkedHashSet<HdPathComponent>,
         isForLegacyOlympia: Boolean = false
     ): List<DerivationPath> {
         return indices.map { accountIndex ->
             if (isForLegacyOlympia) {
-                DerivationPath.Bip44Like.init(index = accountIndex)
+                Bip44LikePath.init(accountIndex).asGeneral()
             } else {
-                DerivationPath.Cap26.account(
+                AccountPath.init(
                     networkId = forNetworkId,
                     keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-                    index = accountIndex,
-                )
+                    index = accountIndex.asHardened()
+                ).asGeneral()
             }
         }
     }

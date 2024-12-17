@@ -7,7 +7,7 @@ import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel
-import com.babylon.wallet.android.presentation.account.settings.Event
+import com.babylon.wallet.android.presentation.account.settings.AccountSettingsViewModel.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Gateway

@@ -1,196 +1,221 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.data.gateway.extensions.asGatewayPublicKey
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
-import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.NotaryAndSigners
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
-import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
-import com.babylon.wallet.android.presentation.common.ViewModelDelegate
+import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.SummarizedManifest
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.execution.ExecutionSummaryToPreviewTypeAnalyser
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.manifest.ManifestSummaryToPreviewTypeAnalyser
 import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
-import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.AddressFormat
+import com.radixdlt.sargon.Blob
+import com.radixdlt.sargon.Blobs
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Nonce
-import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
-import com.radixdlt.sargon.extensions.secureRandom
-import com.radixdlt.sargon.extensions.value
+import com.radixdlt.sargon.PreAuthToReview
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.mapError
+import com.radixdlt.sargon.extensions.random
+import com.radixdlt.sargon.os.SargonOsManager
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.then
+import kotlinx.coroutines.withContext
+import rdx.works.core.sargon.formatted
+import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
-    private val previewTypeAnalyzer: PreviewTypeAnalyzer,
+    private val executionSummaryToPreviewTypeAnalyser: ExecutionSummaryToPreviewTypeAnalyser,
+    private val manifestSummaryToPreviewTypeAnalyser: ManifestSummaryToPreviewTypeAnalyser,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
-    private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
-    private val searchFeePayersUseCase: SearchFeePayersUseCase,
-    private val transactionRepository: TransactionRepository,
-    private val getFiatValueUseCase: GetFiatValueUseCase
-) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+    private val sargonOsManager: SargonOsManager,
+    private val getProfileUseCase: GetProfileUseCase,
+    @IoDispatcher private val dispatcher: CoroutineDispatcher
+) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
 
-    suspend fun analyse() {
-        val manifestData = _state.value.requestNonNull.transactionManifestData.also {
-            logger.v(it.instructions)
-        }
-        startAnalysis(manifestData)
-        fetchXrdPrice()
-    }
-
-    private fun fetchXrdPrice() {
-        viewModelScope.launch {
-            getFiatValueUseCase.forXrd().onSuccess { fiatPrice ->
-                _state.update { state ->
-                    state.copy(transactionFees = state.transactionFees.copy(xrdFiatPrice = fiatPrice))
-                }
-            }
-        }
-    }
-
-    private suspend fun startAnalysis(manifestData: TransactionManifestData) {
-        runCatching {
-            manifestData.entitiesRequiringAuth()
-        }.then { entitiesRequiringAuth ->
-            resolveNotaryAndSignersUseCase(
-                accountsAddressesRequiringAuth = entitiesRequiringAuth.accounts,
-                personaAddressesRequiringAuth = entitiesRequiringAuth.identities,
-                notary = _state.value.ephemeralNotaryPrivateKey
-            )
-        }.then { notaryAndSigners ->
-            getTransactionPreview(
-                manifestData = manifestData,
-                notaryAndSigners = notaryAndSigners
-            ).mapCatching { preview ->
-                logger.v(preview.encodedReceipt)
-                manifestData
-                    .executionSummary(encodedReceipt = preview.encodedReceipt.hexToBagOfBytes())
-                    .resolvePreview(notaryAndSigners)
-                    .resolveFees(notaryAndSigners)
-            }
-        }.then { transactionFees ->
-            _state.update { it.copy(transactionFees = transactionFees) }
-
-            searchFeePayersUseCase(
-                manifestData = manifestData,
-                lockFee = transactionFees.defaultTransactionFee
-            )
-        }.onSuccess { feePayers ->
-            _state.update { it.copy(isNetworkFeeLoading = false, feePayers = feePayers) }
-        }.onFailure { error ->
-            reportFailure(RadixWalletException.DappRequestException.PreviewError(error))
-        }
-    }
-
-    private suspend fun getTransactionPreview(
-        manifestData: TransactionManifestData,
-        notaryAndSigners: NotaryAndSigners
-    ): Result<TransactionPreviewResponse> {
-        val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
-            val epoch = this.getOrNull() ?: return@with (0.toULong() to 0.toULong())
-
-            (epoch to epoch + 1.toULong())
-        }
-
-        return transactionRepository.getTransactionPreview(
-            TransactionPreviewRequest(
-                manifest = manifestData.instructions,
-                startEpochInclusive = startEpochInclusive.toLong(),
-                endEpochExclusive = endEpochExclusive.toLong(),
-                tipPercentage = 0,
-                nonce = Nonce.secureRandom().value.toLong(),
-                signerPublicKeys = notaryAndSigners.signersPublicKeys().map { it.asGatewayPublicKey() },
-                flags = TransactionPreviewRequestFlags(
-                    useFreeCredit = true,
-                    assumeAllSignatureProofs = false,
-                    skipEpochCheck = false
-                ),
-                blobsHex = manifestData.blobs.map { it.hex },
-                notaryPublicKey = notaryAndSigners.notaryPublicKeyNew().asGatewayPublicKey(),
-                notaryIsSignatory = notaryAndSigners.notaryIsSignatory
-            )
-        ).fold(
-            onSuccess = { preview ->
-                if (preview.receipt.isFailed) {
-                    val errorMessage = preview.receipt.errorMessage.orEmpty()
-                    val isFailureDueToDepositRules = errorMessage.contains("AccountError(DepositIsDisallowed") ||
-                        errorMessage.contains("AccountError(NotAllBucketsCouldBeDeposited")
-                    if (isFailureDueToDepositRules) {
-                        Result.failure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
-                    } else {
-                        Result.failure(RadixWalletException.DappRequestException.PreviewError(Throwable(preview.receipt.errorMessage)))
-                    }
-                } else {
-                    Result.success(preview)
-                }
-            },
-            onFailure = {
-                Result.failure(RadixWalletException.DappRequestException.PreviewError(it))
-            }
+    /**
+     * Runs analysis on each transaction type received. Resolves the preview type and returns the signers involved.
+     */
+    suspend fun analyse(): Result<Analysis> = when (data.value.request.kind) {
+        is TransactionRequest.Kind.PreAuthorized -> analysePreAuthTransaction(
+            manifestData = data.value.request.unvalidatedManifestData
         )
-    }
 
-    private suspend fun ExecutionSummary.resolvePreview(notaryAndSigners: NotaryAndSigners) = apply {
-        val previewType = if (_state.value.requestNonNull.isInternal.not() && reservedInstructions.isNotEmpty()) {
-            // wallet unacceptable manifest
-            _state.update {
-                it.copy(
-                    error = TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
+        is TransactionRequest.Kind.Regular -> analyseTransaction(
+            manifestData = data.value.request.unvalidatedManifestData,
+            isInternal = data.value.request.isInternal
+        )
+    }.onSuccess { analysis ->
+        cacheNewlyCreatedResources(previewType = analysis.previewType)
+    }.onSuccess { analysis ->
+        _state.update {
+            it.copy(
+                isRawManifestVisible = analysis.previewType == PreviewType.NonConforming,
+                showRawTransactionWarning = analysis.previewType == PreviewType.NonConforming,
+                isLoading = false,
+                previewType = analysis.previewType,
+            )
+        }
+    }.onFailure { error -> onError(error) }
+
+    private suspend fun analyseTransaction(
+        manifestData: UnvalidatedManifestData,
+        isInternal: Boolean
+    ): Result<Analysis> = runCatching {
+        val notary = data.value.ephemeralNotaryPrivateKey
+        val transactionToReview = withContext(dispatcher) {
+            sargonOsManager.sargonOs.analyseTransactionPreview(
+                instructions = manifestData.instructions,
+                blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
+                areInstructionsOriginatingFromHost = isInternal,
+                nonce = Nonce.random(),
+                notaryPublicKey = notary.toPublicKey()
+            )
+        }
+        val summary = Summary.FromExecution(
+            manifest = SummarizedManifest.Transaction(transactionToReview.transactionManifest),
+            summary = transactionToReview.executionSummary
+        )
+
+        val profile = getProfileUseCase()
+        val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
+
+        Analysis(
+            previewType = previewType,
+            summary = summary,
+            profile = profile
+        )
+    }.mapError(::mapPreviewError)
+
+    private suspend fun analysePreAuthTransaction(
+        manifestData: UnvalidatedManifestData
+    ): Result<Analysis> = runCatching {
+        val preAuthToReview = withContext(dispatcher) {
+            sargonOsManager.sargonOs.analysePreAuthPreview(
+                instructions = manifestData.instructions,
+                blobs = Blobs.init(blobs = manifestData.blobs.map { Blob.init(it) }),
+                nonce = Nonce.random(),
+                notaryPublicKey = data.value.ephemeralNotaryPrivateKey.toPublicKey()
+            )
+        }
+
+        val profile = getProfileUseCase()
+
+        when (preAuthToReview) {
+            is PreAuthToReview.Enclosed -> {
+                val summary = Summary.FromExecution(
+                    manifest = SummarizedManifest.Subintent(preAuthToReview.v1.manifest),
+                    summary = preAuthToReview.v1.summary
+                )
+                val previewType = executionSummaryToPreviewTypeAnalyser.analyze(summary)
+
+                Analysis(
+                    previewType = previewType,
+                    summary = summary,
+                    profile = profile
                 )
             }
-            PreviewType.UnacceptableManifest
-        } else {
-            previewTypeAnalyzer.analyze(this)
-        }
 
-        if (previewType is PreviewType.Transfer) {
+            is PreAuthToReview.Open -> {
+                val summary = Summary.FromStaticAnalysis(
+                    manifest = SummarizedManifest.Subintent(preAuthToReview.v1.manifest),
+                    summary = preAuthToReview.v1.summary
+                )
+                val previewType = manifestSummaryToPreviewTypeAnalyser.analyze(summary = summary)
+
+                Analysis(
+                    previewType = previewType,
+                    summary = summary,
+                    profile = profile
+                )
+            }
+        }
+    }.mapError(::mapPreviewError)
+
+    private fun mapPreviewError(error: Throwable): RadixWalletException {
+        return when (error) {
+            is CommonException.ReservedInstructionsNotAllowedInManifest -> {
+                RadixWalletException.DappRequestException.UnacceptableManifest
+            }
+            is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
+                RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits
+            }
+            else -> {
+                RadixWalletException.DappRequestException.PreviewError(error)
+            }
+        }
+    }
+
+    private suspend fun cacheNewlyCreatedResources(previewType: PreviewType) {
+        if (previewType is PreviewType.Transaction) {
             val newlyCreatedResources = previewType.newlyCreatedResources
             if (newlyCreatedResources.isNotEmpty()) {
                 cacheNewlyCreatedEntitiesUseCase.forResources(newlyCreatedResources)
             }
-            val newlyCreatedNFTItemsForExistingResources = previewType.newlyCreatedNFTItemsForExistingResources
+            val newlyCreatedNFTItemsForExistingResources = previewType.newlyCreatedNFTs
             if (newlyCreatedNFTItemsForExistingResources.isNotEmpty()) {
                 cacheNewlyCreatedEntitiesUseCase.forNFTs(newlyCreatedNFTItemsForExistingResources)
             }
         }
+    }
 
-        _state.update {
-            it.copy(
-                isRawManifestVisible = previewType == PreviewType.NonConforming,
-                showRawTransactionWarning = previewType == PreviewType.NonConforming,
-                isLoading = false,
-                previewType = previewType,
-                defaultSignersCount = notaryAndSigners.signers.count()
-            )
+    private fun onError(error: Throwable) {
+        logger.w(error)
+
+        when (error) {
+            is RadixWalletException.ResourceCouldNotBeResolvedInTransaction -> {
+                logger.w(
+                    "Resource address ${
+                        error.address.formatted(
+                            AddressFormat.RAW
+                        )
+                    } neither on ledger nor as newly created entity. Defaulting to Non Conforming view."
+                )
+
+                _state.update {
+                    it.copy(
+                        isRawManifestVisible = true,
+                        showRawTransactionWarning = true,
+                        isLoading = false,
+                        previewType = PreviewType.NonConforming
+                    )
+                }
+            }
+
+            else -> {
+                reportFailure(
+                    error = error,
+                    previewType = if (error is RadixWalletException.DappRequestException.UnacceptableManifest) {
+                        PreviewType.UnacceptableManifest
+                    } else {
+                        PreviewType.None
+                    }
+                )
+            }
         }
     }
 
-    private fun ExecutionSummary.resolveFees(notaryAndSigners: NotaryAndSigners) = FeesResolver.resolve(
-        summary = this,
-        notaryAndSigners = notaryAndSigners,
-        previewType = _state.value.previewType
-    )
-
-    private fun reportFailure(error: Throwable) {
+    private fun reportFailure(
+        error: Throwable,
+        previewType: PreviewType = PreviewType.None
+    ) {
         logger.w(error)
 
         _state.update {
             it.copy(
                 isLoading = false,
-                isNetworkFeeLoading = false,
-                previewType = PreviewType.None,
-                error = TransactionErrorMessage(error)
+                previewType = previewType,
+                error = TransactionErrorMessage(error),
+                expiration = null
             )
         }
     }

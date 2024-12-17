@@ -107,7 +107,7 @@ fun AssetDialog(
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
-                    val args = state.args as? AssetDialogArgs.NFT
+                    val args = state.args as? AssetDialogArgs.NonFungible
                     NonFungibleAssetDialogContent(
                         resourceAddress = state.args.resourceAddress,
                         localId = args?.localId,
@@ -117,6 +117,7 @@ fun AssetDialog(
                         accountContext = state.accountContext,
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
                         isLoadingBalance = isLoadingBalance,
+                        boundedAmount = args?.amount,
                         canBeHidden = state.canBeHidden,
                         onInfoClick = onInfoClick,
                         onClaimClick = viewModel::onClaimClick,
@@ -135,7 +136,7 @@ fun AssetDialog(
                         onInfoClick = onInfoClick
                     )
 
-                    is AssetDialogArgs.NFT -> NonFungibleAssetDialogContent(
+                    is AssetDialogArgs.NonFungible -> NonFungibleAssetDialogContent(
                         resourceAddress = state.args.resourceAddress,
                         localId = args.localId,
                         asset = null,
@@ -269,7 +270,7 @@ fun DescriptionSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                    .padding(top = RadixTheme.dimensions.paddingXSmall),
+                    .padding(top = RadixTheme.dimensions.paddingXXSmall),
                 url = infoUrl
             )
         }
@@ -392,7 +393,7 @@ fun TagsSection(
                     tags.forEach { tag ->
                         Tag(
                             modifier = Modifier
-                                .padding(RadixTheme.dimensions.paddingXSmall)
+                                .padding(RadixTheme.dimensions.paddingXXSmall)
                                 .border(
                                     width = 1.dp,
                                     color = RadixTheme.colors.gray4,

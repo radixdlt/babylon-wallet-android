@@ -9,8 +9,8 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
@@ -33,41 +33,49 @@ private const val ARG_RESOURCE_TYPE_VALUE_NFT = "nft"
 
 fun NavController.fungibleAssetDialog(
     resourceAddress: ResourceAddress,
-    amounts: Map<ResourceAddress, Decimal192> = emptyMap(),
+    amounts: Map<ResourceAddress, BoundedAmount> = emptyMap(),
     isNewlyCreated: Boolean = false,
     underAccountAddress: AccountAddress? = null,
 ) {
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress.string}" else ""
-    val fungibleAmounts = Serializer.kotlinxSerializationJson.encodeToString(FungibleAmounts(amounts.mapKeys { it.key.string }))
+    val boundedAmounts = Serializer.kotlinxSerializationJson.encodeToString(BoundedAmounts(amounts.mapKeys { it.key.string }))
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_FUNGIBLE" +
             "?${ARG_RESOURCE_ADDRESS}=${resourceAddress.string}" +
             "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-            "&$ARG_AMOUNTS=$fungibleAmounts" +
+            "&$ARG_AMOUNTS=$boundedAmounts" +
             underAccountAddressParam
     )
 }
 
-fun NavController.nftAssetDialog(
+fun NavController.nonFungibleAssetDialog(
     resourceAddress: ResourceAddress,
     localId: NonFungibleLocalId? = null,
     isNewlyCreated: Boolean = false,
-    underAccountAddress: AccountAddress? = null
+    underAccountAddress: AccountAddress? = null,
+    amount: BoundedAmount? = null
 ) {
     val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId.string, Charsets.UTF_8.name())}" else ""
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress.string}" else ""
+    val boundedAmounts = amount?.let {
+        Serializer.kotlinxSerializationJson.encodeToString(
+            BoundedAmounts(amounts = mapOf(resourceAddress.string to it))
+        )
+    }?.let { "&$ARG_AMOUNTS=$it" }.orEmpty()
+
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
             "?${ARG_RESOURCE_ADDRESS}=${resourceAddress.string}" +
             "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
+            boundedAmounts +
             localIdParam +
             underAccountAddressParam
     )
 }
 
 @Serializable
-private data class FungibleAmounts(
-    val amounts: Map<String, @Contextual Decimal192>
+private data class BoundedAmounts(
+    val amounts: Map<String, @Contextual BoundedAmount>
 )
 
 sealed interface AssetDialogArgs {
@@ -79,38 +87,42 @@ sealed interface AssetDialogArgs {
         override val resourceAddress: ResourceAddress,
         override val isNewlyCreated: Boolean,
         override val underAccountAddress: AccountAddress?,
-        private val amounts: Map<String, Decimal192>,
+        private val amounts: Map<String, BoundedAmount>,
     ) : AssetDialogArgs {
 
-        fun fungibleAmountOf(address: ResourceAddress): Decimal192? = amounts[address.string]
+        fun fungibleAmountOf(address: ResourceAddress): BoundedAmount? = amounts[address.string]
     }
 
-    data class NFT(
+    data class NonFungible(
         override val resourceAddress: ResourceAddress,
         override val isNewlyCreated: Boolean,
         override val underAccountAddress: AccountAddress?,
-        val localId: NonFungibleLocalId?
+        val localId: NonFungibleLocalId?,
+        val amount: BoundedAmount?
     ) : AssetDialogArgs
 
     companion object {
         fun from(savedStateHandle: SavedStateHandle): AssetDialogArgs {
+            val boundedAmounts = savedStateHandle.get<String>(ARG_AMOUNTS)?.let { amountsSerialized ->
+                Serializer.kotlinxSerializationJson.decodeFromString<BoundedAmounts>(amountsSerialized)
+            }
+
             return when (requireNotNull(savedStateHandle[ARG_RESOURCE_TYPE])) {
                 ARG_RESOURCE_TYPE_VALUE_FUNGIBLE -> {
-                    val amountsSerialized = requireNotNull(savedStateHandle.get<String>(ARG_AMOUNTS))
-                    val fungibleAmounts = Serializer.kotlinxSerializationJson.decodeFromString<FungibleAmounts>(amountsSerialized)
                     Fungible(
                         resourceAddress = ResourceAddress.init(requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS])),
                         isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                         underAccountAddress = savedStateHandle.get<String>(ARG_UNDER_ACCOUNT_ADDRESS)?.let { AccountAddress.init(it) },
-                        amounts = fungibleAmounts.amounts
+                        amounts = requireNotNull(boundedAmounts?.amounts)
                     )
                 }
 
-                ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
+                ARG_RESOURCE_TYPE_VALUE_NFT -> NonFungible(
                     resourceAddress = ResourceAddress.init(requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS])),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle.get<String>(ARG_UNDER_ACCOUNT_ADDRESS)?.let { AccountAddress.init(it) },
-                    localId = savedStateHandle.get<String>(ARG_LOCAL_ID)?.let { NonFungibleLocalId.init(it) }
+                    localId = savedStateHandle.get<String>(ARG_LOCAL_ID)?.let { NonFungibleLocalId.init(it) },
+                    amount = boundedAmounts?.amounts?.values?.firstOrNull()
                 )
 
                 else -> error("No type specified.")

@@ -2,7 +2,8 @@ package com.babylon.wallet.android.domain.usecases.deeplink
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
-import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
+import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.radixdlt.sargon.RadixConnectMobile
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
@@ -16,15 +17,15 @@ class ProcessDeepLinkUseCase @Inject constructor(
 
     suspend operator fun invoke(deepLink: String): Result<DeepLinkProcessingResult> {
         return runCatching {
-            val profileInitialized = getProfileUseCase.isInitialized()
+            val profileFinishedOnboarding = getProfileUseCase.finishedOnboardingProfile() != null
             val sessionRequest = radixConnectMobile.handleDeepLink(deepLink)
             val request = sessionRequest.interaction.toDomainModel(
-                remoteEntityId = IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(
+                remoteEntityId = RemoteEntityID.RadixMobileConnectRemoteSession(
                     id = sessionRequest.sessionId.toString(),
                     originVerificationUrl = if (sessionRequest.originRequiresValidation) sessionRequest.origin else null
                 )
             ).getOrThrow()
-            if (!profileInitialized) {
+            if (!profileFinishedOnboarding) {
                 incomingRequestRepository.setBufferedRequest(request)
                 return Result.success(DeepLinkProcessingResult.Buffered)
             }
@@ -37,5 +38,5 @@ class ProcessDeepLinkUseCase @Inject constructor(
 
 sealed interface DeepLinkProcessingResult {
     data object Buffered : DeepLinkProcessingResult
-    data class Processed(val request: IncomingMessage.IncomingRequest) : DeepLinkProcessingResult
+    data class Processed(val request: DappToWalletInteraction) : DeepLinkProcessingResult
 }

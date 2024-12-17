@@ -33,19 +33,16 @@ data class LiquidStakeUnit(
     val iconUrl: Uri?
         get() = fungibleResource.iconUrl
 
-    private val percentageOwned: Decimal192?
-        get() {
-            val supply = fungibleResource.currentSupply ?: return null
-            val amount = fungibleResource.ownedAmount ?: return null
+    fun stakeValueXRD(
+        lsu: Decimal192? = fungibleResource.ownedAmount,
+        totalStaked: Decimal192? = fungibleResource.currentSupply,
+        totalStakedInXrd: Decimal192? = validator.totalXrdStake
+    ): Decimal192? {
+        val totalXrdStake = totalStakedInXrd ?: return null
+        val amountOwned = lsu ?: return null
+        val supply = totalStaked ?: return null
 
-            return (amount / supply).roundedWith(divisibility = fungibleResource.divisibility)
-        }
-
-    fun stakeValue(): Decimal192? = stakeValueInXRD(validator.totalXrdStake)
-
-    fun stakeValueInXRD(totalXrdStake: Decimal192?): Decimal192? {
-        if (totalXrdStake == null) return null
-        val percentage = percentageOwned ?: return null
+        val percentage = (amountOwned / supply).roundedWith(divisibility = fungibleResource.divisibility)
 
         return (percentage * totalXrdStake).roundedWith(divisibility = fungibleResource.divisibility)
     }

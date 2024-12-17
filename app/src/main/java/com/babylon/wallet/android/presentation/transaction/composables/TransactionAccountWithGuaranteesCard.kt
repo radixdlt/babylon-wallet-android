@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -34,24 +35,27 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.gradient
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
-import com.babylon.wallet.android.presentation.transaction.model.AccountWithPredictedGuarantee
+import com.babylon.wallet.android.presentation.transaction.model.GuaranteeItem
+import com.babylon.wallet.android.presentation.transaction.model.InvolvedAccount
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun TransactionAccountWithGuaranteesCard(
     modifier: Modifier = Modifier,
-    accountWithGuarantee: AccountWithPredictedGuarantee,
+    guaranteeItem: GuaranteeItem,
     onGuaranteePercentChanged: (String) -> Unit,
     onGuaranteePercentIncreased: () -> Unit,
     onGuaranteePercentDecreased: () -> Unit,
@@ -64,9 +68,9 @@ fun TransactionAccountWithGuaranteesCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    brush = when (accountWithGuarantee) {
-                        is AccountWithPredictedGuarantee.Other -> SolidColor(RadixTheme.colors.gray2)
-                        is AccountWithPredictedGuarantee.Owned -> accountWithGuarantee.account.appearanceId.gradient()
+                    brush = when (val involvedAccount = guaranteeItem.account) {
+                        is InvolvedAccount.Other -> SolidColor(RadixTheme.colors.gray2)
+                        is InvolvedAccount.Owned -> involvedAccount.account.appearanceId.gradient()
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
@@ -74,12 +78,11 @@ fun TransactionAccountWithGuaranteesCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = when (accountWithGuarantee) {
-                    is AccountWithPredictedGuarantee.Other -> stringResource(
-                        id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName
+                text = when (val involvedAccount = guaranteeItem.account) {
+                    is InvolvedAccount.Other -> stringResource(
+                        id = com.babylon.wallet.android.R.string.interactionReview_externalAccountName
                     )
-
-                    is AccountWithPredictedGuarantee.Owned -> accountWithGuarantee.account.displayName.value
+                    is InvolvedAccount.Owned -> involvedAccount.account.displayName.value
                 },
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
@@ -89,7 +92,7 @@ fun TransactionAccountWithGuaranteesCard(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             ActionableAddressView(
-                address = Address.Account(accountWithGuarantee.address),
+                address = guaranteeItem.accountAddress.asGeneral(),
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white
@@ -112,14 +115,14 @@ fun TransactionAccountWithGuaranteesCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                val fungible = accountWithGuarantee.transferable.resource as Resource.FungibleResource
+                val fungible = guaranteeItem.transferable.asset.resource as Resource.FungibleResource
                 Thumbnail.Fungible(
                     modifier = Modifier.size(44.dp),
                     token = fungible
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = accountWithGuarantee.transferable.displayTitle(),
+                    text = guaranteeItem.transferable.displayTitle(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -134,7 +137,7 @@ fun TransactionAccountWithGuaranteesCard(
                     ) {
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_estimated),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.interactionReview_estimated),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -143,7 +146,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.transferable.amount.formatted(),
+                            text = guaranteeItem.updatedAmount.estimated.formatted(),
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -154,7 +157,7 @@ fun TransactionAccountWithGuaranteesCard(
                     Row {
                         Text(
                             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                            text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
+                            text = stringResource(id = com.babylon.wallet.android.R.string.interactionReview_guaranteed),
                             style = RadixTheme.typography.body2Regular,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,
@@ -163,7 +166,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.guaranteedAmount.formatted(),
+                            text = guaranteeItem.updatedAmount.guaranteed.formatted(),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,
@@ -195,13 +198,16 @@ fun TransactionAccountWithGuaranteesCard(
 
                 IconButton(
                     modifier = Modifier.weight(0.7f),
-                    onClick = onGuaranteePercentDecreased
+                    onClick = onGuaranteePercentDecreased,
+                    enabled = guaranteeItem.isDecreaseAllowed,
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        contentColor = RadixTheme.colors.gray1
+                    )
                 ) {
                     Icon(
                         painterResource(
                             id = com.babylon.wallet.android.R.drawable.ic_minus
                         ),
-                        tint = RadixTheme.colors.gray1,
                         contentDescription = "minus button"
                     )
                 }
@@ -209,8 +215,9 @@ fun TransactionAccountWithGuaranteesCard(
                 RadixTextField(
                     modifier = Modifier.weight(1.1f),
                     onValueChanged = onGuaranteePercentChanged,
-                    value = accountWithGuarantee.guaranteeAmountString,
+                    value = guaranteeItem.typedPercent,
                     singleLine = true,
+                    errorHighlight = !guaranteeItem.isInputValid,
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.None,
                         keyboardType = KeyboardType.Number
@@ -219,13 +226,15 @@ fun TransactionAccountWithGuaranteesCard(
 
                 IconButton(
                     modifier = Modifier.weight(0.7f),
-                    onClick = onGuaranteePercentIncreased
+                    onClick = onGuaranteePercentIncreased,
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        contentColor = RadixTheme.colors.gray1
+                    )
                 ) {
                     Icon(
                         painterResource(
                             id = com.babylon.wallet.android.R.drawable.ic_plus
                         ),
-                        tint = RadixTheme.colors.gray1,
                         contentDescription = "plus button"
                     )
                 }
@@ -243,22 +252,26 @@ fun TransactionAccountWithGuaranteesCard(
 @Composable
 fun TransactionAccountWithGuaranteesCardPreview() {
     RadixWalletTheme {
-        val state: MutableState<AccountWithPredictedGuarantee> = remember {
+        val state: MutableState<GuaranteeItem> = remember {
             mutableStateOf(
-                AccountWithPredictedGuarantee.Owned(
-                    account = Account.sampleMainnet(),
-                    transferable = TransferableAsset.Fungible.Token(
-                        amount = 10.toDecimal192(),
-                        resource = Resource.FungibleResource.sampleMainnet(),
-                        isNewlyCreated = false
-                    ),
-                    instructionIndex = 1L,
-                    guaranteeAmountString = "100"
+                requireNotNull(
+                    GuaranteeItem.from(
+                        involvedAccount = InvolvedAccount.Owned(Account.sampleMainnet()),
+                        transferable = Transferable.FungibleType.Token(
+                            asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                            amount = BoundedAmount.Predicted(
+                                estimated = 10.toDecimal192(),
+                                instructionIndex = 1L,
+                                offset = 0.9.toDecimal192()
+                            ),
+                            isNewlyCreated = false
+                        )
+                    )
                 )
             )
         }
         TransactionAccountWithGuaranteesCard(
-            accountWithGuarantee = state.value,
+            guaranteeItem = state.value,
             onGuaranteePercentChanged = { value ->
                 state.value = state.value.change(value)
             },

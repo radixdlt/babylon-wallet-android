@@ -12,19 +12,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.model.displayTitle
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun TransferableTokenItemContent(
     modifier: Modifier = Modifier,
-    transferable: Transferable,
+    transferableToken: Transferable.FungibleType.Token,
     shape: Shape,
     isHidden: Boolean,
     hiddenResourceWarning: String
@@ -45,36 +55,140 @@ fun TransferableTokenItemContent(
             verticalAlignment = CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
-            when (val resource = transferable.transferable) {
-                is TransferableAsset.Fungible.Token -> {
-                    Thumbnail.Fungible(
-                        modifier = Modifier.size(44.dp),
-                        token = resource.resource,
-                    )
-                }
-
-                is TransferableAsset.NonFungible.NFTAssets -> {
-                    Thumbnail.NonFungible(
-                        modifier = Modifier.size(44.dp),
-                        collection = resource.resource
-                    )
-                }
-
-                else -> {}
-            }
+            Thumbnail.Fungible(
+                modifier = Modifier.size(44.dp),
+                token = transferableToken.asset.resource,
+            )
             Text(
                 modifier = Modifier.weight(1f),
-                text = transferable.transferable.displayTitle(),
+                text = transferableToken.asset.displayTitle(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            GuaranteesSection(transferable)
+            BoundedAmountSection(boundedAmount = transferableToken.amount)
         }
+        UnknownAmount(
+            modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+            amount = transferableToken.amount
+        )
         TransferableHiddenItemWarning(
             isHidden = isHidden,
             text = hiddenResourceWarning
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Preview("large font", fontScale = 2f)
+@Composable
+private fun TransferableTokenWithExactAmountPreview() {
+    RadixWalletTheme {
+        TransferableTokenItemContent(
+            transferableToken = Transferable.FungibleType.Token(
+                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                amount = BoundedAmount.Exact("745".toDecimal192()),
+                isNewlyCreated = false
+            ),
+            shape = RectangleShape,
+            isHidden = false,
+            hiddenResourceWarning = ""
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+private fun TransferableTokenWithRangeAmountPreview() {
+    RadixWalletTheme {
+        TransferableTokenItemContent(
+            transferableToken = Transferable.FungibleType.Token(
+                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                amount = BoundedAmount.Range(minAmount = "123".toDecimal192(), maxAmount = "3564".toDecimal192()),
+                isNewlyCreated = false
+            ),
+            shape = RectangleShape,
+            isHidden = false,
+            hiddenResourceWarning = ""
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+private fun TransferableTokenWithMinAmountPreview() {
+    RadixWalletTheme {
+        TransferableTokenItemContent(
+            transferableToken = Transferable.FungibleType.Token(
+                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                amount = BoundedAmount.Min("10.0396".toDecimal192()),
+                isNewlyCreated = false
+            ),
+            shape = RectangleShape,
+            isHidden = false,
+            hiddenResourceWarning = ""
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+private fun TransferableTokenWithMaxAmountPreview() {
+    RadixWalletTheme {
+        TransferableTokenItemContent(
+            transferableToken = Transferable.FungibleType.Token(
+                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                amount = BoundedAmount.Max("10.0396".toDecimal192()),
+                isNewlyCreated = false
+            ),
+            shape = RectangleShape,
+            isHidden = false,
+            hiddenResourceWarning = ""
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+private fun TransferableTokenWithGuaranteeAmountPreview() {
+    RadixWalletTheme {
+        TransferableTokenItemContent(
+            transferableToken = Transferable.FungibleType.Token(
+                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                amount = BoundedAmount.Predicted(
+                    estimated = 69.toDecimal192(),
+                    instructionIndex = 4L,
+                    offset = "1.8".toDecimal192()
+                ),
+                isNewlyCreated = false
+            ),
+            shape = RectangleShape,
+            isHidden = false,
+            hiddenResourceWarning = ""
+        )
+    }
+}
+
+@UsesSampleValues
+@Preview(showBackground = true)
+@Composable
+private fun TransferableTokenWithUnknownAmountPreview() {
+    RadixWalletTheme {
+        TransferableTokenItemContent(
+            transferableToken = Transferable.FungibleType.Token(
+                asset = Token(resource = Resource.FungibleResource.sampleMainnet()),
+                amount = BoundedAmount.Unknown,
+                isNewlyCreated = false
+            ),
+            shape = RectangleShape,
+            isHidden = true,
+            hiddenResourceWarning = stringResource(id = R.string.interactionReview_hiddenAsset_withdraw)
         )
     }
 }

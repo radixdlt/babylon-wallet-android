@@ -56,6 +56,19 @@ sealed interface LedgerInteractionRequest {
     }
 
     @Serializable
+    @SerialName("signSubintentHash")
+    data class SignSubintentHash(
+        @SerialName("interactionId")
+        override val interactionId: String,
+        @SerialName("signers")
+        val signers: List<KeyParameters>,
+        @SerialName("ledgerDevice")
+        val ledgerDevice: LedgerDevice,
+        @SerialName("subintentHash")
+        val subintentHash: String,
+    ) : LedgerInteractionRequest
+
+    @Serializable
     @SerialName("signChallenge")
     data class SignChallenge(
         @SerialName("interactionId")
@@ -96,7 +109,7 @@ sealed interface LedgerInteractionRequest {
         companion object {
             fun from(factorSource: FactorSource.Ledger): LedgerDevice = LedgerDevice(
                 id = factorSource.value.id.body.hex,
-                name = factorSource.value.hint.name,
+                name = factorSource.value.hint.label,
                 model = LedgerDeviceModel.from(factorSource.value.hint.model),
             )
         }

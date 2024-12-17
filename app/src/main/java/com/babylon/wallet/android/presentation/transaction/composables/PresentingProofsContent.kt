@@ -43,7 +43,7 @@ fun PresentingProofsContent(
 ) {
     if (badges.isNotEmpty()) {
         Column(
-            modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)
+            modifier = modifier
         ) {
             Row(
                 modifier = Modifier
@@ -52,10 +52,10 @@ fun PresentingProofsContent(
                         vertical = RadixTheme.dimensions.paddingSmall
                     )
                     .height(intrinsicSize = IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXXSmall)
             ) {
                 Text(
-                    text = stringResource(id = R.string.transactionReview_presentingHeading).uppercase(),
+                    text = stringResource(id = R.string.interactionReview_presentingHeading).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2,
                     overflow = TextOverflow.Ellipsis,

@@ -24,11 +24,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
@@ -64,21 +59,13 @@ class HistoryViewModel @Inject constructor(
         // we load first transaction date first before we load history for the 1st time, to use this date in request filters
         viewModelScope.launch {
             getProfileUseCase().activeAccountOnCurrentNetwork(args.accountAddress)?.let { account ->
-                getWalletAssetsUseCase(listOf(account), false).catch { error ->
-                    _state.update {
-                        it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
-                    }
-                }.mapNotNull { it.firstOrNull() }.map { accountWithAssets ->
+                getWalletAssetsUseCase.collect(account, false).map { accountWithAssets ->
                     if (accountWithAssets.details?.firstTransactionDate == null) {
                         updateAccountFirstTransactionDateUseCase(args.accountAddress).getOrThrow()
                     } else {
                         accountWithAssets.details.firstTransactionDate
                     }
-                }.catch { error ->
-                    _state.update {
-                        it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
-                    }
-                }.firstOrNull().let { genesisTxInstant ->
+                }.onSuccess { genesisTxInstant ->
                     genesisTxInstant?.let {
                         computeTimeFilters(it)
                         _state.update { state ->
@@ -93,6 +80,10 @@ class HistoryViewModel @Inject constructor(
                         }
                     }
                     loadHistory()
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
+                    }
                 }
             }
         }
@@ -104,15 +95,17 @@ class HistoryViewModel @Inject constructor(
                 _state.update {
                     it.copy(accountWithAssets = AccountWithAssets(account))
                 }
-                getWalletAssetsUseCase(listOf(account), false).catch { error ->
-                    _state.update {
-                        it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
+
+                getWalletAssetsUseCase.collect(account, false)
+                    .onSuccess { accountWithAssets ->
+                        _state.update { state ->
+                            state.copy(accountWithAssets = accountWithAssets)
+                        }
+                    }.onFailure { error ->
+                        _state.update {
+                            it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
+                        }
                     }
-                }.mapNotNull { it.firstOrNull() }.collectLatest { accountWithAssets ->
-                    _state.update { state ->
-                        state.copy(accountWithAssets = accountWithAssets)
-                    }
-                }
             }
         }
     }

@@ -45,7 +45,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.HomeCardsCarousel
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -61,6 +61,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.HomeCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.toUrl
 import com.radixdlt.sargon.samples.AccountMainnetSample
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -72,7 +73,6 @@ import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
-import rdx.works.core.sargon.toUrl
 
 @Composable
 fun WalletScreen(
@@ -112,6 +112,7 @@ fun WalletScreen(
 
     LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
         viewModel.processBufferedDeepLinkRequest()
+        viewModel.refreshAccountLockers()
     }
 
     LaunchedEffect(Unit) {
@@ -293,7 +294,7 @@ private fun WalletAccountList(
                     style = RadixTheme.typography.body2Header,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXSmall))
                 TotalFiatBalanceView(
                     fiatPrice = state.totalBalance,
                     isLoading = state.isLoadingTotalBalance,

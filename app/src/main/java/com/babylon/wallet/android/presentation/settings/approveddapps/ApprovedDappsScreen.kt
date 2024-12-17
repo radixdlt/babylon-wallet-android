@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.approveddapps
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -96,39 +95,35 @@ private fun ApprovedDAppsContent(
         Box(modifier = Modifier.padding(padding)) {
             Column {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                Text(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingMedium
-                    ),
-                    text = stringResource(R.string.authorizedDapps_subtitle),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray2
-                )
-                InfoButton(
-                    modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingMedium
-                    ),
-                    text = stringResource(id = R.string.infoLink_title_dapps),
-                    onClick = {
-                        onInfoClick(GlossaryItem.dapps)
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item {
+                        Text(
+                            modifier = Modifier.padding(
+                                horizontal = RadixTheme.dimensions.paddingDefault,
+                                vertical = RadixTheme.dimensions.paddingDefault
+                            ),
+                            text = stringResource(R.string.authorizedDapps_subtitle),
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                        InfoButton(
+                            modifier = Modifier.padding(
+                                horizontal = RadixTheme.dimensions.paddingDefault
+                            ),
+                            text = stringResource(id = R.string.infoLink_title_dapps),
+                            onClick = {
+                                onInfoClick(GlossaryItem.dapps)
+                            }
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                     }
-                )
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingLarge
-                    ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                ) {
                     items(state.dApps) { item ->
                         DappCard(
-                            modifier = Modifier.throttleClickable {
-                                onDAppClick(item.dApp.dAppAddress)
-                            },
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                .throttleClickable {
+                                    onDAppClick(item.dApp.dAppAddress)
+                                },
                             dApp = item.dApp,
                             bottomContent = if (item.hasDeposits) {
                                 {

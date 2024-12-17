@@ -17,12 +17,13 @@ class CheckEntitiesCreatedWithOlympiaUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(): BDFSErrorCheckResult {
-        if (getProfileUseCase.isInitialized().not()) return BDFSErrorCheckResult()
-        val accounts = getProfileUseCase().activeAccountsOnCurrentNetwork
-        val personas = getProfileUseCase().activePersonasOnCurrentNetwork
+        val profile = getProfileUseCase.finishedOnboardingProfile() ?: return BDFSErrorCheckResult()
+
+        val accounts = profile.activeAccountsOnCurrentNetwork
+        val personas = profile.activePersonasOnCurrentNetwork
         // after chat with Alex we figured out that we most of Olympia users used
         // 12 words mnemonic so we will catch most of users that have problem that this use case is suppose to detect
-        val olympiaFactorSourceIds = getProfileUseCase().deviceFactorSources.filter {
+        val olympiaFactorSourceIds = profile.deviceFactorSources.filter {
             it.supportsOlympia && it.value.hint.mnemonicWordCount.value < Bip39WordCount.TWENTY_FOUR.value
         }.map { it.value.id.asGeneral() }
         val accountsCreatedWithOlympia = accounts.filter { it.usesEd25519 && it.factorSourceId in olympiaFactorSourceIds }

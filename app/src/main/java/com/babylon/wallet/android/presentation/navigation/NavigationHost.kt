@@ -8,7 +8,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
@@ -21,6 +20,9 @@ import com.babylon.wallet.android.presentation.account.createaccount.withledger.
 import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
+import com.babylon.wallet.android.presentation.account.settings.delete.deleteAccount
+import com.babylon.wallet.android.presentation.account.settings.delete.moveassets.deletingAccountMoveAssets
+import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
 import com.babylon.wallet.android.presentation.account.settings.specificassets.specificAssets
 import com.babylon.wallet.android.presentation.account.settings.specificdepositor.specificDepositor
@@ -32,18 +34,20 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.assets.assetDialog
 import com.babylon.wallet.android.presentation.dialogs.assets.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.dialogs.assets.nftAssetDialog
+import com.babylon.wallet.android.presentation.dialogs.assets.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
+import com.babylon.wallet.android.presentation.dialogs.preauthorization.preAuthorizationStatusDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileScreen
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.main.MainUiState
+import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.mobileconnect.ROUTE_MOBILE_CONNECT
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
+import com.babylon.wallet.android.presentation.model.BoundedAmount
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.ConnectCloudBackupViewModel.ConnectMode
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
@@ -77,6 +81,7 @@ import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
 import com.babylon.wallet.android.presentation.transaction.transactionReview
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -91,7 +96,7 @@ import rdx.works.core.domain.resources.XrdResource
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
-    mainUiState: StateFlow<MainUiState>,
+    state: StateFlow<MainViewModel.State>,
     startDestination: String,
     navController: NavHostController,
     onCloseApp: () -> Unit,
@@ -210,7 +215,7 @@ fun NavigationHost(
             navController.popBackStack()
         })
         main(
-            mainUiState = mainUiState,
+            mainUiState = state,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
@@ -254,7 +259,7 @@ fun NavigationHost(
             },
             onFungibleResourceClick = { resource, account ->
                 val resourceWithAmount = resource.ownedAmount?.let {
-                    mapOf(resource.address to it)
+                    mapOf(resource.address to BoundedAmount.Exact(amount = it))
                 }.orEmpty()
                 navController.fungibleAssetDialog(
                     resourceAddress = resource.address,
@@ -263,7 +268,7 @@ fun NavigationHost(
                 )
             },
             onNonFungibleResourceClick = { resource, item, account ->
-                navController.nftAssetDialog(
+                navController.nonFungibleAssetDialog(
                     resourceAddress = resource.address,
                     localId = item.localId,
                     underAccountAddress = account.address
@@ -393,40 +398,49 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onTransferableFungibleClick = { asset ->
-                val resourcesWithAmount = when (asset) {
-                    is TransferableAsset.Fungible.LSUAsset -> {
+            onTransferableFungibleClick = { fungibleTransferable ->
+                val resourcesWithAmount = when (fungibleTransferable) {
+                    is Transferable.FungibleType.LSU -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = asset.resourceAddress.networkId
+                            val networkId = fungibleTransferable.resourceAddress.networkId
                             XrdResource.address(networkId = networkId)
                         }.getOrNull()
 
                         mutableMapOf(
-                            asset.resource.address to asset.amount,
+                            fungibleTransferable.asset.resource.address to fungibleTransferable.amount,
                         ).apply {
                             if (xrdResourceAddress != null) {
-                                put(xrdResourceAddress, asset.xrdWorth)
+                                put(xrdResourceAddress, fungibleTransferable.xrdWorth)
                             }
                         }
                     }
 
-                    is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.address to asset.amount).apply {
-                        putAll(asset.contributionPerResource)
+                    is Transferable.FungibleType.PoolUnit -> mutableMapOf(
+                        fungibleTransferable.asset.resource.address to fungibleTransferable.amount
+                    ).apply {
+                        putAll(fungibleTransferable.contributions)
                     }
 
-                    is TransferableAsset.Fungible.Token -> mapOf(asset.resource.address to asset.amount)
+                    is Transferable.FungibleType.Token -> mapOf(fungibleTransferable.asset.resource.address to fungibleTransferable.amount)
                 }
                 navController.fungibleAssetDialog(
-                    resourceAddress = asset.resource.address,
+                    resourceAddress = fungibleTransferable.asset.resource.address,
                     amounts = resourcesWithAmount,
-                    isNewlyCreated = asset.isNewlyCreated
+                    isNewlyCreated = fungibleTransferable.isNewlyCreated
                 )
             },
-            onTransferableNonFungibleClick = { asset, item ->
-                navController.nftAssetDialog(
-                    resourceAddress = asset.resource.address,
+            onTransferableNonFungibleItemClick = { nonFungibleTransferable, item ->
+                navController.nonFungibleAssetDialog(
+                    resourceAddress = nonFungibleTransferable.asset.resource.address,
                     localId = item?.localId,
-                    isNewlyCreated = asset.isNewlyCreated
+                    isNewlyCreated = nonFungibleTransferable.isNewlyCreated
+                )
+            },
+            onTransferableNonFungibleByAmountClick = { nonFungibleTransferable, amount ->
+                navController.nonFungibleAssetDialog(
+                    resourceAddress = nonFungibleTransferable.asset.resource.address,
+                    isNewlyCreated = nonFungibleTransferable.isNewlyCreated,
+                    amount = amount
                 )
             },
             onDAppClick = { dApp ->
@@ -447,11 +461,13 @@ fun NavigationHost(
                 when (spendingAsset) {
                     is SpendingAsset.Fungible -> navController.fungibleAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
-                        amounts = spendingAsset.resource.ownedAmount?.let { mapOf(spendingAsset.resourceAddress to it) }.orEmpty(),
+                        amounts = spendingAsset.resource.ownedAmount?.let {
+                            mapOf(spendingAsset.resourceAddress to BoundedAmount.Exact(amount = it))
+                        }.orEmpty(),
                         underAccountAddress = fromAccount.address
                     )
 
-                    is SpendingAsset.NFT -> navController.nftAssetDialog(
+                    is SpendingAsset.NFT -> navController.nonFungibleAssetDialog(
                         resourceAddress = spendingAsset.resourceAddress,
                         localId = spendingAsset.item.localId,
                         underAccountAddress = null // Marking as null hides claim button when the nft is a claim
@@ -480,6 +496,27 @@ fun NavigationHost(
                 }
             },
             onHideAccountClick = {
+                navController.popBackStack(MAIN_ROUTE, inclusive = false)
+            },
+            onDeleteAccountClick = {
+                navController.deleteAccount(accountAddress = it)
+            }
+        )
+        deleteAccount(
+            onMoveAssetsToAnotherAccount = { accountAddress ->
+                navController.deletingAccountMoveAssets(deletingAccountAddress = accountAddress)
+            },
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        deletingAccountMoveAssets(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        deletedAccountSuccess(
+            onGotoHomescreen = {
                 navController.popBackStack(MAIN_ROUTE, inclusive = false)
             }
         )
@@ -574,7 +611,7 @@ fun NavigationHost(
                 navController.fungibleAssetDialog(resourceAddress = it.address)
             },
             onNonFungibleClick = {
-                navController.nftAssetDialog(resourceAddress = it.address)
+                navController.nonFungibleAssetDialog(resourceAddress = it.address)
             },
             onDismiss = {
                 navController.popBackStack()
@@ -619,6 +656,11 @@ fun NavigationHost(
                 navController.transactionReview(it) {
                     popUpTo(ROUTE_MOBILE_CONNECT) { inclusive = true }
                 }
+            }
+        )
+        preAuthorizationStatusDialog(
+            onClose = {
+                navController.popBackStack()
             }
         )
     }

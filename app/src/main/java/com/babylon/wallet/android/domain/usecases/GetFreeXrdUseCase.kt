@@ -1,24 +1,19 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.babylon.wallet.android.data.transaction.TransactionConfig.TIP_PERCENTAGE
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.signing.SignTransactionUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.signing.SignAndNotariseTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionStatusUseCase
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
-import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -26,12 +21,11 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 class GetFreeXrdUseCase @Inject constructor(
-    private val signTransactionUseCase: SignTransactionUseCase,
+    private val signAndNotarizeTransactionUseCase: SignAndNotariseTransactionUseCase,
     private val transactionRepository: TransactionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
-    private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
-    private val submitTransactionUseCase: SubmitTransactionUseCase,
+    private val getTransactionStatusUseCase: GetTransactionStatusUseCase,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
@@ -42,25 +36,20 @@ class GetFreeXrdUseCase @Inject constructor(
                     includeLockFeeInstruction = true,
                     addressOfReceivingAccount = address
                 )
-            }.mapCatching {
-                TransactionManifestData.from(manifest = it)
             }.getOrElse {
                 return@withContext Result.failure(it)
             }
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
-                signTransactionUseCase(
-                    request = SignTransactionUseCase.Request(
-                        manifest = manifest,
-                        lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
-                        tipPercentage = TIP_PERCENTAGE
-                    )
+                signAndNotarizeTransactionUseCase(
+                    manifest = manifest,
                 ).then { notarization ->
-                    submitTransactionUseCase(notarizationResult = notarization)
+                    transactionRepository.submitTransaction(notarization.notarizedTransaction)
+                        .map { notarization }
                 }.onSuccess { notarization ->
-                    pollTransactionStatusUseCase(
-                        txID = notarization.intentHash.bech32EncodedTxId,
+                    getTransactionStatusUseCase(
+                        intentHash = notarization.intentHash,
                         requestId = "",
                         endEpoch = notarization.endEpoch
                     ).result.onSuccess {

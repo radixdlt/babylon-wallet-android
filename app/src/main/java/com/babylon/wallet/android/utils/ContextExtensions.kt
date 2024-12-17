@@ -32,6 +32,11 @@ interface BiometricAuthenticationEntryPoint {
     fun provideAppLockStateProvider(): AppLockStateProvider
 }
 
+@Deprecated(
+    "If biometrics is needed from an operation handled by a view model, better use BiometricsAuthenticateUseCase. " +
+        "No need for the viewmodel to send an event to the ui which will eventually provide a callback to the view model regarding the " +
+        "result of the biometrics operation."
+)
 fun Context.biometricAuthenticate(
     authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit
 ) {
@@ -59,6 +64,10 @@ fun Context.biometricAuthenticate(
     }
 }
 
+@Deprecated(
+    "If biometrics is needed from an operation handled by a view model, better use BiometricsAuthenticateUseCase. " +
+        "No need for the viewmodel to expose methods with a suspend callback just to receive the result of the biometrics operation."
+)
 suspend fun Context.biometricAuthenticateSuspend(): Boolean {
     val fragmentActivity = findFragmentActivity() ?: return false
     val appLockStateProvider = EntryPointAccessors.fromActivity(

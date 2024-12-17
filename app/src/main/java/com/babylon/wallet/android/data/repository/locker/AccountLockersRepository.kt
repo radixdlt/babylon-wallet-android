@@ -6,12 +6,13 @@ import com.babylon.wallet.android.data.gateway.extensions.paginateAccountLockerV
 import com.babylon.wallet.android.data.gateway.generated.models.AccountLockerAddress
 import com.babylon.wallet.android.data.gateway.generated.models.AccountLockerVaultCollectionItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateAccountLockersTouchedAtRequest
-import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerDao
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerTouchedAtEntity
 import com.babylon.wallet.android.data.repository.cache.database.locker.AccountLockerVaultItemEntity
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.domain.model.transaction.UnvalidatedManifestData
+import com.babylon.wallet.android.domain.model.transaction.prepareInternalTransactionRequest
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.LockerAddress
 import com.radixdlt.sargon.TransactionManifest
@@ -22,7 +23,6 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.TransactionManifestData
 import javax.inject.Inject
 
 interface AccountLockersRepository {
@@ -126,7 +126,7 @@ class AccountLockersRepositoryImpl @Inject constructor(
                     claimableResources = cachedVaultItems.map { it.into() }
                 )
             }.mapCatching { manifest ->
-                TransactionManifestData.from(manifest)
+                UnvalidatedManifestData.from(manifest)
                     .prepareInternalTransactionRequest()
             }.onSuccess { request ->
                 incomingRequestRepository.add(request)

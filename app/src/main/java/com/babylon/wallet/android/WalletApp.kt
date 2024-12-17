@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -21,18 +22,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.userFriendlyMessage
+import com.babylon.wallet.android.domain.model.messages.TransactionRequest
+import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
+import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
+import com.babylon.wallet.android.presentation.account.settings.delete.success.deletedAccountSuccess
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.dialogs.address.addressDetails
 import com.babylon.wallet.android.presentation.dialogs.dapp.dappInteractionDialog
+import com.babylon.wallet.android.presentation.dialogs.preauthorization.preAuthorizationStatusDialog
 import com.babylon.wallet.android.presentation.dialogs.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
@@ -70,30 +73,30 @@ fun WalletApp(
             modifier = Modifier.fillMaxSize(),
             startDestination = MAIN_ROUTE,
             navController = navController,
-            mainUiState = mainViewModel.state,
+            state = mainViewModel.state,
             onCloseApp = onCloseApp
         )
         LaunchedEffect(Unit) {
             mainViewModel.oneOffEvent.collect { event ->
                 when (event) {
-                    is MainEvent.IncomingRequestEvent -> {
+                    is MainViewModel.Event.IncomingRequestEvent -> {
                         if (event.request.needVerification) {
                             navController.mobileConnect(event.request.interactionId)
                             return@collect
                         }
-                        when (val incomingRequest = event.request) {
-                            is IncomingMessage.IncomingRequest.TransactionRequest -> {
+                        when (val dappToWalletInteraction = event.request) {
+                            is TransactionRequest -> {
                                 navController.transactionReview(
-                                    requestId = incomingRequest.interactionId
+                                    requestId = dappToWalletInteraction.interactionId
                                 )
                             }
 
-                            is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
-                                navController.dAppLoginAuthorized(incomingRequest.interactionId)
+                            is WalletAuthorizedRequest -> {
+                                navController.dAppLoginAuthorized(dappToWalletInteraction.interactionId)
                             }
 
-                            is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
-                                navController.dAppLoginUnauthorized(incomingRequest.interactionId)
+                            is WalletUnauthorizedRequest -> {
+                                navController.dAppLoginUnauthorized(dappToWalletInteraction.interactionId)
                             }
                         }
                     }
@@ -128,6 +131,13 @@ fun WalletApp(
         HandleAddressDetailsEvents(
             navController = navController,
             addressDetailsEvents = mainViewModel.addressDetailsEvents
+        )
+        HandleAccountDeletedEvent(
+            navController = navController,
+            accountDeletedEvents = mainViewModel.accountDeletedEvents
+        )
+        HandleDeletedAccountsDetectedEvent(
+            viewModel = mainViewModel
         )
         ObserveHighPriorityScreens(
             navController = navController,
@@ -175,7 +185,7 @@ fun WalletApp(
                     mainViewModel.onInvalidRequestMessageShown()
                 },
                 titleText = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-                messageText = it.userFriendlyMessage(),
+                messageText = it.getMessage(),
                 confirmText = stringResource(
                     id = R.string.common_ok
                 ),
@@ -246,6 +256,10 @@ private fun HandleStatusEvents(
                 is AppEvent.Status.DappInteraction -> {
                     navController.dappInteractionDialog(event)
                 }
+
+                is AppEvent.Status.PreAuthorization -> {
+                    navController.preAuthorizationStatusDialog(event)
+                }
             }
         }
     }
@@ -260,6 +274,44 @@ private fun HandleAddressDetailsEvents(
         addressDetailsEvents.collect { event ->
             navController.addressDetails(actionableAddress = event.address)
         }
+    }
+}
+
+@Composable
+private fun HandleAccountDeletedEvent(
+    navController: NavController,
+    accountDeletedEvents: Flow<AppEvent.AccountDeleted>
+) {
+    LaunchedEffect(Unit) {
+        accountDeletedEvents.collect {
+            navController.deletedAccountSuccess()
+        }
+    }
+}
+
+@Composable
+private fun HandleDeletedAccountsDetectedEvent(
+    viewModel: MainViewModel
+) {
+    var isAccountsPreviouslyDeletedDetected by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        viewModel.accountsDetectedDeletedEvents.collect {
+            isAccountsPreviouslyDeletedDetected = true
+        }
+    }
+
+    if (isAccountsPreviouslyDeletedDetected) {
+        BasicPromptAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    isAccountsPreviouslyDeletedDetected = false
+                }
+            },
+            titleText = stringResource(id = R.string.homePage_deletedAccountWarning_title),
+            messageText = stringResource(id = R.string.homePage_deletedAccountWarning_message),
+            dismissText = null,
+            confirmText = stringResource(R.string.common_continue)
+        )
     }
 }
 

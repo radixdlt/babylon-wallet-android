@@ -8,8 +8,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.NPSSurveyRepository
 import com.babylon.wallet.android.data.repository.NPSSurveyRepositoryImpl
-import com.babylon.wallet.android.data.repository.cache.HttpCache
-import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepositoryImpl
 import com.babylon.wallet.android.data.repository.homecards.HomeCardsRepository
@@ -121,12 +119,6 @@ interface DataModule {
     fun bindAccountLockerRepository(
         repository: AccountLockersRepositoryImpl
     ): AccountLockersRepository
-
-    @Binds
-    @Singleton
-    fun bindHttpCache(
-        cache: HttpCacheImpl
-    ): HttpCache
 
     @Binds
     @Singleton

@@ -60,7 +60,7 @@ import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.resources.metadata.AccountType
+import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.poolUnit
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.currentNetwork
@@ -246,7 +246,7 @@ class AccountsStateCache @Inject constructor(
             // Parse details for this account
             val cachedDetails = AccountCachedData(
                 stateVersion = cache.stateVersion,
-                accountType = cache.accountType,
+                accountMetadata = cache.accountMetadata?.metadata.orEmpty(),
                 firstTransactionDate = cache.firstTransactionDate
             )
 
@@ -360,7 +360,7 @@ class AccountsStateCache @Inject constructor(
 
     private data class AccountCachedData(
         val stateVersion: Long?,
-        val accountType: AccountType?,
+        val accountMetadata: List<Metadata>,
         val firstTransactionDate: Instant?,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
@@ -448,7 +448,7 @@ class AccountsStateCache @Inject constructor(
                 address = accountAddress,
                 details = AccountDetails(
                     stateVersion = stateVersion,
-                    accountType = accountType,
+                    metadata = accountMetadata,
                     firstTransactionDate = firstTransactionDate
                 ),
                 assets = Assets(

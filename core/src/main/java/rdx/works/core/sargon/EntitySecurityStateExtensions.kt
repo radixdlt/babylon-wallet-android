@@ -50,7 +50,7 @@ val EntitySecurityState.derivationPathScheme: DerivationPathScheme
         is EntitySecurityState.Unsecured -> {
             when (value.transactionSigning.publicKey.derivationPath) {
                 is DerivationPath.Bip44Like -> DerivationPathScheme.BIP44_OLYMPIA
-                is DerivationPath.Cap26 -> DerivationPathScheme.CAP26
+                is DerivationPath.Account, is DerivationPath.Identity -> DerivationPathScheme.CAP26
             }
         }
     }

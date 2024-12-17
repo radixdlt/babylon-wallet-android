@@ -12,7 +12,6 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
@@ -148,16 +147,17 @@ class AccountsChooserDelegate @Inject constructor(
     }
 
     private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Account): List<ResourceAddress> {
-        return getWalletAssetsUseCase(
-            accounts = listOf(ownedAccount),
+        return getWalletAssetsUseCase.collect(
+            account = ownedAccount,
             isRefreshing = false
-        ).first()
-            .first()
-            .assets
-            ?.knownResources
-            ?.map { resource ->
-                resource.address
-            }.orEmpty()
+        ).fold(
+            onSuccess = { accountWithAssets ->
+                accountWithAssets.assets?.knownResources?.map { it.address }.orEmpty()
+            },
+            onFailure = {
+                emptyList()
+            }
+        )
     }
 
     private fun updateSheetState(

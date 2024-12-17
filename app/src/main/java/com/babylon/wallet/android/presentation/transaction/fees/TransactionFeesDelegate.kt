@@ -1,115 +1,429 @@
 package com.babylon.wallet.android.presentation.transaction.fees
 
-import com.babylon.wallet.android.presentation.common.ViewModelDelegate
+import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.TransactionFeePayers
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
+import com.babylon.wallet.android.domain.usecases.signing.NotaryAndSigners
+import com.babylon.wallet.android.presentation.common.DataHolderViewModelDelegate
+import com.babylon.wallet.android.presentation.model.BoundedAmount
+import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
+import com.babylon.wallet.android.presentation.transaction.analysis.Analysis
+import com.babylon.wallet.android.presentation.transaction.analysis.summary.Summary
+import com.babylon.wallet.android.presentation.transaction.model.AccountWithTransferables
+import com.babylon.wallet.android.presentation.transaction.model.TransactionErrorMessage
+import com.babylon.wallet.android.presentation.transaction.model.Transferable
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.isZero
-import kotlinx.coroutines.Job
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toUnit
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
-class TransactionFeesDelegate @Inject constructor(
+@Suppress("TooManyFunctions")
+interface TransactionFeesDelegate {
+
+    fun onCustomizeClick()
+
+    fun onChangeFeePayerClick()
+
+    fun onSelectFeePayerClick()
+
+    fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate)
+
+    fun onFeePayerSelected()
+
+    fun onFeePayerSelectionDismissRequest()
+
+    fun onFeePaddingAmountChanged(feePaddingAmount: String)
+
+    fun onTipPercentageChanged(tipPercentage: String)
+
+    fun onViewDefaultModeClick()
+
+    fun onViewAdvancedModeClick()
+}
+
+@Suppress("TooManyFunctions")
+class TransactionFeesDelegateImpl @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-) : ViewModelDelegate<TransactionReviewViewModel.State>() {
+    private val searchFeePayersUseCase: SearchFeePayersUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase
+) : DataHolderViewModelDelegate<TransactionReviewViewModel.Data, TransactionReviewViewModel.State>(),
+    TransactionFeesDelegate {
 
-    private var searchFeePayersJob: Job? = null
+    private val logger = Timber.tag("TransactionFees")
 
-    @Suppress("NestedBlockDepth")
-    suspend fun onCustomizeClick() {
-        if (_state.value.transactionFees.defaultTransactionFee.isZero) {
+    suspend fun resolveFees(analysis: Analysis): Result<Unit> {
+        val executionSummary = (analysis.summary as? Summary.FromExecution)?.summary ?: error(
+            "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
+        )
+        _state.update { it.copy(fees = TransactionReviewViewModel.State.Fees(isNetworkFeeLoading = true)) }
+
+        val transactionFees = TransactionFees.from(
+            summary = executionSummary,
+            notaryAndSigners = NotaryAndSigners(
+                signers = analysis.signers,
+                ephemeralNotaryPrivateKey = data.value.ephemeralNotaryPrivateKey
+            ),
+            previewType = _state.value.previewType
+        )
+        observeFeesChanges()
+
+        return searchFeePayersUseCase(
+            feePayerCandidates = executionSummary.feePayerCandidates(),
+            xrdWithdrawals = _state.value.previewType.xrdWithdrawals(),
+            lockFee = transactionFees.defaultTransactionFee
+        ).onSuccess { feePayers ->
+            _state.update { state ->
+                state.copy(
+                    fees = state.fees?.copy(isNetworkFeeLoading = false)
+                )
+            }
+            data.update { data ->
+                data.copy(
+                    feePayers = feePayers,
+                    transactionFees = transactionFees
+                )
+            }
+            fetchXrdPrice()
+        }.onFailure { throwable ->
+            logger.w(throwable)
+
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    previewType = PreviewType.None,
+                    error = TransactionErrorMessage(throwable)
+                )
+            }
+        }.toUnit()
+    }
+
+    override fun onCustomizeClick() {
+        val feesState = _state.value.fees ?: return
+
+        if (feesState.transactionFees.defaultTransactionFee.isZero) {
             // None required
             _state.update { state ->
-                state.noneRequiredState()
+                state.copy(
+                    sheetState = Sheet.CustomizeFees(
+                        feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerRequired,
+                        feesMode = data.value.latestFeesMode,
+                        transactionFees = feesState.transactionFees,
+                        properties = feesState.properties
+                    )
+                )
             }
         } else {
-            _state.value.feePayers?.let { feePayerResult ->
-                if (feePayerResult.selectedAccountAddress != null) {
+            val feePayers = data.value.feePayers ?: return
+            if (feePayers.selectedAccountAddress != null) {
+                viewModelScope.launch {
                     // Candidate selected
-                    getProfileUseCase().activeAccountOnCurrentNetwork(withAddress = feePayerResult.selectedAccountAddress)
-                        ?.let { feePayerCandidate ->
-                            _state.update { state ->
-                                state.candidateSelectedState(feePayerCandidate)
-                            }
-                        }
-                } else {
-                    // No candidate selected
+                    val feePayerCandidate = getProfileUseCase().activeAccountOnCurrentNetwork(
+                        withAddress = feePayers.selectedAccountAddress
+                    ) ?: return@launch
                     _state.update { state ->
-                        state.noCandidateSelectedState()
+                        state.copy(
+                            sheetState = Sheet.CustomizeFees(
+                                feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                                    feePayerCandidate = feePayerCandidate
+                                ),
+                                feesMode = data.value.latestFeesMode,
+                                transactionFees = requireNotNull(state.fees?.transactionFees),
+                                properties = requireNotNull(state.fees?.properties)
+                            )
+                        )
                     }
+                }
+            } else {
+                // No candidate selected
+                _state.update { state ->
+                    state.copy(
+                        sheetState = Sheet.CustomizeFees(
+                            feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
+                                candidates = data.value.feePayers?.candidates.orEmpty()
+                            ),
+                            feesMode = data.value.latestFeesMode,
+                            transactionFees = requireNotNull(state.fees?.transactionFees),
+                            properties = requireNotNull(state.fees?.properties)
+                        )
+                    )
                 }
             }
         }
     }
 
-    fun onChangeFeePayerClick() {
+    override fun onChangeFeePayerClick() {
         switchToFeePayerSelection()
     }
 
-    fun onSelectFeePayerClick() {
+    override fun onSelectFeePayerClick() {
         switchToFeePayerSelection()
     }
 
-    fun onFeePaddingAmountChanged(feePaddingAmount: String) {
-        val transactionFees = _state.value.transactionFees
+    override fun onFeePayerChanged(selectedFeePayer: TransactionFeePayers.FeePayerCandidate) {
+        _state.update { state ->
+            state.copy(
+                fees = state.fees?.copy(
+                    selectedFeePayerInput = state.fees.selectedFeePayerInput?.copy(
+                        preselectedCandidate = selectedFeePayer
+                    )
+                )
+            )
+        }
+    }
+
+    override fun onFeePayerSelected() {
+        val feesState = _state.value.fees ?: return
+        val selectedFeePayerAccount = feesState.selectedFeePayerInput?.preselectedCandidate?.account ?: return
+        val feePayers = data.value.feePayers ?: return
+
+        val signersCount = data.value.signers.count()
+
+        val updatedFeePayers = feePayers.copy(
+            selectedAccountAddress = selectedFeePayerAccount.address,
+            candidates = feePayers.candidates
+        )
+        data.update { it.copy(feePayers = updatedFeePayers) }
+
+        val customizeFeesSheet = _state.value.sheetState as? Sheet.CustomizeFees ?: return
+        val updatedSignersCount = if (isSelectedFeePayerInvolvedInTransaction(selectedFeePayerAccount.address)) {
+            signersCount
+        } else {
+            signersCount + 1
+        }
+
+        data.update {
+            it.copy(
+                transactionFees = feesState.transactionFees.copy(
+                    signersCount = updatedSignersCount
+                )
+            )
+        }
+        _state.update {
+            it.copy(
+                sheetState = customizeFeesSheet.copy(
+                    feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
+                        feePayerCandidate = selectedFeePayerAccount
+                    )
+                )
+            )
+        }
+    }
+
+    override fun onFeePayerSelectionDismissRequest() {
+        _state.update { state ->
+            state.copy(
+                fees = state.fees?.copy(
+                    selectedFeePayerInput = null
+                )
+            )
+        }
+    }
+
+    override fun onFeePaddingAmountChanged(feePaddingAmount: String) {
+        val transactionFees = data.value.transactionFees ?: return
+        val feePayers = data.value.feePayers ?: return
         val newTransactionFees = transactionFees.copy(
             feePaddingAmount = feePaddingAmount
         )
-        _state.update { state ->
-            state.copy(
-                transactionFees = newTransactionFees
-            )
-        }
 
-        searchFeePayersJob?.cancel()
-        searchFeePayersJob = viewModelScope.launch {
-            val feePayers = _state.value.feePayers ?: return@launch
-            val newFeePayers = feePayers.copy(
-                candidates = feePayers.candidates.map {
-                    it.copy(
-                        hasEnoughBalance = it.xrdAmount >= newTransactionFees.transactionFeeToLock
-                    )
-                }
-            )
-
-            _state.update { state ->
-                state.copy(
-                    feePayers = newFeePayers
+        data.update { data ->
+            data.copy(
+                transactionFees = newTransactionFees,
+                feePayers = feePayers.copy(
+                    candidates = feePayers.candidates.map {
+                        it.copy(
+                            hasEnoughBalance = it.xrdAmount >= newTransactionFees.transactionFeeToLock
+                        )
+                    }
                 )
-            }
+            )
         }
     }
 
     @Suppress("MagicNumber")
-    fun onTipPercentageChanged(tipPercentage: String) {
-        val transactionFees = _state.value.transactionFees
-
-        _state.update { state ->
-            state.copy(
-                transactionFees = transactionFees.copy(
+    override fun onTipPercentageChanged(tipPercentage: String) {
+        data.update { data ->
+            data.copy(
+                transactionFees = data.transactionFees?.copy(
                     tipPercentage = tipPercentage.filter { it.isDigit() }
                 )
             )
         }
     }
 
-    fun onViewDefaultModeClick() {
+    override fun onViewDefaultModeClick() {
         _state.update { state ->
-            state.defaultModeState()
+            state.copy(
+                sheetState = (state.sheetState as Sheet.CustomizeFees).copy(
+                    feesMode = Sheet.CustomizeFees.FeesMode.Default
+                )
+            )
+        }
+        data.update { data ->
+            data.copy(
+                latestFeesMode = Sheet.CustomizeFees.FeesMode.Default,
+                transactionFees = data.transactionFees?.copy(
+                    feePaddingAmount = null,
+                    tipPercentage = null
+                )
+            )
         }
     }
 
-    fun onViewAdvancedModeClick() {
+    override fun onViewAdvancedModeClick() {
+        data.update { data -> data.copy(latestFeesMode = Sheet.CustomizeFees.FeesMode.Advanced) }
         _state.update { state ->
-            state.advancedModeState()
+            state.copy(
+                sheetState = (state.sheetState as Sheet.CustomizeFees).copy(
+                    feesMode = Sheet.CustomizeFees.FeesMode.Advanced
+                )
+            )
         }
+    }
+
+    private fun fetchXrdPrice() {
+        viewModelScope.launch {
+            getFiatValueUseCase.forXrd()
+                .onSuccess { fiatPrice ->
+                    data.update { data ->
+                        data.copy(
+                            transactionFees = data.transactionFees?.copy(
+                                xrdFiatPrice = fiatPrice
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun observeFeesChanges() {
+        viewModelScope.launch {
+            data.mapNotNull {
+                val feePayers = it.feePayers ?: return@mapNotNull null
+                val transactionFees = it.transactionFees ?: return@mapNotNull null
+                feePayers to transactionFees
+            }
+                .distinctUntilChanged()
+                .collect { feePayersAndTransactionFees ->
+                    _state.update { state ->
+                        val feePayers = feePayersAndTransactionFees.first
+                        val transactionFees = feePayersAndTransactionFees.second
+
+                        val properties = TransactionReviewViewModel.State.Fees.Properties(
+                            isSelectedFeePayerInvolvedInTransaction = isSelectedFeePayerInvolvedInTransaction(
+                                feePayers.selectedAccountAddress
+                            ),
+                            noFeePayerSelected = feePayers.selectedAccountAddress == null,
+                            isBalanceInsufficientToPayTheFee = isBalanceInsufficientToPayTheFee(
+                                feePayers,
+                                transactionFees.transactionFeeToLock
+                            )
+                        )
+
+                        state.copy(
+                            fees = state.fees?.copy(
+                                properties = properties,
+                                transactionFees = transactionFees,
+                            ),
+                            sheetState = (state.sheetState as? Sheet.CustomizeFees)?.copy(
+                                transactionFees = transactionFees,
+                                properties = properties
+                            ) ?: state.sheetState,
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun isBalanceInsufficientToPayTheFee(feePayers: TransactionFeePayers, feeToLock: Decimal192): Boolean {
+        val candidateAddress = feePayers.selectedAccountAddress ?: return false
+
+        if (feeToLock.isZero) {
+            return false
+        }
+
+        return feePayers.candidates.find {
+            it.account.address == candidateAddress
+        }?.hasEnoughBalance?.not() ?: false
+    }
+
+    /**
+     * Calculate how many XRD have been used from accounts withdrawn from
+     * In cases were it is not a transfer type, then it means the user
+     * will not spend any other XRD rather than the ones spent for the fees
+     */
+    private fun PreviewType.xrdWithdrawals(): Map<AccountAddress, Decimal192> {
+        return when (this) {
+            is PreviewType.Transaction -> from.associate {
+                it.account.address to getUsedXrdAmount(it)
+            }
+            is PreviewType.DeleteAccount -> mapOf(deletingAccount.address to to?.let { getUsedXrdAmount(it) }.orZero())
+            is PreviewType.AccountsDepositSettings,
+            is PreviewType.NonConforming,
+            is PreviewType.None,
+            is PreviewType.UnacceptableManifest -> emptyMap()
+        }
+    }
+
+    private fun getUsedXrdAmount(candidateAddressWithdrawn: AccountWithTransferables?): Decimal192 {
+        return candidateAddressWithdrawn
+            ?.transferables
+            ?.filterIsInstance<Transferable.FungibleType.Token>()
+            ?.find { it.asset.resource.isXrd }?.amount
+            .let { xrdAmount ->
+                when (xrdAmount) {
+                    null -> 0.toDecimal192()
+                    is BoundedAmount.Exact -> xrdAmount.amount
+                    is BoundedAmount.Predicted -> xrdAmount.estimated
+                    else -> 0.toDecimal192() // Should not go through these cases. Fees are calculated only on regular transactions.
+                }
+            }
+    }
+
+    private fun isSelectedFeePayerInvolvedInTransaction(selectedAccountAddress: AccountAddress?): Boolean {
+        val executionSummary = (data.value.summary as? Summary.FromExecution)?.summary ?: error(
+            "Fees resolver should be called only on normal transactions which are resolved with an ExecutionSummary"
+        )
+
+        val candidates = executionSummary.feePayerCandidates()
+        return selectedAccountAddress?.let { candidates.contains(it) } ?: true
     }
 
     private fun switchToFeePayerSelection() {
         _state.update { state ->
-            state.feePayerSelectionState()
+            val feePayers = data.value.feePayers
+
+            state.copy(
+                fees = state.fees?.copy(
+                    selectedFeePayerInput = TransactionReviewViewModel.State.SelectFeePayerInput(
+                        preselectedCandidate = feePayers?.candidates?.firstOrNull {
+                            it.account.address == feePayers.selectedAccountAddress
+                        },
+                        candidates = feePayers?.candidates.orEmpty().toPersistentList(),
+                        fee = state.fees.transactionFees.transactionFeeToLock.formatted()
+                    )
+                )
+            )
         }
     }
+
+    private fun ExecutionSummary.feePayerCandidates(): Set<AccountAddress> = withdrawals.keys +
+        deposits.keys +
+        addressesOfAccountsRequiringAuth.toSet()
 }

@@ -8,14 +8,14 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.locker.AccountLockerDeposit
-import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.accountPrompts
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.securityproblems.accountPrompts
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
 import com.babylon.wallet.android.presentation.account.delegates.AccountLockersDelegate
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -42,7 +42,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -122,7 +121,7 @@ class AccountViewModel @Inject constructor(
             _state.update { it.onAccount(account, refreshEvent) }
             account
         }.flatMapLatest { account ->
-            getWalletAssetsUseCase(
+            getWalletAssetsUseCase.observe(
                 accounts = listOf(account),
                 isRefreshing = _state.value.refreshType.overrideCache
             ).catch { error ->

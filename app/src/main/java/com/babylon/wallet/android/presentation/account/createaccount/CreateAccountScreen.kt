@@ -23,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -46,7 +45,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.isKeyboardVisible
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 
 @Composable
@@ -61,7 +59,6 @@ fun CreateAccountScreen(
     onAddLedgerDevice: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
     BackHandler(onBack = viewModel::onBackClick)
 
@@ -98,13 +95,6 @@ fun CreateAccountScreen(
                 )
                 is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
                 is CreateAccountEvent.Dismiss -> onBackClick()
-                is CreateAccountEvent.RequestBiometricAuthForFirstAccount -> {
-                    val isAuthenticated = context.biometricAuthenticateSuspend()
-                    viewModel.handleNewProfileCreation(
-                        isAuthenticated = isAuthenticated,
-                        isWithLedger = event.isWithLedger
-                    )
-                }
             }
         }
     }
