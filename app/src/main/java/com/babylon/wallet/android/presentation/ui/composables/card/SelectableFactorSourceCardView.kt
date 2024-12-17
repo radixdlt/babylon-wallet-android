@@ -196,7 +196,8 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
                     kind = FactorSourceKind.ARCULUS_CARD,
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
-                    personas = persistentListOf()
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false
                 ),
                 selected = true
             ),
@@ -236,7 +237,8 @@ private fun RemovableFactorSourceCardPreview() {
                 kind = FactorSourceKind.DEVICE,
                 messages = persistentListOf(),
                 accounts = persistentListOf(),
-                personas = persistentListOf()
+                personas = persistentListOf(),
+                hasHiddenEntities = false
             ),
             onRemoveClick = {}
         )
