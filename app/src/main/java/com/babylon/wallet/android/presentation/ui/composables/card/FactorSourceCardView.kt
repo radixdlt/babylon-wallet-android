@@ -106,7 +106,8 @@ fun FactorSourceInstanceCardView(
 
         LinkedEntitiesView(
             accounts = item.accounts,
-            personas = item.personas
+            personas = item.personas,
+            hasHiddenEntities = item.hasHiddenEntities
         )
     }
 }
@@ -223,7 +224,8 @@ private fun MessagesView(
 @Composable
 private fun LinkedEntitiesView(
     accounts: PersistentList<Account>,
-    personas: PersistentList<Persona>
+    personas: PersistentList<Persona>,
+    hasHiddenEntities: Boolean
 ) {
     if (accounts.isEmpty() && personas.isEmpty()) {
         return
@@ -239,15 +241,28 @@ private fun LinkedEntitiesView(
         personas.size == 1 -> stringResource(id = R.string.factorSources_card_personaSingular)
         else -> stringResource(id = R.string.factorSources_card_personaPlural, personas.size)
     }
-    val linkedText = when {
-        accountsText != null && personasText != null -> stringResource(
-            id = R.string.factorSources_card_linkedAccountsAndPersonas,
-            accountsText,
-            personasText
-        )
-        accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
-        personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
-        else -> ""
+    val linkedText = if (hasHiddenEntities) {
+        when {
+            accountsText != null && personasText != null -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsAndPersonasSomeHidden,
+                accountsText,
+                personasText
+            )
+            accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, accountsText)
+            personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonasSomeHidden, personasText)
+            else -> ""
+        }
+    } else {
+        when {
+            accountsText != null && personasText != null -> stringResource(
+                id = R.string.factorSources_card_linkedAccountsAndPersonas,
+                accountsText,
+                personasText
+            )
+            accountsText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, accountsText)
+            personasText != null -> stringResource(id = R.string.factorSources_card_linkedAccountsOrPersonas, personasText)
+            else -> ""
+        }
     }
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -272,6 +287,7 @@ private fun LinkedEntitiesView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
+                modifier = Modifier.weight(1f),
                 text = linkedText,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
@@ -455,7 +471,32 @@ class FactorSourceInstanceCardPreviewProvider : PreviewParameterProvider<FactorS
                 personas = persistentListOf(
                     Persona.sampleMainnet(),
                     Persona.sampleStokenet()
-                )
+                ),
+                hasHiddenEntities = true
+            ),
+            FactorSourceInstanceCard(
+                id = FactorSourceId.Hash.init(
+                    kind = FactorSourceKind.DEVICE,
+                    mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
+                ),
+                name = "My Phone",
+                includeDescription = false,
+                lastUsedOn = "Today",
+                kind = FactorSourceKind.DEVICE,
+                messages = persistentListOf(
+                    FactorSourceStatusMessage.PassphraseHint,
+                    FactorSourceStatusMessage.Dynamic(
+                        message = StatusMessage(
+                            message = "Warning text",
+                            type = StatusMessage.Type.WARNING
+                        )
+                    )
+                ),
+                accounts = persistentListOf(
+                    Account.sampleMainnet()
+                ),
+                personas = persistentListOf(),
+                hasHiddenEntities = true
             )
         )
 }
