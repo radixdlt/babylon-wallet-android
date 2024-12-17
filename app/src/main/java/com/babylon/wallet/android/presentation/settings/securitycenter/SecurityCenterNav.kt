@@ -15,6 +15,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ledgerHardwareWalletsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.biometricsPin
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactors
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.securityShieldsNavGraph
@@ -72,7 +73,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     navController.restoreMnemonics(args = RestoreMnemonicsArgs(requestSource = RestoreMnemonicsRequestSource.Settings))
                 },
                 onBackupEntities = {
-                    navController.seedPhrases()
+                    navController.biometricsPin()
                 }
             )
         }
@@ -94,7 +95,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     }
 
                     is SettingsItem.SecurityFactorsSettingsItem.BiometricsPin -> {
-                        navController.seedPhrases()
+                        navController.biometricsPin()
                     }
 
                     SettingsItem.SecurityFactorsSettingsItem.ArculusCard -> {
@@ -108,6 +109,11 @@ fun NavGraphBuilder.securityCenterNavGraph(
                     }
                 }
             }
+        )
+        biometricsPin(
+            onBackClick = { navController.popBackStack() },
+            onNavigateToDeviceFactorSourceInstanceDetails = {}, // TODO next task
+            onNavigateToAddBiometricPin = { } // TODO next task
         )
         seedPhrases(
             onBackClick = { navController.popBackStack() },
