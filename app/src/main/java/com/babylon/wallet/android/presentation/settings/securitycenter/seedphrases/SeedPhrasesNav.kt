@@ -1,3 +1,4 @@
+
 package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases
 
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -9,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.radixdlt.sargon.FactorSourceId
 
+@Deprecated("remove it when new design/flow is complete")
 const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_seed_phrases"
 
 fun NavController.seedPhrases() {

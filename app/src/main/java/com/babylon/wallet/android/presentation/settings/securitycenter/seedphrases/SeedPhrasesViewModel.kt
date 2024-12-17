@@ -23,6 +23,7 @@ import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 import rdx.works.profile.domain.GetProfileEntitiesConnectedToSeedPhrasesUseCase
 import javax.inject.Inject
 
+@Deprecated("remove it when new design/flow is complete")
 @HiltViewModel
 class SeedPhrasesViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
