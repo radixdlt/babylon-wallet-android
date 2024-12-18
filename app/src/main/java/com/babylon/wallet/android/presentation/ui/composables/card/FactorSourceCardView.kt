@@ -337,6 +337,10 @@ private fun LinkedEntitiesView(
                         persona = it
                     )
                 }
+
+                if (hasHiddenEntities) {
+                    HiddenEntityCard(modifier = Modifier.fillMaxWidth())
+                }
             }
         }
     }
