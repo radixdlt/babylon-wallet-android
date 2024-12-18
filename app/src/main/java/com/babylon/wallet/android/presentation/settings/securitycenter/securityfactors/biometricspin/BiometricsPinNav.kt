@@ -7,6 +7,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
 private const val ROUTE_BIOMETRICS_PIN_SCREEN = "route_biometrics_pin_screen"
 
@@ -19,7 +20,8 @@ fun NavController.biometricsPin() {
 fun NavGraphBuilder.biometricsPin(
     onBackClick: () -> Unit,
     onNavigateToDeviceFactorSourceInstanceDetails: () -> Unit,
-    onNavigateToAddBiometricPin: () -> Unit
+    onNavigateToAddBiometricPin: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     composable(
         route = ROUTE_BIOMETRICS_PIN_SCREEN,
@@ -41,7 +43,7 @@ fun NavGraphBuilder.biometricsPin(
             onBackClick = onBackClick,
             onNavigateToDeviceFactorSourceInstanceDetails = onNavigateToDeviceFactorSourceInstanceDetails,
             onNavigateToAddBiometricPin = onNavigateToAddBiometricPin,
-            onInfoClick = {}
+            onInfoClick = onInfoClick
         )
     }
 }
