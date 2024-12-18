@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import android.text.format.DateUtils
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -27,12 +28,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,55 +49,55 @@ import kotlin.time.Duration.Companion.seconds
 class BiometricsPinViewModel @Inject constructor(
     private val sargonOsManager: SargonOsManager,
     private val preferencesManager: PreferencesManager,
-    private val getProfileUseCase: GetProfileUseCase
+    getProfileUseCase: GetProfileUseCase,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<BiometricsPinViewModel.State>(),
     OneOffEventHandler<BiometricsPinViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
 
     init {
-        viewModelScope.launch {
-            getProfileUseCase.flow
-                .flatMapConcat { profile ->
-                    profile.factorSources.asFlow()
-                }
-                .filterIsInstance<FactorSource.Device>()
-                .map { deviceFactorSource ->
-                    val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
-                        factorSource = FactorSource.Device(deviceFactorSource.value),
-                        profileToCheck = ProfileToCheck.Current
-                    )
+        getProfileUseCase.flow
+            .flatMapConcat { profile ->
+                profile.factorSources.asFlow()
+            }
+            .filterIsInstance<FactorSource.Device>()
+            .map { deviceFactorSource ->
+                val entitiesLinkedToDeviceFactorSource = sargonOsManager.sargonOs.entitiesLinkedToFactorSource(
+                    factorSource = FactorSource.Device(deviceFactorSource.value),
+                    profileToCheck = ProfileToCheck.Current
+                )
 
-                    val securityMessages = getSecurityPromptsForDeviceFactorSource(
-                        deviceFactorSourceId = deviceFactorSource.id,
-                        entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
-                    )
+                val securityMessages = getSecurityPromptsForDeviceFactorSource(
+                    deviceFactorSourceId = deviceFactorSource.id,
+                    entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
+                )
 
-                    val factorSourceInstantCard = deviceFactorSource.value.toInstanceCard(
-                        messages = securityMessages,
-                        accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
-                        personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
-                        hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
-                            entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
-                    )
+                val factorSourceInstantCard = deviceFactorSource.value.toInstanceCard(
+                    messages = securityMessages,
+                    accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
+                    personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
+                    hasHiddenEntities = entitiesLinkedToDeviceFactorSource.hiddenAccounts.isNotEmpty() ||
+                        entitiesLinkedToDeviceFactorSource.hiddenPersonas.isNotEmpty()
+                )
 
-                    val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
-                    if (isMainDeviceFactorSource) {
-                        _state.update { state ->
-                            state.copy(mainDeviceFactorSourceInstance = factorSourceInstantCard)
-                        }
-                    } else {
-                        _state.update { state ->
-                            state.copy(
-                                deviceFactorSourceInstances = state.deviceFactorSourceInstances.add(
-                                    factorSourceInstantCard
-                                )
+                val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
+                if (isMainDeviceFactorSource) {
+                    _state.update { state ->
+                        state.copy(mainDeviceFactorSourceInstance = factorSourceInstantCard)
+                    }
+                } else {
+                    _state.update { state ->
+                        state.copy(
+                            deviceFactorSourceInstances = state.deviceFactorSourceInstances.add(
+                                factorSourceInstantCard
                             )
-                        }
+                        )
                     }
                 }
-                .collect()
-        }
+            }
+            .flowOn(defaultDispatcher)
+            .launchIn(viewModelScope)
     }
 
     @Suppress("UnusedParameter") // TODO
