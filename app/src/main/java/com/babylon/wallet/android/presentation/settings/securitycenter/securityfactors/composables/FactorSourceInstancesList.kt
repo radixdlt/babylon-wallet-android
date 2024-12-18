@@ -104,7 +104,7 @@ fun FactorSourceInstancesList(
                     ),
                 text = "Learn about biometrics/PIN", // TODO
                 onClick = {
-                    onInfoClick(GlossaryItem.personas) // TODO
+                    onInfoClick(GlossaryItem.biometricsPIN)
                 }
             )
         }
