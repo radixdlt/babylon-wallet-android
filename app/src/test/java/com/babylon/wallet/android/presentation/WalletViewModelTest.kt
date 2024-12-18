@@ -134,7 +134,8 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         coEvery {
             getWalletAssetsUseCase.observe(
                 accounts = accounts,
-                isRefreshing = false
+                isRefreshing = false,
+                includeHiddenResources = false
             )
         } returns flowOf(
             listOf(
