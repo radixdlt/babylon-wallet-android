@@ -34,8 +34,8 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.WarningText
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
@@ -51,6 +51,7 @@ import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.DeviceFactorSourceWithEntities
 
+@Deprecated("remove it when new design/flow is complete")
 @Composable
 fun SeedPhrasesScreen(
     modifier: Modifier = Modifier,
