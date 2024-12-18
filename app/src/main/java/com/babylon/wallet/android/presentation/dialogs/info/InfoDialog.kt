@@ -226,8 +226,8 @@ private fun GlossaryItem.resolveTextFromGlossaryItem() = when (this) {
     GlossaryItem.gateways -> stringResource(R.string.infoLink_glossary_gateways)
     GlossaryItem.preauthorizations -> stringResource(id = R.string.infoLink_glossary_preauthorizations)
     GlossaryItem.possibledappcalls -> stringResource(id = R.string.infoLink_glossary_possibledappcalls)
-    GlossaryItem.securityshield -> "" // TODO crowdin
-    GlossaryItem.buildsecurityshields -> "" // TODO crowdin
+    GlossaryItem.securityshields -> "" // TODO crowdin
+    GlossaryItem.buildingshield -> "" // TODO crowdin
     GlossaryItem.nohardwaredevice -> "" // TODO crowdin
 }
 

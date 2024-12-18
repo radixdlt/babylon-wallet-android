@@ -24,14 +24,11 @@ class SelectFactorsViewModel @Inject constructor(
 ) : StateViewModel<SelectFactorsViewModel.State>() {
 
     init {
+        securityShieldBuilderClient.newSecurityShieldBuilder()
         initFactorSources()
     }
 
     override fun initialState(): State = State()
-
-    fun onMessageShown() {
-        _state.update { state -> state.copy(message = null) }
-    }
 
     private fun initFactorSources() {
         viewModelScope.launch {
@@ -85,8 +82,7 @@ class SelectFactorsViewModel @Inject constructor(
 
     data class State(
         val items: List<UiItem> = emptyList(),
-        val status: SelectedFactorSourcesForRoleStatus? = null,
-        val message: UiMessage? = null
+        val status: SelectedFactorSourcesForRoleStatus? = null
     ) : UiState {
 
         val isButtonEnabled: Boolean = items.any { it is UiItem.Factor && it.card.selected }

@@ -12,35 +12,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.buildStatusMessageAnnotatedString
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.onStatusMessageInfoAnnotationClick
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
@@ -73,8 +68,7 @@ fun SelectFactorsScreen(
         onDismiss = onDismiss,
         onFactorCheckedChange = viewModel::onFactorCheckedChange,
         onInfoClick = onInfoClick,
-        onBuildShieldClick = onBuildShield,
-        onMessageShown = viewModel::onMessageShown
+        onBuildShieldClick = onBuildShield
     )
 }
 
@@ -85,17 +79,8 @@ private fun SelectFactorsContent(
     onDismiss: () -> Unit,
     onFactorCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onMessageShown: () -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    SnackbarUIMessage(
-        message = state.message,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -110,12 +95,6 @@ private fun SelectFactorsContent(
                 onClick = onBuildShieldClick,
                 text = stringResource(R.string.shieldSetupSelectFactors_buildButtonTitle),
                 enabled = state.isButtonEnabled
-            )
-        },
-        snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.white
@@ -224,7 +203,7 @@ private fun StatusView(
     status: SelectedFactorSourcesForRoleStatus,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
-    val readMoreGlossaryItem = GlossaryItem.buildsecurityshields
+    val readMoreGlossaryItem = GlossaryItem.buildingshield
     val message = when (status) {
         SelectedFactorSourcesForRoleStatus.SUBOPTIMAL -> StatusMessage(
             message = stringResource(id = R.string.shieldSetupSelectFactors_statusMessage_recommendedFactors),
@@ -235,22 +214,11 @@ private fun StatusView(
             type = StatusMessage.Type.ERROR
         )
         SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
-            message = buildAnnotatedString {
-                append("You cannot create a Shield with this combination of factors.") // TODO crowdin
-                withStyle(
-                    RadixTheme.typography.body1StandaloneLink.copy(
-                        fontSize = 14.sp,
-                        color = RadixTheme.colors.blue2
-                    ).toSpanStyle()
-                ) {
-                    pushStringAnnotation(
-                        tag = readMoreGlossaryItem.name,
-                        annotation = readMoreGlossaryItem.name
-                    )
-                    append(" ")
-                    append("Read more") // TODO crowdin
-                }
-            },
+            message = buildStatusMessageAnnotatedString(
+                message = "You cannot create a Shield with this combination of factors.",  // TODO crowdin
+                glossaryItem = readMoreGlossaryItem,
+                annotation = "Read more" // TODO crowdin
+            ),
             type = StatusMessage.Type.ERROR
         )
         SelectedFactorSourcesForRoleStatus.OPTIMAL -> return
@@ -259,11 +227,7 @@ private fun StatusView(
     StatusMessageText(
         modifier = modifier,
         message = message,
-        onTextClick = { offset ->
-            message.message.getStringAnnotations(readMoreGlossaryItem.name, offset, offset).firstOrNull()?.let {
-                onInfoClick(readMoreGlossaryItem)
-            }
-        }
+        onTextClick = { offset -> message.onStatusMessageInfoAnnotationClick(offset, readMoreGlossaryItem, onInfoClick) }
     )
 }
 
@@ -280,7 +244,6 @@ private fun SelectFactorsPreview(
             onFactorCheckedChange = { _, _ -> },
             onInfoClick = {},
             onBuildShieldClick = {},
-            onMessageShown = {}
         )
     }
 }

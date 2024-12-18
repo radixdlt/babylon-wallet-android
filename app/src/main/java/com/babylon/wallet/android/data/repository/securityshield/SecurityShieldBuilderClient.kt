@@ -20,7 +20,11 @@ class SecurityShieldBuilderClient @Inject constructor(
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
 ) {
 
-    private val securityShieldBuilder by lazy { SecurityShieldBuilder() }
+    private lateinit var securityShieldBuilder: SecurityShieldBuilder
+
+    fun newSecurityShieldBuilder() {
+        securityShieldBuilder = SecurityShieldBuilder()
+    }
 
     suspend fun getFactorSources(): List<FactorSource> = withContext(dispatcher) {
         val factorSources = profileRepository.profile.first().factorSources
