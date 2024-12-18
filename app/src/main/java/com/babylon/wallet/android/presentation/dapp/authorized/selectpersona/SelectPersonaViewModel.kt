@@ -132,9 +132,9 @@ class SelectPersonaViewModel @Inject constructor(
         selectedPersonaEntity: ProfileEntity.PersonaEntity,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        signAuthUseCase(
+        signAuthUseCase.persona(
             challenge = challenge,
-            entity = selectedPersonaEntity,
+            persona = selectedPersonaEntity.persona,
             metadata = metadata
         ).onSuccess { signatureWithPublicKey ->
             sendEvent(

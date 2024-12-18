@@ -37,25 +37,13 @@ fun DevSettingsScreen(
     DevSettingsContent(
         modifier = modifier,
         onBackClick = onBackClick,
-        isAuthSigningLoading = state.isLoading,
-        hasAuthKey = state.hasAuthKey,
-        onCreateAndUploadAuthKey = {
-            context.biometricAuthenticate { result ->
-                if (result == BiometricAuthenticationResult.Succeeded) {
-                    viewModel.onCreateAndUploadAuthKey()
-                }
-            }
-        }
     )
 }
 
 @Composable
 private fun DevSettingsContent(
     onBackClick: () -> Unit,
-    isAuthSigningLoading: Boolean,
-    modifier: Modifier = Modifier,
-    hasAuthKey: Boolean,
-    onCreateAndUploadAuthKey: () -> Unit
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier,
@@ -74,19 +62,7 @@ private fun DevSettingsContent(
                 .fillMaxSize()
                 .background(RadixTheme.colors.gray5)
         ) {
-            if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED && !hasAuthKey) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                RadixSecondaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
-                    onClick = onCreateAndUploadAuthKey,
-                    isLoading = isAuthSigningLoading,
-                    enabled = !isAuthSigningLoading,
-                    throttleClicks = true
-                )
-            }
+
         }
     }
 }
@@ -96,10 +72,7 @@ private fun DevSettingsContent(
 fun DevSettingsPreview() {
     RadixWalletTheme {
         DevSettingsContent(
-            onBackClick = {},
-            isAuthSigningLoading = false,
-            hasAuthKey = false,
-            onCreateAndUploadAuthKey = {}
+            onBackClick = {}
         )
     }
 }

@@ -26,9 +26,6 @@ val Persona.derivationPathScheme: DerivationPathScheme
 val Persona.derivationPathEntityIndex: HdPathComponent
     get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.path.components.last()
 
-val Persona.hasAuthSigning: Boolean
-    get() = securityState.hasAuthSigning
-
 val Persona.usesEd25519: Boolean
     get() = securityState.usesEd25519
 

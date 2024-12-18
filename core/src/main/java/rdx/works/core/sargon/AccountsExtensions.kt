@@ -34,9 +34,6 @@ val Account.factorSourceId: FactorSourceId
 val Account.derivationPathScheme: DerivationPathScheme
     get() = securityState.derivationPathScheme
 
-val Account.hasAuthSigning: Boolean
-    get() = securityState.hasAuthSigning
-
 val Account.derivationPathEntityIndex: HdPathComponent
     get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.path.components.last()
 
