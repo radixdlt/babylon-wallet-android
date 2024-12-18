@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin
 
-import android.text.format.DateUtils
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -10,6 +9,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
+import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.EntitiesLinkedToFactorSource
@@ -19,7 +19,6 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIntegrity
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ProfileToCheck
-import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
@@ -42,7 +41,6 @@ import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
@@ -118,19 +116,13 @@ class BiometricsPinViewModel @Inject constructor(
             id = id.asGeneral(),
             name = hint.label,
             includeDescription = includeDescription,
-            lastUsedOn = common.lastUsedOn.formatted(),
+            lastUsedOn = common.lastUsedOn.relativeTimeFormatted(),
             kind = kind,
             messages = messages,
             accounts = accounts,
             personas = personas,
             hasHiddenEntities = hasHiddenEntities
         )
-    }
-
-    // TODO
-    private fun Timestamp.formatted(): String {
-        val millis = toEpochSecond().seconds.inWholeMilliseconds
-        return DateUtils.getRelativeTimeSpanString(millis).toString()
     }
 
     private suspend fun getSecurityPromptsForDeviceFactorSource(
