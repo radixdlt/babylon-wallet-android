@@ -183,16 +183,14 @@ class ChooseAccountsViewModel @Inject constructor(
         selectedAccountEntities: List<ProfileEntity.AccountEntity>,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        signAuthUseCase(
+        signAuthUseCase.accounts(
             challenge = challenge,
-            entities = selectedAccountEntities,
+            accounts = selectedAccountEntities.map { it.account },
             metadata = metadata
         ).onSuccess { signersWithSignatures ->
             sendEvent(
                 ChooseAccountsEvent.AccountsCollected(
-                    accountsWithSignatures = signersWithSignatures.map {
-                        it.key as ProfileEntity.AccountEntity to it.value
-                    }.associate { it.first to it.second },
+                    accountsWithSignatures = signersWithSignatures.mapKeys { ProfileEntity.AccountEntity(it.key) },
                     isOneTimeRequest = state.value.isOneTimeRequest
                 )
             )

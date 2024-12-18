@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
+import com.radixdlt.sargon.AccountOrPersona
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
@@ -152,18 +153,14 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
         selectedAccountEntities: List<ProfileEntity.AccountEntity>,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        signAuthUseCase(
+        signAuthUseCase.accounts(
             challenge,
-            selectedAccountEntities,
+            selectedAccountEntities.map { it.account },
             metadata
         ).onSuccess { entitiesWithSignatures ->
             sendEvent(
                 OneTimeChooseAccountsEvent.AccountsCollected(
-                    accountsWithSignatures = entitiesWithSignatures.map {
-                        it.key as ProfileEntity.AccountEntity to it.value
-                    }.associate {
-                        it.first to it.second
-                    }
+                    accountsWithSignatures = entitiesWithSignatures.mapKeys { ProfileEntity.AccountEntity(it.key) }
                 )
             )
             setSigningInProgress(false)

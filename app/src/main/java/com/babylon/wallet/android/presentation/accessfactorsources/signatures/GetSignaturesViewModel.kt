@@ -291,8 +291,7 @@ class GetSignaturesViewModel @Inject constructor(
                     is EntitySecurityState.Unsecured -> {
                         val factorSourceId = when (state.value.signPurpose) {
                             SignPurpose.SignTransaction -> securityState.value.transactionSigning.factorSourceId.asGeneral()
-                            SignPurpose.SignAuth -> securityState.value.authenticationSigning?.factorSourceId?.asGeneral()
-                                ?: securityState.value.transactionSigning.factorSourceId.asGeneral()
+                            SignPurpose.SignAuth -> securityState.value.transactionSigning.factorSourceId.asGeneral()
                         }
                         val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
 

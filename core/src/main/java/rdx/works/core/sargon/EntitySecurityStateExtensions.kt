@@ -18,7 +18,7 @@ fun EntitySecurityState.Companion.unsecured(
             factorSourceId = factorSourceId.value,
             publicKey = hdPublicKey
         ),
-        authenticationSigning = null
+        provisionalSecurifiedConfig = null
     )
 )
 
@@ -59,11 +59,3 @@ val EntitySecurityState.transactionSigningFactorInstance: HierarchicalDeterminis
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.transactionSigning
     }
-
-val EntitySecurityState.authenticationSigningFactorInstance: HierarchicalDeterministicFactorInstance?
-    get() = when (this) {
-        is EntitySecurityState.Unsecured -> value.authenticationSigning
-    }
-
-val EntitySecurityState.hasAuthSigning: Boolean
-    get() = authenticationSigningFactorInstance != null
