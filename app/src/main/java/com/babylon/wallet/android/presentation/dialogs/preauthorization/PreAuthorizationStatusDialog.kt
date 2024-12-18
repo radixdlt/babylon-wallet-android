@@ -246,7 +246,7 @@ private fun PreAuthorizationId(
             color = RadixTheme.colors.gray1
         )
 
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
 
         Row(
             modifier = Modifier.throttleClickable { onClick() },
@@ -259,7 +259,7 @@ private fun PreAuthorizationId(
                 style = RadixTheme.typography.body1HighImportance
             )
 
-            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
 
             Icon(
                 modifier = Modifier.size(14.dp),

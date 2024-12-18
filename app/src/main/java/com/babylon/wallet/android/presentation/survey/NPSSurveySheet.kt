@@ -173,7 +173,7 @@ fun RatingContainer(
 
                 Box(
                     modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingXSmall)
+                        .padding(RadixTheme.dimensions.paddingXXSmall)
                         .clip(CircleShape)
                         .border(1.dp, Color.Black, CircleShape)
                         .size(45.dp)

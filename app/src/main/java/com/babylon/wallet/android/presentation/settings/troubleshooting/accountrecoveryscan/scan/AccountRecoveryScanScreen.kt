@@ -172,7 +172,7 @@ private fun AccountRecoveryScanContent(
                     text = stringResource(id = R.string.accountRecoveryScan_scanComplete_continueButton),
                     enabled = isScanningNetwork.not(),
                     isLoading = isScanningNetwork,
-                    additionalContent = {
+                    additionalTopContent = {
                         val activeAccountsShown = pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal
                         if (activeAccountsShown) {
                             RadixTextButton(

@@ -65,7 +65,7 @@ fun DevelopmentPreviewWrapper(
                     .onGloballyPositioned { coordinates ->
                         devBannerHeight.height.value = with(density) { coordinates.size.height.toDp() }
                     }
-                    .padding(RadixTheme.dimensions.paddingXSmall)
+                    .padding(RadixTheme.dimensions.paddingXXSmall)
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
@@ -98,7 +98,7 @@ fun DevelopmentPreviewWrapper(
                     .onGloballyPositioned { coordinates ->
                         devBannerHeight.height.value = with(density) { coordinates.size.height.toDp() }
                     }
-                    .padding(RadixTheme.dimensions.paddingXSmall),
+                    .padding(RadixTheme.dimensions.paddingXXSmall),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
             ) {
                 items(items = linkConnectionsStatus.currentStatus()) { color ->

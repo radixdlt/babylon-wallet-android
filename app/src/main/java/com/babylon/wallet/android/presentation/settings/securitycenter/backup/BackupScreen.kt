@@ -414,7 +414,7 @@ private fun BackupStatusCard(
             color = RadixTheme.colors.gray1,
             style = RadixTheme.typography.body1Regular
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_accountsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_accountsItemSubtitle),
@@ -591,7 +591,7 @@ private fun ExportWalletBackupFileDialog(
                         .clickable(role = Role.Button) { onConfirm(true) }
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingSmall,
-                            vertical = RadixTheme.dimensions.paddingXSmall
+                            vertical = RadixTheme.dimensions.paddingXXSmall
                         ),
                     text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogConfirm),
                     color = RadixTheme.colors.red1
@@ -602,7 +602,7 @@ private fun ExportWalletBackupFileDialog(
                         .clickable(role = Role.Button) { onConfirm(false) }
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingSmall,
-                            vertical = RadixTheme.dimensions.paddingXSmall
+                            vertical = RadixTheme.dimensions.paddingXXSmall
                         ),
                     text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupDialogDeny),
                     color = RadixTheme.colors.red1
@@ -615,7 +615,7 @@ private fun ExportWalletBackupFileDialog(
                     .clickable(role = Role.Button) { onDeny() }
                     .padding(
                         horizontal = RadixTheme.dimensions.paddingSmall,
-                        vertical = RadixTheme.dimensions.paddingXSmall
+                        vertical = RadixTheme.dimensions.paddingXXSmall
                     ),
                 text = stringResource(id = R.string.common_cancel),
                 color = RadixTheme.colors.blue2

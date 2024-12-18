@@ -890,11 +890,14 @@ Code: %s</string>
   <string name="factorSources_kind_trustedContact">Third-party</string>
   <string name="factorSources_kind_securityQuestions">Security Questions</string>
   <string name="factorSources_card_linkedAccountsAndPersonas">Linked to %s and %s</string>
+  <string name="factorSources_card_linkedAccountsAndPersonasSomeHidden">Linked to %s and %s (and some hidden)</string>
   <string name="factorSources_card_linkedAccountsOrPersonas">Linked to %s</string>
+  <string name="factorSources_card_linkedAccountsOrPersonasSomeHidden">Linked to %s (and some hidden)</string>
   <string name="factorSources_card_accountSingular">1 Account</string>
   <string name="factorSources_card_accountPlural">%d Accounts</string>
   <string name="factorSources_card_personaSingular">1 Persona</string>
   <string name="factorSources_card_personaPlural">%d Personas</string>
+  <string name="factorSources_card_hiddenAccountsOrPersonas">Hidden Accounts or Personas</string>
   <string name="factorSources_card_lastUsed">**Last Used:** %s</string>
   <string name="factorSources_card_deviceTitle">Biometrics/PIN</string>
   <string name="factorSources_card_deviceDescription">Use phone biometrics/PIN to approve</string>
@@ -906,6 +909,17 @@ Code: %s</string>
   <string name="factorSources_card_arculusCardDescription">Tap to your phone to approve</string>
   <string name="factorSources_card_passwordTitle">Password</string>
   <string name="factorSources_card_passwordDescription">Enter a decentralized password to approve</string>
+  <string name="factorSources_list_deviceAdd">Add Biometrics/PIN</string>
+  <string name="factorSources_list_ledgerAdd">Add New Ledger Nano</string>
+  <string name="factorSources_list_passphraseAdd">Add New Passphrase</string>
+  <string name="factorSources_list_arculusCardAdd">Add Arculus Card</string>
+  <string name="factorSources_list_passwordAdd">Add New Password</string>
+  <string name="factorSources_list_default">Default</string>
+  <string name="factorSources_list_others">Others</string>
+  <string name="factorSources_list_seedPhraseWrittenDown">This seed phrase has been written down</string>
+  <string name="factorSources_list_seedPhraseNotRecoverable">Write down seed phrase to make this factor recoverable</string>
+  <string name="factorSources_list_arculusCardNotWorking">Arculus not working. Try adding it again</string>
+  <string name="factorSources_list_lostFactorSource">This factor has been lost</string>
   <string name="customizeNetworkFees_normalMode_title">Customize Fees</string>
   <string name="customizeNetworkFees_feeBreakdownTitle">Estimated Transaction Fees</string>
   <string name="customizeNetworkFees_totalFee">Transaction Fee</string>
@@ -1079,7 +1093,9 @@ Code: %s</string>
   <string name="securityCenter_encryptWalletBackup_passwordMismatchError">Passwords do not match</string>
   <string name="securityCenter_encryptWalletBackup_continue">Continue</string>
   <string name="securityFactors_title">Security Factors</string>
-  <string name="securityFactors_subtitle">View and manage your security factors</string>
+  <string name="securityFactors_subtitle">Manage the security factors you’ll use in your Security Shields.</string>
+  <string name="securityFactors_hardware">Hardware</string>
+  <string name="securityFactors_information">Things you know</string>
   <string name="securityFactors_seedPhrases_title">Seed Phrases</string>
   <string name="securityFactors_seedPhrases_subtitle">Your seedphrases connected to your account</string>
   <string name="securityFactors_seedPhrases_counterSingular">1 Seed phrase</string>
@@ -1223,7 +1239,7 @@ Code: %s</string>
   <string name="securityProblems_no9_accountCard">Recovery required</string>
   <string name="securityProblems_no9_securityCenterTitle">Recovery required</string>
   <string name="securityProblems_no9_securityCenterBody">Enter seed phrase to recover control.</string>
-  <string name="securityProblems_no9_securityFactors">Enter seed phrase to recover control</string>
+  <string name="securityProblems_no9_securityFactors">Enter seed phrase to recover use</string>
   <string name="securityProblems_no9_seedPhrases">Enter seed phrase to recover control</string>
   <string name="securityProblems_no9_walletSettingsPersonas">Recovery required</string>
   <string name="securityProblems_no9_personas">Recovery required</string>
@@ -1412,4 +1428,9 @@ Code: %s</string>
   <string name="shieldSetupPrepareFactors_completion_subtitleTop">Now let’s build your Shield.</string>
   <string name="shieldSetupPrepareFactors_completion_subtitleBottom">Before it’s finished, you’ll have the chance to review it and make any changes.</string>
   <string name="shieldSetupPrepareFactors_completion_button">Build Shield</string>
+  <string name="shieldSetupSelectFactors_title">Select Factors for Transactions</string>
+  <string name="shieldSetupSelectFactors_subtitle">Choose the factors you’ll use to sign transactions. You’ll use **all** of these factors every time you send assets or log in to dApps.</string>
+  <string name="shieldSetupSelectFactors_statusMessage_atLeastOneFactor">You need to select at least 1 factor for signing transactions</string>
+  <string name="shieldSetupSelectFactors_statusMessage_recommendedFactors">Choosing 2 factors will make your Shield more secure and reliable</string>
+  <string name="shieldSetupSelectFactors_buildButtonTitle">Build Shield</string>
 </resources>

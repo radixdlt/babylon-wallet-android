@@ -1,9 +1,10 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting.reset
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
-import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -11,7 +12,9 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,8 +22,10 @@ import javax.inject.Inject
 @HiltViewModel
 class FactoryResetViewModel @Inject constructor(
     private val deleteWalletUseCase: DeleteWalletUseCase,
-    private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase
-) : StateViewModel<FactoryResetViewModel.State>(), OneOffEventHandler<FactoryResetViewModel.Event> by OneOffEventHandlerImpl() {
+    private val getSecurityProblemsUseCase: GetSecurityProblemsUseCase,
+    @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
+) : StateViewModel<FactoryResetViewModel.State>(),
+    OneOffEventHandler<FactoryResetViewModel.Event> by OneOffEventHandlerImpl() {
 
     private var securityProblemsJob: Job? = null
 
@@ -28,13 +33,15 @@ class FactoryResetViewModel @Inject constructor(
 
     init {
         securityProblemsJob = viewModelScope.launch {
-            getSecurityProblemsUseCase().collect { problems ->
-                _state.update { state ->
-                    state.copy(
-                        securityProblems = problems
-                    )
+            getSecurityProblemsUseCase()
+                .flowOn(defaultDispatcher)
+                .collect { problems ->
+                    _state.update { state ->
+                        state.copy(
+                            securityProblems = problems
+                        )
+                    }
                 }
-            }
         }
     }
 
