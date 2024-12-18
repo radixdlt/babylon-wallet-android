@@ -6,10 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletAuthorizedRequest
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -24,7 +21,6 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -47,7 +43,7 @@ class SelectPersonaViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
+    private val signAuthUseCase: SignAuthUseCase
 ) : StateViewModel<SelectPersonaViewModel.State>(), OneOffEventHandler<SelectPersonaViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = SelectPersonaArgs(savedStateHandle)
@@ -136,29 +132,21 @@ class SelectPersonaViewModel @Inject constructor(
         selectedPersonaEntity: ProfileEntity.PersonaEntity,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        val signRequest = SignRequest.RolaSignRequest(
-            challengeHex = challenge.hex,
-            origin = metadata.origin,
-            dAppDefinitionAddress = metadata.dAppDefinitionAddress
-        )
-
-        accessFactorSourcesProxy.getSignatures(
-            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                signPurpose = SignPurpose.SignAuth,
-                signRequest = signRequest,
-                signers = listOf(selectedPersonaEntity)
-            )
-        ).onSuccess { result ->
+        signAuthUseCase.persona(
+            challenge = challenge,
+            persona = selectedPersonaEntity.persona,
+            metadata = metadata
+        ).onSuccess { signatureWithPublicKey ->
             sendEvent(
                 Event.PersonaAuthorized(
                     persona = selectedPersonaEntity,
-                    signature = result.signersWithSignatures[selectedPersonaEntity]
+                    signature = signatureWithPublicKey
                 )
             )
             setSigningInProgress(false)
         }.onFailure {
             sendEvent(
-                Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it))
+                Event.AuthorizationFailed(throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge)
             )
             setSigningInProgress(false)
         }

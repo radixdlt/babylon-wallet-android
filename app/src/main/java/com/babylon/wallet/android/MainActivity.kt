@@ -41,6 +41,7 @@ import com.radixdlt.sargon.os.driver.BiometricsHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import rdx.works.profile.cloudbackup.CloudBackupSyncExecutor
+import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -66,6 +67,9 @@ class MainActivity : FragmentActivity() {
     // Automatic biometric handler that requests for biometrics when mnemonics are accessed from sargon os
     @Inject
     lateinit var biometricsHandler: BiometricsHandler
+
+    @Inject
+    lateinit var getProfileUseCase: GetProfileUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
