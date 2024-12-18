@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
