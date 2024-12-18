@@ -24,11 +24,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.resetwallet.ResetWalletDialog
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 
 @Composable
 fun ClaimedByAnotherDeviceScreen(
@@ -62,7 +63,10 @@ fun ClaimedByAnotherDeviceScreen(
                     .padding(padding)
                     .padding(vertical = RadixTheme.dimensions.paddingLarge)
                     .fillMaxSize(),
-                onClearWalletClick = viewModel::onClearWalletClick,
+                state = state,
+                onResetWalletClick = viewModel::onResetWalletClick,
+                onResetWalletConfirmClick = viewModel::onResetWalletConfirm,
+                onResetWalletDenyClick = viewModel::onResetWalletDeny,
                 onTransferControlBackClick = viewModel::onTransferWalletBackClick
             )
         }
@@ -72,9 +76,19 @@ fun ClaimedByAnotherDeviceScreen(
 @Composable
 fun ClaimedByAnotherDeviceContent(
     modifier: Modifier = Modifier,
-    onClearWalletClick: () -> Unit,
+    state: ClaimedByAnotherDeviceViewModel.State,
+    onResetWalletClick: () -> Unit,
+    onResetWalletConfirmClick: () -> Unit,
+    onResetWalletDenyClick: () -> Unit,
     onTransferControlBackClick: () -> Unit
 ) {
+    if (state.isResetWalletConfirmationVisible) {
+        ResetWalletDialog(
+            onConfirm = onResetWalletConfirmClick,
+            onDeny = onResetWalletDenyClick
+        )
+    }
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -122,12 +136,12 @@ fun ClaimedByAnotherDeviceContent(
         }
 
         Spacer(Modifier.weight(0.5f))
-        RadixPrimaryButton(
+        WarningButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.configurationBackup_automated_walletTransferredClearButton),
-            onClick = onClearWalletClick
+            text = stringResource(id = R.string.factoryReset_resetWallet),
+            onClick = onResetWalletClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         RadixTextButton(
@@ -148,7 +162,10 @@ fun ClaimedByAnotherDeviceContent(
 fun ClaimedByAnotherDeviceScreenPreview() {
     RadixWalletPreviewTheme {
         ClaimedByAnotherDeviceContent(
-            onClearWalletClick = {},
+            state = ClaimedByAnotherDeviceViewModel.State(),
+            onResetWalletClick = {},
+            onResetWalletConfirmClick = {},
+            onResetWalletDenyClick = {},
             onTransferControlBackClick = {}
         )
     }
