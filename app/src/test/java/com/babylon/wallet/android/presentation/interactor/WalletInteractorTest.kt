@@ -1,7 +1,5 @@
 package com.babylon.wallet.android.presentation.interactor
 
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
@@ -130,12 +128,30 @@ class WalletInteractorTest {
         val expectedSignatures: Map<ProfileEntity, SignatureWithPublicKey> = instances.keys.associate {
             it.asProfileEntity() to mnemonicWithPassphrase.sign(transaction.hash().hash, instances[it]!!)
         }
+
         coEvery {
-            proxy.getSignatures(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signPurpose = SignPurpose.SignTransaction,
-                    signers = instances.keys.map { AddressOfAccountOrPersona.Account(it.address) },
-                    signRequest = SignRequest.TransactionIntentSignRequest(transaction)
+            proxy.sign(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.Transactions(
+                    perFactorSource = listOf(
+                        TransactionToSignPerFactorSourceOfTransactionIntent(
+                            factorSourceId = device.id,
+                            transactions = listOf(
+                                TransactionSignRequestInputOfTransactionIntent(
+                                    payload = transaction.compile(),
+                                    factorSourceId = device.id,
+                                    ownedFactorInstances = instances.keys.map { owner ->
+                                        OwnedFactorInstance(
+                                            owner = AddressOfAccountOrPersona.Account(owner.address),
+                                            factorInstance = HierarchicalDeterministicFactorInstance(
+                                                factorSourceId = device.id,
+                                                publicKey = mnemonicWithPassphrase.derivePublicKey(instances[owner]!!)
+                                            )
+                                        )
+                                    }
+                                )
+                            )
+                        )
+                    )
                 )
             )
         } returns AccessFactorSourcesOutput.EntitiesWithSignatures.Success(signersWithSignatures = expectedSignatures)
@@ -206,11 +222,21 @@ class WalletInteractorTest {
             it.asProfileEntity() to mnemonicWithPassphrase.sign(subintent.hash().hash, instances[it]!!)
         }
         coEvery {
-            proxy.getSignatures(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                    signPurpose = SignPurpose.SignTransaction,
-                    signers = instances.keys.map { AddressOfAccountOrPersona.Account(it.address) },
-                    signRequest = SignRequest.SubintentSignRequest(subintent)
+            proxy.sign(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.Subintents(
+                    perFactorSource = TransactionSignRequestInputOfSubintent(
+                        payload = subintent.compile(),
+                        ownedFactorInstances = instances.keys.map { owner ->
+                            OwnedFactorInstance(
+                                owner = AddressOfAccountOrPersona.Account(owner.address),
+                                factorInstance = HierarchicalDeterministicFactorInstance(
+                                    factorSourceId = device.id,
+                                    publicKey = mnemonicWithPassphrase.derivePublicKey(instances[owner]!!)
+                                )
+                            )
+                        },
+                        factorSourceId = device.id
+                    )
                 )
             )
         } returns AccessFactorSourcesOutput.EntitiesWithSignatures.Success(signersWithSignatures = expectedSignatures)
