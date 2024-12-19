@@ -37,10 +37,22 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    fun onClearWalletClick() = viewModelScope.launch {
-        deleteWalletUseCase()
-        cloudBackupErrorStream.resetErrors()
-        sendEvent(Event.ResetToOnboarding)
+    fun onResetWalletClick() {
+        _state.update { it.copy(isResetWalletConfirmationVisible = true) }
+    }
+
+    fun onResetWalletConfirm() {
+        _state.update { it.copy(isResetWalletConfirmationVisible = false) }
+
+        viewModelScope.launch {
+            deleteWalletUseCase()
+            cloudBackupErrorStream.resetErrors()
+            sendEvent(Event.ResetToOnboarding)
+        }
+    }
+
+    fun onResetWalletDeny() {
+        _state.update { it.copy(isResetWalletConfirmationVisible = false) }
     }
 
     fun onTransferWalletBackClick() = viewModelScope.launch {
@@ -63,7 +75,8 @@ class ClaimedByAnotherDeviceViewModel @Inject constructor(
     }
 
     data class State(
-        val isReclaiming: Boolean = false
+        val isReclaiming: Boolean = false,
+        val isResetWalletConfirmationVisible: Boolean = false,
     ) : UiState
 
     sealed interface Event : OneOffEvent {

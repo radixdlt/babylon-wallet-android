@@ -23,7 +23,7 @@ class HostInfoRepositoryImpl @Inject constructor(
     override suspend fun getHostId(): HostId {
         val sargonOs = sargonOsManager.sargonOs
 
-        return withContext(defaultDispatcher) { sargonOs.resolveHostId() }
+        return withContext(defaultDispatcher) { sargonOs.hostId() }
     }
 
     override suspend fun getHostInfo(): HostInfo {
