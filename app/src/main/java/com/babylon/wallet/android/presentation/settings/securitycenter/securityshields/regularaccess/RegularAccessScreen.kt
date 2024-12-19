@@ -107,7 +107,7 @@ private fun RegularAccessContent(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Step 1 of 2", //TODO crowdin
+                title = "Step 1 of 2", // TODO crowdin
                 onBackClick = onDismiss,
                 windowInsets = WindowInsets.statusBarsAndBanner
             )
@@ -133,13 +133,13 @@ private fun RegularAccessContent(
                 ShieldBuilderTitleView(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     imageRes = DSR.ic_regular_access,
-                    title = "Regular Access", //TODO crowdin
+                    title = "Regular Access", // TODO crowdin
                 )
 
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
                 Text(
-                    text = "Factors required to withdraw assets from Accounts.", //TODO crowdin
+                    text = "Factors required to withdraw assets from Accounts.", // TODO crowdin
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
@@ -226,7 +226,7 @@ private fun OverrideFactorsView(
                 modifier = Modifier
                     .padding(vertical = RadixTheme.dimensions.paddingDefault)
                     .align(Alignment.CenterHorizontally),
-                text = "OR", //TODO crowdin
+                text = "OR", // TODO crowdin
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1
             )
@@ -245,7 +245,7 @@ private fun OverrideFactorsView(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = "Override (advanced)", //TODO crowdin
+                    text = "Override (advanced)", // TODO crowdin
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.white,
                 )
@@ -295,7 +295,7 @@ private fun OverrideFactorsView(
                                 .padding(end = RadixTheme.dimensions.paddingXXXLarge)
                                 .padding(vertical = RadixTheme.dimensions.paddingDefault)
                                 .align(Alignment.CenterHorizontally),
-                            text = "OR", //TODO crowdin
+                            text = "OR", // TODO crowdin
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray1
                         )
@@ -326,7 +326,7 @@ private fun StatusView(
         )
         SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
             message = buildStatusMessageAnnotatedString(
-                message = "You cannot create a Shield with this combination of factors.",  // TODO crowdin
+                message = "You cannot create a Shield with this combination of factors.", // TODO crowdin
                 glossaryItem = readMoreGlossaryItem,
                 annotation = "Read more" // TODO crowdin
             ),
@@ -363,9 +363,9 @@ private fun ThresholdFactorsView(
         ) { measuredSize ->
             Text(
                 text = buildAnnotatedString {
-                    append("You'll need to use") //TODO crowdin
+                    append("You'll need to use") // TODO crowdin
                     appendInlineContent(id = "button")
-                    append("of the following:") //TODO crowdin
+                    append("of the following:") // TODO crowdin
                 },
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
@@ -414,7 +414,7 @@ private fun NumberOfFactorsView(
     ) {
         Text(
             text = when (numberOfFactors) {
-                RegularAccessViewModel.State.NumberOfFactors.All -> "All" //TODO crowdin
+                RegularAccessViewModel.State.NumberOfFactors.All -> "All" // TODO crowdin
                 is RegularAccessViewModel.State.NumberOfFactors.Count -> numberOfFactors.value.toString()
             },
             style = RadixTheme.typography.body2Link,
@@ -454,7 +454,7 @@ private fun LoginFactorView(
                     bottom = RadixTheme.dimensions.paddingSemiLarge
                 ),
                 message = StatusMessage(
-                    message = "You need to choose a factor to continue", //TODO crowdin
+                    message = "You need to choose a factor to continue", // TODO crowdin
                     type = StatusMessage.Type.WARNING
                 )
             )

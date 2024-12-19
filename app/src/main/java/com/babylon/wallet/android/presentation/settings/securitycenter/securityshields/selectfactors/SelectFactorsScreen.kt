@@ -244,7 +244,7 @@ private fun StatusView(
         )
         SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
             message = buildStatusMessageAnnotatedString(
-                message = "You cannot create a Shield with this combination of factors.",  // TODO crowdin
+                message = "You cannot create a Shield with this combination of factors.", // TODO crowdin
                 glossaryItem = readMoreGlossaryItem,
                 annotation = "Read more" // TODO crowdin
             ),

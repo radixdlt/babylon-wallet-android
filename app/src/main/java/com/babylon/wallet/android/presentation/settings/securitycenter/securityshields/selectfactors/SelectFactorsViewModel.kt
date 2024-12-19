@@ -114,8 +114,8 @@ class SelectFactorsViewModel @Inject constructor(
         val message: UiMessage? = null
     ) : UiState {
 
-        val isButtonEnabled: Boolean = status == SelectedFactorSourcesForRoleStatus.OPTIMAL
-            || status == SelectedFactorSourcesForRoleStatus.SUBOPTIMAL
+        val isButtonEnabled: Boolean = status == SelectedFactorSourcesForRoleStatus.OPTIMAL ||
+            status == SelectedFactorSourcesForRoleStatus.SUBOPTIMAL
 
         fun showPasswordWarning(categoryHeader: UiItem.CategoryHeader): Boolean =
             categoryHeader.kind == FactorSourceKind.PASSWORD && items.any {

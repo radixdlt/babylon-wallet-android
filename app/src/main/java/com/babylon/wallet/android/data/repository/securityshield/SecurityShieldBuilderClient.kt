@@ -65,7 +65,7 @@ class SecurityShieldBuilderClient @Inject constructor(
             threshold = securityShieldBuilder.getPrimaryThreshold().toInt(),
             thresholdFactors = securityShieldBuilder.getPrimaryThresholdFactors().toFactorSources(),
             overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
-            loginFactor = null //TODO update when login factor support is added to the shield builder in Sargon
+            loginFactor = null // TODO update when login factor support is added to the shield builder in Sargon
         )
     }
 
@@ -77,5 +77,6 @@ class SecurityShieldBuilderClient @Inject constructor(
         )
     }
 
-    private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> = mapNotNull { id -> allFactorSources.firstOrNull { it.id == id } }
+    private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =
+        mapNotNull { id -> allFactorSources.firstOrNull { it.id == id } }
 }
