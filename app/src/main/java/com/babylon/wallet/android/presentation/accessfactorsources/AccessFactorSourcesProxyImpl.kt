@@ -59,7 +59,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSignatures(
+    override suspend fun sign(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
     ): AccessFactorSourcesOutput.EntitiesWithSignatures {
         input = accessFactorSourcesInput

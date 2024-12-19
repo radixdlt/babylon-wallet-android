@@ -139,7 +139,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         val signatureFromDevice = SignatureWithPublicKey.sample.other()
 
         backgroundScope.launch(Dispatchers.Default) { // TransactionReviewScreen needs to access factor sources to get signatures
-            val result = accessFactorSourcesProxyFake.getSignatures(
+            val result = accessFactorSourcesProxyFake.sign(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,
                     signers = listOf(signerWithLedgerFactorSource, signerWithDeviceFactorSource).map { it.address },
@@ -177,7 +177,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
     @Test
     fun `given ledger and device factor sources to sign, when one of the factor source sign fails, then end signing process and return failure`() = runTest {
         backgroundScope.launch(Dispatchers.Default) { // TransactionReviewScreen needs to access factor sources to get signatures
-            val result = accessFactorSourcesProxyFake.getSignatures(
+            val result = accessFactorSourcesProxyFake.sign(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
                     signPurpose = SignPurpose.SignTransaction,
                     signers = signers.map { it.address },
@@ -223,7 +223,7 @@ class AccessFactorSourcesProxyFake : AccessFactorSourcesProxy, AccessFactorSourc
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSignatures(accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures): AccessFactorSourcesOutput.EntitiesWithSignatures {
+    override suspend fun sign(accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures): AccessFactorSourcesOutput.EntitiesWithSignatures {
         val result = _output.first()
         return result as AccessFactorSourcesOutput.EntitiesWithSignatures
     }

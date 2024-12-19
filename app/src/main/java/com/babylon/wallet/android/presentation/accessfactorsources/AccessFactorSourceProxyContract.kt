@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.EntityKind
@@ -15,6 +12,10 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.SignaturesPerFactorSourceOfTransactionIntentHash
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfAuthIntent
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfSubintent
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfTransactionIntent
 import com.radixdlt.sargon.extensions.ProfileEntity
 
 /**
@@ -39,17 +40,9 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 
-    /**
-     * This method is used for signing, and based on [SignPurpose] it can be
-     * - either for signing a transaction
-     * - or proving ownership.
-     *
-     * The output is a map of entities and their signatures.
-     * Error is guaranteed to be of CommonException only
-     */
-    suspend fun getSignatures(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): AccessFactorSourcesOutput.EntitiesWithSignatures
+    suspend fun sign(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign
+    ): AccessFactorSourcesOutput.SignOutput
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -130,11 +123,19 @@ sealed interface AccessFactorSourcesInput {
         ) : ToReDeriveAccounts
     }
 
-    data class ToGetSignatures(
-        val signPurpose: SignPurpose,
-        val signers: List<AddressOfAccountOrPersona>,
-        val signRequest: SignRequest
-    ) : AccessFactorSourcesInput
+    sealed interface ToSign: AccessFactorSourcesInput {
+        data class Transactions(
+            val perFactorSource: List<TransactionToSignPerFactorSourceOfTransactionIntent>
+        ): ToSign
+
+        data class Subintents(
+            val perFactorSource: List<TransactionToSignPerFactorSourceOfSubintent>
+        ): ToSign
+
+        data class Auth(
+            val perFactorSource: List<TransactionToSignPerFactorSourceOfAuthIntent>
+        ): ToSign
+    }
 
     data object Init : AccessFactorSourcesInput
 }
@@ -177,6 +178,16 @@ sealed interface AccessFactorSourcesOutput {
         data class Failure(
             val error: AccessFactorSourceError.Fatal
         ) : EntitiesWithSignatures
+    }
+
+    sealed interface SignOutput: AccessFactorSourcesOutput {
+        data class Success(
+            val perFactorSource: List<SignaturesPerFactorSourceOfTransactionIntentHash>
+        ): SignOutput
+
+        data class Failure(
+            val error: AccessFactorSourceError.Fatal
+        ): SignOutput
     }
 
     data class Failure(
