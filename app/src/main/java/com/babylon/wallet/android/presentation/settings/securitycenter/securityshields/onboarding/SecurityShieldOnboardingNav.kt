@@ -9,6 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactorsScreen
 
 const val ROUTE_SECURITY_SHIELD_ONBOARDING = "security_shield_onboarding"
 
@@ -30,10 +31,7 @@ fun NavGraphBuilder.securityShieldOnboardingScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            onSelectFactors = {
-                // TODO navigate to factors selection screen instead of dismissing
-                navController.popBackStack()
-            },
+            onSelectFactors = { navController.selectFactorsScreen() },
             onSetupFactors = { navController.prepareFactorsScreen() }
         )
     }

@@ -30,7 +30,7 @@ fun NavGraphBuilder.selectFactorsScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            onBuildShield = { navController.regularAccessScreen() }
+            toRegularAccess = { navController.regularAccessScreen() }
         )
     }
 }

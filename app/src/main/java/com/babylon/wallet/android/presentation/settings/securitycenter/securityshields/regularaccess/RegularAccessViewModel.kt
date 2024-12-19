@@ -1,12 +1,16 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess
 
+import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldBuilderClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -14,38 +18,44 @@ class RegularAccessViewModel @Inject constructor(
     private val securityShieldBuilderClient: SecurityShieldBuilderClient
 ) : StateViewModel<RegularAccessViewModel.State>() {
 
+    init {
+        viewModelScope.launch {
+            val selection = securityShieldBuilderClient.getPrimaryRoleSelection()
+
+            _state.update { state ->
+                state.copy(
+                    thresholdFactors = selection.thresholdFactors.map { it.toCompactInstanceCard(true) },
+                    overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) },
+                    loginFactor = selection.loginFactor?.toCompactInstanceCard(true)
+                )
+            }
+        }
+    }
+
     override fun initialState(): State = State()
 
     fun onNumberOfFactorsClick() {
-        TODO("Not yet implemented")
     }
 
-    fun onAddFactorClick() {
-        TODO("Not yet implemented")
+    fun onAddThresholdFactorClick() {
     }
 
-    fun onRemoveFactorClick(card: FactorSourceInstanceCard) {
-        TODO("Not yet implemented")
+    fun onRemoveThresholdFactorClick(card: FactorSourceInstanceCard) {
     }
 
     fun onAddOverrideClick() {
-        TODO("Not yet implemented")
     }
 
     fun onAddLoginFactorClick() {
-        TODO("Not yet implemented")
     }
 
     fun onRemoveLoginFactorClick() {
-        TODO("Not yet implemented")
     }
 
     fun onRemoveOverrideFactorClick(factorSourceInstanceCard: FactorSourceInstanceCard) {
-        TODO("Not yet implemented")
     }
 
     fun onRemoveAllOverrideFactorsClick() {
-        TODO("Not yet implemented")
     }
 
     data class State(

@@ -23,11 +23,12 @@ data class FactorSourceInstanceCard(
         fun compact(
             id: FactorSourceId,
             name: String,
-            kind: FactorSourceKind
+            kind: FactorSourceKind,
+            includeDescription: Boolean = false
         ): FactorSourceInstanceCard = FactorSourceInstanceCard(
             id = id,
             name = name,
-            includeDescription = false,
+            includeDescription = includeDescription,
             lastUsedOn = null,
             kind = kind,
             messages = persistentListOf(),
