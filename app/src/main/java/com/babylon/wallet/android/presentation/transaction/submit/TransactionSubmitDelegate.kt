@@ -326,7 +326,7 @@ class TransactionSubmitDelegateImpl @Inject constructor(
             val fungibleAsset = (transferable.asset as? Asset.Fungible) ?: return@mapNotNull null
 
             TransactionGuarantee(
-                amount = amount.estimated,
+                amount = amount.guaranteed,
                 instructionIndex = amount.instructionIndex.toULong(),
                 resourceAddress = fungibleAsset.resource.address,
                 resourceDivisibility = fungibleAsset.resource.divisibility?.value,
