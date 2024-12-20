@@ -17,9 +17,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RegularAccessViewModel @Inject constructor(
+class SetupRegularAccessViewModel @Inject constructor(
     private val securityShieldBuilderClient: SecurityShieldBuilderClient
-) : StateViewModel<RegularAccessViewModel.State>() {
+) : StateViewModel<SetupRegularAccessViewModel.State>() {
 
     init {
         initSelection()

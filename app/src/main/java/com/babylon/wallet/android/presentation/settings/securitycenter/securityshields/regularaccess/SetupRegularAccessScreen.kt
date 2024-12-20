@@ -53,7 +53,6 @@ import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress.Companion.remember
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewSize
@@ -71,15 +70,15 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun RegularAccessScreen(
-    viewModel: RegularAccessViewModel,
+fun SetupRegularAccessScreen(
+    viewModel: SetupRegularAccessViewModel,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onContinue: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    RegularAccessContent(
+    SetupRegularAccessContent(
         state = state,
         onDismiss = onDismiss,
         onInfoClick = onInfoClick,
@@ -98,13 +97,13 @@ fun RegularAccessScreen(
 }
 
 @Composable
-private fun RegularAccessContent(
+private fun SetupRegularAccessContent(
     modifier: Modifier = Modifier,
-    state: RegularAccessViewModel.State,
+    state: SetupRegularAccessViewModel.State,
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onNumberOfFactorsClick: () -> Unit,
-    onNumberOfFactorsSelect: (RegularAccessViewModel.State.NumberOfFactors) -> Unit,
+    onNumberOfFactorsSelect: (SetupRegularAccessViewModel.State.NumberOfFactors) -> Unit,
     onNumberOfFactorsDismiss: () -> Unit,
     onAddFactorClick: () -> Unit,
     onRemoveFactorClick: (FactorSourceInstanceCard) -> Unit,
@@ -366,7 +365,7 @@ private fun StatusView(
 @Composable
 private fun ThresholdFactorsView(
     modifier: Modifier = Modifier,
-    numberOfFactors: RegularAccessViewModel.State.NumberOfFactors,
+    numberOfFactors: SetupRegularAccessViewModel.State.NumberOfFactors,
     factors: PersistentList<FactorSourceInstanceCard>,
     onNumberOfFactorsClick: () -> Unit,
     onAddFactorClick: () -> Unit,
@@ -426,7 +425,7 @@ private fun ThresholdFactorsView(
 
 @Composable
 private fun NumberOfFactorsView(
-    numberOfFactors: RegularAccessViewModel.State.NumberOfFactors
+    numberOfFactors: SetupRegularAccessViewModel.State.NumberOfFactors
 ) {
     Row(
         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXSmall),
@@ -434,8 +433,8 @@ private fun NumberOfFactorsView(
     ) {
         Text(
             text = when (numberOfFactors) {
-                RegularAccessViewModel.State.NumberOfFactors.All -> "All" // TODO crowdin
-                is RegularAccessViewModel.State.NumberOfFactors.Count -> numberOfFactors.value.toString()
+                SetupRegularAccessViewModel.State.NumberOfFactors.All -> "All" // TODO crowdin
+                is SetupRegularAccessViewModel.State.NumberOfFactors.Count -> numberOfFactors.value.toString()
             },
             style = RadixTheme.typography.body2Link,
             color = RadixTheme.colors.blue2
@@ -497,8 +496,8 @@ private fun LoginFactorView(
 
 @Composable
 private fun SelectNumberOfFactorsSheet(
-    selectNumberOfFactors: RegularAccessViewModel.State.SelectNumberOfFactors,
-    onSelect: (RegularAccessViewModel.State.NumberOfFactors) -> Unit,
+    selectNumberOfFactors: SetupRegularAccessViewModel.State.SelectNumberOfFactors,
+    onSelect: (SetupRegularAccessViewModel.State.NumberOfFactors) -> Unit,
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
@@ -532,8 +531,8 @@ private fun SelectNumberOfFactorsSheet(
                 },
                 label = { item ->
                     when (item) {
-                        RegularAccessViewModel.State.NumberOfFactors.All -> "All (Recommended)" // TODO crowdin
-                        is RegularAccessViewModel.State.NumberOfFactors.Count -> item.value.toString()
+                        SetupRegularAccessViewModel.State.NumberOfFactors.All -> "All (Recommended)" // TODO crowdin
+                        is SetupRegularAccessViewModel.State.NumberOfFactors.Count -> item.value.toString()
                     }
                 }
             )
@@ -554,10 +553,10 @@ private fun SelectNumberOfFactorsSheet(
 @Preview
 @UsesSampleValues
 private fun RegularAccessPreview(
-    @PreviewParameter(RegularAccessPreviewProvider::class) state: RegularAccessViewModel.State
+    @PreviewParameter(RegularAccessPreviewProvider::class) state: SetupRegularAccessViewModel.State
 ) {
     RadixWalletPreviewTheme {
-        RegularAccessContent(
+        SetupRegularAccessContent(
             state = state,
             onDismiss = {},
             onInfoClick = {},
@@ -577,11 +576,11 @@ private fun RegularAccessPreview(
 }
 
 @UsesSampleValues
-class RegularAccessPreviewProvider : PreviewParameterProvider<RegularAccessViewModel.State> {
+class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccessViewModel.State> {
 
-    override val values: Sequence<RegularAccessViewModel.State>
+    override val values: Sequence<SetupRegularAccessViewModel.State>
         get() = sequenceOf(
-            RegularAccessViewModel.State(
+            SetupRegularAccessViewModel.State(
                 thresholdFactors = persistentListOf(
                     FactorSourceInstanceCard(
                         id = FactorSourceId.Hash.init(
@@ -652,17 +651,17 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<RegularAccessViewM
                     personas = persistentListOf()
                 ),
             ),
-            RegularAccessViewModel.State(
-                selectNumberOfFactors = RegularAccessViewModel.State.SelectNumberOfFactors(
-                    current = RegularAccessViewModel.State.NumberOfFactors.All,
+            SetupRegularAccessViewModel.State(
+                selectNumberOfFactors = SetupRegularAccessViewModel.State.SelectNumberOfFactors(
+                    current = SetupRegularAccessViewModel.State.NumberOfFactors.All,
                     items = persistentListOf(
-                        RegularAccessViewModel.State.NumberOfFactors.All,
-                        RegularAccessViewModel.State.NumberOfFactors.Count(1),
-                        RegularAccessViewModel.State.NumberOfFactors.Count(2),
-                        RegularAccessViewModel.State.NumberOfFactors.Count(3)
+                        SetupRegularAccessViewModel.State.NumberOfFactors.All,
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(1),
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(3)
                     )
                 ),
-                numberOfFactors = RegularAccessViewModel.State.NumberOfFactors.Count(2),
+                numberOfFactors = SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
                 status = SelectedFactorSourcesForRoleStatus.INSUFFICIENT
             )
         )

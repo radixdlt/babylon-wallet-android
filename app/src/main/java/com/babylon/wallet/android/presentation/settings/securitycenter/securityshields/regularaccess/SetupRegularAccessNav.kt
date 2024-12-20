@@ -9,23 +9,23 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
 
-const val ROUTE_REGULAR_ACCESS = "regular_access"
+const val ROUTE_SETUP_REGULAR_ACCESS = "setup_regular_access"
 
 fun NavController.regularAccessScreen() {
-    navigate(ROUTE_REGULAR_ACCESS)
+    navigate(ROUTE_SETUP_REGULAR_ACCESS)
 }
 
 fun NavGraphBuilder.regularAccessScreen(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_REGULAR_ACCESS,
+        route = ROUTE_SETUP_REGULAR_ACCESS,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        RegularAccessScreen(
+        SetupRegularAccessScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
             onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
