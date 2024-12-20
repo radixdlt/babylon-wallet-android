@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -276,6 +277,7 @@ private fun TransactionPreviewContent(
             ) {
                 Box(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .applyIf(
                             condition = state.isPreviewDisplayable,
                             modifier = if (state.isPreAuthorization) {
@@ -354,6 +356,7 @@ private fun TransactionPreviewContent(
                             .align(Alignment.TopEnd)
                             .padding(
                                 top = RadixTheme.dimensions.paddingDefault,
+                                bottom = RadixTheme.dimensions.paddingDefault,
                                 end = RadixTheme.dimensions.paddingDefault
                             ),
                         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
