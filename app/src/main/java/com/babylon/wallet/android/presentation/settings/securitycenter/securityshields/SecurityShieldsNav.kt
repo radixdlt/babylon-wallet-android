@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReadyScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.setupRecoveryScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccessScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactorsScreen
 
@@ -39,6 +40,8 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         selectFactorsScreen(navController)
 
         regularAccessScreen(navController)
+
+        setupRecoveryScreen(navController)
     }
 }
 

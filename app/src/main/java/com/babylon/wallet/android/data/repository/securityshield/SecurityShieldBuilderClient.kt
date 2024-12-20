@@ -7,14 +7,17 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilder
+import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.kind
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityRetainedScoped
@@ -60,6 +63,10 @@ class SecurityShieldBuilderClient @Inject constructor(
         }
     }
 
+    suspend fun validateShield(): SecurityShieldBuilderInvalidReason? = withContext(dispatcher) {
+        securityShieldBuilder.validate()
+    }?.also { Timber.w("Shield builder invalid. Reason: $it") }
+
     suspend fun getPrimaryRoleSelection(): PrimaryRoleSelection = withContext(dispatcher) {
         PrimaryRoleSelection(
             threshold = securityShieldBuilder.getPrimaryThreshold().toInt(),
@@ -82,8 +89,20 @@ class SecurityShieldBuilderClient @Inject constructor(
         securityShieldBuilder.getPrimaryThreshold().toInt()
     }
 
-    suspend fun removeFactor(id: FactorSourceId) = withContext(dispatcher) {
-        securityShieldBuilder.removeFactorFromPrimary(id)
+    suspend fun removeFactor(id: FactorSourceId, role: RoleKind) = withContext(dispatcher) {
+        when (role) {
+            RoleKind.PRIMARY -> securityShieldBuilder.removeFactorFromPrimary(id)
+            RoleKind.RECOVERY -> securityShieldBuilder.removeFactorFromRecovery(id)
+            RoleKind.CONFIRMATION -> securityShieldBuilder.removeFactorFromConfirmation(id)
+        }
+    }
+
+    // TODO remove this when the factor source selector is implemented
+    suspend fun addFirstAvailableFactorToOverride() = withContext(dispatcher) {
+        val currentSelection = getPrimaryRoleSelection()
+        val alreadyUsedFactorKinds = (currentSelection.thresholdFactors + currentSelection.overrideFactors).map { it.kind }
+        allFactorSources.firstOrNull { it.kind !in alreadyUsedFactorKinds }
+            ?.let { securityShieldBuilder.addFactorSourceToPrimaryOverride(it.id) }
     }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =

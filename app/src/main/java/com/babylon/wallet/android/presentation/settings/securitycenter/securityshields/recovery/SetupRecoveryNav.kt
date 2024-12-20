@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -8,29 +8,27 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.dialogs.info.infoDialog
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery.setupRecoveryScreen
 
-const val ROUTE_SETUP_REGULAR_ACCESS = "setup_regular_access"
+const val ROUTE_SETUP_RECOVERY = "setup_recovery"
 
-fun NavController.regularAccessScreen() {
-    navigate(ROUTE_SETUP_REGULAR_ACCESS)
+fun NavController.setupRecoveryScreen() {
+    navigate(ROUTE_SETUP_RECOVERY)
 }
 
-fun NavGraphBuilder.regularAccessScreen(
+fun NavGraphBuilder.setupRecoveryScreen(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_SETUP_REGULAR_ACCESS,
+        route = ROUTE_SETUP_RECOVERY,
         enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right) }
     ) {
-        SetupRegularAccessScreen(
+        SetupRecoveryScreen(
             viewModel = hiltViewModel(),
             onDismiss = { navController.popBackStack() },
-            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) },
-            onContinue = { navController.setupRecoveryScreen() }
+            onInfoClick = { glossaryItem -> navController.infoDialog(glossaryItem) }
         )
     }
 }
