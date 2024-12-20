@@ -1,9 +1,13 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Slip10Curve
+import com.radixdlt.sargon.extensions.curve
 import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
@@ -121,7 +125,16 @@ sealed interface LedgerInteractionRequest {
         val curve: Curve,
         @SerialName("derivationPath")
         val derivationPath: String
-    )
+    ) {
+
+        companion object {
+
+            fun from(derivationPath: DerivationPath) = KeyParameters(
+                curve = Curve.from(derivationPath.curve),
+                derivationPath = derivationPath.string
+            )
+        }
+    }
 }
 
 @Serializable
@@ -136,6 +149,11 @@ enum class Curve {
         fun from(publicKey: PublicKey): Curve = when (publicKey) {
             is PublicKey.Ed25519 -> Curve25519
             is PublicKey.Secp256k1 -> Secp256k1
+        }
+
+        fun from(curve: Slip10Curve): Curve = when (curve) {
+            Slip10Curve.CURVE25519 -> Curve25519
+            Slip10Curve.SECP256K1 -> Secp256k1
         }
     }
 }

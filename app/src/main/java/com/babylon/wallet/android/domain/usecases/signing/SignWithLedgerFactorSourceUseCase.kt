@@ -19,7 +19,6 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.sargon.authenticationSigningFactorInstance
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.core.sargon.updateLastUsed
 import rdx.works.profile.data.repository.ProfileRepository
@@ -178,9 +177,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         val signersWithPublicKeys = signers.associateWith { signer ->
             val securityState = signer.securityState
             when (signRequest) {
-                is SignRequest.RolaSignRequest ->
-                    securityState.authenticationSigningFactorInstance
-                        ?: securityState.transactionSigningFactorInstance
+                is SignRequest.RolaSignRequest -> securityState.transactionSigningFactorInstance
 
                 is SignRequest.TransactionIntentSignRequest,
                 is SignRequest.SubintentSignRequest -> securityState.transactionSigningFactorInstance

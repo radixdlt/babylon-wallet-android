@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.RemoteEntityID
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
@@ -15,7 +16,9 @@ import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import com.radixdlt.sargon.samples.sample
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -45,13 +48,20 @@ class ChooseAccountsViewModelTest {
     private val getProfileUseCase = GetProfileUseCase(profileRepository, coroutineRule.dispatcher)
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl(AppEventBusImpl())
+    private val signAuthUseCase = mockk<SignAuthUseCase>()
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
 
     private val accountsRequestExact = WalletUnauthorizedRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = "",
+            isInternal = false
+        ),
         oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
             numberOfValues = DappToWalletInteraction.NumberOfValues(
@@ -64,7 +74,13 @@ class ChooseAccountsViewModelTest {
     private val accountsTwoRequestExact = WalletUnauthorizedRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = "",
+            isInternal = false
+        ),
         oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
             numberOfValues = DappToWalletInteraction.NumberOfValues(
@@ -78,7 +94,13 @@ class ChooseAccountsViewModelTest {
     private val accountsRequestAtLeast = WalletUnauthorizedRequest(
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
-        requestMetadata = DappToWalletInteraction.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        requestMetadata = DappToWalletInteraction.RequestMetadata(
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = "",
+            isInternal = false
+        ),
         oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
             isOngoing = false,
             numberOfValues = DappToWalletInteraction.NumberOfValues(
@@ -103,7 +125,7 @@ class ChooseAccountsViewModelTest {
             ),
             getProfileUseCase = getProfileUseCase,
             incomingRequestRepository = incomingRequestRepository,
-            accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
+            signAuthUseCase = signAuthUseCase
         )
     }
 
@@ -169,7 +191,7 @@ class ChooseAccountsViewModelTest {
                 ),
                 getProfileUseCase = getProfileUseCase,
                 incomingRequestRepository = incomingRequestRepository,
-                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
+                signAuthUseCase = signAuthUseCase
             )
 
             advanceUntilIdle()
@@ -198,7 +220,7 @@ class ChooseAccountsViewModelTest {
                 ),
                 getProfileUseCase = getProfileUseCase,
                 incomingRequestRepository = incomingRequestRepository,
-                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
+                signAuthUseCase = signAuthUseCase
             )
 
             advanceUntilIdle()
@@ -226,7 +248,7 @@ class ChooseAccountsViewModelTest {
                 ),
                 getProfileUseCase = getProfileUseCase,
                 incomingRequestRepository = incomingRequestRepository,
-                accessFactorSourcesProxy = AccessFactorSourcesProxyFake()
+                signAuthUseCase = signAuthUseCase
             )
             advanceUntilIdle()
 

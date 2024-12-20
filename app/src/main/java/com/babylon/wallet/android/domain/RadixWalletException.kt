@@ -48,9 +48,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object InvalidPersonaOrAccounts : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
-        data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
-            DappRequestException(cause = cause)
-
+        data object FailedToSignAuthChallenge : DappRequestException()
         data class PreviewError(override val cause: Throwable?) : DappRequestException()
         data object InvalidPreAuthorizationExpirationTooClose : DappRequestException()
         data object InvalidPreAuthorizationExpired : DappRequestException()

@@ -33,6 +33,7 @@ import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
@@ -93,10 +94,11 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
         requestMetadata = DappToWalletInteraction.RequestMetadata(
-            NetworkId.MAINNET,
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
+            isInternal = false
         ),
         authRequestItem = WalletAuthorizedRequest.AuthRequestItem.LoginRequest.WithoutChallenge,
         oneTimeAccountsRequestItem = null,
@@ -114,10 +116,11 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
         requestMetadata = DappToWalletInteraction.RequestMetadata(
-            NetworkId.MAINNET,
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
+            isInternal = false
         ),
         authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(IdentityAddress.sampleMainnet()),
         ongoingAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
@@ -133,10 +136,11 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
         requestMetadata = DappToWalletInteraction.RequestMetadata(
-            NetworkId.MAINNET,
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
+            isInternal = false
         ),
         authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(IdentityAddress.sampleMainnet()),
         ongoingAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
@@ -156,10 +160,11 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteEntityId = RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUID.randomUUID().toString(),
         requestMetadata = DappToWalletInteraction.RequestMetadata(
-            NetworkId.MAINNET,
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
+            version = newWalletInteractionVersionCurrent(),
+            networkId = NetworkId.MAINNET,
+            origin = "",
+            dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
+            isInternal = false
         ),
         authRequestItem = WalletAuthorizedRequest.AuthRequestItem.UsePersonaRequest(IdentityAddress.sampleMainnet()),
         oneTimeAccountsRequestItem = DappToWalletInteraction.AccountsRequestItem(
