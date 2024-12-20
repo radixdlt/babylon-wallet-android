@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.troubleshooting.reset
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -29,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -38,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.common.resetwallet.ResetWalletDialog
 import com.babylon.wallet.android.presentation.settings.securitycenter.RecoverableStatusCard
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -86,7 +84,7 @@ private fun FactoryResetScreenContent(
     onBackClick: () -> Unit
 ) {
     if (state.deleteWalletDialogVisible) {
-        DeleteWalletDialog(
+        ResetWalletDialog(
             onConfirm = onDeleteWalletConfirm,
             onDeny = onDeleteWalletDeny
         )
@@ -198,58 +196,6 @@ private fun FactoryResetScreenContent(
             }
         }
     }
-}
-
-@Composable
-private fun DeleteWalletDialog(
-    modifier: Modifier = Modifier,
-    onConfirm: () -> Unit,
-    onDeny: () -> Unit
-) {
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = onDeny,
-        shape = RadixTheme.shapes.roundedRectSmall,
-        containerColor = RadixTheme.colors.defaultBackground,
-        title = {
-            Text(
-                text = stringResource(id = R.string.factoryReset_dialog_title),
-                style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
-            )
-        },
-        text = {
-            Text(
-                text = stringResource(id = R.string.factoryReset_dialog_message),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
-            )
-        },
-        confirmButton = {
-            Text(
-                modifier = modifier
-                    .clickable(role = Role.Button) { onConfirm() }
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingSmall,
-                        vertical = RadixTheme.dimensions.paddingXXSmall
-                    ),
-                text = stringResource(id = R.string.common_confirm),
-                color = RadixTheme.colors.red1
-            )
-        },
-        dismissButton = {
-            Text(
-                modifier = modifier
-                    .clickable(role = Role.Button) { onDeny() }
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingSmall,
-                        vertical = RadixTheme.dimensions.paddingXXSmall
-                    ),
-                text = stringResource(id = R.string.common_cancel),
-                color = RadixTheme.colors.blue2
-            )
-        }
-    )
 }
 
 @Composable

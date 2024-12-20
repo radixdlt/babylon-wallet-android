@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
-import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -77,7 +76,9 @@ class PersonaDetailViewModel @Inject constructor(
                         authorizedDapps = dApps.toImmutableList(),
                         persona = personaToDApps.first,
                         loading = false,
-                        hasAuthKey = personaToDApps.first.hasAuthSigning
+                        // TODO AuthSigningFactorInstance update this when the feature is implemented, for now hiding the button
+//                        hasAuthKey = personaToDApps.first.hasAuthSigning
+                        hasAuthKey = true
                     )
                 }
             }

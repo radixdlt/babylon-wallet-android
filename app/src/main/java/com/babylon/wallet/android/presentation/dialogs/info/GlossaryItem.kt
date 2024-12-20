@@ -33,7 +33,7 @@ enum class GlossaryItem {
     gateways,
     preauthorizations,
     possibledappcalls,
-    securityshield,
-    buildsecurityshields,
+    securityshields,
+    buildingshield,
     nohardwaredevice
 }
