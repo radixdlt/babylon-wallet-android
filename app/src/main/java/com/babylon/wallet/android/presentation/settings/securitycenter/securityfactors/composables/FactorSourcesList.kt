@@ -21,19 +21,19 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.ui.composables.InfoButton
-import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceInstanceCardView
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
 import kotlinx.collections.immutable.PersistentList
 
 @Composable
-fun FactorSourceInstancesList(
+fun FactorSourcesList(
     modifier: Modifier = Modifier,
-    mainFactorSourceInstance: FactorSourceInstanceCard?,
-    factorSourceInstances: PersistentList<FactorSourceInstanceCard>,
+    mainFactorSource: FactorSourceCard?,
+    factorSources: PersistentList<FactorSourceCard>,
     @StringRes factorSourceDescriptionText: Int,
     @StringRes addFactorSourceButtonTitle: Int,
-    onFactorSourceInstanceClick: (FactorSourceId.Hash) -> Unit,
+    onFactorSourceClick: (FactorSourceId.Hash) -> Unit,
     onAddFactorSourceClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
@@ -53,7 +53,7 @@ fun FactorSourceInstancesList(
                 color = RadixTheme.colors.gray2
             )
         }
-        mainFactorSourceInstance?.let {
+        mainFactorSource?.let {
             item {
                 Text(
                     modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingDefault),
@@ -61,10 +61,10 @@ fun FactorSourceInstancesList(
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
-                FactorSourceInstanceCardView(
+                FactorSourceCardView(
                     modifier = Modifier
                         .padding(bottom = RadixTheme.dimensions.paddingMedium)
-                        .clickable { onFactorSourceInstanceClick(it.id) },
+                        .clickable { onFactorSourceClick(it.id) },
                     item = it
                 )
             }
@@ -77,9 +77,9 @@ fun FactorSourceInstancesList(
             }
         }
 
-        items(factorSourceInstances) {
-            FactorSourceInstanceCardView(
-                modifier = Modifier.clickable { onFactorSourceInstanceClick(it.id) },
+        items(factorSources) {
+            FactorSourceCardView(
+                modifier = Modifier.clickable { onFactorSourceClick(it.id) },
                 item = it
             )
         }

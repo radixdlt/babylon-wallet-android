@@ -7,7 +7,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.utils.relativeTimeFormatted
 import com.radixdlt.sargon.Account
@@ -71,7 +71,7 @@ class BiometricsPinViewModel @Inject constructor(
                     entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
                 )
 
-                val factorSourceInstanceCard = deviceFactorSource.value.toInstanceCard(
+                val factorSourceCard = deviceFactorSource.value.toFactorSourceCard(
                     messages = securityMessages,
                     accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
                     personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
@@ -82,13 +82,13 @@ class BiometricsPinViewModel @Inject constructor(
                 val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
                 if (isMainDeviceFactorSource) {
                     _state.update { state ->
-                        state.copy(mainDeviceFactorSourceInstance = factorSourceInstanceCard)
+                        state.copy(mainDeviceFactorSource = factorSourceCard)
                     }
                 } else {
                     _state.update { state ->
                         state.copy(
-                            deviceFactorSourceInstances = state.deviceFactorSourceInstances.add(
-                                factorSourceInstanceCard
+                            deviceFactorSources = state.deviceFactorSources.add(
+                                factorSourceCard
                             )
                         )
                     }
@@ -99,20 +99,20 @@ class BiometricsPinViewModel @Inject constructor(
     }
 
     @Suppress("UnusedParameter") // TODO
-    fun onDeviceFactorSourceInstanceClick(hash: FactorSourceId.Hash) {
+    fun onDeviceFactorSourceClick(hash: FactorSourceId.Hash) {
         viewModelScope.launch {
-            sendEvent(Event.NavigateToDeviceFactorSourceInstanceDetails)
+            sendEvent(Event.NavigateToDeviceFactorSourceDetails)
         }
     }
 
-    private fun DeviceFactorSource.toInstanceCard(
+    private fun DeviceFactorSource.toFactorSourceCard(
         includeDescription: Boolean = false,
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf(),
         hasHiddenEntities: Boolean
-    ): FactorSourceInstanceCard {
-        return FactorSourceInstanceCard(
+    ): FactorSourceCard {
+        return FactorSourceCard(
             id = id.asGeneral(),
             name = hint.label,
             includeDescription = includeDescription,
@@ -129,7 +129,7 @@ class BiometricsPinViewModel @Inject constructor(
         deviceFactorSourceId: FactorSourceId,
         entitiesLinkedToDeviceFactorSource: EntitiesLinkedToFactorSource
     ): PersistentList<FactorSourceStatusMessage> {
-        val isDeviceFactorSourceInstanceLinkedToAnyEntities = listOf(
+        val isDeviceFactorSourceLinkedToAnyEntities = listOf(
             entitiesLinkedToDeviceFactorSource.accounts,
             entitiesLinkedToDeviceFactorSource.personas,
             entitiesLinkedToDeviceFactorSource.hiddenAccounts,
@@ -138,7 +138,7 @@ class BiometricsPinViewModel @Inject constructor(
 
         val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
 
-        return if (isDeviceFactorSourceInstanceLinkedToAnyEntities) {
+        return if (isDeviceFactorSourceLinkedToAnyEntities) {
             val deviceFactorSourceIntegrity = entitiesLinkedToDeviceFactorSource.integrity as FactorSourceIntegrity.Device
             deviceFactorSourceIntegrity.toMessages().toPersistentList()
         } else if (backedUpFactorSourceIds.contains(deviceFactorSourceId)) { // if not linked entities we can't check
@@ -165,12 +165,12 @@ class BiometricsPinViewModel @Inject constructor(
     }
 
     data class State(
-        val mainDeviceFactorSourceInstance: FactorSourceInstanceCard? = null,
-        val deviceFactorSourceInstances: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
+        val mainDeviceFactorSource: FactorSourceCard? = null,
+        val deviceFactorSources: PersistentList<FactorSourceCard> = persistentListOf(),
     ) : UiState
 
     sealed interface Event : OneOffEvent {
 
-        data object NavigateToDeviceFactorSourceInstanceDetails : Event
+        data object NavigateToDeviceFactorSourceDetails : Event
     }
 }

@@ -19,7 +19,7 @@ fun NavController.biometricsPin() {
 
 fun NavGraphBuilder.biometricsPin(
     onBackClick: () -> Unit,
-    onNavigateToDeviceFactorSourceInstanceDetails: () -> Unit,
+    onNavigateToDeviceFactorSourceDetails: () -> Unit,
     onNavigateToAddBiometricPin: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -41,7 +41,7 @@ fun NavGraphBuilder.biometricsPin(
         BiometricsPinScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onNavigateToDeviceFactorSourceInstanceDetails = onNavigateToDeviceFactorSourceInstanceDetails,
+            onNavigateToDeviceFactorSourceDetails = onNavigateToDeviceFactorSourceDetails,
             onNavigateToAddBiometricPin = onNavigateToAddBiometricPin,
             onInfoClick = onInfoClick
         )
