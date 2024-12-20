@@ -54,6 +54,7 @@ sealed interface OutputPerFactorSource<ID : Signable.ID> {
     ) : OutputPerFactorSource<ID>
 
     data class Neglected<ID : Signable.ID>(
+        val factorSourceId: FactorSourceIdFromHash,
         val reason: NeglectFactorReason
     ) : OutputPerFactorSource<ID>
 

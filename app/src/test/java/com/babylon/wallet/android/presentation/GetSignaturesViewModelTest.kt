@@ -73,7 +73,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
     @Test
     fun `given singers with ledger and device factor sources, the first factor source to sign is always ledger`() = runTest {
         coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf())
-        coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf())
+        coEvery { signWithDeviceFactorSourceUseCaseMock.mono(any(), any(), any()) } returns Result.success(listOf())
 
         val viewModel = vm.value
         advanceUntilIdle()
@@ -91,7 +91,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
     @Test
     fun `given device factor source, when signing, then show bottom sheet content for device factors`() = runTest {
         coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf())
-        coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(listOf())
+        coEvery { signWithDeviceFactorSourceUseCaseMock.mono(any(), any(), any()) } returns Result.success(listOf())
 
         val viewModel = vm.value
         advanceUntilIdle()
@@ -155,7 +155,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
             listOf(EntityWithSignature(entity = signerWithLedgerFactorSource, signatureWithPublicKey = signatureFromLedger))
         )
-        coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
+        coEvery { signWithDeviceFactorSourceUseCaseMock.mono(any(), any(), any()) } returns Result.success(
             listOf(EntityWithSignature(entity = signerWithDeviceFactorSource, signatureWithPublicKey = signatureFromDevice))
         )
 
@@ -191,7 +191,7 @@ class GetSignaturesViewModelTest : StateViewModelTest<GetSignaturesViewModel>() 
         coEvery { signWithLedgerFactorSourceUseCaseMock(any(), any(), any()) } returns Result.success(
             listOf(EntityWithSignature(entity = signers[0], signatureWithPublicKey = signature))
         )
-        coEvery { signWithDeviceFactorSourceUseCaseMock(any(), any(), any()) } returns Result.failure(exception = IllegalStateException("User has no fingers"))
+        coEvery { signWithDeviceFactorSourceUseCaseMock.mono(any(), any(), any()) } returns Result.failure(exception = IllegalStateException("User has no fingers"))
 
         val viewModel = vm.value
         advanceUntilIdle()

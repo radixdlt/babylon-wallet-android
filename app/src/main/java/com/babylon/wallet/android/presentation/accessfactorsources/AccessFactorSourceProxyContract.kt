@@ -15,7 +15,6 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.SignaturesPerFactorSourceOfTransactionIntentHash
 import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfAuthIntent
 import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfSubintent
 import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfTransactionIntent
@@ -132,8 +131,7 @@ sealed interface AccessFactorSourcesInput {
     ): AccessFactorSourcesInput {
 
         companion object {
-
-            fun from(input: List<TransactionToSignPerFactorSourceOfTransactionIntent>): ToSign<Signable.Payload.Transaction> = ToSign(
+            fun fromTransactionIntents(input: List<TransactionToSignPerFactorSourceOfTransactionIntent>): ToSign<Signable.Payload.Transaction> = ToSign(
                 perFactorSource = input.map { perFactorSource ->
                     InputPerFactorSource(
                         factorSourceId = perFactorSource.factorSourceId,
@@ -148,7 +146,7 @@ sealed interface AccessFactorSourcesInput {
                 }
             )
 
-            fun from(input: List<TransactionToSignPerFactorSourceOfSubintent>): ToSign<Signable.Payload.Subintent> = ToSign(
+            fun fromSubintents(input: List<TransactionToSignPerFactorSourceOfSubintent>): ToSign<Signable.Payload.Subintent> = ToSign(
                 perFactorSource = input.map { perFactorSource ->
                     InputPerFactorSource(
                         factorSourceId = perFactorSource.factorSourceId,
@@ -163,7 +161,7 @@ sealed interface AccessFactorSourcesInput {
                 }
             )
 
-            fun from(input: List<TransactionToSignPerFactorSourceOfAuthIntent>): ToSign<Signable.Payload.Auth> = ToSign(
+            fun fromAuthIntents(input: List<TransactionToSignPerFactorSourceOfAuthIntent>): ToSign<Signable.Payload.Auth> = ToSign(
                 perFactorSource = input.map { perFactorSource ->
                     InputPerFactorSource(
                         factorSourceId = perFactorSource.factorSourceId,
