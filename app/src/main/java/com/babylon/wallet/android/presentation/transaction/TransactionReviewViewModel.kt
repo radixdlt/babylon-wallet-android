@@ -276,9 +276,8 @@ class TransactionReviewViewModel @Inject constructor(
                 incomingRequestRepository.requestHandled(args.interactionId)
                 sendEvent(Event.Dismiss)
             }
+            _state.update { it.copy(error = null) }
         }
-
-        _state.update { it.copy(error = null) }
     }
 
     fun onAcknowledgeRawTransactionWarning() {
