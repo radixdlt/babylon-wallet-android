@@ -5,6 +5,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import rdx.works.core.sargon.Signable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,14 +60,15 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
-    override suspend fun sign(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): AccessFactorSourcesOutput.EntitiesWithSignatures {
+    override suspend fun <P : Signable.Payload, ID : Signable.ID> sign(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<P>
+    ): AccessFactorSourcesOutput.SignOutput<ID> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.GetSignatures)
         val result = _output.first()
 
-        return result as AccessFactorSourcesOutput.EntitiesWithSignatures
+        @Suppress("UNCHECKED_CAST")
+        return result as AccessFactorSourcesOutput.SignOutput<ID>
     }
 
     override fun getInput(): AccessFactorSourcesInput {
