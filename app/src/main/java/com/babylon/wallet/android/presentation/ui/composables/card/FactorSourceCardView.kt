@@ -36,8 +36,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.defaultCardShadow
@@ -57,15 +57,15 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun FactorSourceCardView(
-    item: FactorSourceCard,
+fun FactorSourceKindCardView(
+    item: FactorSourceKindCard,
     modifier: Modifier = Modifier,
     endContent: (@Composable () -> Unit)? = null
 ) {
     CardContainer(
         modifier = modifier
     ) {
-        SimpleFactorSourceCardView(
+        SimpleFactorCardView(
             iconRes = item.kind.iconRes(),
             title = item.kind.title(),
             subtitle = item.kind.subtitle(),
@@ -88,7 +88,7 @@ fun FactorSourceInstanceCardView(
     CardContainer(
         modifier = modifier
     ) {
-        SimpleFactorSourceCardView(
+        SimpleFactorCardView(
             iconRes = item.kind.iconRes(),
             title = item.name,
             subtitle = item.kind.subtitle().takeIf { item.includeDescription },
@@ -111,8 +111,12 @@ fun FactorSourceInstanceCardView(
     }
 }
 
+/**
+ * A composable that can be used either to present a factor source or a factor source kind.
+ *
+ */
 @Composable
-fun SimpleFactorSourceCardView(
+fun SimpleFactorCardView(
     @DrawableRes iconRes: Int,
     title: String,
     modifier: Modifier = Modifier,
@@ -391,11 +395,11 @@ fun FactorSourceKind.subtitle(): String {
 @Composable
 @Preview
 @UsesSampleValues
-private fun FactorSourceCardPreview(
-    @PreviewParameter(FactorSourceCardPreviewProvider::class) item: FactorSourceCard
+private fun FactorSourceKindCardPreview(
+    @PreviewParameter(FactorSourceKindCardPreviewProvider::class) item: FactorSourceKindCard
 ) {
     RadixWalletPreviewTheme {
-        FactorSourceCardView(
+        FactorSourceKindCardView(
             item = item
         )
     }
@@ -415,23 +419,23 @@ private fun FactorSourceInstanceCardPreview(
 }
 
 @UsesSampleValues
-class FactorSourceCardPreviewProvider : PreviewParameterProvider<FactorSourceCard> {
+class FactorSourceKindCardPreviewProvider : PreviewParameterProvider<FactorSourceKindCard> {
 
-    override val values: Sequence<FactorSourceCard>
+    override val values: Sequence<FactorSourceKindCard>
         get() = sequenceOf(
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                 messages = persistentListOf()
             ),
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.ARCULUS_CARD,
                 messages = persistentListOf()
             ),
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.PASSWORD,
                 messages = persistentListOf()
             ),
-            FactorSourceCard(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 messages = persistentListOf(
                     FactorSourceStatusMessage.Dynamic(

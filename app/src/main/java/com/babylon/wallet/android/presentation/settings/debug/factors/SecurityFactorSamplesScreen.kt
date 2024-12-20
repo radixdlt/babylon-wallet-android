@@ -18,14 +18,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceCardView
 import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceInstanceCardView
+import com.babylon.wallet.android.presentation.ui.composables.card.FactorSourceKindCardView
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableSingleChoiceFactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.radixdlt.sargon.Account
@@ -61,7 +61,7 @@ private fun SecurityFactorSamplesContent(
     modifier: Modifier = Modifier,
     state: SecurityFactorSamplesViewModel.State,
     onBackClick: () -> Unit,
-    onSelect: (FactorSourceCard) -> Unit,
+    onSelect: (FactorSourceKindCard) -> Unit,
     onCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
     onRemoveClick: (FactorSourceInstanceCard) -> Unit
 ) {
@@ -87,14 +87,14 @@ private fun SecurityFactorSamplesContent(
                 )
             }
 
-            items(state.displayOnlySourceItems) {
-                FactorSourceCardView(
+            items(state.displayOnlyFactorSourceKindItems) {
+                FactorSourceKindCardView(
                     item = it
                 )
             }
 
-            items(state.singleChoiceItems) {
-                SelectableSingleChoiceFactorSourceCard(
+            items(state.singleChoiceFactorSourceKindItems) {
+                SelectableSingleChoiceFactorSourceKindCard(
                     item = it,
                     onSelect = onSelect
                 )
@@ -153,25 +153,25 @@ private fun SecurityFactorSamplesPreview() {
                         hasHiddenEntities = true
                     )
                 ),
-                displayOnlySourceItems = persistentListOf(
-                    FactorSourceCard(
+                displayOnlyFactorSourceKindItems = persistentListOf(
+                    FactorSourceKindCard(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         messages = persistentListOf()
                     ),
-                    FactorSourceCard(
+                    FactorSourceKindCard(
                         kind = FactorSourceKind.ARCULUS_CARD,
                         messages = persistentListOf()
                     )
                 ),
-                singleChoiceItems = persistentListOf(
+                singleChoiceFactorSourceKindItems = persistentListOf(
                     Selectable(
-                        data = FactorSourceCard(
+                        data = FactorSourceKindCard(
                             kind = FactorSourceKind.DEVICE,
                             messages = persistentListOf()
                         )
                     ),
                     Selectable(
-                        data = FactorSourceCard(
+                        data = FactorSourceKindCard(
                             kind = FactorSourceKind.ARCULUS_CARD,
                             messages = persistentListOf()
                         )

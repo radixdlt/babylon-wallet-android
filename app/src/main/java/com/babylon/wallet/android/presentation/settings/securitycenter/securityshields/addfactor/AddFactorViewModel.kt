@@ -9,7 +9,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.radixdlt.sargon.FactorSourceKind
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +28,7 @@ class AddFactorViewModel @Inject constructor(
 
     override fun initialState(): State = State(mode = State.Mode.from(args))
 
-    fun onFactorSourceSelect(card: FactorSourceCard) {
+    fun onFactorSourceKindSelect(card: FactorSourceKindCard) {
         _state.update { it.copy(selected = card.kind) }
     }
 
@@ -58,6 +58,17 @@ class AddFactorViewModel @Inject constructor(
                     ).toPersistentList()
                 ),
                 selected = kind == selected
+            )
+        }
+
+        val factorSourceKinds: List<FactorSourceKindCard> = mode.kinds.map { kind ->
+            FactorSourceKindCard(
+                kind = kind,
+                messages = listOfNotNull(
+                    FactorSourceStatusMessage.PassphraseHint.takeIf {
+                        kind == selected && kind == FactorSourceKind.OFF_DEVICE_MNEMONIC
+                    }
+                ).toPersistentList()
             )
         }
 

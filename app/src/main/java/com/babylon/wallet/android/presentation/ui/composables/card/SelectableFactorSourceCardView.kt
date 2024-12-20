@@ -18,8 +18,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.FactorSourceId
@@ -101,7 +99,7 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    SimpleFactorSourceCardView(
+    SimpleFactorCardView(
         modifier = modifier
             .background(
                 color = RadixTheme.colors.white,
@@ -117,23 +115,6 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
             )
         }
     )
-}
-
-@Composable
-private fun RadioButtonSelectorView(
-    isSelected: Boolean,
-    onSelectedChange: () -> Unit
-) {
-    Row {
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-
-        RadixRadioButton(
-            selected = isSelected,
-            onClick = onSelectedChange
-        )
-
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
-    }
 }
 
 @Composable
@@ -158,23 +139,6 @@ private fun CheckboxSelectorView(
         )
 
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-    }
-}
-
-@Composable
-@Preview
-private fun SelectableSingleChoiceFactorSourceCardPreview() {
-    RadixWalletPreviewTheme {
-        SelectableSingleChoiceFactorSourceCard(
-            item = Selectable(
-                data = FactorSourceCard(
-                    kind = FactorSourceKind.DEVICE,
-                    messages = persistentListOf()
-                ),
-                selected = false
-            ),
-            onSelect = {}
-        )
     }
 }
 
