@@ -112,7 +112,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
         )
         biometricsPin(
             onBackClick = { navController.popBackStack() },
-            onNavigateToDeviceFactorSourceInstanceDetails = {}, // TODO next task
+            onNavigateToDeviceFactorSourceDetails = {}, // TODO next task
             onNavigateToAddBiometricPin = { }, // TODO next task
             onInfoClick = { glossaryItem ->
                 navController.infoDialog(glossaryItem)

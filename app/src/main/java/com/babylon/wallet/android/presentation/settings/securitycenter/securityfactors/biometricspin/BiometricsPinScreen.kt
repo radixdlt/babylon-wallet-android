@@ -18,11 +18,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin.BiometricsPinViewModel.State
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourceInstancesList
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.composables.FactorSourcesList
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSourceId
@@ -40,7 +40,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun BiometricsPinScreen(
     viewModel: BiometricsPinViewModel,
     onBackClick: () -> Unit,
-    onNavigateToDeviceFactorSourceInstanceDetails: () -> Unit,
+    onNavigateToDeviceFactorSourceDetails: () -> Unit,
     onNavigateToAddBiometricPin: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit
 ) {
@@ -49,8 +49,8 @@ fun BiometricsPinScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                BiometricsPinViewModel.Event.NavigateToDeviceFactorSourceInstanceDetails -> {
-                    onNavigateToDeviceFactorSourceInstanceDetails()
+                BiometricsPinViewModel.Event.NavigateToDeviceFactorSourceDetails -> {
+                    onNavigateToDeviceFactorSourceDetails()
                 }
             }
         }
@@ -59,7 +59,7 @@ fun BiometricsPinScreen(
     BiometricsPinContent(
         state = state,
         onBackClick = onBackClick,
-        onDeviceFactorSourceInstanceClick = viewModel::onDeviceFactorSourceInstanceClick,
+        onDeviceFactorSourceClick = viewModel::onDeviceFactorSourceClick,
         onAddBiometricsPinClick = onNavigateToAddBiometricPin,
         onInfoClick = onInfoClick
     )
@@ -70,7 +70,7 @@ private fun BiometricsPinContent(
     modifier: Modifier = Modifier,
     state: State,
     onBackClick: () -> Unit,
-    onDeviceFactorSourceInstanceClick: (FactorSourceId.Hash) -> Unit,
+    onDeviceFactorSourceClick: (FactorSourceId.Hash) -> Unit,
     onAddBiometricsPinClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
@@ -91,12 +91,12 @@ private fun BiometricsPinContent(
         ) {
             HorizontalDivider(color = RadixTheme.colors.gray4)
 
-            FactorSourceInstancesList(
-                mainFactorSourceInstance = state.mainDeviceFactorSourceInstance,
-                factorSourceInstances = state.deviceFactorSourceInstances,
+            FactorSourcesList(
+                mainFactorSource = state.mainDeviceFactorSource,
+                factorSources = state.deviceFactorSources,
                 factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                 addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
-                onFactorSourceInstanceClick = onDeviceFactorSourceInstanceClick,
+                onFactorSourceClick = onDeviceFactorSourceClick,
                 onAddFactorSourceClick = onAddBiometricsPinClick,
                 onInfoClick = onInfoClick
             )
@@ -111,7 +111,7 @@ private fun BiometricsPinPreview() {
     RadixWalletPreviewTheme {
         BiometricsPinContent(
             state = State(
-                mainDeviceFactorSourceInstance = FactorSourceInstanceCard(
+                mainDeviceFactorSource = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -130,8 +130,8 @@ private fun BiometricsPinPreview() {
                     ),
                     hasHiddenEntities = false
                 ),
-                deviceFactorSourceInstances = persistentListOf(
-                    FactorSourceInstanceCard(
+                deviceFactorSources = persistentListOf(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.DEVICE,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -153,7 +153,7 @@ private fun BiometricsPinPreview() {
                 )
             ),
             onBackClick = {},
-            onDeviceFactorSourceInstanceClick = {},
+            onDeviceFactorSourceClick = {},
             onAddBiometricsPinClick = {},
             onInfoClick = {}
         )

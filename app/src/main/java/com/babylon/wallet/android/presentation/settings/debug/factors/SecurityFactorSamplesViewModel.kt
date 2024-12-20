@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.debug.factors
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
@@ -37,13 +37,13 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     @Suppress("LongMethod")
     @OptIn(UsesSampleValues::class)
     override fun initialState(): State = State(
-        displayOnlyInstanceItems = persistentListOf(
-            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
+        displayOnlyFactorSourceItems = persistentListOf(
+            LedgerHardwareWalletFactorSource.sample().toFactorSourceCard(
                 accounts = persistentListOf(Account.sampleStokenet.nadia),
                 personas = persistentListOf(Persona.sampleStokenet.leiaSkywalker),
                 hasHiddenEntities = true
             ),
-            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
+            LedgerHardwareWalletFactorSource.sample().toFactorSourceCard(
                 accounts = persistentListOf(
                     Account.sampleMainnet.alice,
                     Account.sampleMainnet.bob,
@@ -61,7 +61,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     Persona.sampleStokenet.connor
                 )
             ),
-            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
+            LedgerHardwareWalletFactorSource.sample().toFactorSourceCard(
                 accounts = persistentListOf(
                     Account.sampleMainnet.alice,
                     Account.sampleMainnet.bob,
@@ -71,7 +71,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                     Account.sampleStokenet.paige
                 )
             ),
-            LedgerHardwareWalletFactorSource.sample().toInstanceCard(
+            LedgerHardwareWalletFactorSource.sample().toFactorSourceCard(
                 personas = persistentListOf(
                     Persona.sampleMainnet.satoshi,
                     Persona.sampleMainnet.batman,
@@ -82,7 +82,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 ),
                 hasHiddenEntities = true
             ),
-            DeviceFactorSource.sample().toInstanceCard(
+            DeviceFactorSource.sample().toFactorSourceCard(
                 messages = persistentListOf(
                     FactorSourceStatusMessage.Dynamic(
                         message = StatusMessage(
@@ -124,7 +124,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }.toPersistentList(),
         multiChoiceItems = getSupportedKinds().map {
             Selectable(
-                data = FactorSourceInstanceCard(
+                data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = it,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -149,8 +149,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             )
         }.toPersistentList(),
         removableItems = persistentListOf(
-            DeviceFactorSource.sample().toInstanceCard(includeDescription = true),
-            LedgerHardwareWalletFactorSource.sample().toInstanceCard(includeDescription = true, hasHiddenEntities = true)
+            DeviceFactorSource.sample().toFactorSourceCard(includeDescription = true),
+            LedgerHardwareWalletFactorSource.sample().toFactorSourceCard(includeDescription = true, hasHiddenEntities = true)
         )
     )
 
@@ -166,7 +166,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }
     }
 
-    fun onCheckedChange(item: FactorSourceInstanceCard, isChecked: Boolean) {
+    fun onCheckedChange(item: FactorSourceCard, isChecked: Boolean) {
         _state.update { state ->
             state.copy(
                 multiChoiceItems = state.multiChoiceItems.mapWhen(
@@ -177,7 +177,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         }
     }
 
-    fun onRemoveClick(item: FactorSourceInstanceCard) {
+    fun onRemoveClick(item: FactorSourceCard) {
         Timber.d("Remove clicked: $item")
     }
 
@@ -189,14 +189,14 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         return this !in unsupportedKinds
     }
 
-    private fun DeviceFactorSource.toInstanceCard(
+    private fun DeviceFactorSource.toFactorSourceCard(
         includeDescription: Boolean = false,
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf(),
         hasHiddenEntities: Boolean = false
-    ): FactorSourceInstanceCard {
-        return FactorSourceInstanceCard(
+    ): FactorSourceCard {
+        return FactorSourceCard(
             id = id.asGeneral(),
             name = hint.label,
             includeDescription = includeDescription,
@@ -209,14 +209,14 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         )
     }
 
-    private fun LedgerHardwareWalletFactorSource.toInstanceCard(
+    private fun LedgerHardwareWalletFactorSource.toFactorSourceCard(
         includeDescription: Boolean = false,
         messages: PersistentList<FactorSourceStatusMessage> = persistentListOf(),
         accounts: PersistentList<Account> = persistentListOf(),
         personas: PersistentList<Persona> = persistentListOf(),
         hasHiddenEntities: Boolean = false
-    ): FactorSourceInstanceCard {
-        return FactorSourceInstanceCard(
+    ): FactorSourceCard {
+        return FactorSourceCard(
             id = id.asGeneral(),
             name = hint.label,
             includeDescription = includeDescription,
@@ -231,10 +231,10 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
 
     data class State(
         val displayOnlyFactorSourceKindItems: PersistentList<FactorSourceKindCard> = persistentListOf(),
-        val displayOnlyInstanceItems: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
+        val displayOnlyFactorSourceItems: PersistentList<FactorSourceCard> = persistentListOf(),
         val singleChoiceFactorSourceKindItems: PersistentList<Selectable<FactorSourceKindCard>> = persistentListOf(),
-        val multiChoiceItems: PersistentList<Selectable<FactorSourceInstanceCard>> = persistentListOf(),
-        val removableItems: PersistentList<FactorSourceInstanceCard> = persistentListOf()
+        val multiChoiceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
+        val removableItems: PersistentList<FactorSourceCard> = persistentListOf()
     ) : UiState
 
     companion object {
