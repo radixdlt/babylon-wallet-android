@@ -3,8 +3,8 @@ package com.babylon.wallet.android.presentation.settings.debug.factors
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.utils.relativeTimeFormatted
@@ -94,8 +94,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 hasHiddenEntities = true
             )
         ),
-        displayOnlySourceItems = persistentListOf(
-            FactorSourceCard(
+        displayOnlyFactorSourceKindItems = persistentListOf(
+            FactorSourceKindCard(
                 kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                 messages = persistentListOf(
                     FactorSourceStatusMessage.Dynamic(
@@ -113,9 +113,9 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 )
             )
         ),
-        singleChoiceItems = getSupportedKinds().map {
+        singleChoiceFactorSourceKindItems = getSupportedKinds().map {
             Selectable(
-                data = FactorSourceCard(
+                data = FactorSourceKindCard(
                     kind = it,
                     messages = persistentListOf()
                 ),
@@ -154,10 +154,10 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         )
     )
 
-    fun onSelect(item: FactorSourceCard) {
+    fun onSelect(item: FactorSourceKindCard) {
         _state.update { state ->
             state.copy(
-                singleChoiceItems = state.singleChoiceItems.map { selectableItem ->
+                singleChoiceFactorSourceKindItems = state.singleChoiceFactorSourceKindItems.map { selectableItem ->
                     selectableItem.copy(
                         selected = selectableItem.data.kind == item.kind
                     )
@@ -230,9 +230,9 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
     }
 
     data class State(
-        val displayOnlySourceItems: PersistentList<FactorSourceCard> = persistentListOf(),
+        val displayOnlyFactorSourceKindItems: PersistentList<FactorSourceKindCard> = persistentListOf(),
         val displayOnlyInstanceItems: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
-        val singleChoiceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
+        val singleChoiceFactorSourceKindItems: PersistentList<Selectable<FactorSourceKindCard>> = persistentListOf(),
         val multiChoiceItems: PersistentList<Selectable<FactorSourceInstanceCard>> = persistentListOf(),
         val removableItems: PersistentList<FactorSourceInstanceCard> = persistentListOf()
     ) : UiState
