@@ -71,7 +71,7 @@ class BiometricsPinViewModel @Inject constructor(
                     entitiesLinkedToDeviceFactorSource = entitiesLinkedToDeviceFactorSource
                 )
 
-                val factorSourceInstantCard = deviceFactorSource.value.toInstanceCard(
+                val factorSourceInstanceCard = deviceFactorSource.value.toInstanceCard(
                     messages = securityMessages,
                     accounts = entitiesLinkedToDeviceFactorSource.accounts.toPersistentList(),
                     personas = entitiesLinkedToDeviceFactorSource.personas.toPersistentList(),
@@ -82,13 +82,13 @@ class BiometricsPinViewModel @Inject constructor(
                 val isMainDeviceFactorSource = deviceFactorSource.value.common.flags.contains(FactorSourceFlag.MAIN)
                 if (isMainDeviceFactorSource) {
                     _state.update { state ->
-                        state.copy(mainDeviceFactorSourceInstance = factorSourceInstantCard)
+                        state.copy(mainDeviceFactorSourceInstance = factorSourceInstanceCard)
                     }
                 } else {
                     _state.update { state ->
                         state.copy(
                             deviceFactorSourceInstances = state.deviceFactorSourceInstances.add(
-                                factorSourceInstantCard
+                                factorSourceInstanceCard
                             )
                         )
                     }
