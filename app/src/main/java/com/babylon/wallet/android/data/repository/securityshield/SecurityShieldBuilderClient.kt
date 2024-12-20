@@ -77,6 +77,15 @@ class SecurityShieldBuilderClient @Inject constructor(
         )
     }
 
+    suspend fun setThreshold(threshold: Int): Int = withContext(dispatcher) {
+        securityShieldBuilder.setThreshold(threshold.toUByte())
+        securityShieldBuilder.getPrimaryThreshold().toInt()
+    }
+
+    suspend fun removeFactor(id: FactorSourceId) = withContext(dispatcher) {
+        securityShieldBuilder.removeFactorFromPrimary(id)
+    }
+
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =
         mapNotNull { id -> allFactorSources.firstOrNull { it.id == id } }
 }

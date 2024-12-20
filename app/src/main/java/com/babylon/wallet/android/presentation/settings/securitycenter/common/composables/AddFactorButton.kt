@@ -12,10 +12,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 
 @Composable
 fun AddFactorButton(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     RadixSecondaryButton(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(41.dp),
         text = stringResource(id = R.string.plus),
