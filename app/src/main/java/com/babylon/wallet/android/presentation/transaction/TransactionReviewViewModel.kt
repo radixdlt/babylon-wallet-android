@@ -268,8 +268,6 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun dismissTerminalErrorDialog() {
-        _state.update { it.copy(error = null) }
-
         viewModelScope.launch {
             val error = state.value.error?.error
             if (error is DappRequestException) {
@@ -279,6 +277,8 @@ class TransactionReviewViewModel @Inject constructor(
                 sendEvent(Event.Dismiss)
             }
         }
+
+        _state.update { it.copy(error = null) }
     }
 
     fun onAcknowledgeRawTransactionWarning() {

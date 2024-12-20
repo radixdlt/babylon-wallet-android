@@ -144,7 +144,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private fun mapPreviewError(error: Throwable): RadixWalletException {
         return when (error) {
             is CommonException.ReservedInstructionsNotAllowedInManifest -> {
-                RadixWalletException.DappRequestException.UnacceptableManifest
+                RadixWalletException.DappRequestException.UnacceptableManifest(cause = error)
             }
             is CommonException.OneOfReceivingAccountsDoesNotAllowDeposits -> {
                 RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits
