@@ -17,9 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
-import com.babylon.wallet.android.presentation.ui.composables.RadixRadioButton
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -30,32 +28,13 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun SelectableSingleChoiceFactorSourceCard(
+fun SelectableMultiChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
     item: FactorSourceCard,
-    isSelected: Boolean,
-    onSelect: (FactorSourceCard) -> Unit
+    isChecked: Boolean,
+    onCheckedChange: (FactorSourceCard, Boolean) -> Unit
 ) {
     FactorSourceCardView(
-        modifier = modifier.noIndicationClickable { onSelect(item) },
-        item = item,
-        endContent = {
-            RadioButtonSelectorView(
-                isSelected = isSelected,
-                onSelectedChange = { onSelect(item) }
-            )
-        }
-    )
-}
-
-@Composable
-fun SelectableMultiChoiceFactorSourceInstanceCard(
-    modifier: Modifier = Modifier,
-    item: FactorSourceInstanceCard,
-    isChecked: Boolean,
-    onCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit
-) {
-    FactorSourceInstanceCardView(
         modifier = modifier.noIndicationClickable { onCheckedChange(item, !isChecked) },
         item = item,
         endContent = {
@@ -68,16 +47,16 @@ fun SelectableMultiChoiceFactorSourceInstanceCard(
 }
 
 @Composable
-fun RemovableFactorSourceInstanceCard(
+fun RemovableFactorSourceCard(
     modifier: Modifier = Modifier,
-    item: FactorSourceInstanceCard,
-    onRemoveClick: (FactorSourceInstanceCard) -> Unit
+    item: FactorSourceCard,
+    onRemoveClick: (FactorSourceCard) -> Unit
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        FactorSourceInstanceCardView(
+        FactorSourceCardView(
             modifier = Modifier.weight(1f),
             item = item
         )
@@ -102,7 +81,7 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    SimpleFactorSourceCardView(
+    SimpleFactorCardView(
         modifier = modifier
             .background(
                 color = RadixTheme.colors.white,
@@ -118,23 +97,6 @@ fun SimpleSelectableMultiChoiceFactorSourceCard(
             )
         }
     )
-}
-
-@Composable
-private fun RadioButtonSelectorView(
-    isSelected: Boolean,
-    onSelectedChange: () -> Unit
-) {
-    Row {
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
-
-        RadixRadioButton(
-            selected = isSelected,
-            onClick = onSelectedChange
-        )
-
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
-    }
 }
 
 @Composable
@@ -164,26 +126,11 @@ private fun CheckboxSelectorView(
 
 @Composable
 @Preview
-private fun SelectableSingleChoiceFactorSourceCardPreview() {
-    RadixWalletPreviewTheme {
-        SelectableSingleChoiceFactorSourceCard(
-            item = FactorSourceCard(
-                kind = FactorSourceKind.DEVICE,
-                messages = persistentListOf()
-            ),
-            isSelected = false,
-            onSelect = {}
-        )
-    }
-}
-
-@Composable
-@Preview
 @UsesSampleValues
 private fun SelectableMultiChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
-        SelectableMultiChoiceFactorSourceInstanceCard(
-            item = FactorSourceInstanceCard(
+        SelectableMultiChoiceFactorSourceCard(
+            item = FactorSourceCard(
                 id = FactorSourceId.Hash.init(
                     kind = FactorSourceKind.ARCULUS_CARD,
                     mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -194,7 +141,8 @@ private fun SelectableMultiChoiceFactorSourceCardPreview() {
                 kind = FactorSourceKind.ARCULUS_CARD,
                 messages = persistentListOf(),
                 accounts = persistentListOf(),
-                personas = persistentListOf()
+                personas = persistentListOf(),
+                hasHiddenEntities = false
             ),
             isChecked = true,
             onCheckedChange = { _, _ -> }
@@ -221,8 +169,8 @@ private fun SimpleSelectableFactorSourceCardPreview() {
 @UsesSampleValues
 private fun RemovableFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
-        RemovableFactorSourceInstanceCard(
-            item = FactorSourceInstanceCard(
+        RemovableFactorSourceCard(
+            item = FactorSourceCard(
                 id = FactorSourceId.Hash.init(
                     kind = FactorSourceKind.DEVICE,
                     mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -233,7 +181,8 @@ private fun RemovableFactorSourceCardPreview() {
                 kind = FactorSourceKind.DEVICE,
                 messages = persistentListOf(),
                 accounts = persistentListOf(),
-                personas = persistentListOf()
+                personas = persistentListOf(),
+                hasHiddenEntities = false
             ),
             onRemoveClick = {}
         )

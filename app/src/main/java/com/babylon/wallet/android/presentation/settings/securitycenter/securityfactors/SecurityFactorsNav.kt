@@ -9,7 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 
-const val ROUTE_SECURITY_FACTORS_SCREEN = "settings_security_factors_screen"
+private const val ROUTE_SECURITY_FACTORS_SCREEN = "settings_security_factors_screen"
 
 fun NavController.securityFactors() {
     navigate(ROUTE_SECURITY_FACTORS_SCREEN) {
