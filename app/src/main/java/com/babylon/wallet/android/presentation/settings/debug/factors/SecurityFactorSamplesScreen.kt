@@ -95,16 +95,14 @@ private fun SecurityFactorSamplesContent(
 
             items(state.singleChoiceItems) {
                 SelectableSingleChoiceFactorSourceCard(
-                    item = it.data,
-                    isSelected = it.selected,
+                    item = it,
                     onSelect = onSelect
                 )
             }
 
             items(state.multiChoiceItems) {
                 SelectableMultiChoiceFactorSourceInstanceCard(
-                    item = it.data,
-                    isChecked = it.selected,
+                    item = it,
                     onCheckedChange = onCheckedChange
                 )
             }

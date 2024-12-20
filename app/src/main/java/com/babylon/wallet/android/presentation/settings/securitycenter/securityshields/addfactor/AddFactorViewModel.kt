@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -46,14 +47,17 @@ class AddFactorViewModel @Inject constructor(
         val selected: FactorSourceKind? = null
     ) : UiState {
 
-        val factorSources: List<FactorSourceCard> = mode.kinds.map { kind ->
-            FactorSourceCard(
-                kind = kind,
-                messages = listOfNotNull(
-                    FactorSourceStatusMessage.PassphraseHint.takeIf {
-                        kind == selected && kind == FactorSourceKind.OFF_DEVICE_MNEMONIC
-                    }
-                ).toPersistentList()
+        val factorSources: List<Selectable<FactorSourceCard>> = mode.kinds.map { kind ->
+            Selectable(
+                data = FactorSourceCard(
+                    kind = kind,
+                    messages = listOfNotNull(
+                        FactorSourceStatusMessage.PassphraseHint.takeIf {
+                            kind == selected && kind == FactorSourceKind.OFF_DEVICE_MNEMONIC
+                        }
+                    ).toPersistentList()
+                ),
+                selected = kind == selected
             )
         }
 

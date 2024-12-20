@@ -167,7 +167,6 @@ private fun AddFactorContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                         .padding(bottom = RadixTheme.dimensions.paddingDefault),
                     item = item,
-                    isSelected = item.kind == state.selected,
                     onSelect = onFactorSourceSelect
                 )
             }
