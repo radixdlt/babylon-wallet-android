@@ -154,7 +154,7 @@ private fun PrepareFactorsContent(
 
             InfoButton(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
-                text = stringResource(id = R.string.infoLink_title_buildsecurityshields),
+                text = stringResource(id = R.string.infoLink_title_buildingshield),
                 onClick = { onInfoClick(GlossaryItem.nohardwaredevice) }
             )
         }
