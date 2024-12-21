@@ -53,12 +53,18 @@ class WalletInteractor @Inject constructor(
     override suspend fun signAuth(request: SignRequestOfAuthIntent): SignWithFactorsOutcomeOfAuthIntentHash =
         if (request.factorSourceKind == FactorSourceKind.DEVICE) {
             accessFactorSourcesProxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(input = request.perFactorSource)
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(
+                    kind = request.factorSourceKind,
+                    input = request.perFactorSource
+                )
             ).perFactorSource
         } else {
             request.perFactorSource.map { perFactorSource ->
                 accessFactorSourcesProxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(input = listOf(perFactorSource))
+                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(
+                        request.factorSourceKind,
+                        input = listOf(perFactorSource)
+                    )
                 ).perFactorSource.first()
             }
         }.into()
@@ -66,12 +72,18 @@ class WalletInteractor @Inject constructor(
     override suspend fun signSubintents(request: SignRequestOfSubintent): SignWithFactorsOutcomeOfSubintentHash =
         if (request.factorSourceKind == FactorSourceKind.DEVICE) {
             accessFactorSourcesProxy.sign<Signable.Payload.Subintent, Signable.ID.Subintent>(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromSubintents(input = request.perFactorSource)
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromSubintents(
+                    kind = request.factorSourceKind,
+                    input = request.perFactorSource
+                )
             ).perFactorSource
         } else {
             request.perFactorSource.map { perFactorSource ->
                 accessFactorSourcesProxy.sign<Signable.Payload.Subintent, Signable.ID.Subintent>(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromSubintents(input = listOf(perFactorSource))
+                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromSubintents(
+                        kind = request.factorSourceKind,
+                        input = listOf(perFactorSource)
+                    )
                 ).perFactorSource.first()
             }
         }.into()
@@ -79,12 +91,18 @@ class WalletInteractor @Inject constructor(
     override suspend fun signTransactions(request: SignRequestOfTransactionIntent): SignWithFactorsOutcomeOfTransactionIntentHash =
         if (request.factorSourceKind == FactorSourceKind.DEVICE) {
             accessFactorSourcesProxy.sign<Signable.Payload.Transaction, Signable.ID.Transaction>(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromTransactionIntents(input = request.perFactorSource)
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromTransactionIntents(
+                    kind = request.factorSourceKind,
+                    input = request.perFactorSource
+                )
             ).perFactorSource
         } else {
             request.perFactorSource.map { perFactorSource ->
                 accessFactorSourcesProxy.sign<Signable.Payload.Transaction, Signable.ID.Transaction>(
-                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromTransactionIntents(input = listOf(perFactorSource))
+                    accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromTransactionIntents(
+                        kind = request.factorSourceKind,
+                        input = listOf(perFactorSource)
+                    )
                 ).perFactorSource.first()
             }
         }.into()
