@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource
@@ -9,6 +10,7 @@ import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
@@ -127,11 +129,24 @@ sealed interface AccessFactorSourcesInput {
     }
 
     data class ToSign<SP: Signable.Payload>(
+        val purpose: Purpose,
+        val kind: FactorSourceKind,
         val perFactorSource: List<InputPerFactorSource<SP>>
     ): AccessFactorSourcesInput {
 
+        enum class Purpose {
+            TransactionIntents,
+            SubIntents,
+            AuthIntents
+        }
+
         companion object {
-            fun fromTransactionIntents(input: List<TransactionToSignPerFactorSourceOfTransactionIntent>): ToSign<Signable.Payload.Transaction> = ToSign(
+            fun fromTransactionIntents(
+                kind: FactorSourceKind,
+                input: List<TransactionToSignPerFactorSourceOfTransactionIntent>
+            ): ToSign<Signable.Payload.Transaction> = ToSign(
+                purpose = Purpose.TransactionIntents,
+                kind = kind,
                 perFactorSource = input.map { perFactorSource ->
                     InputPerFactorSource(
                         factorSourceId = perFactorSource.factorSourceId,
@@ -146,7 +161,12 @@ sealed interface AccessFactorSourcesInput {
                 }
             )
 
-            fun fromSubintents(input: List<TransactionToSignPerFactorSourceOfSubintent>): ToSign<Signable.Payload.Subintent> = ToSign(
+            fun fromSubintents(
+                kind: FactorSourceKind,
+                input: List<TransactionToSignPerFactorSourceOfSubintent>
+            ): ToSign<Signable.Payload.Subintent> = ToSign(
+                purpose = Purpose.SubIntents,
+                kind = kind,
                 perFactorSource = input.map { perFactorSource ->
                     InputPerFactorSource(
                         factorSourceId = perFactorSource.factorSourceId,
@@ -161,7 +181,12 @@ sealed interface AccessFactorSourcesInput {
                 }
             )
 
-            fun fromAuthIntents(input: List<TransactionToSignPerFactorSourceOfAuthIntent>): ToSign<Signable.Payload.Auth> = ToSign(
+            fun fromAuthIntents(
+                kind: FactorSourceKind,
+                input: List<TransactionToSignPerFactorSourceOfAuthIntent>
+            ): ToSign<Signable.Payload.Auth> = ToSign(
+                purpose = Purpose.AuthIntents,
+                kind = kind,
                 perFactorSource = input.map { perFactorSource ->
                     InputPerFactorSource(
                         factorSourceId = perFactorSource.factorSourceId,
