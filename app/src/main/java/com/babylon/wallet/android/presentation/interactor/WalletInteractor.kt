@@ -66,7 +66,7 @@ class WalletInteractor @Inject constructor(
             request.perFactorSource.map { perFactorSource ->
                 accessFactorSourcesProxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.fromAuthIntents(
-                        request.factorSourceKind,
+                        kind = request.factorSourceKind,
                         input = listOf(perFactorSource)
                     )
                 ).perFactorSource.first().also {
