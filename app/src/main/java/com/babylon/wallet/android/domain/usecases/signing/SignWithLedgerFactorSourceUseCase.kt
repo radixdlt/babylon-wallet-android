@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.messages.LedgerResponse
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HDSignatureInput
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HdSignature
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.SignaturesPerFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.OwnedFactorInstance
@@ -32,7 +33,6 @@ import rdx.works.core.sargon.updateLastUsed
 import rdx.works.core.then
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import timber.log.Timber
 import javax.inject.Inject
 
 class SignWithLedgerFactorSourceUseCase @Inject constructor(
@@ -48,71 +48,24 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         input: InputPerFactorSource<Signable.Payload>
     ): Result<SignaturesPerFactorSource<Signable.ID>> {
         val hdSignatures = input.transactions.map { perTransaction ->
-            val payloadId = perTransaction.payload.getSignable().getId()
-            val interactionId = UUIDGenerator.uuid().toString()
-
             when (val payload = perTransaction.payload) {
-                is Signable.Payload.Transaction -> ledgerMessenger.signTransactionRequest(
-                    interactionId = interactionId,
-                    hdPublicKeys = perTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
-                    compiledTransactionIntent = payload.value.bytes.hex,
-                    ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
-                ).then { response ->
-                    runCatching {
-                        response.signatures.map {
-                            it.toHDSignature(
-                                payloadId = payloadId,
-                                ownedFactorInstances = perTransaction.ownedFactorInstances
-                            )
-                        }
-                    }.mapError {
-                        RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(
-                            reason = LedgerErrorCode.Generic,
-                            message = it.message
-                        )
-                    }
-                }
+                is Signable.Payload.Transaction -> signTransaction(
+                    inputPerTransaction = perTransaction,
+                    payload = payload,
+                    ledgerFactorSource = ledgerFactorSource
+                )
 
-                is Signable.Payload.Subintent -> ledgerMessenger.signSubintentHashRequest(
-                    interactionId = interactionId,
-                    hdPublicKeys = perTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
-                    subintentHash = payload.value.decompile().hash().hash.hex,
-                    ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
-                ).then { response ->
-                    runCatching {
-                        response.signatures.map {
-                            it.toHDSignature(
-                                payloadId = payloadId,
-                                ownedFactorInstances = perTransaction.ownedFactorInstances
-                            )
-                        }
-                    }.mapError {
-                        RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(
-                            reason = LedgerErrorCode.Generic,
-                            message = it.message
-                        )
-                    }
-                }
+                is Signable.Payload.Subintent -> signSubintent(
+                    inputPerTransaction = perTransaction,
+                    payload = payload,
+                    ledgerFactorSource = ledgerFactorSource
+                )
 
-                is Signable.Payload.Auth -> ledgerMessenger.signChallengeRequest(
-                    interactionId = interactionId,
-                    hdPublicKeys = perTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
-                    challengeHex = payload.value.challengeNonce.hex,
-                    origin = payload.value.origin.toString(),
-                    dAppDefinitionAddress = payload.value.dappDefinitionAddress.string,
-                    ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
-                ).then { response ->
-                    runCatching {
-                        response.signatures.map {
-                            it.toHDSignature(
-                                payloadId = payloadId,
-                                ownedFactorInstances = perTransaction.ownedFactorInstances
-                            )
-                        }
-                    }.mapError {
-                        RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge
-                    }
-                }
+                is Signable.Payload.Auth -> signAuth(
+                    inputPerTransaction = perTransaction,
+                    payload = payload,
+                    ledgerFactorSource = ledgerFactorSource
+                )
             }.getOrElse { error ->
                 return Result.failure(error)
             }
@@ -127,6 +80,89 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 hdSignatures = hdSignatures
             )
         )
+    }
+
+    private suspend fun signTransaction(
+        inputPerTransaction: InputPerTransaction<Signable.Payload>,
+        payload: Signable.Payload.Transaction,
+        ledgerFactorSource: FactorSource.Ledger,
+    ): Result<List<HdSignature<Signable.ID>>> {
+        val payloadId = inputPerTransaction.payload.getSignable().getId()
+        return ledgerMessenger.signTransactionRequest(
+            interactionId = UUIDGenerator.uuid().toString(),
+            hdPublicKeys = inputPerTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
+            compiledTransactionIntent = payload.value.bytes.hex,
+            ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
+        ).then { response ->
+            runCatching {
+                response.signatures.map {
+                    it.toHDSignature(
+                        payloadId = payloadId,
+                        ownedFactorInstances = inputPerTransaction.ownedFactorInstances
+                    )
+                }
+            }.mapError {
+                RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(
+                    reason = LedgerErrorCode.Generic,
+                    message = it.message
+                )
+            }
+        }
+    }
+
+    private suspend fun signSubintent(
+        inputPerTransaction: InputPerTransaction<Signable.Payload>,
+        payload: Signable.Payload.Subintent,
+        ledgerFactorSource: FactorSource.Ledger,
+    ): Result<List<HdSignature<Signable.ID>>> {
+        val payloadId = inputPerTransaction.payload.getSignable().getId()
+        return ledgerMessenger.signSubintentHashRequest(
+            interactionId = UUIDGenerator.uuid().toString(),
+            hdPublicKeys = inputPerTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
+            subintentHash = payload.value.decompile().hash().hash.hex,
+            ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
+        ).then { response ->
+            runCatching {
+                response.signatures.map {
+                    it.toHDSignature(
+                        payloadId = payloadId,
+                        ownedFactorInstances = inputPerTransaction.ownedFactorInstances
+                    )
+                }
+            }.mapError {
+                RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(
+                    reason = LedgerErrorCode.Generic,
+                    message = it.message
+                )
+            }
+        }
+    }
+
+    private suspend fun signAuth(
+        inputPerTransaction: InputPerTransaction<Signable.Payload>,
+        payload: Signable.Payload.Auth,
+        ledgerFactorSource: FactorSource.Ledger,
+    ): Result<List<HdSignature<Signable.ID>>> {
+        val payloadId = inputPerTransaction.payload.getSignable().getId()
+        return ledgerMessenger.signChallengeRequest(
+            interactionId = UUIDGenerator.uuid().toString(),
+            hdPublicKeys = inputPerTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
+            challengeHex = payload.value.challengeNonce.hex,
+            origin = payload.value.origin.toString(),
+            dAppDefinitionAddress = payload.value.dappDefinitionAddress.string,
+            ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
+        ).then { response ->
+            runCatching {
+                response.signatures.map {
+                    it.toHDSignature(
+                        payloadId = payloadId,
+                        ownedFactorInstances = inputPerTransaction.ownedFactorInstances
+                    )
+                }
+            }.mapError {
+                RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge
+            }
+        }
     }
 
     private fun FactorSource.Ledger.toLedgerDeviceModel() = LedgerInteractionRequest.LedgerDevice(

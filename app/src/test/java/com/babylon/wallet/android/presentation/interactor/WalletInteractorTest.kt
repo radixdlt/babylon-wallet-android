@@ -4,14 +4,22 @@ import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HDSignatureInput
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.HdSignature
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.SignaturesPerFactorSource
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.AuthIntent
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HdSignatureInputOfAuthIntentHash
 import com.radixdlt.sargon.HdSignatureInputOfSubintentHash
 import com.radixdlt.sargon.HdSignatureInputOfTransactionIntentHash
+import com.radixdlt.sargon.HdSignatureOfAuthIntentHash
 import com.radixdlt.sargon.HdSignatureOfSubintentHash
 import com.radixdlt.sargon.HdSignatureOfTransactionIntentHash
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
@@ -21,22 +29,27 @@ import com.radixdlt.sargon.KeyDerivationResponse
 import com.radixdlt.sargon.KeyDerivationResponsePerFactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.OwnedFactorInstance
+import com.radixdlt.sargon.SignRequestOfAuthIntent
 import com.radixdlt.sargon.SignRequestOfSubintent
 import com.radixdlt.sargon.SignRequestOfTransactionIntent
+import com.radixdlt.sargon.SignResponseOfAuthIntentHash
 import com.radixdlt.sargon.SignResponseOfSubintentHash
 import com.radixdlt.sargon.SignResponseOfTransactionIntentHash
+import com.radixdlt.sargon.SignWithFactorsOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.SignWithFactorsOutcomeOfSubintentHash
 import com.radixdlt.sargon.SignWithFactorsOutcomeOfTransactionIntentHash
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.SignaturesPerFactorSourceOfAuthIntentHash
 import com.radixdlt.sargon.SignaturesPerFactorSourceOfSubintentHash
 import com.radixdlt.sargon.SignaturesPerFactorSourceOfTransactionIntentHash
 import com.radixdlt.sargon.Subintent
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.TransactionSignRequestInputOfAuthIntent
 import com.radixdlt.sargon.TransactionSignRequestInputOfSubintent
 import com.radixdlt.sargon.TransactionSignRequestInputOfTransactionIntent
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfAuthIntent
 import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfSubintent
 import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfTransactionIntent
-import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.derivePublicKey
@@ -50,6 +63,7 @@ import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.core.sargon.Signable
 import rdx.works.core.sargon.transactionSigningFactorInstance
 
 class WalletInteractorTest {
@@ -121,40 +135,58 @@ class WalletInteractorTest {
         val device = DeviceFactorSource.sample()
         val transaction = TransactionIntent.sample()
 
-        val instances = mapOf(
-            Account.sampleMainnet() to DerivationPath.sample(),
-            Account.sampleMainnet.other() to DerivationPath.sample.other(),
+        val accounts = listOf(
+            Account.sampleMainnet(),
+            Account.sampleMainnet.other()
         )
-        val expectedSignatures: Map<ProfileEntity, SignatureWithPublicKey> = instances.keys.associate {
-            it.asProfileEntity() to mnemonicWithPassphrase.sign(transaction.hash().hash, instances[it]!!)
+        val instances = accounts.map {
+            OwnedFactorInstance(
+                owner = it.asProfileEntity().address,
+                factorInstance = it.securityState.transactionSigningFactorInstance
+            )
+
+        }
+        val expectedSignatures: Map<OwnedFactorInstance, SignatureWithPublicKey> = instances.associateWith {
+            mnemonicWithPassphrase.sign(transaction.hash().hash, it.factorInstance.publicKey.derivationPath)
         }
 
         coEvery {
-            proxy.sign(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.Transactions(
+            proxy.sign<Signable.Payload.Transaction, Signable.ID.Transaction>(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
+                    kind = FactorSourceKind.DEVICE,
                     perFactorSource = listOf(
-                        TransactionToSignPerFactorSourceOfTransactionIntent(
+                        InputPerFactorSource(
                             factorSourceId = device.id,
                             transactions = listOf(
-                                TransactionSignRequestInputOfTransactionIntent(
-                                    payload = transaction.compile(),
+                                InputPerTransaction(
+                                    payload = Signable.Payload.Transaction(transaction.compile()),
                                     factorSourceId = device.id,
-                                    ownedFactorInstances = instances.keys.map { owner ->
-                                        OwnedFactorInstance(
-                                            owner = AddressOfAccountOrPersona.Account(owner.address),
-                                            factorInstance = HierarchicalDeterministicFactorInstance(
-                                                factorSourceId = device.id,
-                                                publicKey = mnemonicWithPassphrase.derivePublicKey(instances[owner]!!)
-                                            )
-                                        )
-                                    }
+                                    ownedFactorInstances = instances
                                 )
                             )
                         )
+                    ),
+                    purpose = AccessFactorSourcesInput.ToSign.Purpose.TransactionIntents
+                )
+            )
+        } returns AccessFactorSourcesOutput.SignOutput(
+            perFactorSource = listOf(
+                OutputPerFactorSource.Signed(
+                    signatures = SignaturesPerFactorSource(
+                        factorSourceId = device.id,
+                        hdSignatures = expectedSignatures.map { entry ->
+                            HdSignature(
+                                input = HDSignatureInput(
+                                    payloadId = Signable.ID.Transaction(transaction.hash()),
+                                    ownedFactorInstance = entry.key
+                                ),
+                                signature = entry.value
+                            )
+                        }
                     )
                 )
             )
-        } returns AccessFactorSourcesOutput.EntitiesWithSignatures.Success(signersWithSignatures = expectedSignatures)
+        )
 
         val response = sut.signTransactions(
             request = SignRequestOfTransactionIntent(
@@ -166,15 +198,7 @@ class WalletInteractorTest {
                             TransactionSignRequestInputOfTransactionIntent(
                                 payload = transaction.compile(),
                                 factorSourceId = device.id,
-                                ownedFactorInstances = instances.keys.map { owner ->
-                                    OwnedFactorInstance(
-                                        owner = AddressOfAccountOrPersona.Account(owner.address),
-                                        factorInstance = HierarchicalDeterministicFactorInstance(
-                                            factorSourceId = device.id,
-                                            publicKey = mnemonicWithPassphrase.derivePublicKey(instances[owner]!!)
-                                        )
-                                    )
-                                }
+                                ownedFactorInstances = instances
                             ),
                         )
                     )
@@ -193,10 +217,7 @@ class WalletInteractorTest {
                                 HdSignatureOfTransactionIntentHash(
                                     input = HdSignatureInputOfTransactionIntentHash(
                                         payloadId = transaction.hash(),
-                                        ownedFactorInstance = OwnedFactorInstance(
-                                            owner = it.key.address,
-                                            factorInstance = it.key.securityState.transactionSigningFactorInstance
-                                        )
+                                        ownedFactorInstance = it.key
                                     ),
                                     signature = it.value
                                 )
@@ -214,32 +235,58 @@ class WalletInteractorTest {
         val device = DeviceFactorSource.sample()
         val subintent = Subintent.sample()
 
-        val instances = mapOf(
-            Account.sampleMainnet() to DerivationPath.sample(),
-            Account.sampleMainnet.other() to DerivationPath.sample.other(),
+        val accounts = listOf(
+            Account.sampleMainnet(),
+            Account.sampleMainnet.other()
         )
-        val expectedSignatures: Map<ProfileEntity, SignatureWithPublicKey> = instances.keys.associate {
-            it.asProfileEntity() to mnemonicWithPassphrase.sign(subintent.hash().hash, instances[it]!!)
+        val instances = accounts.map {
+            OwnedFactorInstance(
+                owner = it.asProfileEntity().address,
+                factorInstance = it.securityState.transactionSigningFactorInstance
+            )
+
         }
+        val expectedSignatures: Map<OwnedFactorInstance, SignatureWithPublicKey> = instances.associateWith {
+            mnemonicWithPassphrase.sign(subintent.hash().hash, it.factorInstance.publicKey.derivationPath)
+        }
+
         coEvery {
-            proxy.sign(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign.Subintents(
-                    perFactorSource = TransactionSignRequestInputOfSubintent(
-                        payload = subintent.compile(),
-                        ownedFactorInstances = instances.keys.map { owner ->
-                            OwnedFactorInstance(
-                                owner = AddressOfAccountOrPersona.Account(owner.address),
-                                factorInstance = HierarchicalDeterministicFactorInstance(
+            proxy.sign<Signable.Payload.Subintent, Signable.ID.Subintent>(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
+                    kind = FactorSourceKind.DEVICE,
+                    perFactorSource = listOf(
+                        InputPerFactorSource(
+                            factorSourceId = device.id,
+                            transactions = listOf(
+                                InputPerTransaction(
+                                    payload = Signable.Payload.Subintent(subintent.compile()),
                                     factorSourceId = device.id,
-                                    publicKey = mnemonicWithPassphrase.derivePublicKey(instances[owner]!!)
+                                    ownedFactorInstances = instances
                                 )
                             )
-                        },
-                        factorSourceId = device.id
+                        )
+                    ),
+                    purpose = AccessFactorSourcesInput.ToSign.Purpose.SubIntents
+                )
+            )
+        } returns AccessFactorSourcesOutput.SignOutput(
+            perFactorSource = listOf(
+                OutputPerFactorSource.Signed(
+                    signatures = SignaturesPerFactorSource(
+                        factorSourceId = device.id,
+                        hdSignatures = expectedSignatures.map { entry ->
+                            HdSignature(
+                                input = HDSignatureInput(
+                                    payloadId = Signable.ID.Subintent(subintent.hash()),
+                                    ownedFactorInstance = entry.key
+                                ),
+                                signature = entry.value
+                            )
+                        }
                     )
                 )
             )
-        } returns AccessFactorSourcesOutput.EntitiesWithSignatures.Success(signersWithSignatures = expectedSignatures)
+        )
 
         val response = sut.signSubintents(
             request = SignRequestOfSubintent(
@@ -251,15 +298,7 @@ class WalletInteractorTest {
                             TransactionSignRequestInputOfSubintent(
                                 payload = subintent.compile(),
                                 factorSourceId = device.id,
-                                ownedFactorInstances = instances.keys.map { owner ->
-                                    OwnedFactorInstance(
-                                        owner = AddressOfAccountOrPersona.Account(owner.address),
-                                        factorInstance = HierarchicalDeterministicFactorInstance(
-                                            factorSourceId = device.id,
-                                            publicKey = mnemonicWithPassphrase.derivePublicKey(instances[owner]!!)
-                                        )
-                                    )
-                                }
+                                ownedFactorInstances = instances
                             ),
                         )
                     )
@@ -278,10 +317,107 @@ class WalletInteractorTest {
                                 HdSignatureOfSubintentHash(
                                     input = HdSignatureInputOfSubintentHash(
                                         payloadId = subintent.hash(),
-                                        ownedFactorInstance = OwnedFactorInstance(
-                                            owner = it.key.address,
-                                            factorInstance = it.key.securityState.transactionSigningFactorInstance
-                                        )
+                                        ownedFactorInstance = it.key
+                                    ),
+                                    signature = it.value
+                                )
+                            }
+                        )
+                    )
+                )
+            ),
+            response
+        )
+    }
+
+    @Test
+    fun testSignAuth() = runTest {
+        val device = DeviceFactorSource.sample()
+        val authIntent = AuthIntent.sample()
+
+        val accounts = listOf(
+            Account.sampleMainnet(),
+            Account.sampleMainnet.other()
+        )
+        val instances = accounts.map {
+            OwnedFactorInstance(
+                owner = it.asProfileEntity().address,
+                factorInstance = it.securityState.transactionSigningFactorInstance
+            )
+
+        }
+        val expectedSignatures: Map<OwnedFactorInstance, SignatureWithPublicKey> = instances.associateWith {
+            mnemonicWithPassphrase.sign(authIntent.hash().payload.hash(), it.factorInstance.publicKey.derivationPath)
+        }
+
+        coEvery {
+            proxy.sign<Signable.Payload.Auth, Signable.ID.Auth>(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToSign(
+                    kind = FactorSourceKind.DEVICE,
+                    perFactorSource = listOf(
+                        InputPerFactorSource(
+                            factorSourceId = device.id,
+                            transactions = listOf(
+                                InputPerTransaction(
+                                    payload = Signable.Payload.Auth(authIntent),
+                                    factorSourceId = device.id,
+                                    ownedFactorInstances = instances
+                                )
+                            )
+                        )
+                    ),
+                    purpose = AccessFactorSourcesInput.ToSign.Purpose.AuthIntents
+                )
+            )
+        } returns AccessFactorSourcesOutput.SignOutput(
+            perFactorSource = listOf(
+                OutputPerFactorSource.Signed(
+                    signatures = SignaturesPerFactorSource(
+                        factorSourceId = device.id,
+                        hdSignatures = expectedSignatures.map { entry ->
+                            HdSignature(
+                                input = HDSignatureInput(
+                                    payloadId = Signable.ID.Auth(authIntent.hash()),
+                                    ownedFactorInstance = entry.key
+                                ),
+                                signature = entry.value
+                            )
+                        }
+                    )
+                )
+            )
+        )
+
+        val response = sut.signAuth(
+            request = SignRequestOfAuthIntent(
+                factorSourceKind = FactorSourceKind.DEVICE,
+                perFactorSource = listOf(
+                    TransactionToSignPerFactorSourceOfAuthIntent(
+                        factorSourceId = device.id,
+                        transactions = listOf(
+                            TransactionSignRequestInputOfAuthIntent(
+                                payload = authIntent,
+                                factorSourceId = device.id,
+                                ownedFactorInstances = instances
+                            ),
+                        )
+                    )
+                ),
+                invalidTransactionsIfNeglected = emptyList()
+            )
+        )
+
+        assertEquals(
+            SignWithFactorsOutcomeOfAuthIntentHash.Signed(
+                producedSignatures = SignResponseOfAuthIntentHash(
+                    perFactorSource = listOf(
+                        SignaturesPerFactorSourceOfAuthIntentHash(
+                            factorSourceId = device.id,
+                            hdSignatures = expectedSignatures.map {
+                                HdSignatureOfAuthIntentHash(
+                                    input = HdSignatureInputOfAuthIntentHash(
+                                        payloadId = authIntent.hash(),
+                                        ownedFactorInstance = it.key
                                     ),
                                     signature = it.value
                                 )

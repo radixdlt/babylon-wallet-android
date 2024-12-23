@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.presentation.accessfactorsources.signatures.GetSignaturesViewModel
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource
@@ -45,7 +44,7 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 
-    suspend fun <P: Signable.Payload, ID: Signable.ID> sign(
+    suspend fun <P : Signable.Payload, ID : Signable.ID> sign(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<P>
     ): AccessFactorSourcesOutput.SignOutput<ID>
 
@@ -128,11 +127,11 @@ sealed interface AccessFactorSourcesInput {
         ) : ToReDeriveAccounts
     }
 
-    data class ToSign<SP: Signable.Payload>(
+    data class ToSign<SP : Signable.Payload>(
         val purpose: Purpose,
         val kind: FactorSourceKind,
         val perFactorSource: List<InputPerFactorSource<SP>>
-    ): AccessFactorSourcesInput {
+    ) : AccessFactorSourcesInput {
 
         enum class Purpose {
             TransactionIntents,
@@ -200,9 +199,7 @@ sealed interface AccessFactorSourcesInput {
                     )
                 }
             )
-
         }
-
     }
 
     data object Init : AccessFactorSourcesInput
@@ -248,9 +245,9 @@ sealed interface AccessFactorSourcesOutput {
         ) : EntitiesWithSignatures
     }
 
-    data class SignOutput<ID: Signable.ID>(
+    data class SignOutput<ID : Signable.ID>(
         val perFactorSource: List<OutputPerFactorSource<ID>>
-    ): AccessFactorSourcesOutput
+    ) : AccessFactorSourcesOutput
 
     data class Failure(
         val error: Throwable

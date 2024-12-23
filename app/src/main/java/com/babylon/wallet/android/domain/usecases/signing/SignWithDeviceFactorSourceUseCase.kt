@@ -47,7 +47,9 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
             )
         }.mapError { error ->
             when (error) {
-                is BiometricsFailure -> error.toCommonException(key = SecureStorageKey.DeviceFactorSourceMnemonic(deviceFactorSource.value.id))
+                is BiometricsFailure -> error.toCommonException(
+                    key = SecureStorageKey.DeviceFactorSourceMnemonic(deviceFactorSource.value.id)
+                )
                 ProfileException.NoMnemonic -> CommonException.UnableToLoadMnemonicFromSecureStorage(badValue = deviceFactorSource.value.id)
                 ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException()
                 else -> CommonException.Unknown()
@@ -103,7 +105,9 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                         key = deviceFactorSource.value.id.asGeneral()
                     ).mapError { error ->
                         val commonException = when (error) {
-                            ProfileException.NoMnemonic -> CommonException.UnableToLoadMnemonicFromSecureStorage(badValue = deviceFactorSource.value.id)
+                            ProfileException.NoMnemonic -> CommonException.UnableToLoadMnemonicFromSecureStorage(
+                                badValue = deviceFactorSource.value.id
+                            )
                             ProfileException.SecureStorageAccess -> CommonException.SecureStorageReadException()
                             else -> CommonException.Unknown()
                         }

@@ -173,22 +173,28 @@ private fun LedgerContent(
     signPurpose: Purpose,
     factorSource: FactorSource.Ledger
 ) {
-    val stringRes = when (signPurpose) {
-        Purpose.TransactionIntents,
-        Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
-        Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_ledger_message)
-    }
-    Text(
+    Column(
         modifier = modifier,
-        text = stringRes.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-        style = RadixTheme.typography.body1Regular,
-        color = RadixTheme.colors.gray1,
-        textAlign = TextAlign.Center
-    )
-    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-    RoundLedgerItem(ledgerName = factorSource.value.hint.label)
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val stringRes = when (signPurpose) {
+            Purpose.TransactionIntents,
+            Purpose.SubIntents -> stringResource(id = R.string.factorSourceActions_ledger_messageSignature)
+            Purpose.AuthIntents -> stringResource(id = R.string.factorSourceActions_ledger_message)
+        }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringRes.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        RoundLedgerItem(
+            ledgerName = factorSource.value.hint.label
+        )
+    }
 }
-
 
 @UsesSampleValues
 @Preview(showBackground = false)

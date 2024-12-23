@@ -20,7 +20,6 @@ import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.NeglectFactorReason
-import com.radixdlt.sargon.SecureStorageAccessErrorKind
 import com.radixdlt.sargon.SecureStorageAccessErrorKind.USER_CANCELLED
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
@@ -53,7 +52,7 @@ class GetSignaturesViewModel @Inject constructor(
     )
 
     init {
-        viewModelScope.launch {
+        signingJob = viewModelScope.launch {
             resolveFactorSourcesAndSign()
         }
     }
@@ -78,7 +77,9 @@ class GetSignaturesViewModel @Inject constructor(
         val factorSourcesById = factorSources.associateBy { (it.id as FactorSourceId.Hash).value }
 
         signingJob?.cancel()
-        signingJob = sign(factorSourcesById)
+        signingJob = viewModelScope.launch {
+            sign(factorSourcesById)
+        }
     }
 
     fun onMessageShown() {
@@ -96,41 +97,11 @@ class GetSignaturesViewModel @Inject constructor(
         }
 
         val factorSourcesById = factorSources.associateBy { (it.id as FactorSourceId.Hash).value }
-        signingJob = sign(factorSourcesById)
+        sign(factorSourcesById)
     }
 
-    private fun sign(factorSources: Map<FactorSourceIdFromHash, FactorSource>) = viewModelScope.launch {
-        if (input.perFactorSource.size > 1) {
-            if (input.perFactorSource.any { it.factorSourceId.kind != FactorSourceKind.DEVICE }) {
-                error("Poly factor sign is currently only supported for DeviceFactorSource kind.")
-            } else {
-                _state.update {
-                    it.copy(
-                        isSigningInProgress = true,
-                        factorSourcesToSign = State.FactorSourcesToSign.Poly(
-                            kind = input.kind,
-                            factorSources = factorSources.values.toList()
-                        )
-                    )
-                }
-
-                signPoly(
-                    factorSources = factorSources,
-                    perDeviceFactorSource = input.perFactorSource
-                )
-            }
-        } else if (input.perFactorSource.size == 1) {
-            val input = input.perFactorSource.first()
-            val factorSource = factorSources.getValue(input.factorSourceId)
-            _state.update { it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource)) }
-
-            signMono(
-                factorSource = factorSource,
-                input = input
-            ).map { listOf(it) }
-        } else {
-            error("Did not provide any factor source to sign")
-        }.onSuccess { signaturesPerFactorSource ->
+    private suspend fun sign(factorSources: Map<FactorSourceIdFromHash, FactorSource>) {
+        signMonoOrPoly(factorSources).onSuccess { signaturesPerFactorSource ->
             _state.update { it.copy(isSigningInProgress = false) }
             finishWithSuccess(signaturesPerFactorSource)
         }.onFailure { error ->
@@ -146,13 +117,39 @@ class GetSignaturesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun signPoly(
-        factorSources: Map<FactorSourceIdFromHash, FactorSource>,
-        perDeviceFactorSource: List<InputPerFactorSource<Signable.Payload>>
-    ): Result<List<SignaturesPerFactorSource<Signable.ID>>> = signWithDeviceFactorSourceUseCase.poly(
-        deviceFactorSources = factorSources.values.filterIsInstance<FactorSource.Device>(),
-        inputs = perDeviceFactorSource
-    )
+    private suspend fun signMonoOrPoly(
+        factorSources: Map<FactorSourceIdFromHash, FactorSource>
+    ) = if (input.perFactorSource.size > 1) {
+        if (input.perFactorSource.any { it.factorSourceId.kind != FactorSourceKind.DEVICE }) {
+            error("Poly factor sign is currently only supported for DeviceFactorSource kind.")
+        } else {
+            _state.update {
+                it.copy(
+                    isSigningInProgress = true,
+                    factorSourcesToSign = State.FactorSourcesToSign.Poly(
+                        kind = input.kind,
+                        factorSources = factorSources.values.toList()
+                    )
+                )
+            }
+
+            signWithDeviceFactorSourceUseCase.poly(
+                deviceFactorSources = factorSources.values.filterIsInstance<FactorSource.Device>(),
+                inputs = input.perFactorSource
+            )
+        }
+    } else if (input.perFactorSource.size == 1) {
+        val input = input.perFactorSource.first()
+        val factorSource = factorSources.getValue(input.factorSourceId)
+        _state.update { it.copy(isSigningInProgress = true, factorSourcesToSign = State.FactorSourcesToSign.Mono(factorSource)) }
+
+        signMono(
+            factorSource = factorSource,
+            input = input
+        ).map { listOf(it) }
+    } else {
+        error("Did not provide any factor source to sign")
+    }
 
     private suspend fun signMono(
         factorSource: FactorSource,
@@ -177,7 +174,6 @@ class GetSignaturesViewModel @Inject constructor(
         sendEvent(event = Event.Completed)
         accessFactorSourcesIOHandler.setOutput(AccessFactorSourcesOutput.SignOutput(output))
     }
-
 
     private suspend fun finishWithFailure(
         factorSourceId: FactorSourceIdFromHash,
@@ -217,11 +213,11 @@ class GetSignaturesViewModel @Inject constructor(
             data class Poly(
                 val kind: FactorSourceKind,
                 val factorSources: List<FactorSource>
-            ): FactorSourcesToSign
+            ) : FactorSourcesToSign
 
             data class Mono(
                 val factorSource: FactorSource
-            ): FactorSourcesToSign
+            ) : FactorSourcesToSign
         }
     }
 
