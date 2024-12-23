@@ -148,7 +148,7 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
             interactionId = UUIDGenerator.uuid().toString(),
             hdPublicKeys = inputPerTransaction.ownedFactorInstances.map { it.factorInstance.publicKey },
             challengeHex = payload.value.challengeNonce.hex,
-            origin = payload.value.origin.toString(),
+            origin = payload.value.origin.toString(), // TODO that might be a problem
             dAppDefinitionAddress = payload.value.dappDefinitionAddress.string,
             ledgerDevice = ledgerFactorSource.toLedgerDeviceModel()
         ).then { response ->
