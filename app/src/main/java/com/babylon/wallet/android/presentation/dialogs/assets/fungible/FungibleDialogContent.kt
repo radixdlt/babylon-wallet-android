@@ -104,7 +104,7 @@ fun FungibleDialogContent(
                 if (isLoadingBalance) {
                     ShimmeringView(
                         modifier = Modifier
-                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                            .padding(top = RadixTheme.dimensions.paddingXXXSmall)
                             .height(12.dp)
                             .fillMaxWidth(0.2f),
                         isVisible = true

@@ -49,7 +49,7 @@ fun LegacyAccountCard(
             style = RadixTheme.typography.secondaryHeader,
             color = Color.White
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
         Text(
             text = stringResource(
                 id = when (accountType) {

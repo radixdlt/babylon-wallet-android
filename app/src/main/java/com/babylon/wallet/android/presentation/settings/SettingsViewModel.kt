@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.SecurityProblem
-import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
+import com.babylon.wallet.android.domain.usecases.securityproblems.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Preferences

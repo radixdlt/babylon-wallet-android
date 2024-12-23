@@ -390,7 +390,7 @@ private fun TransactionPreviewContent(
                                     contentDescription = "copy"
                                 )
                                 Text(
-                                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
+                                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXXSmall),
                                     text = stringResource(R.string.common_copy),
                                     style = RadixTheme.typography.body1Header
                                 )

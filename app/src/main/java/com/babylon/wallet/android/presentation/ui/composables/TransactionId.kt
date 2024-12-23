@@ -25,7 +25,7 @@ fun TransactionId(transactionId: TransactionIntentHash, modifier: Modifier = Mod
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
+        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXXSmall))
         ActionableAddressView(
             transactionId = transactionId,
             textStyle = RadixTheme.typography.body1HighImportance,
