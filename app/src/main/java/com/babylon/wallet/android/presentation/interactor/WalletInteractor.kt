@@ -15,9 +15,12 @@ import com.radixdlt.sargon.SignRequestOfTransactionIntent
 import com.radixdlt.sargon.SignWithFactorsOutcomeOfAuthIntentHash
 import com.radixdlt.sargon.SignWithFactorsOutcomeOfSubintentHash
 import com.radixdlt.sargon.SignWithFactorsOutcomeOfTransactionIntentHash
+import kotlinx.coroutines.delay
 import rdx.works.core.sargon.Signable
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 class WalletInteractor @Inject constructor(
@@ -44,6 +47,8 @@ class WalletInteractor @Inject constructor(
                 is AccessFactorSourcesOutput.DerivedPublicKeys.Failure -> {
                     throw result.error.commonException
                 }
+            }.also {
+                delay(delayPerFactorSource)
             }
         }
 
@@ -65,7 +70,9 @@ class WalletInteractor @Inject constructor(
                         request.factorSourceKind,
                         input = listOf(perFactorSource)
                     )
-                ).perFactorSource.first()
+                ).perFactorSource.first().also {
+                    delay(delayPerFactorSource)
+                }
             }
         }.into()
 
@@ -84,7 +91,9 @@ class WalletInteractor @Inject constructor(
                         kind = request.factorSourceKind,
                         input = listOf(perFactorSource)
                     )
-                ).perFactorSource.first()
+                ).perFactorSource.first().also {
+                    delay(delayPerFactorSource)
+                }
             }
         }.into()
 
@@ -103,8 +112,19 @@ class WalletInteractor @Inject constructor(
                         kind = request.factorSourceKind,
                         input = listOf(perFactorSource)
                     )
-                ).perFactorSource.first()
+                ).perFactorSource.first().also {
+                    delay(delayPerFactorSource)
+                }
             }
         }.into()
 
+
+    companion object {
+
+        /**
+         * The delay between showing a different factor sources bottom sheets.
+         */
+        private val delayPerFactorSource = 250.milliseconds
+
+    }
 }
