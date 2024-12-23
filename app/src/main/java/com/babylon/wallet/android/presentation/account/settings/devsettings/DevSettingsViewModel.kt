@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
-import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
@@ -58,7 +57,9 @@ class DevSettingsViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         account = account,
-                        hasAuthKey = account.hasAuthSigning
+                        // TODO AuthSigningFactorInstance update this when the feature is implemented, for now hiding the button
+//                        hasAuthKey = account.hasAuthSigning
+                        hasAuthKey = true
                     )
                 }
             }

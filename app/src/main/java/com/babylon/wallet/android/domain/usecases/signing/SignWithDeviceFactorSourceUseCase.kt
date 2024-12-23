@@ -33,8 +33,10 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                 is EntitySecurityState.Unsecured -> {
                     val factorInstance = when (signRequest) {
                         is SignRequest.RolaSignRequest ->
-                            securityState.value.authenticationSigning
-                                ?: securityState.value.transactionSigning
+                            // TODO AuthSigningFactorInstance update this when the feature is implemented
+//                            securityState.value.authenticationSigning
+//                                ?:
+                            securityState.value.transactionSigning
 
                         is SignRequest.TransactionIntentSignRequest,
                         is SignRequest.SubintentSignRequest -> securityState.value.transactionSigning
