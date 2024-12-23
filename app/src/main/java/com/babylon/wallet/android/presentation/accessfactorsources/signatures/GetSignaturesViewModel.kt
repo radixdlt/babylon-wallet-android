@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.accessfactorsources.signatures
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 import com.babylon.wallet.android.domain.usecases.signing.SignWithDeviceFactorSourceUseCase
 import com.babylon.wallet.android.domain.usecases.signing.SignWithLedgerFactorSourceUseCase
@@ -15,11 +14,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.CommonException.SecureStorageAccessException
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.NeglectFactorReason
+import com.radixdlt.sargon.SecureStorageAccessErrorKind
+import com.radixdlt.sargon.SecureStorageAccessErrorKind.USER_CANCELLED
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
@@ -132,12 +134,15 @@ class GetSignaturesViewModel @Inject constructor(
             _state.update { it.copy(isSigningInProgress = false) }
             finishWithSuccess(signaturesPerFactorSource)
         }.onFailure { error ->
-            if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
-                // TODO ask that
-                onDismiss()
+            val errorMessageToShow = if (error is SecureStorageAccessException && error.errorKind == USER_CANCELLED) {
+                null
+            } else if (error is FailedToSignTransaction && error.reason == LedgerErrorCode.UserRejectedSigningOfTransaction) {
+                null
             } else {
-                _state.update { it.copy(isSigningInProgress = false, errorMessage = UiMessage.ErrorMessage(error)) }
+                UiMessage.ErrorMessage(error)
             }
+
+            _state.update { it.copy(isSigningInProgress = false, errorMessage = errorMessageToShow) }
         }
     }
 

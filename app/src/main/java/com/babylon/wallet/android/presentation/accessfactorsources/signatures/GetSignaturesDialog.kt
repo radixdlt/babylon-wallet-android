@@ -30,6 +30,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToSign.Purpose
 import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.DeviceFactorSource
@@ -52,7 +53,13 @@ fun GetSignaturesDialog(
         viewModel.onDismiss()
     }
 
-    // TODO Handle errors
+    state.errorMessage?.let { errorMessage ->
+        BasicPromptAlertDialog(
+            finish = { viewModel.onMessageShown() },
+            messageText = errorMessage.getMessage(),
+            dismissText = null
+        )
+    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
