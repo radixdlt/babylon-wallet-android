@@ -186,11 +186,11 @@ private fun SecurityShieldOnboardingContent(
                     when (currentPage) {
                         SecurityShieldOnboardingViewModel.State.Page.Introduction -> InfoButton(
                             text = stringResource(id = R.string.infoLink_title_securityshields),
-                            onClick = { onInfoClick(GlossaryItem.securityshield) }
+                            onClick = { onInfoClick(GlossaryItem.securityshields) }
                         )
                         SecurityShieldOnboardingViewModel.State.Page.AddFactors -> InfoButton(
                             text = stringResource(id = R.string.infoLink_title_buildingshield),
-                            onClick = { onInfoClick(GlossaryItem.buildsecurityshields) }
+                            onClick = { onInfoClick(GlossaryItem.buildingshield) }
                         )
                         SecurityShieldOnboardingViewModel.State.Page.ApplyShield -> {}
                     }

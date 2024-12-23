@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.securitys
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.factorsready.factorsReadyScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.onboarding.securityShieldOnboardingScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.preparefactors.prepareFactorsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.regularaccess.regularAccessScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.selectfactors.selectFactorsScreen
 
 const val ROUTE_SECURITY_SHIELDS = "security_shields"
@@ -36,6 +37,8 @@ fun NavGraphBuilder.securityShieldsNavGraph(
         factorsReadyScreen(navController)
 
         selectFactorsScreen(navController)
+
+        regularAccessScreen(navController)
     }
 }
 
