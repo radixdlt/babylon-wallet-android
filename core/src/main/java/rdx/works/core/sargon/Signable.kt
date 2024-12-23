@@ -27,7 +27,7 @@ sealed interface Signable {
 
     data class Transaction(
         val value: TransactionIntent
-    ): Signable {
+    ) : Signable {
         override fun getPayload(): Payload = Payload.Transaction(
             value = value.compile()
         )
@@ -39,7 +39,7 @@ sealed interface Signable {
 
     data class Subintent(
         val value: com.radixdlt.sargon.Subintent
-    ): Signable {
+    ) : Signable {
         override fun getPayload(): Payload = Payload.Subintent(
             value = value.compile()
         )
@@ -51,7 +51,7 @@ sealed interface Signable {
 
     data class Auth(
         val value: AuthIntent
-    ): Signable {
+    ) : Signable {
         override fun getPayload(): Payload = Payload.Auth(
             value = value
         )
@@ -67,22 +67,21 @@ sealed interface Signable {
 
         data class Transaction(
             val value: CompiledTransactionIntent
-        ): Payload {
+        ) : Payload {
             override fun getSignable(): Signable = Transaction(value.decompile())
         }
 
         data class Subintent(
             val value: CompiledSubintent
-        ): Payload {
+        ) : Payload {
             override fun getSignable(): Signable = Subintent(value.decompile())
         }
 
         data class Auth(
             val value: AuthIntent
-        ): Payload {
+        ) : Payload {
             override fun getSignable(): Signable = Signable.Auth(value)
         }
-
     }
 
     sealed interface ID {
@@ -91,19 +90,19 @@ sealed interface Signable {
 
         data class Transaction(
             val value: TransactionIntentHash
-        ): ID {
+        ) : ID {
             override fun hash(): Hash = value.hash
         }
 
         data class Subintent(
             val value: SubintentHash
-        ): ID {
+        ) : ID {
             override fun hash(): Hash = value.hash
         }
 
         data class Auth(
             val value: AuthIntentHash
-        ): ID {
+        ) : ID {
             override fun hash(): Hash = value.payload.hash()
         }
     }

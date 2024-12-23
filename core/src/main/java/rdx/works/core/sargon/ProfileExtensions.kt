@@ -13,14 +13,12 @@ import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DeviceInfo
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
-import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Header
-import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.KeySpace
 import com.radixdlt.sargon.NetworkId

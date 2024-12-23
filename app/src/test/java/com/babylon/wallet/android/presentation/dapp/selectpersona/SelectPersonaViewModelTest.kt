@@ -5,7 +5,6 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.presentation.AccessFactorSourcesProxyFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_AUTHORIZED_REQUEST_INTERACTION_ID
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS

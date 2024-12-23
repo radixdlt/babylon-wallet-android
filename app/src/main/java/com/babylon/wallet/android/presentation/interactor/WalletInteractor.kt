@@ -20,7 +20,6 @@ import rdx.works.core.sargon.Signable
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 class WalletInteractor @Inject constructor(
@@ -118,13 +117,11 @@ class WalletInteractor @Inject constructor(
             }
         }.into()
 
-
     companion object {
 
         /**
          * The delay between showing a different factor sources bottom sheets.
          */
         private val delayPerFactorSource = 250.milliseconds
-
     }
 }

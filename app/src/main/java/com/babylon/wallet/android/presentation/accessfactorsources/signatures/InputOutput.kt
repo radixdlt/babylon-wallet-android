@@ -25,7 +25,7 @@ import com.radixdlt.sargon.SignaturesPerFactorSourceOfSubintentHash
 import com.radixdlt.sargon.SignaturesPerFactorSourceOfTransactionIntentHash
 import rdx.works.core.sargon.Signable
 
-///// Inputs
+// /// Inputs
 data class InputPerFactorSource<P : Signable.Payload>(
     val factorSourceId: FactorSourceIdFromHash,
     val transactions: List<InputPerTransaction<P>>
@@ -47,7 +47,7 @@ data class InputPerTransaction<P : Signable.Payload>(
     val ownedFactorInstances: List<OwnedFactorInstance>
 )
 
-///// Outputs
+// /// Outputs
 sealed interface OutputPerFactorSource<ID : Signable.ID> {
     data class Signed<ID : Signable.ID>(
         val signatures: SignaturesPerFactorSource<ID>
@@ -149,7 +149,6 @@ data class HdSignature<ID : Signable.ID>(
             signature = signature
         )
     }
-
 }
 
 data class HDSignatureInput<ID : Signable.ID>(
@@ -181,5 +180,4 @@ data class HDSignatureInput<ID : Signable.ID>(
             ownedFactorInstance = ownedFactorInstance
         )
     }
-
 }

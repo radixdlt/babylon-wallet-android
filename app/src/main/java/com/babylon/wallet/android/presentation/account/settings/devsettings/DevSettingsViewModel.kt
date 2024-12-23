@@ -7,7 +7,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,7 +21,6 @@ class DevSettingsViewModel @Inject constructor(
 ) : StateViewModel<DevSettingsUiState>() {
 
     private val args = DevSettingsArgs(savedStateHandle)
-    private var createAndUploadAuthKeyJob: Job? = null
 
     override fun initialState(): DevSettingsUiState = DevSettingsUiState(
         accountAddress = args.address,
