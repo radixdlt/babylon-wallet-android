@@ -68,6 +68,9 @@ fun FactorSourcesList(
                     item = it
                 )
             }
+        }
+
+        if (factorSources.isNotEmpty()) {
             item {
                 Text(
                     text = stringResource(id = R.string.factorSources_list_others),
