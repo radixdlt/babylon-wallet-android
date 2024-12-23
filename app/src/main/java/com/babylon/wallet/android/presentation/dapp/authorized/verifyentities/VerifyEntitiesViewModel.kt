@@ -69,9 +69,10 @@ class VerifyEntitiesViewModel @Inject constructor(
     }
 
     private suspend fun getRequestedEntitiesToVerify() {
-        val entitiesForProofWithSignatures = args.entitiesForProofWithSignatures
         val profile = getProfileUseCase()
+        val entitiesForProofWithSignatures = args.entitiesForProofWithSignatures
         val activeAccountsOnCurrentNetwork = profile.activeAccountsOnCurrentNetwork
+
         _state.update { state ->
             state.copy(
                 requestedPersona = entitiesForProofWithSignatures.personaAddress?.let { identityAddress ->
@@ -79,7 +80,8 @@ class VerifyEntitiesViewModel @Inject constructor(
                 },
                 requestedAccounts = activeAccountsOnCurrentNetwork.filter { activeAccount ->
                     activeAccount.address in entitiesForProofWithSignatures.accountAddresses
-                }.map { it.asProfileEntity() }
+                }.map { it.asProfileEntity() },
+                collectedSignatures = entitiesForProofWithSignatures.signatures
             )
         }
     }
@@ -121,7 +123,7 @@ class VerifyEntitiesViewModel @Inject constructor(
             metadata = metadata
         ).onSuccess { signature ->
             _state.update { state ->
-                state.copy(signatures = mapOf(persona to signature))
+                state.copy(collectedSignatures = mapOf(persona.address to signature))
             }
 
             if (state.value.requestedAccounts.isNotEmpty()) {
@@ -161,13 +163,10 @@ class VerifyEntitiesViewModel @Inject constructor(
                 metadata = metadata
             ).onSuccess { signatures ->
                 _state.update { state ->
-                    val currentSignatures = state.signatures.toMutableMap()
-                    currentSignatures.putAll(signatures.mapKeys { ProfileEntity.AccountEntity(it.key) })
-
-                    state.copy(signatures = currentSignatures)
+                    state.addSignatures(signatures.mapKeys { AddressOfAccountOrPersona.Account(it.key.address) })
                 }
 
-                sendEvent(Event.EntitiesVerified)
+                sendEvent(state.value.entitiesVerifiedEvent())
                 setSigningInProgress(false)
             }.onFailure {
                 sendEvent(
@@ -178,7 +177,7 @@ class VerifyEntitiesViewModel @Inject constructor(
                 setSigningInProgress(false)
             }
         } else {
-            sendEvent(Event.EntitiesVerified)
+            sendEvent(state.value.entitiesVerifiedEvent())
         }
     }
 
@@ -188,7 +187,7 @@ class VerifyEntitiesViewModel @Inject constructor(
         val walletAuthorizedRequest: WalletAuthorizedRequest? = null,
         val requestedPersona: ProfileEntity.PersonaEntity? = null,
         val requestedAccounts: List<ProfileEntity.AccountEntity> = emptyList(),
-        val signatures: Map<ProfileEntity, SignatureWithPublicKey> = emptyMap(),
+        private val collectedSignatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey> = emptyMap(),
         val canNavigateBack: Boolean = false,
         val isSigningInProgress: Boolean = false
     ) : UiState {
@@ -212,13 +211,21 @@ class VerifyEntitiesViewModel @Inject constructor(
             } else {
                 emptyList()
             }
+
+        fun addSignatures(signatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey>) = copy(
+            collectedSignatures = this.collectedSignatures.toMutableMap().apply {
+                putAll(signatures)
+            }
+        )
+
+        fun entitiesVerifiedEvent() = Event.EntitiesVerified(collectedSignatures)
     }
 
     sealed interface Event : OneOffEvent {
 
         data object TerminateVerification : Event
 
-        data object EntitiesVerified : Event
+        data class EntitiesVerified(val signatures: Map<AddressOfAccountOrPersona, SignatureWithPublicKey>) : Event
 
         data class NavigateToVerifyAccounts(
             val walletAuthorizedRequestInteractionId: String,
