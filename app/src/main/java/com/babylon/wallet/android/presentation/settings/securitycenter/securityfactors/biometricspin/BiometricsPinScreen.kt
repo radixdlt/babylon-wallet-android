@@ -70,7 +70,7 @@ private fun BiometricsPinContent(
     modifier: Modifier = Modifier,
     state: State,
     onBackClick: () -> Unit,
-    onDeviceFactorSourceClick: (FactorSourceId.Hash) -> Unit,
+    onDeviceFactorSourceClick: (FactorSourceId) -> Unit,
     onAddBiometricsPinClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
 ) {

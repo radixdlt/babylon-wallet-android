@@ -25,7 +25,7 @@ data class FactorSourceCard(
             id: FactorSourceId,
             name: String,
             kind: FactorSourceKind
-        ): FactorSourceInstanceCard = FactorSourceInstanceCard(
+        ): FactorSourceCard = FactorSourceCard(
             id = id,
             name = name,
             includeDescription = false,
@@ -33,7 +33,8 @@ data class FactorSourceCard(
             kind = kind,
             messages = persistentListOf(),
             accounts = persistentListOf(),
-            personas = persistentListOf()
+            personas = persistentListOf(),
+            hasHiddenEntities = false
         )
     }
 }

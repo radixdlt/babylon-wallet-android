@@ -29,24 +29,6 @@ import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun SelectableSingleChoiceFactorSourceCard(
-    modifier: Modifier = Modifier,
-    item: Selectable<FactorSourceCard>,
-    onSelect: (FactorSourceCard) -> Unit
-) {
-    FactorSourceCardView(
-        modifier = modifier.noIndicationClickable { onSelect(item.data) },
-        item = item.data,
-        endContent = {
-            RadioButtonSelectorView(
-                isSelected = item.selected,
-                onSelectedChange = { onSelect(item.data) }
-            )
-        }
-    )
-}
-
-@Composable
 fun SelectableMultiChoiceFactorSourceCard(
     modifier: Modifier = Modifier,
     item: Selectable<FactorSourceCard>,
@@ -147,7 +129,7 @@ private fun CheckboxSelectorView(
 @UsesSampleValues
 private fun SelectableMultiChoiceFactorSourceCardPreview() {
     RadixWalletPreviewTheme {
-        SelectableMultiChoiceFactorSourceInstanceCard(
+        SelectableMultiChoiceFactorSourceCard(
             item = Selectable(
                 data = FactorSourceCard(
                     id = FactorSourceId.Hash.init(

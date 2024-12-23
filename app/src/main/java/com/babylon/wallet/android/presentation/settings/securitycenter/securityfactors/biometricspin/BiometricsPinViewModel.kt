@@ -99,7 +99,7 @@ class BiometricsPinViewModel @Inject constructor(
     }
 
     @Suppress("UnusedParameter") // TODO
-    fun onDeviceFactorSourceClick(hash: FactorSourceId.Hash) {
+    fun onDeviceFactorSourceClick(factorSourceId: FactorSourceId) {
         viewModelScope.launch {
             sendEvent(Event.NavigateToDeviceFactorSourceDetails)
         }

@@ -47,9 +47,9 @@ class AddFactorViewModel @Inject constructor(
         val selected: FactorSourceKind? = null
     ) : UiState {
 
-        val factorSources: List<Selectable<FactorSourceCard>> = mode.kinds.map { kind ->
+        val factorSourceKinds: List<Selectable<FactorSourceKindCard>> = mode.kinds.map { kind ->
             Selectable(
-                data = FactorSourceCard(
+                data = FactorSourceKindCard(
                     kind = kind,
                     messages = listOfNotNull(
                         FactorSourceStatusMessage.PassphraseHint.takeIf {
@@ -58,17 +58,6 @@ class AddFactorViewModel @Inject constructor(
                     ).toPersistentList()
                 ),
                 selected = kind == selected
-            )
-        }
-
-        val factorSourceKinds: List<FactorSourceKindCard> = mode.kinds.map { kind ->
-            FactorSourceKindCard(
-                kind = kind,
-                messages = listOfNotNull(
-                    FactorSourceStatusMessage.PassphraseHint.takeIf {
-                        kind == selected && kind == FactorSourceKind.OFF_DEVICE_MNEMONIC
-                    }
-                ).toPersistentList()
             )
         }
 

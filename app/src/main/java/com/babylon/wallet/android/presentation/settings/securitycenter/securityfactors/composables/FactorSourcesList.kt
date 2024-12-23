@@ -33,7 +33,7 @@ fun FactorSourcesList(
     factorSources: PersistentList<FactorSourceCard>,
     @StringRes factorSourceDescriptionText: Int,
     @StringRes addFactorSourceButtonTitle: Int,
-    onFactorSourceClick: (FactorSourceId.Hash) -> Unit,
+    onFactorSourceClick: (FactorSourceId) -> Unit,
     onAddFactorSourceClick: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
 ) {
