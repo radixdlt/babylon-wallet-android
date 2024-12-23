@@ -44,8 +44,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.buildStatusMessageAnnotatedString
-import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.onStatusMessageInfoAnnotationClick
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -62,7 +61,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
+import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
@@ -126,8 +125,7 @@ private fun SetupRegularAccessContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
-                text = stringResource(R.string.common_continue),
-                enabled = state.isButtonEnabled
+                text = stringResource(R.string.common_continue)
             )
         },
         containerColor = RadixTheme.colors.white
@@ -139,7 +137,9 @@ private fun SetupRegularAccessContent(
                 .padding(padding)
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 ShieldBuilderTitleView(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -158,7 +158,7 @@ private fun SetupRegularAccessContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
                 state.status?.let {
-                    StatusView(
+                    ShieldSetupStatusView(
                         modifier = Modifier.padding(
                             start = RadixTheme.dimensions.paddingSemiLarge,
                             end = RadixTheme.dimensions.paddingSemiLarge,
@@ -213,7 +213,7 @@ private fun SetupRegularAccessContent(
 
 @Composable
 private fun OverrideFactorsView(
-    overrideFactors: List<FactorSourceInstanceCard>,
+    overrideFactors: PersistentList<FactorSourceInstanceCard>,
     onAddClick: () -> Unit,
     onRemoveClick: (FactorSourceInstanceCard) -> Unit,
     onRemoveAllClick: () -> Unit
@@ -329,37 +329,6 @@ private fun OverrideFactorsView(
             }
         }
     }
-}
-
-@Composable
-private fun StatusView(
-    modifier: Modifier = Modifier,
-    status: SelectedFactorSourcesForRoleStatus,
-    onInfoClick: (GlossaryItem) -> Unit
-) {
-    val readMoreGlossaryItem = GlossaryItem.buildingshield
-    val message = when (status) {
-        SelectedFactorSourcesForRoleStatus.INSUFFICIENT -> StatusMessage(
-            message = "You need at least 1 factor to sign transactions. Select a signing factor to continue to the next step.", // TODO crowdin
-            type = StatusMessage.Type.WARNING
-        )
-        SelectedFactorSourcesForRoleStatus.INVALID -> StatusMessage(
-            message = buildStatusMessageAnnotatedString(
-                message = "You cannot create a Shield with this combination of factors.", // TODO crowdin
-                glossaryItem = readMoreGlossaryItem,
-                annotation = "Read more" // TODO crowdin
-            ),
-            type = StatusMessage.Type.ERROR
-        )
-        SelectedFactorSourcesForRoleStatus.SUBOPTIMAL,
-        SelectedFactorSourcesForRoleStatus.OPTIMAL -> return
-    }
-
-    StatusMessageText(
-        modifier = modifier,
-        message = message,
-        onTextClick = { offset -> message.onStatusMessageInfoAnnotationClick(offset, readMoreGlossaryItem, onInfoClick) }
-    )
 }
 
 @Composable
@@ -657,12 +626,11 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     items = persistentListOf(
                         SetupRegularAccessViewModel.State.NumberOfFactors.All,
                         SetupRegularAccessViewModel.State.NumberOfFactors.Count(1),
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(3)
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2)
                     )
                 ),
                 numberOfFactors = SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
-                status = SelectedFactorSourcesForRoleStatus.INSUFFICIENT
+                status = SecurityShieldBuilderInvalidReason.PrimaryRoleMustHaveAtLeastOneFactor()
             )
         )
 }

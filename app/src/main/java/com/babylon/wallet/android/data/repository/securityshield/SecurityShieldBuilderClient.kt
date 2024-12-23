@@ -7,16 +7,18 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilder
-import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @ActivityRetainedScoped
 class SecurityShieldBuilderClient @Inject constructor(
     private val profileRepository: ProfileRepository,
@@ -26,10 +28,17 @@ class SecurityShieldBuilderClient @Inject constructor(
     private lateinit var securityShieldBuilder: SecurityShieldBuilder
     private var allFactorSources = emptyList<FactorSource>()
 
+    private val primaryRoleSelection = MutableSharedFlow<PrimaryRoleSelection>(1)
+    private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
+
     suspend fun newSecurityShieldBuilder() {
         securityShieldBuilder = SecurityShieldBuilder()
         allFactorSources = profileRepository.profile.first().factorSources
     }
+
+    fun primaryRoleSelection(): Flow<PrimaryRoleSelection> = primaryRoleSelection
+
+    fun recoveryRoleSelection(): Flow<RecoveryRoleSelection> = recoveryRoleSelection
 
     suspend fun getSortedPrimaryThresholdFactorSources(): List<FactorSource> = withContext(dispatcher) {
         securityShieldBuilder.sortedFactorSourcesForPrimaryThresholdSelection(allFactorSources)
@@ -38,52 +47,63 @@ class SecurityShieldBuilderClient @Inject constructor(
     suspend fun updatePrimaryRoleThresholdFactorSourceSelection(
         id: FactorSourceId,
         isSelected: Boolean
-    ): List<FactorSourceId> = withContext(dispatcher) {
+    ) = withContext(dispatcher) {
+        val currentFactorCount = (primaryRoleSelection.replayCache.firstOrNull()?.thresholdFactors?.size ?: 0).toUByte()
+
         if (isSelected) {
-            securityShieldBuilder.addFactorSourceToPrimaryThreshold(id)
+            executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryThreshold(id) }
+            executeMutatingFunction { securityShieldBuilder.setThreshold(currentFactorCount.inc()) }
         } else {
-            securityShieldBuilder.removeFactorFromPrimary(id)
+            executeMutatingFunction { securityShieldBuilder.removeFactorFromPrimary(id) }
+            executeMutatingFunction { securityShieldBuilder.setThreshold(currentFactorCount.dec()) }
         }
-        securityShieldBuilder.getPrimaryThresholdFactors()
-            .also { securityShieldBuilder.setThreshold(it.size.toUByte()) }
+
+        onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun validatePrimaryRoleFactorSourceSelection(): SelectedFactorSourcesForRoleStatus = withContext(dispatcher) {
-        securityShieldBuilder.selectedFactorSourcesForRoleStatus(RoleKind.PRIMARY)
+    private fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) {
+        securityShieldBuilder = securityShieldBuilder.function()
     }
 
-    suspend fun autoAssignSelectedFactors(): Result<Unit> = withContext(dispatcher) {
+    suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
         val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
         val selectedFactorSources = allFactorSources.filter { it.id in selectedFactorSourceIds }
-        runCatching {
-            securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources)
-        }
+        executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
+        onPrimaryRoleSelectionUpdate()
+        onRecoveryRoleSelectionUpdate()
     }
 
-    suspend fun getPrimaryRoleSelection(): PrimaryRoleSelection = withContext(dispatcher) {
-        PrimaryRoleSelection(
-            threshold = securityShieldBuilder.getPrimaryThreshold().toInt(),
-            thresholdFactors = securityShieldBuilder.getPrimaryThresholdFactors().toFactorSources(),
-            overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
-            loginFactor = null // TODO update when login factor support is added to the shield builder in Sargon
+    suspend fun setThreshold(threshold: Int) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.setThreshold(threshold.toUByte()) }
+        onPrimaryRoleSelectionUpdate()
+    }
+
+    suspend fun removeFactorsFromPrimary(ids: List<FactorSourceId>) = withContext(dispatcher) {
+        ids.forEach { id -> securityShieldBuilder.removeFactorFromPrimary(id) }
+        onPrimaryRoleSelectionUpdate()
+    }
+
+    private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
+        primaryRoleSelection.emit(
+            PrimaryRoleSelection(
+                threshold = securityShieldBuilder.getPrimaryThreshold().toInt(),
+                thresholdFactors = securityShieldBuilder.getPrimaryThresholdFactors().toFactorSources(),
+                overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
+                loginFactor = null, // TODO update when login factor support is added to the shield builder in Sargon
+                primaryRoleStatus = securityShieldBuilder.selectedFactorSourcesForRoleStatus(RoleKind.PRIMARY),
+                shieldStatus = securityShieldBuilder.validate()
+            )
         )
     }
 
-    suspend fun getRecoveryRoleSelection(): RecoveryRoleSelection = withContext(dispatcher) {
-        RecoveryRoleSelection(
-            startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
-            confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
-            numberOfDaysUntilAutoConfirm = securityShieldBuilder.getNumberOfDaysUntilAutoConfirm().toInt()
+    private suspend fun onRecoveryRoleSelectionUpdate() = withContext(dispatcher) {
+        recoveryRoleSelection.emit(
+            RecoveryRoleSelection(
+                startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
+                confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
+                numberOfDaysUntilAutoConfirm = securityShieldBuilder.getNumberOfDaysUntilAutoConfirm().toInt()
+            )
         )
-    }
-
-    suspend fun setThreshold(threshold: Int): Int = withContext(dispatcher) {
-        securityShieldBuilder.setThreshold(threshold.toUByte())
-        securityShieldBuilder.getPrimaryThreshold().toInt()
-    }
-
-    suspend fun removeFactor(id: FactorSourceId) = withContext(dispatcher) {
-        securityShieldBuilder.removeFactorFromPrimary(id)
     }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =

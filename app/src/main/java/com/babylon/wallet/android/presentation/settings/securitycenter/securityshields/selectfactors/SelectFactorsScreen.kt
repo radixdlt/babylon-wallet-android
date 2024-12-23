@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -39,8 +37,6 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
 import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
@@ -73,7 +69,6 @@ fun SelectFactorsScreen(
         onDismiss = onDismiss,
         onFactorCheckedChange = viewModel::onFactorCheckedChange,
         onInfoClick = onInfoClick,
-        onMessageShown = viewModel::onMessageShown,
         onBuildShieldClick = viewModel::onBuildShieldClick
     )
 
@@ -93,17 +88,8 @@ private fun SelectFactorsContent(
     onDismiss: () -> Unit,
     onFactorCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onMessageShown: () -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    SnackbarUIMessage(
-        message = state.message,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -118,12 +104,6 @@ private fun SelectFactorsContent(
                 onClick = onBuildShieldClick,
                 text = stringResource(R.string.shieldSetupSelectFactors_buildButtonTitle),
                 enabled = state.isButtonEnabled
-            )
-        },
-        snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.white
@@ -272,7 +252,6 @@ private fun SelectFactorsPreview(
             onDismiss = {},
             onFactorCheckedChange = { _, _ -> },
             onInfoClick = {},
-            onMessageShown = {},
             onBuildShieldClick = {},
         )
     }
