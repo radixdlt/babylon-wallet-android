@@ -99,12 +99,6 @@ class SignAndNotariseTransactionUseCase @Inject constructor(
             transactionIntent = intent,
             roleKind = RoleKind.PRIMARY
         )
-    }.mapError { error ->
-        if (error is CommonException.SigningRejected) {
-            RejectedByUser
-        } else {
-            PrepareTransactionException.SignCompiledTransactionIntent(error)
-        }
     }
 
     private fun notarize(
