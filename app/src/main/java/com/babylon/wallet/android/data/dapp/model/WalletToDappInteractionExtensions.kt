@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
+import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EmailAddress
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.PersonaData
@@ -15,7 +16,6 @@ import com.radixdlt.sargon.WalletToDappInteractionPersonaDataRequestResponseItem
 import com.radixdlt.sargon.WalletToDappInteractionPersonaProof
 import com.radixdlt.sargon.WalletToDappInteractionProofOfOwnership
 import com.radixdlt.sargon.WalletToDappInteractionProofOfOwnershipRequestResponseItem
-import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.publicKey
 import com.radixdlt.sargon.extensions.signature
 
@@ -41,24 +41,24 @@ fun PersonaData.toWalletToDappInteractionPersonaDataRequestResponseItem(): Walle
     )
 }
 
-fun Map<ProfileEntity, SignatureWithPublicKey>.toWalletToDappInteractionProofOfOwnershipRequestResponseItem(
+fun Map<AddressOfAccountOrPersona, SignatureWithPublicKey>.toWalletToDappInteractionProofOfOwnershipRequestResponseItem(
     challenge: Exactly32Bytes
 ): WalletToDappInteractionProofOfOwnershipRequestResponseItem {
-    val entitiesWithProofs = this.map { (profileEntity, signatureWithPublicKey) ->
-        when (profileEntity) {
-            is ProfileEntity.PersonaEntity -> {
+    val entitiesWithProofs = this.map { (entityAddress, signatureWithPublicKey) ->
+        when (entityAddress) {
+            is AddressOfAccountOrPersona.Identity -> {
                 WalletToDappInteractionProofOfOwnership.Persona(
                     v1 = WalletToDappInteractionPersonaProof(
-                        identityAddress = profileEntity.identityAddress,
+                        identityAddress = entityAddress.v1,
                         proof = signatureWithPublicKey.toWalletToDappInteractionAuthProof()
                     )
                 )
             }
 
-            is ProfileEntity.AccountEntity -> {
+            is AddressOfAccountOrPersona.Account -> {
                 WalletToDappInteractionProofOfOwnership.Account(
                     v1 = WalletToDappInteractionAccountProof(
-                        accountAddress = profileEntity.accountAddress,
+                        accountAddress = entityAddress.v1,
                         proof = signatureWithPublicKey.toWalletToDappInteractionAuthProof()
                     )
                 )
