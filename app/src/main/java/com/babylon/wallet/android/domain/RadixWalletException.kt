@@ -184,7 +184,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object FailedToDerivePublicKeys : LedgerCommunicationException()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
         data object FailedToSignAuthChallenge : LedgerCommunicationException()
-        data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationException()
+        data class FailedToSignTransaction(val reason: LedgerErrorCode, override val message: String?) : LedgerCommunicationException()
 
         override val dappWalletInteractionErrorType: DappWalletInteractionErrorType
             get() = when (this) {
@@ -256,7 +256,7 @@ fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(cont
                 R.string.ledgerHardwareDevices_verification_requestFailed
             }
 
-            RadixWalletException.LedgerCommunicationException.FailedToConnect -> R.string.common_somethingWentWrong
+            RadixWalletException.LedgerCommunicationException.FailedToConnect -> R.string.ledgerHardwareDevices_linkConnectorAlert_message
         }
     )
 }

@@ -66,8 +66,10 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                             )
                         }
                     }.mapError {
-                        Timber.w(it)
-                        RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(reason = LedgerErrorCode.Generic)
+                        RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(
+                            reason = LedgerErrorCode.Generic,
+                            message = it.message
+                        )
                     }
                 }
 
@@ -85,8 +87,10 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                             )
                         }
                     }.mapError {
-                        Timber.w(it)
-                        RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(reason = LedgerErrorCode.Generic)
+                        RadixWalletException.LedgerCommunicationException.FailedToSignTransaction(
+                            reason = LedgerErrorCode.Generic,
+                            message = it.message
+                        )
                     }
                 }
 
