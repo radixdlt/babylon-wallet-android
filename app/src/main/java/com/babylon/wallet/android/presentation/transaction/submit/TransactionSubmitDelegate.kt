@@ -36,10 +36,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
-import rdx.works.core.logNonFatalException
 import rdx.works.core.mapError
 import rdx.works.core.toUnitResult
-import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import java.time.Instant
