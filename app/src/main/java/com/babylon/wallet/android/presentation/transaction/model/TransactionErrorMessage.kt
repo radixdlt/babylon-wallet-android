@@ -5,7 +5,6 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.presentation.common.UiMessage
-import rdx.works.profile.domain.ProfileException
 
 data class TransactionErrorMessage(
     val error: Throwable?
@@ -17,11 +16,11 @@ data class TransactionErrorMessage(
     val isTerminalError: Boolean
         get() =
             error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
-            error is RadixWalletException.PrepareTransactionException.RequestNotFound ||
-            error is RadixWalletException.DappRequestException.PreviewError ||
-            error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose ||
-            error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired ||
-            error is RadixWalletException.DappRequestException.UnacceptableManifest
+                error is RadixWalletException.PrepareTransactionException.RequestNotFound ||
+                error is RadixWalletException.DappRequestException.PreviewError ||
+                error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpirationTooClose ||
+                error is RadixWalletException.DappRequestException.InvalidPreAuthorizationExpired ||
+                error is RadixWalletException.DappRequestException.UnacceptableManifest
 
     val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
 

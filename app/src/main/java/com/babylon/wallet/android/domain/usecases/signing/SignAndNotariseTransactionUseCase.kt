@@ -2,11 +2,9 @@ package com.babylon.wallet.android.domain.usecases.signing
 
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.RadixWalletException.DappRequestException.RejectedByUser
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
 import com.babylon.wallet.android.domain.usecases.transaction.TransactionConfig
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.Message
