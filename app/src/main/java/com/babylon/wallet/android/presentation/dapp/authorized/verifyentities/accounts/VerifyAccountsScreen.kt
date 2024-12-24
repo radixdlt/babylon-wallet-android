@@ -34,8 +34,8 @@ fun VerifyAccountsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                VerifyEntitiesViewModel.Event.EntitiesVerified -> {
-                    sharedViewModel.onRequestedEntitiesVerified(state.signatures)
+                is VerifyEntitiesViewModel.Event.EntitiesVerified -> {
+                    sharedViewModel.onRequestedEntitiesVerified(event.signatures)
                 }
                 VerifyEntitiesViewModel.Event.TerminateVerification -> {
                     sharedViewModel.onAbortDappLogin()

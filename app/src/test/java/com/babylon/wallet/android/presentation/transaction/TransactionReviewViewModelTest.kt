@@ -67,6 +67,7 @@ import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.newWalletInteractionVersionCurrent
 import com.radixdlt.sargon.os.SargonOsManager
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -197,9 +198,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         interactionId = sampleRequestId,
         unvalidatedManifestData = sampleUnvalidatedManifestData,
         requestMetadata = DappToWalletInteraction.RequestMetadata(
+            version = newWalletInteractionVersionCurrent(),
             networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
-            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
+            dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
             isInternal = false
         ),
         kind = TransactionRequest.Kind.Regular(

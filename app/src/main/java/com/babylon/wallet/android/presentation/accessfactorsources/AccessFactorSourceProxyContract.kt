@@ -1,16 +1,26 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerFactorSource
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.InputPerTransaction
+import com.babylon.wallet.android.presentation.accessfactorsources.signatures.OutputPerFactorSource
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.DerivationPurpose
 import com.radixdlt.sargon.EntityKind
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.HdPathComponent
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfAuthIntent
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfSubintent
+import com.radixdlt.sargon.TransactionToSignPerFactorSourceOfTransactionIntent
 import com.radixdlt.sargon.extensions.ProfileEntity
+import rdx.works.core.sargon.Signable
 
 /**
  * Interface for the callers (ViewModels or UseCases) that need access to factor sources.
@@ -26,21 +36,17 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.HDPublicKey>
 
+    suspend fun derivePublicKeys(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKeys
+    ): AccessFactorSourcesOutput.DerivedPublicKeys
+
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 
-    /**
-     * This method is used for signing, and based on [SignPurpose] it can be
-     * - either for signing a transaction
-     * - or proving ownership.
-     *
-     * The output is a map of entities and their signatures.
-     *
-     */
-    suspend fun getSignatures(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToGetSignatures
-    ): Result<AccessFactorSourcesOutput.EntitiesWithSignatures>
+    suspend fun <P : Signable.Payload, ID : Signable.ID> sign(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToSign<P>
+    ): AccessFactorSourcesOutput.SignOutput<ID>
 
     /**
      * This method temporarily keeps in memory the mnemonic that has been added through
@@ -95,6 +101,12 @@ sealed interface AccessFactorSourcesInput {
         val isBiometricsProvided: Boolean
     ) : AccessFactorSourcesInput
 
+    data class ToDerivePublicKeys(
+        val purpose: DerivationPurpose,
+        val factorSourceId: FactorSourceIdFromHash,
+        val derivationPaths: List<DerivationPath>
+    ) : AccessFactorSourcesInput
+
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
 
         val factorSource: FactorSource
@@ -115,11 +127,80 @@ sealed interface AccessFactorSourcesInput {
         ) : ToReDeriveAccounts
     }
 
-    data class ToGetSignatures(
-        val signPurpose: SignPurpose,
-        val signers: List<ProfileEntity>,
-        val signRequest: SignRequest
-    ) : AccessFactorSourcesInput
+    data class ToSign<SP : Signable.Payload>(
+        val purpose: Purpose,
+        val kind: FactorSourceKind,
+        val perFactorSource: List<InputPerFactorSource<SP>>
+    ) : AccessFactorSourcesInput {
+
+        enum class Purpose {
+            TransactionIntents,
+            SubIntents,
+            AuthIntents
+        }
+
+        companion object {
+            fun fromTransactionIntents(
+                kind: FactorSourceKind,
+                input: List<TransactionToSignPerFactorSourceOfTransactionIntent>
+            ): ToSign<Signable.Payload.Transaction> = ToSign(
+                purpose = Purpose.TransactionIntents,
+                kind = kind,
+                perFactorSource = input.map { perFactorSource ->
+                    InputPerFactorSource(
+                        factorSourceId = perFactorSource.factorSourceId,
+                        transactions = perFactorSource.transactions.map { perTransaction ->
+                            InputPerTransaction(
+                                payload = Signable.Payload.Transaction(perTransaction.payload),
+                                factorSourceId = perTransaction.factorSourceId,
+                                ownedFactorInstances = perTransaction.ownedFactorInstances
+                            )
+                        }
+                    )
+                }
+            )
+
+            fun fromSubintents(
+                kind: FactorSourceKind,
+                input: List<TransactionToSignPerFactorSourceOfSubintent>
+            ): ToSign<Signable.Payload.Subintent> = ToSign(
+                purpose = Purpose.SubIntents,
+                kind = kind,
+                perFactorSource = input.map { perFactorSource ->
+                    InputPerFactorSource(
+                        factorSourceId = perFactorSource.factorSourceId,
+                        transactions = perFactorSource.transactions.map { perTransaction ->
+                            InputPerTransaction(
+                                payload = Signable.Payload.Subintent(perTransaction.payload),
+                                factorSourceId = perTransaction.factorSourceId,
+                                ownedFactorInstances = perTransaction.ownedFactorInstances
+                            )
+                        }
+                    )
+                }
+            )
+
+            fun fromAuthIntents(
+                kind: FactorSourceKind,
+                input: List<TransactionToSignPerFactorSourceOfAuthIntent>
+            ): ToSign<Signable.Payload.Auth> = ToSign(
+                purpose = Purpose.AuthIntents,
+                kind = kind,
+                perFactorSource = input.map { perFactorSource ->
+                    InputPerFactorSource(
+                        factorSourceId = perFactorSource.factorSourceId,
+                        transactions = perFactorSource.transactions.map { perTransaction ->
+                            InputPerTransaction(
+                                payload = Signable.Payload.Auth(perTransaction.payload),
+                                factorSourceId = perTransaction.factorSourceId,
+                                ownedFactorInstances = perTransaction.ownedFactorInstances
+                            )
+                        }
+                    )
+                }
+            )
+        }
+    }
 
     data object Init : AccessFactorSourcesInput
 }
@@ -138,13 +219,34 @@ sealed interface AccessFactorSourcesOutput {
         val value: HierarchicalDeterministicPublicKey
     ) : AccessFactorSourcesOutput
 
+    sealed interface DerivedPublicKeys : AccessFactorSourcesOutput {
+        data class Success(
+            val factorSourceId: FactorSourceIdFromHash,
+            val factorInstances: List<HierarchicalDeterministicFactorInstance>
+        ) : DerivedPublicKeys
+
+        data class Failure(
+            val error: AccessFactorSourceError.Fatal
+        ) : DerivedPublicKeys
+    }
+
     data class DerivedAccountsWithNextDerivationPath(
         val derivedAccounts: List<Account>,
         val nextDerivationPathIndex: HdPathComponent // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
-    data class EntitiesWithSignatures(
-        val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
+    sealed interface EntitiesWithSignatures : AccessFactorSourcesOutput {
+        data class Success(
+            val signersWithSignatures: Map<ProfileEntity, SignatureWithPublicKey>
+        ) : EntitiesWithSignatures
+
+        data class Failure(
+            val error: AccessFactorSourceError.Fatal
+        ) : EntitiesWithSignatures
+    }
+
+    data class SignOutput<ID : Signable.ID>(
+        val perFactorSource: List<OutputPerFactorSource<ID>>
     ) : AccessFactorSourcesOutput
 
     data class Failure(

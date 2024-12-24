@@ -6,10 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.messages.DappToWalletInteraction
 import com.babylon.wallet.android.domain.model.messages.WalletUnauthorizedRequest
-import com.babylon.wallet.android.domain.model.signing.SignPurpose
-import com.babylon.wallet.android.domain.model.signing.SignRequest
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
+import com.babylon.wallet.android.domain.usecases.signing.SignAuthUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -21,7 +18,6 @@ import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asProfileEntity
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -39,7 +35,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val accessFactorSourcesProxy: AccessFactorSourcesProxy
+    private val signAuthUseCase: SignAuthUseCase
 ) : StateViewModel<OneTimeChooseAccountUiState>(),
     OneOffEventHandler<OneTimeChooseAccountsEvent> by OneOffEventHandlerImpl() {
 
@@ -156,34 +152,21 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
         selectedAccountEntities: List<ProfileEntity.AccountEntity>,
         metadata: DappToWalletInteraction.RequestMetadata
     ) {
-        val signRequest = SignRequest.RolaSignRequest(
-            challengeHex = challenge.hex,
-            origin = metadata.origin,
-            dAppDefinitionAddress = metadata.dAppDefinitionAddress
-        )
-
-        accessFactorSourcesProxy.getSignatures(
-            accessFactorSourcesInput = AccessFactorSourcesInput.ToGetSignatures(
-                signPurpose = SignPurpose.SignAuth,
-                signRequest = signRequest,
-                signers = selectedAccountEntities
-            )
-        ).onSuccess { result ->
+        signAuthUseCase.accounts(
+            challenge,
+            selectedAccountEntities.map { it.account },
+            metadata
+        ).onSuccess { entitiesWithSignatures ->
             sendEvent(
                 OneTimeChooseAccountsEvent.AccountsCollected(
-                    accountsWithSignatures = result.signersWithSignatures
-                        .filterKeys {
-                            it is ProfileEntity.AccountEntity
-                        }.mapKeys {
-                            it.key as ProfileEntity.AccountEntity
-                        }
+                    accountsWithSignatures = entitiesWithSignatures.mapKeys { ProfileEntity.AccountEntity(it.key) }
                 )
             )
             setSigningInProgress(false)
         }.onFailure {
             sendEvent(
                 OneTimeChooseAccountsEvent.AuthorizationFailed(
-                    throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge(it)
+                    throwable = RadixWalletException.DappRequestException.FailedToSignAuthChallenge
                 )
             )
             setSigningInProgress(false)

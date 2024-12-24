@@ -40,8 +40,8 @@ fun VerifyPersonaScreen(
                     event.walletAuthorizedRequestInteractionId,
                     event.entitiesForProofWithSignatures
                 )
-                VerifyEntitiesViewModel.Event.EntitiesVerified -> {
-                    sharedViewModel.onRequestedEntitiesVerified(state.signatures)
+                is VerifyEntitiesViewModel.Event.EntitiesVerified -> {
+                    sharedViewModel.onRequestedEntitiesVerified(event.signatures)
                 }
                 VerifyEntitiesViewModel.Event.TerminateVerification -> {
                     sharedViewModel.onAbortDappLogin()

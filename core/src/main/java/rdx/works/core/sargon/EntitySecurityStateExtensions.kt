@@ -59,12 +59,3 @@ val EntitySecurityState.transactionSigningFactorInstance: HierarchicalDeterminis
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.transactionSigning
     }
-
-val EntitySecurityState.authenticationSigningFactorInstance: HierarchicalDeterministicFactorInstance?
-    get() = when (this) {
-        // TODO AuthSigningFactorInstance: delete this and all the usages when the replacement is ready
-        is EntitySecurityState.Unsecured -> null
-    }
-
-val EntitySecurityState.hasAuthSigning: Boolean
-    get() = authenticationSigningFactorInstance != null

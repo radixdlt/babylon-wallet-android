@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKeyDialog
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickeys.derivePublicKeysDialog
 import com.babylon.wallet.android.presentation.accessfactorsources.signatures.getSignatures
 import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
@@ -285,6 +286,11 @@ fun NavigationHost(
             }
         )
         derivePublicKeyDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        derivePublicKeysDialog(
             onDismiss = {
                 navController.popBackStack()
             }
