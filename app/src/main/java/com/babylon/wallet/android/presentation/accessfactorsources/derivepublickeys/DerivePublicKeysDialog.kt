@@ -119,6 +119,7 @@ private fun DerivePublicKeyBottomSheetContent(
                             DerivationPurpose.SECURIFYING_ACCOUNT -> "TBD"
                             DerivationPurpose.SECURIFYING_PERSONA -> "TBD"
                             DerivationPurpose.PRE_DERIVING_KEYS -> stringResource(R.string.factorSourceActions_deriveAccounts_title)
+                            DerivationPurpose.SECURIFYING_ACCOUNTS_AND_PERSONAS -> "TBD"
                         }
                     )
 
