@@ -97,7 +97,7 @@ fun SecurityFactorTypes(
     }
 }
 
-val currentSecurityFactorsSettings = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+val currentSecurityFactorTypeItems = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
     persistentMapOf(
         SecurityFactorCategory.Own to persistentSetOf(SecurityFactorsSettingsItem.BiometricsPin(persistentSetOf())),
         SecurityFactorCategory.Hardware to persistentSetOf(
@@ -123,7 +123,7 @@ val currentSecurityFactorsSettings = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABL
 private fun SecurityFactorsPreview() {
     RadixWalletTheme {
         SecurityFactorTypes(
-            securityFactorSettingItems = currentSecurityFactorsSettings,
+            securityFactorSettingItems = currentSecurityFactorTypeItems,
             onSecurityFactorSettingItemClick = {}
         )
     }

@@ -20,7 +20,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFac
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypes
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorsSettings
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -102,7 +102,7 @@ private fun SecurityFactorsPreview() {
     RadixWalletTheme {
         SecurityFactorsContent(
             modifier = Modifier,
-            securityFactorSettingItems = currentSecurityFactorsSettings,
+            securityFactorSettingItems = currentSecurityFactorTypeItems,
             onSecurityFactorSettingItemClick = {},
             onBackClick = {}
         )

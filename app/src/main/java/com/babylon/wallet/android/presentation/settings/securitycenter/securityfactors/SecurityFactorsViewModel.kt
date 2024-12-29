@@ -7,7 +7,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorsSettings
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -26,7 +26,7 @@ class SecurityFactorsViewModel @Inject constructor(
     @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
 ) : StateViewModel<SecurityFactorsViewModel.State>() {
 
-    override fun initialState(): State = State(securityFactorSettingItems = currentSecurityFactorsSettings)
+    override fun initialState(): State = State(securityFactorSettingItems = currentSecurityFactorTypeItems)
 
     init {
         viewModelScope.launch {
@@ -34,8 +34,8 @@ class SecurityFactorsViewModel @Inject constructor(
                 .flowOn(defaultDispatcher)
                 .collectLatest { securityProblems ->
                     if (securityProblems.isNotEmpty()) {
-                        val firstCategory = currentSecurityFactorsSettings.keys.first()
-                        val updatedSecurityFactorsSettings = currentSecurityFactorsSettings.put(
+                        val firstCategory = currentSecurityFactorTypeItems.keys.first()
+                        val updatedSecurityFactorsSettings = currentSecurityFactorTypeItems.put(
                             key = firstCategory,
                             value = persistentSetOf(
                                 SecurityFactorsSettingsItem.BiometricsPin(
@@ -48,7 +48,7 @@ class SecurityFactorsViewModel @Inject constructor(
                         }
                     } else {
                         _state.update {
-                            it.copy(securityFactorSettingItems = currentSecurityFactorsSettings)
+                            it.copy(securityFactorSettingItems = currentSecurityFactorTypeItems)
                         }
                     }
                 }
