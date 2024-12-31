@@ -99,13 +99,13 @@ fun ChooseFactorSourceBottomSheet(
             val currentPage = pages[pageIndex]
             when (currentPage) {
                 SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType -> {
-                    SecurityFactorTypes(
+                    SecurityFactorTypesListView(
                         securityFactorSettingItems = securityFactorTypeItems,
                         onSecurityFactorSettingItemClick = onSecurityFactorTypeClick
                     )
                 }
                 SecurityFactorSamplesViewModel.State.Page.BiometricsPin -> {
-                    SelectableFactorSourcesList(
+                    SelectableFactorSourcesListView(
                         factorSources = factorSources[FactorSourceKind.DEVICE] ?: persistentListOf(),
                         factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                         addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
@@ -115,7 +115,7 @@ fun ChooseFactorSourceBottomSheet(
                     )
                 }
                 SecurityFactorSamplesViewModel.State.Page.LedgerNano -> {
-                    SelectableFactorSourcesList(
+                    SelectableFactorSourcesListView(
                         factorSources = factorSources[FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET] ?: persistentListOf(),
                         factorSourceDescriptionText = R.string.factorSources_card_ledgerDescription,
                         addFactorSourceButtonTitle = R.string.factorSources_list_ledgerAdd,
@@ -147,7 +147,7 @@ fun ChooseFactorSourceBottomSheet(
 @Preview
 @Composable
 @UsesSampleValues
-private fun SelectFactorTypeBottomSheetPreview() {
+private fun ChooseFactorSourceBottomSheetPreview() {
     RadixWalletPreviewTheme {
         ChooseFactorSourceBottomSheet(
             modifier = Modifier,
@@ -167,7 +167,7 @@ private fun SelectFactorTypeBottomSheetPreview() {
 @Preview
 @Composable
 @UsesSampleValues
-private fun SelectDeviceFactorBottomSheetPreview() {
+private fun DeviceFactorsBottomSheetPreview() {
     RadixWalletPreviewTheme {
         ChooseFactorSourceBottomSheet(
             modifier = Modifier,

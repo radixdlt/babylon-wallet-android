@@ -19,7 +19,7 @@ import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypes
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListView
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import kotlinx.collections.immutable.ImmutableMap
@@ -66,7 +66,7 @@ private fun SecurityFactorsContent(
             }
         }
     ) { padding ->
-        SecurityFactorTypes(
+        SecurityFactorTypesListView(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),

@@ -26,7 +26,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
-fun SecurityFactorTypes(
+fun SecurityFactorTypesListView(
     modifier: Modifier = Modifier,
     isDescriptionVisible: Boolean = false, // if true then it is used in the Security Factors settings screen
     securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
@@ -120,9 +120,9 @@ val currentSecurityFactorTypeItems = if (BuildConfig.EXPERIMENTAL_FEATURES_ENABL
 
 @Preview(showBackground = true)
 @Composable
-private fun SecurityFactorsPreview() {
+private fun SecurityFactorTypesListPreview() {
     RadixWalletTheme {
-        SecurityFactorTypes(
+        SecurityFactorTypesListView(
             securityFactorSettingItems = currentSecurityFactorTypeItems,
             onSecurityFactorSettingItemClick = {}
         )

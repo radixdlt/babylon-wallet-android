@@ -42,7 +42,7 @@ import kotlinx.collections.immutable.persistentListOf
 
 // can be used to list any factor sources in ChooseFactorSourceBottomSheet
 @Composable
-fun SelectableFactorSourcesList(
+fun SelectableFactorSourcesListView(
     modifier: Modifier = Modifier,
     factorSources: PersistentList<Selectable<FactorSourceCard>>,
     @StringRes factorSourceDescriptionText: Int,
@@ -115,7 +115,7 @@ fun SelectableFactorSourcesList(
 @UsesSampleValues
 private fun SelectableFactorSourcesListPreview() {
     RadixWalletPreviewTheme {
-        SelectableFactorSourcesList(
+        SelectableFactorSourcesListView(
             factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
             addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
             factorSources = persistentListOf(
