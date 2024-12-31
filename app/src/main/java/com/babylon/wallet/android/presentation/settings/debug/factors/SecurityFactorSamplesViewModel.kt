@@ -292,15 +292,6 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
                 selectableFactorSources = state.selectableFactorSources.put(targetKind, updatedList)
             )
         }
-//        _state.update { state ->
-//            state.copy(
-//                selectableFactorSources = state.selectableFactorSources.map { selectableItem ->
-//                    selectableItem.copy(
-//                        selected = selectableItem.data == factorSourceCard
-//                    )
-//                }.toPersistentList()
-//            )
-//        }
     }
 
     fun onSelectedFactorSourceConfirm() {
