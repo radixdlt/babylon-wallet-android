@@ -45,7 +45,6 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR

@@ -8,9 +8,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
-import com.radixdlt.sargon.RoleKind
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf

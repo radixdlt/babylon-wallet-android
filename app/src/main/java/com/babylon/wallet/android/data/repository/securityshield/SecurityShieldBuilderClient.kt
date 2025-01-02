@@ -7,10 +7,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilder
-import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
-import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.kind
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +16,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -87,6 +83,16 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
+    suspend fun removeFactorFromRecovery(id: FactorSourceId) = withContext(dispatcher) {
+        securityShieldBuilder.removeFactorFromRecovery(id)
+        onRecoveryRoleSelectionUpdate()
+    }
+
+    suspend fun removeFactorFromConfirmation(id: FactorSourceId) = withContext(dispatcher) {
+        securityShieldBuilder.removeFactorFromConfirmation(id)
+        onRecoveryRoleSelectionUpdate()
+    }
+
     private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
@@ -105,14 +111,11 @@ class SecurityShieldBuilderClient @Inject constructor(
             RecoveryRoleSelection(
                 startRecoveryFactors = securityShieldBuilder.getRecoveryFactors().toFactorSources(),
                 confirmationFactors = securityShieldBuilder.getConfirmationFactors().toFactorSources(),
-                numberOfDaysUntilAutoConfirm = securityShieldBuilder.getNumberOfDaysUntilAutoConfirm().toInt()
+                numberOfDaysUntilAutoConfirm = securityShieldBuilder.getNumberOfDaysUntilAutoConfirm().toInt(),
+                shieldStatus = securityShieldBuilder.validate()
             )
         )
     }
-
-    suspend fun validateShield(): SecurityShieldBuilderInvalidReason? = withContext(dispatcher) {
-        securityShieldBuilder.validate()
-    }?.also { Timber.w("Shield builder invalid. Reason: $it") }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =
         mapNotNull { id -> allFactorSources.firstOrNull { it.id == id } }

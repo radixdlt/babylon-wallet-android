@@ -5,8 +5,7 @@ import com.babylon.wallet.android.data.repository.securityshield.SecurityShieldB
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
-import com.radixdlt.sargon.RoleKind
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -31,20 +30,17 @@ class SetupRecoveryViewModel @Inject constructor(
         // Show factor source selector
     }
 
-    fun onRemoveStartRecoveryFactor(card: FactorSourceInstanceCard) {
-        viewModelScope.launch {
-            securityShieldBuilderClient.removeFactor(card.id, RoleKind.RECOVERY)
-            initSelection()
-        }
+    fun onRemoveStartRecoveryFactor(card: FactorSourceCard) {
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorFromRecovery(card.id) }
     }
 
     fun onAddConfirmRecoveryFactorClick() {
         // Show factor source selector
     }
 
-    fun onRemoveConfirmRecoveryFactor(card: FactorSourceInstanceCard) {
+    fun onRemoveConfirmRecoveryFactor(card: FactorSourceCard) {
         viewModelScope.launch {
-            securityShieldBuilderClient.removeFactor(card.id, RoleKind.CONFIRMATION)
+            securityShieldBuilderClient.removeFactorFromConfirmation(card.id)
             initSelection()
         }
     }
@@ -55,21 +51,23 @@ class SetupRecoveryViewModel @Inject constructor(
 
     private fun initSelection() {
         viewModelScope.launch {
-            val selection = securityShieldBuilderClient.getRecoveryRoleSelection()
-
-            _state.update { state ->
-                state.copy(
-                    startFactors = selection.startRecoveryFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                    confirmFactors = selection.confirmationFactors.map { it.toCompactInstanceCard(true) }.toPersistentList()
-                )
-            }
+            securityShieldBuilderClient.recoveryRoleSelection()
+                .collect { selection ->
+                    _state.update { state ->
+                        state.copy(
+                            startFactors = selection.startRecoveryFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            confirmFactors = selection.confirmationFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            status = selection.shieldStatus
+                        )
+                    }
+                }
         }
     }
 
     data class State(
         val status: SecurityShieldBuilderInvalidReason? = null,
-        val startFactors: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
-        val confirmFactors: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
+        val startFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val confirmFactors: PersistentList<FactorSourceCard> = persistentListOf(),
     ) : UiState {
 
         val isButtonEnabled = status == null

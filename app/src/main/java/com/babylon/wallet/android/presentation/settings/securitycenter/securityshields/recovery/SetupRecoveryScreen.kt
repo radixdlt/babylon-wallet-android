@@ -27,14 +27,14 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.ShieldSetupStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -71,9 +71,9 @@ private fun SetupRecoveryContent(
     onDismiss: () -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onAddStartRecoveryFactorClick: () -> Unit,
-    onRemoveStartRecoveryFactor: (FactorSourceInstanceCard) -> Unit,
+    onRemoveStartRecoveryFactor: (FactorSourceCard) -> Unit,
     onAddConfirmRecoveryFactorClick: () -> Unit,
-    onRemoveConfirmRecoveryFactor: (FactorSourceInstanceCard) -> Unit,
+    onRemoveConfirmRecoveryFactor: (FactorSourceCard) -> Unit,
     onContinueClick: () -> Unit
 ) {
     Scaffold(
@@ -192,9 +192,9 @@ private fun SectionHeaderView(
 @Composable
 private fun FactorsView(
     modifier: Modifier = Modifier,
-    factors: PersistentList<FactorSourceInstanceCard>,
+    factors: PersistentList<FactorSourceCard>,
     onAddFactorClick: () -> Unit,
-    onRemoveFactorClick: (FactorSourceInstanceCard) -> Unit
+    onRemoveFactorClick: (FactorSourceCard) -> Unit
 ) {
     FactorsContainerView(
         modifier = modifier
@@ -209,7 +209,7 @@ private fun FactorsView(
 
         if (factors.isNotEmpty()) {
             factors.forEach { factor ->
-                RemovableFactorSourceInstanceCard(
+                RemovableFactorSourceCard(
                     item = factor,
                     onRemoveClick = onRemoveFactorClick
                 )
@@ -251,7 +251,7 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
         get() = sequenceOf(
             SetupRecoveryViewModel.State(
                 startFactors = persistentListOf(
-                    FactorSourceInstanceCard(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -262,11 +262,12 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
-                        personas = persistentListOf()
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     )
                 ),
                 confirmFactors = persistentListOf(
-                    FactorSourceInstanceCard(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -277,7 +278,8 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
-                        personas = persistentListOf()
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     )
                 )
             )
