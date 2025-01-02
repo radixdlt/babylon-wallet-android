@@ -117,7 +117,7 @@ fun BottomSheetDialogWrapper(
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
     showDefaultTopBar: Boolean = true,
-    sheetBackgroundColor: Color? = RadixTheme.colors.defaultBackground,
+    sheetBackgroundColor: Color = RadixTheme.colors.defaultBackground,
     headerBackIcon: ImageVector = Icons.Filled.Clear,
     isDismissible: Boolean = true,
     title: String? = null,
@@ -205,7 +205,7 @@ fun BottomSheetDialogWrapper(
                     )
                     .animateContentSize()
                     .background(
-                        color = sheetBackgroundColor ?: RadixTheme.colors.defaultBackground,
+                        color = sheetBackgroundColor,
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
                     .clip(RadixTheme.shapes.roundedRectTopMedium),
@@ -220,7 +220,7 @@ fun BottomSheetDialogWrapper(
                                 .padding(top = RadixTheme.dimensions.paddingMedium)
                                 .fillMaxWidth()
                                 .background(
-                                    color = sheetBackgroundColor ?: RadixTheme.colors.defaultBackground,
+                                    color = sheetBackgroundColor,
                                     shape = RadixTheme.shapes.roundedRectTopDefault
                                 ),
                             backIcon = headerBackIcon,
