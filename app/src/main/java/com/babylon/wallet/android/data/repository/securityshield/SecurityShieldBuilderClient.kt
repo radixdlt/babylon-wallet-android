@@ -10,12 +10,14 @@ import com.radixdlt.sargon.SecurityShieldBuilder
 import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -31,9 +33,12 @@ class SecurityShieldBuilderClient @Inject constructor(
     private val primaryRoleSelection = MutableSharedFlow<PrimaryRoleSelection>(1)
     private val recoveryRoleSelection = MutableSharedFlow<RecoveryRoleSelection>(1)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun newSecurityShieldBuilder() {
         securityShieldBuilder = SecurityShieldBuilder()
         allFactorSources = profileRepository.profile.first().factorSources
+        primaryRoleSelection.resetReplayCache()
+        recoveryRoleSelection.resetReplayCache()
     }
 
     fun primaryRoleSelection(): Flow<PrimaryRoleSelection> = primaryRoleSelection
@@ -83,15 +88,20 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
+    suspend fun removeAuthenticationFactor() = withContext(dispatcher) {
+        securityShieldBuilder.setAuthenticationSigningFactor(null)
+        onPrimaryRoleSelectionUpdate()
+    }
+
     private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
                 threshold = securityShieldBuilder.getPrimaryThreshold().toInt(),
                 thresholdFactors = securityShieldBuilder.getPrimaryThresholdFactors().toFactorSources(),
                 overrideFactors = securityShieldBuilder.getPrimaryOverrideFactors().toFactorSources(),
-                loginFactor = null, // TODO update when login factor support is added to the shield builder in Sargon
+                authenticationFactor = securityShieldBuilder.getAuthenticationSigningFactor()?.toFactorSource(),
                 primaryRoleStatus = securityShieldBuilder.selectedFactorSourcesForRoleStatus(RoleKind.PRIMARY),
-                shieldStatus = securityShieldBuilder.validate()
+                shieldStatus = securityShieldBuilder.validate().also { Timber.w("Security shield builder invalid reason: $it") }
             )
         )
     }
@@ -107,5 +117,7 @@ class SecurityShieldBuilderClient @Inject constructor(
     }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =
-        mapNotNull { id -> allFactorSources.firstOrNull { it.id == id } }
+        mapNotNull { id -> id.toFactorSource() }
+
+    private fun FactorSourceId.toFactorSource(): FactorSource? = allFactorSources.firstOrNull { it.id == this }
 }

@@ -34,7 +34,10 @@ class SetupRegularAccessViewModel @Inject constructor(
             it.copy(
                 selectNumberOfFactors = State.SelectNumberOfFactors(
                     current = it.numberOfFactors,
-                    items = (listOf(State.NumberOfFactors.All) + (1 until factorCount).map { value -> State.NumberOfFactors.Count(value) })
+                    items = (
+                        listOf(State.NumberOfFactors.All) + (factorCount - 1 downTo 1)
+                            .map { value -> State.NumberOfFactors.Count(value) }
+                        )
                         .toPersistentList()
                 )
             )
@@ -63,12 +66,12 @@ class SetupRegularAccessViewModel @Inject constructor(
         // Show factor source selector
     }
 
-    fun onAddLoginFactorClick() {
+    fun onAddAuthenticationFactorClick() {
         // Show factor source selector
     }
 
-    fun onRemoveLoginFactorClick() {
-        // Remove login factor
+    fun onRemoveAuthenticationFactorClick() {
+        viewModelScope.launch { securityShieldBuilderClient.removeAuthenticationFactor() }
     }
 
     fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
@@ -90,7 +93,7 @@ class SetupRegularAccessViewModel @Inject constructor(
                         state.copy(
                             thresholdFactors = selection.thresholdFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
                             overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                            loginFactor = selection.loginFactor?.toCompactInstanceCard(true),
+                            authenticationFactor = selection.authenticationFactor?.toCompactInstanceCard(true),
                             status = selection.shieldStatus,
                             numberOfFactors = State.NumberOfFactors.fromThreshold(selection.threshold, selection.thresholdFactors.size),
                             selectNumberOfFactors = null
@@ -106,7 +109,7 @@ class SetupRegularAccessViewModel @Inject constructor(
         val selectNumberOfFactors: SelectNumberOfFactors? = null,
         val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
         val overrideFactors: PersistentList<FactorSourceCard> = persistentListOf(),
-        val loginFactor: FactorSourceCard? = null,
+        val authenticationFactor: FactorSourceCard? = null,
         val message: UiMessage? = null
     ) : UiState {
 
