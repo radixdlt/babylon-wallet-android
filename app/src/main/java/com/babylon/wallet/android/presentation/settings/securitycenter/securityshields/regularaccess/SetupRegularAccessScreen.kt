@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.AddFactorButton
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
+import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -52,10 +53,10 @@ import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.composables.utils.MeasureViewSize
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.presentation.ui.modifier.noIndicationClickable
 import com.radixdlt.sargon.FactorSourceId
@@ -105,9 +106,9 @@ private fun SetupRegularAccessContent(
     onNumberOfFactorsSelect: (SetupRegularAccessViewModel.State.NumberOfFactors) -> Unit,
     onNumberOfFactorsDismiss: () -> Unit,
     onAddFactorClick: () -> Unit,
-    onRemoveFactorClick: (FactorSourceInstanceCard) -> Unit,
+    onRemoveFactorClick: (FactorSourceCard) -> Unit,
     onAddOverrideClick: () -> Unit,
-    onRemoveOverrideFactorClick: (FactorSourceInstanceCard) -> Unit,
+    onRemoveOverrideFactorClick: (FactorSourceCard) -> Unit,
     onRemoveAllOverrideFactorsClick: () -> Unit,
     onAddLoginFactorClick: () -> Unit,
     onRemoveLoginFactorClick: () -> Unit,
@@ -125,8 +126,7 @@ private fun SetupRegularAccessContent(
         bottomBar = {
             RadixBottomBar(
                 onClick = onContinueClick,
-                text = stringResource(R.string.common_continue),
-                enabled = state.isButtonEnabled
+                text = stringResource(R.string.common_continue)
             )
         },
         containerColor = RadixTheme.colors.white
@@ -214,9 +214,9 @@ private fun SetupRegularAccessContent(
 
 @Composable
 private fun OverrideFactorsView(
-    overrideFactors: List<FactorSourceInstanceCard>,
+    overrideFactors: PersistentList<FactorSourceCard>,
     onAddClick: () -> Unit,
-    onRemoveClick: (FactorSourceInstanceCard) -> Unit,
+    onRemoveClick: (FactorSourceCard) -> Unit,
     onRemoveAllClick: () -> Unit
 ) {
     Column(
@@ -304,7 +304,7 @@ private fun OverrideFactorsView(
                 )
 
                 overrideFactors.forEachIndexed { index, item ->
-                    RemovableFactorSourceInstanceCard(
+                    RemovableFactorSourceCard(
                         item = item,
                         onRemoveClick = onRemoveClick
                     )
@@ -336,10 +336,10 @@ private fun OverrideFactorsView(
 private fun ThresholdFactorsView(
     modifier: Modifier = Modifier,
     numberOfFactors: SetupRegularAccessViewModel.State.NumberOfFactors,
-    factors: PersistentList<FactorSourceInstanceCard>,
+    factors: PersistentList<FactorSourceCard>,
     onNumberOfFactorsClick: () -> Unit,
     onAddFactorClick: () -> Unit,
-    onRemoveFactorClick: (FactorSourceInstanceCard) -> Unit
+    onRemoveFactorClick: (FactorSourceCard) -> Unit
 ) {
     FactorsContainerView(
         modifier = modifier
@@ -378,7 +378,7 @@ private fun ThresholdFactorsView(
 
         if (factors.isNotEmpty()) {
             factors.forEach { factor ->
-                RemovableFactorSourceInstanceCard(
+                RemovableFactorSourceCard(
                     item = factor,
                     onRemoveClick = onRemoveFactorClick
                 )
@@ -421,7 +421,7 @@ private fun NumberOfFactorsView(
 @Composable
 private fun LoginFactorView(
     modifier: Modifier = Modifier,
-    loginFactor: FactorSourceInstanceCard?,
+    loginFactor: FactorSourceCard?,
     onRemoveClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -451,7 +451,7 @@ private fun LoginFactorView(
 
         FactorsContainerView {
             if (loginFactor != null) {
-                RemovableFactorSourceInstanceCard(
+                RemovableFactorSourceCard(
                     item = loginFactor,
                     onRemoveClick = { onRemoveClick() }
                 )
@@ -552,7 +552,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
         get() = sequenceOf(
             SetupRegularAccessViewModel.State(
                 thresholdFactors = persistentListOf(
-                    FactorSourceInstanceCard(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.DEVICE,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -563,9 +563,10 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         kind = FactorSourceKind.DEVICE,
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
-                        personas = persistentListOf()
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     ),
-                    FactorSourceInstanceCard(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.ARCULUS_CARD,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -576,11 +577,12 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         kind = FactorSourceKind.ARCULUS_CARD,
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
-                        personas = persistentListOf()
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     )
                 ),
                 overrideFactors = persistentListOf(
-                    FactorSourceInstanceCard(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -591,9 +593,10 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
-                        personas = persistentListOf()
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     ),
-                    FactorSourceInstanceCard(
+                    FactorSourceCard(
                         id = FactorSourceId.Hash.init(
                             kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                             mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -604,10 +607,11 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                         messages = persistentListOf(),
                         accounts = persistentListOf(),
-                        personas = persistentListOf()
+                        personas = persistentListOf(),
+                        hasHiddenEntities = false
                     )
                 ),
-                loginFactor = FactorSourceInstanceCard(
+                loginFactor = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -618,7 +622,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     kind = FactorSourceKind.DEVICE,
                     messages = persistentListOf(),
                     accounts = persistentListOf(),
-                    personas = persistentListOf()
+                    personas = persistentListOf(),
+                    hasHiddenEntities = false
                 ),
             ),
             SetupRegularAccessViewModel.State(
@@ -627,8 +632,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     items = persistentListOf(
                         SetupRegularAccessViewModel.State.NumberOfFactors.All,
                         SetupRegularAccessViewModel.State.NumberOfFactors.Count(1),
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(3)
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2)
                     )
                 ),
                 numberOfFactors = SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),

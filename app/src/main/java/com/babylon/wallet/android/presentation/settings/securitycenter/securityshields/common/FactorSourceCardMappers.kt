@@ -1,40 +1,40 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common
 
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.kind
 
-fun FactorSource.toCompactInstanceCard(includeDescription: Boolean): FactorSourceInstanceCard = when (this) {
-    is FactorSource.ArculusCard -> FactorSourceInstanceCard.compact(
+fun FactorSource.toCompactInstanceCard(includeDescription: Boolean): FactorSourceCard = when (this) {
+    is FactorSource.ArculusCard -> FactorSourceCard.compact(
         id = id,
         name = value.hint.label,
         kind = value.kind,
         includeDescription = includeDescription
     )
-    is FactorSource.Device -> FactorSourceInstanceCard.compact(
+    is FactorSource.Device -> FactorSourceCard.compact(
         id = id,
         name = value.hint.deviceName,
         kind = value.kind,
         includeDescription = includeDescription
     )
-    is FactorSource.Ledger -> FactorSourceInstanceCard.compact(
+    is FactorSource.Ledger -> FactorSourceCard.compact(
         id = id,
         name = value.hint.label,
         kind = value.kind,
         includeDescription = includeDescription
     )
-    is FactorSource.OffDeviceMnemonic -> FactorSourceInstanceCard.compact(
+    is FactorSource.OffDeviceMnemonic -> FactorSourceCard.compact(
         id = id,
         name = value.hint.label.value,
         kind = value.kind,
-        includeDescription = true
+        includeDescription = includeDescription
     )
-    is FactorSource.Password -> FactorSourceInstanceCard.compact(
+    is FactorSource.Password -> FactorSourceCard.compact(
         id = id,
         name = value.hint.label,
         kind = value.kind,
-        includeDescription = true
+        includeDescription = includeDescription
     )
     is FactorSource.SecurityQuestions,
     is FactorSource.TrustedContact -> error("Not supported yet")

@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -39,14 +37,12 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
 import com.babylon.wallet.android.presentation.ui.composables.card.title
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
@@ -73,7 +69,6 @@ fun SelectFactorsScreen(
         onDismiss = onDismiss,
         onFactorCheckedChange = viewModel::onFactorCheckedChange,
         onInfoClick = onInfoClick,
-        onMessageShown = viewModel::onMessageShown,
         onBuildShieldClick = viewModel::onBuildShieldClick
     )
 
@@ -91,19 +86,10 @@ private fun SelectFactorsContent(
     modifier: Modifier = Modifier,
     state: SelectFactorsViewModel.State,
     onDismiss: () -> Unit,
-    onFactorCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
+    onFactorCheckedChange: (FactorSourceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
-    onMessageShown: () -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
-    val snackBarHostState = remember { SnackbarHostState() }
-
-    SnackbarUIMessage(
-        message = state.message,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
-
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -118,12 +104,6 @@ private fun SelectFactorsContent(
                 onClick = onBuildShieldClick,
                 text = stringResource(R.string.shieldSetupSelectFactors_buildButtonTitle),
                 enabled = state.isButtonEnabled
-            )
-        },
-        snackbarHost = {
-            RadixSnackbarHost(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.white
@@ -182,7 +162,7 @@ private fun SelectFactorsContent(
                         item = item,
                         message = "Cannot use this factor by itself".takeIf { state.showPasswordWarning(item) } // TODO crowdin
                     )
-                    is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceInstanceCard(
+                    is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
                         item = item.card,
                         onCheckedChange = onFactorCheckedChange
@@ -272,7 +252,6 @@ private fun SelectFactorsPreview(
             onDismiss = {},
             onFactorCheckedChange = { _, _ -> },
             onInfoClick = {},
-            onMessageShown = {},
             onBuildShieldClick = {},
         )
     }
@@ -285,7 +264,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -299,7 +278,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.ARCULUS_CARD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.ARCULUS_CARD,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -313,7 +292,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -326,7 +305,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         ),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -340,7 +319,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.PASSWORD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.PASSWORD,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -354,7 +333,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.OFF_DEVICE_MNEMONIC),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),

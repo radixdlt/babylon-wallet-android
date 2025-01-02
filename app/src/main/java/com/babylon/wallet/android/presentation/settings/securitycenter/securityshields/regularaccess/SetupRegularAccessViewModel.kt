@@ -6,6 +6,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
 import com.radixdlt.sargon.RoleKind
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
@@ -23,7 +25,7 @@ class SetupRegularAccessViewModel @Inject constructor(
 ) : StateViewModel<SetupRegularAccessViewModel.State>() {
 
     init {
-        initSelection()
+        observeSelection()
     }
 
     override fun initialState(): State = State()
@@ -44,15 +46,7 @@ class SetupRegularAccessViewModel @Inject constructor(
 
     fun onNumberOfFactorsSelect(numberOfFactors: State.NumberOfFactors) {
         viewModelScope.launch {
-            val factorCount = _state.value.thresholdFactors.size
-            val newThreshold = securityShieldBuilderClient.setThreshold(numberOfFactors.toThreshold(factorCount))
-
-            _state.update {
-                it.copy(
-                    selectNumberOfFactors = null,
-                    numberOfFactors = State.NumberOfFactors.fromThreshold(newThreshold, factorCount)
-                )
-            }
+            securityShieldBuilderClient.setThreshold(numberOfFactors.toThreshold(_state.value.thresholdFactors.size))
         }
     }
 
@@ -64,20 +58,12 @@ class SetupRegularAccessViewModel @Inject constructor(
         // Show factor source selector
     }
 
-    fun onRemoveThresholdFactorClick(card: FactorSourceInstanceCard) {
-        viewModelScope.launch {
-            securityShieldBuilderClient.removeFactor(card.id, RoleKind.PRIMARY)
-            initSelection()
-        }
+    fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorsFromPrimary(listOf(card.id)) }
     }
 
     fun onAddOverrideClick() {
         // Show factor source selector
-        viewModelScope.launch {
-            // TODO remove this when the factor source selector is implemented
-            securityShieldBuilderClient.addFirstAvailableFactorToOverride()
-            initSelection()
-        }
     }
 
     fun onAddLoginFactorClick() {
@@ -88,34 +74,32 @@ class SetupRegularAccessViewModel @Inject constructor(
         // Remove login factor
     }
 
-    fun onRemoveOverrideFactorClick(card: FactorSourceInstanceCard) {
-        viewModelScope.launch {
-            securityShieldBuilderClient.removeFactor(card.id, RoleKind.PRIMARY)
-            initSelection()
-        }
+    fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
+        viewModelScope.launch { securityShieldBuilderClient.removeFactorsFromPrimary(listOf(card.id)) }
     }
 
     fun onRemoveAllOverrideFactorsClick() {
         viewModelScope.launch {
-            _state.value.overrideFactors.forEach {
-                securityShieldBuilderClient.removeFactor(it.id, RoleKind.PRIMARY)
-            }
-            initSelection()
+            val ids = _state.value.overrideFactors.map { it.id }
+            securityShieldBuilderClient.removeFactorsFromPrimary(ids)
         }
     }
 
-    private fun initSelection() {
+    private fun observeSelection() {
         viewModelScope.launch {
-            val selection = securityShieldBuilderClient.getPrimaryRoleSelection()
-
-            _state.update { state ->
-                state.copy(
-                    thresholdFactors = selection.thresholdFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                    overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
-                    loginFactor = selection.loginFactor?.toCompactInstanceCard(true),
-                    status = securityShieldBuilderClient.validateShield()
-                )
-            }
+            securityShieldBuilderClient.primaryRoleSelection()
+                .collect { selection ->
+                    _state.update { state ->
+                        state.copy(
+                            thresholdFactors = selection.thresholdFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            overrideFactors = selection.overrideFactors.map { it.toCompactInstanceCard(true) }.toPersistentList(),
+                            loginFactor = selection.loginFactor?.toCompactInstanceCard(true),
+                            status = selection.shieldStatus,
+                            numberOfFactors = State.NumberOfFactors.fromThreshold(selection.threshold, selection.thresholdFactors.size),
+                            selectNumberOfFactors = null
+                        )
+                    }
+                }
         }
     }
 
@@ -123,13 +107,11 @@ class SetupRegularAccessViewModel @Inject constructor(
         val status: SecurityShieldBuilderInvalidReason? = null,
         val numberOfFactors: NumberOfFactors = NumberOfFactors.All,
         val selectNumberOfFactors: SelectNumberOfFactors? = null,
-        val thresholdFactors: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
-        val overrideFactors: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
-        val loginFactor: FactorSourceInstanceCard? = null,
+        val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val overrideFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val loginFactor: FactorSourceCard? = null,
         val message: UiMessage? = null
     ) : UiState {
-
-        val isButtonEnabled = true
 
         data class SelectNumberOfFactors(
             val current: NumberOfFactors,

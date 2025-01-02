@@ -35,5 +35,6 @@ enum class GlossaryItem {
     possibledappcalls,
     securityshields,
     buildingshield,
-    nohardwaredevice
+    nohardwaredevice,
+    biometricsPIN // TODO pending the right glossary item
 }
