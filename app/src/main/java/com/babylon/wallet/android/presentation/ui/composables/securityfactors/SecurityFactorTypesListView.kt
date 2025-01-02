@@ -28,7 +28,7 @@ import kotlinx.collections.immutable.persistentSetOf
 @Composable
 fun SecurityFactorTypesListView(
     modifier: Modifier = Modifier,
-    isDescriptionVisible: Boolean = false, // if true then it is used in the Security Factors settings screen
+    isDescriptionVisible: Boolean = false,
     securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
     onSecurityFactorSettingItemClick: (SecurityFactorsSettingsItem) -> Unit
 ) {
