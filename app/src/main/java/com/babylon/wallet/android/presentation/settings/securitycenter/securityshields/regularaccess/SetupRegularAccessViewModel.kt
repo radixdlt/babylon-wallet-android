@@ -6,7 +6,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.common.toCompactInstanceCard
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.SecurityShieldBuilderInvalidReason
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -55,7 +55,7 @@ class SetupRegularAccessViewModel @Inject constructor(
         // Show factor source selector
     }
 
-    fun onRemoveThresholdFactorClick(card: FactorSourceInstanceCard) {
+    fun onRemoveThresholdFactorClick(card: FactorSourceCard) {
         viewModelScope.launch { securityShieldBuilderClient.removeFactorsFromPrimary(listOf(card.id)) }
     }
 
@@ -71,7 +71,7 @@ class SetupRegularAccessViewModel @Inject constructor(
         // Remove login factor
     }
 
-    fun onRemoveOverrideFactorClick(card: FactorSourceInstanceCard) {
+    fun onRemoveOverrideFactorClick(card: FactorSourceCard) {
         viewModelScope.launch { securityShieldBuilderClient.removeFactorsFromPrimary(listOf(card.id)) }
     }
 
@@ -104,9 +104,9 @@ class SetupRegularAccessViewModel @Inject constructor(
         val status: SecurityShieldBuilderInvalidReason? = null,
         val numberOfFactors: NumberOfFactors = NumberOfFactors.All,
         val selectNumberOfFactors: SelectNumberOfFactors? = null,
-        val thresholdFactors: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
-        val overrideFactors: PersistentList<FactorSourceInstanceCard> = persistentListOf(),
-        val loginFactor: FactorSourceInstanceCard? = null,
+        val thresholdFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val overrideFactors: PersistentList<FactorSourceCard> = persistentListOf(),
+        val loginFactor: FactorSourceCard? = null,
         val message: UiMessage? = null
     ) : UiState {
 
