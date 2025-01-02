@@ -1,5 +1,4 @@
-
-package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.biometricspin
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -8,24 +7,24 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.radixdlt.sargon.FactorSourceId
+import com.babylon.wallet.android.presentation.dialogs.info.GlossaryItem
 
-@Deprecated("remove it when new design/flow is complete")
-const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_seed_phrases"
+private const val ROUTE_BIOMETRICS_PIN_SCREEN = "route_biometrics_pin_screen"
 
-fun NavController.seedPhrases() {
-    navigate(ROUTE_SETTINGS_SHOW_MNEMONIC) {
+fun NavController.biometricsPin() {
+    navigate(ROUTE_BIOMETRICS_PIN_SCREEN) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.seedPhrases(
+fun NavGraphBuilder.biometricsPin(
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: () -> Unit,
-    onNavigateToSeedPhrase: (FactorSourceId.Hash) -> Unit
+    onNavigateToDeviceFactorSourceDetails: () -> Unit,
+    onNavigateToAddBiometricPin: () -> Unit,
+    onInfoClick: (GlossaryItem) -> Unit
 ) {
     composable(
-        route = ROUTE_SETTINGS_SHOW_MNEMONIC,
+        route = ROUTE_BIOMETRICS_PIN_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -39,11 +38,12 @@ fun NavGraphBuilder.seedPhrases(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         }
     ) {
-        SeedPhrasesScreen(
+        BiometricsPinScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onNavigateToRecoverMnemonic = onNavigateToRecoverMnemonic,
-            onNavigateToSeedPhrase = onNavigateToSeedPhrase
+            onNavigateToDeviceFactorSourceDetails = onNavigateToDeviceFactorSourceDetails,
+            onNavigateToAddBiometricPin = onNavigateToAddBiometricPin,
+            onInfoClick = onInfoClick
         )
     }
 }

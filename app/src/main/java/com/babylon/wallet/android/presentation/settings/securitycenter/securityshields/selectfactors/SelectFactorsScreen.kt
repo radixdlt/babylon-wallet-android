@@ -38,11 +38,11 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.StatusMessageText
-import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.composables.card.SelectableMultiChoiceFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.card.subtitle
 import com.babylon.wallet.android.presentation.ui.composables.card.title
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.StatusMessage
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
@@ -86,7 +86,7 @@ private fun SelectFactorsContent(
     modifier: Modifier = Modifier,
     state: SelectFactorsViewModel.State,
     onDismiss: () -> Unit,
-    onFactorCheckedChange: (FactorSourceInstanceCard, Boolean) -> Unit,
+    onFactorCheckedChange: (FactorSourceCard, Boolean) -> Unit,
     onInfoClick: (GlossaryItem) -> Unit,
     onBuildShieldClick: () -> Unit
 ) {
@@ -162,7 +162,7 @@ private fun SelectFactorsContent(
                         item = item,
                         message = "Cannot use this factor by itself".takeIf { state.showPasswordWarning(item) } // TODO crowdin
                     )
-                    is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceInstanceCard(
+                    is SelectFactorsViewModel.State.UiItem.Factor -> SelectableMultiChoiceFactorSourceCard(
                         modifier = Modifier.padding(top = RadixTheme.dimensions.paddingMedium),
                         item = item.card,
                         onCheckedChange = onFactorCheckedChange
@@ -264,7 +264,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.DEVICE),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -278,7 +278,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.ARCULUS_CARD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.ARCULUS_CARD,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -292,7 +292,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -305,7 +305,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         ),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -319,7 +319,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.PASSWORD),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.PASSWORD,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -333,7 +333,7 @@ class SelectFactorsPreviewProvider : PreviewParameterProvider<SelectFactorsViewM
         SelectFactorsViewModel.State.UiItem.CategoryHeader(FactorSourceKind.OFF_DEVICE_MNEMONIC),
         SelectFactorsViewModel.State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.OFF_DEVICE_MNEMONIC,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),

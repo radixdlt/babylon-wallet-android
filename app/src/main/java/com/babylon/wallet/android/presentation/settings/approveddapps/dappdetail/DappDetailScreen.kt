@@ -58,10 +58,10 @@ import com.babylon.wallet.android.presentation.ui.composables.LinkText
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.card.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder

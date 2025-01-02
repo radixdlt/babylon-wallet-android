@@ -9,7 +9,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceInstanceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.SelectedFactorSourcesForRoleStatus
@@ -34,7 +34,7 @@ class SelectFactorsViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onFactorCheckedChange(
-        card: FactorSourceInstanceCard,
+        card: FactorSourceCard,
         checked: Boolean
     ) {
         viewModelScope.launch {
@@ -94,7 +94,7 @@ class SelectFactorsViewModel @Inject constructor(
     private fun FactorSource.toUiItem(): State.UiItem.Factor {
         return State.UiItem.Factor(
             Selectable(
-                data = FactorSourceInstanceCard.compact(
+                data = FactorSourceCard.compact(
                     id = id,
                     name = name,
                     kind = kind
@@ -125,7 +125,7 @@ class SelectFactorsViewModel @Inject constructor(
             ) : UiItem
 
             data class Factor(
-                val card: Selectable<FactorSourceInstanceCard>
+                val card: Selectable<FactorSourceCard>
             ) : UiItem
         }
     }
