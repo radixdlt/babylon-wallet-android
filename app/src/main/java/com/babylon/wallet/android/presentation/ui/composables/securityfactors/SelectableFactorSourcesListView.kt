@@ -40,7 +40,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
-// can be used to list any factor sources in ChooseFactorSourceBottomSheet
+// can be used to list any factor sources (selectable factor source cards) in ChooseFactorSourceBottomSheet
 @Composable
 fun SelectableFactorSourcesListView(
     modifier: Modifier = Modifier,
