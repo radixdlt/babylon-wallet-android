@@ -1,13 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.debug.factors
 
-import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
-import com.babylon.wallet.android.presentation.settings.debug.factors.SecurityFactorSamplesViewModel.State.Page
-import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceKindCard
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceStatusMessage
@@ -28,16 +23,11 @@ import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleStokenet
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import timber.log.Timber
 import javax.inject.Inject
@@ -173,9 +163,7 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
             DeviceFactorSource.sample().toFactorSourceCard(includeDescription = true),
             LedgerHardwareWalletFactorSource.sample()
                 .toFactorSourceCard(includeDescription = true, hasHiddenEntities = true)
-        ),
-        securityFactorSettingItems = currentSecurityFactorTypeItems,
-        selectableFactorSources = availableFactorSources
+        )
     )
 
     fun onSelectFactorSourceKind(item: FactorSourceKindCard) {
@@ -267,66 +255,15 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
 
     fun onChooseFactorSourceClick() = _state.update { it.copy(isBottomSheetVisible = true) }
 
-    fun onSecurityFactorTypeClick(securityFactorsSettingsItem: SecurityFactorsSettingsItem) {
-        _state.update { state ->
-            state.copy(
-                currentPagePosition = when (securityFactorsSettingsItem) {
-                    SecurityFactorsSettingsItem.ArculusCard -> Page.ArculusCard.ordinal
-                    is SecurityFactorsSettingsItem.BiometricsPin -> Page.BiometricsPin.ordinal
-                    SecurityFactorsSettingsItem.LedgerNano -> Page.LedgerNano.ordinal
-                    SecurityFactorsSettingsItem.Passphrase -> Page.Passphrase.ordinal
-                    SecurityFactorsSettingsItem.Password -> Page.Password.ordinal
-                }
-            )
-        }
-    }
-
-    fun onFactorSourceFromSheetSelect(factorSourceCard: FactorSourceCard) {
-        _state.update { state ->
-            val targetKind = factorSourceCard.kind
-            val targetList = state.selectableFactorSources[targetKind] ?: return@update state
-            val updatedList = targetList.map { selectableItem ->
-                selectableItem.copy(selected = selectableItem.data == factorSourceCard)
-            }.toPersistentList()
-            state.copy(
-                selectableFactorSources = state.selectableFactorSources.put(targetKind, updatedList)
-            )
-        }
-    }
-
-    fun onSelectedFactorSourceConfirm() {
+    fun onSelectedFactorSourceConfirm(factorSourceCard: FactorSourceCard) {
         _state.update {
-            it.copy(
-                currentPagePosition = Page.SelectFactorSourceType.ordinal,
-                isBottomSheetVisible = false,
-                selectableFactorSources = availableFactorSources
-            )
+            it.copy(isBottomSheetVisible = false)
         }
-    }
-
-    fun onSheetBackClick() = viewModelScope.launch {
-        _state.update { state ->
-            if (state.currentPagePosition != Page.SelectFactorSourceType.ordinal) {
-                state.copy(
-                    currentPagePosition = Page.SelectFactorSourceType.ordinal,
-                    selectableFactorSources = availableFactorSources
-                )
-            } else {
-                state.copy(
-                    isBottomSheetVisible = false,
-                    currentPagePosition = Page.SelectFactorSourceType.ordinal,
-                    selectableFactorSources = availableFactorSources
-                )
-            }
-        }
+        Timber.d("factor source selected: ${factorSourceCard.name}")
     }
 
     fun onSheetClosed() = _state.update { state ->
-        state.copy(
-            isBottomSheetVisible = false,
-            currentPagePosition = Page.SelectFactorSourceType.ordinal,
-            selectableFactorSources = availableFactorSources
-        )
+        state.copy(isBottomSheetVisible = false)
     }
 
     data class State(
@@ -336,17 +273,8 @@ class SecurityFactorSamplesViewModel @Inject constructor() : StateViewModel<Secu
         val singleChoiceFactorSourceKindItems: PersistentList<Selectable<FactorSourceKindCard>> = persistentListOf(),
         val multiChoiceItems: PersistentList<Selectable<FactorSourceCard>> = persistentListOf(),
         val removableItems: PersistentList<FactorSourceCard> = persistentListOf(),
-        val securityFactorSettingItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
-        val selectableFactorSources: PersistentMap<FactorSourceKind, PersistentList<Selectable<FactorSourceCard>>> = persistentMapOf(),
-        val bottomSheetPages: List<Page> = Page.entries.toList(),
-        val currentPagePosition: Int = Page.SelectFactorSourceType.ordinal,
         val isBottomSheetVisible: Boolean = false
-    ) : UiState {
-
-        enum class Page {
-            SelectFactorSourceType, BiometricsPin, LedgerNano, ArculusCard, Password, Passphrase
-        }
-    }
+    ) : UiState
 
     companion object {
 
