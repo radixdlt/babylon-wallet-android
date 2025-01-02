@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.ui.composables
 import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -54,18 +55,10 @@ fun <T> ListItemPicker(
     textStyle: TextStyle = RadixTheme.typography.body1Regular
 ) {
     val visibleItemsMiddle = VISIBLE_ITEM_COUNT / 2
-    val listScrollCount = Integer.MAX_VALUE
-    val listScrollMiddle = listScrollCount / 2
-    val listStartIndex = listScrollMiddle - listScrollMiddle % items.size - visibleItemsMiddle + items.indexOf(selectedValue)
+    val listScrollCount = items.size
+    val listStartIndex = items.indexOf(selectedValue)
 
     fun getItem(index: Int) = items[index % items.size]
-
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = listStartIndex)
-    val flingBehavior = rememberSnapperFlingBehavior(
-        lazyListState = lazyListState,
-        springAnimationSpec = spring(),
-        decayAnimationSpec = exponentialDecay(frictionMultiplier = 5f)
-    )
 
     val itemHeightPixels = remember { mutableStateOf(0) }
     val itemHeightDp = pixelsToDp(itemHeightPixels.value)
@@ -76,6 +69,14 @@ fun <T> ListItemPicker(
             1f to Color.Transparent
         )
     }
+
+    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = listStartIndex)
+    val flingBehavior = rememberSnapperFlingBehavior(
+        lazyListState = lazyListState,
+        springAnimationSpec = spring(),
+        decayAnimationSpec = exponentialDecay(frictionMultiplier = 5f),
+        endContentPadding = itemHeightDp
+    )
 
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex }
@@ -94,6 +95,9 @@ fun <T> ListItemPicker(
                 .fadingEdge(fadingEdgeGradient),
             state = lazyListState,
             flingBehavior = flingBehavior,
+            contentPadding = PaddingValues(
+                vertical = itemHeightDp * (VISIBLE_ITEM_COUNT / 2)
+            )
         ) {
             items(listScrollCount) { index ->
                 Box(

@@ -8,7 +8,7 @@ data class PrimaryRoleSelection(
     val threshold: Int,
     val thresholdFactors: List<FactorSource>,
     val overrideFactors: List<FactorSource>,
-    val loginFactor: FactorSource?,
+    val authenticationFactor: FactorSource?,
     val primaryRoleStatus: SelectedFactorSourcesForRoleStatus,
     val shieldStatus: SecurityShieldBuilderInvalidReason?
 )

@@ -89,8 +89,8 @@ fun SetupRegularAccessScreen(
         onAddOverrideClick = viewModel::onAddOverrideClick,
         onRemoveOverrideFactorClick = viewModel::onRemoveOverrideFactorClick,
         onRemoveAllOverrideFactorsClick = viewModel::onRemoveAllOverrideFactorsClick,
-        onAddLoginFactorClick = viewModel::onAddLoginFactorClick,
-        onRemoveLoginFactorClick = viewModel::onRemoveLoginFactorClick,
+        onAddAuthenticationFactorClick = viewModel::onAddAuthenticationFactorClick,
+        onRemoveAuthenticationFactorClick = viewModel::onRemoveAuthenticationFactorClick,
         onContinueClick = onContinue
     )
 }
@@ -109,8 +109,8 @@ private fun SetupRegularAccessContent(
     onAddOverrideClick: () -> Unit,
     onRemoveOverrideFactorClick: (FactorSourceCard) -> Unit,
     onRemoveAllOverrideFactorsClick: () -> Unit,
-    onAddLoginFactorClick: () -> Unit,
-    onRemoveLoginFactorClick: () -> Unit,
+    onAddAuthenticationFactorClick: () -> Unit,
+    onRemoveAuthenticationFactorClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
     Scaffold(
@@ -192,10 +192,10 @@ private fun SetupRegularAccessContent(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
-            LoginFactorView(
-                loginFactor = state.loginFactor,
-                onRemoveClick = onRemoveLoginFactorClick,
-                onAddClick = onAddLoginFactorClick
+            AuthenticationFactorView(
+                factor = state.authenticationFactor,
+                onRemoveClick = onRemoveAuthenticationFactorClick,
+                onAddClick = onAddAuthenticationFactorClick
             )
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
@@ -418,9 +418,9 @@ private fun NumberOfFactorsView(
 }
 
 @Composable
-private fun LoginFactorView(
+private fun AuthenticationFactorView(
     modifier: Modifier = Modifier,
-    loginFactor: FactorSourceCard?,
+    factor: FactorSourceCard?,
     onRemoveClick: () -> Unit,
     onAddClick: () -> Unit
 ) {
@@ -435,7 +435,7 @@ private fun LoginFactorView(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
 
-        if (loginFactor == null) {
+        if (factor == null) {
             StatusMessageText(
                 modifier = Modifier.padding(
                     top = RadixTheme.dimensions.paddingSmall,
@@ -449,9 +449,9 @@ private fun LoginFactorView(
         }
 
         FactorsContainerView {
-            if (loginFactor != null) {
+            if (factor != null) {
                 RemovableFactorSourceCard(
-                    item = loginFactor,
+                    item = factor,
                     onRemoveClick = { onRemoveClick() }
                 )
             } else {
@@ -472,6 +472,7 @@ private fun SelectNumberOfFactorsSheet(
     BottomSheetDialogWrapper(
         addScrim = true,
         showDragHandle = true,
+        dragToDismissEnabled = false,
         onDismiss = onDismiss
     ) {
         Column(
@@ -537,8 +538,8 @@ private fun RegularAccessPreview(
             onAddOverrideClick = {},
             onRemoveOverrideFactorClick = {},
             onRemoveAllOverrideFactorsClick = {},
-            onAddLoginFactorClick = {},
-            onRemoveLoginFactorClick = {},
+            onAddAuthenticationFactorClick = {},
+            onRemoveAuthenticationFactorClick = {},
             onContinueClick = {}
         )
     }
@@ -610,7 +611,7 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                         hasHiddenEntities = false
                     )
                 ),
-                loginFactor = FactorSourceCard(
+                authenticationFactor = FactorSourceCard(
                     id = FactorSourceId.Hash.init(
                         kind = FactorSourceKind.DEVICE,
                         mnemonicWithPassphrase = MnemonicWithPassphrase.sample(),
@@ -630,8 +631,8 @@ class RegularAccessPreviewProvider : PreviewParameterProvider<SetupRegularAccess
                     current = SetupRegularAccessViewModel.State.NumberOfFactors.All,
                     items = persistentListOf(
                         SetupRegularAccessViewModel.State.NumberOfFactors.All,
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(1),
-                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2)
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
+                        SetupRegularAccessViewModel.State.NumberOfFactors.Count(1)
                     )
                 ),
                 numberOfFactors = SetupRegularAccessViewModel.State.NumberOfFactors.Count(2),
