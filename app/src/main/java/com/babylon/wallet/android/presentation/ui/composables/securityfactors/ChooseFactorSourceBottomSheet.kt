@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,81 +14,107 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
-import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
-import com.babylon.wallet.android.presentation.settings.debug.factors.SecurityFactorSamplesViewModel
 import com.babylon.wallet.android.presentation.settings.debug.factors.SecurityFactorSamplesViewModel.Companion.availableFactorSources
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceViewModel
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceViewModel.State
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toPersistentList
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChooseFactorSourceBottomSheet(
     modifier: Modifier = Modifier,
-    securityFactorTypeItems: ImmutableMap<SecurityFactorCategory, ImmutableSet<SecurityFactorsSettingsItem>>,
-    pages: PersistentList<SecurityFactorSamplesViewModel.State.Page>,
-    currentPagePosition: Int,
-    factorSources: PersistentMap<FactorSourceKind, PersistentList<Selectable<FactorSourceCard>>>,
-    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
-    onFactorSourceSelect: (FactorSourceCard) -> Unit,
-    onContinueClick: () -> Unit,
-    onBackClick: () -> Unit,
+    viewModel: ChooseFactorSourceViewModel,
+    onContinueClick: (factorSourceCard: FactorSourceCard) -> Unit,
     onDismissSheet: () -> Unit,
 ) {
-    BackHandler(onBack = onBackClick)
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    val pagerState = rememberPagerState(
-        pageCount = { pages.count() }
-    )
+    BackHandler(onBack = viewModel::onSheetBackClick)
 
-    LaunchedEffect(currentPagePosition) {
-        if (currentPagePosition == SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType.ordinal) {
-            // animation is abnormal when navigating back thus scrollToPage works as expected
-            pagerState.scrollToPage(currentPagePosition)
-        } else {
-            pagerState.animateScrollToPage(currentPagePosition)
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                ChooseFactorSourceViewModel.Event.DismissSheet -> onDismissSheet()
+                is ChooseFactorSourceViewModel.Event.SelectedFactorSourceConfirm -> onContinueClick(event.factorSourceCard)
+            }
         }
     }
 
+    val pagerState = rememberPagerState(
+        pageCount = { state.pages.count() }
+    )
+
+    LaunchedEffect(state.currentPagePosition) {
+        if (state.currentPagePosition == State.Page.SelectFactorSourceType.ordinal) {
+            // animation is abnormal when navigating back thus scrollToPage works as expected
+            pagerState.scrollToPage(state.currentPagePosition)
+        } else {
+            pagerState.animateScrollToPage(state.currentPagePosition)
+        }
+    }
+
+    ChooseFactorSourceContent(
+        modifier = modifier,
+        state = state,
+        pagerState = pagerState,
+        onSecurityFactorTypeClick = viewModel::onSecurityFactorTypeClick,
+        onFactorSourceSelect = viewModel::onFactorSourceFromSheetSelect,
+        onAddFactorSourceClick = viewModel::onAddFactorSourceClick,
+        onContinueClick = viewModel::onSelectedFactorSourceConfirm,
+        onSheetBackClick = viewModel::onSheetBackClick,
+        onSheetCloseClick = viewModel::onSheetCloseClick
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ChooseFactorSourceContent(
+    modifier: Modifier = Modifier,
+    state: State,
+    pagerState: PagerState,
+    onSecurityFactorTypeClick: (SecurityFactorsSettingsItem) -> Unit,
+    onFactorSourceSelect: (FactorSourceCard) -> Unit,
+    onAddFactorSourceClick: (FactorSourceKind) -> Unit,
+    onContinueClick: () -> Unit,
+    onSheetBackClick: () -> Unit,
+    onSheetCloseClick: () -> Unit
+) {
     BottomSheetDialogWrapper(
         modifier = modifier,
         addScrim = true,
-        sheetBackgroundColor = if (pagerState.currentPage == SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType.ordinal) {
+        sheetBackgroundColor = if (pagerState.currentPage == State.Page.SelectFactorSourceType.ordinal) {
             RadixTheme.colors.defaultBackground
         } else {
             RadixTheme.colors.gray5
         },
-        headerBackIcon = if (pagerState.currentPage == SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType.ordinal) {
+        headerBackIcon = if (pagerState.currentPage == State.Page.SelectFactorSourceType.ordinal) {
             Icons.Filled.Clear
         } else {
             Icons.AutoMirrored.Filled.ArrowBack
         },
-        title = when (pages[pagerState.currentPage]) { // TODO strings
-            SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType -> "Select Factor Type"
-            SecurityFactorSamplesViewModel.State.Page.BiometricsPin -> "Biometrics"
-            SecurityFactorSamplesViewModel.State.Page.LedgerNano -> "Ledger nano"
-            SecurityFactorSamplesViewModel.State.Page.ArculusCard -> "Arculus card"
-            SecurityFactorSamplesViewModel.State.Page.Password -> "Password"
-            SecurityFactorSamplesViewModel.State.Page.Passphrase -> "Passphrase"
+        title = when (state.pages[pagerState.currentPage]) { // TODO strings
+            State.Page.SelectFactorSourceType -> "Select Factor Type"
+            State.Page.BiometricsPin -> "Biometrics"
+            State.Page.LedgerNano -> "Ledger nano"
+            State.Page.ArculusCard -> "Arculus card"
+            State.Page.Password -> "Password"
+            State.Page.Passphrase -> "Passphrase"
         },
         isDismissible = false,
-        onHeaderBackIconClick = onBackClick,
-        onDismiss = onDismissSheet
+        onHeaderBackIconClick = onSheetBackClick,
+        onDismiss = onSheetCloseClick
     ) {
         HorizontalPager(
             modifier = Modifier
@@ -96,45 +123,51 @@ fun ChooseFactorSourceBottomSheet(
             state = pagerState,
             userScrollEnabled = false
         ) { pageIndex ->
-            val currentPage = pages[pageIndex]
+            val currentPage = state.pages[pageIndex]
             when (currentPage) {
-                SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType -> {
+                State.Page.SelectFactorSourceType -> {
                     SecurityFactorTypesListView(
-                        securityFactorSettingItems = securityFactorTypeItems,
+                        securityFactorSettingItems = state.securityFactorTypeItems,
                         onSecurityFactorSettingItemClick = onSecurityFactorTypeClick
                     )
                 }
-                SecurityFactorSamplesViewModel.State.Page.BiometricsPin -> {
+
+                State.Page.BiometricsPin -> {
                     SelectableFactorSourcesListView(
-                        factorSources = factorSources[FactorSourceKind.DEVICE] ?: persistentListOf(),
+                        factorSources = state.selectableFactorSources[FactorSourceKind.DEVICE] ?: persistentListOf(),
                         factorSourceDescriptionText = R.string.factorSources_card_deviceDescription,
                         addFactorSourceButtonTitle = R.string.factorSources_list_deviceAdd,
                         onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = {},
+                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.DEVICE) },
                         onContinueClick = onContinueClick
                     )
                 }
-                SecurityFactorSamplesViewModel.State.Page.LedgerNano -> {
+
+                State.Page.LedgerNano -> {
                     SelectableFactorSourcesListView(
-                        factorSources = factorSources[FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET] ?: persistentListOf(),
+                        factorSources = state.selectableFactorSources[FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET]
+                            ?: persistentListOf(),
                         factorSourceDescriptionText = R.string.factorSources_card_ledgerDescription,
                         addFactorSourceButtonTitle = R.string.factorSources_list_ledgerAdd,
                         onFactorSourceSelect = onFactorSourceSelect,
-                        onAddFactorSourceClick = {},
+                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET) },
                         onContinueClick = onContinueClick
                     )
                 }
-                SecurityFactorSamplesViewModel.State.Page.ArculusCard -> {
+
+                State.Page.ArculusCard -> {
                     Column {
                         Text("Arculus")
                     }
                 }
-                SecurityFactorSamplesViewModel.State.Page.Password -> {
+
+                State.Page.Password -> {
                     Column {
                         Text("Password")
                     }
                 }
-                SecurityFactorSamplesViewModel.State.Page.Passphrase -> {
+
+                State.Page.Passphrase -> {
                     Column {
                         Text("Passhprase")
                     }
@@ -144,42 +177,54 @@ fun ChooseFactorSourceBottomSheet(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
 @UsesSampleValues
 private fun ChooseFactorSourceBottomSheetPreview() {
     RadixWalletPreviewTheme {
-        ChooseFactorSourceBottomSheet(
+        ChooseFactorSourceContent(
             modifier = Modifier,
-            pages = SecurityFactorSamplesViewModel.State.Page.entries.toPersistentList(),
-            currentPagePosition = SecurityFactorSamplesViewModel.State.Page.SelectFactorSourceType.ordinal,
-            factorSources = persistentMapOf(),
-            securityFactorTypeItems = currentSecurityFactorTypeItems,
+            state = State(
+                currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
+                securityFactorTypeItems = currentSecurityFactorTypeItems,
+
+            ),
+            pagerState = rememberPagerState {
+                State.Page.entries.count()
+            },
             onSecurityFactorTypeClick = {},
             onFactorSourceSelect = {},
+            onAddFactorSourceClick = {},
             onContinueClick = {},
-            onBackClick = {},
-            onDismissSheet = {}
+            onSheetBackClick = {},
+            onSheetCloseClick = {}
         )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Preview
 @Composable
 @UsesSampleValues
 private fun DeviceFactorsBottomSheetPreview() {
     RadixWalletPreviewTheme {
-        ChooseFactorSourceBottomSheet(
+        ChooseFactorSourceContent(
             modifier = Modifier,
-            pages = SecurityFactorSamplesViewModel.State.Page.entries.toPersistentList(),
-            currentPagePosition = SecurityFactorSamplesViewModel.State.Page.BiometricsPin.ordinal,
-            factorSources = availableFactorSources,
-            securityFactorTypeItems = currentSecurityFactorTypeItems,
+            state = State(
+                currentPagePosition = State.Page.BiometricsPin.ordinal,
+                securityFactorTypeItems = currentSecurityFactorTypeItems,
+                selectableFactorSources = availableFactorSources
+            ),
+            pagerState = rememberPagerState(initialPage = State.Page.BiometricsPin.ordinal) {
+                State.Page.entries.count()
+            },
             onSecurityFactorTypeClick = {},
             onFactorSourceSelect = {},
+            onAddFactorSourceClick = {},
             onContinueClick = {},
-            onBackClick = {},
-            onDismissSheet = {}
+            onSheetBackClick = {},
+            onSheetCloseClick = {}
         )
     }
 }
