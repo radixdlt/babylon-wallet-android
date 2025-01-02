@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.securityfactors
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -22,10 +22,12 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
 import com.babylon.wallet.android.presentation.settings.debug.factors.SecurityFactorSamplesViewModel.Companion.availableFactorSources
-import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceViewModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceViewModel.State
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SecurityFactorTypesListView
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SelectableFactorSourcesListView
+import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.annotation.UsesSampleValues
