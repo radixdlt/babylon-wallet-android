@@ -22,6 +22,7 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,7 +94,7 @@ class ChooseFactorSourceViewModel @Inject constructor() :
     }
 
     fun onAddFactorSourceClick(factorSourceKind: FactorSourceKind) {
-        TODO("Not yet implemented")
+        Timber.d("onAddFactorSourceClick: $factorSourceKind")
     }
 
     fun onSheetCloseClick() = viewModelScope.launch {
