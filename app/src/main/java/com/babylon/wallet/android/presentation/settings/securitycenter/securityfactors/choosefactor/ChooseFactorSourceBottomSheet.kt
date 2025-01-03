@@ -27,18 +27,25 @@ import com.babylon.wallet.android.presentation.ui.composables.securityfactors.Se
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.SelectableFactorSourcesListView
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChooseFactorSourceBottomSheet(
     modifier: Modifier = Modifier,
+    excludeFactorSources: PersistentList<FactorSourceId> = persistentListOf(),
     viewModel: ChooseFactorSourceViewModel,
     onContinueClick: (factorSourceCard: FactorSourceCard) -> Unit,
     onDismissSheet: () -> Unit,
 ) {
+    LaunchedEffect(excludeFactorSources) {
+        viewModel.initData(excludeFactorSources)
+    }
+
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     BackHandler(onBack = viewModel::onSheetBackClick)

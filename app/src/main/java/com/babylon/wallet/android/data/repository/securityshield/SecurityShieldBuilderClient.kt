@@ -53,33 +53,21 @@ class SecurityShieldBuilderClient @Inject constructor(
         id: FactorSourceId,
         isSelected: Boolean
     ) = withContext(dispatcher) {
-        val currentFactorCount = (primaryRoleSelection.replayCache.firstOrNull()?.thresholdFactors?.size ?: 0).toUByte()
+        val thresholdFactorCount = (primaryRoleSelection.replayCache.firstOrNull()?.thresholdFactors?.size ?: 0).toUByte()
 
         if (isSelected) {
             executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryThreshold(id) }
-            executeMutatingFunction { securityShieldBuilder.setThreshold(currentFactorCount.inc()) }
+            executeMutatingFunction { securityShieldBuilder.setThreshold(thresholdFactorCount.inc()) }
         } else {
             executeMutatingFunction { securityShieldBuilder.removeFactorFromPrimary(id) }
-            executeMutatingFunction { securityShieldBuilder.setThreshold(currentFactorCount.dec()) }
+            executeMutatingFunction { securityShieldBuilder.setThreshold(thresholdFactorCount.dec()) }
         }
 
         onPrimaryRoleSelectionUpdate()
     }
 
-    private fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) {
-        securityShieldBuilder = securityShieldBuilder.function()
-    }
-
-    suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
-        val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
-        val selectedFactorSources = allFactorSources.filter { it.id in selectedFactorSourceIds }
-        executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
-        onPrimaryRoleSelectionUpdate()
-        onRecoveryRoleSelectionUpdate()
-    }
-
-    suspend fun setThreshold(threshold: Int) = withContext(dispatcher) {
-        executeMutatingFunction { securityShieldBuilder.setThreshold(threshold.toUByte()) }
+    suspend fun addPrimaryRoleOverrideFactorSource(id: FactorSourceId) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.addFactorSourceToPrimaryOverride(id) }
         onPrimaryRoleSelectionUpdate()
     }
 
@@ -88,9 +76,22 @@ class SecurityShieldBuilderClient @Inject constructor(
         onPrimaryRoleSelectionUpdate()
     }
 
-    suspend fun removeAuthenticationFactor() = withContext(dispatcher) {
-        securityShieldBuilder.setAuthenticationSigningFactor(null)
+    suspend fun setAuthenticationFactor(id: FactorSourceId?) = withContext(dispatcher) {
+        securityShieldBuilder.setAuthenticationSigningFactor(id)
         onPrimaryRoleSelectionUpdate()
+    }
+
+    suspend fun setThreshold(threshold: Int) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.setThreshold(threshold.toUByte()) }
+        onPrimaryRoleSelectionUpdate()
+    }
+
+    suspend fun autoAssignSelectedFactors() = withContext(dispatcher) {
+        val selectedFactorSourceIds = securityShieldBuilder.getPrimaryThresholdFactors()
+        val selectedFactorSources = allFactorSources.filter { it.id in selectedFactorSourceIds }
+        executeMutatingFunction { securityShieldBuilder.autoAssignFactorsToRecoveryAndConfirmationBasedOnPrimary(selectedFactorSources) }
+        onPrimaryRoleSelectionUpdate()
+        onRecoveryRoleSelectionUpdate()
     }
 
     private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
@@ -114,6 +115,10 @@ class SecurityShieldBuilderClient @Inject constructor(
                 numberOfDaysUntilAutoConfirm = securityShieldBuilder.getNumberOfDaysUntilAutoConfirm().toInt()
             )
         )
+    }
+
+    private fun executeMutatingFunction(function: SecurityShieldBuilder.() -> SecurityShieldBuilder) {
+        securityShieldBuilder = securityShieldBuilder.function()
     }
 
     private fun List<FactorSourceId>.toFactorSources(): List<FactorSource> =

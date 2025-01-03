@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
@@ -55,10 +56,7 @@ fun <T> ListItemPicker(
     textStyle: TextStyle = RadixTheme.typography.body1Regular
 ) {
     val visibleItemsMiddle = VISIBLE_ITEM_COUNT / 2
-    val listScrollCount = items.size
-    val listStartIndex = items.indexOf(selectedValue)
-
-    fun getItem(index: Int) = items[index % items.size]
+    val listStartIndex = remember(items, selectedValue) { items.indexOf(selectedValue) }
 
     val itemHeightPixels = remember { mutableStateOf(0) }
     val itemHeightDp = pixelsToDp(itemHeightPixels.value)
@@ -70,19 +68,21 @@ fun <T> ListItemPicker(
         )
     }
 
+    val verticalContentPadding = itemHeightDp * visibleItemsMiddle
+
     val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = listStartIndex)
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = lazyListState,
         springAnimationSpec = spring(),
         decayAnimationSpec = exponentialDecay(frictionMultiplier = 5f),
-        endContentPadding = itemHeightDp
+        endContentPadding = verticalContentPadding
     )
 
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex }
-            .map { index -> getItem(index + visibleItemsMiddle) }
+            .map { index -> items.getOrNull(index) }
             .distinctUntilChanged()
-            .collect { item -> onValueChange(item) }
+            .collect { item -> item?.let { onValueChange(it) } }
     }
 
     Box(
@@ -96,10 +96,10 @@ fun <T> ListItemPicker(
             state = lazyListState,
             flingBehavior = flingBehavior,
             contentPadding = PaddingValues(
-                vertical = itemHeightDp * (VISIBLE_ITEM_COUNT / 2)
+                vertical = verticalContentPadding
             )
         ) {
-            items(listScrollCount) { index ->
+            items(items) { item ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -108,7 +108,7 @@ fun <T> ListItemPicker(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = label(getItem(index)),
+                        text = label(item),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,

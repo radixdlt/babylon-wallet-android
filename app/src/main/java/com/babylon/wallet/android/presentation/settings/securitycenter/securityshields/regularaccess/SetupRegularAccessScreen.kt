@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -45,6 +46,7 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.FactorsContainerView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor.ChooseFactorSourceBottomSheet
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -93,6 +95,15 @@ fun SetupRegularAccessScreen(
         onRemoveAuthenticationFactorClick = viewModel::onRemoveAuthenticationFactorClick,
         onContinueClick = onContinue
     )
+
+    state.selectFactor?.let { selectFactor ->
+        ChooseFactorSourceBottomSheet(
+            viewModel = hiltViewModel(),
+            excludeFactorSources = selectFactor.excludeFactorSources,
+            onContinueClick = viewModel::onFactorSelected,
+            onDismissSheet = viewModel::onDismissSelectFactor
+        )
+    }
 }
 
 @Composable
@@ -488,7 +499,7 @@ private fun SelectNumberOfFactorsSheet(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
             var selectedItem by remember(selectNumberOfFactors.current) { mutableStateOf(selectNumberOfFactors.current) }
 
@@ -507,7 +518,7 @@ private fun SelectNumberOfFactorsSheet(
                 }
             )
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             RadixBottomBar(
                 modifier = Modifier.fillMaxWidth(),
