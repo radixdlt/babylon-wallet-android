@@ -32,6 +32,7 @@ val Orange2 = Color(0xFFEC633E)
 val Orange3 = Color(0xFFE59700)
 val LightOrange = Color(0xFFFFF5E2)
 val Red1 = Color(0xFFC82020)
+val LightRed = Color(0xFFfcebeb)
 
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)

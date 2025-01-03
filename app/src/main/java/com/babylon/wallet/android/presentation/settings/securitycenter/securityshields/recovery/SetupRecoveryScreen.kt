@@ -1,25 +1,40 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityshields.recovery
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -29,12 +44,16 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.common.co
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldBuilderTitleView
 import com.babylon.wallet.android.presentation.settings.securitycenter.common.composables.ShieldSetupStatusView
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.ListItemPicker
 import com.babylon.wallet.android.presentation.ui.composables.RadixBottomBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.RemovableFactorSourceCard
 import com.babylon.wallet.android.presentation.ui.composables.statusBarsAndBanner
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -43,6 +62,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun SetupRecoveryScreen(
@@ -60,6 +80,11 @@ fun SetupRecoveryScreen(
         onRemoveStartRecoveryFactor = viewModel::onRemoveStartRecoveryFactor,
         onAddConfirmRecoveryFactorClick = viewModel::onAddConfirmRecoveryFactorClick,
         onRemoveConfirmRecoveryFactor = viewModel::onRemoveConfirmRecoveryFactor,
+        onFallbackPeriodClick = viewModel::onFallbackPeriodClick,
+        onFallbackPeriodValueChange = viewModel::onFallbackPeriodValueChange,
+        onFallbackPeriodUnitChange = viewModel::onFallbackPeriodUnitChange,
+        onSetFallbackPeriodClick = viewModel::onSetFallbackPeriodClick,
+        onDismissFallbackPeriod = viewModel::onDismissFallbackPeriod,
         onContinueClick = viewModel::onContinueClick
     )
 }
@@ -74,6 +99,11 @@ private fun SetupRecoveryContent(
     onRemoveStartRecoveryFactor: (FactorSourceCard) -> Unit,
     onAddConfirmRecoveryFactorClick: () -> Unit,
     onRemoveConfirmRecoveryFactor: (FactorSourceCard) -> Unit,
+    onFallbackPeriodClick: () -> Unit,
+    onFallbackPeriodValueChange: (Int) -> Unit,
+    onFallbackPeriodUnitChange: (SetupRecoveryViewModel.State.FallbackPeriod.Unit) -> Unit,
+    onSetFallbackPeriodClick: () -> Unit,
+    onDismissFallbackPeriod: () -> Unit,
     onContinueClick: () -> Unit
 ) {
     Scaffold(
@@ -138,13 +168,19 @@ private fun SetupRecoveryContent(
                     onAddFactorClick = onAddStartRecoveryFactorClick,
                     onRemoveFactorClick = onRemoveStartRecoveryFactor
                 )
+            }
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 
-                HorizontalDivider()
+            HorizontalDivider()
 
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
 
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge)
+            ) {
                 SectionHeaderView(
                     title = "Confirming a Recovery", // TODO crowdin
                     subtitle = "Factors you can use to complete the recovery of your Accounts and Personas.", // TODO crowdin
@@ -158,9 +194,36 @@ private fun SetupRecoveryContent(
                     onRemoveFactorClick = onRemoveConfirmRecoveryFactor
                 )
 
+                Text(
+                    modifier = Modifier
+                        .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                        .align(Alignment.CenterHorizontally),
+                    text = "OR", // TODO crowdin
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray1
+                )
+
+                state.fallbackPeriod?.let { period ->
+                    EmergencyFallbackView(
+                        period = period,
+                        onInfoClick = onInfoClick,
+                        onNumberOfDaysClick = onFallbackPeriodClick
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
             }
         }
+    }
+
+    if (state.selectFallbackPeriod != null) {
+        SelectFallbackPeriodSheet(
+            selectFallbackPeriod = state.selectFallbackPeriod,
+            onValueChange = onFallbackPeriodValueChange,
+            onUnitChange = onFallbackPeriodUnitChange,
+            onSetClick = onSetFallbackPeriodClick,
+            onDismiss = onDismissFallbackPeriod
+        )
     }
 }
 
@@ -225,6 +288,192 @@ private fun FactorsView(
 }
 
 @Composable
+private fun EmergencyFallbackView(
+    modifier: Modifier = Modifier,
+    period: SetupRecoveryViewModel.State.FallbackPeriod,
+    onInfoClick: (GlossaryItem) -> Unit,
+    onNumberOfDaysClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = RadixTheme.colors.lightRed,
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = RadixTheme.colors.red1,
+                    shape = RadixTheme.shapes.roundedRectTopMedium
+                )
+                .clip(RadixTheme.shapes.roundedRectTopMedium)
+                .clickable { onInfoClick(GlossaryItem.emergencyFallback) }
+                .padding(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "Emergency Fallback", // TODO crowdin
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.white
+            )
+
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(DSR.ic_info_outline),
+                tint = RadixTheme.colors.white,
+                contentDescription = "info"
+            )
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = "Set a time period to automatically confirm recovery **WITHOUT** presenting any of the above confirmation factors." // TODO crowdin
+                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.gray1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+
+        Row(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .fillMaxWidth()
+                .height(RadixTheme.dimensions.buttonDefaultHeight)
+                .shadow(
+                    elevation = 2.dp,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
+                .background(
+                    color = RadixTheme.colors.white,
+                    shape = RadixTheme.shapes.roundedRectSmall
+                )
+                .throttleClickable { onNumberOfDaysClick() }
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        ) {
+            Icon(
+                painter = painterResource(id = DSR.ic_calendar),
+                contentDescription = null
+            )
+
+            Text(
+                text = period.title(),
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1
+            )
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingSemiLarge),
+            text = "We recommend setting this for an extended period, so you have time to notice and cancel a recovery you don’t want.", // TODO crowdin
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.red1
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+    }
+}
+
+@Composable
+private fun SelectFallbackPeriodSheet(
+    selectFallbackPeriod: SetupRecoveryViewModel.State.SelectFallbackPeriod,
+    onValueChange: (Int) -> Unit,
+    onUnitChange: (SetupRecoveryViewModel.State.FallbackPeriod.Unit) -> Unit,
+    onSetClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    BottomSheetDialogWrapper(
+        addScrim = true,
+        showDragHandle = true,
+        dragToDismissEnabled = false,
+        onDismiss = onDismiss
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                text = "Emergency Fallback", // TODO crowdin
+                style = RadixTheme.typography.header,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
+                text = "Set a time period to automatically confirm recovery **WITHOUT** presenting any confirmation factors." // TODO crowdin
+                    .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+            Row(
+                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
+            ) {
+                ListItemPicker(
+                    modifier = Modifier.weight(1f),
+                    displayMode = ListItemPicker.DisplayMode.Normal,
+                    items = selectFallbackPeriod.values,
+                    selectedValue = selectFallbackPeriod.currentValue,
+                    onValueChange = onValueChange,
+                    label = { item -> item.toString() },
+                    contentAlignment = Alignment.CenterEnd,
+                    contentPadding = PaddingValues(end = RadixTheme.dimensions.paddingSemiLarge)
+                )
+
+                ListItemPicker(
+                    modifier = Modifier.weight(1f),
+                    displayMode = ListItemPicker.DisplayMode.Normal,
+                    items = selectFallbackPeriod.units,
+                    selectedValue = selectFallbackPeriod.currentUnit,
+                    onValueChange = onUnitChange,
+                    label = { item -> item.displayName() },
+                    contentAlignment = Alignment.CenterStart,
+                    contentPadding = PaddingValues(start = RadixTheme.dimensions.paddingSemiLarge)
+                )
+            }
+
+            RadixBottomBar(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onSetClick,
+                text = "Set", // TODO crowdin
+                enabled = true
+            )
+        }
+    }
+}
+
+@Composable
+private fun SetupRecoveryViewModel.State.FallbackPeriod.title(): String = "$value ${unit.displayName()}"
+
+@Composable
+private fun SetupRecoveryViewModel.State.FallbackPeriod.Unit.displayName(): String = when (this) {
+    SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS -> "Days" // TODO crowdin
+    SetupRecoveryViewModel.State.FallbackPeriod.Unit.WEEKS -> "Weeks" // TODO crowdin
+}
+
+@Composable
 @Preview
 @UsesSampleValues
 private fun SetupRecoveryPreview(
@@ -239,6 +488,11 @@ private fun SetupRecoveryPreview(
             onRemoveStartRecoveryFactor = {},
             onAddConfirmRecoveryFactorClick = {},
             onRemoveConfirmRecoveryFactor = {},
+            onFallbackPeriodClick = {},
+            onFallbackPeriodValueChange = {},
+            onFallbackPeriodUnitChange = {},
+            onSetFallbackPeriodClick = {},
+            onDismissFallbackPeriod = {},
             onContinueClick = {}
         )
     }
@@ -281,6 +535,18 @@ class SetupRecoveryPreviewProvider : PreviewParameterProvider<SetupRecoveryViewM
                         personas = persistentListOf(),
                         hasHiddenEntities = false
                     )
+                ),
+                fallbackPeriod = SetupRecoveryViewModel.State.FallbackPeriod(
+                    value = 10,
+                    unit = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS
+                )
+            ),
+            SetupRecoveryViewModel.State(
+                selectFallbackPeriod = SetupRecoveryViewModel.State.SelectFallbackPeriod(
+                    currentValue = 10,
+                    currentUnit = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS,
+                    values = SetupRecoveryViewModel.State.FallbackPeriod.Unit.DAYS.possibleValues,
+                    units = SetupRecoveryViewModel.State.FallbackPeriod.Unit.entries.toPersistentList()
                 )
             )
         )

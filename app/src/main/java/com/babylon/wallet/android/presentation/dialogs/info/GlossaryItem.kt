@@ -36,5 +36,6 @@ enum class GlossaryItem {
     securityshields,
     buildingshield,
     nohardwaredevice,
-    biometricsPIN // TODO pending the right glossary item
+    biometricsPIN, // TODO pending the right glossary item
+    emergencyFallback
 }

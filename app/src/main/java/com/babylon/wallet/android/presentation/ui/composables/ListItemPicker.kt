@@ -9,13 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
@@ -41,7 +44,17 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-private const val VISIBLE_ITEM_COUNT = 3
+object ListItemPicker {
+
+    @Suppress("MagicNumber")
+    enum class DisplayMode(
+        val visibleItemCount: Int
+    ) {
+
+        Compact(3),
+        Normal(5),
+    }
+}
 
 @OptIn(ExperimentalSnapperApi::class)
 @Composable
@@ -49,16 +62,16 @@ fun <T> ListItemPicker(
     items: PersistentList<T>,
     selectedValue: T,
     onValueChange: (T) -> Unit,
-    label: (T) -> String,
+    label: @Composable (T) -> String,
     modifier: Modifier = Modifier,
+    displayMode: ListItemPicker.DisplayMode = ListItemPicker.DisplayMode.Compact,
     dividersColor: Color = RadixTheme.colors.gray3,
-    textStyle: TextStyle = RadixTheme.typography.body1Regular
+    textStyle: TextStyle = RadixTheme.typography.body1Regular,
+    contentAlignment: Alignment = Alignment.Center,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
-    val visibleItemsMiddle = VISIBLE_ITEM_COUNT / 2
-    val listScrollCount = items.size
-    val listStartIndex = items.indexOf(selectedValue)
-
-    fun getItem(index: Int) = items[index % items.size]
+    val visibleItemsMiddle = displayMode.visibleItemCount / 2
+    val listStartIndex = remember(items, selectedValue) { items.indexOf(selectedValue) }
 
     val itemHeightPixels = remember { mutableStateOf(0) }
     val itemHeightDp = pixelsToDp(itemHeightPixels.value)
@@ -70,19 +83,26 @@ fun <T> ListItemPicker(
         )
     }
 
-    val lazyListState = rememberLazyListState(initialFirstVisibleItemIndex = listStartIndex)
+    val verticalContentPadding = itemHeightDp * visibleItemsMiddle
+
+    val lazyListState = rememberSaveable(items, saver = LazyListState.Saver) {
+        LazyListState(
+            firstVisibleItemIndex = listStartIndex,
+            firstVisibleItemScrollOffset = 0
+        )
+    }
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = lazyListState,
         springAnimationSpec = spring(),
         decayAnimationSpec = exponentialDecay(frictionMultiplier = 5f),
-        endContentPadding = itemHeightDp
+        endContentPadding = verticalContentPadding
     )
 
     LaunchedEffect(lazyListState) {
         snapshotFlow { lazyListState.firstVisibleItemIndex }
-            .map { index -> getItem(index + visibleItemsMiddle) }
+            .map { index -> items.getOrNull(index) }
             .distinctUntilChanged()
-            .collect { item -> onValueChange(item) }
+            .collect { item -> item?.let { onValueChange(it) } }
     }
 
     Box(
@@ -91,24 +111,24 @@ fun <T> ListItemPicker(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(itemHeightDp * VISIBLE_ITEM_COUNT)
+                .height(itemHeightDp * displayMode.visibleItemCount)
                 .fadingEdge(fadingEdgeGradient),
             state = lazyListState,
             flingBehavior = flingBehavior,
             contentPadding = PaddingValues(
-                vertical = itemHeightDp * (VISIBLE_ITEM_COUNT / 2)
-            )
+                vertical = verticalContentPadding
+            ) + contentPadding
         ) {
-            items(listScrollCount) { index ->
+            items(items) { item ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 34.dp)
                         .onSizeChanged { size -> itemHeightPixels.value = size.height },
-                    contentAlignment = Alignment.Center
+                    contentAlignment = contentAlignment
                 ) {
                     Text(
-                        text = label(getItem(index)),
+                        text = label(item),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         textAlign = TextAlign.Center,

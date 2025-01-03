@@ -476,7 +476,8 @@ private fun SelectNumberOfFactorsSheet(
         onDismiss = onDismiss
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
 

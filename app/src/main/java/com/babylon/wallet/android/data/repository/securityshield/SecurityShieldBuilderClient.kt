@@ -103,6 +103,11 @@ class SecurityShieldBuilderClient @Inject constructor(
         onRecoveryRoleSelectionUpdate()
     }
 
+    suspend fun setNumberOfDaysUntilAutoConfirm(days: Int) = withContext(dispatcher) {
+        executeMutatingFunction { securityShieldBuilder.setNumberOfDaysUntilAutoConfirm(days.toUShort()) }
+        onRecoveryRoleSelectionUpdate()
+    }
+
     private suspend fun onPrimaryRoleSelectionUpdate() = withContext(dispatcher) {
         primaryRoleSelection.emit(
             PrimaryRoleSelection(
