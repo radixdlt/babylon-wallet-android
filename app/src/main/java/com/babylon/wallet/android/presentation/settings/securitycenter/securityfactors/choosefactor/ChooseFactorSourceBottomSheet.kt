@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.securitycenter.security
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -11,7 +10,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -158,21 +156,36 @@ private fun ChooseFactorSourceContent(
                 }
 
                 State.Page.ArculusCard -> {
-                    Column {
-                        Text("Arculus")
-                    }
+                    SelectableFactorSourcesListView(
+                        factorSources = state.selectableFactorSources[FactorSourceKind.ARCULUS_CARD] ?: persistentListOf(),
+                        factorSourceDescriptionText = R.string.factorSources_card_arculusCardDescription,
+                        addFactorSourceButtonTitle = R.string.factorSources_list_arculusCardAdd,
+                        onFactorSourceSelect = onFactorSourceSelect,
+                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.ARCULUS_CARD) },
+                        onContinueClick = onContinueClick
+                    )
                 }
 
                 State.Page.Password -> {
-                    Column {
-                        Text("Password")
-                    }
+                    SelectableFactorSourcesListView(
+                        factorSources = state.selectableFactorSources[FactorSourceKind.PASSWORD] ?: persistentListOf(),
+                        factorSourceDescriptionText = R.string.factorSources_card_passwordDescription,
+                        addFactorSourceButtonTitle = R.string.factorSources_list_passwordAdd,
+                        onFactorSourceSelect = onFactorSourceSelect,
+                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.PASSWORD) },
+                        onContinueClick = onContinueClick
+                    )
                 }
 
                 State.Page.Passphrase -> {
-                    Column {
-                        Text("Passhprase")
-                    }
+                    SelectableFactorSourcesListView(
+                        factorSources = state.selectableFactorSources[FactorSourceKind.OFF_DEVICE_MNEMONIC] ?: persistentListOf(),
+                        factorSourceDescriptionText = R.string.factorSources_card_passphraseDescription,
+                        addFactorSourceButtonTitle = R.string.factorSources_list_passphraseAdd,
+                        onFactorSourceSelect = onFactorSourceSelect,
+                        onAddFactorSourceClick = { onAddFactorSourceClick(FactorSourceKind.OFF_DEVICE_MNEMONIC) },
+                        onContinueClick = onContinueClick
+                    )
                 }
             }
         }

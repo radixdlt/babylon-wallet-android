@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.choosefactor
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -9,10 +10,11 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.SecurityFactorsSettingsItem.SecurityFactorCategory
-import com.babylon.wallet.android.presentation.settings.debug.factors.SecurityFactorSamplesViewModel.Companion.availableFactorSources
 import com.babylon.wallet.android.presentation.ui.composables.securityfactors.currentSecurityFactorTypeItems
 import com.babylon.wallet.android.presentation.ui.model.factors.FactorSourceCard
+import com.babylon.wallet.android.presentation.ui.model.factors.toFactorSourceCard
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.os.SargonOsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.ImmutableSet
@@ -20,21 +22,42 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class ChooseFactorSourceViewModel @Inject constructor() :
-    StateViewModel<ChooseFactorSourceViewModel.State>(),
-    OneOffEventHandler<ChooseFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
+class ChooseFactorSourceViewModel @Inject constructor(
+    private val osManager: SargonOsManager,
+    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
+) : StateViewModel<ChooseFactorSourceViewModel.State>(), OneOffEventHandler<ChooseFactorSourceViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State(
         currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
-        securityFactorTypeItems = currentSecurityFactorTypeItems,
-        selectableFactorSources = availableFactorSources // this will be replaced with the actual factor sources
+        securityFactorTypeItems = currentSecurityFactorTypeItems
     )
+
+    private var factorSourcesFromProfile = state.value.selectableFactorSources
+
+    init {
+        viewModelScope.launch(defaultDispatcher) {
+            factorSourcesFromProfile = osManager.sargonOs
+                .factorSources()
+                .map { factorSource ->
+                    Selectable(factorSource.toFactorSourceCard())
+                }
+                .groupBy { it.data.kind }
+                .mapValues { (_, cards) -> cards.toPersistentList() }
+                .toPersistentMap()
+
+            _state.update { state ->
+                state.copy(selectableFactorSources = factorSourcesFromProfile)
+            }
+        }
+    }
 
     fun onSecurityFactorTypeClick(securityFactorsSettingsItem: SecurityFactorsSettingsItem) {
         _state.update { state ->
@@ -71,7 +94,7 @@ class ChooseFactorSourceViewModel @Inject constructor() :
         _state.update { state ->
             state.copy(
                 currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
-                selectableFactorSources = availableFactorSources
+                selectableFactorSources = factorSourcesFromProfile
             )
         }
     }
@@ -81,13 +104,13 @@ class ChooseFactorSourceViewModel @Inject constructor() :
             if (state.currentPagePosition != State.Page.SelectFactorSourceType.ordinal) {
                 state.copy(
                     currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
-                    selectableFactorSources = availableFactorSources
+                    selectableFactorSources = factorSourcesFromProfile
                 )
             } else {
                 sendEvent(Event.DismissSheet)
                 state.copy(
                     currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
-                    selectableFactorSources = availableFactorSources
+                    selectableFactorSources = factorSourcesFromProfile
                 )
             }
         }
@@ -101,7 +124,7 @@ class ChooseFactorSourceViewModel @Inject constructor() :
         _state.update { state ->
             state.copy(
                 currentPagePosition = State.Page.SelectFactorSourceType.ordinal,
-                selectableFactorSources = availableFactorSources
+                selectableFactorSources = factorSourcesFromProfile
             )
         }
         sendEvent(Event.DismissSheet)
